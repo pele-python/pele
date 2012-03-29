@@ -9,6 +9,7 @@ import scipy.optimize.lbfgsb
 #import steepest_descent
 import copy
 import mykeyword
+import saveit
 
 def adjustCenterOfMass(coords, natoms):
     CoM = [0.,0.,0.]
@@ -21,10 +22,10 @@ def adjustCenterOfMass(coords, natoms):
         for k in range(3):
             coords[i*3+k] -= CoM[k]
 
-def printxyz(fout, coords, natoms):
+def printxyz(fout, coords, natoms, E=""):
     adjustCenterOfMass(coords, natoms)
     fout.write( str(natoms) + "\n")
-    fout.write( "\n")
+    fout.write( str(E) + "\n")
     for i in range(natoms):
         fout.write( "LA "+ str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
 
@@ -136,15 +137,16 @@ class manageStepSize:
             self.adjustStep()
 
 
-def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepsequil):
+def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepsequil, savelowest):
     fout = open("dump.q.xyz", "w")
-    printxyz(fout, coords, natoms)
     #########################################################################
     #do initial quench
     #########################################################################
     print "starting monteCarlo, nsteps", nsteps
     print "calculating initial energy"
     potel = potential.getEnergy(coords)
+    savelowest.insert(potel, coords)
+    printxyz(fout, coords, natoms, potel)
     print "initial energy", potel
     potel, V = potential.getEnergyGradient(coords)
     print "max gradient", np.max(V), potel
@@ -156,8 +158,9 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     print "newcoords max V", np.max(V), Equench
 
     coords = newcoords
-    printxyz(fout, coords, natoms)
+    printxyz(fout, coords, natoms, Equench)
 
+    savelowest.insert(Equench, coords)
     
     #########################################################################
     #do equilibration run.  Adjust the stepsize every nstepaccrat to ensure the
@@ -172,7 +175,8 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, manstep.stepsize)
         manstep.insertStep(acceptstep)
         if acceptstep:
-            printxyz(fout, newcoords, natoms)
+            printxyz(fout, newcoords, natoms, Equench_new)
+            savelowest.insert(Equench_new, newcoords)
         coords = newcoords
         Equench = Equench_new
 
@@ -184,7 +188,8 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
         print "step number ", istep + nstepsequil
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, stepsize)
         if acceptstep:
-            printxyz(fout, newcoords, natoms)
+            printxyz(fout, newcoords, natoms, Equench_new)
+            savelowest.insert(Equench_new, newcoords)
         coords = newcoords
         Equench = Equench_new
 
@@ -225,11 +230,14 @@ def main():
     #########################################################################
     #run monte carlo
     #########################################################################
-    monteCarlo(potential, coords, natoms, keys.nmcsteps, keys.temperature, keys.stepsize, nstepsequil)
+    savelowest = saveit.saveit()
+    monteCarlo(potential, coords, natoms, keys.nmcsteps, keys.temperature, keys.stepsize, nstepsequil, savelowest)
 
     #########################################################################
     #print results
     #########################################################################
+    with open("lowest", "w") as fout:
+        printxyz(fout,  savelowest.lowestcoords, natoms, savelowest.lowestE)
 
 if __name__ == "__main__":
     main()
