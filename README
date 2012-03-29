@@ -8,6 +8,9 @@ the input files are
 data
 coords
 
+run the program with
+python mingmin.py
+
 
 The lowest energy structure found will be in file 
 lowest
