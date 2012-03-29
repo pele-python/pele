@@ -148,8 +148,6 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     print "initial energy", potel
     potel, V = potential.getEnergyGradient(coords)
     print "max gradient", np.max(V), potel
-    with open("V", "w") as fout1:
-        printcoords(fout1, V, natoms)
     print "minimizing initial coords"
 
     #exit()
