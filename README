@@ -2,3 +2,15 @@ minGMIN, a minimal version of GMIN, originally written by David Wales.  Desiged
 to find the global energy minimum for molecular systems
 
 http://www-wales.ch.cam.ac.uk/software.html
+
+
+the input files are
+data
+coords
+
+
+The lowest energy structure found will be in file 
+lowest
+
+Currently all unique quenched structures found are printed to file
+dump.q.xyz

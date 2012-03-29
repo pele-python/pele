@@ -171,7 +171,8 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
         print "step number ", istep
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, manstep.stepsize)
         manstep.insertStep(acceptstep)
-        printxyz(fout, newcoords, natoms)
+        if acceptstep:
+            printxyz(fout, newcoords, natoms)
         coords = newcoords
         Equench = Equench_new
 
@@ -182,7 +183,8 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     for istep in range(nsteps):
         print "step number ", istep + nstepsequil
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, stepsize)
-        printxyz(fout, newcoords, natoms)
+        if acceptstep:
+            printxyz(fout, newcoords, natoms)
         coords = newcoords
         Equench = Equench_new
 
