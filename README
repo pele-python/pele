@@ -8,6 +8,9 @@ the input files are
 data
 coords
 
+to compile (only if you're using the fast potentials.  Uses f2py, which is part of the numpy package.)
+make
+
 run the program with
 python mingmin.py
 
