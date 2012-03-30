@@ -59,7 +59,7 @@ def mcStep(potential, coordsold, natoms, Equench_old, temperature, stepsize):
     #########################################################################
     coords = copy.copy(coordsold) #make  a working copy
     for j in range(natoms*3):
-        rand = 2.*RNG.rand()-0.5
+        rand = 2.*RNG.rand()-1.
         #print "rand ", rand
         coords[j] += stepsize*rand
 
