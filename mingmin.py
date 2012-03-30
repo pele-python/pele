@@ -4,8 +4,9 @@ from math import *
 import getopt, sys
 import lj
 #import blj
-import ljpshift as ljpshift
 import scipy.optimize.lbfgsb
+#import ljpshift as ljpshift
+import ljpshiftfast as ljpshift
 #import steepest_descent
 import copy
 import mykeyword
@@ -226,6 +227,7 @@ def main():
         potential = lj.LJ(keys.eps, keys.sig, natoms, keys.boxl)
     if keys.potential == "binary":
         potential = ljpshift.LJpshift( natoms, keys.ntypeA, keys.boxl, keys.cutoff, keys.epsBB, keys.sigBB, keys.epsAB, keys.sigAB)
+        #potential = ljpshift.LJpshift( natoms, keys.ntypeA, keys.boxl, keys.cutoff, keys.epsBB, keys.sigBB, keys.epsAB, keys.sigAB)
 
     #########################################################################
     #run monte carlo
