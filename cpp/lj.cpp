@@ -1,6 +1,4 @@
-#include <boost/python/numeric.hpp>
-#include <boost/python.hpp>
-#include <numpy/arrayobject.h>
+#include "nparray.h"
 #include <math.h>
 
 // TODO: make a lennard jones class! for now just do a function for testing
@@ -57,11 +55,12 @@ double energy(boost::python::numeric::array& px)
 double gradient(boost::python::numeric::array& px, boost::python::numeric::array& pgrad)
 {
   int N;
-  double *x, *g, gtmp[3];
+  double gtmp[3];
   
-  N = python_array_pointer(px, &x);
-  python_array_pointer(pgrad, &g);
-  
+  NPArray<1> x(px);
+  NPArray<1> g(pgrad);
+ 
+  N=x.size(0);
   for(int i=0; i<N; ++i)
     g[i]=0.0;
   
