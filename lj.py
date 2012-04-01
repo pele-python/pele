@@ -2,7 +2,7 @@ from math import *
 import numpy as np #to access np.exp() not built int exp
 
 def apply_periodic( dr, boxl ):
-    for i in range(len(dr)):
+    for i in xrange(len(dr)):
         #print i, boxl, dr[i],int(dr[i]/(boxl)),
         dr[i] -= boxl*int(dr[i]/(boxl)) 
         #if abs(dr[i]) > (0.5*boxl): dr[i] = boxl - abs(dr[i])
@@ -58,10 +58,10 @@ class LJ:
         natoms = self.natoms
         V = np.zeros([natoms*3], np.float64) 
         energy=0.
-        for i in range(natoms):
-            for j in range(i+1,natoms):
-                v1 = coords[range(i*3,i*3+3)]
-                v2 = coords[range(j*3,j*3+3)]
+        for i in xrange(natoms):
+            for j in xrange(i+1,natoms):
+                v1 = coords[i*3:i*3+3]
+                v2 = coords[j*3:j*3+3]
                 r,dr = self.getSep(v1,v2)
                 energy += self.vij(r)
         return energy
@@ -70,16 +70,15 @@ class LJ:
         natoms = self.natoms
         V = np.zeros([natoms*3], np.float64) 
         energy=0.
-        for i in range(natoms):
-            for j in range(i+1,natoms):
-                v1 = coords[range(i*3,i*3+3)]
-                v2 = coords[range(j*3,j*3+3)]
+        for i in xrange(natoms):
+            for j in xrange(i+1,natoms):
+                v1 = coords[i*3:i*3+3]
+                v2 = coords[j*3:j*3+3]
                 r,dr = self.getSep(v1,v2)
                 energy += self.vij(r)
                 g = self.dvij(r)
-                for k in range(3):
-                    V[i*3+k] += -g * dr[k]/r
-                    V[j*3+k] += g * dr[k]/r
+                V[i*3:i*3+3] += -g * dr/r
+                V[j*3:j*3+3] += g * dr/r
         return energy,V
 
 
