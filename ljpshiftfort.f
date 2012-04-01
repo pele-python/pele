@@ -247,7 +247,7 @@ C*******************************************************************
         DOUBLE PRECISION, INTENT(IN) :: EPSG, SIGG6, RCONSTG, CONSTG
         DOUBLE PRECISION, INTENT(IN) :: boxlx, boxly, boxlz, IRCUT2G
         DOUBLE PRECISION, INTENT(IN) :: X(3*NATOMS)
-        DOUBLE PRECISION, INTENT(OUT) :: POTEL
+        DOUBLE PRECISION, INTENT(INOUT) :: POTEL
 
         DOUBLE PRECISION :: R2DUM, R6, VEC1, VEC2, VEC3
         INTEGER :: J3, J4
