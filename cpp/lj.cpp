@@ -19,7 +19,7 @@ double lj(double *x1, double *x2)
   }
   r=sqrt(r);
   
-  return pow(1./r,12) - pow(1./r, 6);
+  return 4.*(pow(1./r,12) - pow(1./r, 6));
 }
 
 double ljg(double *x1, double *x2, double *g)
@@ -35,9 +35,9 @@ double ljg(double *x1, double *x2, double *g)
     d[i]/=r;
   
   for(int i=0; i<3; ++i)
-    g[i]=-d[i]*(pow(1./r,13) -  pow(1./r,7));
+    g[i]=4.0*d[i]*(12.*pow(1./r,13) -  6.*pow(1./r,7));
   
-  return pow(1./r,12) - pow(1./r, 6);
+  return 4.*(pow(1./r,12) - pow(1./r, 6));
 }
 
 double energy(boost::python::numeric::array& px)
@@ -46,11 +46,12 @@ double energy(boost::python::numeric::array& px)
   double *x, r[3];
   
   N = python_array_pointer(px, &x);
-  
+   
   double energy = 0;
-  for(int i=0; i<N; i+=3)
-    for(int j=i*3; j<N; j+=3)
+  for(int i=0; i<N; i+=3) 
+    for(int j=i+3; j<N; j+=3)
       energy+=lj(&x[i], &x[j]);
+  return energy;
 }
 
 double gradient(boost::python::numeric::array& px, boost::python::numeric::array& pgrad)
@@ -66,16 +67,17 @@ double gradient(boost::python::numeric::array& px, boost::python::numeric::array
   
   double energy = 0;
   for(int i=0; i<N; i+=3)
-    for(int j=i*3; j<N; j+=3) {
+    for(int j=i+3; j<N; j+=3) {
       energy+=ljg(&x[i], &x[j], gtmp);
       for(int k=0; k<3; ++k) {
         g[i+k]+=gtmp[k];
         g[j+k]-=gtmp[k];	
       }
     }
+  return energy;
 }
 
-BOOST_PYTHON_MODULE(ljcpp)
+BOOST_PYTHON_MODULE(ljcpp_)
 {
   using namespace boost::python;
   import_array();

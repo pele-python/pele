@@ -28,6 +28,9 @@ class myKeywordClass():
                 self.eps = float(words[1])
                 self.sig = float(words[2])
 
+            elif words[0] == "ljcpp":
+                self.potential = "ljcpp"
+
             elif words[0] == "blj":
                 self.potential = "blj"
                 self.ntypeA = int(words[1])

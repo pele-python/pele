@@ -12,8 +12,9 @@ INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 #target_link_libraries(dbookpy dbook)
 #LINK_DIRECTORIES("/usr/local/lib")
 
-ADD_LIBRARY(ljcpp lj.cpp)
-target_link_libraries(ljcpp boost_python)
+ADD_LIBRARY(ljcpp_ lj.cpp)
+target_link_libraries(ljcpp_ boost_python)
+set_target_properties(ljcpp_ PROPERTIES PREFIX "")
 
 #SET_TARGET_PROPERTIES(dbookpy PROPERTIES LINKER_LANGUAGE C)
 #iSET_TARGET_PROPERTIES(dbookpy

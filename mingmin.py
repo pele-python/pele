@@ -235,6 +235,9 @@ def main():
     #########################################################################
     if keys.potential == "lj":
         potential = lj.LJ(keys.eps, keys.sig, natoms, keys.boxl)
+    if keys.potential == "ljcpp":
+        import ljcpp
+        potential = ljcpp.LJ()
     if keys.potential == "binary":
         potential = ljpshift.LJpshift( natoms, keys.ntypeA, keys.boxl, keys.cutoff, keys.epsBB, keys.sigBB, keys.epsAB, keys.sigAB)
         #potential = ljpshift.LJpshift( natoms, keys.ntypeA, keys.boxl, keys.cutoff, keys.epsBB, keys.sigBB, keys.epsAB, keys.sigAB)
