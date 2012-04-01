@@ -14,9 +14,9 @@ def apply_periodic( dr, boxl ):
 
 class BLJ_interaction_type:
     def __init__(self, eps, sig, rcut):
-        self.rcut = rcut
         self.eps = eps
         self.sig = sig
+        self.rcut = rcut*self.sig
 
         self.ircut2 = 1.0/self.rcut**2
         self.sig6 = self.sig**6
@@ -80,13 +80,13 @@ class LJpshift:
         return -8.0*T.eps*(3.0*(2.0*ir14*(T.sig12)-ir8*T.sig6)-T.rconst)
 
     def updateEnergy(self, potel, coords, i, j, T):
-       r2,dr = self.getSep( coords[range(i*3,i*3+3)], coords[range(j*3,j*3+3)] )
-       ir2 = 1./r2
-       if ir2 > T.ircut2:
-           ir6=ir2**3
-           #potel += 4.*T.eps*(T.sig6*ir6*(T.sig6*ir6-1.0) + T.rconst*r2 + T.const)
-           potel += self.vij(r2, ir6, T)
-       return potel
+        r2,dr = self.getSep( coords[range(i*3,i*3+3)], coords[range(j*3,j*3+3)] )
+        ir2 = 1./r2
+        if ir2 > T.ircut2:
+            ir6=ir2**3
+            #potel += 4.*T.eps*(T.sig6*ir6*(T.sig6*ir6-1.0) + T.rconst*r2 + T.const)
+            potel += self.vij(r2, ir6, T)
+        return potel
 
     def updateEnergyGradient(self, potel, V, coords, i, j, T):
        r2,dr = self.getSep( coords[range(i*3,i*3+3)], coords[range(j*3,j*3+3)] )

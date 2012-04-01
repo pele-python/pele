@@ -155,7 +155,7 @@ C
             ENDDO
          ENDDO
       ENDIF
-      POTEL = POTEL * 4.D0
+      !POTEL = POTEL * 4.D0
 
       RETURN
       END
@@ -213,7 +213,7 @@ C*******************************************************************
           R14=R8*R6
 
           !update potential energy
-          POTEL = POTEL + EPSG*(SIGG6*R6*(SIGG6*R6-1.0D0) + 
+          POTEL = POTEL + 4.D0*EPSG*(SIGG6*R6*(SIGG6*R6-1.0D0) + 
      & RCONSTG/R2 + CONSTG )
 
           !update derivative of potential energy
@@ -270,7 +270,7 @@ C       POTELDUM = 0.D0;
         R2DUM=1.0D0/R2DUM
         R6=R2DUM**3
         IF (R2DUM.GT.IRCUT2G) THEN
-          POTEL = POTEL + EPSG*(SIGG6*R6*(SIGG6*R6-1.0D0) 
+          POTEL = POTEL + 4.D0*EPSG*(SIGG6*R6*(SIGG6*R6-1.0D0) 
      & + RCONSTG/R2DUM + CONSTG)  ! AB
         ENDIF
 

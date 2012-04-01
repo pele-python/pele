@@ -15,9 +15,9 @@ def apply_periodic( dr, boxl ):
 
 class BLJ_interaction_type:
     def __init__(self, eps, sig, rcut):
-        self.rcut = rcut
         self.eps = eps
         self.sig = sig
+        self.rcut = rcut*self.sig
 
         self.ircut2 = 1.0/self.rcut**2
         self.sig6 = self.sig**6
@@ -56,18 +56,19 @@ class LJpshift:
             print ""
 
     def getEnergy(self, coords):
-        V, E = ljpshiftfort.ljpshift(coords,False,False,\
-                self.boxl,self.boxl,self.boxl, \
-                self.AA.rcut,self.periodic,self.ntypeA, \
-                self.AB.eps,self.BB.eps,self.AB.sig,self.BB.sig, \
+        print "getting energy only"
+        V, E = ljpshiftfort.ljpshift(coords, False, False,\
+                self.boxl, self.boxl, self.boxl, \
+                self.AA.rcut, self.periodic, self.ntypeA, \
+                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig, \
                 [self.natoms])
         return E
 
     def getEnergyGradient(self, coords):
-        V, E = ljpshiftfort.ljpshift(coords,True,False,\
-                self.boxl,self.boxl,self.boxl, \
-                self.AA.rcut,self.periodic,self.ntypeA, \
-                self.AB.eps,self.BB.eps,self.AB.sig,self.BB.sig, \
+        V, E = ljpshiftfort.ljpshift(coords, True, False,\
+                self.boxl, self.boxl, self.boxl, \
+                self.AA.rcut, self.periodic, self.ntypeA, \
+                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig, \
                 [self.natoms])
         return E, V
 
