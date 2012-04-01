@@ -20,3 +20,13 @@ lowest
 
 Currently all unique quenched structures found are printed to file
 dump.q.xyz
+
+To use the C++ potentials:
+You need to have boost-python, boost-dev and python-dev installed
+cd cpp
+cmake .
+make
+cp ljcpp_.so ..
+cd ..
+
+Then use ljcpp in data file. So far no parameters can be added.
