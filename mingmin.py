@@ -42,13 +42,23 @@ def quench(potential, coords, natoms):
         #printxyz(fout, coords, natoms)
 
     #newcoords, newE = steepest_descent.steepestDescent(potential.getEnergyGradient, coords, 100)
-    newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(potential.getEnergyGradient, coords, iprint=-1, factr=1e4)
+    newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(potential.getEnergyGradient, coords, iprint=-1, pgtol=1e-3)
 
     #with open("oldcoords", "a") as fout:
         #printxyz(fout, newcoords, natoms)
 
-    newE, V = potential.getEnergyGradient(newcoords)
-    print "quench: Ei", initE, " Ef", newE, "max Vi ", np.max(initV), "max Vf", np.max(V)
+    V = dictionary["grad"]
+    funcalls = dictionary["funcalls"]
+    warnflag = dictionary['warnflag']
+    if warnflag > 0:
+        print "warning: problem with quench: ",
+        if warnflag == 1:
+            print "too many function evaluations"
+        else:
+            print dictionary['task']
+
+    #print "quench: Ei", initE, " Ef", newE, "max Vi ", np.max(initV), "max Vf", np.max(V)
+    print "quench: Ef=", newE, "steps=", funcalls, "max(V)=", np.max(np.abs(V))
     return newcoords, newE
 
 
@@ -78,7 +88,7 @@ def mcStep(potential, coordsold, natoms, Equench_old, temperature, stepsize):
     rand = RNG.rand()
     if (rand > w): acceptstep = False
 
-    print "mc step: Eo", Equench_old, "En", Equench, "accepted", acceptstep
+    print "mc step: Eo", Equench_old, "Ef", Equench, "accepted", acceptstep
 
     if acceptstep:
         return acceptstep, qcoords, Equench
