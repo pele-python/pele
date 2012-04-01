@@ -1,6 +1,6 @@
 from math import *
 import numpy as np #to access np.exp() not built int exp
-import ljpshiftfort
+import fortran.ljpshiftfort as ljpshiftfort
 
 def apply_periodic( dr, boxl ):
     for i in range(len(dr)):
