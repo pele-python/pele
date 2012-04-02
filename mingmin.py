@@ -87,7 +87,7 @@ def mcStep(potential, coordsold, natoms, Equench_old, temperature, takeStep):
         return acceptstep, coordsold, Equench_old
 
 
-def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepsequil, savelowest, accrat=0.5, accrat_frq=50):
+def monteCarlo(potential, coords, natoms, nsteps, temperature, savelowest, manstep, takeStep ):
     fout = open("dump.q.xyz", "w")
     #########################################################################
     #do initial quench
@@ -113,12 +113,10 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     savelowest.insert(Equench, coords)
     
     #########################################################################
-    #do equilibration run.  Adjust the stepsize every nstepaccrat to ensure the
+    #Adjust the stepsize every nstepaccrat to ensure the
     #acceptance ratio is met
     #########################################################################
-    manstep = adaptive_step.manageStepSize (stepsize, accrat, accrat_frq)
-    takeStep = take_step.takeStep( RNG = np.random.rand, getStep = manstep.getStepSize )
-    for istep in xrange(nstepsequil):
+    for istep in xrange(nsteps):
         print "step number ", istep
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, takeStep )
         manstep.insertStep(acceptstep)
@@ -174,7 +172,9 @@ def main():
     #run monte carlo
     #########################################################################
     savelowest = saveit.saveit()
-    monteCarlo(potential, coords, natoms, keys.nmcsteps, keys.temperature, keys.stepsize, nstepsequil, savelowest, keys.accrat, keys.accrat_frq )
+    manstep = adaptive_step.manageStepSize (keys.stepsize, keys.accrat, keys.accrat_frq)
+    takeStep = take_step.takeStep( RNG = np.random.rand, getStep = manstep.getStepSize )
+    monteCarlo(potential, coords, natoms, keys.nmcsteps, keys.temperature, savelowest, manstep, takeStep )
 
     #########################################################################
     #print results
