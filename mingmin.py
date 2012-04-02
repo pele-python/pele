@@ -105,7 +105,10 @@ class manageStepSize:
         return self.stepsize
 
     def adjustFactor(self, factor):
-        """this is the function which ensures f is a reasonable number"""
+        """This is the function which ensures f is a reasonable number.  Normal
+        GMIN doesn't adjust f.  So this function currently does nothing
+        """
+        return 
         changef = 1.5
         if len(self.changehist) == 0: return 
         if (factor < 1.0) != (self.changehist[-1] < 1.0):
