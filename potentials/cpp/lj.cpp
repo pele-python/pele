@@ -18,22 +18,21 @@ double lj(double *x1, double *x2)
   return 4.*(pow(1./r2,6) - pow(1./r2, 3));
 }
 
-double ljg(double *x1, double *x2, double *g)
+double ljg(double * __restrict__ x1, double * __restrict__ x2, double * __restrict__ g)
 {
-  double d[3], r=0;
+  double r2=0;
   
   for(int i=0; i<3; ++i) {
-    d[i]=x2[i] - x1[i];
-    r+=d[i]*d[i];
+    g[i]=x2[i] - x1[i];
+    r2+=g[i]*g[i];
   }
-  double r6 = 1./(r*r*r);
-  r=sqrt(r);
-  for(int i=0; i<3; ++i)
-    d[i]/=r;
+  //r2+=g[0]*g[0] + g[1]*g[1] + g[2]*g[2];
   
+  double r6 = 1./(r2*r2*r2);
   double r12 = r6*r6;
+  
   for(int i=0; i<3; ++i)
-    g[i]=4.0*d[i]*(12.*r12 -  6.*r6)/r;
+    g[i]*=4.0*(12.*r12 -  6.*r6)/r2;
   
   return 4.*(r12 - r6);
 }
