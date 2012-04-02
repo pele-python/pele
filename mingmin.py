@@ -7,6 +7,7 @@ import copy
 import mykeyword
 import saveit
 import adaptive_step
+import take_step
 
 def adjustCenterOfMass(coords, natoms):
     CoM = np.zeros(3, np.float64)
@@ -55,16 +56,13 @@ def quench(potential, coords, natoms):
     return newcoords, newE
 
 
-def mcStep(potential, coordsold, natoms, Equench_old, temperature, stepsize):
+def mcStep(potential, coordsold, natoms, Equench_old, temperature, takeStep):
     """take one monte carlo basin hopping step"""
     #########################################################################
     #take step
     #########################################################################
     coords = copy.copy(coordsold) #make  a working copy
-    for j in xrange(natoms*3):
-        rand = 2.*RNG.rand()-1.
-        #print "rand ", rand
-        coords[j] += stepsize*rand
+    takeStep.takeStep(coords)
 
     #########################################################################
     #quench
@@ -119,9 +117,10 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     #acceptance ratio is met
     #########################################################################
     manstep = adaptive_step.manageStepSize (stepsize, accrat, accrat_frq)
+    takeStep = take_step.takeStep( RNG = np.random.rand, getStep = manstep.getStepSize )
     for istep in xrange(nstepsequil):
         print "step number ", istep
-        acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, manstep.stepsize)
+        acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, takeStep )
         manstep.insertStep(acceptstep)
         if acceptstep:
             printxyz(fout, newcoords, natoms, Equench_new)
