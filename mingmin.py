@@ -234,7 +234,7 @@ def main():
     #########################################################################
     if keys.potential == "lj":
         import potentials.lj as lj
-        potential = lj.LJ(keys.eps, keys.sig, natoms, keys.boxl)
+        potential = lj.LJ(keys.eps, keys.sig, keys.boxl)
     if keys.potential == "ljcpp":
         import potentials.ljcpp as ljcpp
         potential = ljcpp.LJ()

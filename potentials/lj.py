@@ -12,11 +12,10 @@ def apply_periodic( dr, boxl ):
     return dr;
 
 class LJ:
-    def __init__(self, eps, sig, natoms, boxl=None):
+    def __init__(self, eps, sig, boxl=None):
         """ simple lennard jones potential"""
         self.sig = sig
         self.eps = eps
-        self.natoms = natoms
         self.boxl = boxl
         if self.boxl == None:
             self.getSep = self.getSep_abs
@@ -55,7 +54,7 @@ class LJ:
         return 4.*self.eps * ( -12./self.sig*(self.sig/r)**13 + 6./self.sig*(self.sig/r)**7 )
 
     def getEnergy(self, coords):
-        natoms = self.natoms
+        natoms = coords.size/3
         V = np.zeros([natoms*3], np.float64) 
         energy=0.
         for i in xrange(natoms):
@@ -67,7 +66,7 @@ class LJ:
         return energy
 
     def getEnergyGradient(self, coords):
-        natoms = self.natoms
+        natoms = coords.size/3
         V = np.zeros([natoms*3], np.float64) 
         energy=0.
         for i in xrange(natoms):
