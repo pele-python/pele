@@ -55,3 +55,6 @@ class manageStepSize:
         self.nstepstot += 1
         if self.nsteps == self.nstepsaccrat:
             self.adjustStep()
+
+    def insertStepWrapper(self, E, coords, accepted ):
+        return self.insertStep(accepted)

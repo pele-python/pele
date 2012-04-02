@@ -27,14 +27,13 @@ class BasinHopping:
 
             event(Equench_new, newcoords, acceptstep)
   """
-  def __init__(self, coords, potential, takestep, storage=None, manstep=None, event_after_step=[], \
+  def __init__(self, coords, potential, takestep, storage=None, event_after_step=[], \
           acceptTests=[]  \
           ):
     self.coords = coords
     self.storage = storage
     self.potential = potential
     self.takestep = takestep
-    self.manstep = manstep
     self.event_after_step = event_after_step
     self.acceptTests = acceptTests
     if len(self.acceptTests) == 0: #set default value
@@ -70,8 +69,6 @@ class BasinHopping:
         acceptstep, newcoords, Equench_new = self.mcStep(self.coords, Equench)
         for event in self.event_after_step:
             event(Equench_new, newcoords, acceptstep)
-        if self.manstep:
-            self.manstep.insertStep(acceptstep)
         if acceptstep:
             if(self.storage):
               self.storage(Equench_new, newcoords)

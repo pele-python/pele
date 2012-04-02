@@ -43,21 +43,23 @@ class myKeywordClass():
         self.savelowest = saveit.saveit() #class to save the lowest energy structure
 
         #initialize adaptive step size routine
-        manstep = adaptive_step.manageStepSize (self.stepsize, self.accrat, self.accrat_frq) #class to do step size adjustment
+        self.manstep = adaptive_step.manageStepSize (self.stepsize, self.accrat, self.accrat_frq) #class to do step size adjustment
+        event_after_step = [self.manstep.insertStepWrapper]
 
-        #initialize step taking routine
-        takeStep = take_step.takeStep( RNG = np.random.rand, getStep = manstep.getStepSize ) #class to impliment the take step routine
+
+        #initialize step taking routine using adaptive step size class
+        takeStep = take_step.takeStep( RNG = np.random.rand, getStep = self.manstep.getStepSize ) #class to impliment the take step routine
 
         #class to impiment acceptence criterion
         metrop_test = metropolis.Metropolis(self.temperature)
         acceptTests=[metrop_test.acceptReject]
         #add further tests here, e.g    acceptTests.append( cold_fusion_test )
 
-        #add optional events
-        event_after_step = []
+        #add optional events, e.g. dump coords
+        #event_after_step.append(  myDumpRoutine )
 
         #initialize basing hopping class and return it
-        opt = bh.BasinHopping(coords, potential, takeStep, storage = self.savelowest.insert, manstep = manstep, \
+        opt = bh.BasinHopping(coords, potential, takeStep, storage = self.savelowest.insert,  \
                 event_after_step=event_after_step, \
                 acceptTests=acceptTests, \
                 )
