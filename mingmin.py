@@ -12,25 +12,22 @@ import mykeyword
 import saveit
 
 def adjustCenterOfMass(coords, natoms):
-    CoM = [0.,0.,0.]
+    CoM = np.zeros(3, np.float64)
     for i in range(natoms):
-        for k in range(3):
-            CoM[k] += coords[i*3+k]
-    for k in range(3):
-        CoM[k] /= natoms
+        CoM += coords[i*3:i*3+3]
+    CoM /= natoms
     for i in range(natoms):
-        for k in range(3):
-            coords[i*3+k] -= CoM[k]
+        coords[i*3:i*3+3] -= CoM
 
 def printxyz(fout, coords, natoms, E=""):
     adjustCenterOfMass(coords, natoms)
     fout.write( str(natoms) + "\n")
     fout.write( str(E) + "\n")
-    for i in range(natoms):
+    for i in xrange(natoms):
         fout.write( "LA "+ str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
 
 def printcoords(fout, coords, natoms):
-    for i in range(natoms):
+    for i in xrange(natoms):
         fout.write( str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
 
 
@@ -67,7 +64,7 @@ def mcStep(potential, coordsold, natoms, Equench_old, temperature, stepsize):
     #take step
     #########################################################################
     coords = copy.copy(coordsold) #make  a working copy
-    for j in range(natoms*3):
+    for j in xrange(natoms*3):
         rand = 2.*RNG.rand()-1.
         #print "rand ", rand
         coords[j] += stepsize*rand
@@ -180,7 +177,7 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     accrat = 0.5
     nstepsaccrat = 10
     manstep = manageStepSize (stepsize, accrat, nstepsaccrat, faccrat)
-    for istep in range(nstepsequil):
+    for istep in xrange(nstepsequil):
         print "step number ", istep
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, manstep.stepsize)
         manstep.insertStep(acceptstep)
@@ -194,7 +191,7 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     #loop through monte carlo steps
     #########################################################################
     stepsize = manstep.stepsize
-    for istep in range(nsteps):
+    for istep in xrange(nsteps):
         print "step number ", istep + nstepsequil
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, stepsize)
         if acceptstep:
@@ -215,9 +212,8 @@ def main():
     coords2d = np.genfromtxt('coords')
     natoms = len(coords2d[:,0])
     coords = np.zeros(3*natoms, np.float64)
-    for i in range(natoms):
-        for k in range(3):
-            coords[i*3+k] = coords2d[i,k]
+    for i in xrange(natoms):
+        coords[i*3:i*3+3] = coords2d[i,0:3]
 
 
     #########################################################################
