@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 import numpy as np
 
 
@@ -8,7 +9,7 @@ class takeStep:
     def __init__(self, RNG = np.random.rand, getStep=None, stepsize=0.3):
         self.RNG = RNG #random number generator
         if getStep == None: 
-            self.getStep = self.constStep(stepsize)
+            self.getStep = lambda : stepsize
         else:
             self.getStep = getStep
         return
@@ -18,6 +19,3 @@ class takeStep:
             rand = 2.*self.RNG()-1.
             #print "rand ", rand
             coords[j] += self.getStep()*rand
-
-    def constStep(self, stepsize):
-        return stepsize
