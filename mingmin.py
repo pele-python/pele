@@ -9,6 +9,7 @@ import saveit
 import adaptive_step
 import take_step
 import basinhopping as bh
+import metropolis
 
 def adjustCenterOfMass(coords, natoms):
     CoM = np.zeros(3, np.float64)
@@ -18,7 +19,8 @@ def adjustCenterOfMass(coords, natoms):
     for i in range(natoms):
         coords[i*3:i*3+3] -= CoM
 
-def printxyz(fout, coords, natoms, E=""):
+def printxyz(fout, coords, E=""):
+    natoms = len(coords)/3
     adjustCenterOfMass(coords, natoms)
     fout.write( str(natoms) + "\n")
     fout.write( str(E) + "\n")
@@ -29,6 +31,12 @@ def printcoords(fout, coords, natoms):
     for i in xrange(natoms):
         fout.write( str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
 
+class printWrapper:
+    def __init__(self, fout):
+        self.fout = fout
+    def printIt(self, E, coords, accept):
+        if accept:
+            printxyz(self.fout, coords, E)
 
 def main():
     #########################################################################
@@ -70,17 +78,29 @@ def main():
     #########################################################################
     #initialize basing hopping class
     #########################################################################
-    savelowest = saveit.saveit()
-    manstep = adaptive_step.manageStepSize (keys.stepsize, keys.accrat, keys.accrat_frq)
-    takeStep = take_step.takeStep( RNG = np.random.rand, getStep = manstep.getStepSize )
-    opt = bh.BasinHopping(coords, potential, takeStep, keys.temperature, storage = savelowest.insert, manstep = manstep)
+    savelowest = saveit.saveit() #class to save the lowest energy structure
+    manstep = adaptive_step.manageStepSize (keys.stepsize, keys.accrat, keys.accrat_frq) #class to do step size adjustment
+    takeStep = take_step.takeStep( RNG = np.random.rand, getStep = manstep.getStepSize ) #class to impliment the take step routine
+    #class to dump xyz files after each successful step
+    fdump = open("dump.q.xyz", "w")
+    dumper = printWrapper(fdump)
+    event_after_step = [dumper.printIt]
+    #class to impiment acceptence criterion
+    metrop_test = metropolis.Metropolis(keys.temperature)
+    acceptTests=[metrop_test.acceptReject]
+    #now initialize the basin hopping class
+    opt = bh.BasinHopping(coords, potential, takeStep, storage = savelowest.insert, manstep = manstep, \
+            event_after_step=event_after_step, \
+            acceptTests=acceptTests, \
+            )
     opt.run(keys.nmcsteps)
+    fdump.close()
 
     #########################################################################
     #print results
     #########################################################################
     with open("lowest", "w") as fout:
-        printxyz(fout,  savelowest.lowestcoords, natoms, savelowest.lowestE)
+        printxyz(fout,  savelowest.lowestcoords, savelowest.lowestE)
 
 if __name__ == "__main__":
     main()

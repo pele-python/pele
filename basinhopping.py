@@ -2,18 +2,44 @@
 import numpy as np
 import scipy
 from math import *
-import numpy.random as RNG
+import metropolis
 
 
 class BasinHopping:
-  def __init__(self, coords, potential, takestep, temperature=1.0, storage=None, manstep=None, event_after_step=[]):
+  """A class to run the basin hopping algorithm
+  
+     input:
+
+     coords: the initial set of coordinates
+
+     takestep: the function which randomly perterbs the system, e.g. random
+                dispacement.  It takes the form
+
+            takestep(coords)
+
+     acceptTests: a list of functions which return false if a quench should be rejected
+                   Each test in the list takes the form
+
+            test(Eold, Enew, new_coords):
+
+     event_after_step: an optional list of functions which act just after each monte carlo
+                        round.  Each even in the list takes the form
+
+            event(Equench_new, newcoords, acceptstep)
+  """
+  def __init__(self, coords, potential, takestep, storage=None, manstep=None, event_after_step=[], \
+          acceptTests=[]  \
+          ):
     self.coords = coords
-    self.temperature = temperature
     self.storage = storage
     self.potential = potential
     self.takestep = takestep
     self.manstep = manstep
     self.event_after_step = event_after_step
+    self.acceptTests = acceptTests
+    if len(self.acceptTests) == 0: #set default value
+        self.metrop_test = metropolis.Metropolis(1.0)
+        self.acceptTests=[self.metrop_test.acceptReject]
 
   def run(self, nsteps):
     #########################################################################
@@ -42,7 +68,6 @@ class BasinHopping:
     for istep in xrange(nsteps):
         print istep
         acceptstep, newcoords, Equench_new = self.mcStep(self.coords, Equench)
-        #note: coords may be modified by mcStep
         for event in self.event_after_step:
             event(Equench_new, newcoords, acceptstep)
         if self.manstep:
@@ -85,17 +110,17 @@ class BasinHopping:
     qcoords, Equench = self.quench (coords)
 
     #########################################################################
-    #check whether step is accepted using metropolis algorithm.
-    #Use quenched energies.
+    #check whether step is accepted with user defined tests.  If any returns
+    #false then reject step.
     #########################################################################
     acceptstep = True
-    wcomp = (Equench - Equench_old)/self.temperature
-    w=min(1.0,exp(-wcomp))
-    rand = RNG.rand()
-    if (rand > w): acceptstep = False
+    for test in self.acceptTests:
+        if not test(Equench_old, Equench, qcoords):
+            acceptstep = False
 
-    print "mc step: Eo", Equench_old, "Ef", Equench, "accepted", acceptstep
-
+    #########################################################################
+    #return
+    #########################################################################
     if acceptstep:
         return acceptstep, qcoords, Equench
     else:
