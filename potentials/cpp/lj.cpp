@@ -6,18 +6,16 @@
 
 int python_array_pointer(boost::python::numeric::array& p, double **data);
 
-// not optimized!!
 double lj(double *x1, double *x2)
 {
-  double d[3], r=0;
+  double d[3], r2=0;
   
   for(int i=0; i<3; ++i) {
     d[i]=x2[i] - x1[i];
-    r+=d[i]*d[i];
+    r2+=d[i]*d[i];
   }
-  r=sqrt(r);
   
-  return 4.*(pow(1./r,12) - pow(1./r, 6));
+  return 4.*(pow(1./r2,6) - pow(1./r2, 3));
 }
 
 double ljg(double *x1, double *x2, double *g)
@@ -28,14 +26,16 @@ double ljg(double *x1, double *x2, double *g)
     d[i]=x2[i] - x1[i];
     r+=d[i]*d[i];
   }
+  double r6 = 1./(r*r*r);
   r=sqrt(r);
   for(int i=0; i<3; ++i)
     d[i]/=r;
   
+  double r12 = r6*r6;
   for(int i=0; i<3; ++i)
-    g[i]=4.0*d[i]*(12.*pow(1./r,13) -  6.*pow(1./r,7));
+    g[i]=4.0*d[i]*(12.*r12 -  6.*r6)/r;
   
-  return 4.*(pow(1./r,12) - pow(1./r, 6));
+  return 4.*(r12 - r6);
 }
 
 double energy(boost::python::numeric::array& px)
