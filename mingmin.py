@@ -6,6 +6,7 @@ import scipy.optimize.lbfgsb
 import copy
 import mykeyword
 import saveit
+import adaptive_step
 
 def adjustCenterOfMass(coords, natoms):
     CoM = np.zeros(3, np.float64)
@@ -87,61 +88,6 @@ def mcStep(potential, coordsold, natoms, Equench_old, temperature, stepsize):
     else:
         return acceptstep, coordsold, Equench_old
 
-class manageStepSize:
-    """a class to manage the adaptive step size"""
-    def __init__(self, stepsize, accrat, nstepsaccrat, f = 1.05):
-        self.stepsize = stepsize
-        self.f = f
-        self.accrat = accrat #target accept ratio
-        self.nstepsaccrat = nstepsaccrat #interval for adjusting septsize
-
-        self.nsteps = 0
-        self.nstepstot = 0
-        self.naccepted = 0
-        self.nadjust = 0
-        self.changehist = []
-
-    def getStepSize(self):
-        return self.stepsize
-
-    def adjustFactor(self, factor):
-        """This is the function which ensures f is a reasonable number.  Normal
-        GMIN doesn't adjust f.  So this function currently does nothing
-        """
-        return 
-        changef = 1.5
-        if len(self.changehist) == 0: return 
-        if (factor < 1.0) != (self.changehist[-1] < 1.0):
-            self.f -= (self.f - 1)/1.5
-
-
-    def adjustStep(self):
-        """adjust stepsize"""
-        self.nadjust += 1
-        rat = float(self.naccepted)/self.nsteps
-        if rat < self.accrat:
-            #reduce step size
-            self.adjustFactor( 1./self.f )
-            self.stepsize /= self.f
-            self.changehist.append( 1./self.f )
-        else:
-            #increase step size
-            self.adjustFactor( self.f )
-            self.stepsize *= self.f
-            self.changehist.append( self.f )
-        self.nsteps = 0
-        self.nsteps = 0
-        self.naccepted = 0
-        print "accrat was ", rat, "new stepsize is ", self.stepsize, "f is", self.f
-
-    def insertStep(self, accepted ):
-        """tell us whether a step was accepted or rejected"""
-        if accepted: self.naccepted += 1
-        self.nsteps += 1
-        self.nstepstot += 1
-        if self.nsteps == self.nstepsaccrat:
-            self.adjustStep()
-
 
 def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepsequil, savelowest, accrat=0.5, accrat_frq=50):
     fout = open("dump.q.xyz", "w")
@@ -172,7 +118,7 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     #do equilibration run.  Adjust the stepsize every nstepaccrat to ensure the
     #acceptance ratio is met
     #########################################################################
-    manstep = manageStepSize (stepsize, accrat, accrat_frq)
+    manstep = adaptive_step.manageStepSize (stepsize, accrat, accrat_frq)
     for istep in xrange(nstepsequil):
         print "step number ", istep
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, manstep.stepsize)
