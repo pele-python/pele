@@ -6,13 +6,14 @@ import numpy.random as RNG
 
 
 class BasinHopping:
-  def __init__(self, coords, potential, takestep, temperature=1.0, storage=None, manstep=None):
+  def __init__(self, coords, potential, takestep, temperature=1.0, storage=None, manstep=None, event_after_step=[]):
     self.coords = coords
     self.temperature = temperature
     self.storage = storage
     self.potential = potential
     self.takestep = takestep
     self.manstep = manstep
+    self.event_after_step = event_after_step
 
   def run(self, nsteps):
     #########################################################################
@@ -41,8 +42,11 @@ class BasinHopping:
     for istep in xrange(nsteps):
         print istep
         acceptstep, newcoords, Equench_new = self.mcStep(self.coords, Equench)
+        #note: coords may be modified by mcStep
+        for event in self.event_after_step:
+            event(Equench_new, newcoords, acceptstep)
         if self.manstep:
-          self.manstep.insertStep(acceptstep)
+            self.manstep.insertStep(acceptstep)
         if acceptstep:
             if(self.storage):
               self.storage(Equench_new, newcoords)
