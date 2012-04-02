@@ -40,10 +40,11 @@ double ljg(double * __restrict__ x1, double * __restrict__ x2, double * __restri
 double energy(boost::python::numeric::array& px)
 {
   int N;
-  double *x, r[3];
+  double r[3];
   
-  N = python_array_pointer(px, &x);
-   
+  NPArray<1> x(px);
+  N = x.size(0);
+ 
   double energy = 0;
   for(int i=0; i<N; i+=3) 
     for(int j=i+3; j<N; j+=3)
@@ -82,24 +83,4 @@ BOOST_PYTHON_MODULE(ljcpp_)
   boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
   def("energy", energy);
   def("gradient", gradient);
-}
-
-int python_array_pointer(boost::python::numeric::array& p, double **data)
-{
-  const int ndims = 1;
-  // Get pointer to np array
-  PyArrayObject* a = (PyArrayObject*)PyArray_FROM_O(p.ptr());
-  if (a == NULL) {
-    throw std::runtime_error("Could not get NP array.");
-  }
-  if (a->descr->elsize != sizeof(double)) {
-    throw std::runtime_error("Must be double ndarray");
-  }
-  
-  if (a->nd != ndims) {
-    throw std::runtime_error("Wrong dimension on array.");
-  }
-  
-  *data = (double*)a->data;
-  return *(a->dimensions);
 }
