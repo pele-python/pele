@@ -39,7 +39,7 @@ class BasinHopping:
       self.storage(Equench, coords)
     
     for istep in xrange(nsteps):
-        print "step number ", istep
+        print istep
         acceptstep, newcoords, Equench_new = self.mcStep(self.coords, Equench)
         if self.manstep:
           self.manstep.insertStep(acceptstep)
@@ -96,3 +96,4 @@ class BasinHopping:
         return acceptstep, qcoords, Equench
     else:
         return acceptstep, coordsold, Equench_old
+
