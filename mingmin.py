@@ -89,11 +89,11 @@ def mcStep(potential, coordsold, natoms, Equench_old, temperature, stepsize):
 
 class manageStepSize:
     """a class to manage the adaptive step size"""
-    def __init__(self, stepsize, accrat, nstepsaccrat, f):
+    def __init__(self, stepsize, accrat, nstepsaccrat, f = 1.05):
         self.stepsize = stepsize
         self.f = f
-        self.accrat = accrat
-        self.nstepsaccrat = nstepsaccrat
+        self.accrat = accrat #target accept ratio
+        self.nstepsaccrat = nstepsaccrat #interval for adjusting septsize
 
         self.nsteps = 0
         self.nstepstot = 0
@@ -140,7 +140,7 @@ class manageStepSize:
             self.adjustStep()
 
 
-def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepsequil, savelowest):
+def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepsequil, savelowest, accrat=0.5, accrat_frq=50):
     fout = open("dump.q.xyz", "w")
     #########################################################################
     #do initial quench
@@ -169,27 +169,11 @@ def monteCarlo(potential, coords, natoms, nsteps, temperature, stepsize, nstepse
     #do equilibration run.  Adjust the stepsize every nstepaccrat to ensure the
     #acceptance ratio is met
     #########################################################################
-    faccrat = 1.5 #the ratio by which to multiply or dived the stepsize
-    accrat = 0.5
-    nstepsaccrat = 10
-    manstep = manageStepSize (stepsize, accrat, nstepsaccrat, faccrat)
+    manstep = manageStepSize (stepsize, accrat, accrat_frq)
     for istep in xrange(nstepsequil):
         print "step number ", istep
         acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, manstep.stepsize)
         manstep.insertStep(acceptstep)
-        if acceptstep:
-            printxyz(fout, newcoords, natoms, Equench_new)
-            savelowest.insert(Equench_new, newcoords)
-        coords = newcoords
-        Equench = Equench_new
-
-    #########################################################################
-    #loop through monte carlo steps
-    #########################################################################
-    stepsize = manstep.stepsize
-    for istep in xrange(nsteps):
-        print "step number ", istep + nstepsequil
-        acceptstep, newcoords, Equench_new = mcStep(potential, coords, natoms, Equench, temperature, stepsize)
         if acceptstep:
             printxyz(fout, newcoords, natoms, Equench_new)
             savelowest.insert(Equench_new, newcoords)
@@ -242,7 +226,7 @@ def main():
     #run monte carlo
     #########################################################################
     savelowest = saveit.saveit()
-    monteCarlo(potential, coords, natoms, keys.nmcsteps, keys.temperature, keys.stepsize, nstepsequil, savelowest)
+    monteCarlo(potential, coords, natoms, keys.nmcsteps, keys.temperature, keys.stepsize, nstepsequil, savelowest, keys.accrat, keys.accrat_frq )
 
     #########################################################################
     #print results
