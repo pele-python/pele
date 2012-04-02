@@ -2,11 +2,7 @@ import numpy as np #to access np.exp() not built int exp
 import numpy.random as RNG #to access np.exp() not built int exp
 from math import *
 import getopt, sys
-#import blj
 import scipy.optimize.lbfgsb
-#import potentials.ljpshift as ljpshift
-import potentials.ljpshiftfast as ljpshift
-#import steepest_descent
 import copy
 import mykeyword
 import saveit
@@ -235,8 +231,12 @@ def main():
         import potentials.ljcpp as ljcpp
         potential = ljcpp.LJ()
     if keys.potential == "binary":
+        usefortran = True
+        if usefortran:
+            import potentials.ljpshiftfast as ljpshift
+        else:
+            import potentials.ljpshift as ljpshift
         potential = ljpshift.LJpshift( natoms, keys.ntypeA, keys.boxl, keys.cutoff, keys.epsBB, keys.sigBB, keys.epsAB, keys.sigAB)
-        #potential = ljpshift.LJpshift( natoms, keys.ntypeA, keys.boxl, keys.cutoff, keys.epsBB, keys.sigBB, keys.epsAB, keys.sigAB)
 
     #########################################################################
     #run monte carlo
