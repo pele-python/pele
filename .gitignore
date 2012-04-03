@@ -1,0 +1,12 @@
+*~
+CMakeCache.txt
+CMakeFiles
+*.pyc
+cmake_install.cmake
+Makefile
+*.setup
+*.so
+coords.txt
+dump.q.xyz
+lowest
+
