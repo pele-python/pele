@@ -5,6 +5,8 @@
 #include <boost/python.hpp>
 #include <numpy/arrayobject.h>
 
+namespace wales {
+
 template<int ndims>
 class NPArray
 {
@@ -35,6 +37,8 @@ NPArray<ndims>::NPArray(boost::python::numeric::array& array)
   }
   _data = (double*)a->data;
   _size[0] = *(a->dimensions);
+}
+
 }
 
 #endif

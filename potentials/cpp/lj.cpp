@@ -1,10 +1,9 @@
-#include "nparray.h"
 #include <math.h>
+#include <wales/nparray.h>
+
+using namespace wales;
 
 // TODO: make a lennard jones class! for now just do a function for testing
-// also the whole calculation is crappy and no convenience wrappers for arrays
-
-int python_array_pointer(boost::python::numeric::array& p, double **data);
 
 double lj(double *x1, double *x2)
 {
