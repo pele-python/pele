@@ -48,6 +48,7 @@ class myKeywordClass():
 
         #initialize step taking routine using adaptive step size class
         takeStep = take_step.takeStep( RNG = np.random.rand, getStep = self.manstep.getStepSize ) #class to impliment the take step routine
+        takestep_fun = takeStep.takeStep
 
         #classes to impiment acceptence criterion
         acceptTests = []
@@ -57,7 +58,9 @@ class myKeywordClass():
         #event_after_step.append(  myDumpRoutine )
 
         #initialize basing hopping class and return it
-        opt = bh.BasinHopping(coords, potential, takeStep, storage = self.savelowest.insert,  \
+        opt = bh.BasinHopping(coords, potential, \
+                takeStep = takestep_fun, \
+                storage = self.savelowest.insert,  \
                 event_after_step=event_after_step, \
                 acceptTests=acceptTests, \
                 temperature=self.temperature \

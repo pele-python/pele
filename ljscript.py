@@ -26,7 +26,7 @@ coords=np.loadtxt('coords')
 coords = coords.reshape(coords.size)
 
 step = take_step.takeStep(  stepsize=0.3)
-opt = bh.BasinHopping(coords, potential, step)
+opt = bh.BasinHopping(coords, potential, takeStep=step.takeStep)
 
 opt.run(100)
 
@@ -38,7 +38,7 @@ coords=np.random.random(3*natoms)
 import saveit
 
 storage = saveit.saveit()
-opt = bh.BasinHopping(coords, potential, step, storage=storage.insert)
+opt = bh.BasinHopping(coords, potential, step.takeStep, storage=storage.insert)
 opt.run(100)
 
 with open("lowest", "w") as fout:
@@ -56,6 +56,6 @@ import adaptive_step
 
 manstep = adaptive_step.manageStepSize (0.3, 0.5, 100)
 takeStep = take_step.takeStep( getStep = manstep.getStepSize )
-opt = bh.BasinHopping(coords, potential, takeStep)
+opt = bh.BasinHopping(coords, potential, takeStep=takeStep.takeStep)
 opt.run(100)
 

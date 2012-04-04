@@ -11,11 +11,11 @@ class BasinHopping:
     coords: 
         The initial set of coordinates
 
-    takestep: 
+    takeStep: 
         The function which randomly perterbs the system, e.g. random
         dispacement.  It takes the form
 
-        takestep(coords)
+        takeStep(coords)
 
     acceptTests: 
         An optional list of functions which return False if a quench should be
@@ -39,7 +39,7 @@ class BasinHopping:
 
         event(Equench_new, newcoords, acceptstep)
   """
-  def __init__(self, coords, potential, takestep, storage=None, event_after_step=[], \
+  def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
           acceptTests=[],  \
           temperature=1.0, \
           nometropolis=False \
@@ -47,7 +47,7 @@ class BasinHopping:
     self.coords = coords
     self.storage = storage
     self.potential = potential
-    self.takestep = takestep
+    self.takeStep = takeStep
     self.event_after_step = event_after_step
     self.acceptTests = acceptTests
     self.temperature = temperature
@@ -116,7 +116,7 @@ class BasinHopping:
     #take step
     #########################################################################
     coords = coordsold.copy() #make  a working copy
-    self.takestep.takeStep(coords)
+    self.takeStep(coords)
 
     #########################################################################
     #quench
