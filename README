@@ -4,25 +4,14 @@ to find the global energy minimum for molecular systems
 http://www-wales.ch.cam.ac.uk/software.html
 
 
-the input files are
-data
-coords
+Compilation is required for use of the fast potentials, those written in C++ and/or fortran)
 
-to compile (only if you're using the fast potentials.  Uses f2py, which is part of the numpy package.)
-make
+To use the fortran potentials you need f2py, which is part of the numpy package
 
-run the program with
-python mingmin.py
+To use the C++ potentials you need to have boost-python, boost-dev and python-dev installed
 
+to compile:
 
-The lowest energy structure found will be in file 
-lowest
+cmake .
 
-Currently all unique quenched structures found are printed to file
-dump.q.xyz
-
-To use the C++ potentials:
-You need to have boost-python, boost-dev and python-dev installed
-make cpp (uses cmake)
-
-Then use ljcpp in data file. So far no parameters can be added.
+make 
