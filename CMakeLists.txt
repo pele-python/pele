@@ -7,6 +7,18 @@ enable_language(Fortran)
 
 find_package(PythonInterp)
 find_package(PythonLibs)
+#   set(Boost_USE_STATIC_LIBS        ON)
+#   set(Boost_USE_MULTITHREADED      ON)
+#   set(Boost_USE_STATIC_RUNTIME    OFF)
+
+option(WITH_BOOST "Enable Boost" ON)
+if(WITH_BOOST)
+  find_package( Boost 1.36.0 COMPONENTS python )
+  if(NOT Boost_FOUND)
+    message(FATAL_ERROR "Error, boost not found. Please install boost or use -DWITH_BOOST=no (that disables many features)")
+    include_directories(${Boost_INCLUDE_DIRS})
+  endif(NOT Boost_FOUND)
+endif(WITH_BOOST)
 
 include_directories(${PYTHON_INCLUDE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(potentials)
