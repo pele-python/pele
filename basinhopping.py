@@ -114,7 +114,8 @@ class BasinHopping:
         else:
             print dictionary['task']
 
-    print "quench: Ef=", newE, "steps=", funcalls, "max(V)=", np.max(np.abs(V))
+    rms = V.std()
+    print "quench: Ef=", newE, "steps=", funcalls, "max(V)=", np.max(np.abs(V)), "RMS=", rms
     return newcoords, newE
     
   def mcStep(self, coordsold, Equench_old):
