@@ -12,7 +12,7 @@ def apply_periodic( dr, boxl ):
     return dr;
 
 class LJ:
-    def __init__(self, eps, sig, boxl=None):
+    def __init__(self, eps=1.0, sig=1.0, boxl=None):
         """ simple lennard jones potential"""
         self.sig = sig
         self.eps = eps

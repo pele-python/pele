@@ -1,6 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 import numpy as np
-import potentials.lj as lj
+#import potentials.lj as lj
+import potentials.ljcpp as lj
 import basinhopping as bh
 import take_step
 
@@ -12,11 +13,11 @@ natoms = 12
 # random initial coordinates
 coords=np.random.random(3*natoms)
 
-potential = lj.LJ(1.0, 1.0, None)
+potential = lj.LJ()#1.0, 1.0, None)
 
 step = take_step.takeStep( stepsize=0.3)
 
-opt = bh.BasinHopping(coords, potential, step)
+opt = bh.BasinHopping(coords, potential, takeStep=step.takeStep)
 opt.run(100)
 
 ############################################################
