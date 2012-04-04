@@ -15,3 +15,8 @@ to compile:
 cmake .
 
 make 
+
+
+
+=== running ===
+see the examples in the examples folder

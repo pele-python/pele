@@ -3,6 +3,7 @@ import numpy as np
 import scipy
 from math import *
 import metropolis
+import copy
 
 
 class BasinHopping:
@@ -51,12 +52,13 @@ class BasinHopping:
           temperature=1.0, \
           nometropolis=False \
           ):
+    #note: make a local copy of lists of events so that an inputted list is not modified.
     self.coords = coords
     self.storage = storage
     self.potential = potential
     self.takeStep = takeStep
-    self.event_after_step = event_after_step
-    self.acceptTests = acceptTests
+    self.event_after_step = copy.copy(event_after_step)
+    self.acceptTests = copy.copy(acceptTests)
     self.temperature = temperature
     self.nometropolis = nometropolis
 
