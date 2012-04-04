@@ -12,7 +12,7 @@ class Metropolis:
         rand = self.random()
         if (rand > w): acceptstep = False
 
-        print "mc step: Eo", Eold, "En", Enew, "accepted", acceptstep
+        #print "mc step: Eo", Eold, "En", Enew, "accepted", acceptstep
 
         return acceptstep
         

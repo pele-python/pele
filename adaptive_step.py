@@ -12,6 +12,7 @@ class manageStepSize:
         self.nsteps = 0
         self.nstepstot = 0
         self.naccepted = 0
+        self.naccepted_tot = 0
         self.nadjust = 0
         self.changehist = []
 
@@ -50,7 +51,9 @@ class manageStepSize:
 
     def insertStep(self, accepted ):
         """tell us whether a step was accepted or rejected"""
-        if accepted: self.naccepted += 1
+        if accepted: 
+            self.naccepted += 1
+            self.naccepted_tot += 1
         self.nsteps += 1
         self.nstepstot += 1
         if self.nsteps == self.nstepsaccrat:
@@ -58,3 +61,6 @@ class manageStepSize:
 
     def insertStepWrapper(self, E, coords, accepted ):
         return self.insertStep(accepted)
+
+    def accratTot(self):
+        return float(self.naccepted_tot) / self.nstepstot
