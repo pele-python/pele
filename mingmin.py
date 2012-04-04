@@ -80,8 +80,12 @@ def main():
     #########################################################################
     #print results
     #########################################################################
+    print "Finished:"
     with open("lowest", "w") as fout:
         printxyz(fout,  keys.savelowest.lowestcoords, keys.savelowest.lowestE)
+
+    print "Acceptance ratio for run= ", keys.manstep.accratTot(), "Step=", keys.takeStep.getStep()
+    print "lowest energy found ", keys.savelowest.lowestE
 
 if __name__ == "__main__":
     main()

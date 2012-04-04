@@ -81,9 +81,9 @@ class BasinHopping:
     print "max gradient", np.max(V), potel
     print "minimizing initial coords"
 
-    newcoords, newE = self.quench(self.coords)
-    Equench, V = self.potential.getEnergyGradient(newcoords)
-    print "newcoords max V", np.max(V), Equench
+    newcoords, Equench, self.rms, self.funcalls = self.quench(self.coords)
+    Equench_new = Equench
+    print "Qu  ", 0, "E=", Equench, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench_new
 
     coords = newcoords
 
@@ -91,8 +91,8 @@ class BasinHopping:
       self.storage(Equench, coords)
     
     for istep in xrange(nsteps):
-        print istep
         acceptstep, newcoords, Equench_new = self.mcStep(self.coords, Equench)
+        print "Qu  ", istep+1, "E=", Equench_new, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench, "accepted=", acceptstep
         for event in self.event_after_step:
             event(Equench_new, newcoords, acceptstep)
         if acceptstep:
@@ -117,8 +117,8 @@ class BasinHopping:
             print dictionary['task']
 
     rms = V.std()
-    print "quench: Ef=", newE, "steps=", funcalls, "max(V)=", np.max(np.abs(V)), "RMS=", rms
-    return newcoords, newE
+    #print "quench: Ef=", newE, "steps=", funcalls, "max(V)=", np.max(np.abs(V)), "RMS=", rms
+    return newcoords, newE, rms, funcalls 
     
   def mcStep(self, coordsold, Equench_old):
     """take one monte carlo basin hopping step"""
@@ -131,7 +131,7 @@ class BasinHopping:
     #########################################################################
     #quench
     #########################################################################
-    qcoords, Equench = self.quench (coords)
+    qcoords, Equench, self.rms, self.funcalls = self.quench (coords)
 
     #########################################################################
     #check whether step is accepted with user defined tests.  If any returns

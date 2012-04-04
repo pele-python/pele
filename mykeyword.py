@@ -47,8 +47,8 @@ class myKeywordClass():
 
 
         #initialize step taking routine using adaptive step size class
-        takeStep = take_step.takeStep( RNG = np.random.rand, getStep = self.manstep.getStepSize ) #class to impliment the take step routine
-        takestep_fun = takeStep.takeStep
+        self.takeStep = take_step.takeStep( RNG = np.random.rand, getStep = self.manstep.getStepSize ) #class to impliment the take step routine
+        takestep_fun = self.takeStep.takeStep
 
         #classes to impiment acceptence criterion
         acceptTests = []
