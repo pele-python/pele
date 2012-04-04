@@ -3,7 +3,6 @@ import basinhopping as bh
 import saveit
 import adaptive_step
 import take_step
-import metropolis
 
 class myKeywordClass():
     def __init__(self):
@@ -50,9 +49,8 @@ class myKeywordClass():
         #initialize step taking routine using adaptive step size class
         takeStep = take_step.takeStep( RNG = np.random.rand, getStep = self.manstep.getStepSize ) #class to impliment the take step routine
 
-        #class to impiment acceptence criterion
-        metrop_test = metropolis.Metropolis(self.temperature)
-        acceptTests=[metrop_test.acceptReject]
+        #classes to impiment acceptence criterion
+        acceptTests = []
         #add further tests here, e.g    acceptTests.append( cold_fusion_test )
 
         #add optional events, e.g. dump coords
@@ -62,6 +60,7 @@ class myKeywordClass():
         opt = bh.BasinHopping(coords, potential, takeStep, storage = self.savelowest.insert,  \
                 event_after_step=event_after_step, \
                 acceptTests=acceptTests, \
+                temperature=self.temperature \
                 )
         return opt
 

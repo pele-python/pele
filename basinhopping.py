@@ -8,27 +8,41 @@ import metropolis
 class BasinHopping:
   """A class to run the basin hopping algorithm
   
-     input:
+    coords: 
+        The initial set of coordinates
 
-     coords: the initial set of coordinates
+    takestep: 
+        The function which randomly perterbs the system, e.g. random
+        dispacement.  It takes the form
 
-     takestep: the function which randomly perterbs the system, e.g. random
-                dispacement.  It takes the form
+        takestep(coords)
 
-            takestep(coords)
+    acceptTests: 
+        An optional list of functions which return False if a quench should be
+        rejected.  The Metropolis test is added to this list by default unless
+        the input "nometropolis" is set to False. Each test in the list takes
+        the form
+ 
+        test(Eold, Enew, new_coords):
 
-     acceptTests: a list of functions which return false if a quench should be rejected
-                   Each test in the list takes the form
+    temperature:  (1.0)
+        The temperature used in the metropolis criterion.  If no temperature is
+        passed, the default 1.0 is used unless the flag "nometropolis" is set
+        to False
 
-            test(Eold, Enew, new_coords):
+    nometropolis: (False)
+        Flag to disable the Metropolis accept reject test.
+    
+    event_after_step:  ([])
+        An optional list of functions which act just after each monte carlo
+        round.  Each even in the list takes the form
 
-     event_after_step: an optional list of functions which act just after each monte carlo
-                        round.  Each even in the list takes the form
-
-            event(Equench_new, newcoords, acceptstep)
+        event(Equench_new, newcoords, acceptstep)
   """
   def __init__(self, coords, potential, takestep, storage=None, event_after_step=[], \
-          acceptTests=[]  \
+          acceptTests=[],  \
+          temperature=1.0, \
+          nometropolis=False \
           ):
     self.coords = coords
     self.storage = storage
@@ -36,9 +50,12 @@ class BasinHopping:
     self.takestep = takestep
     self.event_after_step = event_after_step
     self.acceptTests = acceptTests
-    if len(self.acceptTests) == 0: #set default value
-        self.metrop_test = metropolis.Metropolis(1.0)
-        self.acceptTests=[self.metrop_test.acceptReject]
+    self.temperature = temperature
+    self.nometropolis = nometropolis
+
+    if not self.nometropolis:
+        self.metrop_test = metropolis.Metropolis(self.temperature)
+        self.acceptTests.append( self.metrop_test.acceptReject )
 
   def run(self, nsteps):
     #########################################################################
