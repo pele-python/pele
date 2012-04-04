@@ -9,7 +9,14 @@ class BasinHopping:
   """A class to run the basin hopping algorithm
   
     coords: 
-        The initial set of coordinates
+        The initial set of coordinates.  A one dimensional list or numpy array
+
+    potential: 
+        A class implimenting the potential.  The class must have the
+        following functions implimented
+
+        energy = potential.getEnergy( coords )
+        energy, gradient = potential.getEnergyGradient( coords )
 
     takeStep: 
         The function which randomly perterbs the system, e.g. random
@@ -17,13 +24,13 @@ class BasinHopping:
 
         takeStep(coords)
 
-    acceptTests: 
+    acceptTests:  ([]) 
         An optional list of functions which return False if a quench should be
         rejected.  The Metropolis test is added to this list by default unless
         the input "nometropolis" is set to False. Each test in the list takes
         the form
  
-        test(Eold, Enew, new_coords):
+        accept = test(Eold, Enew, new_coords):
 
     temperature:  (1.0)
         The temperature used in the metropolis criterion.  If no temperature is
