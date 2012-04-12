@@ -1,5 +1,6 @@
 from math import *
 import numpy as np #to access np.exp() not built int exp
+import potential
 
 def apply_periodic( dr, boxl ):
     for i in xrange(len(dr)):
@@ -11,7 +12,7 @@ def apply_periodic( dr, boxl ):
     #print "dr ",dr
     return dr;
 
-class LJ:
+class LJ(potential.potential):
     def __init__(self, eps=1.0, sig=1.0, boxl=None):
         """ simple lennard jones potential"""
         self.sig = sig
