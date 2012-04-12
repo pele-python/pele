@@ -4,6 +4,7 @@ import scipy
 from math import *
 import accept_tests.metropolis as metropolis
 import copy
+import quench
 
 
 class BasinHopping:
@@ -46,11 +47,16 @@ class BasinHopping:
         round.  Each even in the list takes the form
 
         event(Equench_new, newcoords, acceptstep)
+
+    quenchRoutine:  (quench.quench)
+        Optionally pass a non-default quench routine.
+        
   """
   def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
           acceptTests=[],  \
           temperature=1.0, \
-          nometropolis=False \
+          nometropolis=False, \
+          quenchRoutine = quench.quench
           ):
     #note: make a local copy of lists of events so that an inputted list is not modified.
     self.coords = coords
@@ -61,6 +67,7 @@ class BasinHopping:
     self.acceptTests = copy.copy(acceptTests)
     self.temperature = temperature
     self.nometropolis = nometropolis
+    self.quenchRoutine = quenchRoutine
 
     if not self.nometropolis:
         self.metrop_test = metropolis.Metropolis(self.temperature)
@@ -81,7 +88,7 @@ class BasinHopping:
     print "max gradient", np.max(V), potel
     print "minimizing initial coords"
 
-    newcoords, Equench, self.rms, self.funcalls = self.quench(self.coords)
+    newcoords, Equench, self.rms, self.funcalls = self.quenchRoutine(self.coords, self.potential.getEnergyGradient)
     Equench_new = Equench
     print "Qu  ", 0, "E=", Equench, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench_new
 
@@ -101,25 +108,6 @@ class BasinHopping:
         self.coords = newcoords
         Equench = Equench_new
     
-  def quench(self, coords):
-    import scipy.optimize.lbfgsb
-    #newcoords, newE = steepest_descent.steepestDescent(potential.getEnergyGradient, coords, 100)
-    newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(self.potential.getEnergyGradient, coords, iprint=-1, pgtol=1e-3)
-
-    V = dictionary["grad"]
-    funcalls = dictionary["funcalls"]
-    warnflag = dictionary['warnflag']
-    if warnflag > 0:
-        print "warning: problem with quench: ",
-        if warnflag == 1:
-            print "too many function evaluations"
-        else:
-            print dictionary['task']
-
-    rms = V.std()
-    #print "quench: Ef=", newE, "steps=", funcalls, "max(V)=", np.max(np.abs(V)), "RMS=", rms
-    return newcoords, newE, rms, funcalls 
-    
   def mcStep(self, coordsold, Equench_old):
     """take one monte carlo basin hopping step"""
     #########################################################################
@@ -131,7 +119,7 @@ class BasinHopping:
     #########################################################################
     #quench
     #########################################################################
-    qcoords, Equench, self.rms, self.funcalls = self.quench (coords)
+    qcoords, Equench, self.rms, self.funcalls = self.quenchRoutine (coords, self.potential.getEnergyGradient)
 
     #########################################################################
     #check whether step is accepted with user defined tests.  If any returns
