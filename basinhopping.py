@@ -2,7 +2,7 @@
 import numpy as np
 import scipy
 from math import *
-import metropolis
+import accept_tests.metropolis as metropolis
 import copy
 
 
