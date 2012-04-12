@@ -1,15 +1,10 @@
 import numpy as np #to access np.exp() not built int exp
-import numpy.random as RNG #to access np.exp() not built int exp
 from math import *
 import getopt, sys
 import scipy.optimize.lbfgsb
 import copy
 import mykeyword
-import saveit
-import adaptive_step
-import take_step
 import basinhopping as bh
-import metropolis
 
 def adjustCenterOfMass(coords, natoms):
     CoM = np.zeros(3, np.float64)

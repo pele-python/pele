@@ -1,8 +1,6 @@
 import numpy as np
 import basinhopping as bh
 import saveit
-import adaptive_step
-import take_step
 
 class myKeywordClass():
     def __init__(self):
@@ -42,12 +40,14 @@ class myKeywordClass():
         self.savelowest = saveit.saveit() #class to save the lowest energy structure
 
         #initialize adaptive step size routine
-        self.manstep = adaptive_step.manageStepSize (self.stepsize, self.accrat, self.accrat_frq) #class to do step size adjustment
+        import take_step.adaptive_step
+        self.manstep = take_step.adaptive_step.manageStepSize (self.stepsize, self.accrat, self.accrat_frq) #class to do step size adjustment
         event_after_step = [self.manstep.insertStepWrapper]
 
 
         #initialize step taking routine using adaptive step size class
-        self.takeStep = take_step.takeStep( RNG = np.random.rand, getStep = self.manstep.getStepSize ) #class to impliment the take step routine
+        import take_step.random_displacement as random_displacement
+        self.takeStep = random_displacement.takeStep( RNG = np.random.rand, getStep = self.manstep.getStepSize ) #class to impliment the take step routine
         takestep_fun = self.takeStep.takeStep
 
         #classes to impiment acceptence criterion

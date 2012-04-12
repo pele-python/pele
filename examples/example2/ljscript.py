@@ -3,7 +3,7 @@ import numpy as np
 #import potentials.lj as lj
 import potentials.ljcpp as lj
 import basinhopping as bh
-import take_step
+import take_step.random_displacement as random_displacement
 
 natoms = 12
 ############################################################
@@ -15,7 +15,7 @@ coords=np.random.random(3*natoms)
 
 potential = lj.LJ()#1.0, 1.0, None)
 
-step = take_step.takeStep( stepsize=0.3)
+step = random_displacement.takeStep( stepsize=0.3)
 
 opt = bh.BasinHopping(coords, potential, takeStep=step.takeStep)
 opt.run(100)
@@ -26,7 +26,7 @@ opt.run(100)
 coords=np.loadtxt('coords')
 coords = coords.reshape(coords.size)
 
-step = take_step.takeStep(  stepsize=0.3)
+step = random_displacement.takeStep( stepsize=0.3)
 opt = bh.BasinHopping(coords, potential, takeStep=step.takeStep)
 
 opt.run(100)
@@ -53,10 +53,10 @@ with open("lowest", "w") as fout:
 #Example 4: adaptive step size
 ############################################################
 
-import adaptive_step
+import take_step.adaptive_step as adaptive_step
 
 manstep = adaptive_step.manageStepSize (0.3, 0.5, 100)
-takeStep = take_step.takeStep( getStep = manstep.getStepSize )
+takeStep = random_displacement.takeStep( getStep = manstep.getStepSize )
 opt = bh.BasinHopping(coords, potential, takeStep=takeStep.takeStep)
 opt.run(100)
 
