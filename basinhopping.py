@@ -52,14 +52,15 @@ class BasinHopping:
         Optionally pass a non-default quench routine.
         
   """
+
   def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
           acceptTests=[],  \
           temperature=1.0, \
           nometropolis=False, \
-          quenchRoutine = quench.quench
+          quenchRoutine = quench.quench \
           ):
     #note: make a local copy of lists of events so that an inputted list is not modified.
-    self.coords = coords
+    self.coords = copy.copy(coords)
     self.storage = storage
     self.potential = potential
     self.takeStep = takeStep
@@ -73,33 +74,36 @@ class BasinHopping:
         self.metrop_test = metropolis.Metropolis(self.temperature)
         self.acceptTests.append( self.metrop_test.acceptReject )
 
-  def run(self, nsteps):
+    self.stepnum = 0
+
+    #########################################################################
+    #store intial structure
+    #########################################################################
+    potel = self.potential.getEnergy(self.coords)
+    print "initial energy", potel
+    if(self.storage):
+        self.storage(potel, self.coords)
+      
     #########################################################################
     #do initial quench
     #########################################################################
-    print "doing monteCarlo, nsteps", nsteps
-    potel = self.potential.getEnergy(self.coords)
-    print "initial energy", potel
-
-    if(self.storage):
-      self.storage(potel, self.coords)
-      
-    potel, V = self.potential.getEnergyGradient(self.coords)
-    print "max gradient", np.max(V), potel
-    print "minimizing initial coords"
-
     newcoords, Equench, self.rms, self.funcalls = self.quenchRoutine(self.coords, self.potential.getEnergyGradient)
     Equench_new = Equench
-    print "Qu  ", 0, "E=", Equench, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench_new
-
-    coords = newcoords
+    print "Qu  ", self.stepnum, "E=", Equench, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench_new
+    self.coords = newcoords
 
     if(self.storage):
-      self.storage(Equench, coords)
+        self.storage(Equench, self.coords)
+
+    self.myE = Equench
     
+  def run(self, nsteps):
+
+    Equench = self.myE
     for istep in xrange(nsteps):
+        self.stepnum += 1
         acceptstep, newcoords, Equench_new = self.mcStep(self.coords, Equench)
-        print "Qu  ", istep+1, "E=", Equench_new, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench, "accepted=", acceptstep
+        print "Qu  ", self.stepnum, "E=", Equench_new, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench, "accepted=", acceptstep
         for event in self.event_after_step:
             event(Equench_new, newcoords, acceptstep)
         if acceptstep:
