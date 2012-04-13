@@ -5,8 +5,10 @@ import scipy.optimize.lbfgsb
 import copy
 import mykeyword
 import basinhopping as bh
+import printing.print_atoms_xyz as printxyz
 
-def adjustCenterOfMass(coords, natoms):
+def adjustCenterOfMass(coords):
+    natoms = len(coords)/3
     CoM = np.zeros(3, np.float64)
     for i in range(natoms):
         CoM += coords[i*3:i*3+3]
@@ -14,24 +16,13 @@ def adjustCenterOfMass(coords, natoms):
     for i in range(natoms):
         coords[i*3:i*3+3] -= CoM
 
-def printxyz(fout, coords, E=""):
-    natoms = len(coords)/3
-    adjustCenterOfMass(coords, natoms)
-    fout.write( str(natoms) + "\n")
-    fout.write( str(E) + "\n")
-    for i in xrange(natoms):
-        fout.write( "LA "+ str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
-
-def printcoords(fout, coords, natoms):
-    for i in xrange(natoms):
-        fout.write( str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
-
 class printWrapper:
     def __init__(self, fout):
         self.fout = fout
     def printIt(self, E, coords, accept):
         if accept:
-            printxyz(self.fout, coords, E)
+            adjustCenterOfMass(coords)
+            printxyz.printAtomsXYZ(self.fout, coords, E)
 
 def main():
     #########################################################################
@@ -77,7 +68,8 @@ def main():
     #########################################################################
     print "Finished:"
     with open("lowest", "w") as fout:
-        printxyz(fout,  keys.savelowest.lowestcoords, keys.savelowest.lowestE)
+        adjustCenterOfMass(coords)
+        printxyz.printAtomsXYZ(fout,  keys.savelowest.lowestcoords, keys.savelowest.lowestE)
 
     print "Acceptance ratio for run= ", keys.manstep.accratTot(), "Step=", keys.takeStep.getStep()
     print "lowest energy found ", keys.savelowest.lowestE
