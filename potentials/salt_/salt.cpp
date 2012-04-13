@@ -89,7 +89,7 @@ public:
 
 	double pair_gradient(double * __restrict__ x1, double * __restrict__ x2, double * __restrict__ g)
 	{
-		double r2=0;
+		double r2=0, r;
 
 		get_mindist(x1, x2, g);
 
@@ -99,10 +99,11 @@ public:
 		double r6 = pow(_sigma,6)/(r2*r2*r2);
 		double r12 = r6*r6;
 
+		r=sqrt(r2);
 		for(int i=0; i<3; ++i)
-			g[i]*=4.0*_eps*(12.*r12 -  6.*r6)/r2 + _q12/r2;
+			g[i]*=4.0*_eps*(12.*r12 -  6.*r6)/r2 + _q12/(r2*r);
 
-		return 4.*_eps*(r12 - r6) + _q12/sqrt(r2);
+		return 4.*_eps*(r12 - r6) + _q12/r;
 	}
 
 private:
