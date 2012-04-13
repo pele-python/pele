@@ -2,6 +2,7 @@
 import numpy as np
 import scipy
 from math import *
+import sys
 import accept_tests.metropolis as metropolis
 import copy
 import quench
@@ -51,13 +52,16 @@ class BasinHopping:
     quenchRoutine:  (quench.quench)
         Optionally pass a non-default quench routine.
         
+    outstream: (stdout)
+        the file stream to print quench information to
   """
 
   def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
           acceptTests=[],  \
           temperature=1.0, \
           nometropolis=False, \
-          quenchRoutine = quench.quench \
+          quenchRoutine = quench.quench, \
+          outstream = sys.stdout
           ):
     #note: make a local copy of lists of events so that an inputted list is not modified.
     self.coords = copy.copy(coords)
@@ -70,6 +74,8 @@ class BasinHopping:
     self.nometropolis = nometropolis
     self.quenchRoutine = quenchRoutine
 
+    self.outstream = outstream
+
     if not self.nometropolis:
         self.metrop_test = metropolis.Metropolis(self.temperature)
         self.acceptTests.append( self.metrop_test.acceptReject )
@@ -80,7 +86,7 @@ class BasinHopping:
     #store intial structure
     #########################################################################
     potel = self.potential.getEnergy(self.coords)
-    print "initial energy", potel
+    self.outstream.write( "initial energy " + str( potel)  + "\n")
     if(self.storage):
         self.storage(potel, self.coords)
       
@@ -89,28 +95,28 @@ class BasinHopping:
     #########################################################################
     newcoords, Equench, self.rms, self.funcalls = self.quenchRoutine(self.coords, self.potential.getEnergyGradient)
     Equench_new = Equench
-    print "Qu  ", self.stepnum, "E=", Equench, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench_new
+    #print "Qu  ", self.stepnum, "E=", Equench, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench_new
+    self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(Equench) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(Equench_new) + "\n" )
+
     self.coords = newcoords
+    self.markovE = Equench
 
     if(self.storage):
         self.storage(Equench, self.coords)
-
-    self.myE = Equench
     
   def run(self, nsteps):
 
-    Equench = self.myE
     for istep in xrange(nsteps):
         self.stepnum += 1
-        acceptstep, newcoords, Equench_new = self.mcStep(self.coords, Equench)
-        print "Qu  ", self.stepnum, "E=", Equench_new, "quench_steps= ", self.funcalls, "RMS=", self.rms, "Markov E= ", Equench, "accepted=", acceptstep
-        for event in self.event_after_step:
-            event(Equench_new, newcoords, acceptstep)
+        acceptstep, newcoords, newE = self.mcStep(self.coords, self.markovE)
+        self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(newE) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE) + " accepted= " + str(acceptstep) + "\n" )
         if acceptstep:
             if(self.storage):
-              self.storage(Equench_new, newcoords)
-        self.coords = newcoords
-        Equench = Equench_new
+                self.storage(newE, newcoords)
+            self.coords = newcoords
+            self.markovE = newE
+        for event in self.event_after_step:
+            event(self.markovE, self.coords, acceptstep)
     
   def mcStep(self, coordsold, Equench_old):
     """take one monte carlo basin hopping step"""
@@ -135,10 +141,7 @@ class BasinHopping:
             acceptstep = False
 
     #########################################################################
-    #return
+    #return new coords and energy and whether or not they were accepted
     #########################################################################
-    if acceptstep:
-        return acceptstep, qcoords, Equench
-    else:
-        return acceptstep, coordsold, Equench_old
+    return acceptstep, qcoords, Equench
 
