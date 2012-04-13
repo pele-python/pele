@@ -12,7 +12,7 @@ class potential(object):
     '''
         
     def getEnergyGradient(self, coords):
-        return self.getEnergy(), self.NumericalDerivative(coords, 1e-6)
+        return self.getEnergy(coords), self.NumericalDerivative(coords, 1e-8)
             
     def NumericalDerivative(self, coords, eps):
         g = np.zeros(coords.size)
