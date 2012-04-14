@@ -68,8 +68,10 @@ class BHPT:
         self.exchange_frq = 10
 
         #set up the temperatures
+        #distribute them exponentially
         dT = (Tmax - Tmin) / (self.nreplicas-1)
-        self.Tlist = [Tmin + i*dT for i in range(self.nreplicas)]
+        CTE = np.exp( np.log( Tmax / Tmin ) / (self.nreplicas-1) )
+        self.Tlist = [Tmin* CTE**i for i in range(self.nreplicas)]
         print "Tlist", self.Tlist
 
         self.streams = []
@@ -116,3 +118,5 @@ class BHPT:
             self.replicas[k].coords = copy.copy( self.replicas[k+1].coords )
             self.replicas[k+1].markovE = E1
             self.replicas[k+1].coords = coords1
+        else:
+            print "rejecting exchange ", k, k+1, w, rand
