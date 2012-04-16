@@ -20,8 +20,8 @@ class potential(object):
         for i in xrange(coords.size):
             x[i] += eps
             g[i] = self.getEnergy(x)
-            x[i] -= 2 * eps
+            x[i] -= 2. * eps
             g[i] -= self.getEnergy(x)
-            g[i] /= 2 * eps
+            g[i] /= 2. * eps
             x[i] += eps
         return g        
