@@ -21,4 +21,4 @@ if(WITH_BOOST)
 endif(WITH_BOOST)
 
 include_directories(${PYTHON_INCLUDE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/include)
-add_subdirectory(potentials)
+add_subdirectory(src/potentials)

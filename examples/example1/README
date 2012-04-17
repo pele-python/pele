@@ -1,4 +1,4 @@
 This example demonstrates how to run minGMIN using data files in the style of
 GMIN.  The potential is binary Lennard-Jones.  Just execute
 
-python ../../mingmin.py
+python ../../src/mingmin.py
