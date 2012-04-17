@@ -9,7 +9,6 @@ class LJ:
         # self.natoms = natoms
 
     def getEnergy(self, coords):
-        print "getting energy only"
         E = ljc.energy(coords)
         return E
 
