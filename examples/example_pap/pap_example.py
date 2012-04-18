@@ -10,162 +10,52 @@ Created on 13 Apr 2012
 @author: ruehle
 '''
 
-import potentials.potential
+import pap
 import pygmin
 import numpy as np
 import basinhopping as bh
+import take_step.adaptive_step as adaptive_step
 import take_step.random_displacement as ts
+import storage.savenlowest
+        
+# initialize GMIN
+pygmin.init()
 
-class PatchyParticle(potentials.potential.potential):
-    '''
-    classdocs
-    '''
-    def __init__(self):
-        '''
-        Constructor
-        '''
-    
-    def getEnergy(self, coords):
-        x = self.toReal(coords).copy()
-        #x = coords
-        #print x.reshape(17,3)
-        return pygmin.getPAPEnergy(x)
-    
-    def getEnergyGradient(self, coords):
-        x = self.toReal(coords).copy()
-        xo = coords.copy()      
-        #x = coords.copy() #self.toReal(coords).copy()
-        grad = np.zeros(x.shape)
-        E = pygmin.getPAPEnergyGradient(x, grad)
-        
-        m = self.getLatticeMatrix(coords)        
-        natoms = (coords.size - 3)/6
-        grad[0:3*natoms] = np.dot(grad[0:3*natoms].reshape([natoms,3]), m).reshape(3*natoms)
-        
-#        eps=1e-6
-#        for i in range(6*natoms,6*natoms+3):
-#            xo[i]+=eps
-#            grad[i]=self.getEnergy(xo)      
-#            xo[i]-=2.*eps
-#            grad[i]-=self.getEnergy(xo)
-#            xo[i]+=eps
-#            grad[i]/=2.*eps
-#            grad[i]=0.
-        return E, grad
-    
-    def getLatticeMatrix(self, coords):
-        m = np.zeros([3,3])
-        m[0][0] = coords[-3]       
-        m[1][1] = coords[-2]
-        m[2][2] = coords[-1]
-        return m
+# create PatchyParticle potential
+pot = pap.PatchyParticle()    
 
-    def getInverseLatticeMatrix(self, coords):
-        m = np.zeros([3,3])
-        m[0][0] = 1./coords[-3]       
-        m[1][1] = 1./coords[-2]
-        m[2][2] = 1./coords[-1]
-        return m
-        
-    def setLatticeMatrix(self, coords, m):
-        coords[-3] = m[0][0]
-        coords[-2] = m[1][1]
-        coords[-1] = m[2][2]
-        return m
-        
-    def toReduced(self, coords):
-        natoms = (coords.size - 3)/6
-        m = self.getInverseLatticeMatrix(coords)
-        x = coords.copy()
-        x[0:3*natoms] = np.dot(coords[0:3*natoms].reshape([natoms,3]), m).reshape(3*natoms)
-        x[-3:-1] = coords[-3:-1]
-        return x
-    
-    def toReal(self, coords):
-        natoms = (coords.size - 3)/6
-        m = self.getLatticeMatrix(coords)
-        x = coords.copy()
-        x[0:3*natoms] = np.dot(coords[0:3*natoms].reshape([natoms,3]), m).reshape(3*natoms)
-        x[-3:-1] = coords[-3:-1]
-        return x
+# load coords array
+tmp = np.loadtxt('coords')    
+x = tmp.reshape(tmp.size)
 
-class PatchyParticleFixed(potentials.potential.potential):
-    '''
-    classdocs
-    '''
-    
-    def getEnergy(self, coords):
-        return pygmin.getEnergy(coords)
-    
-    def getEnergyGradient(self, coords):
-        grad = np.zeros(coords.shape)
-        E = pygmin.getEnergyGradient(coords, grad)
-        return E, grad
+# go to reduced coordinate space
+x =pot.toReduced(x)
 
-        
-def steep(coords, pot):
-    work = coords.copy()
-    Elast = pot(work)
-    step=0.0001  
-    for i in xrange(10000):        
-        nsteps=i
-        E,grad = pot(work)
-        
-        dx = step*grad[:]
-        if(np.max(np.abs(dx)) > 0.01):
-            #step=0.01/np.max(dx)
-            dx*=0.01/np.max(dx)
-        #print "max", np.max(np.abs(dx))
-        tmp = work-dx
-        
-#        while(E > Elast):
-#            step*=0.5
-#            print "reducing step to", step
-#            tmp = work - step*grad[:]
-#            tmp = work - step*grad[:]
+# optional, start with random configuration
+x[0:x.size-3] = np.random.random(x.size-3)
+    
+# use adaptive step size, 0.3 start, acceptance rate 0.5, adjust every 20
+manstep = adaptive_step.manageStepSize (0.1, 0.3, 20)    
+step = ts.takeStep( getStep=manstep.getStepSize)
 
-        work = tmp
-        #print E
-        norm = np.linalg.norm(grad)
-        if(norm < 1e-3):
-             break
-    #print tmp, grad
-    return tmp, E, np.linalg.norm(grad), nsteps 
-        
-def run_tests():
-    pygmin.init()
-    tmp = np.loadtxt('coords')
-    
-    x = tmp.reshape(tmp.size)
-    #print tmp[1:8,:]
-    pot = PatchyParticle()    
-    #x[-3] -= 1e-6
-#    x[0:8*6] = x[0:8*6] np.random.random(x[0:8*6].shape)*0.01
-    #x[0]+=0.1
-    x =pot.toReduced(x) #+ np.random.random(x.shape)*0.01
-    #x[-2] += 0.5
-    #x[-3] += 100
-    a = x.copy()
-    e=pot.getEnergy(x)
-    e,g = pot.getEnergyGradient(x)
-    gn = pot.NumericalDerivative(a, 1e-6)
-    print e
-    print g
-    print gn
-    #exit()
-    #x[-1] += 0.1
-    e,g = pot.getEnergyGradient(x)
-    print "start steep"
-    #steep(pot, x)
-    #exit()
-    
-    gn = pot.NumericalDerivative(x, 1e-6)
-    step = ts.takeStep( stepsize=0.1)
-    opt = bh.BasinHopping(x, pot, takeStep=step.takeStep, quenchRoutine = steep)
-    opt.run(10)
-    #print pot.getEnergyGradient(opt.coords)
-    
-    
+# store the lowest 10 minma
+minima = storage.savenlowest.SaveN(nsave=10)
 
-if __name__ == '__main__':
-    run_tests()
+# start a basin hopping run
+opt = bh.BasinHopping(x, pot,                      
+                      temperature=2.,
+                      takeStep=step.takeStep,
+                      event_after_step=[manstep.insertStepWrapper],
+                      storage = minima.insert
+                      )
+
+# do 100 mc steps
+opt.run(400)
+
+# save the minima
+with open("pylowest", "w") as fout:
+  for i in minima.data:
+      fout.write( str(x.size) + "\n")
+      fout.write( "Energy = " + str(i[0]) + "\n")
+      for atom in i[1].reshape(x.size/3, 3):
+          fout.write(str(atom[0]) + " " + str(atom[1]) + " " + str(atom[2]) + "\n")
