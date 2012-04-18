@@ -13,6 +13,6 @@ def printAtomsXYZ(fout, coords, line2="", atom_type="LA"):
     fout.write( str(natoms) + "\n")
     fout.write( str(line2) + "\n")
     for i in xrange(natoms):
-        fout.write( atom_type+ str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
+        fout.write( atom_type +" "+ str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
 
 

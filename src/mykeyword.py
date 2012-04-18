@@ -1,6 +1,5 @@
 import numpy as np
 import basinhopping as bh
-import saveit
 
 class myKeywordClass():
     def __init__(self):
@@ -17,6 +16,8 @@ class myKeywordClass():
         self.temperature = 1.0
         self.accrat = 0.5
         self.accrat_frq = 50
+        self.nsave = 1
+        self.ediff = 0.002
 
     def getBasinHopping(self, coords, natoms):
         #########################################################################
@@ -37,7 +38,8 @@ class myKeywordClass():
             potential = ljpshift.LJpshift( natoms, self.ntypeA, self.boxl, self.cutoff, self.epsBB, self.sigBB, self.epsAB, self.sigAB)
 
         #initialize minima saving routine
-        self.savelowest = saveit.saveit() #class to save the lowest energy structure
+        import storage.savenlowest as saveit
+        self.savelowest = saveit.SaveN( nsave = self.nsave, accuracy = self.ediff ) #class to save the lowest energy structures
 
         #initialize adaptive step size routine
         import take_step.adaptive_step
@@ -80,14 +82,17 @@ class myKeywordClass():
                 return
 
             elif words[0] == "lj":
+                """lennard jones potential"""
                 self.pot_type = "lj"
                 self.eps = float(words[1])
                 self.sig = float(words[2])
 
             elif words[0] == "ljcpp":
+                """fast lennard jones potential coded with c++ and boost python"""
                 self.pot_type = "ljcpp"
 
             elif words[0] == "blj":
+                """binary lennard jones potential"""
                 self.pot_type = "blj"
                 self.ntypeA = int(words[1])
                 self.epsAB = float(words[2])
@@ -96,6 +101,7 @@ class myKeywordClass():
                 self.sigBB = float(words[5])
 
             elif words[0] == "binary":
+                """binary lennard jones potential with cutoff"""
                 self.pot_type = "binary"
                 self.ntypeA = int(words[1])
                 self.epsAB = float(words[2])
@@ -104,26 +110,41 @@ class myKeywordClass():
                 self.sigBB = float(words[5])
 
             elif words[0] == "shiftcut":
+                """cutoff distance for the potential"""
                 self.cutoff = float(words[1])
 
             elif words[0] == "periodic":
+                """box size for periodic systems (cubic only at the moment)"""
                 self.periodic = True
                 self.boxl = float(words[1])
 
             elif words[0] == "step":
+                """initial step size for the monte carlo step"""
                 self.stepsize = float(words[1])
 
             elif words[0] == "steps":
+                """number of monte carlo steps"""
                 self.nmcsteps = int(words[1])
 
             elif words[0] == "accrat" or words[0] == "acceptratio":
+                """target acceptance ratio"""
                 self.accrat = float(words[1])
 
             elif words[0] == "changeaccept" or words[0] == "acceptratio":
+                """the interval at which the acceptance ratio is modified"""
                 self.accrat_frq = float(words[1])
 
             elif words[0] == "temperature":
+                """temperature for the monte carlo acceptance criterion"""
                 self.temperature = float(words[1])
+
+            elif words[0] == "save":
+                """number of lowest minima to save"""
+                self.nsave = int(words[1])
+
+            elif words[0] == "ediff":
+                """energy difference used to distinguish different minima in the save lowest routine"""
+                self.ediff = float(words[1])
 
 
             else:
