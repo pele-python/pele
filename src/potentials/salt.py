@@ -11,6 +11,8 @@ class salt(potential.potential):
 
     def getEnergy(self, coords):
         E = salt_.energy(coords)
+        #grad=np.zeros(coords.shape[0], np.float64)
+        #E = salt_.gradient(coords, grad)
         return E
 
     def getEnergyGradient(self, coords):

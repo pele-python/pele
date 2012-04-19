@@ -1,5 +1,5 @@
 if(WITH_BOOST)
-  add_library(salt_ salt.cpp)
+  add_library(salt_ salt.cpp matrix.cpp)
   target_link_libraries(salt_ ${Boost_PYTHON_LIBRARY})
   set_target_properties(salt_ PROPERTIES PREFIX "")
 endif(WITH_BOOST)
