@@ -114,3 +114,25 @@ def rot_q2mx(qin):
 
 def aa2mx( p ):
     return q2mx( aa2q( p ) )
+
+def random_q():
+    """
+    uniform random rotation in angle axis formulation
+    input: 3 uniformly distributed random numbers
+    uses the algorithm given in
+     K. Shoemake, Uniform random rotations, Graphics Gems III, pages 124-132. Academic, New York, 1992.
+    This first generates a random rotation in quaternion representation. We should substitute this by
+    a direct angle axis generation, but be careful: the angle of rotation in angle axis representation
+    is NOT uniformly distributed
+    """
+    from numpy import sqrt, sin, cos, pi
+    u = np.random.uniform(0,1,[3])
+    q = np.zeros(4, np.float64)
+    q[0] = sqrt(1.-u[0]) * sin(2.*pi*u[1])
+    q[1] = sqrt(1.-u[0]) * cos(2.*pi*u[1])
+    q[2] = sqrt(u[0]) * sin(2.*pi*u[2])
+    q[3] = sqrt(u[0]) * cos(2.*pi*u[2])
+    return q
+
+def random_aa():
+    return q2aa( random_q() )

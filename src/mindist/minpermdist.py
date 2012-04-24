@@ -79,7 +79,7 @@ def findBestPermutation( X1, X2):
     dist = np.sqrt(costnew)
     return dist, X1, X2
 
-def minpermdist(X1, X2, max_permutations = 10000):
+def minPermDistLong(X1, X2, max_permutations = 10000):
     """
     Minimize the distance between two clusters.  The following symmetries will be accounted for
     
@@ -103,7 +103,7 @@ def minpermdist(X1, X2, max_permutations = 10000):
         #print perm
         X2 = permuteArray( X2in, perm)
 
-        dist = mindist.mindist(X1, X2)
+        dist = mindist.minDist(X1, X2)
 
         if dist < dmin:
             dmin = dist
@@ -153,7 +153,7 @@ def main():
     distinit = np.linalg.norm(X1-X2)
     print "distinit", distinit
 
-    (dist, X1, X2) = minpermdist(X1,X2)
+    (dist, X1, X2) = minPermDistLong(X1,X2)
     distfinal = np.linalg.norm(X1-X2)
     print "dist returned    ", dist
     print "dist from coords ", distfinal

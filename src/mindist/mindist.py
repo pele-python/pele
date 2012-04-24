@@ -20,12 +20,16 @@ def CoMToOrigin( X1):
         com = np.sum( X1[i::3] )
         com /= natoms
         X1[i::3] -= com
+    return X1
 
 
-def alignRotation(XA, XB):
+def getAlignRotation(XA, XB):
     """
-    Align structure XB to be as similar as possible to structure XA.
+    Return the quaternion which
+    aligns structure XB to be as similar as possible to structure XA.
     To be precise, rotate XB, so as to minimize the distance |XA - XB|.
+
+    Rotations will be done around the origin, not the center of mass
 
     Rotational alignment follows the prescription of
     Kearsley, Acta Cryst. A, 45, 208-210, 1989
@@ -34,8 +38,8 @@ def alignRotation(XA, XB):
     nsites = len(XA)/3
 
     #move the center of mass to the origin
-    CoMToOrigin(XA)
-    CoMToOrigin(XB)
+    #CoMToOrigin(XA)
+    #CoMToOrigin(XB)
 
     #distcm = np.linalg.norm(XA-XB)
     #print "distcm", distcm
@@ -89,7 +93,7 @@ def alignRotation(XA, XB):
         if abs(eigmin) < 1e-6:
             eigmin = 0.
         else:
-            print 'mindist> WARNING minimum eigenvalue is ',eigmin,' change to absolute value'
+            print 'minDist> WARNING minimum eigenvalue is ',eigmin,' change to absolute value'
             eigmin = -eigmin
 
     dist = np.sqrt(eigmin) #this is the minimized distance between the two structures
@@ -98,10 +102,23 @@ def alignRotation(XA, XB):
     #aa = rot.q2aa( Q2)
     #print "aa ", aa, "norm", np.linalg.norm(aa)
 
+    return dist, Q2
+
+def alignRotation(XA, XB):
+    """
+    Align structure XB to be as similar as possible to structure XA.
+    To be precise, rotate XB, so as to minimize the distance |XA - XB|.
+
+    Rotations will be done around the origin, not the center of mass
+    """
+    nsites = len(XA)/3
+
+    dist, Q2 = getAlignRotation(XA, XB)
     ###################################################################
     # Q2 contains the quaternion which rotates XB to best align with X1.
     # rotate XB according to Q2
     ###################################################################
+
     rot_mx = rot.q2mx( Q2 )
     #print rot_mx
     for j in range(nsites):
@@ -111,7 +128,7 @@ def alignRotation(XA, XB):
     return dist
 
 
-def mindist(X1, X2):
+def minDist(X1, X2):
     """
     Minimize the distance between two clusters.  The following symmetries will be accounted for
     
@@ -120,8 +137,8 @@ def mindist(X1, X2):
     Global rotational symmetry
     """
     #alignCoM(X1, X2)
-    CoMToOrigin(X1)
-    CoMToOrigin(X2)
+    X1 = CoMToOrigin(X1)
+    X2 = CoMToOrigin(X2)
 
     #align rotation degrees of freedom
     dist = alignRotation(X1, X2)
@@ -142,7 +159,7 @@ def main():
     distinit = np.linalg.norm(X1-X2)
     print "distinit", distinit
 
-    dist = mindist(X1,X2)
+    dist = minDist(X1,X2)
     distfinal = np.linalg.norm(X1-X2)
     print "dist from eigenvalue", dist
     print "distfinal", distfinal

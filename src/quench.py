@@ -1,10 +1,10 @@
 import scipy.optimize.lbfgsb
 
-def quench(coords, getEnergyGradient):
+def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     """
     a wrapper function for lbfgs routine in scipy
     """
-    newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(getEnergyGradient, coords, iprint=-1, pgtol=1e-3)
+    newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(getEnergyGradient, coords, iprint=iprint, pgtol=tol)
     V = dictionary["grad"]
     funcalls = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
