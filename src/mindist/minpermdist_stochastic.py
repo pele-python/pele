@@ -45,34 +45,40 @@ def minPermDistStochastic(X1, X2, niter = 100):
     Once the rotation is optimized, the correct permutation can be determined
     deterministically using the Hungarian algorithm.
     """
+    ###############################################
+    # move the centers of mass to the origin
+    ###############################################
     X1 = mindist.CoMToOrigin(X1)
     X2 = mindist.CoMToOrigin(X2)
-    X2in = np.copy(X2)
+    X2in = np.copy(X2) #I wish i could declare this constant
 
-    X2min = np.copy(X2)
-    dmin = np.linalg.norm( X2-X1 )
-    pot = distpot.MinPermDistPotential( X1, X2, 0.2 )
-    Eminglobal = pot.globalEnergyMin()
-    print "global Emin", Eminglobal
-
+    ###############################################
+    # set initial conditions
+    ###############################################
     aamin = np.array([0.,0.,0.])
-    Emin = pot.getEnergy(aamin)
-    dist = aa2dist( X1, X2in, aamin)
-    print "initial minimum,", Emin, dist
 
-    e, v = pot.getEnergyGradient( aamin )
-    print e, "gradient", v
-    aaq, Eq, rms, funcalls = quench( aamin, pot.getEnergyGradient, tol=1e-6 )
-    dist = aa2dist( X1, X2in, aaq)
-    print "quenched minimum,", Eq, dist, funcalls
-
-    aamin = aaq
-    Emin = Eq
-
+    ######################################
+    # set up potential
+    ######################################
+    pot = distpot.MinPermDistPotential( X1, X2, 0.2 )
+    if True:
+        #print some stuff. not necessary
+        Emin = pot.getEnergy(aamin)
+        dist = aa2dist( X1, X2in, aamin)
+        print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
     takestep = distpot.random_rotation
-    print "using basin hopping to optimize rotations + permutations"
     bh = basinhopping.BasinHopping( aamin, pot, takestep, storage=saveit.insert)
+
+
+    Eminglobal = pot.globalEnergyMin() #condition for determining isomer
+    print "global Emin", Eminglobal
+
+    ##########################################################################
+    # run basin hopping for ninter steps or until the global minimum is found
+    # (i.e. determine they are isomers)
+    ##########################################################################
+    print "using basin hopping to optimize rotations + permutations"
     for i in range(niter):
         bh.run(1)
         Emin = saveit.data[0][0]
@@ -90,12 +96,15 @@ def minPermDistStochastic(X1, X2, niter = 100):
     dmin = aa2dist( X1, X2in, aamin )
     for (E, aa) in saveit.data:
         dist = aa2dist( X1, X2in, aa)
-        print "E", E, dist
+        print "E %11.5g dist %11.5g" % (E, dist)
         if dist < dmin:
             dmin = dist
             aamin = aa
 
     X2min = aa2xyz( X2in, aamin )
+
+    # permutations are set, do one final mindist run to truly optimize rotations
+    dmin = mindist.minDist( X1, X2min )
 
     return dmin, X1, X2min
 
@@ -107,6 +116,7 @@ def main():
     ret = quench( X1, lj.getEnergyGradient)
     X1 = ret[0]
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
+    #make X2 a rotation of X1
     aa = rot.random_aa()
     rot_mx = rot.aa2mx( aa )
     for j in range(natoms):

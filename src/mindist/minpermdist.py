@@ -31,7 +31,8 @@ def findBestPermutation( X1, X2):
         from munkres import Munkres
     except:
         print "munkres package not installed, skipping Hungarian algorithm"
-        return None
+        dist = np.linalg.norm( X1 - X2 )
+        return dist, X1, X2
 
     nsites = len(X1) / 3
 
