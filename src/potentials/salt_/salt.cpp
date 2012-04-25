@@ -6,16 +6,24 @@
 
 using namespace wales;
 
-double g_eps11=16.8;
-double g_eps22=14.9;
+double g_eps11=16.8*123.984/1000./96.;
+double g_eps22=14.9*123.984/1000./96.;
 double g_eps12=sqrt(g_eps11*g_eps22);
 double g_sigma11=1.98;
 double g_sigma22=5.24;
 double g_sigma12=0.5*(g_sigma11+g_sigma22);
-double g_q1=1.18;
-double g_q2=-1.18;
+double g_q1=1.18*sqrt(17.5);
+double g_q2=-1.18*sqrt(17.5);
+double _cutoff=10.0;
 
 using namespace votca::tools;
+
+double entier(double x)
+{
+	double e = int(x);
+	if (x-e < 0.) e -= 1.;
+	if (x-e >= 1.) e += 1.;
+}
 
 class System {
 public:
@@ -48,6 +56,9 @@ public:
 		setLattice(&coords[3*_pos.size()]);
 		for(int i=0; i<_pos.size(); ++i) {
 			pos(i) = _box*vec(&coords[3*i]);
+			pos(i).x() -= entier(pos(i).getX());
+			pos(i).y() -= entier(pos(i).getY());
+			pos(i).z() -= entier(pos(i).getZ());
 		}
 	}
 
@@ -64,6 +75,14 @@ public:
 			g[3*_pos.size()+i] = _glatt[i];
 	}
 
+	void getReal(double *x) {
+		for(int i=0; i<_pos.size(); ++i) {
+			x[3*i+0] = pos(i).getX();
+			x[3*i+1] = pos(i).getY();
+			x[3*i+2] = pos(i).getZ();
+		}
+	}
+
 	void resetGrad() {
 		for(int i=0; i<_grad.size(); ++i)
 			grad(i)=vec(0., 0, 0);
@@ -73,7 +92,7 @@ public:
 
 	vec mindist(const vec &r_i, const vec &r_j) const
 	{
-		return r_j - r_i;
+//		return r_j - r_i;
 	    vec r_tp, r_dp, r_sp, r_ij;
 	    vec a = _box.getCol(0); vec b = _box.getCol(1); vec c = _box.getCol(2);
 	    r_tp = r_j - r_i;
@@ -122,6 +141,7 @@ public:
 
 	double CalcEnergy() {
 		double energy=0;
+		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6)) + _q12/_cutoff;
 		if(_offset1 == _offset2) {
 			for(int i=_offset1; i<_offset1 + _n1; ++i)
 				for(int j=i+1; j<_offset1 + _n1; ++j) {
@@ -140,6 +160,7 @@ public:
 
 	double CalcGradient() {
 		double energy=0;
+		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6)) + _q12/_cutoff;
 		if(_offset1 == _offset2) {
 			for(int i=_offset1; i<_offset1 + _n1; ++i)
 				for(int j=i+1; j<_offset1 + _n1; ++j) {
@@ -162,20 +183,28 @@ public:
 		return energy;
 	}
 
-	double pair_energy(vec &x1, vec &x2)
+	double pair_energy(const vec &x1, const vec &x2)
 	{
 		double r2;
         vec d = _sys.mindist(x1, x2);
         r2=d*d;
-		return 4.*_eps*(pow(_sigma/r2,6) - pow(_sigma/r2, 3)) + _q12/sqrt(r2);
+		if(r2>_cutoff*_cutoff) {
+			return 0.;
+		}
+		return 4.*_eps*(pow(_sigma*_sigma/r2,6) - pow(_sigma*_sigma/r2, 3)) + _q12/sqrt(r2) - _cut_shift;
 	}
 
-	double pair_gradient(vec &x1, vec &x2, vec &g)
+	double pair_gradient(const vec &x1, const vec &x2, vec &g)
 	{
 		g = _sys.mindist(x1, x2);
 		vec r_ij(g);
 		double r2 = g*g;
 		double r=sqrt(r2);
+//cout << r << endl;
+		if(r>_cutoff) {
+			g=vec(0., 0., 0.);
+			return 0.;
+		}
 
 		double r6 = pow(_sigma,6)/(r2*r2*r2);
 		double r12 = r6*r6;
@@ -183,7 +212,7 @@ public:
 		g*=4.0*_eps*(12.*r12 -  6.*r6)/r2 + _q12/(r2*r);
 
 		_sys.addGLatt(g, r_ij);
-		return 4.*_eps*(r12 - r6) + _q12/r;
+		return 4.*_eps*(r12 - r6) + _q12/r - _cut_shift;
 	}
 
 private:
@@ -192,6 +221,7 @@ private:
 
 	int _offset1, _n1;
 	int _offset2, _n2;
+	double _cut_shift;
 
 	System &_sys;
 };
@@ -244,6 +274,19 @@ double gradient(boost::python::numeric::array& px, boost::python::numeric::array
 	return energy;
 }
 
+void toReal(boost::python::numeric::array& px)
+{
+	int N;
+
+	NPArray<1> x(px);
+
+	N=x.size(0)/3-2;
+
+	System sys(N);
+	sys.setCoordinates(&x[0]);
+	sys.getReal(&x[0]);
+}
+
 BOOST_PYTHON_MODULE(salt_)
 {
 	using namespace boost::python;
@@ -251,4 +294,5 @@ BOOST_PYTHON_MODULE(salt_)
 	boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
 	def("energy", energy);
 	def("gradient", gradient);
+	def("toReal", toReal);
 }
