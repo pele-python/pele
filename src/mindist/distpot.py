@@ -4,7 +4,20 @@ import rotations as rot
 import potentials.potential as potential
 
 class MinPermDistPotential(potential.potential):
-    def __init__(self, XA, XB, L=0.4):
+    """
+    Find the rotation (in angle-axis representation) which maximizes the
+    permutation independent overlap between two structures.
+
+    This potential defines the energy as the overlap, here defined as
+
+    E = - sum_i sum_j exp( -|x_Ai - X_Bj|**2 / L**2 )
+
+    There are other options for the overlap which are not implimented.  For
+    instance something with a slower decay than exp(-R**2).
+
+    TODO: impliment analytical Gradients
+    """
+    def __init__(self, XA, XB, L=0.2):
         self.XA0 = copy.copy(XA)
         self.XB0 = copy.copy(XB)
         self.XB = copy.copy(XB)
@@ -28,8 +41,22 @@ class MinPermDistPotential(potential.potential):
                 E -= np.exp(-r2/self.L2)
         return E
 
+    def globalEnergyMin(self):
+        """
+        return the lowest energy theoretically possible.  This will happen if XB == XA
+        """
+        E = 0.
+        for i1 in range(self.nsites):
+            i = i1*3
+            for j1 in range(self.nsites):
+                j = j1*3
+                r2 = np.sum( (self.XA0[i:i+3] - self.XA0[j:j+3])**2 )
+                E -= np.exp(-r2/self.L2)
+        return E
 
-def take_step( aa):
+
+
+def random_rotation( aa):
     aanew = rot.random_aa()
     #print "aanew ", aanew
     aa[:] = aanew[:]
