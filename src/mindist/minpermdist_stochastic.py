@@ -120,6 +120,7 @@ def main():
     lj = LJ()
     natoms = 12
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
+    #quench X1
     ret = quench( X1, lj.getEnergyGradient)
     X1 = ret[0]
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)

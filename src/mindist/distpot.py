@@ -3,6 +3,16 @@ import copy
 import rotations as rot
 import potentials.potential as potential
 
+def overlap_slow( XA, XB, L2, nsites ):
+    E = 0.
+    for i1 in range(nsites):
+        i = i1*3
+        for j1 in range(nsites):
+            j = j1*3
+            r2 = np.sum( (XB[i:i+3] - XA[j:j+3])**2 )
+            E += np.exp(-r2/L2)
+    return E
+
 class MinPermDistPotential(potential.potential):
     """
     Find the rotation (in angle-axis representation) which maximizes the
@@ -23,7 +33,13 @@ class MinPermDistPotential(potential.potential):
         self.XB = copy.copy(XB)
         self.nsites = len(XA)/3
         self.L2 = L*L
-        pass
+        try:
+            from overlap import overlap
+            self.overlap = overlap
+        except:
+            self.overlap = overlap_slow
+            print "Using slow energy calculation. Compile overlap.f90 to speed things up"
+            
 
     def getEnergy(self, AA ):
         # Rotate XB0 according to angle axis AA
@@ -32,26 +48,14 @@ class MinPermDistPotential(potential.potential):
             i = 3*j
             self.XB[i:i+3] = np.dot( rot_mx, self.XB0[i:i+3] )
         #return distance between XB and XA0
-        E = 0.
-        for i1 in range(self.nsites):
-            i = i1*3
-            for j1 in range(self.nsites):
-                j = j1*3
-                r2 = np.sum( (self.XB[i:i+3] - self.XA0[j:j+3])**2 )
-                E -= np.exp(-r2/self.L2)
+        E = -self.overlap( self.XA0, self.XB, self.L2, self.nsites)
         return E
 
     def globalEnergyMin(self):
         """
         return the lowest energy theoretically possible.  This will happen if XB == XA
         """
-        E = 0.
-        for i1 in range(self.nsites):
-            i = i1*3
-            for j1 in range(self.nsites):
-                j = j1*3
-                r2 = np.sum( (self.XA0[i:i+3] - self.XA0[j:j+3])**2 )
-                E -= np.exp(-r2/self.L2)
+        E = -self.overlap( self.XA0, self.XA0, self.L2, self.nsites)
         return E
 
 
