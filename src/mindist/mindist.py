@@ -142,7 +142,7 @@ def minDist(X1, X2):
 
     #align rotation degrees of freedom
     dist = alignRotation(X1, X2)
-    return dist
+    return dist, X1, X2
 
 
 def main():
@@ -159,7 +159,7 @@ def main():
     distinit = np.linalg.norm(X1-X2)
     print "distinit", distinit
 
-    dist = minDist(X1,X2)
+    dist, X1, X2 = minDist(X1,X2)
     distfinal = np.linalg.norm(X1-X2)
     print "dist from eigenvalue", dist
     print "distfinal", distfinal

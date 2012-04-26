@@ -104,7 +104,7 @@ def minPermDistLong(X1, X2, max_permutations = 10000):
         #print perm
         X2 = permuteArray( X2in, perm)
 
-        dist = mindist.minDist(X1, X2)
+        dist, X1, X2 = mindist.minDist(X1, X2)
 
         if dist < dmin:
             dmin = dist

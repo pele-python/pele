@@ -22,7 +22,7 @@ def aa2dist(XA, XB, AA):
     # Rotate XB according to angle axis AA
     XBnew = aa2xyz( XB, AA)
     dist, XAnew, XBnew = minpermdist.findBestPermutation( XA, XBnew)
-    return dist
+    return dist, XAnew, XBnew
 
 
 
@@ -64,7 +64,7 @@ def minPermDistStochastic(X1, X2, niter = 100):
     if True:
         #print some stuff. not necessary
         Emin = pot.getEnergy(aamin)
-        dist = aa2dist( X1, X2in, aamin)
+        dist, X11, x22 = aa2dist( X1, X2in, aamin)
         print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
     takestep = distpot.random_rotation
@@ -93,18 +93,25 @@ def minPermDistStochastic(X1, X2, niter = 100):
     """
     print "lowest structures found"
     aamin = saveit.data[0][1]
-    dmin = aa2dist( X1, X2in, aamin )
+    dmin, X11, X22 = aa2dist( X1, X2in, aamin )
     for (E, aa) in saveit.data:
-        dist = aa2dist( X1, X2in, aa)
+        dist, X11, X22 = aa2dist( X1, X2in, aa)
         print "E %11.5g dist %11.5g" % (E, dist)
         if dist < dmin:
             dmin = dist
             aamin = aa
 
-    X2min = aa2xyz( X2in, aamin )
+    ###################################################################
+    #we've optimized the rotation in a permutation independent manner
+    #now optimize the permutation
+    ###################################################################
+    dmin, X1, X2min = aa2dist(X1, X2in, aamin )
 
-    # permutations are set, do one final mindist run to truly optimize rotations
-    dmin = mindist.minDist( X1, X2min )
+    ###################################################################
+    # permutations are set, do one final mindist improve accuracy
+    #of rotation optimization
+    ###################################################################
+    dmin, X1, X2min = mindist.minDist( X1, X2min )
 
     return dmin, X1, X2min
 
