@@ -1,25 +1,13 @@
 import distpot
 import numpy as np
-import itertools
 import rotations as rot
-import math
 import mindist
-import minpermdist
 from quench import quench
 import basinhopping
 import storage.savenlowest as storage
+from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
 
-def aa2xyz(XB, AA):
-    """
-    Rotate XB according to angle axis AA
-    """
-    nsites = len(XB)/3
-    XBnew = np.copy(XB)
-    rot_mx = rot.aa2mx( AA )
-    for j in range(nsites):
-        i = 3*j
-        XBnew[i:i+3] = np.dot( rot_mx, XBnew[i:i+3] )
-    return XBnew
+
 
 
 
@@ -44,8 +32,8 @@ def minPermDistStochastic(X1, X2, niter = 100):
     ###############################################
     # move the centers of mass to the origin
     ###############################################
-    X1 = mindist.CoMToOrigin(X1)
-    X2 = mindist.CoMToOrigin(X2)
+    X1 = CoMToOrigin(X1)
+    X2 = CoMToOrigin(X2)
     X2in = np.copy(X2) #I wish i could declare this constant
 
     ###############################################
@@ -60,7 +48,7 @@ def minPermDistStochastic(X1, X2, niter = 100):
     if True:
         #print some stuff. not necessary
         Emin = pot.getEnergy(aamin)
-        dist, X11, X22 = minpermdist.findBestPermutation(X1, aa2xyz(X2in, aamin) )
+        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin) )
         print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
     takestep = distpot.random_rotation
@@ -89,9 +77,9 @@ def minPermDistStochastic(X1, X2, niter = 100):
     """
     print "lowest structures found"
     aamin = saveit.data[0][1]
-    dmin, X11, X22 = minpermdist.findBestPermutation(X1, aa2xyz(X2in, aamin) )
+    dmin, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin) )
     for (E, aa) in saveit.data:
-        dist, X11, X22 = minpermdist.findBestPermutation(X1, aa2xyz(X2in, aa) )
+        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aa) )
         print "E %11.5g dist %11.5g" % (E, dist)
         if dist < dmin:
             dmin = dist
@@ -101,13 +89,13 @@ def minPermDistStochastic(X1, X2, niter = 100):
     #we've optimized the rotation in a permutation independent manner
     #now optimize the permutation
     ###################################################################
-    dmin, X1, X2min = minpermdist.findBestPermutation(X1, aa2xyz(X2in, aamin) )
+    dmin, X1, X2min = findBestPermutation(X1, aa2xyz(X2in, aamin) )
 
     ###################################################################
     # permutations are set, do one final mindist improve accuracy
     #of rotation optimization
     ###################################################################
-    dmin, X1, X2min = mindist.minDist( X1, X2min )
+    dmin, X2min = alignRotation( X1, X2min )
 
     return dmin, X1, X2min
 
@@ -143,8 +131,8 @@ def main():
 
     import printing.print_atoms_xyz as printxyz
     with open("out.xyz", "w") as fout:
-        mindist.CoMToOrigin(X1i)
-        mindist.CoMToOrigin(X2i)
+        CoMToOrigin(X1i)
+        CoMToOrigin(X2i)
         printxyz.printAtomsXYZ(fout, X1i )
         printxyz.printAtomsXYZ(fout, X2i )
         printxyz.printAtomsXYZ(fout, X1 )
