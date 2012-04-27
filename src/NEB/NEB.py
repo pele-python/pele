@@ -70,7 +70,6 @@ class NEB:
             else:
                 print dictionary['task']            
         return newcoords, newE
-
     # Calculate gradient for the while NEB
     def getEnergyGradient(self, coords1d):
         # make array access a bit simpler
@@ -99,10 +98,10 @@ class NEB:
             # project out parallel part
             gpar = g - np.dot(g, t) * t
             # calculate parallel spring force and energy
-            gspring = self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
+            gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
             E+=0.5*self.k*(np.linalg.norm(d1)-np.linalg.norm(d2))**2
             
-            return E, -(gpar + gspring)
+            return E, (gpar + gspring)
     
     # initial interpolation    
     def interpolate(self, initial, final, nimages):
