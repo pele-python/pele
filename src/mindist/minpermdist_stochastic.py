@@ -1,7 +1,6 @@
 import distpot
 import numpy as np
 import rotations as rot
-import mindist
 from quench import quench
 import basinhopping
 import storage.savenlowest as storage
@@ -11,7 +10,7 @@ from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
 
 
 
-def minPermDistStochastic(X1, X2, niter = 100):
+def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
     """
     Minimize the distance between two clusters.  The following symmetries will be accounted for
     
@@ -28,7 +27,17 @@ def minPermDistStochastic(X1, X2, niter = 100):
 
     Once the rotation is optimized, the correct permutation can be determined
     deterministically using the Hungarian algorithm.
+    
+    input:
+    
+    permlist  ([range(natoms)]) 
+        A list of lists of atoms which are interchangable.
+        e.g. for a 50/50 binary mixture, permlist = [ range(1,natoms/2), range(natoms/2,natoms) ]
     """
+    nsites = len(X1)/3
+    if len(permlist) == 0:
+        permlist = [range(nsites)]
+
     ###############################################
     # move the centers of mass to the origin
     ###############################################
@@ -44,11 +53,11 @@ def minPermDistStochastic(X1, X2, niter = 100):
     ######################################
     # set up potential
     ######################################
-    pot = distpot.MinPermDistPotential( X1, X2, 0.2 )
+    pot = distpot.MinPermDistPotential( X1, X2, 0.2, permlist )
     if True:
         #print some stuff. not necessary
         Emin = pot.getEnergy(aamin)
-        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin) )
+        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
         print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
     takestep = distpot.random_rotation
@@ -77,9 +86,9 @@ def minPermDistStochastic(X1, X2, niter = 100):
     """
     print "lowest structures found"
     aamin = saveit.data[0][1]
-    dmin, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin) )
+    dmin, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
     for (E, aa) in saveit.data:
-        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aa) )
+        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aa), permlist )
         print "E %11.5g dist %11.5g" % (E, dist)
         if dist < dmin:
             dmin = dist
@@ -89,7 +98,7 @@ def minPermDistStochastic(X1, X2, niter = 100):
     #we've optimized the rotation in a permutation independent manner
     #now optimize the permutation
     ###################################################################
-    dmin, X1, X2min = findBestPermutation(X1, aa2xyz(X2in, aamin) )
+    dmin, X1, X2min = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
 
     ###################################################################
     # permutations are set, do one final mindist improve accuracy
@@ -99,21 +108,85 @@ def minPermDistStochastic(X1, X2, niter = 100):
 
     return dmin, X1, X2min
 
-def main():
+def test_binary_LJ(natoms = 12):
+    printlist = []
+    
+    ntypea = int(natoms*.8)
+    from potentials.ljpshift import LJpshift
+    lj = LJpshift(natoms, ntypea)
+    permlist = [range(ntypea), range(ntypea, natoms)]
+
+    X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)/2
+    printlist.append( (X1.copy(), "very first"))
+    #quench X1
+    ret = quench( X1, lj.getEnergyGradient)
+    X1 = ret[0]
+    printlist.append((X1.copy(), "after quench"))
+
+    X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
+    #make X2 a rotation of X1
+    print "testing with", natoms, "atoms,", ntypea, "type A atoms, with X2 a rotated and permuted isomer of X1"
+    aa = rot.random_aa()
+    rot_mx = rot.aa2mx( aa )
+    for j in range(natoms):
+        i = 3*j
+        X2[i:i+3] = np.dot( rot_mx, X1[i:i+3] )
+    printlist.append((X2.copy(), "x2 after rotation"))
+
+    import random, mindistutils, copy
+    for atomlist in permlist:
+        perm = copy.copy(atomlist)
+        random.shuffle( perm )
+        print perm
+        X2 = mindistutils.permuteArray( X2, perm)
+    printlist.append((X2.copy(), "x2 after permutation"))
+
+
+    #X1 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 0., 1.,] )
+    #X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )
+    X1i = copy.copy(X1)
+    X2i = copy.copy(X2)
+
+    distinit = np.linalg.norm(X1-X2)
+    print "distinit", distinit
+
+    (dist, X1, X2) = minPermDistStochastic(X1,X2, permlist=permlist)
+    distfinal = np.linalg.norm(X1-X2)
+    print "dist returned    ", dist
+    print "dist from coords ", distfinal
+
+    import printing.print_atoms_xyz as printxyz
+    with open("blj.xyz", "w") as fout:
+        for xyz, line2 in printlist:
+            printxyz.printAtomsXYZ(fout, xyz, line2=line2)
+        CoMToOrigin(X1i)
+        CoMToOrigin(X2i)
+        printxyz.printAtomsXYZ(fout, X1i )
+        printxyz.printAtomsXYZ(fout, X2i )
+        printxyz.printAtomsXYZ(fout, X1 )
+        printxyz.printAtomsXYZ(fout, X2 )
+        
+        
+def test_LJ(natoms = 12):
     from potentials.lj import LJ
     lj = LJ()
-    natoms = 12
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     #quench X1
     ret = quench( X1, lj.getEnergyGradient)
     X1 = ret[0]
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     #make X2 a rotation of X1
+    print "testing with", natoms, "atoms, with X2 a rotated and permuted isomer of X1"
     aa = rot.random_aa()
     rot_mx = rot.aa2mx( aa )
     for j in range(natoms):
         i = 3*j
         X2[i:i+3] = np.dot( rot_mx, X1[i:i+3] )
+    import random, mindistutils
+    perm = range(natoms)
+    random.shuffle( perm )
+    print perm
+    X2 = mindistutils.permuteArray( X2, perm)
 
     #X1 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 0., 1.,] )
     #X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )
@@ -130,7 +203,7 @@ def main():
     print "dist from coords ", distfinal
 
     import printing.print_atoms_xyz as printxyz
-    with open("out.xyz", "w") as fout:
+    with open("lj.xyz", "w") as fout:
         CoMToOrigin(X1i)
         CoMToOrigin(X2i)
         printxyz.printAtomsXYZ(fout, X1i )
@@ -139,4 +212,15 @@ def main():
         printxyz.printAtomsXYZ(fout, X2 )
 
 if __name__ == "__main__":
-    main()
+    print "******************************"
+    print "testing normal LJ"
+    print "******************************"
+    test_LJ(12)
+    print ""
+    print ""
+    print "************************************"
+    print "testing binary LJ with permute lists"
+    print "************************************"
+    test_binary_LJ(12)
+    
+    

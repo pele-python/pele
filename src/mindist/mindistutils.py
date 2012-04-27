@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 import rotations as rot
+import itertools
 
 def alignCoM( X1, X2):
     """
@@ -133,13 +134,14 @@ def alignRotation(XA, XB):
 def permuteArray(Xold, perm):
     #don't modify Xold
     Xnew = np.copy(Xold)
-    for (iold, inew) in enumerate(perm):
-        #print iold, "->", inew
+    permsorted = sorted(perm)
+    for (iold, inew) in itertools.izip(permsorted, perm):
+        print iold, "->", inew
         Xnew[inew*3:inew*3+3] = Xold[iold*3:iold*3+3]
 
     return Xnew
 
-def findBestPermutation( X1, X2):
+def findBestPermutationList( X1, X2, atomlist = None ):
     """
     For a given set of positions X1 and X2, find the best permutation of the
     atoms in X2.
@@ -161,13 +163,17 @@ def findBestPermutation( X1, X2):
 
     nsites = len(X1) / 3
 
+    if atomlist == None:
+        atomlist = range(nsites)
+    nperm = len(atomlist)
+
 
     #########################################
     # create the cost matrix
     #########################################
-    cost = np.zeros( [nsites,nsites], np.float64)
-    for i in range(nsites):
-        for j in range(nsites):
+    cost = np.zeros( [nperm,nperm], np.float64)
+    for i in atomlist:
+        for j in atomlist:
             R2 = np.sum( (X1[i*3:i*3+3] - X2[j*3:j*3+3])**2 )
             #R2old = np.linalg.norm( X1[i*3:i*3+3] - X2[j*3:j*3+3] )**2
             #if abs(R2 - R2old) > 1e-6:
@@ -205,6 +211,13 @@ def findBestPermutation( X1, X2):
     dist = np.sqrt(costnew)
     return dist, X1, X2
 
+def findBestPermutation( X1, X2, permlist = [] ):
+    if len(permlist) == 0:
+        permlist = [range(len(X1)/3)]
+    for atomlist in permlist:
+        dist, X1, X2 = findBestPermutationList( X1, X2 )
+    dist = np.linalg.norm(X1-X2)
+    return dist, X1, X2
 
 
 def aa2xyz(XB, AA):
