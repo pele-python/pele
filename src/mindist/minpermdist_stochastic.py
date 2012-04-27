@@ -10,6 +10,9 @@ import basinhopping
 import storage.savenlowest as storage
 
 def aa2xyz(XB, AA):
+    """
+    Rotate XB according to angle axis AA
+    """
     nsites = len(XB)/3
     XBnew = np.copy(XB)
     rot_mx = rot.aa2mx( AA )
@@ -17,13 +20,6 @@ def aa2xyz(XB, AA):
         i = 3*j
         XBnew[i:i+3] = np.dot( rot_mx, XBnew[i:i+3] )
     return XBnew
-
-def aa2dist(XA, XB, AA):
-    # Rotate XB according to angle axis AA
-    XBnew = aa2xyz( XB, AA)
-    dist, XAnew, XBnew = minpermdist.findBestPermutation( XA, XBnew)
-    return dist, XAnew, XBnew
-
 
 
 
@@ -64,7 +60,7 @@ def minPermDistStochastic(X1, X2, niter = 100):
     if True:
         #print some stuff. not necessary
         Emin = pot.getEnergy(aamin)
-        dist, X11, x22 = aa2dist( X1, X2in, aamin)
+        dist, X11, X22 = minpermdist.findBestPermutation(X1, aa2xyz(X2in, aamin) )
         print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
     takestep = distpot.random_rotation
@@ -93,9 +89,9 @@ def minPermDistStochastic(X1, X2, niter = 100):
     """
     print "lowest structures found"
     aamin = saveit.data[0][1]
-    dmin, X11, X22 = aa2dist( X1, X2in, aamin )
+    dmin, X11, X22 = minpermdist.findBestPermutation(X1, aa2xyz(X2in, aamin) )
     for (E, aa) in saveit.data:
-        dist, X11, X22 = aa2dist( X1, X2in, aa)
+        dist, X11, X22 = minpermdist.findBestPermutation(X1, aa2xyz(X2in, aa) )
         print "E %11.5g dist %11.5g" % (E, dist)
         if dist < dmin:
             dmin = dist
@@ -105,7 +101,7 @@ def minPermDistStochastic(X1, X2, niter = 100):
     #we've optimized the rotation in a permutation independent manner
     #now optimize the permutation
     ###################################################################
-    dmin, X1, X2min = aa2dist(X1, X2in, aamin )
+    dmin, X1, X2min = minpermdist.findBestPermutation(X1, aa2xyz(X2in, aamin) )
 
     ###################################################################
     # permutations are set, do one final mindist improve accuracy
