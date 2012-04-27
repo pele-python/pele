@@ -29,6 +29,18 @@ class LJ(potential.potential):
             print "periodic with boxl ", self.boxl
         else:
             print ""
+        
+        self.getEnergy = self.getEnergySlow
+        self.getEnergyGradient = self.getEnergyGradientSlow
+        if not self.periodic:
+            try: 
+                import cpp.ljcpp_ as ljc
+                print "using fast cpp LJ implimentation"
+                self.ljc = ljc
+                self.getEnergy = self.getEnergyFast
+                self.getEnergyGradient = self.getEnergyGradientFast
+            except:
+                pass
 
     def getSep_periodic(self, vec1, vec2 ):
         assert len(vec1) == 3, "get_sep: vec length not 3"
@@ -54,7 +66,7 @@ class LJ(potential.potential):
     def dvij(self, r):
         return 4.*self.eps * ( -12./self.sig*(self.sig/r)**13 + 6./self.sig*(self.sig/r)**7 )
 
-    def getEnergy(self, coords):
+    def getEnergySlow(self, coords):
         natoms = coords.size/3
         V = np.zeros([natoms*3], np.float64) 
         energy=0.
@@ -66,7 +78,7 @@ class LJ(potential.potential):
                 energy += self.vij(r)
         return energy
 
-    def getEnergyGradient(self, coords):
+    def getEnergyGradientSlow(self, coords):
         natoms = coords.size/3
         V = np.zeros([natoms*3], np.float64) 
         energy=0.
@@ -80,5 +92,30 @@ class LJ(potential.potential):
                 V[i*3:i*3+3] += -g * dr/r
                 V[j*3:j*3+3] += g * dr/r
         return energy,V
+    
+    def getEnergyFast(self, coords):
+        E = self.ljc.energy(coords, self.eps, self.sig)
+        return E
+
+    def getEnergyGradientFast(self, coords):
+        grad=np.zeros(coords.shape[0], np.float64)
+        E = self.ljc.gradient(coords, grad, self.eps, self.sig)
+        return E, grad 
 
 
+def main():
+    #test class
+    natoms = 12
+    coords = np.random.uniform(-1,1,natoms*3)*2
+    
+    lj = LJ()
+    E = lj.getEnergy(coords)
+    print "E", E 
+    E, V = lj.getEnergyGradient(coords)
+    print "E", E 
+    print "V"
+    print V
+    
+
+if __name__ == "__main__":
+    main()
