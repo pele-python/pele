@@ -1,10 +1,10 @@
-module sandbox_wrapper
-    use sandbox_commons
-    use sandbox_module
+!module sandbox_wrapper
+    !use sandbox_commons
+    !use sandbox_module
 
-    implicit none
+    !implicit none
 
-    contains
+    !contains
 
     subroutine setup_commons(nmol, nsites, r, s, os, as)
     use sandbox_commons
@@ -53,6 +53,7 @@ module sandbox_wrapper
     end subroutine setup_commons
 
     subroutine input(fname)
+    use sandbox_module
     implicit none
     character(len=200) :: fname
     integer myun
@@ -65,6 +66,7 @@ module sandbox_wrapper
 
 
     subroutine getEnergyGradient(natoms, mycoords, mygrad, energy)
+    use sandbox_module
     !use sandbox_commons, only : natoms
     implicit none
     integer, intent(in) :: natoms
@@ -75,5 +77,30 @@ module sandbox_wrapper
     call sandbox( mycoords, mygrad, energy, .true. )
     end subroutine getEnergyGradient
 
-end module sandbox_wrapper
+    subroutine takestep(coords_i, natoms_i, tmove_i, omove_i, step_i, ostep_i, astep_i)
+    use sandbox_module
+    use sandbox_commons
+    implicit none
+    integer, intent(in) :: natoms_i
+    double precision, intent(inout) :: coords_i(3*natoms_i)
+    double precision, intent(in) :: step_i, ostep_i, astep_i
+    logical, intent(in) :: tmove_i, omove_i
+
+    write(*,*) "taking step"
+    myunit = 101
+    coords(:,1) = coords_i(:)
+    step = step_i
+    ostep = ostep_i
+    astep = astep_i
+    tmove(1) = tmove_i
+    omove(1) = omove_i
+
+    call sandbox_takestep(1)
+
+    coords_i(:) = coords(:,1)
+
+    !use sandbox_commons, only: myunit, coords, radius, percolatet, perccut, tmove, omove, step, ostep, astep, vt, twod
+    end subroutine takestep
+
+!end module sandbox_wrapper
 
