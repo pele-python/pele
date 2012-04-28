@@ -23,7 +23,7 @@ class RBSandbox(potential):
         
         self.nsites = 0
         self.typelist = []
-        self.nsites_cum = np.zeros(self.nmol, np.float64)
+        self.nsites_cum = np.zeros(self.nmol, np.int)
         for i, mol in enumerate(self.molecule_list):
             self.nsites_cum[i] = self.nsites
             self.nsites += mol.nsites
@@ -35,47 +35,44 @@ class RBSandbox(potential):
         xyz = np.zeros(self.nsites*3)
         for imol, mol in enumerate(self.molecule_list):
             molxyz = mol.getxyz( coords[3*nmol + imol*3 : 3*nmol + imol*3+3] )
-            print "before ", molxyz
             for j in range(mol.nsites):
                 molxyz[j*3:j*3+3] += coords[imol*3 : imol*3+3]
-            print "after  ", molxyz
             
             k = self.nsites_cum[imol]*3
             xyz[k:k+mol.nsites*3] = molxyz
-            print "xyz", xyz
         return xyz
     
-    def molmolEnergy(self, j1, j2, xyz):
+    def molmolEnergy(self, imol1, imol2, xyz):
         E = 0.
-        mol1 = self.molecule_list[j1]
-        mol2 = self.molecule_list[j2]
-        k1 = self.nsites_cum[j1]*3
-        k2 = self.nsites_cum[j2]*3
+        mol1 = self.molecule_list[imol1]
+        mol2 = self.molecule_list[imol2]
+        #print "mol ", imol1, imol2
+        k1 = self.nsites_cum[imol1]*3
+        k2 = self.nsites_cum[imol2]*3
         coords2 = np.zeros(6, np.float64)
         for i1, site1 in enumerate(mol1.sitelist):
             coords2[0:3] = xyz[k1 + i1*3 : k1 + i1*3+3]
             for i2, site2 in enumerate(mol2.sitelist):
                 interaction = self.interaction_matrix[site1.type][site2.type]
                 coords2[3:] = xyz[k2 + i2*3 : k2 + i2*3+3]
-                E += interaction.getEnergy(coords2)
+                dE = interaction.getEnergy(coords2)
+                E += dE
+                dr = np.linalg.norm(coords2[0:3] - coords2[3:])
+                #print "    site", k1 + i1*3, k2 + i2*3, dE, dr
+
         return E
 
     
     def getEnergy(self, coords):
         xyz = self.getxyz(coords)
+        E = 0.
         for imol1 in range(self.nmol):
-            mol1 = self.molecule_list[imol1]
-            com1 = coords[imol1*3:imol1*3+3]
-            aa1 = coords[self.nmol+imol1*3:self.nmol+imol1*3+3]
             for imol2 in range(0,imol1):
-                com1 = coords[imol2*3:imol2*3+3]
-                aa1 = coords[self.nmol+imol2*3:self.nmol+imol2*3+3]
-                mol2 = self.molecule_list[imol2]
-                E = self.molmolEnergy(imol1, imol2, xyz)            
+                E += self.molmolEnergy(imol1, imol2, xyz)            
         return E
 
 
-def test_molecule():
+def test_sandbox():
     from numpy import sin, cos, pi
     import copy
     from potentials.lj import LJ
@@ -94,7 +91,8 @@ def test_molecule():
     nmol = 4
     mols = [otp for i in range(nmol)]
     mysys = RBSandbox(mols, interaction_matrix)
-    comcoords = np.random.uniform(-1,1,[nmol*3]) * 2*(nmol)**(1./3)
+    nsites = mysys.nsites
+    comcoords = np.random.uniform(-1,1,[nmol*3]) * 1.3*(nsites)**(1./3)
     aacoords = np.array( [copy.copy(rot.random_aa()) for i in range(nmol)] )
     print comcoords
     print aacoords
@@ -112,15 +110,28 @@ def test_molecule():
     printlist = []
     printlist.append( (xyz.copy(), "initial"))
     
-    #from printing.print_atoms_xyz import printAtomsXYZ as printxyz
-    with open("otp.xyz", "w") as fout:
-        for xyz, line2 in printlist:
-            printxyz( fout, xyz, line2=line2)
             
     E = mysys.getEnergy(coords)
     print "energy", E
     
+    numericV = mysys.NumericalDerivative(coords, 1e-4)
+    print "numeric V", numericV
+    
+    import quench
+    coords, E, rms, funcalls = quench.quench(coords, mysys.getEnergyGradient, iprint=1)
+    print "postquench", E, rms, funcalls
+    print coords
+    xyz = mysys.getxyz(coords )
+    printlist.append( (xyz.copy(), "post quench"))
+
+    
+    #from printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    with open("otp.xyz", "w") as fout:
+        for xyz, line2 in printlist:
+            printxyz( fout, xyz, line2=line2)
+
     
     
 if __name__ == "__main__":
-    test_molecule()
+    test_sandbox()
+    
