@@ -13,7 +13,7 @@ import copy
 
 rot_epsilon = 1e-6
 
-def q_multiply(q1, q2):
+def q_multiply(q0, q1):
     """ multiply 2 quaternions q1, q2 """
     q3 = copy.copy(q1)
 
