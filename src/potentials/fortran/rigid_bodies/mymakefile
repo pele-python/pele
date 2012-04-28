@@ -1,11 +1,11 @@
 
 FC=gfortran
-FCFLAGS = -c -fPIC -shared
+FCFLAGS = -c 
 
 objs= dprand.o qmod.o vec3.o rotations.o sandbox_commons.o sandbox.o rmdrvt.o utils.o
 
 sandbox_wrapper.so: sandbox_wrapper.f90 ${objs}
-	f2py -c -m sandbox_wrapper --fcompiler=gfortran --link-lapack_opt sandbox_wrapper.f90 ${objs} #> sandbox_wrapper.setup
+	f2py -c -m sandbox_wrapper --fcompiler=gfortran --link-lapack_opt sandbox_wrapper.f90 ${objs} > sandbox_wrapper.setup
 
 
 dprand.o: dprand.f90
@@ -18,9 +18,14 @@ rmdrvt.o: rmdrvt.f90
 utils.o: utils.f
 
 %.o: %.f90
-	$(FC) $(FCFLAGS) $^
-	$(FC) $(FCFLAGS) $^
+	$(FC) $(FCFLAGS) $<
+	$(FC) $(FCFLAGS) $<
 
 %.o: %.f
-	$(FC) $(FCFLAGS) $^
-	$(FC) $(FCFLAGS) $^
+	$(FC) $(FCFLAGS) $<
+	$(FC) $(FCFLAGS) $<
+
+sandbox_wrapper.o: sandbox_wrapper.f90 sandbox_commons.o sandbox.o
+!mymain.o: mymain.f90 ${objs} sandbox_wrapper.o
+mymain: mymain.f90 ${objs} sandbox_wrapper.o
+	${FC} -o mymain $^
