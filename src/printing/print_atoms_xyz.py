@@ -1,4 +1,4 @@
-def printAtomsXYZ(fout, coords, line2="", atom_type="LA"):
+def printAtomsXYZ(fout, coords, line2="", atom_type=["LA"]):
     """
     print atomic coordinate in vmd xyz format:
 
@@ -10,9 +10,12 @@ def printAtomsXYZ(fout, coords, line2="", atom_type="LA"):
     ...
     """
     natoms = len(coords)/3
+    if isinstance(atom_type, str):
+        atomtype = [atom_type]
+    natomtypes = len(atom_type)
     fout.write( str(natoms) + "\n")
     fout.write( str(line2) + "\n")
     for i in xrange(natoms):
-        fout.write( atom_type +" "+ str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
+        fout.write( atom_type[i % natomtypes] +" "+ str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
 
 
