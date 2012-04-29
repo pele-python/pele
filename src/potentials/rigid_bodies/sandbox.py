@@ -195,7 +195,7 @@ def test_sandbox(nmol = 4):
     nsites = mysys.nsites
 
     #get an initial set of coordinates
-    comcoords = np.random.uniform(-1,1,[nmol*3]) * 1.*(nsites)**(1./3)
+    comcoords = np.random.uniform(-1,1,[nmol*3]) * 1.3*(nsites)**(1./3)
     aacoords = np.array( [copy.copy(rot.random_aa()) for i in range(nmol)] )
     aacoords = aacoords.reshape(3*nmol)
     coords = np.zeros(2*3*nmol, np.float64)
@@ -214,14 +214,16 @@ def test_sandbox(nmol = 4):
     print "initial energy", Einit
 
     #test the gradient
-    numericV = mysys.NumericalDerivative(coords, 1e-4)
+    numericV = mysys.NumericalDerivative(coords, 1e-10)
     numericV = numericV.copy()
     print "numeric V", numericV
 
     E, V = mysys.getEnergyGradient(coords)
     print "energy from gradient", E, "difference", E - Einit
     #print "analytic gradient", V
-    print "max error in gradient", np.max(np.abs(V - numericV))
+    maxgrad_relative = np.max(np.abs(V-numericV)/np.abs(V))
+    maxgraddiff = np.max(np.abs(V - numericV))
+    print "max error in gradient", maxgraddiff, "max relative", maxgrad_relative
 
     #do a quench to make sure everything is working well
     import quench

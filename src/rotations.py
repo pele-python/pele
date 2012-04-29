@@ -136,3 +136,50 @@ def random_q():
 
 def random_aa():
     return q2aa( random_q() )
+
+def takestep_aa(p, maxtheta):
+    """ change an angle axis vector by a small rotation"""
+    p[:] = rotate_aa(p, small_random_aa(maxtheta))
+
+def rotate_aa(p1, p2):
+    """
+    change a given angle axis rotation p1 by the
+    rotation p2
+    """
+    return q2aa(q_multiply( aa2q(p2), aa2q(p1) ))
+
+
+def small_random_aa(maxtheta):
+    """ generate a small random rotation"""
+    # first choose a random unit vector
+    p = vec_random()
+
+    # linear for too small steps
+    # this is not completely right but should be ok
+    if maxtheta < rot_epsilon:
+        p = p*dprand()*maxtheta
+        return
+
+    s = 1. / (np.sin(0.5*maxtheta)**2)
+    # now choose the angle theta in range 0:step
+    # with distribution sin(0.5*theta)**2
+    u = dprand() * maxtheta
+    while  dprand() > s * np.sin(0.5 * u)**2:
+        u=dprand() * maxtheta
+    p = p*u
+    return p
+
+
+def vec_random():
+    """ uniform random unit vector """
+    p = np.zeros(3)
+    u1 = dprand()
+    u2 = dprand()
+    z = 2*u1 - 1.
+    p[0] = np.sqrt(1-z*z) * np.cos(2. * np.pi * u2)
+    p[1] = np.sqrt(1-z*z) * np.sin(2. * np.pi * u2)
+    p[2] = z
+    return p
+
+
+dprand = lambda: np.random.rand()
