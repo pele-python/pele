@@ -89,19 +89,20 @@ class NEB:
             # construct tangent vector, TODO: implement newer method
             d1 = p - pl
             d2 = pr - p
-            t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
+            #t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
+            t = d1  + d2 
             t = t / np.linalg.norm(t)
             
             # get real gradient for image
             E, g = self.potential.getEnergyGradient(p)
             
             # project out parallel part
-            gpar = g - np.dot(g, t) * t
+            gperp = g - np.dot(g, t) * t
             # calculate parallel spring force and energy
             gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
             E+=0.5*self.k*(np.linalg.norm(d1)-np.linalg.norm(d2))**2
             
-            return E, (gpar + gspring)
+            return E, (gperp + gspring)
     
     # initial interpolation    
     def interpolate(self, initial, final, nimages):
