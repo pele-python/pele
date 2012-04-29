@@ -1,7 +1,6 @@
 import numpy as np
 import potentials.rigid_bodies.molecule as molecule
 import potentials.rigid_bodies.sandbox as sandbox
-from potentials.rigid_bodies.take_step import RBTakeStep
 import rotations as rot
 import copy
 
@@ -10,7 +9,18 @@ nmol = 5
 
 #define the molecule types.
 #here use only one type, LWOTP
-otp = molecule.setupLWOTP()
+#LWOTP has three sites
+from numpy import sin, cos, pi
+pos1 = [0.0, -2./3 * np.sin( 7.*pi/24.), 0.0]
+pos2 = [cos( 7.*pi/24.),  1./3. * sin( 7.* pi/24.), 0.0]
+pos3 = [-cos( 7.* pi/24.),  1./3. * sin( 7.*pi/24), 0.0]
+otp = molecule.Molecule()
+otp.insert_site(0, pos1 )
+otp.insert_site(0, pos2 )
+otp.insert_site(0, pos3 )
+
+#note, this can also be redone using the predefined otp defniition
+#otp = molecule.setupLWOTP()
 
 
 # define the interaction matrix for the system.
@@ -36,6 +46,7 @@ for i in range(nmol):
 
 
 #set up the takestep routine
+from potentials.rigid_bodies.take_step import RBTakeStep
 takestep = RBTakeStep()
 
 #set up the class to save lowest energy structures

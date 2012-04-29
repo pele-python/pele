@@ -17,6 +17,8 @@ cmake .
 make 
 
 
+PYTHONPATH:  
+make sure to add the directory mingmin/src/ to your PYTHONPATH environment variable
 
 === running ===
 see the examples in the examples folder
