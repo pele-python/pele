@@ -3,6 +3,7 @@ import molecule
 import rotations as rot
 import itertools
 from potentials.potential import potential
+import copy
 
 
 class RBSandbox(potential):
@@ -17,7 +18,7 @@ class RBSandbox(potential):
             inter = interaction_matrix[site1.type][site2.type] is the interaction between site1 and site2
             inter.getEnergy(coords) returns the energy of the interaction
         """
-        self.molecule_list = molecule_list
+        self.molecule_list = [copy.deepcopy(mol) for mol in molecule_list]
         self.interaction_matrix = interaction_matrix
         self.nmol = len(self.molecule_list)
         
@@ -57,7 +58,7 @@ class RBSandbox(potential):
                 coords2[3:] = xyz[k2 + i2*3 : k2 + i2*3+3]
                 dE = interaction.getEnergy(coords2)
                 E += dE
-                dr = np.linalg.norm(coords2[0:3] - coords2[3:])
+                #dr = np.linalg.norm(coords2[0:3] - coords2[3:])
                 #print "    site", k1 + i1*3, k2 + i2*3, dE, dr
 
         return E
@@ -70,6 +71,60 @@ class RBSandbox(potential):
             for imol2 in range(0,imol1):
                 E += self.molmolEnergy(imol1, imol2, xyz)            
         return E
+
+
+    
+    def molmolEnergyGradient(self, mol1, mol2):
+        E = 0.
+        coords2 = np.zeros(6, np.float64)
+        for i1, site1 in enumerate(mol1.sitelist):
+            coords2[0:3] = site1.abs_position 
+            for i2, site2 in enumerate(mol2.sitelist):
+                coords2[3:6] = site2.abs_position
+                #print coords2 
+                interaction = self.interaction_matrix[site1.type][site2.type]
+                dE, V2 = interaction.getEnergyGradient(coords2)
+                E += dE
+                mol1.E += dE
+                mol2.E += dE
+                mol1.comgrad += V2[0:3]
+                mol2.comgrad += V2[3:6]
+                #do angle axis part
+                #calculate drdp
+                mol1.aagrad += np.dot( site1.drdp, V2[0:3])
+                mol2.aagrad += np.dot( site2.drdp, V2[3:6])
+                
+
+
+    def update(self, coords):
+        nmol= self.nmol
+        for imol, mol in enumerate(self.molecule_list):
+            com = coords[         imol*3 :          imol*3 + 3]
+            aa  = coords[3*nmol + imol*3 : 3*nmol + imol*3 + 3]
+            mol.update( com, aa )
+        #for imol, mol in enumerate(self.molecule_list):
+            #print "abs position", imol, mol.com
+
+
+    def getEnergyGradient(self, coords):
+        nmol = self.nmol
+        self.update(coords)
+        Etot = 0.
+        grad = np.zeros([2*self.nmol*3])
+        for imol1 in range(self.nmol):
+            mol1 = self.molecule_list[imol1]
+            for imol2 in range(imol1):
+                #print "mol mol", imol1, imol2
+                mol2 = self.molecule_list[imol2]
+                self.molmolEnergyGradient(mol1, mol2)
+        for imol, mol in enumerate(self.molecule_list):
+            Etot += mol.E 
+            grad[         3*imol :          3*imol + 3] = mol.comgrad
+            #print "aagrad", mol.aagrad
+            grad[3*nmol + 3*imol : 3*nmol + 3*imol + 3] = mol.aagrad
+        Etot /= 2.
+        return Etot, grad
+        
 
 
 def test_sandbox():
@@ -117,12 +172,20 @@ def test_sandbox():
     numericV = mysys.NumericalDerivative(coords, 1e-4)
     print "numeric V", numericV
     
+    E, V = mysys.getEnergyGradient(coords)
+    print "energy from gradient", E
+    print "analytic gradient", V
+    print "max error in gradient", np.max(np.abs(V - numericV))
+    print "exiting"
+
+    
     import quench
     coords, E, rms, funcalls = quench.quench(coords, mysys.getEnergyGradient, iprint=1)
     print "postquench", E, rms, funcalls
     print coords
     xyz = mysys.getxyz(coords )
     printlist.append( (xyz.copy(), "post quench"))
+    
 
     
     #from printing.print_atoms_xyz import printAtomsXYZ as printxyz

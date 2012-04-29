@@ -1,5 +1,6 @@
 import numpy as np
 import rotations as rot
+from potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
 
 def vec2aa( v2, v1 = np.array( [0.,0.,1.]) ):
     """ 
@@ -20,6 +21,8 @@ class Site:
         self.type = type
         assert( len(position) == 3 )
         self.position = np.array(position)
+        self.abs_position = np.array(position)
+        self.drdp = np.zeros([3,3])
         #self.aa = vec2aa( position )
         #self.rotation_matrix = rot.aa2mx(self.aa)
         
@@ -27,12 +30,21 @@ class Site:
 
 class Molecule:
     """
-    this class defines a rigid body
+    this class defines a type of rigid body
     """
     def __init__(self):
         self.sitelist=[]
         self.nsites = 0
-        pass
+        
+        self.aa = np.zeros(3)
+        self.com = np.zeros(3)
+        self.rotation_mat = np.zeros([3,3])
+        self.drmat = [np.zeros([3,3]) for i in range(3)]
+        self.comgrad = np.zeros(3)
+        self.aagrad = np.zeros(3)
+
+
+
     
     def insert_site(self, type, position):
         self.sitelist.append( Site(type, position) )
@@ -45,6 +57,19 @@ class Molecule:
         for i,site in enumerate(self.sitelist):
             xyz[i*3:i*3+3] = np.dot(mx, site.position)
         return xyz
+    
+    def update(self, com, aa, do_derivatives = True):
+        self.aa[:] = aa
+        self.com[:] = com
+        self.rotation_mat, self.drmat[0], self.drmat[1], self.drmat[2] = rotMatDeriv(aa, do_derivatives)
+        for site in self.sitelist:
+            site.abs_position = np.dot( self.rotation_mat, site.position ) + self.com
+            for k in range(3):
+                site.drdp[k,:] = np.dot(self.drmat[k], site.position)
+        self.E = 0.
+        self.comgrad[:] = 0.
+        self.aagrad[:] = 0.
+
 
 def setupLWOTP():
     from numpy import sin, cos, pi
