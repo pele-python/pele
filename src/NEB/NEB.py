@@ -89,8 +89,8 @@ class NEB:
             # construct tangent vector, TODO: implement newer method
             d1 = p - pl
             d2 = pr - p
-            #t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
-            t = d1  + d2 
+            t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
+            #t = d1  + d2 
             t = t / np.linalg.norm(t)
             
             # get real gradient for image
@@ -99,10 +99,18 @@ class NEB:
             # project out parallel part
             gperp = g - np.dot(g, t) * t
             # calculate parallel spring force and energy
-            gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
+            #gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
+            # this is the spring
+            gspring = -self.k*(pl + pr - 2.*p)
+            # the parallel part
+            gs_par = np.dot(gspring,t)
+            # perpendicular part
+            gs_perp = gspring - gs_par
+            # double nudging
+            gstar = gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
             E+=0.5*self.k*(np.linalg.norm(d1)-np.linalg.norm(d2))**2
             
-            return E, (gperp + gspring)
+            return E, (gperp + gs_par + gstar)
     
     # initial interpolation    
     def interpolate(self, initial, final, nimages):
@@ -131,7 +139,7 @@ if __name__ == "__main__":
     print "Final: ", final
     #pl.imshow(z)
     
-    neb = NEB(initial, final, potential, nimages=20)
+    neb = NEB(initial, final, potential, nimages=20, k=100)
     tmp = neb.coords
     
     pl.contourf(x, y, z)
