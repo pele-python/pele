@@ -40,6 +40,7 @@ class LJ(potential.potential):
                 self.getEnergy = self.getEnergyFast
                 self.getEnergyGradient = self.getEnergyGradientFast
             except:
+                print "using slow python LJ implimentation"
                 pass
 
     def getSep_periodic(self, vec1, vec2 ):
