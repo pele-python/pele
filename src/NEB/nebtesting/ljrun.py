@@ -71,6 +71,8 @@ with open("path.init.EoS", "w") as fout:
 print "optimizing path"
 #neb.optimize(neb.bfgs_quench)
 neb.optimize()
+neb.MakeClimbingImage()
+neb.optimize()
 
 print "saving final path to path.final.xyz"
 with open("path.final.xyz", "w") as fout:
@@ -89,6 +91,10 @@ neb2 = NEB.NEB(X1, X2, lj, k = 10. , nimages=10)
 neb2.optimize()
 import pylab as pl
 pl.plot(neb.energies, label="neb1")
+for i in xrange(len(neb.energies)):
+    if(neb.isclimbing[i]):
+        print "the climbing image is:", i, neb.energies[i]
+        pl.plot(i, neb.energies[i], "o", label="climbing image")
 pl.plot(neb2.energies, label="neb2")
-pl.legend()
+pl.legend(loc='best')
 pl.show()

@@ -48,7 +48,6 @@ class Fire(object):
                     self.a *= self.fa
                 self.Nsteps += 1
             else:
-                print "freeze"
                 self.v[:] *= 0.0
                 self.a = self.astart
                 self.dt *= self.fdec
@@ -75,7 +74,7 @@ class Fire(object):
         while step < steps:
             E,f = self.potential(self.coords)
             #self.call_observers()
-            print E
+            #print E
             if self.converged(f):
                 return
             self.step(-f)
@@ -95,7 +94,7 @@ class Fire(object):
         #return (forces**2).sum().max() < self.fmax**2
         import numpy as np
         import math
-        print np.linalg.norm(forces)/math.sqrt(len(forces))
+        #print np.linalg.norm(forces)/math.sqrt(len(forces))
         return np.linalg.norm(forces)/math.sqrt(len(forces)) < self.fmax
 
 if __name__ == "__main__":

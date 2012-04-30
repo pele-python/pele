@@ -22,7 +22,7 @@ class NEB:
         elastic constant for band
         
     """
-    def __init__(self, initial, final, potential, distance=distance_cart, nimages=10, k=20.0):
+    def __init__(self, initial, final, potential, distance=distance_cart, nimages=20, k=100.0):
         self.distance = distance
         self.potential = potential
         self.k = k
@@ -32,7 +32,10 @@ class NEB:
         self.coords = np.zeros([nimages, initial.size])
         self.grad = np.zeros([nimages-2, initial.size])
         self.energies=np.zeros(nimages)
-        
+        self.isclimbing=[]
+        for i in xrange(nimages):
+            self.isclimbing.append(False)
+            
         #interpolate initial points
         self.interpolate(initial, final, nimages)        
         
@@ -75,7 +78,7 @@ class NEB:
                 print dictionary['task']            
         return newcoords, newE
 
-    def default_quencho(self, coords):
+    def default_quench_fire(self, coords):
         import optimize.fire as fire
         tmp = coords.reshape(coords.size)
         opt = fire.Fire(tmp, self.getEnergyGradient,dtmax=0.1, dt=0.01, maxmove=0.01)
@@ -102,7 +105,9 @@ class NEB:
                     [self.energies[i],tmp[i, :]],
                     [self.energies[i-1],tmp[i-1, :]],
                     [self.energies[i+1],tmp[i+1, :]],
-                    self.realgrad[i,:])
+                    self.realgrad[i,:],
+                    self.isclimbing[i])
+            
             grad[i-1,:] = g
         return E,grad.reshape(self.grad.size)
             
@@ -136,7 +141,7 @@ class NEB:
         return t / np.linalg.norm(t)            
     
     # update force for one image
-    def NEBForce(self, image, left, right, greal):
+    def NEBForce(self, image, left, right, greal, isclimbing):
             # construct tangent vector, TODO: implement newer method
             p = image[1]
             pl = left[1]
@@ -161,6 +166,8 @@ class NEB:
             # double nudging
             gstar = gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)            
             
+            if(isclimbing):
+                return greal - 2.*np.dot(greal, t) * t
             return (gperp + gs_par + gstar)
     
     # initial interpolation    
@@ -168,7 +175,12 @@ class NEB:
         delta = (final - initial) / (nimages-1)
         for i in xrange(1, nimages):
             self.coords[i, :] =  initial + delta * i
-
+            
+    def MakeClimbingImage(self):
+        emax = max(self.energies)
+        for i in xrange(0,len(self.energies)):
+            if(abs(self.energies[i]-emax)<1e-10):
+                self.isclimbing[i] = True
             
 import nebtesting as test
 
