@@ -85,3 +85,10 @@ for i in range(npaths-1):
 with open("path.final.EoS", "w") as fout:
     printpath_EoS(fout, neb.coords, lj.getEnergy) 
 
+neb2 = NEB.NEB(X1, X2, lj, k = 500. )
+neb2.optimize()
+import pylab as pl
+pl.plot(neb.energies, label="neb1")
+pl.plot(neb2.energies, label="neb2")
+pl.legend()
+pl.show()

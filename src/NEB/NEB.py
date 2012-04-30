@@ -75,7 +75,7 @@ class NEB:
                 print dictionary['task']            
         return newcoords, newE
 
-    def default_quenchf(self, coords):
+    def default_quencho(self, coords):
         import optimize.fire as fire
         tmp = coords.reshape(coords.size)
         opt = fire.Fire(tmp, self.getEnergyGradient,dtmax=0.1, dt=0.01, maxmove=0.01)
@@ -114,12 +114,13 @@ class NEB:
             # this is the spring
             gspring = -self.k*(pl + pr - 2.*p)
             # the parallel part
-            gs_par = np.dot(gspring,t)
+            gs_par = np.dot(gspring,t)*t
             # perpendicular part
             gs_perp = gspring - gs_par
             # double nudging
             gstar = gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
-            E+=0.5*self.k*(np.linalg.norm(d1)-np.linalg.norm(d2))**2
+            #E+=0.5*self.k*(np.linalg.norm(d1)-np.linalg.norm(d2))**2
+            
             
             return E, (gperp + gs_par + gstar)
     
