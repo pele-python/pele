@@ -31,6 +31,7 @@ class NEB:
         #initialiye coordinate&gradient array
         self.coords = np.zeros([nimages, initial.size])
         self.grad = np.zeros([nimages-2, initial.size])
+        self.energies=np.zeros(nimages)
         
         #interpolate initial points
         self.interpolate(initial, final, nimages)        
@@ -38,7 +39,8 @@ class NEB:
         # copy initial and final structure
         self.coords[0,:] = initial
         self.coords[-1,:] = final
-        
+        for i in xrange(0,nimages):
+            self.energies[i] = potential.getEnergy(self.coords[i,:])
         # the active range of the coords, endpoints are fixed
         self.active = self.coords[1:nimages-1,:]  
     
@@ -55,6 +57,8 @@ class NEB:
             quench = self.default_quench
         tmp,E = quench(self.active)
         self.active[:,:] = tmp.reshape(self.active.shape)
+        for i in xrange(0,self.nimages):
+            self.energies[i] = self.potential.getEnergy(self.coords[i,:])
         
     def default_quench(self, coords):
         import scipy.optimize.lbfgsb
@@ -70,6 +74,14 @@ class NEB:
             else:
                 print dictionary['task']            
         return newcoords, newE
+
+    def default_quenchf(self, coords):
+        import optimize.fire as fire
+        tmp = coords.reshape(coords.size)
+        opt = fire.Fire(tmp, self.getEnergyGradient,dtmax=0.1, dt=0.01, maxmove=0.01)
+        opt.run()
+        return opt.coords, 0.0
+    
     # Calculate gradient for the while NEB
     def getEnergyGradient(self, coords1d):
         # make array access a bit simpler
@@ -95,7 +107,6 @@ class NEB:
             
             # get real gradient for image
             E, g = self.potential.getEnergyGradient(p)
-            
             # project out parallel part
             gperp = g - np.dot(g, t) * t
             # calculate parallel spring force and energy
@@ -135,8 +146,8 @@ if __name__ == "__main__":
     #pl.show()
     initial = np.array([.75, 2.]) #np.random.random(3)
     final = np.array([2., .75]) #np.random.random(3)
-    print "Initial: ", initial
-    print "Final: ", final
+    #print "Initial: ", initial
+    #print "Final: ", final
     #pl.imshow(z)
     
     neb = NEB(initial, final, potential, nimages=20, k=100)
@@ -147,9 +158,10 @@ if __name__ == "__main__":
     pl.plot(tmp[:, 0], tmp[:, 1], 'o-')
     neb.optimize()
 
-        
     tmp = neb.coords
     pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')
     pl.show()
+    pl.plot(neb.energies)
+    pl.show()    
     
         
