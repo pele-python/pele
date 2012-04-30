@@ -91,11 +91,16 @@ with open("path.final.EoS", "w") as fout:
 neb2 = NEB.NEB(X1, X2, lj, k = 10. , nimages=10)
 neb2.optimize()
 import pylab as pl
-pl.plot(neb.energies, label="neb1")
+pl.plot(neb.energies, "o-", label="neb1")
+cl=[]
+en=[]
 for i in xrange(len(neb.energies)):
     if(neb.isclimbing[i]):
-        print "the climbing image is:", i, neb.energies[i]
-        pl.plot(i, neb.energies[i], "o", label="climbing image")
+        print "climbing image :", i, neb.energies[i]
+        cl.append(i)
+        en.append(neb.energies[i])
+        
+pl.plot(cl, en, "s", label="climbing images", markersize=10, markerfacecolor="none", markeredgewidth=2)
 pl.plot(neb2.energies, label="neb2")
 pl.legend(loc='best')
 pl.show()
