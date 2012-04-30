@@ -3,6 +3,8 @@ import numpy as np
 def distance_cart(x1, x2):
     return x2 - x1
 
+import quench
+
 class NEB:
     """Nudged elastic band implementation
 
@@ -55,35 +57,13 @@ class NEB:
             quench algorithm to use for optimization. If None is given,
             default_quench is used,
     """
-    def optimize(self, quench=None):
-        if(quench==None):
-            quench = self.default_quench
-        tmp,E = quench(self.active)
+    def optimize(self, quenchRoutine=quench.quench):
+        #if(quench==None):
+        #    quench = self.default_quench
+        tmp,E,tmp3,tmp4 = quenchRoutine(self.active.reshape(self.active.size), self.getEnergyGradient)
         self.active[:,:] = tmp.reshape(self.active.shape)
         for i in xrange(0,self.nimages):
-            self.energies[i] = self.potential.getEnergy(self.coords[i,:])
-        
-    def default_quench(self, coords):
-        import scipy.optimize.lbfgsb
-        #newcoords, newE = steepest_descent.steepestDescent(potential.getEnergyGradient, coords, 100)
-        tmp = coords.reshape(coords.size)
-        newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(self.getEnergyGradient, tmp, iprint=-1, pgtol=1e-3)
-
-        warnflag = dictionary['warnflag']
-        if warnflag > 0:
-            print "warning: problem with quench: ",
-            if warnflag == 1:
-                print "too many function evaluations"
-            else:
-                print dictionary['task']            
-        return newcoords, newE
-
-    def default_quench_fire(self, coords):
-        import optimize.fire as fire
-        tmp = coords.reshape(coords.size)
-        opt = fire.Fire(tmp, self.getEnergyGradient,dtmax=0.1, dt=0.01, maxmove=0.01)
-        opt.run()
-        return opt.coords, 0.0
+            self.energies[i] = self.potential.getEnergy(self.coords[i,:])        
     
     # Calculate gradient for the while NEB
     def getEnergyGradient(self, coords1d):
@@ -178,8 +158,13 @@ class NEB:
             
     def MakeClimbingImage(self):
         emax = max(self.energies)
-        for i in xrange(0,len(self.energies)):
+        for i in xrange(1,len(self.energies)-1):
             if(abs(self.energies[i]-emax)<1e-10):
+                self.isclimbing[i] = True
+                
+    def MakeAllMaximaClimbing(self):
+        for i in xrange(1,len(self.energies)-1):
+            if(self.energies[i] > self.energies[i-1] and self.energies[i] > self.energies[i+1]):
                 self.isclimbing[i] = True
             
 import nebtesting as test
@@ -208,7 +193,7 @@ if __name__ == "__main__":
     pl.contourf(x, y, z)
     pl.colorbar()
     pl.plot(tmp[:, 0], tmp[:, 1], 'o-')
-    neb.optimize()
+    neb.optimize(quenchRoutine=quench.fire)
 
     tmp = neb.coords
     pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')

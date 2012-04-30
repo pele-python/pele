@@ -71,7 +71,8 @@ with open("path.init.EoS", "w") as fout:
 print "optimizing path"
 #neb.optimize(neb.bfgs_quench)
 neb.optimize()
-neb.MakeClimbingImage()
+#neb.MakeClimbingImage()
+neb.MakeAllMaximaClimbing()
 neb.optimize()
 
 print "saving final path to path.final.xyz"

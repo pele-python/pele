@@ -16,3 +16,13 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
             print dictionary['task']
     rms = V.std()
     return newcoords, newE, rms, funcalls 
+
+def fire(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+    import optimize.fire as fire
+    import math
+    import numpy as np
+    opt = fire.Fire(coords, getEnergyGradient)
+    opt.run()
+    e,g = getEnergyGradient(opt.coords)
+    rms = np.linalg.norm(g)/math.sqrt(len(g))
+    return opt.coords, e, rms, opt.nsteps
