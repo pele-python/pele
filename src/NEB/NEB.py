@@ -3,6 +3,8 @@ import numpy as np
 def distance_cart(x1, x2):
     return x2 - x1
 
+import quench
+
 class NEB:
     """Nudged elastic band implementation
 
@@ -30,7 +32,6 @@ class NEB:
         
         #initialiye coordinate&gradient array
         self.coords = np.zeros([nimages, initial.size])
-        self.grad = np.zeros([nimages-2, initial.size])
         self.energies=np.zeros(nimages)
         self.isclimbing=[]
         for i in xrange(nimages):
@@ -47,81 +48,84 @@ class NEB:
         # the active range of the coords, endpoints are fixed
         self.active = self.coords[1:nimages-1,:]  
     
-    # do a stupid steepest descent, have to add scipy interface for minimizer first
     """
         Optimize the band
     
-        quench (None):
-            quench algorithm to use for optimization. If None is given,
-            default_quench is used,
+        quenchRoutine (quench.quench):
+            quench algorithm to use for optimization.
     """
-    def optimize(self, quench=None):
-        if(quench==None):
-            quench = self.default_quench
-        tmp,E = quench(self.active)
+    def optimize(self, quenchRoutine=quench.quench):
+        #if(quench==None):
+        #    quench = self.default_quench
+        tmp,E,tmp3,tmp4 = quenchRoutine(self.active.reshape(self.active.size), self.getEnergyGradient)
         self.active[:,:] = tmp.reshape(self.active.shape)
         for i in xrange(0,self.nimages):
-            self.energies[i] = self.potential.getEnergy(self.coords[i,:])
-        
-    def default_quench(self, coords):
-        import scipy.optimize.lbfgsb
-        #newcoords, newE = steepest_descent.steepestDescent(potential.getEnergyGradient, coords, 100)
-        tmp = coords.reshape(coords.size)
-        newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(self.getEnergyGradient, tmp, iprint=-1, pgtol=1e-3)
-
-        warnflag = dictionary['warnflag']
-        if warnflag > 0:
-            print "warning: problem with quench: ",
-            if warnflag == 1:
-                print "too many function evaluations"
-            else:
-                print dictionary['task']            
-        return newcoords, newE
-
-    def default_quench_fire(self, coords):
-        import optimize.fire as fire
-        tmp = coords.reshape(coords.size)
-        opt = fire.Fire(tmp, self.getEnergyGradient,dtmax=0.1, dt=0.01, maxmove=0.01)
-        opt.run()
-        return opt.coords, 0.0
+            self.energies[i] = self.potential.getEnergy(self.coords[i,:])        
     
-    # Calculate gradient for the while NEB
+    """
+        Calculates the gradient for the whole NEB. only use force based minimizer!
+    
+        coords1d:
+            coordinates of the whole neb active images (no end points)
+    """
     def getEnergyGradient(self, coords1d):
-        # make array access a bit simpler
+        # make array access a bit simpler, create array which contains end images
         tmp = self.coords.copy()
         tmp[1:self.nimages-1,:] = coords1d.reshape(self.active.shape)
-        grad = self.grad.copy()
+        grad = np.zeros(self.active.shape)        
         
-        # calculate real energy and gradient along the band
-        self.realgrad = np.zeros(tmp.shape)
+        # calculate real energy and gradient along the band. energy is needed for tangent
+        # construction
+        realgrad = np.zeros(tmp.shape)
         for i in xrange(1, self.nimages-1):
-            self.energies[i], self.realgrad[i,:] = self.potential.getEnergyGradient(tmp[i,:])
+            self.energies[i], realgrad[i,:] = self.potential.getEnergyGradient(tmp[i,:])
 
+        # the total energy of images, band is neglected
         E = sum(self.energies)
         
         # build forces for all images
         for i in xrange(1, self.nimages-1):
-            g = self.NEBForce(
+            grad[i-1,:] = self.NEBForce(
+                    self.isclimbing[i],
                     [self.energies[i],tmp[i, :]],
                     [self.energies[i-1],tmp[i-1, :]],
                     [self.energies[i+1],tmp[i+1, :]],
-                    self.realgrad[i,:],
-                    self.isclimbing[i])
+                    realgrad[i,:]
+                    )
             
-            grad[i-1,:] = g
-        return E,grad.reshape(self.grad.size)
+        return E,grad.reshape(grad.size)
             
-    # old average tangent formulation
-    def tangentaa(self, central, left, right):
-        d1 = central[1] - left[1]
-        d2 = right[1] - central[1]
+    """
+        Old tangent construction based on average of neighbouring images
+        
+        coords1d:
+            coordinates of the whole neb active images (no end points)
+    """
+    def tangent_old(self, central, left, right):
+        d1 = self.distance(central[1], left[1])
+        d2 = self.distance(right[1], central[1])
         t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
         return t / np.linalg.norm(t)
         
-    # new uphill tangent formulation
+    """
+        New uphill tangent formulation
+        
+        The method was  described in
+        "Improved tangent estimate in the nudged elastic band method for finding
+        minimum energy paths and saddle points"
+        Graeme Henkelman and Hannes Jonsson
+        J. Chem. Phys 113 (22), 9978 (2000)
+        
+        central: 
+            central image energy and coordinates [E, coords]
+        left: 
+            left image energy and coordinates [E, coords]
+        right: 
+            right image energy and coordinates [E, coords]
+    """
     def tangent(self, central, left, right):
-        tleft = (central[1] - left[1])        
-        tright = (right[1] - central[1])
+        tleft = self.distance(central[1], left[1])        
+        tright = self.distance(right[1],  central[1])
         vmax = max(abs(central[0] - left[0]), abs(central[0] - right[0]))
         vmin = max(abs(central[0] - left[0]), abs(central[0] - right[0]))
         
@@ -140,15 +144,24 @@ class NEB:
 
         return t / np.linalg.norm(t)            
     
-    # update force for one image
-    def NEBForce(self, image, left, right, greal, isclimbing):
+    """
+        Calculate NEB force for 1 image. That contains projected real force and spring force.
+        
+        The current implementeation is the DNEB (doubly nudged elastic band) as described in 
+        
+        "A doubly nudged elastic band method for finding transition states"
+        Semen A. Trygubenko and David J. Wales
+        J. Chem. Phys. 120, 2082 (2004); doi: 10.1063/1.1636455
+        
+    """
+    def NEBForce(self, isclimbing, image, left, right, greal):
             # construct tangent vector, TODO: implement newer method
             p = image[1]
             pl = left[1]
             pr = right[1]
             
-            d1 = image[1] - left[1]
-            d2 = right[1] - image[1]
+            d1 = self.distance(image[1], left[1])
+            d2 = self.distance(right[1], image[1])
         
             
             t = self.tangent(image,left,right)
@@ -170,16 +183,31 @@ class NEB:
                 return greal - 2.*np.dot(greal, t) * t
             return (gperp + gs_par + gstar)
     
-    # initial interpolation    
+    """
+        Does the initial interpolation to generate initial guess for path.        
+        So far this only is a linear interpolation.
+        
+    """
     def interpolate(self, initial, final, nimages):
-        delta = (final - initial) / (nimages-1)
+        delta = self.distance(initial, final) / (nimages-1)
         for i in xrange(1, nimages):
             self.coords[i, :] =  initial + delta * i
             
-    def MakeClimbingImage(self):
+    """
+        Make the image with the highest energy a climbing image        
+    """
+    def MakeHighestImageClimbing(self):
         emax = max(self.energies)
-        for i in xrange(0,len(self.energies)):
+        for i in xrange(1,len(self.energies)-1):
             if(abs(self.energies[i]-emax)<1e-10):
+                self.isclimbing[i] = True
+
+    """
+        Make all maxima along the neb climbing images.        
+    """                
+    def MakeAllMaximaClimbing(self):
+        for i in xrange(1,len(self.energies)-1):
+            if(self.energies[i] > self.energies[i-1] and self.energies[i] > self.energies[i+1]):
                 self.isclimbing[i] = True
             
 import nebtesting as test
@@ -208,14 +236,10 @@ if __name__ == "__main__":
     pl.contourf(x, y, z)
     pl.colorbar()
     pl.plot(tmp[:, 0], tmp[:, 1], 'o-')
-    neb.optimize()
+    neb.optimize(quenchRoutine=quench.fire)
 
     tmp = neb.coords
     pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')
-    pl.show()
-    print "bla"
+    pl.figure()
     pl.plot(neb.energies)
-    pl.show()
-    print "bla2" 
-    
-        
+    pl.show()          
