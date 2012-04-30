@@ -32,7 +32,6 @@ class NEB:
         
         #initialiye coordinate&gradient array
         self.coords = np.zeros([nimages, initial.size])
-        self.grad = np.zeros([nimages-2, initial.size])
         self.energies=np.zeros(nimages)
         self.isclimbing=[]
         for i in xrange(nimages):
@@ -49,13 +48,11 @@ class NEB:
         # the active range of the coords, endpoints are fixed
         self.active = self.coords[1:nimages-1,:]  
     
-    # do a stupid steepest descent, have to add scipy interface for minimizer first
     """
         Optimize the band
     
-        quench (None):
-            quench algorithm to use for optimization. If None is given,
-            default_quench is used,
+        quenchRoutine (quench.quench):
+            quench algorithm to use for optimization.
     """
     def optimize(self, quenchRoutine=quench.quench):
         #if(quench==None):
@@ -65,40 +62,67 @@ class NEB:
         for i in xrange(0,self.nimages):
             self.energies[i] = self.potential.getEnergy(self.coords[i,:])        
     
-    # Calculate gradient for the while NEB
+    """
+        Calculates the gradient for the whole NEB. only use force based minimizer!
+    
+        coords1d:
+            coordinates of the whole neb active images (no end points)
+    """
     def getEnergyGradient(self, coords1d):
-        # make array access a bit simpler
+        # make array access a bit simpler, create array which contains end images
         tmp = self.coords.copy()
         tmp[1:self.nimages-1,:] = coords1d.reshape(self.active.shape)
-        grad = self.grad.copy()
+        grad = np.zeros(self.active.shape)        
         
-        # calculate real energy and gradient along the band
-        self.realgrad = np.zeros(tmp.shape)
+        # calculate real energy and gradient along the band. energy is needed for tangent
+        # construction
+        realgrad = np.zeros(tmp.shape)
         for i in xrange(1, self.nimages-1):
-            self.energies[i], self.realgrad[i,:] = self.potential.getEnergyGradient(tmp[i,:])
+            self.energies[i], realgrad[i,:] = self.potential.getEnergyGradient(tmp[i,:])
 
+        # the total energy of images, band is neglected
         E = sum(self.energies)
         
         # build forces for all images
         for i in xrange(1, self.nimages-1):
-            g = self.NEBForce(
+            grad[i-1,:] = self.NEBForce(
+                    self.isclimbing[i],
                     [self.energies[i],tmp[i, :]],
                     [self.energies[i-1],tmp[i-1, :]],
                     [self.energies[i+1],tmp[i+1, :]],
-                    self.realgrad[i,:],
-                    self.isclimbing[i])
+                    realgrad[i,:]
+                    )
             
-            grad[i-1,:] = g
-        return E,grad.reshape(self.grad.size)
+        return E,grad.reshape(grad.size)
             
-    # old average tangent formulation
-    def tangentaa(self, central, left, right):
+    """
+        Old tangent construction based on average of neighbouring images
+        
+        coords1d:
+            coordinates of the whole neb active images (no end points)
+    """
+    def tangent_old(self, central, left, right):
         d1 = central[1] - left[1]
         d2 = right[1] - central[1]
         t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
         return t / np.linalg.norm(t)
         
-    # new uphill tangent formulation
+    """
+        New uphill tangent formulation
+        
+        The method was  described in
+        "Improved tangent estimate in the nudged elastic band method for finding
+        minimum energy paths and saddle points"
+        Graeme Henkelman and Hannes Jonsson
+        J. Chem. Phys 113 (22), 9978 (2000)
+        
+        central: 
+            central image energy and coordinates [E, coords]
+        left: 
+            left image energy and coordinates [E, coords]
+        right: 
+            right image energy and coordinates [E, coords]
+    """
     def tangent(self, central, left, right):
         tleft = (central[1] - left[1])        
         tright = (right[1] - central[1])
@@ -120,8 +144,17 @@ class NEB:
 
         return t / np.linalg.norm(t)            
     
-    # update force for one image
-    def NEBForce(self, image, left, right, greal, isclimbing):
+    """
+        Calculate NEB force for 1 image. That contains projected real force and spring force.
+        
+        The current implementeation is the DNEB (doubly nudged elastic band) as described in 
+        
+        "A doubly nudged elastic band method for finding transition states"
+        Semen A. Trygubenko and David J. Wales
+        J. Chem. Phys. 120, 2082 (2004); doi: 10.1063/1.1636455
+        
+    """
+    def NEBForce(self, isclimbing, image, left, right, greal):
             # construct tangent vector, TODO: implement newer method
             p = image[1]
             pl = left[1]
