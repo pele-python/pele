@@ -56,7 +56,7 @@ class MinPermDistPotential(potential.potential):
         for atomlist in self.permlist:
             E -= self.overlap( self.XA0, self.XB, self.L2, atomlist, [self.nsites, len(atomlist)])
             #if E < -10.5:
-             #   print E, atomlist, [self.nsites, len(atomlist)], len(self.XA0), len(self.XB)
+            #   print E, atomlist, [self.nsites, len(atomlist)], len(self.XA0), len(self.XB)
         return E
 
     def globalEnergyMin(self):

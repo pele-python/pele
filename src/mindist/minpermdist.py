@@ -16,7 +16,11 @@ def minPermDistLong(X1, X2, max_permutations = 10000):
     Global rotational symmetry
 
     Permutational symmetry
+    
+    This routine is deterministic, but ludicrously slow.  Use the minPermDistStochastic instead
     """
+    print "This routine is deterministic, but ludicrously slow.  Use the minPermDistStochastic instead"
+
     X2in = np.copy(X2)
 
     X2min = np.copy(X2)

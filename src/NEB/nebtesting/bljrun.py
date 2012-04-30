@@ -46,6 +46,8 @@ dist, X1, X2 = minpermdist( X1, X2, niter = 100, permlist=permlist )
 distf = np.linalg.norm(X1 - X2)
 print "dist returned        ", dist
 print "dist from structures ", distf
+print "energies ", lj.getEnergy(X1), lj.getEnergy(X2)
+print X2
 
 #X1 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 0., 1.,] )
 #X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )
@@ -58,7 +60,7 @@ for i in range(natoms - ntypea):
     atomtypes.append("O")
 print atomtypes
 print "setting up path" 
-neb = NEB.NEB(X1, X2, lj, k = 100. )
+neb = NEB.NEB(X1, X2, lj, k=100, nimages=30 )
 print "saving intial path to path.init.xyz"
 with open("path.init.xyz", "w") as fout:
     printpath(fout, neb.coords, atomtypes)
@@ -78,6 +80,8 @@ with open("path.init.EoS", "w") as fout:
 print "optimizing path"
 #neb.optimize(neb.bfgs_quench)
 neb.optimize()
+neb.MakeClimbingImage()
+neb.optimize()
 
 print "saving final path to path.final.xyz"
 with open("path.final.xyz", "w") as fout:
@@ -92,3 +96,14 @@ for i in range(npaths-1):
 with open("path.final.EoS", "w") as fout:
     printpath_EoS(fout, neb.coords, lj.getEnergy) 
 
+neb2 = NEB.NEB(X1, X2, lj, k = 500. , nimages=30)
+neb2.optimize()
+import pylab as pl
+pl.plot(neb.energies, label="neb1")
+for i in xrange(len(neb.energies)):
+    if(neb.isclimbing[i]):
+        print "the climbing image is:", i, neb.energies[i]
+        pl.plot(i, neb.energies[i], "o", label="climbing image")
+pl.plot(neb2.energies, label="neb2")
+pl.legend(loc='best')
+pl.show()

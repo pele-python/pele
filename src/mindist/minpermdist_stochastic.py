@@ -108,6 +108,41 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
 
     return dmin, X1, X2min
 
+def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz"):
+    import copy
+    natoms = len(X1) / 3
+    if permlist == None:
+        permlist = [range(natoms)]
+    
+    X1i = copy.copy(X1)
+    X2i = copy.copy(X2)
+    
+    printlist = []
+    printlist.append((X2.copy(), "X2 initial"))
+    printlist.append((X1.copy(), "X1 initial"))
+
+
+    distinit = np.linalg.norm(X1-X2)
+    print "distinit", distinit
+
+    (dist, X1, X2) = minPermDistStochastic(X1,X2, permlist=permlist)
+    distfinal = np.linalg.norm(X1-X2)
+    print "dist returned    ", dist
+    print "dist from coords ", distfinal
+    print "initial energies (post quench)", lj.getEnergy(X1i), lj.getEnergy(X2i)
+    print "final energies                ", lj.getEnergy(X1), lj.getEnergy(X2)
+
+    printlist.append((X1.copy(), "X1 final"))
+    printlist.append((X2.copy(), "X2 final"))
+
+
+    import printing.print_atoms_xyz as printxyz
+    with open(fname, "w") as fout:
+        for xyz, line2 in printlist:
+            printxyz.printAtomsXYZ(fout, xyz, line2=line2 +" "+ str(lj.getEnergy(xyz)))
+
+    
+
 def test_binary_LJ(natoms = 12):
     printlist = []
     
@@ -132,6 +167,9 @@ def test_binary_LJ(natoms = 12):
         i = 3*j
         X2[i:i+3] = np.dot( rot_mx, X1[i:i+3] )
     printlist.append((X2.copy(), "x2 after rotation"))
+    
+
+    
 
     import random, mindistutils, copy
     for atomlist in permlist:
@@ -146,25 +184,25 @@ def test_binary_LJ(natoms = 12):
     #X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )
     X1i = copy.copy(X1)
     X2i = copy.copy(X2)
+    
+    atomtypes = ["N" for i in range(ntypea)]
+    for i in range(natoms-ntypea):
+        atomtypes.append("O")
+    
+    print "******************************"
+    print "testing binary LJ  ISOMER"
+    print "******************************"
+    test(X1, X2, lj, atomtypes=atomtypes, permlist = permlist)
+    
+    print "******************************"
+    print "testing binary LJ  non isomer"
+    print "******************************"
+    X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
+    ret = quench( X2, lj.getEnergyGradient)
+    X2 = ret[0]
+    test(X1, X2, lj, atomtypes=atomtypes, permlist=permlist)
 
-    distinit = np.linalg.norm(X1-X2)
-    print "distinit", distinit
-
-    (dist, X1, X2) = minPermDistStochastic(X1,X2, permlist=permlist)
-    distfinal = np.linalg.norm(X1-X2)
-    print "dist returned    ", dist
-    print "dist from coords ", distfinal
-
-    import printing.print_atoms_xyz as printxyz
-    with open("blj.xyz", "w") as fout:
-        for xyz, line2 in printlist:
-            printxyz.printAtomsXYZ(fout, xyz, line2=line2)
-        CoMToOrigin(X1i)
-        CoMToOrigin(X2i)
-        printxyz.printAtomsXYZ(fout, X1i )
-        printxyz.printAtomsXYZ(fout, X2i )
-        printxyz.printAtomsXYZ(fout, X1 )
-        printxyz.printAtomsXYZ(fout, X2 )
+    
         
         
 def test_LJ(natoms = 12):
@@ -193,23 +231,25 @@ def test_LJ(natoms = 12):
     import copy
     X1i = copy.copy(X1)
     X2i = copy.copy(X2)
+    
+    print "******************************"
+    print "testing normal LJ  ISOMER"
+    print "******************************"
+    test(X1, X2, lj)
+    
+    print "******************************"
+    print "testing normal LJ  non isomer"
+    print "******************************"
+    X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
+    ret = quench( X2, lj.getEnergyGradient)
+    X2 = ret[0]
+    test(X1, X2, lj)
+    
 
     distinit = np.linalg.norm(X1-X2)
     print "distinit", distinit
 
-    (dist, X1, X2) = minPermDistStochastic(X1,X2)
-    distfinal = np.linalg.norm(X1-X2)
-    print "dist returned    ", dist
-    print "dist from coords ", distfinal
 
-    import printing.print_atoms_xyz as printxyz
-    with open("lj.xyz", "w") as fout:
-        CoMToOrigin(X1i)
-        CoMToOrigin(X2i)
-        printxyz.printAtomsXYZ(fout, X1i )
-        printxyz.printAtomsXYZ(fout, X2i )
-        printxyz.printAtomsXYZ(fout, X1 )
-        printxyz.printAtomsXYZ(fout, X2 )
 
 if __name__ == "__main__":
     print "******************************"
