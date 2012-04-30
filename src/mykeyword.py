@@ -26,9 +26,6 @@ class myKeywordClass():
         if self.pot_type == "lj":
             import potentials.lj as lj
             potential = lj.LJ(self.eps, self.sig, self.boxl)
-        if self.pot_type == "ljcpp":
-            import potentials.ljcpp as ljcpp
-            potential = ljcpp.LJ()
         if self.pot_type == "binary":
             usefortran = True
             if usefortran:
@@ -86,10 +83,6 @@ class myKeywordClass():
                 self.pot_type = "lj"
                 self.eps = float(words[1])
                 self.sig = float(words[2])
-
-            elif words[0] == "ljcpp":
-                """fast lennard jones potential coded with c++ and boost python"""
-                self.pot_type = "ljcpp"
 
             elif words[0] == "blj":
                 """binary lennard jones potential"""

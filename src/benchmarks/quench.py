@@ -79,7 +79,7 @@ def cg(pot, coords):
     return r[1],r[0]
 
 if __name__ == "__main__":
-    import potentials.ljcpp as lj
+    import potentials.lj as lj
     import scipy.optimize
     
     print "Running benchmark with lennard jones potential"
