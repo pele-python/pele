@@ -102,8 +102,8 @@ class NEB:
             coordinates of the whole neb active images (no end points)
     """
     def tangent_old(self, central, left, right):
-        d1 = central[1] - left[1]
-        d2 = right[1] - central[1]
+        d1 = self.distance(central[1], left[1])
+        d2 = self.distance(right[1], central[1])
         t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
         return t / np.linalg.norm(t)
         
@@ -124,8 +124,8 @@ class NEB:
             right image energy and coordinates [E, coords]
     """
     def tangent(self, central, left, right):
-        tleft = (central[1] - left[1])        
-        tright = (right[1] - central[1])
+        tleft = self.distance(central[1], left[1])        
+        tright = self.distance(right[1],  central[1])
         vmax = max(abs(central[0] - left[0]), abs(central[0] - right[0]))
         vmin = max(abs(central[0] - left[0]), abs(central[0] - right[0]))
         
@@ -160,8 +160,8 @@ class NEB:
             pl = left[1]
             pr = right[1]
             
-            d1 = image[1] - left[1]
-            d2 = right[1] - image[1]
+            d1 = self.distance(image[1], left[1])
+            d2 = self.distance(right[1], image[1])
         
             
             t = self.tangent(image,left,right)
@@ -183,18 +183,28 @@ class NEB:
                 return greal - 2.*np.dot(greal, t) * t
             return (gperp + gs_par + gstar)
     
-    # initial interpolation    
+    """
+        Does the initial interpolation to generate initial guess for path.        
+        So far this only is a linear interpolation.
+        
+    """
     def interpolate(self, initial, final, nimages):
-        delta = (final - initial) / (nimages-1)
+        delta = self.distance(initial, final) / (nimages-1)
         for i in xrange(1, nimages):
             self.coords[i, :] =  initial + delta * i
             
-    def MakeClimbingImage(self):
+    """
+        Make the image with the highest energy a climbing image        
+    """
+    def MakeHighestImageClimbing(self):
         emax = max(self.energies)
         for i in xrange(1,len(self.energies)-1):
             if(abs(self.energies[i]-emax)<1e-10):
                 self.isclimbing[i] = True
-                
+
+    """
+        Make all maxima along the neb climbing images.        
+    """                
     def MakeAllMaximaClimbing(self):
         for i in xrange(1,len(self.energies)-1):
             if(self.energies[i] > self.energies[i-1] and self.energies[i] > self.energies[i+1]):
@@ -230,10 +240,6 @@ if __name__ == "__main__":
 
     tmp = neb.coords
     pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')
-    pl.show()
-    print "bla"
+    pl.figure()
     pl.plot(neb.energies)
-    pl.show()
-    print "bla2" 
-    
-        
+    pl.show()          
