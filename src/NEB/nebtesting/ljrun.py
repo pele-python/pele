@@ -51,7 +51,7 @@ X1i = copy.copy(X1)
 X2i = copy.copy(X2)
 
 print "setting up path" 
-neb = NEB.NEB(X1, X2, lj, k = 100. )
+neb = NEB.NEB(X1, X2, lj, k = 100. ,nimages=10)
 print "saving intial path to path.init.xyz"
 with open("path.init.xyz", "w") as fout:
     printpath(fout, neb.coords)
@@ -85,7 +85,7 @@ for i in range(npaths-1):
 with open("path.final.EoS", "w") as fout:
     printpath_EoS(fout, neb.coords, lj.getEnergy) 
 
-neb2 = NEB.NEB(X1, X2, lj, k = 500. )
+neb2 = NEB.NEB(X1, X2, lj, k = 10. , nimages=10)
 neb2.optimize()
 import pylab as pl
 pl.plot(neb.energies, label="neb1")

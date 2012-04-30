@@ -88,27 +88,68 @@ class NEB:
         tmp = self.coords.copy()
         tmp[1:self.nimages-1,:] = coords1d.reshape(self.active.shape)
         grad = self.grad.copy()
-        E = 0.
+        
+        # calculate real energy and gradient along the band
+        self.realgrad = np.zeros(tmp.shape)
+        for i in xrange(1, self.nimages-1):
+            self.energies[i], self.realgrad[i,:] = self.potential.getEnergyGradient(tmp[i,:])
+
+        E = sum(self.energies)
+        
         # build forces for all images
         for i in xrange(1, self.nimages-1):
-            Ei, g = self.NEBForce(tmp[i, :], tmp[i-1, :], tmp[i+1, :])
+            g = self.NEBForce(
+                    [self.energies[i],tmp[i, :]],
+                    [self.energies[i-1],tmp[i-1, :]],
+                    [self.energies[i+1],tmp[i+1, :]],
+                    self.realgrad[i,:])
             grad[i-1,:] = g
-            E += Ei
         return E,grad.reshape(self.grad.size)
             
+    # old average tangent formulation
+    def tangentaa(self, central, left, right):
+        d1 = central[1] - left[1]
+        d2 = right[1] - central[1]
+        t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
+        return t / np.linalg.norm(t)
+        
+    # new uphill tangent formulation
+    def tangent(self, central, left, right):
+        tleft = (central[1] - left[1])        
+        tright = (right[1] - central[1])
+        vmax = max(abs(central[0] - left[0]), abs(central[0] - right[0]))
+        vmin = max(abs(central[0] - left[0]), abs(central[0] - right[0]))
+        
+        # special interpolation treatment for maxima/minima
+        if (central[0] >= left[0] and central[0] >= right[0]) or (central[0] <= left[0] and central[0] <= right[0]):
+            if(left[0] > right[0]):
+                t = vmax * tleft + vmin*tright
+            else:
+                t = vmin * tleft + vmax*tright
+        # left is higher, take this one
+        elif (left[0] > right[0]):
+            t = tleft
+        # otherwise take right
+        else: 
+            t = tright
+
+        return t / np.linalg.norm(t)            
+    
     # update force for one image
-    def NEBForce(self, p, pl, pr):
+    def NEBForce(self, image, left, right, greal):
             # construct tangent vector, TODO: implement newer method
-            d1 = p - pl
-            d2 = pr - p
-            t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
-            #t = d1  + d2 
-            t = t / np.linalg.norm(t)
+            p = image[1]
+            pl = left[1]
+            pr = right[1]
             
-            # get real gradient for image
-            E, g = self.potential.getEnergyGradient(p)
+            d1 = image[1] - left[1]
+            d2 = right[1] - image[1]
+        
+            
+            t = self.tangent(image,left,right)
+            
             # project out parallel part
-            gperp = g - np.dot(g, t) * t
+            gperp = greal - np.dot(greal, t) * t
             # calculate parallel spring force and energy
             #gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
             # this is the spring
@@ -118,11 +159,9 @@ class NEB:
             # perpendicular part
             gs_perp = gspring - gs_par
             # double nudging
-            gstar = gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
-            #E+=0.5*self.k*(np.linalg.norm(d1)-np.linalg.norm(d2))**2
+            gstar = gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)            
             
-            
-            return E, (gperp + gs_par + gstar)
+            return (gperp + gs_par + gstar)
     
     # initial interpolation    
     def interpolate(self, initial, final, nimages):
@@ -151,7 +190,7 @@ if __name__ == "__main__":
     #print "Final: ", final
     #pl.imshow(z)
     
-    neb = NEB(initial, final, potential, nimages=20, k=100)
+    neb = NEB(initial, final, potential, nimages=20, k=1000)
     tmp = neb.coords
     
     pl.contourf(x, y, z)
@@ -162,7 +201,9 @@ if __name__ == "__main__":
     tmp = neb.coords
     pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')
     pl.show()
+    print "bla"
     pl.plot(neb.energies)
-    pl.show()    
+    pl.show()
+    print "bla2" 
     
         
