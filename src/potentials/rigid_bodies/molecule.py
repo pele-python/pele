@@ -42,7 +42,9 @@ class Molecule:
         self.drmat = [np.zeros([3,3]) for i in range(3)]
         self.comgrad = np.zeros(3)
         self.aagrad = np.zeros(3)
-
+        
+        self.symmetrylist_rot = [] #list of rotational symmetries
+        #TODO: implement other types of symmetry
 
 
 
@@ -53,13 +55,21 @@ class Molecule:
         self.sitelist.append( Site(type, position) )
         self.nsites += 1
 
-    def getxyz(self, aa=np.array([0.,0.,1e-6])):
+    def getxyz_rmat(self, rmat, com = np.zeros(3)):
+        """return the xyz positions of all sites in the molecule-frame"""
+        xyz = np.zeros(self.nsites*3, np.float64)
+        for i,site in enumerate(self.sitelist):
+            xyz[i*3:i*3+3] = np.dot(rmat, site.position)
+        return xyz
+
+
+    def getxyz(self, com=np.array([0.,0.,0.]), aa=np.array([0.,0.,1e-6]) ):
         """return the xyz positions of all sites in the molecule-frame"""
         nsites = len(self.sitelist)
         xyz = np.zeros(nsites*3, np.float64)
         mx = rot.aa2mx(aa)
         for i,site in enumerate(self.sitelist):
-            xyz[i*3:i*3+3] = np.dot(mx, site.position)
+            xyz[i*3:i*3+3] = np.dot(mx, site.position) + com
         return xyz
 
     def update(self, com, aa, do_derivatives = True):
@@ -77,8 +87,40 @@ class Molecule:
         #zero interaction dependent things
         self.E = 0.
         self.comgrad[:] = 0.
-        self.aagrad[:] = 0.
+        self.aagrad[:] = 0
 
+    def addSymmetryRotation(self, aa): #add rotational symmetry
+        self.symmetrylist_rot.append( aa )
+    #define functions to add new types of symmetries
+    
+    def getSymmetries(self, com, aa ):
+        """
+        a generator which iteratively returns the absolute xyz coordinates
+        of the molecule subject to it's symmetries  
+        
+        com: the center of mass coords of the molecule
+        
+        aa: the orientation of the molecule in angle-axis  
+        """
+        com = np.array(com)
+        xyz = np.zeros(3*self.nsites)
+        rmat = rot.aa2mx(aa) #rotation matrix
+        #first yield the unaltered molecule
+        xyz = self.getxyz_rmat(rmat, com=com)
+        yield xyz, aa
+        #now loop through the symmetries
+        for p in self.symmetrylist_rot:
+            #combine the two rotations into one
+            rmat_comb = np.dot( rmat, rot.aa2mx(p) )
+            xyz = self.getxyz_rmat(rmat_comb, com=com)
+            newaa = rot.rotate_aa(p, aa)
+            #print rmat_comb
+            #print rot.aa2mx( newaa)
+            yield xyz, newaa
+        #return other symmetries here
+                
+            
+            
 
 def setupLWOTP():
     """
@@ -92,11 +134,12 @@ def setupLWOTP():
     otp.insert_site(0, pos1 )
     otp.insert_site(0, pos2 )
     otp.insert_site(0, pos3 )
+    
+    otp.addSymmetryRotation( np.array([ 0., np.pi, 0.]))
     return otp
 
 
 def test_molecule():
-    from numpy import sin, cos, pi
     otp = setupLWOTP()
 
     xyz = otp.getxyz()
@@ -104,8 +147,27 @@ def test_molecule():
     import sys
     #with open("out.xyz", "w") as fout:
     printxyz(sys.stdout, xyz)
+    
+    aa = np.array([.2, .3, .4])
+    for xyz, aanew in otp.getSymmetries( np.zeros(3), aa):
+        printxyz(sys.stdout, xyz, line2="symmetry")
+        xyz = otp.getxyz(aa = aanew)
+        printxyz(sys.stdout, xyz, line2="symmetry from returned aa")
+
 
 
 
 if __name__ == "__main__":
     test_molecule()
+    
+    aa1 = rot.random_aa()
+    aa2 = rot.random_aa()
+    rmat1 = rot.aa2mx(aa1)
+    rmat2 = rot.aa2mx(aa2)
+    
+    rmat21 = np.dot(rmat2, rmat1)
+    aa21 = rot.rotate_aa(aa1, aa2)
+    rmat21aa = rot.aa2mx(aa21)
+    print rmat21
+    print rmat21aa
+    print abs(rmat21 - rmat21aa) < 1e-12

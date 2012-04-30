@@ -15,8 +15,7 @@ rot_epsilon = 1e-6
 
 def q_multiply(q0, q1):
     """ multiply 2 quaternions q1, q2 """
-    q3 = copy.copy(q1)
-
+    q3 = np.zeros(4)
     q3[0] = q0[0]*q1[0]-q0[1]*q1[1]-q0[2]*q1[2]-q0[3]*q1[3]
     q3[1] = q0[0]*q1[1]+q0[1]*q1[0]+q0[2]*q1[3]-q0[3]*q1[2]
     q3[2] = q0[0]*q1[2]-q0[1]*q1[3]+q0[2]*q1[0]+q0[3]*q1[1]
@@ -59,7 +58,6 @@ def q2aa( qin ):
         p = 2. * q[1:4]
     else:
         p = q[1:4] / s * theta
-
     return p
 
 
