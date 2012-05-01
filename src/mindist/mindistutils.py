@@ -234,7 +234,7 @@ def molmolMinSymDist(com1, aa1, com2, aa2, mol):
         dist = np.linalg.norm(xyz1 - xyz2)
         if dist  < mindist:
             mindist = dist
-            aamin = newaa
+            aamin = newaa.copy()
     return mindist, aamin
 
 def getDistxyz( xyz1, xyz2 ):
@@ -256,6 +256,7 @@ def findBestPermutationRBMol_list(coords1, coords2, mol, mollist):
     
     nmol = len(coords1) / 3 / 2
     nperm = len(mollist)
+    coords2old = coords2.copy()
     #########################################
     # create the cost matrix
     #########################################
@@ -284,16 +285,17 @@ def findBestPermutationRBMol_list(coords1, coords2, mol, mollist):
     # apply the permutation
     #########################################
     costnew = 0.;
-    coords2old = np.copy(coords2)
+    coords2 = coords2old.copy()
     for (iold, inew) in newind:
         costnew    += cost[iold,inew]
         if iold != inew:
             moliold = mollist[iold]
             molinew = mollist[inew]
+            #print "%4d  ->  %4d" % (moliold, molinew) 
             #change the com coords
             coords2[         molinew*3 : molinew*3+3] = coords2old[         moliold*3 : moliold*3+3]
             #change the aa coords
-            coords2[3*nmol + molinew*3 : molinew*3+3] = coords2old[3*nmol + moliold*3 : moliold*3+3]
+            coords2[3*nmol + molinew*3 : 3*nmol + molinew*3+3] = coords2old[3*nmol + moliold*3 : 3*nmol + moliold*3+3]
 
     dist = np.sqrt(costnew)
     return dist, coords1, coords2
@@ -305,8 +307,8 @@ def findBestPermutationRBMol(coords1, coords2, mysys, permlist):
     for mollist in permlist:
         mol = mysys.molecule_list[ mollist[0] ] #a molecule object corresponding to this permuation
         dist, coords1, coords2 = findBestPermutationRBMol_list( coords1, coords2, mol, mollist )
-    #dist = getDistaa(coords1, coords2, mysys) 
-    #print "in findBest after perm", dist
+    dist = getDistaa(coords1, coords2, mysys) 
+    #print "in findBest after perm", dist, mysys.getEnergy(coords2)
 
     #the molecules now have their correct permutation.  
     #For each molecule, apply the symmetry operation which minimized the distance

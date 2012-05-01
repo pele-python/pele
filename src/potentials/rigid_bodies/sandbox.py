@@ -170,8 +170,21 @@ class RBSandbox(potential):
         return Etot, grad
 
 
+def test_symmetries(coords, mysys):
+    nmol = mysys.nmol
+    #the molecules now have their correct permutation.  
+    #For each molecule, apply the symmetry operation which minimized the distance
+    for i, mol in enumerate(mysys.molecule_list):
+        comold = coords[3*i : 3*i + 3]
+        kaa = 3*nmol + 3*i
+        aaold = coords[kaa : kaa + 3]
+        for xyz, aanew in mol.getSymmetries(comold, aaold):
+            coords[kaa : kaa + 3] = aanew
+            print "E symmetry", mysys.getEnergy(coords) 
 
-def test_sandbox(nmol = 4):
+
+
+def test_sandbox(nmol = 6):
     from numpy import sin, cos, pi
     import copy
     from potentials.lj import LJ
@@ -240,6 +253,9 @@ def test_sandbox(nmol = 4):
     with open(fname, "w") as fout:
         for xyz, line2 in printlist:
             printxyz( fout, xyz, line2=line2, atom_type=["N", "O", "O"])
+            
+    
+    test_symmetries(coords, mysys)
 
 
 

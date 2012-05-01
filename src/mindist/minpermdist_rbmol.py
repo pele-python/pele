@@ -8,54 +8,6 @@ import storage.savenlowest as storage
 from mindistutils import CoMToOrigin, alignRotation, findBestPermutationRBMol, getDistaa
 
 
-class PermGroup:
-    """
-    grouplist is a list of allowed permutations.
-    
-    Each element in grouplist defines a permutation.
-        If that permutation is dependent, it is another PermGroup object
-        if that permutation is independent, it is a list of permutable atoms
-    
-    Each element in grouplist is independent of all the other elements
-    
-    Each element  
-    
-    for a minimal PermGroup, grouplist is a single list, or a list 
-    of lists of fully permutatble atoms."""
-    def __init__(self, grouplist):
-        #self.atomlist = [] #the atoms involved in this group
-        self.grouplist = [] #the permutation groups in this group
-        pass
-
-"""
-for 3 water molecules.    O   H H 
-permlistmol = [ [0,[ [0],[1,2] ]], [3, [ [3],[4,5] ]], [6,[[6], [7,8] ]] ]
-
-PermGroup.grouplist     = [ H2OPermGroup1, H2OPermGroup2, H2OPermGroup3 ]
-H2OPermGroup1.grouplist = [ 0, H2PermGroup1 ]  # two types of permutation
- H2PermGroup1.grouplist = [ [1,2] ]
-H2OPermGroup1.grouplist = [ 3, H2PermGroup2 ]
- H2PermGroup1.grouplist = [ [4,5] ]
-H2OPermGroup1.grouplist = [ 6, H2PermGroup3 ]
- H2PermGroup1.grouplist = [ [7,8] ]
-
-
-for 3 O2 molecules        O O     
-
-PermGroup.grouplist    = [ O2PermGroup1, O2PermGroup2, O2PermGroup3 ]
-O2PermGroup1.grouplist = [ [0,1] ]  #one type of permutation
-O2PermGroup2.grouplist = [ [2,3] ]
-O2PermGroup3.grouplist = [ [4,5] ]
-
-
-the phenylalanine example at http://www-wales.ch.cam.ac.uk/OPTIM.doc/node4.html
-PermGroup1.grouplist = [ [[1,2], [3,4], [5,6], [7,8]] ] #1 permutation of 4 dependent molecules
-PermGroup1.grouplist = [ [[1,2], [3,4], [5,6], [7,8]] ] #1 permutation of 4 dependent molecules
-
-
-
-"""
-
 def coordsApplyRotation(coordsin, aa):
     coords = coordsin.copy()
     nmol = len(coords) / 3 / 2
@@ -175,7 +127,7 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
         print "E %11.5g dist %11.5g" % (E, dist)
         if dist < dmin:
             dmin = dist
-            aamin = aa
+            aamin = aa.copy()
 
     ###################################################################
     #we've optimized the rotation in a permutation independent manner
@@ -184,10 +136,10 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     dbefore = getDistaa(coords1, coords2in, mysys)
     coords2 = coordsApplyRotation(coords2in, aamin)
     dafter = getDistaa(coords1, coords2, mysys)
-    print "dist before, after applying rotation from basin hopping", dbefore, dafter
+    print "dist before, after applying rotation from basin hopping", dbefore, dafter, mysys.getEnergy(coords2in), mysys.getEnergy(coords2)
     dmin, coords1, coords2min = findBestPermutationRBMol(coords1, coords2, mysys, permlist )
     #dafter = getDistaa(coords1, coords2min, mysys)
-    print "dist findBestPerm", dmin
+    print "dist findBestPerm", dmin, mysys.getEnergy(coords2min)
 
 
     ###################################################################
@@ -205,6 +157,36 @@ def randomCoords(nmol):
         k = 3*nmol + 3*i
         coords[k : k + 3] = rot.random_aa()
     return coords
+
+
+def test(coords1, coords2, mysys, permlist):
+    printlist = []
+    printlist.append((coords1.copy(), "after quench"))
+    printlist.append((coords2.copy(), "after quench"))
+    coords2in = coords2.copy()
+
+
+    distinit = getDistaa(coords1, coords2, mysys)
+    print "distinit", distinit
+
+    (dist, coords1, coords2) = minPermDistRBMol(coords1,coords2, mysys, permlist=permlist)
+    distfinal = getDistaa(coords1, coords2, mysys)
+    print "dist returned    ", dist
+    print "dist from coords ", distfinal
+    print "initial energy", mysys.getEnergy(coords2in)
+    print "final energy  ", mysys.getEnergy(coords2)
+
+    printlist.append((coords1.copy(), "coords1 after mindist"))
+    printlist.append((coords2.copy(), "coords2 after mindist"))
+    import printing.print_atoms_xyz as printxyz
+    with open("otp.xyz", "w") as fout:
+        for coords, line2 in printlist:
+            xyz = mysys.getxyz(coords)
+            printxyz.printAtomsXYZ(fout, xyz, line2=line2, atom_type = ["N", "O", "O"])
+    
+    
+    return dist, coords1, coords2
+
 
 def test_LWOTP(nmol = 5):
     from potentials.rigid_bodies.molecule import Molecule, setupLWOTP
@@ -240,32 +222,23 @@ def test_LWOTP(nmol = 5):
     #quench X2
     ret = quench( coords2, mysys.getEnergyGradient)
     coords2 = ret[0]
+    coords2in = coords2.copy()
     
     printlist.append((coords1.copy(), "after quench"))
     printlist.append((coords2.copy(), "after quench"))
 
-
-    #X1 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 0., 1.,] )
-    #X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )
-    coords1i = copy.copy(coords1)
-    coords2i = copy.copy(coords2)
-
-    distinit = np.linalg.norm(coords1-coords2)
-    print "distinit", distinit
-
-    (dist, coords1, coords2) = minPermDistRBMol(coords1,coords2, mysys, permlist=permlist)
-    distfinal = getDistaa(coords1, coords2, mysys)
-    print "dist returned    ", dist
-    print "dist from coords ", distfinal
-
-
-    printlist.append((coords1.copy(), "coords1 after mindist"))
-    printlist.append((coords2.copy(), "coords2 after mindist"))
-    import printing.print_atoms_xyz as printxyz
-    with open("otp.xyz", "w") as fout:
-        for coords, line2 in printlist:
-            xyz = mysys.getxyz(coords)
-            printxyz.printAtomsXYZ(fout, xyz, line2=line2, atom_type = ["N", "O", "O"])
+    print "******************************"
+    print "testing for OTP not isomer"
+    print "******************************"
+    d, c1new, c2new = test(coords1, coords2, mysys, permlist)
+    
+    print "******************************"
+    print "testing for OTP ISOMER"
+    print "******************************"
+    coords1 = coords2in.copy()
+    coords2 = c2new.copy()
+    #try to reverse the permutations and symmetry operations we just applied 
+    test(coords1, coords2, mysys, permlist)
         
         
 
