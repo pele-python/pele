@@ -1,12 +1,14 @@
 *~
 CMakeCache.txt
 CMakeFiles
-*.pyc
+*\.pyc
 cmake_install.cmake
 Makefile
-*.setup
-*.so
+*\.setup
+*\.so
+*\.o
+*\.mod
 coords.txt
-dump.q.xyz
+*\.xyz
 lowest
 

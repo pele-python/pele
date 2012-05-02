@@ -24,4 +24,8 @@ class potential(object):
             g[i] -= self.getEnergy(x)
             g[i] /= 2. * eps
             x[i] += eps
-        return g        
+        return g
+    
+    def getGradient(self, coords):
+        e, g = self.getEnergyGradient(coords)
+        return g     

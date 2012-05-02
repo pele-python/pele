@@ -17,3 +17,13 @@ add_custom_command(
 )
 
 add_custom_target(${utils2} ALL DEPENDS ${utils2}.so)
+
+set(utils3 "soft_sphere_pot")
+
+add_custom_command( 
+  OUTPUT ${utils3}.so
+  DEPENDS ${utils3}.f90
+  COMMAND f2py -c -m ${utils3} --fcompiler=gfortran --link-lapack_opt ${utils3}.f90 > ${utils3}.setup
+)
+
+add_custom_target(${utils3} ALL DEPENDS ${utils3}.so)
