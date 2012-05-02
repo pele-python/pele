@@ -52,6 +52,8 @@ event_after_step.append( mettest.checkAccepted )
 #from optimize.quench import cg as quench
 from optimize.quench import quench as quench #numpy lbfgs routine
 #from optimize.quench import fmin as quench
+#from optimize.quench import steepest_descent as quench
+
 
 
 

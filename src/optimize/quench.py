@@ -93,3 +93,33 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     e,g = getEnergyGradient(newcoords)  #should I use gradient here?  It seems kind of dumb
     rms = np.linalg.norm(g)/np.sqrt(len(g))
     return newcoords, e, rms, funcalls 
+
+def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+    import fire as fire
+    import numpy as np
+    opt = fire.Fire(coords, getEnergyGradient)
+    opt.run()
+    e,g = getEnergyGradient(opt.coords)
+    rms = np.linalg.norm(g)/np.sqrt(len(g))
+    return opt.coords, e, rms, opt.nsteps
+
+
+def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, gtol = 1e-3):
+    N = len(x0)
+    x=x0.copy()
+    E, V = getEnergyGradient(x)
+    funcalls = 1
+    for k in xrange(nsteps):
+        x -= V * dx
+        E, V = getEnergyGradient(x)
+        funcalls += 1
+        rms = np.linalg.norm(V)/np.sqrt(N)
+        if iprint > 0:
+            if funcalls % iprint == 0: 
+                print "step %8d energy %20.12g rms gradient %20.12g" % (funcalls, E, rms)
+        if rms < gtol:
+            break
+    return x, E, rms, funcalls
+
+def steepest_descent(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+    return _steepest_descent(coords, getEnergyGradient, iprint = iprint, gtol = tol)
