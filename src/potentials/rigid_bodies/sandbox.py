@@ -239,7 +239,7 @@ def test_sandbox(nmol = 6):
     print "max error in gradient", maxgraddiff, "max relative", maxgrad_relative
 
     #do a quench to make sure everything is working well
-    import quench
+    import optimize.quench as quench
     coords, E, rms, funcalls = quench.quench(coords, mysys.getEnergyGradient, iprint=-1)
     print "postquench E", E, "rms", rms, "funtion calls", funcalls
     xyz = mysys.getxyz(coords )

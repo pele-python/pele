@@ -1,7 +1,7 @@
 import distpot
 import numpy as np
 import rotations as rot
-from quench import quench
+from optimize.quench import quench
 import basinhopping
 import storage.savenlowest as storage
 from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation

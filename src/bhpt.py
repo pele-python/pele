@@ -4,7 +4,7 @@ import scipy
 from math import *
 import accept_tests.metropolis as metropolis
 import copy
-import quench
+import optimize.quench as quench
 import basinhopping as bh
 
 

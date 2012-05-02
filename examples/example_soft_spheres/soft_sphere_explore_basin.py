@@ -47,6 +47,13 @@ accept_test_list.append( mettest.acceptReject)
 event_after_step.append( mettest.checkAccepted )
 
 
+#set up quench routine
+#from optimize.quench import fire as quench
+#from optimize.quench import cg as quench
+from optimize.quench import quench as quench #numpy lbfgs routine
+#from optimize.quench import fmin as quench
+
+
 
 
 
@@ -55,7 +62,8 @@ from basinhopping import BasinHopping
 bh = BasinHopping(coords, pot, takestep.takeStep, \
                   event_after_step = event_after_step, \
                   acceptTests = accept_test_list, \
-                  nometropolis = True)
+                  nometropolis = True, \
+                  quenchRoutine = quench)
 
 #run basin hopping
 bh.run(200)

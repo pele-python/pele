@@ -5,7 +5,7 @@ from math import *
 import sys
 import accept_tests.metropolis as metropolis
 import copy
-import quench
+import optimize.quench as quench
 
 
 class BasinHopping:

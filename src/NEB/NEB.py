@@ -3,7 +3,7 @@ import numpy as np
 def distance_cart(x1, x2):
     return x2 - x1
 
-import quench
+import optimize.quench as quench
 
 class NEB:
     """Nudged elastic band implementation

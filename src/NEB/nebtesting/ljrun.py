@@ -2,7 +2,7 @@ import numpy as np
 
 import NEB.NEB as NEB
 import basinhopping
-from quench import quench
+from optimize.quench import quench
 from potentials.lj import LJ
 from mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
 from printing.print_atoms_xyz import printAtomsXYZ
