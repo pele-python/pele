@@ -73,6 +73,7 @@ class BasinHopping:
     self.temperature = temperature
     self.nometropolis = nometropolis
     self.quenchRoutine = quenchRoutine
+    self.naccepted = 0
 
     self.outstream = outstream
 
@@ -115,6 +116,7 @@ class BasinHopping:
                 self.storage(newE, newcoords)
             self.coords = newcoords
             self.markovE = newE
+            self.naccepted += 1
         for event in self.event_after_step:
             event(self.markovE, self.coords, acceptstep)
     
@@ -137,7 +139,7 @@ class BasinHopping:
     #########################################################################
     acceptstep = True
     for test in self.acceptTests:
-        if not test(Equench_old, Equench, qcoords):
+        if not test(Equench_old, Equench, qcoords, coords):
             acceptstep = False
 
     #########################################################################
