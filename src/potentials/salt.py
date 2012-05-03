@@ -6,9 +6,9 @@ import potential
 class salt(potential.potential):
     """binary lennard jones potential with smooth cutoff"""
     def __init__(self):
-        print "using lenard jones cpp implementation"
         # self.natoms = natoms
-
+        pass
+    
     def getEnergy(self, coords):
         E = salt_.energy(coords)
         #grad=np.zeros(coords.shape[0], np.float64)

@@ -23,6 +23,7 @@ double entier(double x)
 	double e = int(x);
 	if (x-e < 0.) e -= 1.;
 	if (x-e >= 1.) e += 1.;
+	return e;
 }
 
 class System {
@@ -41,6 +42,8 @@ public:
 		_box[2][1]=lattice[5];
 		_boxinv = _box;
 		_boxinv.Invert();
+		buildImages();
+		//printf("I have %d ghosts\n", _images.size());
 		return;
 		vec a = _box.getCol(0); vec b = _box.getCol(1); vec c = _box.getCol(2);
 
@@ -52,13 +55,26 @@ public:
 		std::cout << "z: " << _box*vec(0, 0, 1) << std::endl;
 	}
 
+	vec getA() {
+		return _box.getCol(0);
+	}
+	vec getB() {
+		return _box.getCol(1);
+	}
+	vec getC() {
+		return _box.getCol(2);
+	}
+
 	void setCoordinates(double *coords) {
 		setLattice(&coords[3*_pos.size()]);
 		for(int i=0; i<_pos.size(); ++i) {
-			pos(i) = _box*vec(&coords[3*i]);
+			pos(i) = vec(&coords[3*i]);
 			pos(i).x() -= entier(pos(i).getX());
 			pos(i).y() -= entier(pos(i).getY());
 			pos(i).z() -= entier(pos(i).getZ());
+			//printf("a %f %f %f\n", pos(i).x(),pos(i).y(),pos(i).z());
+			pos(i) = _box*pos(i);
+			//printf("%f %f %f\n", pos(i).x(),pos(i).y(),pos(i).z());
 		}
 	}
 
@@ -70,6 +86,7 @@ public:
 			g[3*i+0] = tmp.getX();
 			g[3*i+1] = tmp.getY();
 			g[3*i+2] = tmp.getZ();
+			//printf("gr %f %f %f\n", tmp.getX(),tmp.getY(),tmp.getZ());
 		}
 		for(int i=0; i<6; ++i)
 			g[3*_pos.size()+i] = _glatt[i];
@@ -92,7 +109,7 @@ public:
 
 	vec mindist(const vec &r_i, const vec &r_j) const
 	{
-//		return r_j - r_i;
+		//return r_j - r_i;
 	    vec r_tp, r_dp, r_sp, r_ij;
 	    vec a = _box.getCol(0); vec b = _box.getCol(1); vec c = _box.getCol(2);
 	    r_tp = r_j - r_i;
@@ -104,7 +121,7 @@ public:
 
 	vec &pos(int i) { return _pos[i]; }
 	vec &grad(int i) { return _grad[i]; }
-	void addGLatt(vec &g, vec &r_ij)
+	void addGLatt(const vec &g, const vec &r_ij)
 	{
 		vec u = -(_boxinv*r_ij);
 		_glatt[0] += g.getX()*u.getX();
@@ -115,10 +132,30 @@ public:
 		_glatt[5] += g.getZ()*u.getY();
 		return;
 	}
+
+	void buildImages() {
+		vec a = getA();
+		vec b = getB();
+		vec c = getC();
+		//_images.clear();
+		//_images.push_back(vec(0,0,0));
+		//return;
+		for(int i=-4; i<4; ++i)
+			for(int j=-4; j<4; ++j)
+				for(int k=-4; k<4; ++k) {
+					vec v = i*a + j*b + k*c;
+					if(abs(v) < 2.*_cutoff) {
+						_images.push_back(v);
+					}
+				}
+	}
+
+	std::vector<vec> &images() { return _images; }
 private:
 	matrix _box, _boxinv;
 	std::vector<vec> _pos;
 	std::vector<vec> _grad;
+	std::vector<vec> _images;
 	double _glatt[6];
 };
 
@@ -144,14 +181,14 @@ public:
 		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6)) + _q12/_cutoff;
 		if(_offset1 == _offset2) {
 			for(int i=_offset1; i<_offset1 + _n1; ++i)
-				for(int j=i+1; j<_offset1 + _n1; ++j) {
+				for(int j=i; j<_offset1 + _n1; ++j) {
 					energy
-					+= pair_energy(_sys.pos(i), _sys.pos(j));
+					+= eval_pair_energy(i, j);
 				}
 		} else {
 			for(int i=_offset1; i<_offset1 + _n1; ++i)
 				for(int j=_offset2; j<_offset2 + _n2; ++j) {
-					energy += pair_energy(_sys.pos(i), _sys.pos(j));
+					energy += eval_pair_energy(i, j);
 				}
 		}
 
@@ -163,7 +200,7 @@ public:
 		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6)) + _q12/_cutoff;
 		if(_offset1 == _offset2) {
 			for(int i=_offset1; i<_offset1 + _n1; ++i)
-				for(int j=i+1; j<_offset1 + _n1; ++j) {
+				for(int j=i; j<_offset1 + _n1; ++j) {
 					energy += eval_pair_gradient(i, j);
 				}
 		} else {
@@ -177,35 +214,48 @@ public:
 
 	double eval_pair_gradient(int i, int j) {
 		vec gtmp;
-		double energy=pair_gradient(_sys.pos(i), _sys.pos(j), gtmp);
-		_sys.grad(i)+=gtmp;
-		_sys.grad(j)-=gtmp;
+		vec d = _sys.mindist(_sys.pos(i), _sys.pos(j));
+		double energy = 0;
+		for(int l=0; l<_sys.images().size(); ++l) {
+		energy+=pair_gradient(d+_sys.images()[l], gtmp);
+			vec v =_sys.images()[l];
+			//printf("%d %d %f %f %f\n", i, j, d.getX(), d.getY(), d.getZ());
+			_sys.grad(i)+=gtmp;
+			_sys.grad(j)-=gtmp;
+		}
 		return energy;
 	}
 
-	double pair_energy(const vec &x1, const vec &x2)
+	double eval_pair_energy(int i, int j) {
+		vec d = _sys.mindist(_sys.pos(i), _sys.pos(j));
+		double energy=0;
+		for(int l=0; l<_sys.images().size(); ++l) {
+			energy+=pair_energy(d+_sys.images()[l]);
+		}
+		return energy;
+	}
+
+	double pair_energy(const vec &d)
 	{
 		double r2;
-        vec d = _sys.mindist(x1, x2);
         r2=d*d;
-		if(r2>_cutoff*_cutoff) {
+		if(r2>_cutoff*_cutoff || r2 < 1e-8) {
 			return 0.;
 		}
 		return 4.*_eps*(pow(_sigma*_sigma/r2,6) - pow(_sigma*_sigma/r2, 3)) + _q12/sqrt(r2) - _cut_shift;
 	}
 
-	double pair_gradient(const vec &x1, const vec &x2, vec &g)
+	double pair_gradient(const vec &r_ij, vec &g)
 	{
-		g = _sys.mindist(x1, x2);
-		vec r_ij(g);
+		g = r_ij;
 		double r2 = g*g;
 		double r=sqrt(r2);
 //cout << r << endl;
-		if(r>_cutoff) {
+		if(r>_cutoff || r2 < 1e-8 ) {
 			g=vec(0., 0., 0.);
 			return 0.;
 		}
-
+		//printf("%f \n", r2);
 		double r6 = pow(_sigma,6)/(r2*r2*r2);
 		double r12 = r6*r6;
 
