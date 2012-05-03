@@ -88,10 +88,27 @@ public:
 			g[3*i+2] = tmp.getZ();
 			//printf("gr %f %f %f\n", tmp.getX(),tmp.getY(),tmp.getZ());
 		}
+
 		for(int i=0; i<6; ++i)
 			g[3*_pos.size()+i] = _glatt[i];
 	}
 
+	double addPressure() {
+		double volume = (getA()^getB())*getC();
+		double p = 1;
+		double gp[6];
+		gp[0] = (getB()^getC()).getX();
+		gp[1] = -(getA()^getC()).getY();
+		gp[2] = (getA()^getB()).getZ();
+		gp[3] = -(getB()^getC()).getY();
+		gp[4] = (getB()^getC()).getZ();
+		gp[5] = -(getA()^getC()).getZ();
+		for(int i=0; i<6; ++i) {
+			_glatt[i] += gp[i];
+		}
+
+		return p*volume;
+	}
 	void getReal(double *x) {
 		for(int i=0; i<_pos.size(); ++i) {
 			x[3*i+0] = pos(i).getX();
@@ -295,6 +312,7 @@ double energy(boost::python::numeric::array& px)
 	energy += aa.CalcEnergy();
 	energy += ab.CalcEnergy();
 	energy += bb.CalcEnergy();
+	energy += sys.addPressure();
 
 	return energy;
 }
@@ -320,6 +338,7 @@ double gradient(boost::python::numeric::array& px, boost::python::numeric::array
 	energy += aa.CalcGradient();
 	energy += ab.CalcGradient();
 	energy += bb.CalcGradient();
+	energy += sys.addPressure();
 	sys.getGradient(&g[0]);
 	return energy;
 }
