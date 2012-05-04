@@ -95,7 +95,7 @@ public:
 
 	double addPressure() {
 		double volume = (getA()^getB())*getC();
-		double p = 1;
+		double p = 0.1;
 		double gp[6];
 		gp[0] = (getB()^getC()).getX();
 		gp[1] = -(getA()^getC()).getY();
@@ -104,7 +104,7 @@ public:
 		gp[4] = (getB()^getC()).getZ();
 		gp[5] = -(getA()^getC()).getZ();
 		for(int i=0; i<6; ++i) {
-			_glatt[i] += gp[i];
+			_glatt[i] += p*gp[i];
 		}
 
 		return p*volume;
@@ -157,11 +157,12 @@ public:
 		//_images.clear();
 		//_images.push_back(vec(0,0,0));
 		//return;
-		for(int i=-4; i<4; ++i)
-			for(int j=-4; j<4; ++j)
-				for(int k=-4; k<4; ++k) {
+		int n=10;
+		for(int i=-n; i<=n; ++i)
+			for(int j=-n; j<=n; ++j)
+				for(int k=-n; k<=n; ++k) {
 					vec v = i*a + j*b + k*c;
-					if(abs(v) < 2.*_cutoff) {
+					if(abs(v) < 3.*_cutoff) {
 						_images.push_back(v);
 					}
 				}
@@ -237,8 +238,11 @@ public:
 		energy+=pair_gradient(d+_sys.images()[l], gtmp);
 			vec v =_sys.images()[l];
 			//printf("%d %d %f %f %f\n", i, j, d.getX(), d.getY(), d.getZ());
+			//if(i==j && abs(gtmp) > 1e-8) cout << i << " " << v << " " << gtmp << endl;
 			_sys.grad(i)+=gtmp;
 			_sys.grad(j)-=gtmp;
+			//if(i==j) gtmp=2.*gtmp;
+			_sys.addGLatt(gtmp, d+v);
 		}
 		return energy;
 	}
@@ -278,7 +282,6 @@ public:
 
 		g*=4.0*_eps*(12.*r12 -  6.*r6)/r2 + _q12/(r2*r);
 
-		_sys.addGLatt(g, r_ij);
 		return 4.*_eps*(r12 - r6) + _q12/r - _cut_shift;
 	}
 
