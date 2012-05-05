@@ -1,0 +1,17 @@
+First quick and dirty test of a gui. So far only the minima of a Basin Hopping 
+run can be viewed. Planned features are continue / pause run in background
+and start NEB runs using the gui. 
+
+I decided for qt since it has a very nice API and gui designer. 
+The file MainWindow.py is automatically generated using the command
+
+  pyuic4 MainWindow.ui -o MainWidow.py
+
+I will add this to the build script later. To edit the gui use
+
+  designer-qt4 MainWindow.ui
+
+As far as I remember correctly, the following packages are required (on Fedora):
+- PyQt4  (for running)
+- PyQt4-devel (for the qt designer) 
+
