@@ -34,12 +34,12 @@ class Show3D(QGLWidget):
         '''
         Drawing routine
         '''
-        
-        if(self.coords == None):
-            return
-        
+         
     	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-    	color = [0.65,0.0,0.0,1.]
+    	if(self.coords == None):
+            return
+       
+        color = [0.65,0.0,0.0,1.]
         amb = [0.,0.0,0.0,1.]
         spec=[1.0,1.,1.,1]
         shine=80.
@@ -57,7 +57,7 @@ class Show3D(QGLWidget):
             x=xx-com
             glPushMatrix()            
             glTranslate(x[0],x[1],x[2])
-    	    glutSolidSphere(0.5,100,100)
+    	    glutSolidSphere(0.5,30,30)
     	    glPopMatrix()
         glPopMatrix()	
         glFlush()
@@ -74,7 +74,7 @@ class Show3D(QGLWidget):
         '''
         Resize the GL window 
         '''
-        
+        print "resizegl"
         glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()

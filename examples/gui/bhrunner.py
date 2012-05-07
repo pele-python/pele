@@ -28,17 +28,17 @@ class BHProcess(mp.Thread): #Process):
         import potentials.lj as lj
         import basinhopping as bh
         import take_step.random_displacement as random_displacement
-        natoms = 13 
+        natoms = 69
 
         # random initial coordinates
         coords = np.random.random(3 * natoms)
         potential = lj.LJ()#1.0, 1.0, None)
         step = random_displacement.takeStep(stepsize=0.5)
         opt = bh.BasinHopping(coords,potential,
-                          temperature=5., takeStep=step.takeStep, storage=self.insert)
+                          temperature=1., takeStep=step.takeStep, storage=self.insert)
         print "start bh"
         #while(True):
-        opt.run(2000)
+        opt.run(500)
         print "done with bh"
         
     def insert(self, E, coords):
