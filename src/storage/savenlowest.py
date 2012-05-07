@@ -10,13 +10,14 @@ class SaveN(object):
     if energy differs by more than accuracy
     '''
 
-    def __init__(self, nsave=1, accuracy=1e-3):
+    def __init__(self, nsave=1, accuracy=1e-3, onNewMinimumFound=None):
         '''
         Constructor
         '''
         self.nsave=nsave
         self.data=[]
         self.accuracy=accuracy
+        self.onNewMinimumFound=onNewMinimumFound
     
     def insert(self, E, coords):
         # does minima already exist, if yes exit?
@@ -26,10 +27,13 @@ class SaveN(object):
         
         # otherwise, add it to list & sort
         self.data.append((E, coords.copy()))
+        icoords = self.data[-1][1]
         self.data.sort()
         # remove if too many entries
         while(len(self.data) > self.nsave):
             self.data.pop()
+        if(self.onNewMinimumFound):
+            self.onNewMinimumFound(E, icoords)
             
 if __name__ == "__main__":
     import numpy as np
