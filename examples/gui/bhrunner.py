@@ -45,15 +45,17 @@ class BHProcess(mp.Thread): #Process):
         self.comm.send([E,coords])
         
 class BHRunner():
-    def __init__(self, onNewMinimumFound=None):
-        self.storage = savenlowest.SaveN(50, onNewMinimumFound=onNewMinimumFound)
+    def __init__(self, onMinimumAdded=None, onMinimumRemoved=None):
+        self.storage = savenlowest.SaveN(100, 
+                         onMinimumAdded=onMinimumAdded,
+                         onMinimumRemoved=onMinimumRemoved)
         
         #self.poll_thread = th.Thread(target=self.poll)
         
         #self.conn, child_conn = mp.Pipe()
         child_conn = self
-        self.bhprocess = BHProcess(child_conn)
-    
+        self.bhprocess = None
+        
     def send(self, minimum):
         self.minimum_found(minimum[0], minimum[1])
     
@@ -64,9 +66,13 @@ class BHRunner():
         pass
     
     def start(self):
-        #self.poll_thread.start()
+        if(self.bhprocess):
+            if(self.bhprocess.is_alive()):
+                return
+        self.bhprocess = BHProcess(self)
+    #self.poll_thread.start()
         self.bhprocess.start()
-        pass
+      
     
     def poll(self):    
         while(self.bhprocess.is_alive()):
@@ -77,11 +83,11 @@ class BHRunner():
     def minimum_found(self,E,coords):
         self.storage.insert(E,coords)
     
-def found(E,coords):
-    print("New Minimum",E)
+def found(m):
+    print("New Minimum",m[0])
     
 if __name__ == '__main__': 
-    runner = BHRunner(onNewMinimumFound=found)
+    runner = BHRunner(onMinimumAdded=found)
     runner.start()
     #bhp.start()
     #while(True):
