@@ -13,14 +13,16 @@
 # gui updates.
 
 from storage import savenlowest
-import threading as mp
-#import multiprocessing as mp
+#import threading as mp
+import multiprocessing as mp
 import threading as th
 import time
+from PyQt4 import QtCore,QtGui
 
-class BHProcess(mp.Thread): #Process):
+class BHProcess(mp.Process):
     def __init__(self, comm):
-        mp.Thread.__init__(self)
+        mp.Process.__init__(self)
+        #QtCore.QThread.__init__(self)
         self.comm = comm
     
     def run(self):
@@ -28,7 +30,7 @@ class BHProcess(mp.Thread): #Process):
         import potentials.lj as lj
         import basinhopping as bh
         import take_step.random_displacement as random_displacement
-        natoms = 69
+        natoms = 114 
 
         # random initial coordinates
         coords = np.random.random(3 * natoms)
@@ -42,22 +44,34 @@ class BHProcess(mp.Thread): #Process):
         print "done with bh"
         
     def insert(self, E, coords):
-        self.comm.send([E,coords])
+            self.comm.send([E,coords])
         
-class BHRunner():
+class PollThread(QtCore.QThread):
+    def __init__(self, bhrunner, conn):
+        QtCore.QThread.__init__(self)
+        self.bhrunner = bhrunner
+        self.conn = conn
+    def run(self):
+        while(self.bhrunner.bhprocess.is_alive()):
+            #print "no data"
+            if(self.conn.poll()):
+                minimum = self.conn.recv()
+                self.emit(QtCore.SIGNAL("Activated( PyQt_PyObject )"),minimum)                
+
+
+class BHRunner(QtGui.QWidget):
     def __init__(self, onMinimumAdded=None, onMinimumRemoved=None):
         self.storage = savenlowest.SaveN(100, 
                          onMinimumAdded=onMinimumAdded,
                          onMinimumRemoved=onMinimumRemoved)
         
-        #self.poll_thread = th.Thread(target=self.poll)
         
-        #self.conn, child_conn = mp.Pipe()
-        child_conn = self
+        #child_conn = self
         self.bhprocess = None
+        self.lock = th.Lock()
         
     def send(self, minimum):
-        self.minimum_found(minimum[0], minimum[1])
+        self.minimum_found(minimum)
     
     def pause(self):
         pass
@@ -69,19 +83,21 @@ class BHRunner():
         if(self.bhprocess):
             if(self.bhprocess.is_alive()):
                 return
-        self.bhprocess = BHProcess(self)
-    #self.poll_thread.start()
+        parent_conn, child_conn = mp.Pipe()
+        
+        self.bhprocess = BHProcess(child_conn)
         self.bhprocess.start()
-      
-    
-    def poll(self):    
-        while(self.bhprocess.is_alive()):
-            if(self.conn.poll()):
-                minimum = self.conn.recv()
-                self.minimum_found(minimum[0], minimum[1])
-    
-    def minimum_found(self,E,coords):
-        self.storage.insert(E,coords)
+        self.poll_thread = PollThread(self, parent_conn)
+        self.connect(self.poll_thread,QtCore.SIGNAL("Activated ( PyQt_PyObject ) "), self.minimum_found)        
+        self.poll_thread.start()  
+    def Activated(self, str):
+        
+        print str          
+        
+    def minimum_found(self,minimum):
+        self.lock.acquire()
+        self.storage.insert(minimum[0],minimum[1])
+        self.lock.release()
     
 def found(m):
     print("New Minimum",m[0])
