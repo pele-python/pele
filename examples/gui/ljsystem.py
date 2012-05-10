@@ -4,6 +4,7 @@ import sys
 import numpy as np
 from storage import savenlowest
 import time
+from NEB import NEB
         
 class LJSystem:
     def __init__(self):
@@ -26,8 +27,9 @@ class LJSystem:
                           temperature=1., takeStep=step.takeStep)
         return opt
     
-    def draw(self, coords):
+    def draw(self, coordslinear):
         from OpenGL import GL,GLUT
+        coords = coordslinear.reshape(coordslinear.size/3, 3)
         com=np.mean(coords, axis=0)                  
         for xx in coords:
             x=xx-com
@@ -35,7 +37,16 @@ class LJSystem:
             GL.glTranslate(x[0],x[1],x[2])
             GLUT.glutSolidSphere(0.5,30,30)
             GL.glPopMatrix()
-       
+    
+    def Align(self, coords1, coords2):
+        from mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
+        dist, X1, X2 = minpermdist( coords1, coords2, niter = 100 )
+        return X1, X2
+    
+    def createNEB(self, coords1, coords2):
+        import potentials.lj as lj
+        return NEB.NEB(coords1, coords2, lj.LJ(), k = 100. ,nimages=20)
+
        
 
 class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):

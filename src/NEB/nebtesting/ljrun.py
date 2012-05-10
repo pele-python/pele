@@ -1,7 +1,6 @@
 import numpy as np
 
 import NEB.NEB as NEB
-import basinhopping
 from optimize.quench import quench
 from potentials.lj import LJ
 from mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist

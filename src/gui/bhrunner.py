@@ -80,9 +80,6 @@ class BHRunner(QtCore.QObject):
         self.poll_thread = PollThread(self, parent_conn)
         self.connect(self.poll_thread,QtCore.SIGNAL("Activated ( PyQt_PyObject ) "), self.minimum_found)        
         self.poll_thread.start()  
-    def Activated(self, str):
-        
-        print str          
         
     def minimum_found(self,minimum):
         self.lock.acquire()

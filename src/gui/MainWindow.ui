@@ -89,27 +89,21 @@
         <string>NEB</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="1" column="0">
-         <widget class="QSlider" name="horizontalSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0">
-         <widget class="QWidget" name="widget_2" native="true">
+         <widget class="Show3D" name="oglPath" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <zorder>sliderFrame</zorder>
          </widget>
         </item>
         <item row="0" column="3">
          <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,0">
           <item>
-           <widget class="QListWidget" name="listWidget_2">
+           <widget class="QListWidget" name="listMinima1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -125,7 +119,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="listWidget_3">
+           <widget class="QListWidget" name="listMinima2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -154,7 +148,7 @@
            <number>20</number>
           </property>
           <item row="0" column="1">
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="btnConnect">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -173,7 +167,7 @@
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="btnAlign">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -191,7 +185,21 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="btnEnergies">
+            <property name="text">
+             <string>Energies</string>
+            </property>
+           </widget>
+          </item>
          </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QSlider" name="sliderFrame">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -205,7 +213,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSimulation">
@@ -259,7 +267,7 @@
  <connections>
   <connection>
    <sender>listWidget</sender>
-   <signal>itemClicked(QListWidgetItem*)</signal>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
    <receiver>MainWindow</receiver>
    <slot>SelectMinimum()</slot>
    <hints>
@@ -281,7 +289,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>658</x>
-     <y>489</y>
+     <y>488</y>
     </hint>
     <hint type="destinationlabel">
      <x>432</x>
@@ -305,10 +313,112 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnAlign</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>AlignMinima()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>505</x>
+     <y>476</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>367</x>
+     <y>30</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnConnect</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ConnectMinima()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>623</x>
+     <y>469</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>526</x>
+     <y>26</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listMinima1</sender>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>SelectMinimum1()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>531</x>
+     <y>206</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>551</x>
+     <y>29</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listMinima2</sender>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>SelectMinimum2()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>563</x>
+     <y>399</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>275</x>
+     <y>536</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sliderFrame</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showFrame()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>352</x>
+     <y>490</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>74</x>
+     <y>537</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnEnergies</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showEnergies()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>480</x>
+     <y>509</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>417</x>
+     <y>542</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectMinimum()</slot>
   <slot>StartBasinHopping()</slot>
   <slot>NewSystem()</slot>
+  <slot>SelectMinimum1()</slot>
+  <slot>SelectMinimum2()</slot>
+  <slot>AlignMinima()</slot>
+  <slot>ConnectMinima()</slot>
+  <slot>showFrame()</slot>
+  <slot>showEnergies()</slot>
  </slots>
 </ui>
