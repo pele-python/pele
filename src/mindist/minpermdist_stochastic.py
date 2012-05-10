@@ -87,7 +87,7 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
     print "lowest structures found"
     aamin = saveit.data[0][1]
     dmin, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
-    for (E, aa) in saveit.data:
+    for (E, aa,id) in saveit.data:
         dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aa), permlist )
         print "E %11.5g dist %11.5g" % (E, dist)
         if dist < dmin:
