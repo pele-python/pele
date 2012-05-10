@@ -16,12 +16,13 @@ class MyForm(QtGui.QMainWindow):
         QtGui.QWidget.__init__(self)
         self.ui = MainWindow.Ui_MainWindow()
         self.ui.setupUi(self)
-        import ljsystem
-        self.system=ljsystem.LJSystem()
-
+        self.NewSystem()
+        
     def NewSystem(self):
         import ljsystem
         self.system = ljsystem.LJSystem()
+        self.system.storage.onMinimumAdded=self.NewMinimum
+        self.system.storage.onMinimumRemoved=self.RemoveMinimum
     
     def SelectMinimum(self, item):
         self.ui.widget.setSystem(self.system)
@@ -56,9 +57,7 @@ class MyForm(QtGui.QMainWindow):
                 widget.takeItem(widget.row(i)) 
         
     def StartBasinHopping(self):
-        self.bhrunner = bhrunner.BHRunner(self.system,
-                                  onMinimumAdded=self.NewMinimum,
-                                  onMinimumRemoved=self.RemoveMinimum)
+        self.bhrunner = bhrunner.BHRunner(self.system)
         self.bhrunner.start()
     
 if __name__ == "__main__":

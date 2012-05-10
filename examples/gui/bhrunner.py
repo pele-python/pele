@@ -12,7 +12,6 @@
 # minima to the master via pipe which handles the insert and
 # gui updates.
 
-from storage import savenlowest
 #import threading as mp
 import multiprocessing as mp
 import threading as th
@@ -52,9 +51,6 @@ class BHRunner(QtCore.QObject):
     def __init__(self, system, onMinimumAdded=None, onMinimumRemoved=None):
         QtCore.QObject.__init__(self)
         
-        self.storage = savenlowest.SaveN(system.nsave, 
-                         onMinimumAdded=onMinimumAdded,
-                         onMinimumRemoved=onMinimumRemoved)
         self.system = system
         
         #child_conn = self
@@ -87,7 +83,7 @@ class BHRunner(QtCore.QObject):
         
     def minimum_found(self,minimum):
         self.lock.acquire()
-        self.storage.insert(minimum[0],minimum[1])
+        self.system.storage.insert(minimum[0],minimum[1])
         self.lock.release()
     
 def found(m):

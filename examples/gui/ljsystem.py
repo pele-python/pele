@@ -2,6 +2,7 @@ from PyQt4 import QtGui
 import NewLJ
 import sys
 import numpy as np
+from storage import savenlowest
         
 class LJSystem:
     def __init__(self):
@@ -11,6 +12,7 @@ class LJSystem:
         self.nsave = dlg.nsave()
         if dlg.result() == QtGui.QDialog.Rejected:
             raise BaseException("Aborted parameter dialog")
+        self.storage = savenlowest.SaveN(self.nsave)
         
     def createBasinHopping(self):
         import basinhopping as bh
