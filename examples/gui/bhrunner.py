@@ -59,8 +59,9 @@ class PollThread(QtCore.QThread):
                 self.emit(QtCore.SIGNAL("Activated( PyQt_PyObject )"),minimum)                
 
 
-class BHRunner(QtGui.QWidget):
+class BHRunner(QtCore.QObject):
     def __init__(self, onMinimumAdded=None, onMinimumRemoved=None):
+        QtCore.QObject.__init__(self)
         self.storage = savenlowest.SaveN(100, 
                          onMinimumAdded=onMinimumAdded,
                          onMinimumRemoved=onMinimumRemoved)
