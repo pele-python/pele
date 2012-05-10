@@ -14,4 +14,4 @@ I will add this to the build script later. To edit the gui use
 As far as I remember correctly, the following packages are required (on Fedora):
 - for running the gui: PyQt4, PyOpenGl
 - for development (contains the qt designer): PyQt4-devel 
-
+- js850> for ubuntu, I had to install python-qt4, python-opengl, python-qt4-gl
