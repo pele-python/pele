@@ -17,6 +17,7 @@ import multiprocessing as mp
 import threading as th
 import time
 from PyQt4 import QtCore,QtGui
+import numpy as np
 
 class BHProcess(mp.Process):
     def __init__(self, system, comm):
@@ -26,6 +27,8 @@ class BHProcess(mp.Process):
         self.system = system
     
     def run(self):
+        np.random.seed(int(time.time()*10000.))
+        print np.random.random(2)
         opt = self.system.createBasinHopping()
         opt.storage = self.insert
         #while(True):
