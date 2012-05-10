@@ -4,6 +4,8 @@ Created on Apr 18, 2012
 @author: vr274
 '''
 
+import threading
+
 class SaveN(object):
     '''
     Stores only the nsave lowest minima. Minima are considered as different
@@ -20,12 +22,16 @@ class SaveN(object):
         self.onMinimumAdded=onMinimumAdded
         self.onMinimumRemoved=onMinimumRemoved
         self.next_free_id = 1
+        self.lock = threading.Lock()
         
     def insert(self, E, coords):
         # does minima already exist, if yes exit?
+        self.lock.acquire()
         for i in self.data:
             if(abs(i[0] - E) < self.accuracy):
+                self.lock.release()
                 return
+                
         id = self.next_free_id
         self.next_free_id+=1
         # otherwise, add it to list & sort
@@ -39,6 +45,7 @@ class SaveN(object):
             removed = self.data.pop()
             if(self.onMinimumRemoved):
                 self.onMinimumRemoved(removed)
+        self.lock.release()
             
 if __name__ == "__main__":
     import numpy as np
