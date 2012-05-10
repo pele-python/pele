@@ -1,7 +1,8 @@
 from PyQt4 import QtGui
 import NewLJ
 import sys
-
+import numpy as np
+        
 class LJSystem:
     def __init__(self):
         dlg = NewLJDialog()
@@ -12,7 +13,6 @@ class LJSystem:
             raise BaseException("Aborted parameter dialog")
         
     def createBasinHopping(self):
-        import numpy as np
         import basinhopping as bh
         import potentials.lj as lj
         from take_step import random_displacement
@@ -22,6 +22,17 @@ class LJSystem:
         opt = bh.BasinHopping(coords,potential,
                           temperature=1., takeStep=step.takeStep)
         return opt
+    
+    def draw(self, coords):
+        from OpenGL import GL,GLUT
+        com=np.mean(coords, axis=0)                  
+        for xx in coords:
+            x=xx-com
+            GL.glPushMatrix()            
+            GL.glTranslate(x[0],x[1],x[2])
+            GLUT.glutSolidSphere(0.5,30,30)
+            GL.glPopMatrix()
+       
        
 
 class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):

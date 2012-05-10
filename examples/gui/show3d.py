@@ -29,6 +29,8 @@ class Show3D(QGLWidget):
 
     def setCoords(self, coords):
         self.coords = coords.reshape(coords.size/3,3)
+    def setSystem(self, system):
+        self.system = system
         
     def paintGL(self):
         '''
@@ -51,14 +53,7 @@ class Show3D(QGLWidget):
         glPushMatrix()
         glRotate(self.rotation[0], 1., 0.,0.)
         glRotate(self.rotation[1], 0., 1.,0.)
-        com=np.mean(self.coords, axis=0)      
-            
-        for xx in self.coords:
-            x=xx-com
-            glPushMatrix()            
-            glTranslate(x[0],x[1],x[2])
-    	    glutSolidSphere(0.5,30,30)
-    	    glPopMatrix()
+        self.system.draw(self.coords)
         glPopMatrix()	
         glFlush()
     	#glutSwapBuffers()

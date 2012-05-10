@@ -24,6 +24,7 @@ class MyForm(QtGui.QMainWindow):
         self.system = ljsystem.LJSystem()
     
     def SelectMinimum(self, item):
+        self.ui.widget.setSystem(self.system)
         self.ui.widget.setCoords(item.coords)
         self.ui.widget.repaint()
         
