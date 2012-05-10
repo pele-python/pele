@@ -14,6 +14,11 @@ def overlap_slow( XA, XB, L2, atomlist, nlist = [] ):
             E += np.exp(-r2/L2)
     return E
 
+def overlap_fast( XA, XB, L2, atomlist, nlist = [] ):
+    xa = XA.reshape(XA.size/3,3)[atomlist,:]
+    xb = XB.reshape(XB.size/3,3)[atomlist,:]
+    return np.sum(np.exp(-np.sum((xa[:,np.newaxis] - xb[:])**2, axis=2)/L2))
+   
 class MinPermDistPotential(potential.potential):
     """
     Find the rotation (in angle-axis representation) which maximizes the
@@ -41,10 +46,9 @@ class MinPermDistPotential(potential.potential):
             from overlap import overlap
             self.overlap = overlap
         except:
-            self.overlap = overlap_slow
-            print "Using slow energy calculation. Compile overlap.f90 to speed things up"
-            
-
+            self.overlap = overlap_fast
+            print "Using python energy calculation. Compile overlap.f90 to speed things up (a little)"
+        
     def getEnergy(self, AA ):
         # Rotate XB0 according to angle axis AA
         rot_mx = rot.aa2mx( AA )
