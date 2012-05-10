@@ -20,28 +20,17 @@ import time
 from PyQt4 import QtCore,QtGui
 
 class BHProcess(mp.Process):
-    def __init__(self, comm):
+    def __init__(self, system, comm):
         mp.Process.__init__(self)
         #QtCore.QThread.__init__(self)
         self.comm = comm
+        self.system = system
     
     def run(self):
-        import numpy as np
-        import potentials.lj as lj
-        import basinhopping as bh
-        import take_step.random_displacement as random_displacement
-        natoms = 114 
-
-        # random initial coordinates
-        coords = np.random.random(3 * natoms)
-        potential = lj.LJ()#1.0, 1.0, None)
-        step = random_displacement.takeStep(stepsize=0.5)
-        opt = bh.BasinHopping(coords,potential,
-                          temperature=1., takeStep=step.takeStep, storage=self.insert)
-        print "start bh"
+        opt = self.system.createBasinHopping()
+        opt.storage = self.insert
         #while(True):
         opt.run(500)
-        print "done with bh"
         
     def insert(self, E, coords):
             self.comm.send([E,coords])
@@ -60,12 +49,13 @@ class PollThread(QtCore.QThread):
 
 
 class BHRunner(QtCore.QObject):
-    def __init__(self, onMinimumAdded=None, onMinimumRemoved=None):
+    def __init__(self, system, onMinimumAdded=None, onMinimumRemoved=None):
         QtCore.QObject.__init__(self)
-        self.storage = savenlowest.SaveN(100, 
+        
+        self.storage = savenlowest.SaveN(system.nsave, 
                          onMinimumAdded=onMinimumAdded,
                          onMinimumRemoved=onMinimumRemoved)
-        
+        self.system = system
         
         #child_conn = self
         self.bhprocess = None
@@ -86,7 +76,7 @@ class BHRunner(QtCore.QObject):
                 return
         parent_conn, child_conn = mp.Pipe()
         
-        self.bhprocess = BHProcess(child_conn)
+        self.bhprocess = BHProcess(self.system, child_conn)
         self.bhprocess.start()
         self.poll_thread = PollThread(self, parent_conn)
         self.connect(self.poll_thread,QtCore.SIGNAL("Activated ( PyQt_PyObject ) "), self.minimum_found)        

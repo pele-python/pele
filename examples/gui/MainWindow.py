@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Mon May  7 16:46:18 2012
+# Created: Thu May 10 02:57:59 2012
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -133,18 +133,28 @@ class Ui_MainWindow(object):
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 681, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
+        self.menuSimulation = QtGui.QMenu(self.menubar)
+        self.menuSimulation.setTitle(QtGui.QApplication.translate("MainWindow", "Simulation", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuSimulation.setObjectName(_fromUtf8("menuSimulation"))
+        self.menuHelp = QtGui.QMenu(self.menubar)
+        self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuHelp.setObjectName(_fromUtf8("menuHelp"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
-        self.actionBla = QtGui.QAction(MainWindow)
-        self.actionBla.setText(QtGui.QApplication.translate("MainWindow", "bla", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionBla.setObjectName(_fromUtf8("actionBla"))
+        self.actionNew = QtGui.QAction(MainWindow)
+        self.actionNew.setText(QtGui.QApplication.translate("MainWindow", "New", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNew.setObjectName(_fromUtf8("actionNew"))
+        self.menuSimulation.addAction(self.actionNew)
+        self.menubar.addAction(self.menuSimulation.menuAction())
+        self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.listWidget, QtCore.SIGNAL(_fromUtf8("itemClicked(QListWidgetItem*)")), MainWindow.SelectMinimum)
         QtCore.QObject.connect(self.btnRun, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.StartBasinHopping)
+        QtCore.QObject.connect(self.actionNew, QtCore.SIGNAL(_fromUtf8("activated()")), MainWindow.NewSystem)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
