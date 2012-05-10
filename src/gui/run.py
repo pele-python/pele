@@ -2,7 +2,6 @@ from PyQt4 import QtCore, QtGui, Qt
 import PyQt4
 import MainWindow 
 import sys
-from storage import savenlowest
 import bhrunner
 
 class QMinimumInList(QtGui.QListWidgetItem):
@@ -12,15 +11,15 @@ class QMinimumInList(QtGui.QListWidgetItem):
         self.minid = id
 
 class MyForm(QtGui.QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, systemtype, parent=None):
         QtGui.QWidget.__init__(self)
         self.ui = MainWindow.Ui_MainWindow()
         self.ui.setupUi(self)
+	self.systemtype = systemtype
         self.NewSystem()
         
     def NewSystem(self):
-        import ljsystem
-        self.system = ljsystem.LJSystem()
+        self.system = self.systemtype()
         self.system.storage.onMinimumAdded=self.NewMinimum
         self.system.storage.onMinimumRemoved=self.RemoveMinimum
     
@@ -42,15 +41,15 @@ class MyForm(QtGui.QMainWindow):
         item.setCoords(coords.reshape(coords.size/3, 3))
         item.setMinimumId(id)
         #myapp.ui.listWidget.insertItem(1, item)
-        myapp.ui.listWidget.addItem(item)
+        self.ui.listWidget.addItem(item)
         #myapp.ui.listWidget.insertItem(1, str(E))
         #    c=c+1
-        myapp.ui.listWidget.sortItems(1) #Qt.AscendingOrder)
+        self.ui.listWidget.sortItems(1) #Qt.AscendingOrder)
     
     def RemoveMinimum(self, min):
         E = min[0]
         id = min[2]
-        widget = myapp.ui.listWidget
+        widget = self.ui.listWidget
         itms = widget.findItems('*', QtCore.Qt.MatchWildcard)
         for i in itms:
             if(i.minid == id):
@@ -60,9 +59,9 @@ class MyForm(QtGui.QMainWindow):
         self.bhrunner = bhrunner.BHRunner(self.system)
         self.bhrunner.start()
     
-if __name__ == "__main__":
+def run_gui(systemtype):
     app = QtGui.QApplication(sys.argv)
-    myapp = MyForm()
+    myapp = MyForm(systemtype)
             
     myapp.show()
     sys.exit(app.exec_())

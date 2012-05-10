@@ -3,6 +3,7 @@ import NewLJ
 import sys
 import numpy as np
 from storage import savenlowest
+import time
         
 class LJSystem:
     def __init__(self):
@@ -47,7 +48,5 @@ class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
         return int(self.lineNsave.text())
         
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    a = LJSystem()
-    print a.natoms
-    #print a.nsave
+    import gui.run
+    gui.run.run_gui(LJSystem)
