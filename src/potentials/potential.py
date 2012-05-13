@@ -12,6 +12,9 @@ class potential(object):
     '''
         
     def getEnergyGradient(self, coords):
+        return self.getEnergyGradientNumerical(coords)
+
+    def getEnergyGradientNumerical(self, coords):
         return self.getEnergy(coords), self.NumericalDerivative(coords, 1e-8)
             
     def NumericalDerivative(self, coords, eps):

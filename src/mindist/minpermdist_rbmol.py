@@ -121,7 +121,7 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     print "lowest structures found"
     aamin = saveit.data[0][1]
     dmin = 1000.
-    for (E, aa) in saveit.data:
+    for (E, aa, Id) in saveit.data:
         coords2 = coordsApplyRotation(coords2in, aa)
         dist, X11, X22 = findBestPermutationRBMol(coords1, coords2, mysys, permlist )
         print "E %11.5g dist %11.5g" % (E, dist)
