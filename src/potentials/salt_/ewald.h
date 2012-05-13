@@ -2,6 +2,8 @@
 #define MINGMIN__EWALD_H
 
 #include <complex>
+#include <boost/iterator/zip_iterator.hpp>
+#include <boost/tuple/tuple.hpp>
 #include "vec.h"
 
 using namespace votca::tools;
@@ -41,6 +43,7 @@ public:
 	double PairEnergy(double r, double q) const;
 
 	/**
+	 *
 	 * Calculate reals space gradient for a pair
 	 */
 	//double pair_gradient(const vec r_ij, vec &g) const;
@@ -53,10 +56,57 @@ public:
 	 * \param c box vector c
 	 */
 	void setBox(vec a, vec b, vec c);
+	void setAlpha(double alpha) { _alpha = alpha; }
+
+	class zip_vectors {
+	public:
+		zip_vectors(std::vector<vec> &positions, std::vector<double> &charges)
+			: _positions(positions), _charges(charges) {}
+
+		struct charge_t {
+			charge_t(vec &pos, double &q) : _pos(pos), _q(q) {}
+			const vec &getPos() { return _pos; }
+			double getQ() { return _q; }
+			charge_t *operator->() { return this; }
+		private:
+			double &_q;
+			vec &_pos;
+		};
+
+		struct iterator {
+			iterator();
+			iterator(std::vector<vec>::iterator ipos, std::vector<double>::iterator iq)
+				: _ipos(ipos), _iq(iq) {}
+			iterator(const iterator &i) : _ipos(i._ipos), _iq(i._iq) {}
+
+			charge_t operator*() {
+				return charge_t(*_ipos, *_iq);
+			}
+
+			iterator &operator++() {
+				++_ipos; ++_iq; return *this;
+			}
+
+			iterator &operator=(const iterator &i) {
+				_ipos = i._ipos; _iq = i._iq; return *this;
+			}
+
+			bool operator!=(const iterator &i) { return i._ipos != _ipos; }
+		private:
+			std::vector<vec>::iterator _ipos;
+			std::vector<double>::iterator _iq;
+		};
+
+		iterator begin() { return iterator(_positions.begin(), _charges.begin()); }
+		iterator end() { return iterator(_positions.end(), _charges.end()); }
+
+	private:
+		std::vector<vec> &_positions;
+		std::vector<double> &_charges;
+	};
 
 protected:
 	double _alpha;
-	double _sigma;
 
 	// reciprocal lattice vectors
 	vec _ar, _br, _cr;
@@ -94,6 +144,8 @@ inline void Ewald::setBox(vec a, vec b, vec c)
 	_ar = b^c / _V;
 	_br = c^a / _V;
 	_cr = a^b / _V;
+
+	_lmax = _mmax = _nmax = 10;
 }
 
 
@@ -106,22 +158,25 @@ inline double Ewald::PairEnergy(double r, double q) const
 template<typename container>
 inline double Ewald::EnergyKSpace(container &charges) const
 {
-	vec a,b,c;
 	double E = 0;
 	double V;
 
-	for(int l=0; l<_lmax; ++l) {
-		for(int m=0; m<_mmax; ++m) {
-			for(int n=0; n<_nmax; ++n) {
-				vec k = double(l)*a + double(m)*b + double(n)*c;
+	for(int l=1; l<_lmax; ++l) {
+		for(int m=1; m<_mmax; ++m) {
+			for(int n=1; n<_nmax; ++n) {
+				vec k = double(l)*_ar + double(m)*_br + double(n)*_cr;
 				double k2 = k*k;
-				std::complex<double> S=S(k, charges);
-				double S2 = S.real()*S.real() + S.imag()*S.imag();
+				std::complex<double> s=S(k, charges);
+				double S2 = s.real()*s.real() + s.imag()*s.imag();
 				E+= exp(-0.25*k2/(_alpha*_alpha)) / k2 * S2;
+				std::cout << "E " << E << " " << k2 << k << std::endl;
 			}
 		}
 	}
-	E = 2.*M_PI/V*E - SelfEnergy(charges);
+	E = 2.*M_PI/V*E ;
+	printf("\nKSPace %f\n", E);
+	printf("Self %f\n", SelfEnergy(charges));
+	return E + SelfEnergy(charges);
 }
 
 
@@ -132,8 +187,9 @@ inline std::complex<double> Ewald::S(const vec &k, container &charges) const
 	for(typename container::iterator crg=charges.begin();
 			crg!=charges.end();
 			++crg) {
-		S.real()+=crg.q()*exp(complex<double>(0.,-k*crg.r()));
+		S+=(*crg)->getQ()*exp(complex<double>(0.,-k*(*crg)->getPos()));
 	}
+	std::cout << S << std::endl;
 	return S;
 }
 
@@ -143,7 +199,9 @@ inline double Ewald::SelfEnergy(container &charges) const
 	double E=0;
 	for(typename container::iterator crg=charges.begin();
 		crg!=charges.end(); ++crg) {
-		E+=crg.q()*crg.q();
+		double q = (*crg)->getQ();
+		E+=q*q;
+//std::cout << (*crg)->getPos() << " " << q << endl;
 	}
 	return E*_alpha/sqrt(M_PI);
 }
