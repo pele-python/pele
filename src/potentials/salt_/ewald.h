@@ -4,6 +4,7 @@
 #include <complex>
 #include <boost/iterator/zip_iterator.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/static_assert.hpp>
 #include "vec.h"
 
 using namespace votca::tools;
@@ -75,25 +76,11 @@ public:
 		zip_vectors(std::vector<vec> &positions, std::vector<double> &charges)
 			: _positions(positions), _charges(charges) {}
 
-		struct charge_t {
-			charge_t(vec &pos, double &q) : _pos(pos), _q(q) {}
-			const vec &getPos() { return _pos; }
-			double getQ() { return _q; }
-			charge_t *operator->() { return this; }
-		private:
-			double &_q;
-			vec &_pos;
-		};
-
 		struct iterator {
 			iterator();
 			iterator(std::vector<vec>::iterator ipos, std::vector<double>::iterator iq)
 				: _ipos(ipos), _iq(iq) {}
 			iterator(const iterator &i) : _ipos(i._ipos), _iq(i._iq) {}
-
-			charge_t operator*() {
-				return charge_t(*_ipos, *_iq);
-			}
 
 			iterator &operator++() {
 				++_ipos; ++_iq; return *this;
@@ -103,6 +90,8 @@ public:
 				_ipos = i._ipos; _iq = i._iq; return *this;
 			}
 
+			const vec &getPos() { return *_ipos; }
+			double getQ() { return *_iq; }
 			bool operator!=(const iterator &i) { return i._ipos != _ipos; }
 		private:
 			std::vector<vec>::iterator _ipos;
@@ -117,6 +106,24 @@ public:
 		std::vector<double> &_charges;
 	};
 	double _f;
+
+	/**
+	 * \brief access policy to get position and charge from container iterator
+	 *
+	 * The access policy allows for a general interface. Use template specialization
+	 * to define how to access containers. Not defining a template specialization
+	 * for a container results in a compile time assert.
+	 *
+	 */
+	template <typename container>
+	class access_policy {
+	public:
+		//BOOST_STATIC_ASSERT_MSG(false, "Ewald: access policy for container not defined");
+		/// how to get position from iterator
+		inline static const vec &r(const typename container::iterator &i);
+		/// how to get charge from iterator
+		inline static double &q(const typename container::iterator &i);
+	};
 
 protected:
 	double _alpha;
@@ -208,7 +215,7 @@ inline std::complex<double> Ewald::S(const vec &k, container &charges) const
 	for(typename container::iterator crg=charges.begin();
 			crg!=charges.end();
 			++crg) {
-		S+=(*crg)->getQ()*exp(complex<double>(0.,-k*(*crg)->getPos()));
+		S+=access_policy<container>::q(crg)*exp(complex<double>(0.,-k*access_policy<container>::r(crg)));
 	}
 	//std::cout << S << std::endl;
 	return S;
@@ -220,7 +227,7 @@ inline double Ewald::SelfEnergy(container &charges) const
 	double E=0;
 	for(typename container::iterator crg=charges.begin();
 		crg!=charges.end(); ++crg) {
-		double q = (*crg)->getQ();
+		double q = access_policy<container>::q(crg);
 		E+=q*q;
 //std::cout << (*crg)->getPos() << " " << q << endl;
 	}
@@ -234,10 +241,17 @@ double Ewald::Dipolar(container &charges) const
 	vec d(0.,0.,0.);
 	for(typename container::iterator crg=charges.begin();
 		crg!=charges.end(); ++crg) {
-		d += (*crg)->getQ()*(*crg)->getPos();
+		d += access_policy<container>::q(crg)*access_policy<container>::r(crg);
 //std::cout << (*crg)->getPos() << " " << q << endl;
 	}
 	return 2.*M_PI/(3. * _V)*d*d;
 }
+
+template<>
+class Ewald::access_policy<Ewald::zip_vectors> {
+public:
+	inline static const vec &r(typename zip_vectors::iterator &i) {return i.getPos();}
+	inline static double q(typename zip_vectors::iterator &i) {return i.getQ();}
+};
 
 #endif
