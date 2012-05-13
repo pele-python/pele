@@ -58,6 +58,18 @@ public:
 	void setBox(vec a, vec b, vec c);
 	void setAlpha(double alpha) { _alpha = alpha; }
 
+	/***
+	 *	\brief set the permitivity in MD units.
+	 *
+	 *	Sets the permitivity in MD units. The default
+	 *	is in kJ nm / mol e^2 which means distances are
+	 *	in nm, charges in e and energies in kJ/mol
+	 *
+	 *	\parameter eps0 permitivity in MD units
+	 *
+	 */void setPermitivity(double eps0=5.727656e-4) { _f = 0.25 / (M_PI*eps0); }
+	//void setTolerance(double rcut, double rtol) { _alpha = erfcinv(rtol)/rcut; }
+
 	class zip_vectors {
 	public:
 		zip_vectors(std::vector<vec> &positions, std::vector<double> &charges)
@@ -104,6 +116,7 @@ public:
 		std::vector<vec> &_positions;
 		std::vector<double> &_charges;
 	};
+	double _f;
 
 protected:
 	double _alpha;
@@ -124,6 +137,9 @@ protected:
 	template<typename container>
 	std::complex<double> S(const vec &k, container &charges) const;
 
+	template<typename container>
+	double Dipolar(container &charges) const;
+
 	/**
 	 * Calculate self energy
 	 *
@@ -136,47 +152,52 @@ protected:
 };
 
 inline Ewald::Ewald()
-	: _alpha(1.), _V(0.0) {}
+	: _alpha(1.), _V(0.0)
+{
+	setPermitivity();
+}
 
 inline void Ewald::setBox(vec a, vec b, vec c)
 {
 	_V = abs((a^b)*c);
-	_ar = b^c / _V;
-	_br = c^a / _V;
-	_cr = a^b / _V;
+	_ar = 2.*M_PI*b^c / _V;
+	_br = 2.*M_PI*c^a / _V;
+	_cr = 2.*M_PI*a^b / _V;
 
-	_lmax = _mmax = _nmax = 10;
+	_lmax = _mmax = _nmax = 20;
 }
 
 
 inline double Ewald::PairEnergy(double r, double q) const
 {
 	double z = _alpha * r;
-	return q/r*erfc(z);
+	return _f*q/r*erfc(z);
 }
 
 template<typename container>
 inline double Ewald::EnergyKSpace(container &charges) const
 {
 	double E = 0;
-	double V;
 
-	for(int l=1; l<_lmax; ++l) {
-		for(int m=1; m<_mmax; ++m) {
-			for(int n=1; n<_nmax; ++n) {
+	for(int l=-_lmax; l<_lmax; ++l) {
+		for(int m=-_mmax; m<_mmax; ++m) {
+			for(int n=-_nmax; n<_nmax; ++n) {
+				if(l == 0 && m == 0 && n == 0) continue;
 				vec k = double(l)*_ar + double(m)*_br + double(n)*_cr;
 				double k2 = k*k;
 				std::complex<double> s=S(k, charges);
 				double S2 = s.real()*s.real() + s.imag()*s.imag();
 				E+= exp(-0.25*k2/(_alpha*_alpha)) / k2 * S2;
-				std::cout << "E " << E << " " << k2 << k << std::endl;
+				//std::cout << "E " << E << " " << k2 << k << std::endl;
 			}
 		}
 	}
-	E = 2.*M_PI/V*E ;
+	E = _f * 2.*M_PI/_V*E ;
 	printf("\nKSPace %f\n", E);
 	printf("Self %f\n", SelfEnergy(charges));
-	return E + SelfEnergy(charges);
+	printf("Recip %f\n", E - SelfEnergy(charges));
+//	printf("Dipolar %f\n", Dipolar(charges));
+	return E - SelfEnergy(charges); //+ Dipolar(charges);
 }
 
 
@@ -189,7 +210,7 @@ inline std::complex<double> Ewald::S(const vec &k, container &charges) const
 			++crg) {
 		S+=(*crg)->getQ()*exp(complex<double>(0.,-k*(*crg)->getPos()));
 	}
-	std::cout << S << std::endl;
+	//std::cout << S << std::endl;
 	return S;
 }
 
@@ -203,7 +224,20 @@ inline double Ewald::SelfEnergy(container &charges) const
 		E+=q*q;
 //std::cout << (*crg)->getPos() << " " << q << endl;
 	}
-	return E*_alpha/sqrt(M_PI);
+	return _f*E*_alpha/sqrt(M_PI);
+}
+
+template<typename container>
+double Ewald::Dipolar(container &charges) const
+{
+	double E=0;
+	vec d(0.,0.,0.);
+	for(typename container::iterator crg=charges.begin();
+		crg!=charges.end(); ++crg) {
+		d += (*crg)->getQ()*(*crg)->getPos();
+//std::cout << (*crg)->getPos() << " " << q << endl;
+	}
+	return 2.*M_PI/(3. * _V)*d*d;
 }
 
 #endif
