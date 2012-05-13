@@ -27,3 +27,13 @@ add_custom_command(
 )
 
 add_custom_target(${utils3} ALL DEPENDS ${utils3}.so)
+
+set(utils4 "lj")
+
+add_custom_command( 
+  OUTPUT ${utils4}.so
+  DEPENDS ${utils4}.f90
+  COMMAND f2py -c -m ${utils4} --fcompiler=gfortran --link-lapack_opt ${utils4}.f90 > ${utils4}.setup
+)
+
+add_custom_target(${utils4} ALL DEPENDS ${utils4}.so)
