@@ -76,7 +76,7 @@ class Molecule:
             xyz[i*3:i*3+3] = np.dot(mx, site.position) + com
         return xyz
 
-    def update(self, com, aa, do_derivatives = True):
+    def update_coords(self, com, aa, do_derivatives = True):
         """
         Update the position and orientation of the molecule and things dependent on these.
         """
@@ -87,13 +87,15 @@ class Molecule:
             site.abs_position = np.dot( self.rotation_mat, site.position ) + self.com
             for k in range(3):
                 site.drdp[k,:] = np.dot(self.drmat[k], site.position)
-            site.energy = 0.
-            site.gradient = np.zeros(3)
 
+    def zeroEnergyGrad(self):
         #zero interaction dependent things
+        for site in self.sitelist:
+            site.energy = 0.
+            site.gradient[:]  = 0.
         self.E = 0.
         self.comgrad[:] = 0.
-        self.aagrad[:] = 0
+        self.aagrad[:] = 0.
 
     def addSymmetryRotation(self, aa): #add rotational symmetry
         self.symmetrylist_rot.append( aa )

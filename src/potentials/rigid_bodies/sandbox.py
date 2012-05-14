@@ -16,6 +16,14 @@ class InteractionList:
 
     def addTypePair(self, i, j):
         self.types.append( (i,j) )
+
+    def getNPilist(self):
+        try:
+            return self.npilist
+        except:
+            #convert ilist to np array
+            self.npilist = np.array(self.ilist)
+            return self.npilist
         
 #def buildInteractionLists(typelist, interaction_matrix):
 #    type2list = dict()
@@ -59,7 +67,7 @@ class RBSandbox(potential):
 
     def getxyz(self, coords):
         """convert center of mass + angle-axis coords into xyz coordinates"""
-        self.update(coords)
+        self.update_coords(coords)
         xyz = np.zeros(self.nsites*3)
         isite = 0
         for mol in self.molecule_list:
@@ -88,7 +96,8 @@ class RBSandbox(potential):
 
 
     def getEnergy(self, coords):
-        self.update(coords)
+        self.update_coords(coords)
+        self.zeroEnergyGrad()
         E = 0.
         for imol1 in range(self.nmol):
             mol1 = self.molecule_list[imol1]
@@ -108,56 +117,29 @@ class RBSandbox(potential):
             #return True
         #return False
 
-    def update(self, coords):
+    def update_coords(self, coords):
         """
         update the com and angle-axis coords and dependents on all molecules
 
         only do it if coords is different.
         """
         #using coords_compare makes quench almost always fail for some reason.
-        #if self.coords_compare( coords):
-            #return
-        #self.oldcoords[:] = coords
+        if self.coords_compare( coords):
+            return
+        self.oldcoords[:] = coords[:]
         nmol= self.nmol
         for imol, mol in enumerate(self.molecule_list):
             com = coords[         imol*3 :          imol*3 + 3]
             aa  = coords[3*nmol + imol*3 : 3*nmol + imol*3 + 3]
-            mol.update( com, aa )
-        #for imol, mol in enumerate(self.molecule_list):
-            #print "abs position", imol, mol.com
-        
-    def getEnergyGradient_old(self, coords):
-        nmol = self.nmol
-        self.update(coords)
-        Etot = 0.
-        grad = np.zeros([2*self.nmol*3])
-        coords2 = np.zeros(6, np.float64)
-        #get site-site interactions
-        for mol1, mol2 in itertools.combinations( self.molecule_list, 2 ):
-            for site1 in mol1.sitelist:
-                coords2[0:3] = site1.abs_position
-                for site2 in mol2.sitelist:
-                    coords2[3:6] = site2.abs_position
-                    interaction = self.interaction_matrix[site1.type][site2.type]
-                    dE, V2 = interaction.getEnergyGradient(coords2)
-                    site1.energy += dE
-                    site2.energy += dE
-                    site1.gradient += V2[:3]
-                    site2.gradient += V2[3:]
-        #sum over sites
-        for i, mol in enumerate(self.molecule_list):
-            for site in mol.sitelist:
-                    mol.E += site.energy
-                    mol.comgrad += site.gradient
-                    #do angle axis part
-                    mol.aagrad += np.dot( site.drdp, site.gradient)
-            Etot += mol.E / 2.0
-            grad[         3*i :          3*i + 3] = mol.comgrad
-            grad[3*nmol + 3*i : 3*nmol + 3*i + 3] = mol.aagrad
-        return Etot, grad
+            mol.update_coords( com, aa )
+
+    def zeroEnergyGrad(self):
+        for mol in self.molecule_list:
+            mol.zeroEnergyGrad( )
 
     def getEnergyGradient(self, coords):
-        self.update(coords)
+        self.update_coords(coords)
+        self.zeroEnergyGrad()
         sitexyz = self.getxyz(coords)
         Etot, gradsite = self.siteEnergyGradient(sitexyz)
         grad = np.zeros([2*self.nmol*3])
@@ -177,10 +159,11 @@ class RBSandbox(potential):
     def updateSiteEnergyGradient(self, xyz, grad, ilist):
         pot = ilist.interaction
         try:
-            e, g = pot.getEnergyGradientList(xyz, ilist.ilist)
+            e, g = pot.getEnergyGradientList(xyz, ilist.getNPilist())
             grad += g #this is a bad way of adding in the gradients. 
             return e
         except:
+            print "using slow interaction lists potential"
             Etot = 0.
             coords2 = np.zeros(6, np.float64)
             for i,j in ilist.ilist:

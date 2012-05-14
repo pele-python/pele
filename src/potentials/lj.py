@@ -120,14 +120,12 @@ class LJ(potential.potential):
         return E, grad 
     
     def getEnergyGradientListFortran(self, coords, ilist):
+        #ilist = ilist_i.getNPilist()
+        ilist += 1 #fortran indexing
         nlist = len(ilist)
-        ilistnew = np.array(ilist)
-        ilistnew += 1 #fortran indexing
-        #print ilist
-        #print ilistnew
-        #exit(1)
         natoms = len(coords) / 3
-        E, grad = self.ljf.energy_gradient_ilist(coords, self.eps, self.sig, ilistnew, [natoms, nlist])
+        E, grad = self.ljf.energy_gradient_ilist(coords, self.eps, self.sig, ilist, [natoms, nlist])
+        ilist -= 1
         return E, grad 
     
     def getEnergyGradientList(self, coords, ilist):
