@@ -27,6 +27,8 @@ class Site:
         #self.rotation_matrix = rot.aa2mx(self.aa)
         self.energy = 0.
         self.gradient = np.zeros(3)
+        
+        self.index = 0 #used to order sites in the system
 
 
 
@@ -141,6 +143,22 @@ def setupLWOTP():
     
     otp.addSymmetryRotation( np.array([ 0., np.pi, 0.]))
     return otp
+
+def dumbbell(sig1 = 0.35, sig2 = 0.65):
+    pos1 = [0., 0., 0.5]
+    pos2 = [0., 0., -0.5]
+    dbel = Molecule()
+    dbel.insert_site(0, pos1)
+    dbel.insert_site(1, pos2)
+    
+    from potentials.lj import LJ
+    lj1 = LJ(sig = 2.*sig1)
+    lj2 = LJ(sig = 2.*sig2)
+    lj12 = LJ(sig = sig1+sig2)
+    interaction_matrix = [ [lj1, lj12], [lj12, lj2] ]
+    return dbel, interaction_matrix
+    
+    
 
 
 def test_molecule():
