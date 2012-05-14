@@ -175,17 +175,22 @@ class RBSandbox(potential):
 
 
     def updateSiteEnergyGradient(self, xyz, grad, ilist):
-        Etot = 0.
         pot = ilist.interaction
-        coords2 = np.zeros(6, np.float64)
-        for i,j in ilist.ilist:
-            coords2[:3] = xyz[i*3:i*3+3]
-            coords2[3:] = xyz[j*3:j*3+3]
-            E, g = pot.getEnergyGradient(coords2)
-            Etot += E
-            grad[i*3:i*3+3] += g[:3]
-            grad[j*3:j*3+3] += g[3:]
-        return Etot
+        try:
+            e, g = pot.getEnergyGradientList(xyz, ilist.ilist)
+            grad += g #this is a bad way of adding in the gradients. 
+            return e
+        except:
+            Etot = 0.
+            coords2 = np.zeros(6, np.float64)
+            for i,j in ilist.ilist:
+                coords2[:3] = xyz[i*3:i*3+3]
+                coords2[3:] = xyz[j*3:j*3+3]
+                E, g = pot.getEnergyGradient(coords2)
+                Etot += E
+                grad[i*3:i*3+3] += g[:3]
+                grad[j*3:j*3+3] += g[3:]
+            return Etot
 
     def siteEnergyGradient(self, xyz):
         grad = np.zeros( self.nsites * 3 )

@@ -67,7 +67,7 @@ fname = "otp.xyz"
 print "saving xyz coords to", fname
 from printing.print_atoms_xyz import printAtomsXYZ as printxyz
 with open(fname, "w") as fout:
-    for E, coords in saveit.data:
+    for E, coords, ID in saveit.data:
         xyz = mysys.getxyz(coords)
         printxyz( fout, xyz, atom_type=["N", "O", "O"])
 

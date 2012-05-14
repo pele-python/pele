@@ -118,6 +118,21 @@ class LJ(potential.potential):
         natoms = len(coords) / 3
         E, grad = self.ljf.ljenergy_gradient(coords, self.eps, self.sig, [natoms])
         return E, grad 
+    
+    def getEnergyGradientListFortran(self, coords, ilist):
+        nlist = len(ilist)
+        ilistnew = np.array(ilist)
+        ilistnew += 1 #fortran indexing
+        #print ilist
+        #print ilistnew
+        #exit(1)
+        natoms = len(coords) / 3
+        E, grad = self.ljf.energy_gradient_ilist(coords, self.eps, self.sig, ilistnew, [natoms, nlist])
+        return E, grad 
+    
+    def getEnergyGradientList(self, coords, ilist):
+        return self.getEnergyGradientListFortran(coords, ilist)
+
 
 
 def main():
