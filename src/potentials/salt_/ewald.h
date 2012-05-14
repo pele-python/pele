@@ -250,8 +250,8 @@ double Ewald::Dipolar(container &charges) const
 template<>
 class Ewald::access_policy<Ewald::zip_vectors> {
 public:
-	inline static const vec &r(typename zip_vectors::iterator &i) {return i.getPos();}
-	inline static double q(typename zip_vectors::iterator &i) {return i.getQ();}
+	inline static const vec &r(zip_vectors::iterator &i) {return i.getPos();}
+	inline static double q(zip_vectors::iterator &i) {return i.getQ();}
 };
 
 #endif
