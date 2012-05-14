@@ -44,26 +44,6 @@ class RBSandbox(potential):
                 isite += 1
         return xyz
 
-    def molmolEnergyOld(self, imol1, imol2, xyz):
-        E = 0.
-        mol1 = self.molecule_list[imol1]
-        mol2 = self.molecule_list[imol2]
-        #print "mol ", imol1, imol2
-        k1 = self.nsites_cum[imol1]*3
-        k2 = self.nsites_cum[imol2]*3
-        coords2 = np.zeros(6, np.float64)
-        for i1, site1 in enumerate(mol1.sitelist):
-            coords2[0:3] = xyz[k1 + i1*3 : k1 + i1*3+3]
-            for i2, site2 in enumerate(mol2.sitelist):
-                interaction = self.interaction_matrix[site1.type][site2.type]
-                coords2[3:] = xyz[k2 + i2*3 : k2 + i2*3+3]
-                dE = interaction.getEnergy(coords2)
-                E += dE
-                #dr = np.linalg.norm(coords2[0:3] - coords2[3:])
-                #print "    site", k1 + i1*3, k2 + i2*3, dE, dr
-
-        return E
-
     def molmolEnergy(self, mol1, mol2):
         """
         return the energy of interaction between mol1 and mol2.
@@ -95,29 +75,6 @@ class RBSandbox(potential):
 
 
 
-    def molmolEnergyGradient(self, mol1, mol2):
-        """
-        Update the energy and gradients on mol1 and mol2
-        """
-        E = 0.
-        coords2 = np.zeros(6, np.float64)
-        for i1, site1 in enumerate(mol1.sitelist):
-            coords2[0:3] = site1.abs_position
-            for i2, site2 in enumerate(mol2.sitelist):
-                coords2[3:6] = site2.abs_position
-                #print coords2
-                interaction = self.interaction_matrix[site1.type][site2.type]
-                dE, V2 = interaction.getEnergyGradient(coords2)
-                E += dE
-                mol1.E += dE
-                mol2.E += dE
-                mol1.comgrad += V2[0:3]
-                mol2.comgrad += V2[3:6]
-                #do angle axis part
-                #calculate drdp
-                mol1.aagrad += np.dot( site1.drdp, V2[0:3])
-                mol2.aagrad += np.dot( site2.drdp, V2[3:6])
-
     def coords_compare(self, coords):
         """ return true if coords is the same as oldcoords"""
         maxdif = np.max( np.abs(coords - self.oldcoords))
@@ -146,28 +103,35 @@ class RBSandbox(potential):
 
 
     def getEnergyGradient(self, coords):
-        """
-        return energy and gradient
-
-        update energy and gradient on all the molecules
-        """
         nmol = self.nmol
         self.update(coords)
         Etot = 0.
         grad = np.zeros([2*self.nmol*3])
-        for imol1 in range(self.nmol):
-            mol1 = self.molecule_list[imol1]
-            for imol2 in range(imol1):
-                #print "mol mol", imol1, imol2
-                mol2 = self.molecule_list[imol2]
-                self.molmolEnergyGradient(mol1, mol2)
-        for imol, mol in enumerate(self.molecule_list):
-            Etot += mol.E
-            grad[         3*imol :          3*imol + 3] = mol.comgrad
-            #print "aagrad", mol.aagrad
-            grad[3*nmol + 3*imol : 3*nmol + 3*imol + 3] = mol.aagrad
-        Etot /= 2.
+        coords2 = np.zeros(6, np.float64)
+        #get site-site interactions
+        for mol1, mol2 in itertools.combinations( self.molecule_list, 2 ):
+            for site1 in mol1.sitelist:
+                coords2[0:3] = site1.abs_position
+                for site2 in mol2.sitelist:
+                    coords2[3:6] = site2.abs_position
+                    interaction = self.interaction_matrix[site1.type][site2.type]
+                    dE, V2 = interaction.getEnergyGradient(coords2)
+                    site1.energy += dE
+                    site2.energy += dE
+                    site1.gradient += V2[:3]
+                    site2.gradient += V2[3:]
+        #sum over sites
+        for i, mol in enumerate(self.molecule_list):
+            for site in mol.sitelist:
+                    mol.E += site.energy
+                    mol.comgrad += site.gradient
+                    #do angle axis part
+                    mol.aagrad += np.dot( site.drdp, site.gradient)
+            Etot += mol.E / 2.0
+            grad[         3*i :          3*i + 3] = mol.comgrad
+            grad[3*nmol + 3*i : 3*nmol + 3*i + 3] = mol.aagrad
         return Etot, grad
+
 
 
 def test_symmetries(coords, mysys):

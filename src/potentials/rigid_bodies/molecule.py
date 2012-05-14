@@ -25,6 +25,8 @@ class Site:
         self.drdp = np.zeros([3,3])
         #self.aa = vec2aa( position )
         #self.rotation_matrix = rot.aa2mx(self.aa)
+        self.energy = 0.
+        self.gradient = np.zeros(3)
 
 
 
@@ -83,6 +85,8 @@ class Molecule:
             site.abs_position = np.dot( self.rotation_mat, site.position ) + self.com
             for k in range(3):
                 site.drdp[k,:] = np.dot(self.drmat[k], site.position)
+            site.energy = 0.
+            site.gradient = np.zeros(3)
 
         #zero interaction dependent things
         self.E = 0.

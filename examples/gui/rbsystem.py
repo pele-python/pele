@@ -41,7 +41,7 @@ class RBSystem:
         nmol = self.nmol
         #set up initial coords
         coords = np.zeros(2*3*nmol)
-        coords[0:nmol*3] = np.random.uniform(-1,1,[nmol*3]) * 1.3*(nsites)**(1./3)
+        coords[0:nmol*3] = np.random.uniform(-1,1,[nmol*3]) * 1.8*(nsites)**(1./3)
         for i in range(nmol):
             k = nmol*3 + 3*i
             coords[k : k + 3] = rot.random_aa()
