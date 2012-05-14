@@ -27,7 +27,7 @@ class LJSystem:
                           temperature=1., takeStep=step.takeStep)
         return opt
     
-    def draw(self, coordslinear):
+    def draw(self, coordslinear, index):
         from OpenGL import GL,GLUT
         coords = coordslinear.reshape(coordslinear.size/3, 3)
         com=np.mean(coords, axis=0)                  
