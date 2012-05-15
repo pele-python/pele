@@ -2,61 +2,35 @@ import numpy as np
 import molecule
 import rotations as rot
 import itertools
-from potentials.potential import potential
+from potentials.potential import potential as basepotential
 #from potentials.rigid_body_potential import RigidBodyPotential
 import copy
         
         
-class InteractionList:
-    def __init__(self, interaction, typepair):
-        self.interaction = interaction
-        self.ilist = []
-        self.types = [typepair]
-
-    def addPair(self, ij ):
-        self.ilist.append( ij )
-
-    def addTypePair(self, i, j):
-        self.types.append( (i,j) )
-
-    def getNPilist(self):
-        try:
-            return self.npilist
-        except:
-            #convert ilist to np array
-            self.npilist = np.array(self.ilist)
-            return self.npilist
-
-
-        
-#def buildInteractionLists(typelist, interaction_matrix):
-#    type2list = dict()
-#    for i in typelist:
-#        for j in typelist:
 
 class mypot:
     def __init__(self, getEnergy, getEnergyGradient):
         self.getEnergy = getEnergy
         self.getEnergyGradient = getEnergyGradient
 
-class RBSandbox(potential):
+        
+
+
+class RigidBodySystem(basepotential):
     """
     Defines a system of rigid body molecules
     """
-    def __init__(self, molecule_list, interaction_matrix, use_interaction_lists = False):
+    def __init__(self, molecule_list, potential = None):
         """
         molecule_list:  a list of Molecule objects that define the system
-
-        interaction_matrix:  a matrix that defines the interactions between site types.
-            inter = interaction_matrix[site1.type][site2.type] is the interaction between site1 and site2
-            inter.getEnergy(coords) returns the energy of the interaction
-            
-        use_interaction_lists: indicates the potentials can accept a list of interacting particles
-            This makes the calculation of energy, gradient much faster. 
+        
+        potential:      the class which calculates site energies and gradients
+                        It can be attached later via the function addPotential
         """
         self.molecule_list = [copy.deepcopy(mol) for mol in molecule_list]
-        self.interaction_matrix = interaction_matrix
         self.nmol = len(self.molecule_list)
+        if potential != None:
+            self.potential = potential
 
         self.nsites = 0
         self.typelist = []
@@ -69,13 +43,13 @@ class RBSandbox(potential):
                 self.typelist.append( site.type )
                 site.index = sitenum
                 sitenum += 1
-
-        self.buildInteractionLists()
-        self.addPotential( mypot(self.siteEnergy, self.siteEnergyGradient) )
         
         self.oldcoords = np.zeros(3*2*self.nmol)
 
     def addPotential(self, potential):
+        """
+        attach or replace the potential object.
+        """
         self.potential = potential
         
     def transformToXYZ(self, coords):
@@ -141,54 +115,23 @@ class RBSandbox(potential):
     def zeroEnergyGrad(self):
         for mol in self.molecule_list:
             mol.zeroEnergyGrad()
-
-
-    def siteEnergy(self, xyz):
-        Etot = 0.
-        for ilist in self.ilists:
-            pot = ilist.interaction
-            Etot += pot.getEnergyList(xyz, ilist.getNPilist() )
-        return Etot
-
-
-    def siteEnergyGradient(self, xyz):
-        """
-        return the energy and site-gradient from all site-site interactions
-        """
-        grad = np.zeros( self.nsites * 3 )
-        Etot = 0.
-        for ilist in self.ilists:
-            #get contribution from interaction list ilist
-            potential = ilist.interaction
-            de, dg = potential.getEnergyGradientList( xyz, ilist.getNPilist() )
-            Etot += de
-            grad += dg #there may be more efficient ways of adding in the gradient contributions
-        return Etot, grad
     
-    def buildInteractionLists(self):
-        """
-        build interaction lists from site types and interaction_matrix
-        """
-        self.ilists = []
-        type2ilist = dict()
-        for mol1, mol2 in itertools.combinations( self.molecule_list, 2 ):
-            for site1 in mol1.sitelist:
-                t1 = site1.type
-                i1 = site1.index
-                for site2 in mol2.sitelist:
-                    t2 = site2.type
-                    i2 = site2.index
-                    tp = (t1,t2)
-                    tpi = (t2,t1)
-                    if not tp in type2ilist:
-                        # I should check here if some of the interactions are the same
-                        inter = self.interaction_matrix[t1][t2]
-                        type2ilist[tp] = InteractionList(inter, (t1,t2) )
-                        self.ilists.append( type2ilist[tp] )
-                        if t1 != t2:
-                            type2ilist[tpi] = type2ilist[ tp ]
-                    type2ilist[tp].addPair( (i1,i2) )
         
+class RBSandbox(RigidBodySystem):
+    def __init__(self, molecule_list, interaction_matrix):
+        """
+        a wrapper class to combine RigidBodySystem with RBSandboxPotential
+
+        molecule_list:  a list of Molecule objects that define the system
+
+        interaction_matrix:  a matrix that defines the interactions between site types.
+            inter = interaction_matrix[site1.type][site2.type] is the interaction between site1 and site2
+            inter.getEnergy(coords) returns the energy of the interaction
+        """
+        RigidBodySystem.__init__(self, molecule_list)
+        from sandbox_potential import RBSandboxPotential
+        self.potential = RBSandboxPotential(self, interaction_matrix)
+        #self.addPotential( self.potential )
 
 
 
