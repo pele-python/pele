@@ -5,18 +5,45 @@ import itertools
 from potentials.potential import potential
 import copy
 
+class InteractionList:
+    def __init__(self, interaction, typepair):
+        self.interaction = interaction
+        self.ilist = []
+        self.types = [typepair]
+        
+    def addPair(self, ij ):
+        self.ilist.append( ij )
+
+    def addTypePair(self, i, j):
+        self.types.append( (i,j) )
+
+    def getNPilist(self):
+        try:
+            return self.npilist
+        except:
+            #convert ilist to np array
+            self.npilist = np.array(self.ilist)
+            return self.npilist
+        
+#def buildInteractionLists(typelist, interaction_matrix):
+#    type2list = dict()
+#    for i in typelist:
+#        for j in typelist:
 
 class RBSandbox(potential):
     """
     Defines a system of rigid body molecules
     """
-    def __init__(self, molecule_list, interaction_matrix):
+    def __init__(self, molecule_list, interaction_matrix, use_interaction_lists = False):
         """
         molecule_list:  a list of Molecule objects that define the system
 
         interaction_matrix:  a matrix that defines the interactions between site types.
             inter = interaction_matrix[site1.type][site2.type] is the interaction between site1 and site2
             inter.getEnergy(coords) returns the energy of the interaction
+            
+        use_interaction_lists: indicates the potentials can accept a list of interacting particles
+            This makes the calculation of energy, gradient much faster. 
         """
         self.molecule_list = [copy.deepcopy(mol) for mol in molecule_list]
         self.interaction_matrix = interaction_matrix
@@ -25,17 +52,22 @@ class RBSandbox(potential):
         self.nsites = 0
         self.typelist = []
         self.nsites_cum = np.zeros(self.nmol, np.int)
+        sitenum = 0
         for i, mol in enumerate(self.molecule_list):
             self.nsites_cum[i] = self.nsites
             self.nsites += mol.nsites
             for site in mol.sitelist:
                 self.typelist.append( site.type )
+                site.index = sitenum
+                sitenum += 1
 
+        self.buildInteractionLists()
+        
         self.oldcoords = np.zeros(3*2*self.nmol)
 
     def getxyz(self, coords):
-        """convert center of mass + angle-axis coords into xyz coordinates"""
-        self.update(coords)
+        """convert center of mass + angle-axis coords into xyz coordinates of all the sites"""
+        self.update_coords(coords)
         xyz = np.zeros(self.nsites*3)
         isite = 0
         for mol in self.molecule_list:
@@ -44,130 +76,104 @@ class RBSandbox(potential):
                 isite += 1
         return xyz
 
-    def molmolEnergyOld(self, imol1, imol2, xyz):
-        E = 0.
-        mol1 = self.molecule_list[imol1]
-        mol2 = self.molecule_list[imol2]
-        #print "mol ", imol1, imol2
-        k1 = self.nsites_cum[imol1]*3
-        k2 = self.nsites_cum[imol2]*3
-        coords2 = np.zeros(6, np.float64)
-        for i1, site1 in enumerate(mol1.sitelist):
-            coords2[0:3] = xyz[k1 + i1*3 : k1 + i1*3+3]
-            for i2, site2 in enumerate(mol2.sitelist):
-                interaction = self.interaction_matrix[site1.type][site2.type]
-                coords2[3:] = xyz[k2 + i2*3 : k2 + i2*3+3]
-                dE = interaction.getEnergy(coords2)
-                E += dE
-                #dr = np.linalg.norm(coords2[0:3] - coords2[3:])
-                #print "    site", k1 + i1*3, k2 + i2*3, dE, dr
-
-        return E
-
-    def molmolEnergy(self, mol1, mol2):
-        """
-        return the energy of interaction between mol1 and mol2.
-
-        don't update the molecules
-        """
-        E = 0.
-        coords2 = np.zeros(6, np.float64)
-        for site1 in mol1.sitelist:
-            coords2[0:3] = site1.abs_position
-            for site2 in mol2.sitelist:
-                coords2[3:6] = site2.abs_position
-                #print coords2
-                interaction = self.interaction_matrix[site1.type][site2.type]
-                dE = interaction.getEnergy(coords2)
-                E += dE
-        return E
-
-
-    def getEnergy(self, coords):
-        self.update(coords)
-        E = 0.
-        for imol1 in range(self.nmol):
-            mol1 = self.molecule_list[imol1]
-            for imol2 in range(0,imol1):
-                mol2 = self.molecule_list[imol2]
-                E += self.molmolEnergy(mol1, mol2)
-        return E
-
-
-
-    def molmolEnergyGradient(self, mol1, mol2):
-        """
-        Update the energy and gradients on mol1 and mol2
-        """
-        E = 0.
-        coords2 = np.zeros(6, np.float64)
-        for i1, site1 in enumerate(mol1.sitelist):
-            coords2[0:3] = site1.abs_position
-            for i2, site2 in enumerate(mol2.sitelist):
-                coords2[3:6] = site2.abs_position
-                #print coords2
-                interaction = self.interaction_matrix[site1.type][site2.type]
-                dE, V2 = interaction.getEnergyGradient(coords2)
-                E += dE
-                mol1.E += dE
-                mol2.E += dE
-                mol1.comgrad += V2[0:3]
-                mol2.comgrad += V2[3:6]
-                #do angle axis part
-                #calculate drdp
-                mol1.aagrad += np.dot( site1.drdp, V2[0:3])
-                mol2.aagrad += np.dot( site2.drdp, V2[3:6])
-
     def coords_compare(self, coords):
         """ return true if coords is the same as oldcoords"""
-        maxdif = np.max( np.abs(coords - self.oldcoords))
-        return maxdif < 1e-16
-            #print "maxdif", maxdif, coords[0:3]
-            #return True
-        #return False
+        return all(coords == self.oldcoords)
 
-    def update(self, coords):
+    def update_coords(self, coords):
         """
         update the com and angle-axis coords and dependents on all molecules
 
-        only do it if coords is different.
+        only do it if coords has changed.
         """
         #using coords_compare makes quench almost always fail for some reason.
-        #if self.coords_compare( coords):
-            #return
-        self.oldcoords[:] = coords
+        if self.coords_compare( coords):
+            return
+        self.oldcoords[:] = coords[:]
         nmol= self.nmol
         for imol, mol in enumerate(self.molecule_list):
             com = coords[         imol*3 :          imol*3 + 3]
             aa  = coords[3*nmol + imol*3 : 3*nmol + imol*3 + 3]
-            mol.update( com, aa )
-        #for imol, mol in enumerate(self.molecule_list):
-            #print "abs position", imol, mol.com
+            mol.update_coords( com, aa )
 
+    def zeroEnergyGrad(self):
+        for mol in self.molecule_list:
+            mol.zeroEnergyGrad()
+
+    def getEnergy(self, coords):
+        self.update_coords(coords)
+        self.zeroEnergyGrad()
+        sitexyz = self.getxyz(coords)
+        Etot = self.siteEnergy(sitexyz)
+        return Etot
 
     def getEnergyGradient(self, coords):
-        """
-        return energy and gradient
-
-        update energy and gradient on all the molecules
-        """
-        nmol = self.nmol
-        self.update(coords)
-        Etot = 0.
+        self.update_coords(coords)
+        self.zeroEnergyGrad()
+        sitexyz = self.getxyz(coords)
+        Etot, gradsite = self.siteEnergyGradient(sitexyz)
+        #now convert site gradients into molecule angle axis gradients
         grad = np.zeros([2*self.nmol*3])
-        for imol1 in range(self.nmol):
-            mol1 = self.molecule_list[imol1]
-            for imol2 in range(imol1):
-                #print "mol mol", imol1, imol2
-                mol2 = self.molecule_list[imol2]
-                self.molmolEnergyGradient(mol1, mol2)
-        for imol, mol in enumerate(self.molecule_list):
-            Etot += mol.E
-            grad[         3*imol :          3*imol + 3] = mol.comgrad
-            #print "aagrad", mol.aagrad
-            grad[3*nmol + 3*imol : 3*nmol + 3*imol + 3] = mol.aagrad
-        Etot /= 2.
+        nmol = self.nmol
+        for i, mol in enumerate(self.molecule_list):
+            for site in mol.sitelist:
+                    isite = site.index
+                    site.gradient = gradsite[isite*3:isite*3+3]
+                    mol.comgrad += site.gradient
+                    #do angle axis part
+                    mol.aagrad += np.dot( site.drdp, site.gradient)
+            grad[         3*i :          3*i + 3] = mol.comgrad
+            grad[3*nmol + 3*i : 3*nmol + 3*i + 3] = mol.aagrad
         return Etot, grad
+
+
+    def siteEnergy(self, xyz):
+        Etot = 0.
+        for ilist in self.ilists:
+            pot = ilist.interaction
+            Etot += pot.getEnergyList(xyz, ilist.getNPilist() )
+        return Etot
+
+
+    def siteEnergyGradient(self, xyz):
+        """
+        return the energy and site-gradient from all site-site interactions
+        """
+        grad = np.zeros( self.nsites * 3 )
+        Etot = 0.
+        for ilist in self.ilists:
+            #get contribution from interaction list ilist
+            potential = ilist.interaction
+            de, dg = potential.getEnergyGradientList( xyz, ilist.getNPilist() )
+            Etot += de
+            grad += dg #there may be more efficient ways of adding in the gradient contributions
+        return Etot, grad
+    
+    def buildInteractionLists(self):
+        """
+        build interaction lists from site types and interaction_matrix
+        """
+        self.ilists = []
+        type2ilist = dict()
+        for mol1, mol2 in itertools.combinations( self.molecule_list, 2 ):
+            for site1 in mol1.sitelist:
+                t1 = site1.type
+                i1 = site1.index
+                for site2 in mol2.sitelist:
+                    t2 = site2.type
+                    i2 = site2.index
+                    tp = (t1,t2)
+                    tpi = (t2,t1)
+                    if not tp in type2ilist:
+                        # I should check here if some of the interactions are the same
+                        inter = self.interaction_matrix[t1][t2]
+                        type2ilist[tp] = InteractionList(inter, (t1,t2) )
+                        self.ilists.append( type2ilist[tp] )
+                        if t1 != t2:
+                            type2ilist[tpi] = type2ilist[ tp ]
+                    type2ilist[tp].addPair( (i1,i2) )
+        
+
 
 
 def test_symmetries(coords, mysys):
@@ -182,6 +188,15 @@ def test_symmetries(coords, mysys):
             coords[kaa : kaa + 3] = aanew
             print "E symmetry", mysys.getEnergy(coords) 
 
+
+def random_coords(nmol, nsites = None):
+    if nsites == None: nsites = nmol
+    coords = np.zeros(2*3*nmol)
+    coords[0:nmol*3] = np.random.uniform(-1,1,[nmol*3]) * 1.3*(nsites)**(1./3)
+    for i in range(nmol):
+        k = nmol*3 + 3*i
+        coords[k : k + 3] = rot.random_aa()
+    return coords
 
 
 def test_sandbox(nmol = 6):
@@ -257,8 +272,47 @@ def test_sandbox(nmol = 6):
     
     test_symmetries(coords, mysys)
 
+def test_sandbox_dumbbell():
+    print "***********************************"
+    print "testing dumbbell molecule"
+    print "***********************************"
 
+    dbel, imatrix = molecule.dumbbell()
+    nmol = 5
+    print imatrix[0][0] == imatrix[0][1]
+    print imatrix[1][0] == imatrix[0][1]
+    
+    #set up a list of molecules
+    mols = [dbel for i in range(nmol)]
+
+    #set up the RBSandbox object
+    mysys = RBSandbox(mols, imatrix)
+    nsites = mysys.nsites
+
+    coords = random_coords(nmol, nsites)
+    
+    #calculate the initial energy
+    Einit = mysys.getEnergy(coords)
+    print "initial energy", Einit
+
+    #test the gradient
+    numericV = mysys.NumericalDerivative(coords, 1e-10)
+    numericV = numericV.copy()
+    print "numeric V", numericV
+
+    E, V = mysys.getEnergyGradient(coords)
+    print "energy from gradient", E, "difference", E - Einit
+    #print "analytic gradient", V
+    maxgrad_relative = np.max(np.abs(V-numericV)/np.abs(V))
+    maxgraddiff = np.max(np.abs(V - numericV))
+    print "max error in gradient", maxgraddiff, "max relative", maxgrad_relative
+
+    #do a quench to make sure everything is working well
+    import optimize.quench as quench
+    coords, E, rms, funcalls = quench.quench(coords, mysys.getEnergyGradient, iprint=-1)
+    print "postquench E", E, "rms", rms, "funtion calls", funcalls
 
 if __name__ == "__main__":
     test_sandbox()
+    test_sandbox_dumbbell()
 

@@ -60,7 +60,7 @@ class Show3D(QGLWidget):
             if index == 2:
                 color = [0.00, 0.65, 0., 1.]
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color)
-            self.system.draw(coords)
+            self.system.draw(coords, index)
         
         glPopMatrix()    
         glFlush()

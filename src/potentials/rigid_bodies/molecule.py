@@ -20,11 +20,15 @@ class Site:
     def __init__(self, type, position):
         self.type = type
         assert( len(position) == 3 )
-        self.position = np.array(position)
-        self.abs_position = np.array(position)
-        self.drdp = np.zeros([3,3])
+        self.position = np.array(position) #position in molecule frame
+        self.abs_position = np.array(position) #absolute position in space
+        self.drdp = np.zeros([3,3]) #derivatives of position w.r.t. aa
         #self.aa = vec2aa( position )
         #self.rotation_matrix = rot.aa2mx(self.aa)
+        self.energy = 0.
+        self.gradient = np.zeros(3)
+        
+        self.index = 0 #used to order sites in the system
 
 
 
@@ -39,9 +43,9 @@ class Molecule:
         self.aa = np.zeros(3)
         self.com = np.zeros(3)
         self.rotation_mat = np.zeros([3,3])
-        self.drmat = [np.zeros([3,3]) for i in range(3)]
-        self.comgrad = np.zeros(3)
-        self.aagrad = np.zeros(3)
+        self.drmat = [np.zeros([3,3]) for i in range(3)] #derivatives of the rotation matrix
+        self.comgrad = np.zeros(3)  #gradient of the center of mass
+        self.aagrad = np.zeros(3)   #gradient of the angle-axis coords
         
         self.symmetrylist_rot = [] #list of rotational symmetries
         #TODO: implement other types of symmetry
@@ -54,6 +58,18 @@ class Molecule:
         """
         self.sitelist.append( Site(type, position) )
         self.nsites += 1
+    
+    def correctCoM(self):
+        """
+        perform a few tasks after the sites have been fully defined
+        """
+        #move the center of mass to the origin
+        com = np.zeros(3)
+        for site in self.sitelist:
+            com += site.position
+        com /= self.nsites
+        for site in self.sitelist:
+            site.position -= com
 
     def getxyz_rmat(self, rmat, com = np.zeros(3)):
         """return the xyz positions of all sites in the molecule-frame"""
@@ -72,7 +88,7 @@ class Molecule:
             xyz[i*3:i*3+3] = np.dot(mx, site.position) + com
         return xyz
 
-    def update(self, com, aa, do_derivatives = True):
+    def update_coords(self, com, aa, do_derivatives = True):
         """
         Update the position and orientation of the molecule and things dependent on these.
         """
@@ -84,10 +100,14 @@ class Molecule:
             for k in range(3):
                 site.drdp[k,:] = np.dot(self.drmat[k], site.position)
 
+    def zeroEnergyGrad(self):
         #zero interaction dependent things
+        for site in self.sitelist:
+            site.energy = 0.
+            site.gradient[:]  = 0.
         self.E = 0.
         self.comgrad[:] = 0.
-        self.aagrad[:] = 0
+        self.aagrad[:] = 0.
 
     def addSymmetryRotation(self, aa): #add rotational symmetry
         self.symmetrylist_rot.append( aa )
@@ -136,7 +156,25 @@ def setupLWOTP():
     otp.insert_site(0, pos3 )
     
     otp.addSymmetryRotation( np.array([ 0., np.pi, 0.]))
+    otp.correctCoM()
     return otp
+
+def dumbbell(sig1 = 0.35, sig2 = 0.65):
+    pos1 = [0., 0., 0.5]
+    pos2 = [0., 0., -0.5]
+    dbel = Molecule()
+    dbel.insert_site(0, pos1)
+    dbel.insert_site(1, pos2)
+    dbel.correctCoM()
+    
+    from potentials.lj import LJ
+    lj1 = LJ(sig = 2.*sig1)
+    lj2 = LJ(sig = 2.*sig2)
+    lj12 = LJ(sig = sig1+sig2)
+    interaction_matrix = [ [lj1, lj12], [lj12, lj2] ]
+    return dbel, interaction_matrix
+    
+    
 
 
 def test_molecule():

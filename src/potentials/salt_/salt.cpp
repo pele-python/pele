@@ -3,6 +3,9 @@
 #include "vec.h"
 #include "matrix.h"
 #include <vector>
+#include "ewald.h"
+
+#define USE_EWALD
 
 using namespace wales;
 
@@ -31,6 +34,13 @@ public:
 	System(int n) {
 		_pos.resize(n);
 		_grad.resize(n);
+		_charges.resize(n);
+		for(int i=0; i<n/2; ++i) {
+			_charges[i] = g_q1;
+			_charges[i+n/2] = g_q2;
+		}
+
+		_ewald.setAlpha(0.4);
 	}
 
 	void setLattice(double lattice[]) {
@@ -43,6 +53,7 @@ public:
 		_boxinv = _box;
 		_boxinv.Invert();
 		buildImages();
+		_ewald.setBox(getA(), getB(), getC());
 		//printf("I have %d ghosts\n", _images.size());
 		return;
 		vec a = _box.getCol(0); vec b = _box.getCol(1); vec c = _box.getCol(2);
@@ -138,6 +149,10 @@ public:
 
 	vec &pos(int i) { return _pos[i]; }
 	vec &grad(int i) { return _grad[i]; }
+
+	std::vector<vec> &pos() { return _pos; }
+	std::vector<double> &charges() { return _charges; }
+
 	void addGLatt(const vec &g, const vec &r_ij)
 	{
 		vec u = -(_boxinv*r_ij);
@@ -168,13 +183,17 @@ public:
 				}
 	}
 
+	Ewald &ewald() { return _ewald; }
+
 	std::vector<vec> &images() { return _images; }
 private:
 	matrix _box, _boxinv;
 	std::vector<vec> _pos;
+	std::vector<double> _charges;
 	std::vector<vec> _grad;
 	std::vector<vec> _images;
 	double _glatt[6];
+	Ewald _ewald;
 };
 
 class PairInteraction
@@ -196,7 +215,12 @@ public:
 
 	double CalcEnergy() {
 		double energy=0;
-		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6)) + _q12/_cutoff;
+		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6))
+#ifdef USE_EWALD
+				+ _sys.ewald().PairEnergy(_cutoff, _q12);
+#else
+				+ _q12/_cutoff;
+#endif
 		if(_offset1 == _offset2) {
 			for(int i=_offset1; i<_offset1 + _n1; ++i)
 				for(int j=i; j<_offset1 + _n1; ++j) {
@@ -263,7 +287,12 @@ public:
 		if(r2>_cutoff*_cutoff || r2 < 1e-8) {
 			return 0.;
 		}
-		return 4.*_eps*(pow(_sigma*_sigma/r2,6) - pow(_sigma*_sigma/r2, 3)) + _q12/sqrt(r2) - _cut_shift;
+		return 4.*_eps*(pow(_sigma*_sigma/r2,6) - pow(_sigma*_sigma/r2, 3)) - _cut_shift;
+#ifdef USE_EWALD
+				+ _sys.ewald().PairEnergy(sqrt(r2), _q12);
+#else
+				+ _q12/sqrt(r2);
+#endif
 	}
 
 	double pair_gradient(const vec &r_ij, vec &g)
@@ -282,7 +311,12 @@ public:
 
 		g*=4.0*_eps*(12.*r12 -  6.*r6)/r2 + _q12/(r2*r);
 
-		return 4.*_eps*(r12 - r6) + _q12/r - _cut_shift;
+		return 4.*_eps*(r12 - r6) - _cut_shift
+//#ifdef USE_EWALD
+//				+ _sys.ewald().PairEnergy(r, _q12);
+//#else
+				+ _q12/r;
+//#endif
 	}
 
 private:
@@ -316,7 +350,18 @@ double energy(boost::python::numeric::array& px)
 	energy += ab.CalcEnergy();
 	energy += bb.CalcEnergy();
 	energy += sys.addPressure();
-
+#ifdef USE_EWALD
+	Ewald::zip_vectors adapter(sys.pos(), sys.charges());
+	cout << "foo" << endl;
+	int ii=0;
+	for(Ewald::zip_vectors::iterator i= adapter.begin();
+			i != adapter.end(); ++i) {
+		//cout << "bla" << (*i)->getPos() << " " << (*i)->getQ() << endl
+		//		<< sys.pos(ii) << " " << sys.charges()[ii] << endl;
+		//++ii;
+	}
+	energy += sys.ewald().EnergyKSpace(adapter);
+#endif
 	return energy;
 }
 

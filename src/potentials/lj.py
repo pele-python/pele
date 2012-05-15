@@ -40,8 +40,15 @@ class LJ(potential.potential):
                 self.getEnergy = self.getEnergyFast
                 self.getEnergyGradient = self.getEnergyGradientFast
             except:
-                print "using slow python LJ implimentation"
-                pass
+                try: 
+                    import fortran.lj as ljf
+                    print "using fast fortran LJ implimentation"
+                    self.ljf = ljf
+                    self.getEnergy = self.getEnergyFortran
+                    self.getEnergyGradient = self.getEnergyGradientFortran
+                    self.getEnergyGradientList = self.getEnergyGradientListFortran
+                except:
+                    print "using slow python LJ implimentation"
 
     def getSep_periodic(self, vec1, vec2 ):
         assert len(vec1) == 3, "get_sep: vec length not 3"
@@ -103,6 +110,26 @@ class LJ(potential.potential):
         E = self.ljc.gradient(coords, grad, self.eps, self.sig)
         return E, grad 
 
+    def getEnergyFortran(self, coords):
+        natoms = len(coords) / 3
+        E = self.ljf.ljenergy(coords, self.eps, self.sig, [natoms])
+        return E
+
+    def getEnergyGradientFortran(self, coords):
+        natoms = len(coords) / 3
+        E, grad = self.ljf.ljenergy_gradient(coords, self.eps, self.sig, [natoms])
+        return E, grad 
+    
+    def getEnergyGradientListFortran(self, coords, ilist):
+        #ilist = ilist_i.getNPilist()
+        ilist += 1 #fortran indexing
+        nlist = len(ilist)
+        natoms = len(coords) / 3
+        E, grad = self.ljf.energy_gradient_ilist(coords, self.eps, self.sig, ilist, [natoms, nlist])
+        ilist -= 1
+        return E, grad 
+    
+
 
 def main():
     #test class
@@ -116,6 +143,11 @@ def main():
     print "E", E 
     print "V"
     print V
+
+    print "try a quench"
+    from optimize.quench import quench
+    quench( coords, lj.getEnergyGradient, iprint=1 )
+    #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
     
 
 if __name__ == "__main__":
