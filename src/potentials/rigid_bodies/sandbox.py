@@ -3,14 +3,16 @@ import molecule
 import rotations as rot
 import itertools
 from potentials.potential import potential
+#from potentials.rigid_body_potential import RigidBodyPotential
 import copy
-
+        
+        
 class InteractionList:
     def __init__(self, interaction, typepair):
         self.interaction = interaction
         self.ilist = []
         self.types = [typepair]
-        
+
     def addPair(self, ij ):
         self.ilist.append( ij )
 
@@ -24,11 +26,18 @@ class InteractionList:
             #convert ilist to np array
             self.npilist = np.array(self.ilist)
             return self.npilist
+
+
         
 #def buildInteractionLists(typelist, interaction_matrix):
 #    type2list = dict()
 #    for i in typelist:
 #        for j in typelist:
+
+class mypot:
+    def __init__(self, getEnergy, getEnergyGradient):
+        self.getEnergy = getEnergy
+        self.getEnergyGradient = getEnergyGradient
 
 class RBSandbox(potential):
     """
@@ -62,8 +71,41 @@ class RBSandbox(potential):
                 sitenum += 1
 
         self.buildInteractionLists()
+        self.addPotential( mypot(self.siteEnergy, self.siteEnergyGradient) )
         
         self.oldcoords = np.zeros(3*2*self.nmol)
+
+    def addPotential(self, potential):
+        self.potential = potential
+        
+    def transformToXYZ(self, coords):
+        return self.getxyz(coords)
+    
+    def updateGradients(self, gradsite):
+        self.zeroEnergyGrad()
+        grad = np.zeros([2*self.nmol*3])
+        nmol = self.nmol
+        for i, mol in enumerate(self.molecule_list):
+            for site in mol.sitelist:
+                    isite = site.index
+                    site.gradient = gradsite[isite*3:isite*3+3]
+                    mol.comgrad += site.gradient
+                    #do angle axis part
+                    mol.aagrad += np.dot( site.drdp, site.gradient)
+            grad[         3*i :          3*i + 3] = mol.comgrad
+            grad[3*nmol + 3*i : 3*nmol + 3*i + 3] = mol.aagrad
+        return grad
+
+    def getEnergy(self, coords):
+        xyz = self.transformToXYZ(coords)
+        return self.potential.getEnergy(xyz)
+
+    def getEnergyGradient(self, coords):
+        xyz = self.transformToXYZ(coords)
+        E, xyzgrad = self.potential.getEnergyGradient(xyz)
+        grad = self.updateGradients(xyzgrad)
+        return E, grad
+
 
     def getxyz(self, coords):
         """convert center of mass + angle-axis coords into xyz coordinates of all the sites"""
@@ -99,32 +141,6 @@ class RBSandbox(potential):
     def zeroEnergyGrad(self):
         for mol in self.molecule_list:
             mol.zeroEnergyGrad()
-
-    def getEnergy(self, coords):
-        self.update_coords(coords)
-        self.zeroEnergyGrad()
-        sitexyz = self.getxyz(coords)
-        Etot = self.siteEnergy(sitexyz)
-        return Etot
-
-    def getEnergyGradient(self, coords):
-        self.update_coords(coords)
-        self.zeroEnergyGrad()
-        sitexyz = self.getxyz(coords)
-        Etot, gradsite = self.siteEnergyGradient(sitexyz)
-        #now convert site gradients into molecule angle axis gradients
-        grad = np.zeros([2*self.nmol*3])
-        nmol = self.nmol
-        for i, mol in enumerate(self.molecule_list):
-            for site in mol.sitelist:
-                    isite = site.index
-                    site.gradient = gradsite[isite*3:isite*3+3]
-                    mol.comgrad += site.gradient
-                    #do angle axis part
-                    mol.aagrad += np.dot( site.drdp, site.gradient)
-            grad[         3*i :          3*i + 3] = mol.comgrad
-            grad[3*nmol + 3*i : 3*nmol + 3*i + 3] = mol.aagrad
-        return Etot, grad
 
 
     def siteEnergy(self, xyz):
