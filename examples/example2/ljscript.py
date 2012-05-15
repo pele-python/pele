@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 import numpy as np
-import potentials.lj as lj
-#import potentials.ljcpp as lj
+#import potentials.lj as lj
+import potentials.ljcpp as lj
 import basinhopping as bh
 import take_step.random_displacement as random_displacement
 
