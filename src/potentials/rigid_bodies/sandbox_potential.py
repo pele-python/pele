@@ -1,10 +1,7 @@
 import numpy as np
-import molecule
-import rotations as rot
 import itertools
-from potentials.potential import potential
+from potentials.potential import potential as basepotential
 #from potentials.rigid_body_potential import RigidBodyPotential
-import copy
         
         
 class InteractionList:
@@ -31,7 +28,7 @@ class InteractionList:
             return self.npilist
 
 
-class RBSandboxPotential(potential):
+class RBSandboxPotential(basepotential):
     """
     This class builds a potential object for rigid bodies
     """
