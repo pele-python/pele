@@ -6,7 +6,7 @@ from optimize.quench import quench
 import basinhopping
 import storage.savenlowest as storage
 from mindistutils import CoMToOrigin, alignRotation, findBestPermutationRBMol, getDistaa
-
+from aamindist import aadistance
 
 def coordsApplyRotation(coordsin, aa):
     coords = coordsin.copy()
@@ -55,16 +55,6 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     if permlist == None:
         permlist = [range(nmol)]
     
-    coords1in = coords1.copy()
-    coords2in = coords2.copy()
-    
-    comcoords1 = copy.copy(coords1[0:3*nmol])
-    aacoords1  = copy.copy(coords1[3*nmol:])
-    
-    comcoords2 = copy.copy(coords2[0:3*nmol])
-    aacoords2  = copy.copy(coords2[3*nmol:])
-
-
     ###############################################
     # move the centers of mass to the origin
     ###############################################
@@ -148,7 +138,18 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     ###################################################################
     #dmin, X2min = alignRotation( X1, X2min )
 
+    ###################################################################
+    #minimize the cartesian distance between the angle axis coords
+    #by applying symmetry operations.
+    ###################################################################
+    for i in range(3*nmol,2*3*nmol,3):
+        aadistance( coords1[i:i+3], coords2min[i:i+3] )
+        
+
     return dmin, coords1, coords2min
+
+
+
 
 def randomCoords(nmol):
     coords = np.zeros(2*3*nmol, np.float64)
@@ -164,6 +165,7 @@ def test(coords1, coords2, mysys, permlist):
     printlist.append((coords1.copy(), "after quench"))
     printlist.append((coords2.copy(), "after quench"))
     coords2in = coords2.copy()
+    coords1in = coords1.copy()
 
 
     distinit = getDistaa(coords1, coords2, mysys)
@@ -173,8 +175,11 @@ def test(coords1, coords2, mysys, permlist):
     distfinal = getDistaa(coords1, coords2, mysys)
     print "dist returned    ", dist
     print "dist from coords ", distfinal
-    print "initial energy", mysys.getEnergy(coords2in)
-    print "final energy  ", mysys.getEnergy(coords2)
+    print "coords2 initial energy", mysys.getEnergy(coords2in)
+    print "coords2 final energy  ", mysys.getEnergy(coords2)
+    print "coords1 initial energy", mysys.getEnergy(coords1in)
+    print "coords1 final energy  ", mysys.getEnergy(coords1)
+
 
     printlist.append((coords1.copy(), "coords1 after mindist"))
     printlist.append((coords2.copy(), "coords2 after mindist"))

@@ -96,7 +96,7 @@ class Molecule:
         self.com[:] = com
         self.rotation_mat, self.drmat[0], self.drmat[1], self.drmat[2] = rotMatDeriv(aa, do_derivatives)
         for site in self.sitelist:
-            site.abs_position = np.dot( self.rotation_mat, site.position ) + self.com
+            site.abs_position[:] = np.dot( self.rotation_mat, site.position ) + self.com
             for k in range(3):
                 site.drdp[k,:] = np.dot(self.drmat[k], site.position)
 
