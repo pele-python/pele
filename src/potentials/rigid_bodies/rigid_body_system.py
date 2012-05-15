@@ -41,7 +41,17 @@ class RigidBodySystem(basepotential):
         self.potential = potential
         
     def transformToXYZ(self, coords):
-        return self.getxyz(coords)
+        """
+        convert center of mass + angle-axis coords into xyz coordinates of all the sites
+        """
+        self.update_coords(coords)
+        xyz = np.zeros(self.nsites*3)
+        isite = 0
+        for mol in self.molecule_list:
+            for site in mol.sitelist:
+                xyz[isite*3 : isite*3 + 3] = site.abs_position
+                isite += 1
+        return xyz
     
     def updateGradients(self, gradsite):
         self.zeroEnergyGrad()
@@ -70,15 +80,7 @@ class RigidBodySystem(basepotential):
 
 
     def getxyz(self, coords):
-        """convert center of mass + angle-axis coords into xyz coordinates of all the sites"""
-        self.update_coords(coords)
-        xyz = np.zeros(self.nsites*3)
-        isite = 0
-        for mol in self.molecule_list:
-            for site in mol.sitelist:
-                xyz[isite*3 : isite*3 + 3] = site.abs_position
-                isite += 1
-        return xyz
+        return self.transformToXYZ(coords)
 
     def coords_compare(self, coords):
         """ return true if coords is the same as oldcoords"""
