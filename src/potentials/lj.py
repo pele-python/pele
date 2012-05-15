@@ -46,6 +46,7 @@ class LJ(potential.potential):
                     self.ljf = ljf
                     self.getEnergy = self.getEnergyFortran
                     self.getEnergyGradient = self.getEnergyGradientFortran
+                    self.getEnergyGradientList = self.getEnergyGradientListFortran
                 except:
                     print "using slow python LJ implimentation"
 
@@ -128,9 +129,6 @@ class LJ(potential.potential):
         ilist -= 1
         return E, grad 
     
-    def getEnergyGradientList(self, coords, ilist):
-        return self.getEnergyGradientListFortran(coords, ilist)
-
 
 
 def main():
