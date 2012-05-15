@@ -31,9 +31,10 @@ def overlap_gradient_slow( XA, XB, L2, atomlist, nlist = [] ):
     return E, grad
 
 def overlap_fast( XA, XB, L2, atomlist, nlist = [] ):
-    print "using victor's overlap"
     xa = XA.reshape(XA.size/3,3)[atomlist,:]
     xb = XB.reshape(XB.size/3,3)[atomlist,:]
+    #note: drmat = xa[:,np.newaxis] - xb[:] is an array of shape (natoms,natoms,3)
+    #      drmat[i,j,:] == xa[i,:] - xb[j,:]
     return np.sum(np.exp(-np.sum((xa[:,np.newaxis] - xb[:])**2, axis=2)/L2))
    
 class MinPermDistPotential(potential.potential):
