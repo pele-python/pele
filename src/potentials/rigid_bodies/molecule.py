@@ -106,32 +106,30 @@ class Molecule:
             for k in range(3):
                 site.drdp[k,:] = np.dot(self.drmat[k,:,:], site.position)
 
-    def getGradients(self, aa, sitegrad, recalculate_rot_mat = False):
+    def getGradients(self, aa, sitegrad_in, recalculate_rot_mat = False):
         """
         convert site gradients to com and aa gradients
-        
-        do all calculation on the fly
         """
-        sitegrad = np.reshape(sitegrad, [self.nsites,3] )
-        self.aagrad[:] = 0.
+        sitegrad = np.reshape(sitegrad_in, [self.nsites,3] )
         #calculate rotation matrix and derivatives
         if recalculate_rot_mat:
             self.update_rot_mat(aa, True)
         drmat = self.drmat
         x = self.sitexyz_molframe
-        y = sitegrad
-        #self.aagrad = np.sum( np.sum( np.sum( drmat[:,np.newaxis,:,:]*x[np.newaxis,:,np.newaxis,:]*y[np.newaxis,:,:,np.newaxis]  ,axis=3), axis=2), axis=1 )
-        self.aagrad = np.sum( np.sum( drmat * np.sum(x[:,np.newaxis,:]*y[:,:,np.newaxis] , axis=0), axis=2), axis=1 )
-            
-            
-        #for i in range(self.nsites): #change this loop
-            #self.aagrad += np.dot( np.dot( self.drmat[:,:,:], self.sitexyz_molframe[i,:] ), sitegrad[i,:] )
-            ##for k in range(3): #loop over spatial dimensions
-                ##self.aagrad[k] += np.dot( sitegrad[i,:], np.dot( self.drmat[k,:,:], self.sitexyz_molframe[i,:] ) )
-        
-        #self.aagrad = np.dot( np.dot( self.drmat[:,:,:], self.sitexyz_molframe[i,:] ), sitegrad[i,:] )
-
-
+        y = sitegrad      
+        #self.aagrad = np.sum( np.sum( drmat * np.sum(x[:,np.newaxis,:]*y[:,:,np.newaxis] , axis=0), axis=2), axis=1 )
+        self.aagrad = np.sum( np.sum( drmat * np.dot( np.transpose(y), x) , axis=2), axis=1 )
+        #for k in range(3):
+            #self.aagrad[k] = np.sum( drmat[k,:,:] * np.dot( np.transpose(y), x) )
+        """
+        #The above looks very complicated, but it boils down to a three way sum.
+        #The below is the simplest way to write it, but it's very slow
+        self.aagrad = np.zeros(3)
+            for i in range(3):
+                for j in range(3):
+                    for isite in range(self.nsites):
+                        self.aagrad[:] += drmat[:,i,j]*self.sitexyz_molframe[isite,j]*sitegrad[isite,i]
+        """
         self.comgrad = np.sum( sitegrad, axis=0 ) 
         return self.comgrad, self.aagrad
 
