@@ -45,11 +45,12 @@ class RigidBodySystem(basepotential):
         convert center of mass + angle-axis coords into xyz coordinates of all the sites
         """
         #self.update_coords(coords)
+        self.update_rot_mat(coords)
         xyz = np.zeros(self.nsites*3)
         isite = 0
         for i, mol in enumerate(self.molecule_list):
-            iaa = self.nmol * 3 + i*3
-            xyz[isite*3 : isite*3 + 3*mol.nsites] = mol.getxyz(com = coords[i*3:i*3+3], aa=coords[iaa:iaa+3] )
+            #iaa = self.nmol * 3 + i*3
+            xyz[isite*3 : isite*3 + 3*mol.nsites] = mol.getxyz_rmat(rmat=mol.rotation_mat, com = coords[i*3:i*3+3] )
             isite += mol.nsites
         return xyz
     
@@ -114,6 +115,23 @@ class RigidBodySystem(basepotential):
             com = coords[         imol*3 :          imol*3 + 3]
             aa  = coords[3*nmol + imol*3 : 3*nmol + imol*3 + 3]
             mol.update_coords( com, aa )
+    
+    def update_rot_mat(self, coords):
+        """
+        update the com and angle-axis coords and dependents on all molecules
+
+        only do it if coords has changed.
+        """
+        #using coords_compare makes quench almost always fail for some reason.
+        if self.coords_compare( coords):
+            return
+        self.oldcoords[:] = coords[:]
+        nmol= self.nmol
+        for imol, mol in enumerate(self.molecule_list):
+            #com = coords[         imol*3 :          imol*3 + 3]
+            aa  = coords[3*nmol + imol*3 : 3*nmol + imol*3 + 3]
+            mol.update_rot_mat( aa )
+
 
     def zeroEnergyGrad(self):
         for mol in self.molecule_list:

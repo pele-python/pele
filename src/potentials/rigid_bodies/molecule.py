@@ -90,6 +90,10 @@ class Molecule:
         mx = rot.aa2mx(aa)
         return self.getxyz_rmat(mx, com)
 
+    def update_rot_mat(self, aa, do_derivatives = True):
+        self.rotation_mat, self.drmat[0], self.drmat[1], self.drmat[2] = rotMatDeriv(aa, do_derivatives)
+
+
     def update_coordsOld(self, com, aa, do_derivatives = True):
         """
         Update the position and orientation of the molecule and things dependent on these.
@@ -102,26 +106,26 @@ class Molecule:
             for k in range(3):
                 site.drdp[k,:] = np.dot(self.drmat[k], site.position)
 
-    def getGradients(self, aa, sitegrad):
+    def getGradients(self, aa, sitegrad, recalculate_rot_mat = False):
         """
         convert site gradients to com and aa gradients
         
         do all calculation on the fly
         """
-        comgrad = np.zeros(3)
-        aagrad = np.zeros(3) 
-        drmat = np.zeros([3,3,3]) #three 3x3 matrices
+        sitegrad = np.reshape(sitegrad, [self.nsites,3] )
+        self.aagrad[:] = 0.
         drdp = np.zeros([3,3])
         #calculate rotation matrix and derivatives
-        rotation_mat, drmat[0,:,:], drmat[1,:,:], drmat[2,:,:] = rotMatDeriv(aa, True)
-        #sitexyz_body = 
+        if recalculate_rot_mat:
+            self.update_rot_mat(aa, True)
         for i, site in enumerate(self.sitelist): #change this loop
             for k in range(3): #loop over spatial dimensions
-                drdp[k,:] = np.dot( drmat[k,:,:], site.position)
+                drdp[k,:] = np.dot( self.drmat[k], self.sitexyz_molframe[i,:] )
             #print sitegrad[i*3 : i*3 + 3], i, np.shape(sitegrad)
-            aagrad += np.dot( drdp, sitegrad[i*3 : i*3 + 3] )
-            comgrad += sitegrad[i*3 : i*3 + 3]
-        return comgrad, aagrad
+            self.aagrad += np.dot( drdp, sitegrad[i,:] )
+
+        self.comgrad = np.sum( sitegrad, axis=0 ) 
+        return self.comgrad, self.aagrad
 
 
     def zeroEnergyGradOld(self):
