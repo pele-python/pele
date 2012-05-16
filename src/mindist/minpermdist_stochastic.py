@@ -322,13 +322,13 @@ if __name__ == "__main__":
     print "******************************"
     print "testing normal LJ"
     print "******************************"
-    #test_LJ(12)
+    test_LJ(12)
     print ""
     print ""
     print "************************************"
     print "testing binary LJ with permute lists"
     print "************************************"
-    #test_binary_LJ(12)
+    test_binary_LJ(12)
     
     unittest.main()
     

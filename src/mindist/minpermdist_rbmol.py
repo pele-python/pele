@@ -149,6 +149,76 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     return dmin, coords1, coords2min
 
 
+import unittest
+import testmindist
+class TestMinPermDistRBMol_OTP(unittest.TestCase):
+    """
+    otp has three sites all interacting with the same potential
+    
+    it has one internal symmetry
+    """
+    def setUp(self):
+        from potentials.rigid_bodies.molecule import Molecule, setupLWOTP
+        from potentials.rigid_bodies.sandbox import RBSandbox
+        from potentials.lj import LJ
+        from optimize.quench import quench
+        
+        #set up system
+        nmol = 5
+        self.nmol = nmol
+        otp = setupLWOTP()
+        #set up a list of molecules
+        mols = [otp for i in range(nmol)]
+        # define the interaction matrix for the system.
+        # for LWOTP there is only one atom type, so this is trivial
+        lj = LJ()
+        interaction_matrix = [[lj]]
+        #set up the RBSandbox object
+        mysys = RBSandbox(mols, interaction_matrix)
+        self.pot = mysys
+        self.nsites = mysys.nsites
+    
+        self.permlist = [range(nmol)]
+        
+        self.coords1 = testmindist.randomCoordsAA(nmol)
+        ret = quench(self.coords1, self.pot.getEnergyGradient)
+        self.coords1 = ret[0]
+                
+    def runtest(self, X1, X2):
+        X1i = np.copy(X1)
+        X2i = np.copy(X2)
+        
+        (distreturned, X1, X2) = minPermDistRBMol(X1, X2, mysys=self.pot, permlist=self.permlist)
+
+        distinit = getDistaa(X1i, X2i, self.pot)
+        distfinal = getDistaa(X1 , X2, self.pot)
+        self.assertTrue( abs(distfinal- distreturned) < 1e-14, "returned distance is wrong: %g != %g" % (distfinal, distreturned) )
+        self.assertTrue( distfinal <= distinit )
+        
+        #test if the energies have changed
+        Ei = self.pot.getEnergy(X1i)        
+        Ef = self.pot.getEnergy(X1)
+        self.assertTrue( abs(Ei- Ef) < 1e-12, "Energy of X1 changed: %g - %g = %g" % (Ei, Ef, Ei - Ef) )
+        Ei = self.pot.getEnergy(X2i)        
+        Ef = self.pot.getEnergy(X2)
+        self.assertTrue( abs(Ei- Ef) < 1e-12, "Energy of X2 changed: %g - %g = %g" % (Ei, Ef, Ei - Ef) )
+
+        return distreturned, X1, X2
+
+
+    def testOPT(self):
+        coords1 = np.copy(self.coords1)
+        coords1i = np.copy(coords1)
+        
+        coords2 = testmindist.randomCoordsAA(self.nmol)
+        ret = quench(coords2, self.pot.getEnergyGradient)
+        coords2 = ret[0]
+        coords2i = np.copy(coords2)
+
+        self.runtest( coords1, coords2)
+
+
+
 
 
 def randomCoords(nmol):
@@ -252,5 +322,7 @@ if __name__ == "__main__":
     print "testing for OTP"
     print "******************************"
     test_LWOTP(5)
+    
+    unittest.main()
     
     
