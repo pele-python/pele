@@ -67,6 +67,7 @@ def test_sandbox(nmol = 6):
     #set up the RBSandbox object
     mysys = RBSandbox(mols, interaction_matrix)
     nsites = mysys.nsites
+    
 
     #get an initial set of coordinates
     comcoords = np.random.uniform(-1,1,[nmol*3]) * 1.3*(nsites)**(1./3)
@@ -77,6 +78,7 @@ def test_sandbox(nmol = 6):
     coords[3*nmol:2*3*nmol] = aacoords[:]
     print "lencoords, len aacoords", len (coords), len(aacoords), len(comcoords)
 
+    #print "xyz coords", mysys.transformToXYZ(coords)
 
     #save the initial set of coords
     printlist = []

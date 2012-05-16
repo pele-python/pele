@@ -44,13 +44,13 @@ class RigidBodySystem(basepotential):
         """
         convert center of mass + angle-axis coords into xyz coordinates of all the sites
         """
-        self.update_coords(coords)
+        #self.update_coords(coords)
         xyz = np.zeros(self.nsites*3)
         isite = 0
-        for mol in self.molecule_list:
-            for site in mol.sitelist:
-                xyz[isite*3 : isite*3 + 3] = site.abs_position
-                isite += 1
+        for i, mol in enumerate(self.molecule_list):
+            iaa = self.nmol * 3 + i*3
+            xyz[isite*3 : isite*3 + 3*mol.nsites] = mol.getxyz(com = coords[i*3:i*3+3], aa=coords[iaa:iaa+3] )
+            isite += mol.nsites
         return xyz
     
     def updateGradientsOld(self, gradsite, coords):

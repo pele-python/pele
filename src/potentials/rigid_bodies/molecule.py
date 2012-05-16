@@ -81,14 +81,14 @@ class Molecule:
 
     def getxyz(self, com=np.array([0.,0.,0.]), aa=np.array([0.,0.,1e-6]) ):
         """return the xyz positions of all sites in the molecule-frame"""
-        nsites = len(self.sitelist)
-        xyz = np.zeros(nsites*3, np.float64)
+        nsites = self.nsites
+        xyz = np.zeros(nsites*3)
         mx = rot.aa2mx(aa)
         for i,site in enumerate(self.sitelist):
             xyz[i*3:i*3+3] = np.dot(mx, site.position) + com
         return xyz
 
-    def update_coords(self, com, aa, do_derivatives = True):
+    def update_coordsOld(self, com, aa, do_derivatives = True):
         """
         Update the position and orientation of the molecule and things dependent on these.
         """
@@ -97,8 +97,8 @@ class Molecule:
         self.rotation_mat, self.drmat[0], self.drmat[1], self.drmat[2] = rotMatDeriv(aa, do_derivatives)
         for site in self.sitelist:
             site.abs_position[:] = np.dot( self.rotation_mat, site.position ) + self.com
-            #for k in range(3):
-                #site.drdp[k,:] = np.dot(self.drmat[k], site.position)
+            for k in range(3):
+                site.drdp[k,:] = np.dot(self.drmat[k], site.position)
 
     def getGradients(self, aa, sitegrad):
         """
@@ -122,7 +122,7 @@ class Molecule:
         return comgrad, aagrad
 
 
-    def zeroEnergyGrad(self):
+    def zeroEnergyGradOld(self):
         #zero interaction dependent things
         for site in self.sitelist:
             site.energy = 0.
