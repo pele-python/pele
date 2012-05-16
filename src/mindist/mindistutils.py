@@ -127,6 +127,8 @@ def alignRotation(XA, XB):
     for j in range(nsites):
         i = 3*j
         XB[i:i+3] = np.dot( rot_mx, XB[i:i+3] )
+    
+    dist = np.linalg.norm(XA - XB) #more precise than what it returned
 
     return dist, XB
 

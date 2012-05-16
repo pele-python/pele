@@ -108,6 +108,90 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
 
     return dmin, X1, X2min
 
+
+
+
+
+import unittest
+class TestMinPermDistStochastic_BLJ(unittest.TestCase):
+    def setUp(self):
+        from potentials.ljpshift import LJpshift as BLJ
+        from optimize.quench import quench 
+        self.natoms = 25
+        self.ntypeA = int(self.natoms * .8)
+        self.pot = BLJ(self.natoms, self.ntypeA)
+        self.permlist = [range(self.ntypeA), range(self.ntypeA, self.natoms)]
+        
+        self.X1 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
+        
+        #run a quench so the structure is not crazy
+        ret = quench(self.X1, self.pot.getEnergyGradient)
+        self.X1 = ret[0]
+        
+    def runtest(self, X1, X2):
+        X1i = np.copy(X1)
+        X2i = np.copy(X2)
+        
+        (distreturned, X1, X2) = minPermDistStochastic(X1, X2, permlist=self.permlist)
+
+        distinit = np.linalg.norm(self.X1 - X2i)
+        distfinal = np.linalg.norm(X1 - X2)
+        self.assertTrue( abs(distfinal- distreturned) < 1e-14, "returned distance is wrong: %g != %g" % (distfinal, distreturned) )
+        self.assertTrue( distfinal <= distinit )
+        
+        #test if the energies have changed
+        Ei = self.pot.getEnergy(X1i)        
+        Ef = self.pot.getEnergy(X1)
+        self.assertTrue( abs(Ei- Ef) < 1e-12, "Energy of X1 changed: %g - %g = %g" % (Ei, Ef, Ei - Ef) )
+        Ei = self.pot.getEnergy(X2i)        
+        Ef = self.pot.getEnergy(X2)
+        self.assertTrue( abs(Ei- Ef) < 1e-12, "Energy of X2 changed: %g - %g = %g" % (Ei, Ef, Ei - Ef) )
+
+        return distreturned, X1, X2
+
+    def testBLJ(self):
+        X1 = np.copy(self.X1)
+        X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
+        
+        #run a quench so the structure is not crazy
+        ret = quench(X2, self.pot.getEnergyGradient)
+        X2 = ret[0]
+
+        self.runtest(X1, X2)
+
+
+    def testBLJ_isomer(self):
+        """
+        test with BLJ potential.  We have two classes of permutable atoms  
+        
+        test case where X2 is an isomer of X1.
+        """
+        X1i = np.copy(self.X1)
+        X1 = np.copy(self.X1)        
+        X2 = np.copy(X1)
+        
+        #rotate X2 randomly
+        aa = rot.random_aa()
+        rot_mx = rot.aa2mx( aa )
+        for j in range(self.natoms):
+            i = 3*j
+            X2[i:i+3] = np.dot( rot_mx, X1[i:i+3] )
+        
+        #permute X2
+        import random, mindistutils, copy
+        for atomlist in self.permlist:
+            perm = copy.copy(atomlist)
+            random.shuffle( perm )
+            X2 = mindistutils.permuteArray( X2, perm)
+
+        X2i = np.copy(X2)
+        
+        distreturned, X1, X2 = self.runtest(X1, X2)
+        
+        #it's an isomer, so the distance should be zero
+        self.assertTrue( abs(distreturned) < 1e-14, "didn't find isomer: dist = %g" % (distreturned) )
+
+
 def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz"):
     import copy
     natoms = len(X1) / 3
@@ -255,12 +339,14 @@ if __name__ == "__main__":
     print "******************************"
     print "testing normal LJ"
     print "******************************"
-    test_LJ(12)
+    #test_LJ(12)
     print ""
     print ""
     print "************************************"
     print "testing binary LJ with permute lists"
     print "************************************"
-    test_binary_LJ(12)
+    #test_binary_LJ(12)
+    
+    unittest.main()
     
     
