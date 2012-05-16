@@ -36,16 +36,16 @@ opt.run(100)
 #Example 3: Saving the coordinates as an xyz file
 ############################################################
 coords=np.random.random(3*natoms)
-import saveit
+from storage.savenlowest import SaveN as saveit
 
-storage = saveit.saveit()
+storage = saveit()
 opt = bh.BasinHopping(coords, potential, step.takeStep, storage=storage.insert)
 opt.run(100)
 
 with open("lowest", "w") as fout:
   fout.write( str(natoms) + "\n")
-  fout.write( str(storage.lowestE) + "\n")
-  atoms=storage.lowestcoords.reshape(natoms, 3)  
+  fout.write( str(storage.data[0][0]) + "\n")
+  atoms=storage.data[0][1].reshape(natoms, 3)  
   for a in atoms: 
       fout.write( "LA "+ str(a[0])+ " " +  str(a[1]) + " " + str(a[2]) + "\n" ) 
 
