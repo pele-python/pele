@@ -43,7 +43,7 @@ class Molecule:
         self.aa = np.zeros(3)
         self.com = np.zeros(3)
         self.rotation_mat = np.zeros([3,3])
-        self.drmat = [np.zeros([3,3]) for i in range(3)] #derivatives of the rotation matrix
+        self.drmat = np.zeros([3,3,3]) #three 3x3 matrices for the derivatives of the rotation matrix
         self.comgrad = np.zeros(3)  #gradient of the center of mass
         self.aagrad = np.zeros(3)   #gradient of the angle-axis coords
         
@@ -91,7 +91,7 @@ class Molecule:
         return self.getxyz_rmat(mx, com)
 
     def update_rot_mat(self, aa, do_derivatives = True):
-        self.rotation_mat, self.drmat[0], self.drmat[1], self.drmat[2] = rotMatDeriv(aa, do_derivatives)
+        self.rotation_mat, self.drmat[0,:,:], self.drmat[1,:,:], self.drmat[2,:,:] = rotMatDeriv(aa, do_derivatives)
 
 
     def update_coordsOld(self, com, aa, do_derivatives = True):
@@ -100,11 +100,11 @@ class Molecule:
         """
         self.aa[:] = aa
         self.com[:] = com
-        self.rotation_mat, self.drmat[0], self.drmat[1], self.drmat[2] = rotMatDeriv(aa, do_derivatives)
+        self.rotation_mat, self.drmat[0,:,:], self.drmat[1,:,:], self.drmat[2,:,:] = rotMatDeriv(aa, do_derivatives)
         for site in self.sitelist:
             site.abs_position[:] = np.dot( self.rotation_mat, site.position ) + self.com
             for k in range(3):
-                site.drdp[k,:] = np.dot(self.drmat[k], site.position)
+                site.drdp[k,:] = np.dot(self.drmat[k,:,:], site.position)
 
     def getGradients(self, aa, sitegrad, recalculate_rot_mat = False):
         """
@@ -114,15 +114,13 @@ class Molecule:
         """
         sitegrad = np.reshape(sitegrad, [self.nsites,3] )
         self.aagrad[:] = 0.
-        drdp = np.zeros([3,3])
         #calculate rotation matrix and derivatives
         if recalculate_rot_mat:
             self.update_rot_mat(aa, True)
-        for i, site in enumerate(self.sitelist): #change this loop
-            for k in range(3): #loop over spatial dimensions
-                drdp[k,:] = np.dot( self.drmat[k], self.sitexyz_molframe[i,:] )
-            #print sitegrad[i*3 : i*3 + 3], i, np.shape(sitegrad)
-            self.aagrad += np.dot( drdp, sitegrad[i,:] )
+        for i in range(self.nsites): #change this loop
+            self.aagrad += np.dot( np.dot( self.drmat[:,:,:], self.sitexyz_molframe[i,:] ), sitegrad[i,:] )
+            #for k in range(3): #loop over spatial dimensions
+                #self.aagrad[k] += np.dot( sitegrad[i,:], np.dot( self.drmat[k,:,:], self.sitexyz_molframe[i,:] ) )
 
         self.comgrad = np.sum( sitegrad, axis=0 ) 
         return self.comgrad, self.aagrad
