@@ -113,7 +113,8 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
 
 
 import unittest
-class TestMinPermDistStochastic_BLJ(unittest.TestCase):
+from testmindist import TestMinDist
+class TestMinPermDistStochastic_BLJ(TestMinDist):
     def setUp(self):
         from potentials.ljpshift import LJpshift as BLJ
         from optimize.quench import quench 
@@ -128,26 +129,6 @@ class TestMinPermDistStochastic_BLJ(unittest.TestCase):
         ret = quench(self.X1, self.pot.getEnergyGradient)
         self.X1 = ret[0]
         
-    def runtest(self, X1, X2):
-        X1i = np.copy(X1)
-        X2i = np.copy(X2)
-        
-        (distreturned, X1, X2) = minPermDistStochastic(X1, X2, permlist=self.permlist)
-
-        distinit = np.linalg.norm(self.X1 - X2i)
-        distfinal = np.linalg.norm(X1 - X2)
-        self.assertTrue( abs(distfinal- distreturned) < 1e-14, "returned distance is wrong: %g != %g" % (distfinal, distreturned) )
-        self.assertTrue( distfinal <= distinit )
-        
-        #test if the energies have changed
-        Ei = self.pot.getEnergy(X1i)        
-        Ef = self.pot.getEnergy(X1)
-        self.assertTrue( abs(Ei- Ef) < 1e-12, "Energy of X1 changed: %g - %g = %g" % (Ei, Ef, Ei - Ef) )
-        Ei = self.pot.getEnergy(X2i)        
-        Ef = self.pot.getEnergy(X2)
-        self.assertTrue( abs(Ei- Ef) < 1e-12, "Energy of X2 changed: %g - %g = %g" % (Ei, Ef, Ei - Ef) )
-
-        return distreturned, X1, X2
 
     def testBLJ(self):
         X1 = np.copy(self.X1)
@@ -157,7 +138,7 @@ class TestMinPermDistStochastic_BLJ(unittest.TestCase):
         ret = quench(X2, self.pot.getEnergyGradient)
         X2 = ret[0]
 
-        self.runtest(X1, X2)
+        self.runtest(X1, X2, minPermDistStochastic)
 
 
     def testBLJ_isomer(self):
@@ -186,7 +167,9 @@ class TestMinPermDistStochastic_BLJ(unittest.TestCase):
 
         X2i = np.copy(X2)
         
-        distreturned, X1, X2 = self.runtest(X1, X2)
+        #distreturned, X1, X2 = self.runtest(X1, X2)
+        distreturned, X1, X2 = self.runtest(X1, X2, minPermDistStochastic)
+
         
         #it's an isomer, so the distance should be zero
         self.assertTrue( abs(distreturned) < 1e-14, "didn't find isomer: dist = %g" % (distreturned) )
