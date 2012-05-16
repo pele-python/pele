@@ -58,6 +58,8 @@ class Molecule:
         """
         self.sitelist.append( Site(type, position) )
         self.nsites += 1
+        self.sitexyz_molframe = np.array( [ site.position for site in self.sitelist ] )
+        #print np.shape(self.sitexyz_molframe)
     
     def correctCoM(self):
         """
@@ -73,20 +75,20 @@ class Molecule:
 
     def getxyz_rmat(self, rmat, com = np.zeros(3)):
         """return the xyz positions of all sites in the molecule-frame"""
-        xyz = np.zeros(self.nsites*3, np.float64)
-        for i,site in enumerate(self.sitelist):
-            xyz[i*3:i*3+3] = np.dot(rmat, site.position)
+        xyz = np.transpose( np.dot( rmat, np.transpose(self.sitexyz_molframe) ) )
+        xyz += com #
+        xyz = np.reshape(xyz, self.nsites*3)
         return xyz
+        #xyz = np.zeros(self.nsites*3)
+        #for i,site in enumerate(self.sitelist):
+            #xyz[i*3:i*3+3] = np.dot(rmat, self.sitexyz_molframe[i,:] ) + com
+        #return xyz
 
 
     def getxyz(self, com=np.array([0.,0.,0.]), aa=np.array([0.,0.,1e-6]) ):
         """return the xyz positions of all sites in the molecule-frame"""
-        nsites = self.nsites
-        xyz = np.zeros(nsites*3)
         mx = rot.aa2mx(aa)
-        for i,site in enumerate(self.sitelist):
-            xyz[i*3:i*3+3] = np.dot(mx, site.position) + com
-        return xyz
+        return self.getxyz_rmat(mx, com)
 
     def update_coordsOld(self, com, aa, do_derivatives = True):
         """
