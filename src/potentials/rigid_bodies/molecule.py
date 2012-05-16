@@ -117,10 +117,20 @@ class Molecule:
         #calculate rotation matrix and derivatives
         if recalculate_rot_mat:
             self.update_rot_mat(aa, True)
-        for i in range(self.nsites): #change this loop
-            self.aagrad += np.dot( np.dot( self.drmat[:,:,:], self.sitexyz_molframe[i,:] ), sitegrad[i,:] )
-            #for k in range(3): #loop over spatial dimensions
-                #self.aagrad[k] += np.dot( sitegrad[i,:], np.dot( self.drmat[k,:,:], self.sitexyz_molframe[i,:] ) )
+        drmat = self.drmat
+        x = self.sitexyz_molframe
+        y = sitegrad
+        #self.aagrad = np.sum( np.sum( np.sum( drmat[:,np.newaxis,:,:]*x[np.newaxis,:,np.newaxis,:]*y[np.newaxis,:,:,np.newaxis]  ,axis=3), axis=2), axis=1 )
+        self.aagrad = np.sum( np.sum( drmat * np.sum(x[:,np.newaxis,:]*y[:,:,np.newaxis] , axis=0), axis=2), axis=1 )
+            
+            
+        #for i in range(self.nsites): #change this loop
+            #self.aagrad += np.dot( np.dot( self.drmat[:,:,:], self.sitexyz_molframe[i,:] ), sitegrad[i,:] )
+            ##for k in range(3): #loop over spatial dimensions
+                ##self.aagrad[k] += np.dot( sitegrad[i,:], np.dot( self.drmat[k,:,:], self.sitexyz_molframe[i,:] ) )
+        
+        #self.aagrad = np.dot( np.dot( self.drmat[:,:,:], self.sitexyz_molframe[i,:] ), sitegrad[i,:] )
+
 
         self.comgrad = np.sum( sitegrad, axis=0 ) 
         return self.comgrad, self.aagrad
