@@ -72,6 +72,45 @@ def aadistance( v1, v2 ):
 
     return v1, v2
 
+
+import unittest
+class aaDistTest(unittest.TestCase):
+    def setUp(self):
+        self.v1 = np.random.uniform(-8,8.,[3])
+        self.v2 = np.random.uniform(-8,8.,[3])
+        self.v1in = np.copy(self.v1)
+        self.v2in = np.copy(self.v2)
+        
+    def test_dist(self):
+        aadistance(self.v1, self.v2)
+        
+        v1n = np.linalg.norm(self.v1)
+        v2n = np.linalg.norm(self.v2)
+        
+        v1inn = np.linalg.norm(self.v1in)
+        v1inn = np.linalg.norm(self.v1in)
+
+        distbefore = np.linalg.norm(self.v1in - self.v2in)
+        distafter = np.linalg.norm(self.v1 - self.v2)
+
+        self.assertTrue(distbefore >= distafter, "distance between aa vectors increased")
+        
+        import rotations as rot
+        
+        rot1 = rot.aa2mx( self.v1 )
+        rot1i = rot.aa2mx( self.v1in )
+        self.assertTrue( all( (rot1 == rot1i)[:].tolist() ), "aa vector returned different rotation matrix" )
+        
+        rot2 = rot.aa2mx( self.v2 )
+        rot2i = rot.aa2mx( self.v2in )
+        self.assertTrue( all( (rot2 == rot2i)[:].tolist() ), "aa vector returned different rotation matrix" )
+
+
+
+        
+
+        
+
 def test(v1in, v2in, aadistfunc = aadistance):
     v1 = np.copy(v1in)
     v2 = np.copy(v2in)
@@ -112,3 +151,5 @@ if __name__ == "__main__":
         test(v1, v2, aadistfort)
     except:
         pass
+    
+    unittest.main()
