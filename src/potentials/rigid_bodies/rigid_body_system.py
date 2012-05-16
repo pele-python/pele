@@ -53,7 +53,7 @@ class RigidBodySystem(basepotential):
                 isite += 1
         return xyz
     
-    def updateGradients(self, gradsite):
+    def updateGradientsOld(self, gradsite, coords):
         self.zeroEnergyGrad()
         grad = np.zeros([2*self.nmol*3])
         nmol = self.nmol
@@ -67,6 +67,19 @@ class RigidBodySystem(basepotential):
             grad[         3*i :          3*i + 3] = mol.comgrad
             grad[3*nmol + 3*i : 3*nmol + 3*i + 3] = mol.aagrad
         return grad
+    
+    def updateGradients(self, sitegrad, coords):
+        grad = np.zeros([2*self.nmol*3])
+        isite = 0
+        for i, mol in enumerate(self.molecule_list):
+            iaa = self.nmol*3 + i*3
+            comgrad, aagrad = mol.getGradients( coords[iaa:iaa+3], sitegrad[isite:isite + mol.nsites*3] )
+            grad[i*3 : i*3 + 3] = comgrad
+            grad[iaa : iaa + 3] = aagrad
+            isite += mol.nsites*3
+        return grad
+        
+
 
     def getEnergy(self, coords):
         xyz = self.transformToXYZ(coords)
@@ -75,7 +88,7 @@ class RigidBodySystem(basepotential):
     def getEnergyGradient(self, coords):
         xyz = self.transformToXYZ(coords)
         E, xyzgrad = self.potential.getEnergyGradient(xyz)
-        grad = self.updateGradients(xyzgrad)
+        grad = self.updateGradients(xyzgrad, coords)
         return E, grad
 
 

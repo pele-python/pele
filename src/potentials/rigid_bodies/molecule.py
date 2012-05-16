@@ -97,8 +97,30 @@ class Molecule:
         self.rotation_mat, self.drmat[0], self.drmat[1], self.drmat[2] = rotMatDeriv(aa, do_derivatives)
         for site in self.sitelist:
             site.abs_position[:] = np.dot( self.rotation_mat, site.position ) + self.com
-            for k in range(3):
-                site.drdp[k,:] = np.dot(self.drmat[k], site.position)
+            #for k in range(3):
+                #site.drdp[k,:] = np.dot(self.drmat[k], site.position)
+
+    def getGradients(self, aa, sitegrad):
+        """
+        convert site gradients to com and aa gradients
+        
+        do all calculation on the fly
+        """
+        comgrad = np.zeros(3)
+        aagrad = np.zeros(3) 
+        drmat = np.zeros([3,3,3]) #three 3x3 matrices
+        drdp = np.zeros([3,3])
+        #calculate rotation matrix and derivatives
+        rotation_mat, drmat[0,:,:], drmat[1,:,:], drmat[2,:,:] = rotMatDeriv(aa, True)
+        #sitexyz_body = 
+        for i, site in enumerate(self.sitelist): #change this loop
+            for k in range(3): #loop over spatial dimensions
+                drdp[k,:] = np.dot( drmat[k,:,:], site.position)
+            #print sitegrad[i*3 : i*3 + 3], i, np.shape(sitegrad)
+            aagrad += np.dot( drdp, sitegrad[i*3 : i*3 + 3] )
+            comgrad += sitegrad[i*3 : i*3 + 3]
+        return comgrad, aagrad
+
 
     def zeroEnergyGrad(self):
         #zero interaction dependent things
