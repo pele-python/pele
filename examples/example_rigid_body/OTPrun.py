@@ -4,8 +4,9 @@ import potentials.rigid_bodies.sandbox as sandbox
 import rotations as rot
 import copy
 
+np.random.seed(0)
 
-nmol = 5
+nmol = 15
 
 #define the molecule types.
 #here use only one type, LWOTP

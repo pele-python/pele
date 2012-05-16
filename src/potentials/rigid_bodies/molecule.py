@@ -17,8 +17,8 @@ class Site:
     """
     this class defines a site in a rigid body
     """
-    def __init__(self, type, position):
-        self.type = type
+    def __init__(self, sitetype, position):
+        self.type = sitetype
         assert( len(position) == 3 )
         self.position = np.array(position) #position in molecule frame
         self.abs_position = np.array(position) #absolute position in space
@@ -52,11 +52,11 @@ class Molecule:
 
 
 
-    def insert_site(self, type, position):
+    def insert_site(self, sitetype, position):
         """
         add a site to the definition of the molecule
         """
-        self.sitelist.append( Site(type, position) )
+        self.sitelist.append( Site(sitetype, position) )
         self.nsites += 1
         self.sitexyz_molframe = np.array( [ site.position for site in self.sitelist ] )
         #print np.shape(self.sitexyz_molframe)
@@ -72,17 +72,15 @@ class Molecule:
         com /= self.nsites
         for site in self.sitelist:
             site.position -= com
+        self.sitexyz_molframe = np.array( [ site.position for site in self.sitelist ] )
+
 
     def getxyz_rmat(self, rmat, com = np.zeros(3)):
         """return the xyz positions of all sites in the molecule-frame"""
         xyz = np.transpose( np.dot( rmat, np.transpose(self.sitexyz_molframe) ) )
-        xyz += com #
+        xyz += com 
         xyz = np.reshape(xyz, self.nsites*3)
         return xyz
-        #xyz = np.zeros(self.nsites*3)
-        #for i,site in enumerate(self.sitelist):
-            #xyz[i*3:i*3+3] = np.dot(rmat, self.sitexyz_molframe[i,:] ) + com
-        #return xyz
 
 
     def getxyz(self, com=np.array([0.,0.,0.]), aa=np.array([0.,0.,1e-6]) ):
@@ -93,20 +91,7 @@ class Molecule:
     def update_rot_mat(self, aa, do_derivatives = True):
         self.rotation_mat, self.drmat[0,:,:], self.drmat[1,:,:], self.drmat[2,:,:] = rotMatDeriv(aa, do_derivatives)
 
-
-    def update_coordsOld(self, com, aa, do_derivatives = True):
-        """
-        Update the position and orientation of the molecule and things dependent on these.
-        """
-        self.aa[:] = aa
-        self.com[:] = com
-        self.rotation_mat, self.drmat[0,:,:], self.drmat[1,:,:], self.drmat[2,:,:] = rotMatDeriv(aa, do_derivatives)
-        for site in self.sitelist:
-            site.abs_position[:] = np.dot( self.rotation_mat, site.position ) + self.com
-            for k in range(3):
-                site.drdp[k,:] = np.dot(self.drmat[k,:,:], site.position)
-
-    def getGradients(self, aa, sitegrad_in, recalculate_rot_mat = False):
+    def getGradients(self, aa, sitegrad_in, recalculate_rot_mat = True):
         """
         convert site gradients to com and aa gradients
         """
@@ -125,23 +110,14 @@ class Molecule:
         #The above looks very complicated, but it boils down to a three way sum.
         #The below is the simplest way to write it, but it's very slow
         self.aagrad = np.zeros(3)
+        for k in range(3):
             for i in range(3):
                 for j in range(3):
                     for isite in range(self.nsites):
-                        self.aagrad[:] += drmat[:,i,j]*self.sitexyz_molframe[isite,j]*sitegrad[isite,i]
+                        self.aagrad[k] += drmat[k,i,j]*self.sitexyz_molframe[isite,j]*sitegrad[isite,i]
         """
         self.comgrad = np.sum( sitegrad, axis=0 ) 
         return self.comgrad, self.aagrad
-
-
-    def zeroEnergyGradOld(self):
-        #zero interaction dependent things
-        for site in self.sitelist:
-            site.energy = 0.
-            site.gradient[:]  = 0.
-        self.E = 0.
-        self.comgrad[:] = 0.
-        self.aagrad[:] = 0.
 
     def addSymmetryRotation(self, aa): #add rotational symmetry
         self.symmetrylist_rot.append( aa )
@@ -157,7 +133,6 @@ class Molecule:
         aa: the orientation of the molecule in angle-axis  
         """
         com = np.array(com)
-        xyz = np.zeros(3*self.nsites)
         rmat = rot.aa2mx(aa) #rotation matrix
         #first yield the unaltered molecule
         xyz = self.getxyz_rmat(rmat, com=com)

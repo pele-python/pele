@@ -115,11 +115,8 @@ class MinPermDistPotential(potential.potential):
             E -= de
             grad -= dg
         #convert site-gradients into angle -axis gradients
-        #first calculate the rotation matrix and derivatives and drdp for each site
-        self.rb.update_coords( np.zeros(3), AA )
-        aagrad = np.zeros(3)
-        for i,site in enumerate( self.rb.sitelist ):
-            aagrad += np.dot( site.drdp, grad[i*3:i*3+3] )
+        #first calculate the rotation matrix and derivatives
+        comgrad, aagrad = self.rb.getGradients(AA, grad, True)
         return E, aagrad
 
 
