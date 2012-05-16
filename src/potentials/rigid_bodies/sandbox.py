@@ -18,7 +18,7 @@ class RBSandbox(RigidBodySystem):
         RigidBodySystem.__init__(self, molecule_list)
         from sandbox_potential import RBSandboxPotential
         self.potential = RBSandboxPotential(self, interaction_matrix)
-        #self.addPotential( self.potential )
+        #self.setPotential( self.potential )
 
 
 

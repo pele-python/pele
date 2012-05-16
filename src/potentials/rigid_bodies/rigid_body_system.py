@@ -13,7 +13,7 @@ class RigidBodySystem(basepotential):
         molecule_list:  a list of Molecule objects that define the system
         
         potential:      the class which calculates site energies and gradients
-                        It can be attached later via the function addPotential
+                        It can be attached later via the function setPotential
         """
         self.molecule_list = [copy.deepcopy(mol) for mol in molecule_list]
         self.nmol = len(self.molecule_list)
@@ -34,7 +34,7 @@ class RigidBodySystem(basepotential):
         
         self.oldcoords = np.zeros(3*2*self.nmol)
 
-    def addPotential(self, potential):
+    def setPotential(self, potential):
         """
         attach or replace the potential object.
         """
