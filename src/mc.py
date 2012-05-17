@@ -87,7 +87,6 @@ class MonteCarlo:
         
     def mcStep(self):
         """take one monte carlo basin hopping step"""
-        print "in mc mcStep"
         self.trial_coords = self.coords.copy() #make  a working copy
         #########################################################################
         #take step
