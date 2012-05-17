@@ -60,7 +60,7 @@ class LJpshift(potential.potential):
             print ""
 
     def getEnergy(self, coords):
-        print "getting energy only"
+        #print "getting energy only"
         V, E = ljpshiftfort.ljpshift(coords, False, False,\
                 self.boxl, self.boxl, self.boxl, \
                 self.AA.rcut, self.periodic, self.ntypeA, \
