@@ -13,6 +13,7 @@ from OpenGL.GLUT import *
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtOpenGL import *
 import numpy as np
+import rotations as rot
 
 class Show3D(QGLWidget):
     '''
@@ -25,7 +26,7 @@ class Show3D(QGLWidget):
         glutInit()#sys.argv)
         self.coords = {}
         self.last_mouse_pos = QtCore.QPointF(0., 0.)
-        self.rotation = np.array([0., 0.])
+        self.rotation = rot.aa2mx(np.array([0.,0.,0.])) # np.array([0., 0.])
 
     def setCoords(self, coords, index=1):
         self.coords[index] = coords
@@ -49,9 +50,12 @@ class Show3D(QGLWidget):
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec)
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
-        glRotate(self.rotation[0], 1., 0., 0.)
-        glRotate(self.rotation[1], 0., 1., 0.)
-        
+        #glRotate(self.rotation[0], 1., 0., 0.)
+        #glRotate(self.rotation[1], 0., 1., 0.)
+        mx=np.zeros([4,4])
+        mx[0:3,0:3] = self.rotation
+        mx[3,3]=1.
+        glMultMatrixf(mx)
         for index, coords in self.coords.items():
             if coords == None:
                 continue
@@ -66,11 +70,15 @@ class Show3D(QGLWidget):
         glFlush()
         #glutSwapBuffers() @IndentOk
 
+    def mousePressEvent(self, event):
+        self.last_mouse_pos = event.posF()
+    
     def mouseMoveEvent(self, event):
         self.last_mouse_pos
-        delta = event.posF() - self.last_mouse_pos
+        delta = (event.posF() - self.last_mouse_pos)*0.01
         self.last_mouse_pos = event.posF()
-        self.rotation += np.array([delta.y(), delta.x()])
+        drot = rot.aa2mx(-np.array([delta.y(), delta.x(), 0.]))
+        self.rotation = np.dot(self.rotation, drot)
         self.repaint()
         
     def resizeGL(self, w, h):
