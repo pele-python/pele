@@ -57,20 +57,35 @@ public:
 	 * \param c box vector c
 	 */
 	void setBox(vec a, vec b, vec c);
+
+	/**
+	 * set the inverse width of the gaussian
+	 *
+	 * Set the inverse width of the gaussian. In gromacs this is called beta.
+	 *
+	 */
 	void setAlpha(double alpha) { _alpha = alpha; }
 
 	/***
-	 *	\brief set the permitivity in MD units.
+	 *	\brief set the prefactor for coulomb interactions in MD units.
 	 *
-	 *	Sets the permitivity in MD units. The default
-	 *	is in kJ nm / mol e^2 which means distances are
-	 *	in nm, charges in e and energies in kJ/mol
+	 *	Sets the prefactor ( 1 / 4 Pi eps0)in MD units. The default
+	 *	is distance in nm, charges in e and energies in kJ/mol
 	 *
-	 *	\parameter eps0 permitivity in MD units
+	 *	\parameter f prefactor in md units
 	 *
-	 */void setPermitivity(double eps0=5.727656e-4) { _f = 0.25 / (M_PI*eps0); }
-	//void setTolerance(double rcut, double rtol) { _alpha = erfcinv(rtol)/rcut; }
+	 */
+	void setPrefactor(double f=138.9354859) { _f = f; }
 
+        /**
+         * set cutoff for k-space summation
+         */
+        void setKCut(double kcut) { _kcut = kcut;}
+
+	/**
+	 * class to zip two vectors, 1 for positions, 1 for charges
+	 *
+	 */
 	class zip_vectors {
 	public:
 		zip_vectors(std::vector<vec> &positions, std::vector<double> &charges)
@@ -130,9 +145,12 @@ protected:
 
 	// reciprocal lattice vectors
 	vec _ar, _br, _cr;
-	double _lmax, _mmax, _nmax;
 	// box volume
 	double _V;
+
+	// k-space cut-off
+	int _lmax, _mmax, _nmax;
+        double _kcut;
 
 	/**
 	 * Calculate structure factor
@@ -161,7 +179,7 @@ protected:
 inline Ewald::Ewald()
 	: _alpha(1.), _V(0.0)
 {
-	setPermitivity();
+	setPrefactor();
 }
 
 inline void Ewald::setBox(vec a, vec b, vec c)
@@ -171,7 +189,10 @@ inline void Ewald::setBox(vec a, vec b, vec c)
 	_br = 2.*M_PI*c^a / _V;
 	_cr = 2.*M_PI*a^b / _V;
 
-	_lmax = _mmax = _nmax = 20;
+	// cutoff for each reciprocal vector
+        _lmax = _kcut / abs(_ar);
+	_mmax = _kcut / abs(_br);
+	_nmax = _kcut / abs(_cr);
 }
 
 
