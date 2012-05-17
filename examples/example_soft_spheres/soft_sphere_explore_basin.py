@@ -19,34 +19,6 @@ E = pot.getEnergy(coords)
 print "initial energy", E 
 
 
-
-        
-
-
-#set up functions to pass to basin hopping
-
-#set up the step taking routine
-#Normal basin hopping takes each step from the quenched coords.  This modified step taking routine takes a step from the 
-#last accepted coords, not from the quenched coords
-from take_step.random_displacement_from_old import takeStep
-takestep = takeStep(stepsize=.01)
-#this take step routine needs to know if the step was accepted, so pass a function to be called after every step.
-event_after_step = [takestep.checkAccepted]
-
-#pass a function which rejects the step if the system leaved the inital basin.
-from accept_tests.dont_leave_basin import DontLeaveBasin
-accepttest = DontLeaveBasin(1e-4)
-accept_test_list = [accepttest.acceptReject]
-
-#pass another function which accepts or rejects based on the energy of the unquenched coords
-from accept_tests.metropolis import MetropolisNonQuench
-temperature = 1.
-mettest = MetropolisNonQuench(temperature, pot)
-accept_test_list.append( mettest.acceptReject)
-#this accept reject routine also needs to know if the step was accepted, so pass a function to be called after every step.
-event_after_step.append( mettest.checkAccepted )
-
-
 #set up quench routine
 #from optimize.quench import fire as quench
 #from optimize.quench import cg as quench
@@ -56,18 +28,41 @@ from optimize.quench import quench as quench #numpy lbfgs routine
 
 
 
+#start from quenched coordinates
+ret = quench(coords, pot.getEnergyGradient)
+coords = ret[0]
+        
+
+
+#set up functions to pass to basin hopping
+
+#set up the step taking routine
+#Normal basin hopping takes each step from the quenched coords.  This modified step taking routine takes a step from the 
+#last accepted coords, not from the quenched coords
+from take_step.random_displacement import takeStep
+takestep = takeStep(stepsize=.01)
+
+
+#pass a function which rejects the step if the system leaved the inital basin.
+import do_quenching
+dostuff = do_quenching.DoQuenching(pot, coords, quench=quench)
+accept_test_list = [dostuff.acceptReject]
+
+
 
 
 
 #set up basin hopping
-from basinhopping import BasinHopping
-bh = BasinHopping(coords, pot, takestep.takeStep, \
+from mc import MonteCarlo
+temperature = 1.0
+event_after_step = []
+mc = MonteCarlo(coords, pot, takestep.takeStep, \
                   event_after_step = event_after_step, \
-                  acceptTests = accept_test_list, \
-                  nometropolis = True, \
-                  quenchRoutine = quench)
+                  acceptTests = accept_test_list, temperature = temperature)
 
 #run basin hopping
-bh.run(200)
+mc.run(200)
 
-print bh.naccepted, "steps accepted out of", bh.stepnum
+print mc.naccepted, "steps accepted out of", mc.stepnum
+print "quench: ", dostuff.nrejected, "steps rejected out of", dostuff.ntot
+
