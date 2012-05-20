@@ -15,7 +15,8 @@ class takeStep:
         return
 
     def takeStep(self, coords):
-        for j in xrange(len(coords)):
-            rand = 2.*self.RNG()-1.
+        coords += self.getStep()*self.RNG(len(coords))
+        #for j in xrange(len(coords)):
+            #rand = 2.*self.RNG()-1.
             #print "rand ", rand
-            coords[j] += self.getStep()*rand
+            #coords[j] += self.getStep()*rand
