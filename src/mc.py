@@ -6,7 +6,7 @@ import accept_tests.metropolis as metropolis
 import copy
 
 
-class MonteCarlo:
+class MonteCarlo(object):
     """A class to run the monte carlo algorithm
     
       coords: 

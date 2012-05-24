@@ -1,10 +1,5 @@
 # -*- coding: iso-8859-1 -*-
-import numpy as np
-import scipy
-from math import *
 import sys
-import accept_tests.metropolis as metropolis
-import copy
 import optimize.quench as quench
 from mc import MonteCarlo
 
