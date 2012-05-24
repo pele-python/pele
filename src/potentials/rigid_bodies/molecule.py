@@ -1,6 +1,9 @@
 import numpy as np
 import rotations as rot
 from potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
+from scipy import weave
+from scipy.weave import converters
+
 
 def vec2aa( v2, v1 = np.array( [0.,0.,1.]) ):
     """
@@ -91,10 +94,56 @@ class Molecule:
     def update_rot_mat(self, aa, do_derivatives = True):
         self.rotation_mat, self.drmat[0,:,:], self.drmat[1,:,:], self.drmat[2,:,:] = rotMatDeriv(aa, do_derivatives)
 
+    def getGradientsWeave(self, aa, sitegrad_in, recalculate_rot_mat = True):
+        """
+        convert site gradients to com and aa gradients
+        """
+        sitegrad = np.reshape(sitegrad_in, [self.nsites,3] )
+        #calculate rotation matrix and derivatives
+        if recalculate_rot_mat:
+            self.update_rot_mat(aa, True)
+        drmat = self.drmat
+        x = self.sitexyz_molframe
+        y = sitegrad
+        aagrad = self.aagrad
+        aagrad[:] = 0.  
+        nsites= self.nsites    
+        #self.aagrad = np.sum( np.sum( drmat * np.sum(x[:,np.newaxis,:]*y[:,:,np.newaxis] , axis=0), axis=2), axis=1 )
+        #self.aagrad = np.sum( np.sum( drmat * np.dot( np.transpose(y), x) , axis=2), axis=1 )
+        #for k in range(3):
+            #self.aagrad[k] = np.sum( drmat[k,:,:] * np.dot( np.transpose(y), x) )
+        """
+        #The above looks very complicated, but it boils down to a three way sum.
+        #The below is the simplest way to write it, but it's very slow
+        self.aagrad = np.zeros(3)
+        for k in range(3):
+            for i in range(3):
+                for j in range(3):
+                    for isite in range(self.nsites):
+                        self.aagrad[k] += drmat[k,i,j]*self.sitexyz_molframe[isite,j]*sitegrad[isite,i]
+        """
+        code = """
+        for (int k=0; k<3; ++k){
+            for (int i=0; i<3; ++i){
+                for (int j=0; j<3; ++j){
+                    for (int isite=0; isite<nsites; ++isite){
+                        aagrad(k) += drmat(k,i,j)*x(isite,j)*y(isite,i);
+                    }
+                 }
+            }
+        }
+        """
+        weave.inline(code, ["aagrad", "drmat", "x", "y", "nsites"], type_converters=converters.blitz, verbose=2)
+        self.comgrad = np.sum( sitegrad, axis=0 ) 
+        self.aagrad = aagrad
+        return self.comgrad, self.aagrad
+
+
     def getGradients(self, aa, sitegrad_in, recalculate_rot_mat = True):
         """
         convert site gradients to com and aa gradients
         """
+        return self.getGradientsWeave(aa, sitegrad_in, recalculate_rot_mat)
         sitegrad = np.reshape(sitegrad_in, [self.nsites,3] )
         #calculate rotation matrix and derivatives
         if recalculate_rot_mat:
