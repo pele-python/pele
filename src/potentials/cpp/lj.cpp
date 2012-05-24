@@ -80,6 +80,39 @@ double gradient(boost::python::numeric::array& px, boost::python::numeric::array
   return energy;
 }
 
+#if 0
+//aborted attempt
+//need an integer version of NPArray
+double gradient_list(boost::python::numeric::array& px, boost::python::numeric::array& pgrad,
+		double eps, double sig, boost::python::numeric::array& pilist)
+{
+  int N;
+  int Nlist;
+  double gtmp[3];
+  
+  NPArray<1> x(px);
+  NPArray<1> g(pgrad);
+  NPArray<2> ilist(pilist);
+ 
+  N=x.size(0);
+  Nlist=ilist.size(0);
+  for(int i=0; i<N; ++i)
+    g[i]=0.0;
+  
+  double energy = 0;
+  for(int k=0; k<Nlist; k+=1)
+      i = (&ilist)[k][0]
+      j = (&ilist)[k][1]
+      energy+=ljg(&x[i], &x[j], gtmp, eps, sig);
+      for(int k=0; k<3; ++k) {
+        g[i+k]+=gtmp[k];
+        g[j+k]-=gtmp[k];	
+      }
+    }
+  return energy;
+}
+#endif
+
 BOOST_PYTHON_MODULE(ljcpp_)
 {
   using namespace boost::python;

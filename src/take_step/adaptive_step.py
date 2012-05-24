@@ -3,7 +3,7 @@ import numpy as np
 
 class manageStepSize:
     """a class to manage the adaptive step size"""
-    def __init__(self, stepsize, accrat, nstepsaccrat, f = 1.05):
+    def __init__(self, stepsize, accrat, nstepsaccrat=100, f = 1.05):
         self.stepsize = stepsize
         self.f = f
         self.accrat = accrat #target accept ratio

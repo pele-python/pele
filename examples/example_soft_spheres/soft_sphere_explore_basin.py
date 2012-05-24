@@ -56,7 +56,7 @@ accept_test_list = [dostuff.acceptReject]
 from mc import MonteCarlo
 temperature = 1.0
 event_after_step = []
-mc = MonteCarlo(coords, pot, takestep.takeStep, \
+mc = MonteCarlo(coords, pot, takestep, \
                   event_after_step = event_after_step, \
                   acceptTests = accept_test_list, temperature = temperature)
 

@@ -56,7 +56,7 @@ saveit = SaveN(100)
 
 #set up basinhopping
 from basinhopping import BasinHopping
-bh = BasinHopping(coords, mysys, takestep.take_step, storage=saveit.insert )
+bh = BasinHopping(coords, mysys, takestep, storage=saveit.insert )
 
 #run basin hopping
 bh.run(40)

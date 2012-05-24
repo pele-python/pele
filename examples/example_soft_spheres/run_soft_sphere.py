@@ -1,6 +1,8 @@
 import numpy as np
-from potentials.soft_sphere import SoftSphere, putInBox
+#from potentials.soft_sphere import SoftSphere, putInBox
+from potentials.lj import LJ as SoftSphere
 
+np.random.seed(0)
 
 natoms = 120
 rho = 1.6
@@ -9,8 +11,9 @@ meandiam = boxl / (float(natoms)/rho)**(1./3)
 print "mean diameter", meandiam 
 
 #set up potential
-diams = np.array([meandiam for i in range(natoms)]) #make them all the same
-pot = SoftSphere(diams = diams)
+#diams = np.array([meandiam for i in range(natoms)]) #make them all the same
+#pot = SoftSphere(diams = diams)
+pot = SoftSphere()
 
 
 #initial coordinates
@@ -24,8 +27,9 @@ printlist.append((coords.copy(), "intial coords"))
 
 
 #test a quench with default lbfgs
-from quench import quench
-coords, E, rms, funcalls = quench(coords, pot.getEnergyGradient, iprint=-1)
+#from optimize.quench import quench
+from optimize.quench import lbfgs_ase as quench
+coords, E, rms, funcalls = quench(coords, pot.getEnergyGradient, iprint=1)
 printlist.append((coords.copy(), "intial coords"))
 print "energy post quench", pot.getEnergy(coords)
 
@@ -43,6 +47,6 @@ print "saving coordinates to", fname
 from printing.print_atoms_xyz import printAtomsXYZ as printxyz
 with open(fname, "w") as fout:
     for xyz,line2 in printlist:
-        xyz = putInBox(xyz, boxl)
+        #xyz = putInBox(xyz, boxl)
         printxyz(fout, xyz, line2=line2) 
         

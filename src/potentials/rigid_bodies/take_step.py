@@ -5,6 +5,8 @@ import rotations as rot
 class RBTakeStep:
     """
     a take step routine for rigid bodies
+    
+    warning: adaptive step size not implemented
     """
     def __init__(self, RNG = np.random.rand, \
                  getTStep=None, Tstepsize=0.3, \
@@ -14,11 +16,13 @@ class RBTakeStep:
         if getTStep == None: 
             self.getTStep = lambda : Tstepsize
         else:
+            print "warning: adaptive step size not implemented"
             self.getTStep = getTStep
     
         if getOStep == None: 
             self.getOStep = lambda : Ostepsize
         else:
+            print "warning: adaptive step size not implemented"
             self.getOStep = getOStep
             
         self.stepnum = 0
@@ -26,7 +30,7 @@ class RBTakeStep:
         self.steporder = [self.translation_step, self.orientational_step]
         self.nstep_types = len(self.steporder)
     
-    def take_step(self, coords):
+    def takeStep(self, coords):
         """
         take steps in the order defined by self.steporder
         """
@@ -61,6 +65,8 @@ class RBTakeStep:
         for j in range(nmol):
             rot.takestep_aa( coords[3*nmol + 3*j : 3*nmol + 3*j + 3], maxtheta )
 
+    def updateStep(self, accepted):
+        pass
 
 
 def test_takestep(nmol = 4):
@@ -95,8 +101,8 @@ def test_takestep(nmol = 4):
     print "taking one of each step"
     print ""
     oldcoords = coords.copy()
-    takestep.take_step(coords)
-    takestep.take_step(coords)
+    takestep.takeStep(coords)
+    takestep.takeStep(coords)
     print coords
     print coords - oldcoords
 

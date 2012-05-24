@@ -91,7 +91,7 @@ class MonteCarlo:
         #########################################################################
         #take step
         #########################################################################
-        self.takeStep(self.trial_coords)
+        self.takeStep.takeStep(self.trial_coords)
         
         #########################################################################
         #calculate new energy
@@ -124,6 +124,7 @@ class MonteCarlo:
         acceptstep, newcoords, newE = self.mcStep()
         #self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(newE) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE) + " accepted= " + str(acceptstep) + "\n" )
         self.printStep()
+        self.takeStep.updateStep(acceptstep)
         if acceptstep:
             if(self.storage):
                 self.storage(newE, newcoords)

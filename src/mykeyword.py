@@ -34,20 +34,18 @@ class myKeywordClass():
                 import potentials.ljpshift as ljpshift
             potential = ljpshift.LJpshift( natoms, self.ntypeA, self.boxl, self.cutoff, self.epsBB, self.sigBB, self.epsAB, self.sigAB)
 
+        event_after_step = []
+
         #initialize minima saving routine
         import storage.savenlowest as saveit
         self.savelowest = saveit.SaveN( nsave = self.nsave, accuracy = self.ediff ) #class to save the lowest energy structures
 
-        #initialize adaptive step size routine
-        import take_step.adaptive_step
-        self.manstep = take_step.adaptive_step.manageStepSize (self.stepsize, self.accrat, self.accrat_frq) #class to do step size adjustment
-        event_after_step = [self.manstep.insertStepWrapper]
-
 
         #initialize step taking routine using adaptive step size class
         import take_step.random_displacement as random_displacement
-        self.takeStep = random_displacement.takeStep( RNG = np.random.rand, getStep = self.manstep.getStepSize ) #class to impliment the take step routine
-        takestep_fun = self.takeStep.takeStep
+        self.takeStep = random_displacement.takeStep( ) #class to implement the take step routine
+        #initialize adaptive step size routine
+        self.takeStep.useAdaptiveStep(stepsize=self.stepsize, acc_ratio = self.accrat, freq = self.accrat_frq )
 
         #classes to impiment acceptence criterion
         acceptTests = []
@@ -58,7 +56,7 @@ class myKeywordClass():
 
         #initialize basing hopping class and return it
         opt = bh.BasinHopping(coords, potential, \
-                takeStep = takestep_fun, \
+                takeStep = self.takeStep, \
                 storage = self.savelowest.insert,  \
                 event_after_step=event_after_step, \
                 acceptTests=acceptTests, \

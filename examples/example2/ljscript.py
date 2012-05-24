@@ -17,7 +17,7 @@ potential = lj.LJ()#1.0, 1.0, None)
 
 step = random_displacement.takeStep( stepsize=0.3)
 
-opt = bh.BasinHopping(coords, potential, takeStep=step.takeStep)
+opt = bh.BasinHopping(coords, potential, takeStep=step)
 opt.run(100)
 
 ############################################################
@@ -27,9 +27,9 @@ coords=np.loadtxt('coords')
 coords = coords.reshape(coords.size)
 
 step = random_displacement.takeStep( stepsize=0.3)
-opt = bh.BasinHopping(coords, potential, takeStep=step.takeStep)
+opt = bh.BasinHopping(coords, potential, takeStep=step)
 
-opt.run(100)
+opt.run(200)
 
 
 ############################################################
@@ -39,8 +39,8 @@ coords=np.random.random(3*natoms)
 from storage.savenlowest import SaveN as saveit
 
 storage = saveit()
-opt = bh.BasinHopping(coords, potential, step.takeStep, storage=storage.insert)
-opt.run(100)
+opt = bh.BasinHopping(coords, potential, step, storage=storage.insert)
+opt.run(200)
 
 with open("lowest", "w") as fout:
   fout.write( str(natoms) + "\n")
@@ -53,10 +53,8 @@ with open("lowest", "w") as fout:
 #Example 4: adaptive step size
 ############################################################
 
-import take_step.adaptive_step as adaptive_step
-
-manstep = adaptive_step.manageStepSize (0.3, 0.5, 100)
-takeStep = random_displacement.takeStep( getStep = manstep.getStepSize )
-opt = bh.BasinHopping(coords, potential, takeStep=takeStep.takeStep)
-opt.run(100)
+takeStep = random_displacement.takeStep( stepsize=0.3 )
+takeStep.useAdaptiveStep(acc_ratio = 0.5, freq = 100)
+opt = bh.BasinHopping(coords, potential, takeStep=takeStep)
+opt.run(200)
 

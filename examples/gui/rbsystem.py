@@ -49,7 +49,7 @@ class RBSystem:
         from potentials.rigid_bodies.take_step import RBTakeStep
         step = RBTakeStep()
         opt = bh.BasinHopping(coords,mysys,
-                          temperature=1., takeStep=step.take_step)
+                          temperature=1., takeStep=step)
         return opt
     
     def draw(self, coordslinear, index):

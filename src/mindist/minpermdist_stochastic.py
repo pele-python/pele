@@ -60,7 +60,7 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
         dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
         print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
-    takestep = distpot.random_rotation
+    takestep = distpot.RandomRotationTakeStep()
     bh = basinhopping.BasinHopping( aamin, pot, takestep, storage=saveit.insert)
 
 

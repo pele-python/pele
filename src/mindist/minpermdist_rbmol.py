@@ -84,7 +84,7 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
         #dist, X11, X22 = findBestPermutationRBMol(coords1, aa2xyz(X2in, aamin), permlist )
         #print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
-    takestep = distpot.random_rotation
+    takestep = distpot.RandomRotationTakeStep()
     bh = basinhopping.BasinHopping( aamin, pot, takestep, storage=saveit.insert)
 
 

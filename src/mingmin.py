@@ -68,11 +68,11 @@ def main():
     #########################################################################
     print "Finished:"
     with open("lowest", "w") as fout:
-        for (E,X) in keys.savelowest.data:
+        for (E,X,ID) in keys.savelowest.data:
             adjustCenterOfMass(X)
             printxyz.printAtomsXYZ(fout,  X, E)
 
-    print "Acceptance ratio for run= ", keys.manstep.accratTot(), "Step=", keys.takeStep.getStep()
+    print "Acceptance ratio for run= ", keys.takeStep.adaptive_class.accratTot(), "Step=", keys.takeStep.getStepSize()
     print "lowest energy found ", keys.savelowest.data[0][0]
 
 if __name__ == "__main__":
