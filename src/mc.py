@@ -20,10 +20,11 @@ class MonteCarlo:
           energy, gradient = potential.getEnergyGradient( coords )
   
       takeStep: 
-          The function which randomly perterbs the system, e.g. random
-          dispacement.  It takes the form
+          The class which randomly perterbs the system, e.g. random
+          dispacement.  It must have two functions implemented
   
-          takeStep(coords)
+          takeStep.takeStep(coords)       #actually takes the step
+          takeStep.updateStep(coords)     #for adaptive step size management
   
       acceptTests:  ([]) 
           An optional list of functions which return False if a quench should be
@@ -124,7 +125,10 @@ class MonteCarlo:
         acceptstep, newcoords, newE = self.mcStep()
         #self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(newE) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE) + " accepted= " + str(acceptstep) + "\n" )
         self.printStep()
-        self.takeStep.updateStep(acceptstep)
+        try:
+            self.takeStep.updateStep(acceptstep)
+        except:
+            print "WARNING: takeStep.updateStep() not implemented"
         if acceptstep:
             if(self.storage):
                 self.storage(newE, newcoords)
@@ -135,7 +139,8 @@ class MonteCarlo:
             event(self.markovE, self.coords, acceptstep)
 
     def printStep(self):
-        self.outstream.write( "MCstep    %12d  E= %20.12g  markov E= %20.12g accepted= %s\n" % (self.stepnum, self.trial_energy, self.markovE_old, str(self.acceptstep) )  )
+        if self.outstream != None:
+            self.outstream.write( "MCstep    %12d  E= %20.12g  markov E= %20.12g accepted= %s\n" % (self.stepnum, self.trial_energy, self.markovE_old, str(self.acceptstep) )  )
 
 
 

@@ -22,11 +22,12 @@ class BasinHopping(MonteCarlo):
           energy, gradient = potential.getEnergyGradient( coords )
 
       takeStep: 
-          The function which randomly perterbs the system, e.g. random
-          dispacement.  It takes the form
-
-          takeStep(coords)
-
+          The class which randomly perterbs the system, e.g. random
+          dispacement.  It must have two functions implemented
+  
+          takeStep.takeStep(coords)       #actually takes the step
+          takeStep.updateStep(coords)     #for adaptive step size management
+  
       acceptTests:  ([]) 
           An optional list of functions which return False if a quench should be
           rejected.  The Metropolis test is added to this list by default unless
