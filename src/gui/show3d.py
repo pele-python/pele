@@ -11,6 +11,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from PyQt4 import QtGui, QtCore
+from PyQt4.Qt import Qt
 from PyQt4.QtOpenGL import *
 import numpy as np
 import rotations as rot
@@ -27,7 +28,8 @@ class Show3D(QGLWidget):
         self.coords = {}
         self.last_mouse_pos = QtCore.QPointF(0., 0.)
         self.rotation = rot.aa2mx(np.array([0.,0.,0.])) # np.array([0., 0.])
-
+        self.zoom = 1.0
+        
     def setCoords(self, coords, index=1):
         self.coords[index] = coords
         self.repaint()
@@ -41,7 +43,7 @@ class Show3D(QGLWidget):
         '''
          
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-       
+        glEnable(GL_NORMALIZE)
         amb = [0., 0.0, 0.0, 1.]
         spec = [1.0, 1., 1., 1]
         shine = 80.
@@ -50,12 +52,14 @@ class Show3D(QGLWidget):
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec)
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
+        glScalef(self.zoom, self.zoom, self.zoom)
         #glRotate(self.rotation[0], 1., 0., 0.)
         #glRotate(self.rotation[1], 0., 1., 0.)
         mx=np.zeros([4,4])
         mx[0:3,0:3] = self.rotation
         mx[3,3]=1.
         glMultMatrixf(mx)
+        
         for index, coords in self.coords.items():
             if coords == None:
                 continue
@@ -77,8 +81,13 @@ class Show3D(QGLWidget):
         self.last_mouse_pos
         delta = (event.posF() - self.last_mouse_pos)*0.01
         self.last_mouse_pos = event.posF()
-        drot = rot.aa2mx(-np.array([delta.y(), delta.x(), 0.]))
-        self.rotation = np.dot(self.rotation, drot)
+        if(event.buttons() == Qt.LeftButton):
+            drot = rot.aa2mx(-np.array([delta.y(), delta.x(), 0.]))
+            self.rotation = np.dot(self.rotation, drot)
+        elif(event.buttons() == Qt.RightButton):
+            drot = rot.aa2mx(np.array([0., 0., delta.x()]))
+            self.rotation = np.dot(self.rotation, drot)
+            self.zoom *= 1.0 - 0.2*delta.y()
         self.repaint()
         
     def resizeGL(self, w, h):
@@ -101,7 +110,7 @@ class Show3D(QGLWidget):
         glEnable(GL_CULL_FACE)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
-        lightZeroPosition = [-80., 50., 150., 1.]
+        lightZeroPosition = [-800., 500., 1500., 1.]
         lightZeroColor = [1.0, 1., 1., 1.0] #green tinged
         glLightfv(GL_LIGHT0, GL_POSITION, lightZeroPosition)
         glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor)
@@ -112,7 +121,7 @@ class Show3D(QGLWidget):
         #glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.01)
         glEnable(GL_LIGHT0)
         
-        glLightfv(GL_LIGHT1, GL_POSITION, [10., 20., -2., 1.])
+        glLightfv(GL_LIGHT1, GL_POSITION, [100., 200., -20., 1.])
         glLightfv(GL_LIGHT1, GL_DIFFUSE, [1., 1., 1., 1.0])
         glLightfv(GL_LIGHT1, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         glLightfv(GL_LIGHT1, GL_AMBIENT, [0., 0., 0., 1.0])
