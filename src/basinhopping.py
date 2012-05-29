@@ -125,6 +125,7 @@ class BasinHopping(MonteCarlo):
 
 
     def printStep(self):
-        if self.outstream != None:
-            self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(self.trial_energy) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE_old) + " accepted= " + str(self.acceptstep) + "\n" )
+        if self.stepnum % self.printfrq == 0:
+            if self.outstream != None:
+                self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(self.trial_energy) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE_old) + " accepted= " + str(self.acceptstep) + "\n" )
 

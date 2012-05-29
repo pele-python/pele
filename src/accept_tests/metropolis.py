@@ -6,13 +6,14 @@ class Metropolis:
         self.temperature = temperature
 
     def acceptRejectE(self, Eold, Enew):
+        if Enew < Eold: return True
         acceptstep = True
         wcomp = (Enew - Eold)/self.temperature
         w=min(1.0,np.exp(-wcomp))
         rand = self.random()
         if (rand > w): acceptstep = False
 
-        #print "mc step: Eo", Eold, "En", Enew, "accepted", acceptstep
+        #print "mc step: Eo", Eold, "En", Enew, "accepted", acceptstep, w, self.temperature
 
         return acceptstep
 

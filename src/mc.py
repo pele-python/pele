@@ -70,6 +70,8 @@ class MonteCarlo(object):
         self.naccepted = 0
     
         self.outstream = outstream
+        self.printfrq = 1 #controls how often printing is done
+
     
         if not self.nometropolis:
             self.metrop_test = metropolis.Metropolis(self.temperature)
@@ -85,7 +87,15 @@ class MonteCarlo(object):
             self.storage(energy, self.coords)
           
         self.markovE = energy
-        
+    
+    def setPrinting(self, ostream, frq):
+        self.outstream = ostream
+        self.printfrq = frq
+    
+    def addEventAfterStep(self, event):
+        self.event_after_step.append( event )
+            
+    
     def mcStep(self):
         """take one monte carlo basin hopping step"""
         self.trial_coords = self.coords.copy() #make  a working copy
@@ -139,8 +149,9 @@ class MonteCarlo(object):
             event(self.markovE, self.coords, acceptstep)
 
     def printStep(self):
-        if self.outstream != None:
-            self.outstream.write( "MCstep    %12d  E= %20.12g  markov E= %20.12g accepted= %s\n" % (self.stepnum, self.trial_energy, self.markovE_old, str(self.acceptstep) )  )
+        if self.stepnum % self.printfrq == 0:
+            if self.outstream != None:
+                self.outstream.write( "MCstep    %12d  E= %20.12g  markov E= %20.12g accepted= %s\n" % (self.stepnum, self.trial_energy, self.markovE_old, str(self.acceptstep) )  )
 
 
 
