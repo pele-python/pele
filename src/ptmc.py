@@ -1,10 +1,5 @@
 # -*- coding: iso-8859-1 -*-
 import numpy as np
-import scipy
-from math import *
-import accept_tests.metropolis as metropolis
-import copy
-import optimize.quench as quench
 
 
 def getTemps(Tmin, Tmax, nreplicas):
@@ -31,6 +26,8 @@ class PTMC(object):
         self.replicas = replicas
         self.nreplicas = len(self.replicas)
         self.exchange_frq = 10
+        
+        self.ex_outstream = open("exchanges", "w")
 
         """
         #set up the temperatures
@@ -71,6 +68,20 @@ class PTMC(object):
             stepnum += self.exchange_frq
             self.tryExchange()
             
+    def doExchange(self, k):
+        """
+        do parallel tempering exchange
+        
+        should we exchange coords or temperature?  Exchanging temperature is faster.  
+        Exchanging coords is probably simpler.
+        """
+        E1 = self.replicas[k].markovE
+        coords1 = np.copy( self.replicas[k].coords )
+        self.replicas[k].markovE = self.replicas[k+1].markovE 
+        self.replicas[k].coords = np.copy( self.replicas[k+1].coords )
+        self.replicas[k+1].markovE = E1
+        self.replicas[k+1].coords = np.copy(coords1)
+
 
     def tryExchange(self):
         #choose which pair to try and exchange
@@ -83,12 +94,7 @@ class PTMC(object):
         rand = np.random.rand()
         if w > rand:
             #accept step
-            print "accepting exchange ", k, k+1, w, rand
-            E1 = self.replicas[k].markovE
-            coords1 = np.copy( self.replicas[k].coords )
-            self.replicas[k].markovE = self.replicas[k+1].markovE 
-            self.replicas[k].coords = np.copy( self.replicas[k+1].coords )
-            self.replicas[k+1].markovE = E1
-            self.replicas[k+1].coords = np.copy(coords1)
-        else:
-            print "rejecting exchange ", k, k+1, w, rand
+            self.ex_outstream.write("accepting exchange %d %d %g %g\n" % (k, k+1, w, rand) )
+            self.doExchange(k)
+        #else:
+            #print "rejecting exchange ", k, k+1, w, rand
