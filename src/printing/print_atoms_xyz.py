@@ -19,3 +19,20 @@ def printAtomsXYZ(fout, coords, line2="", atom_type=["LA"]):
         fout.write( atom_type[i % natomtypes] +" "+ str(coords[i*3+0])+" "+ str(coords[i*3+1])+" "+ str(coords[i*3+2])+" "+ "\n" ) 
 
 
+
+class PrintEvent(object):
+    def __init__(self, fout, frq = 1, atom_type=["LA"]):
+        if isinstance(fout, str): 
+            fname = fout      
+            self.fout = open(fname, "w")
+        else:
+            self.fout = fout
+        self.atom_type = atom_type
+        self.frq = frq
+        self.count = 0
+    
+    def event(self, e, coords, accepted):
+        self.count += 1
+        if self.count % self.frq == 0:
+            printAtomsXYZ(self.fout, coords, str(self.count) + " " + str(e))
+        

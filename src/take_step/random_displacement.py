@@ -51,4 +51,5 @@ class takeStep(object):
 
             
     def takeStep(self, coords):
-        coords += self.getStepSize()*self.RNG(len(coords))            
+        coords += self.getStepSize()*(self.RNG(len(coords))-0.5)*2.
+                    
