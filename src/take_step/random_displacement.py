@@ -9,7 +9,7 @@ class takeStep(object):
     returning floats in [0,1)"""
     def __init__(self, stepsize=0.3, RNG = np.random.rand):
         self.RNG = RNG #random number generator
-        
+        self.nsteps = 0
         """
         define functions functions:
         self.getStep()
@@ -18,7 +18,8 @@ class takeStep(object):
         self.getStepSize = lambda : stepsize
         self.updateStep = lambda x: x #do nothing
 
-    def useAdaptiveStep(self, stepsize=None, acc_ratio=0.5, freq=100, adaptive_class=None ):
+    def useAdaptiveStep(self, stepsize=None, acc_ratio=0.5, freq=100, \
+                        adaptive_class=None, last_adaptive_step=None ):
         """
         use adaptive step size
         """
@@ -27,6 +28,7 @@ class takeStep(object):
         self.getStep()
         self.updateStep(accepted)
         """
+        self.last_adaptive_step = last_adaptive_step
         if stepsize == None:  #use current stepsize
             stepsize = self.getStepSize()
         if adaptive_class != None:
@@ -43,6 +45,7 @@ class takeStep(object):
         don't use adaptive step size.  This function can be use to stop
         adaptive step size after a certain number of steps.  E.g. after equilibration
         """
+        self.last_adaptive_step = None
         if stepsize == None:  #use current stepsize
             stepsize = self.getStepSize()
         self.getStepSize = lambda : stepsize
@@ -51,5 +54,8 @@ class takeStep(object):
 
             
     def takeStep(self, coords):
+        self.nsteps += 1
+        if self.last_adaptive_step != None and self.nsteps > self.last_adaptive_step:
+            self.useFixedStep() 
         coords += self.getStepSize()*(self.RNG(len(coords))-0.5)*2.
                     

@@ -37,11 +37,13 @@ class MCProcess(mp.Process):
                 #print self.name, "finished", nsteps, "steps"
                 self.conn.send("done")
             elif message[0] == "return energy coords":
+                #print self.name, "sending energy coords"
                 self.conn.send((self.mcsys.markovE, self.mcsys.coords))
             elif message[0] == "replace energy coords":
-                self.conn.send((self.mcsys.markovE, self.mcsys.coords))
-                self.mysys.markovE = message[1]
-                self.mysys.coords= message[2].copy()
+                #self.conn.send((self.mcsys.markovE, self.mcsys.coords))
+                #print self.name, message[0], self.mcsys.markovE, message[1]
+                self.mcsys.markovE = message[1]
+                self.mcsys.coords= message[2].copy()
             else:
                 print "unknown message:"
                 print message
@@ -57,7 +59,8 @@ class PTMC(object):
     def __init__(self, replicas ):
         self.replicas = replicas
         self.nreplicas = len(self.replicas)
-        self.exchange_frq = 1000
+        self.exchange_frq = 100
+        self.step_num = 0
         
         self.ex_outstream = open("exchanges", "w")
         
@@ -111,12 +114,12 @@ class PTMC(object):
             conn.send(("run", nsteps))
         #wait till they're all done
         for conn in self.communicators:
-            print "waiting for 'done'"
+            #print "waiting for 'done'"
             message = conn.recv()
             if message != "done":
                 print "runNoExchanges> received unexpected message", message
-            else:
-                print "received message", message
+            #else:
+                #print "received message", message
          
 
     def run(self, nsteps):
@@ -124,6 +127,7 @@ class PTMC(object):
         while stepnum < nsteps:
             self.runNoExchanges(self.exchange_frq)
             stepnum += self.exchange_frq
+            self.step_num += self.exchange_frq
             self.tryExchangePar()
             
     def doExchangePar(self, k):
@@ -133,6 +137,7 @@ class PTMC(object):
         should we exchange coords or temperature?  Exchanging temperature is faster.  
         Exchanging coords is probably simpler.
         """
+        print "exchanging", k, k+1
         self.communicators[k].send(("return energy coords",))
         E1, coords1 = self.communicators[k].recv()
         
@@ -166,7 +171,7 @@ class PTMC(object):
     def tryExchangePar(self):
         #choose which pair to try and exchange
         k = np.random.random_integers( 0, self.nreplicas - 2)
-        print "trying exchange", k, k+1
+        #print "trying exchange", k, k+1
         #determine if the exchange will be accepted
         E1, T1 = self.getRepEnergyT(k)
         E2, T2 = self.getRepEnergyT(k+1)
@@ -176,10 +181,10 @@ class PTMC(object):
         rand = np.random.rand()
         if w > rand:
             #accept exchange
-            self.ex_outstream.write("accepting exchange %d %d %g %g\n" % (k, k+1, w, rand) )
-            self.doExchange(k)
-        else:
-            self.ex_outstream.write("rejecting exchange %d %d %g %g\n" % (k, k+1, w, rand) )
+            self.ex_outstream.write("accepting exchange %d %d %g %g %g %g %d\n" % (k, k+1, E1, E2, T1, T2, self.step_num) )
+            self.doExchangePar(k)
+        #else:
+            #self.ex_outstream.write("rejecting exchange %d %d %g %g\n" % (k, k+1, w, rand) )
             #print "rejecting exchange ", k, k+1, w, rand
 
         

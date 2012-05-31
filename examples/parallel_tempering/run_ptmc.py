@@ -10,6 +10,8 @@ from optimize.quench import quench
 from accept_tests.spherical_container import SphericalContainer
 
 natoms = 31
+nsteps_equil = 10000
+nsteps_tot   = 100000
 
 coords=np.random.random(3*natoms)
 #quench the coords so we start from a reasonable location
@@ -59,20 +61,20 @@ for n, rep in enumerate(replicas):
 
 #do some equilibration steps to find a good step size
 for takestep in takesteplist:
-    takestep.useAdaptiveStep()
+    takestep.useAdaptiveStep(last_adaptive_step = nsteps_equil)
 
 
 ptmc = PTMC(replicas)
-ptmc.exchange_frq = 10000
-ptmc.run(30000)
+ptmc.exchange_frq = 100
+ptmc.run(nsteps_tot)
 
 
 
 #do production run
 #fix the step sizes
-for takestep in takesteplist:
-    takestep.useFixedStep()
-ptmc.run(30000)
+#for takestep in takesteplist:
+#    takestep.useFixedStep()
+#ptmc.run(30000)
 
 ptmc.end() #close the open threads
 
