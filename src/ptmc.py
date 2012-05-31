@@ -1,5 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 import numpy as np
+import multiprocessing as mp
 
 
 def getTemps(Tmin, Tmax, nreplicas):
@@ -13,10 +14,41 @@ def getTemps(Tmin, Tmax, nreplicas):
     return Tlist
 
 
+class MCProcess(mp.Process):
+    def __init__(self, mcsys, conn):
+        mp.Process.__init__(self)
+        self.mcsys = mcsys
+        self.conn = conn
+    
+    def run(self):
+        #this redefines mp.Process.run
+        #self.mcsys.run(50000)
+        while 1:
+            message = self.conn.recv()
+            #print "message", message
+            if message[0] == "kill":
+                print "terminating", self.name
+                return
+            elif message[0] == "return energy temperature":
+                self.conn.send((self.mcsys.markovE, self.mcsys.temperature))
+            elif message[0] == "run":
+                nsteps = message[1]
+                self.mcsys.run(nsteps) 
+                #print self.name, "finished", nsteps, "steps"
+                self.conn.send("done")
+            elif message[0] == "return energy coords":
+                self.conn.send((self.mcsys.markovE, self.mcsys.coords))
+            elif message[0] == "replace energy coords":
+                self.conn.send((self.mcsys.markovE, self.mcsys.coords))
+                self.mysys.markovE = message[1]
+                self.mysys.coords= message[2].copy()
+            else:
+                print "unknown message:"
+                print message
 
 
 class PTMC(object):
-    """A class to run basin hopping parallel tempering
+    """A class to run Monte Carlo parallel tempering
 
     eventually I'd like to submit one mc/basinhopping class and use deepcopy
     to make the replicas.  But it's not working for me.  
@@ -25,9 +57,18 @@ class PTMC(object):
     def __init__(self, replicas ):
         self.replicas = replicas
         self.nreplicas = len(self.replicas)
-        self.exchange_frq = 10
+        self.exchange_frq = 1000
         
         self.ex_outstream = open("exchanges", "w")
+        
+        self.replicas_par = []
+        self.communicators = []
+        for rep in self.replicas:
+            parent_conn, child_conn = mp.Pipe()
+            rep_par = MCProcess( rep, child_conn)
+            self.replicas_par.append( rep_par )
+            self.communicators.append( parent_conn )
+            rep_par.start()
 
         """
         #set up the temperatures
@@ -58,16 +99,51 @@ class PTMC(object):
             replica = copy.deepcopy(mcobject)
             self.replica.append( replica )
         """
-        
+       
+    def end(self):
+        for conn in self.communicators:
+            conn.send(("kill",))
+        for rep in self.replicas_par:
+            rep.join()
+            
+    def runNoExchanges(self, nsteps):
+        for conn in self.communicators:
+            conn.send(("run", nsteps))
+        #wait till they're all done
+        for conn in self.communicators:
+            print "waiting for 'done'"
+            message = conn.recv()
+            if message != "done":
+                print "runNoExchanges> received unexpected message", message
+            else:
+                print "received message", message
+         
 
     def run(self, nsteps):
         stepnum = 0
         while stepnum < nsteps:
-            for rep in self.replicas:
-                rep.run( self.exchange_frq )
+            self.runNoExchanges(self.exchange_frq)
             stepnum += self.exchange_frq
-            self.tryExchange()
+            self.tryExchangePar()
             
+    def doExchangePar(self, k):
+        """
+        do parallel tempering exchange between replicas k and k+1
+        
+        should we exchange coords or temperature?  Exchanging temperature is faster.  
+        Exchanging coords is probably simpler.
+        """
+        self.communicators[k].send(("return energy coords",))
+        E1, coords1 = self.communicators[k].recv()
+        
+        self.communicators[k+1].send(("return energy coords",))
+        E2, coords2 = self.communicators[k+1].recv()
+        
+        self.communicators[k].send(("replace energy coords", E2, coords2))
+        self.communicators[k+1].send(("replace energy coords", E1, coords1))
+
+
+    
     def doExchange(self, k):
         """
         do parallel tempering exchange
@@ -82,6 +158,31 @@ class PTMC(object):
         self.replicas[k+1].markovE = E1
         self.replicas[k+1].coords = np.copy(coords1)
 
+    def getRepEnergyT(self, k):
+        self.communicators[k].send(("return energy temperature",))
+        return self.communicators[k].recv()
+
+
+    def tryExchangePar(self):
+        #choose which pair to try and exchange
+        k = np.random.random_integers( 0, self.nreplicas - 2)
+        print "trying exchange", k, k+1
+        #determine if the exchange will be accepted
+        E1, T1 = self.getRepEnergyT(k)
+        E2, T2 = self.getRepEnergyT(k+1)
+        deltaE = E1 - E2
+        deltabeta = 1./T1 - 1./T2
+        w = min( 1. , np.exp( deltaE * deltabeta ) )
+        rand = np.random.rand()
+        if w > rand:
+            #accept exchange
+            self.ex_outstream.write("accepting exchange %d %d %g %g\n" % (k, k+1, w, rand) )
+            self.doExchange(k)
+        else:
+            self.ex_outstream.write("rejecting exchange %d %d %g %g\n" % (k, k+1, w, rand) )
+            #print "rejecting exchange ", k, k+1, w, rand
+
+        
 
     def tryExchange(self):
         #choose which pair to try and exchange
@@ -95,6 +196,6 @@ class PTMC(object):
         if w > rand:
             #accept step
             self.ex_outstream.write("accepting exchange %d %d %g %g\n" % (k, k+1, w, rand) )
-            self.doExchange(k)
+            self.doExchangePar(k)
         #else:
             #print "rejecting exchange ", k, k+1, w, rand

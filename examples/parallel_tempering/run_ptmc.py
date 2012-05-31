@@ -44,7 +44,7 @@ for i in range(nreplicas):
     mc = MonteCarlo(coords, potential, takeStep=takestep, temperature=T, \
                     outstream=ostream, event_after_step = event_after_step, \
                     acceptTests = accept_tests)
-    mc.printfrq = 1000
+    mc.printfrq = 1
     replicas.append(mc)
 
 
@@ -57,20 +57,25 @@ for n, rep in enumerate(replicas):
     printxyzlist.append( printxyz)
     rep.addEventAfterStep(printxyz.event)
 
-
-ptmc = PTMC(replicas)
-ptmc.exchange_frq = 100
-
 #do some equilibration steps to find a good step size
 for takestep in takesteplist:
     takestep.useAdaptiveStep()
-ptmc.run(10000)
+
+
+ptmc = PTMC(replicas)
+ptmc.exchange_frq = 10000
+ptmc.run(30000)
+
+
 
 #do production run
 #fix the step sizes
 for takestep in takesteplist:
     takestep.useFixedStep()
-ptmc.run(10000000)
+ptmc.run(30000)
+
+ptmc.end() #close the open threads
+
 
 print "final energies"
 for rep in replicas:
