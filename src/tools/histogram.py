@@ -29,6 +29,9 @@ class EnergyHistogram(object):
     def __iter__(self):
         return HistIter(self)
     
+    def __call__(self, e, coords, acceptstep):
+        return self.insert(e)
+    
 
 class HistIter(object):
     def __init__(self, hist):

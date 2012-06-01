@@ -15,8 +15,9 @@ class takeStep(object):
         self.getStep()
         self.updateStep(accepted)
         """
-        self.getStepSize = lambda : stepsize
-        self.updateStep = lambda x: x #do nothing
+        self.useFixedStep(stepsize)
+        #self.getStepSize = lambda : stepsize
+        #self.updateStep = lambda x: x #do nothing
 
     def useAdaptiveStep(self, stepsize=None, acc_ratio=0.5, freq=100, \
                         adaptive_class=None, last_adaptive_step=None ):
@@ -49,7 +50,7 @@ class takeStep(object):
         if stepsize == None:  #use current stepsize
             stepsize = self.getStepSize()
         self.getStepSize = lambda : stepsize
-        self.updateStep = lambda x: x #do nothing
+        self.updateStep = self.updateStepDoNothing #do nothing
 
 
             
@@ -58,4 +59,8 @@ class takeStep(object):
         if self.last_adaptive_step != None and self.nsteps > self.last_adaptive_step:
             self.useFixedStep() 
         coords += self.getStepSize()*(self.RNG(len(coords))-0.5)*2.
+        
+    def updateStepDoNothing(self, accepted):
+        pass
+    
                     

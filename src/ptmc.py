@@ -29,6 +29,9 @@ class MCProcess(mp.Process):
             if message[0] == "kill":
                 print "terminating", self.name
                 return
+            elif message[0] == "return system":
+                #sending the system doesn't work
+                self.conn.send(self.mcsys)
             elif message[0] == "return energy temperature":
                 self.conn.send((self.mcsys.markovE, self.mcsys.temperature))
             elif message[0] == "run":
@@ -102,8 +105,17 @@ class PTMC(object):
             replica = copy.deepcopy(mcobject)
             self.replica.append( replica )
         """
+    def getSystems(self):
+        #this function doesn't work
+        self.replicas_final = []
+        for conn in self.communicators:
+            conn.send(("return system",))
+            rep = conn.recv()
+            print "getSystems E", rep.markovE
+            self.replicas_final.append(rep)
        
     def end(self):
+        #self.getSystems()
         for conn in self.communicators:
             conn.send(("kill",))
         for rep in self.replicas_par:
