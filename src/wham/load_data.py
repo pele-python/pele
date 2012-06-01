@@ -11,9 +11,9 @@ from numpy import log
 
 def exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar1, sig1, Ebar2, sig2 ):
     """ 
-    Caluclate bin edges such that dE increase exponentially with E. This is
+    Calculate bin edges such that dE increase exponentially with E. This is
     so that the lower temperatures that have narrower energy histograms have
-    roughly the same number of bins.  If dE increses like
+    roughly the same number of bins.  If dE increases like
 
         dE[i] = dEmin * (dEmax/dEmin)**(i/nebins)
 
@@ -33,7 +33,7 @@ def exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar1, sig1, Ebar2, s
         dE( i(Ebar1) ) / sig1  = dE( i(Ebar2) ) / sig2
         E( nebins ) = emax
 
-    These can be solved analitically for dEmin and dEmax 
+    These can be solved analytically for dEmin and dEmax 
     """
     ##########################################################################
     #first determine dEmin and dEmax
@@ -71,6 +71,10 @@ class load_data1dExp:
                 visits for replica i
     
     fskip:     discard the first fraction (fskip) of data
+    
+    exponential_bins: use exponentially distributed bin sizes. This is so that 
+        lower temperatures that have narrower energy histograms have roughly 
+        the same number of bins.
     """
     def __init__(self, filenames, ecolumn, nebins = 200, NEGLECT = 0.01, fskip=0., \
                  exponential_bins = True):

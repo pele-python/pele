@@ -11,7 +11,7 @@ import load_data
 #import utils
 import getopt, sys
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
+#from matplotlib.backends.backend_pdf import PdfPages
 #from matplotlib.pyplot import *
 #mbar = pickle.load(open("mbar.pickle","rb"))
 
@@ -118,7 +118,7 @@ if not usepkl or not os.path.isfile(pklname):
     wham = WHAM.wham1d(Tlist, data.binenergy, visits1d)
 
     wham.minimize()
-    #wham.minimize()
+    #wham.globalMinimization()
 
     print "dumping WHAM1d to pickle file: ", pklname
     pickle.dump(wham,open(pklname,"wb"))

@@ -42,13 +42,17 @@ class WhamPotential(potential):
 
         nbins: the number of bins in the histogram, e.g. len(n_F(E))
 
-        logP: = log(P(E,T_i))  a 2d array of shape( nreps, nbins).
+        logP: = log(P(E,T_i)) a.k.a. log(visits) a 2d array of shape( nreps, nbins).
 
         reduced_energy:  E/T_i  a 2d array of shape( nreps, nbins) giving the
             reduced energy of each bin
 
-        note: this works perfectly well for 2d histograms as well.  In this
-        case all bins are treated as equal
+        note: this works perfectly well for 2d histograms as well.  In this case the 2d 
+            histograms should be linearized
+        
+        warning: many bins will be completely unoccupied for all replicas.  This means there will be 
+            a lot of extra work done trying to minimize irrelevant variables.  This is fine, just make sure
+            logP == 0 for all bins with zero visits, not logP = -inf
         """
         self.nreps = len( logP[:,0] )
         self.nbins = len( logP[0,:] )
@@ -67,12 +71,6 @@ class WhamPotential(potential):
         """
         wi = X[:self.nreps]
         lognF = X[self.nreps:]
-        #print self.nreps
-        #print self.nbins
-        #print np.shape(wi)
-        #print np.shape(lognF)
-        #print np.shape(self.logP)
-        #print np.shape(self.reduced_energy)
         """
         energy = 0.
         for irep in range(self.nreps):
