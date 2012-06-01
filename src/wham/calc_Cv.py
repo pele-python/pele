@@ -135,9 +135,19 @@ else:
 fname=outprefix+".Cv"
 NDOF = nfree*3
 print 'writing Cv to', fname, ': ', NDOF, "degrees of freedom"
-fout=open(fname,"w")
-wham.calc_Cv(NDOF, fout)
-fout.close()
+cvdata = wham.calc_Cv(NDOF)
+with open(fname,"w") as fout:
+    np.savetxt(fout, cvdata )
+fname += ".pdf"
+print 'saving Cv plot to', fname
+with open(fname,"w") as fout:
+    plt.xlabel("T")
+    plt.ylabel("Cv")
+    plt.plot(cvdata[:,0], cvdata[:,5], "-")
+    plt.savefig(fout)
+
+
+    
 
 fname=outprefix+".n_E"
 print 'writing density of states, log(n_E) to', fname

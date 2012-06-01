@@ -32,16 +32,13 @@ def logSum(log_terms):
     # return the log sum
     return log_sum
 
-def calc_Cv(logn_E, visits1d, binenergy, NDOF, fout, Treplica, k_B):
+
+def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B):
     #put some variables in this namespace
     nebins, nrep = np.shape(visits1d)
     nqbins=1
 
-    nodatae = np.where((visits1d.sum(1)) == 0)
     allzeroe = (visits1d.sum(1)) == 0
-    #fout=open("weights.A1d","w")
-    #savetxt(fout,column_stack((binenergy,logn_E)))
-    #fout.close()
 
     #find the ocupied bin with the minimum energy
     for i in range(nebins):
@@ -50,14 +47,13 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, fout, Treplica, k_B):
             break
 
     #now calculate partition functions, energy expectation values, and Cv
-    #fout = open("Cv.out.Apy1d", "w")
-    #NDOF = 12*3 # = number of degrees of freedom
     NTEMP = 100 # number of temperatures to calculate expectation values
     TMAX = Treplica[-1]
     TMIN = Treplica[0]
     TINT=(TMAX-TMIN)/(NTEMP-1)
     TRANGE = [ TMIN + i*TINT for i in range(NTEMP) ]
-    for T in TRANGE:
+    dataout = np.zeros( [NTEMP, 6] )
+    for count,T in enumerate(TRANGE):
         kBT = k_B*T
         Z0=0.0
         Z1=0.0
@@ -82,6 +78,7 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, fout, Treplica, k_B):
             dE = binenergy[i]-binenergy[i-1]
         else:
             dE = binenergy[i+1]-binenergy[i]
+            
         if dE/kBT < 1.0E-7:
             ONEMEXP=-dE/kBT
         else:
@@ -89,7 +86,19 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, fout, Treplica, k_B):
 
         #Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EDIFF
         Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EREF
+        
         Cv = NDOF/2. + 1.0*(1.0 - dE**2 * np.exp(dE/kBT)/(ONEMEXP**2*kBT**2)) - (Z1/(Z0*kBT))**2 + Z2/(Z0*kBT**2)
-        np.array([kBT, Z0*np.exp(expoffset), Z1*np.exp(expoffset), Z2*np.exp(expoffset), Eavg, Cv, np.log(Z0)+expoffset, np.log(Z1)+expoffset, np.log(Z2)+expoffset]).tofile(fout," ")
-        fout.write("\n")
+        
+        dataout[count,0] = T
+        dataout[count,1] = np.log(Z0)+expoffset
+        dataout[count,2] = np.log(Z1)+expoffset
+        dataout[count,3] = np.log(Z2)+expoffset
+        dataout[count,4] = Eavg
+        dataout[count,5] = Cv
 
+        
+        #np.array([kBT, Z0*np.exp(expoffset), Z1*np.exp(expoffset), Z2*np.exp(expoffset), Eavg, Cv, np.log(Z0)+expoffset, np.log(Z1)+expoffset, np.log(Z2)+expoffset]).tofile(fout," ")
+        
+        #fout.write("\n")
+
+    return dataout

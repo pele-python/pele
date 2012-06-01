@@ -66,9 +66,9 @@ class wham1d:
 
 
 
-    def calc_Cv(self, NDOF, fout):
+    def calc_Cv(self, NDOF):
         return wham_utils.calc_Cv(self.logn_E, self.visits1d, self.binenergy, \
-                                  NDOF, fout, self.Tlist, self.k_B)
+                                  NDOF, self.Tlist, self.k_B)
 
 
 
