@@ -27,7 +27,6 @@ def usage():
     print '  -o output_prefix : change the default output_prefix'
     print '  -F :  dont use pickle file'
     print '  -r rskip : skip the first fraction r of the data files'
-    print '  -q qcolumn : which column to get the overlap data from'
     print '  -e ecolumn : which column to get the energy data from'
     print '  -E nebins  : number of energy bins (=300)'
     print '  -c input : Make a linear combination of two order parameters.'
@@ -38,15 +37,16 @@ def usage():
 usepkl=True
 nfree=1;
 outprefix="out"
+inprefix = "overlap"
 rskip=0.0
-qcolumn=3
 ecolumn=2
 qcombine=[]
 TRANGEi=[]
 nebins=300
 
 
-opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:q:c:T:e:E:", ["help", "nfree="])
+
+opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:c:T:e:E:", ["help", "nfree="])
 output = None
 verbose = False
 for o, a in opts:
@@ -60,9 +60,6 @@ for o, a in opts:
     elif o == "-r":
         rskip=float(a)
         print "will skip the first ", rskip, "of the data files"
-    elif o == "-q":
-        qcolumn=int(a)
-        print "using qcolumn = ", qcolumn
     elif o == "-e":
         ecolumn=int(a)
         print "using ecolumn = ", ecolumn
@@ -105,9 +102,7 @@ if not usepkl or not os.path.isfile(pklname):
     rep1=0 #don't use the first 8 replicas.  There is a better way to do this.
     Tlist=Tlist[(rep1):]
     nrep = len(Tlist)
-    filenames=['overlap.'+str(n+rep1+1) for n in range(nrep)]
-    #ecolumn=2
-    #qcolumn=3
+    filenames=[inprefix+'.'+str(n+rep1+1) for n in range(nrep)]
 
     #OK, now we have a list of temperatures and filenames for each replicas
     print "replica list:"
@@ -115,21 +110,14 @@ if not usepkl or not os.path.isfile(pklname):
         print Tlist[n], filenames[n]
 
 
-    #nfree=64; #THIS SHOULD BE PASSED TO THE PROGRAM
     print "USING nfree = ", nfree
-    #nebins = 300
-    nqbins=nfree+1
-    #nrep=len(Tlist)
-    #qmin=0.
-    #qmax=1.
-
 
     data = load_data.load_data1dExp(filenames, ecolumn, nebins=nebins, fskip=rskip)
     visits1d = data.visits1d
 
     wham = WHAM.wham1d(Tlist, data.binenergy, visits1d)
 
-    wham.minimizeNew()
+    wham.minimize()
     #wham.minimize()
 
     print "dumping WHAM1d to pickle file: ", pklname

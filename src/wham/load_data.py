@@ -57,7 +57,23 @@ def exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar1, sig1, Ebar2, s
 
 
 class load_data1dExp:
-    def __init__(self, filenames, ecolumn, nebins = 200, NEGLECT = 0.01, fskip=0.):
+    """
+    load data from files and create histograms
+    
+    filenames: a list of filesnames
+    
+    ecolumn:   the column in the input files that has the energy
+    
+    nebins:    number of bins
+    
+    NEGLECT:   for each replica, discard bins with less fewer visits than 
+                NEGLECT*max_visits[i], where max_visits[i] is the maximum number of
+                visits for replica i
+    
+    fskip:     discard the first fraction (fskip) of data
+    """
+    def __init__(self, filenames, ecolumn, nebins = 200, NEGLECT = 0.01, fskip=0., \
+                 exponential_bins = True):
     
         nrep = len(filenames)
     
@@ -86,20 +102,31 @@ class load_data1dExp:
     
         emax += 1e-4 #so the highest energy returns the last bin, not one past the last bin
     
-        dE = (emax-emin)/(nebins)
-        print emin, " < E < ", emax, " dE = ", dE
-    
+        ########################################################
+        #determine bin edges
+        ########################################################
         self.visits1d = np.zeros([nebins,nrep], np.int32) 
-        self.binenergy = np.array([ emin + dE*i for i in range(nebins)])
-        visits1d = self.visits1d
-        binenergy = self.binenergy
-        binenergynp = np.array([ emin + dE*i for i in range(nebins+1)]) #for histogram, numpy wants bin endges, including rightmost edge
+        self.binenergy = np.zeros(nebins)
+        binenergynp = np.zeros(nebins+1) #for np.histogram, numpy wants bin endges, including rightmost edge
+
+
     
+    
+        #if exponential_bins then redo the bin calculation
         #use exponentially increasing bin width
-        exponential_bins = True
         if exponential_bins:
             exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar[0], Esig[0], Ebar[-1], Esig[-1] )
-            binenergy[0:nebins] = ( binenergynp[0:-1])
+            self.binenergy[0:nebins] = ( binenergynp[0:-1])
+        else:
+            dE = (emax-emin)/(nebins)
+            print emin, " < E < ", emax, " dE = ", dE
+            
+            self.binenergy = np.array([ emin + dE*i for i in range(nebins)])
+            binenergynp = np.array([ emin + dE*i for i in range(nebins+1)]) #for histogram, numpy wants bin endges, including rightmost edge
+
+        visits1d = self.visits1d
+
+            
     
         #load the energies into visits1d
         print "reading data from files"
