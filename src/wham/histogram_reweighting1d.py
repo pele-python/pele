@@ -1,11 +1,8 @@
-from numpy import *
 import numpy as np #to access np.exp() not built int exp
-from math import *
-import scipy.optimize
 #import timeseries # for timeseries analysis 
-import commands
-import pdb;
-import pickle
+#import commands
+#import pdb;
+#import pickle
 from wham_potential import WhamPotential
 #import matplotlib.pyplot as plt
 #from matplotlib.pyplot import *
@@ -38,9 +35,9 @@ class wham1d:
         self.nrep = len(Tlist)
         self.nebins = len(binenergy)
         self.nqbins = 1
-        self.Tlist = array(Tlist, dtype = float64)
-        self.binenergy = array(binenergy, dtype = float64)
-        self.visits1d = array(visits1d, dtype = int32)
+        self.Tlist = np.array(Tlist, dtype = np.float64)
+        self.binenergy = np.array(binenergy, dtype = np.float64)
+        self.visits1d = np.array(visits1d, dtype = np.int32)
 
     def minimizeNew(self):
         nreps = self.nrep
@@ -77,7 +74,7 @@ class wham1d:
         visits1d=self.visits1d
         logn_E=self.logn_E
 
-        self.nodatae = where((visits1d.sum(1)) == 0)
+        self.nodatae = np.where((visits1d.sum(1)) == 0)
         self.allzeroe = (visits1d.sum(1)) == 0
         #fout=open("weights.A1d","w")
         #savetxt(fout,column_stack((binenergy,logn_E)))
@@ -113,7 +110,7 @@ class wham1d:
             for i in range(nebins):
                 if self.allzeroe[i]: continue
                 EDIFF = (binenergy[i]-EREF)
-                dummy = exp( logn_E[i]   -(EDIFF)/(kBT) - expoffset)
+                dummy = np.exp( logn_E[i]   -(EDIFF)/(kBT) - expoffset)
                 Z0 += dummy
                 Z1 += dummy * EDIFF
                 Z2 += dummy * EDIFF * EDIFF
@@ -125,12 +122,12 @@ class wham1d:
             if dE/kBT < 1.0E-7:
                 ONEMEXP=-dE/kBT
             else:
-                ONEMEXP= 1.0-exp(dE/kBT)
+                ONEMEXP= 1.0-np.exp(dE/kBT)
 
             #Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EDIFF
             Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EREF
-            Cv = NDOF/2. + 1.0*(1.0 - dE**2 * exp(dE/kBT)/(ONEMEXP**2*kBT**2)) - (Z1/(Z0*kBT))**2 + Z2/(Z0*kBT**2)
-            array([kBT, Z0*exp(expoffset), Z1*exp(expoffset), Z2*exp(expoffset), Eavg, Cv, log(Z0)+expoffset, log(Z1)+expoffset, log(Z2)+expoffset]).tofile(fout," ")
+            Cv = NDOF/2. + 1.0*(1.0 - dE**2 * np.exp(dE/kBT)/(ONEMEXP**2*kBT**2)) - (Z1/(Z0*kBT))**2 + Z2/(Z0*kBT**2)
+            np.array([kBT, Z0*np.exp(expoffset), Z1*np.exp(expoffset), Z2*np.exp(expoffset), Eavg, Cv, np.log(Z0)+expoffset, np.log(Z1)+expoffset, np.log(Z2)+expoffset]).tofile(fout," ")
             fout.write("\n")
 
 

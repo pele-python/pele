@@ -1,13 +1,10 @@
-from numpy import *
-import numpy as np #to access np.exp() not built int exp
-from math import *
-import scipy.optimize
+import numpy as np 
+from numpy import log
 #import timeseries # for timeseries analysis 
-import commands
-import pdb;
-import pickle
+#import commands
+#import pdb;
+#import pickle
 #import calc_Cv_extrap4_new_utils as whamutil
-from wham_potential import WhamPotential
 #import matplotlib.pyplot as plt
 #from matplotlib.pyplot import *
 
@@ -43,7 +40,7 @@ def exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar1, sig1, Ebar2, s
     ##########################################################################
     B = (sig2*(Ebar1 - emin) - sig1*(Ebar2-emin))/(sig1-sig2)
     f = (emax - emin)/B + 1.
-    dEmin_test = log(f) / nebins * B
+    dEmin_test = np.log(f) / nebins * B
     dEmax_test = f * dEmin_test
     print "dEmin dEmax ", dEmin_test, dEmax_test
     dEmin = dEmin_test
@@ -60,66 +57,66 @@ def exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar1, sig1, Ebar2, s
 
 
 class load_data1dExp:
-  def __init__(self, filenames, ecolumn, nebins = 200, NEGLECT = 0.01, fskip=0.):
-
-    nrep = len(filenames)
-
-
-    #loop through files and get maximum and minimum energies
-    print "determining emax and emin from input data"
-    emin=1e10
-    emax=-1e10
-    nlines=[]
-    Ebar=[]
-    Esig=[]
-    for f in filenames:
-        data=genfromtxt(f)
-        e=data[:,ecolumn].min()
-        if e < emin: emin = e
-        e=data[:,ecolumn].max()
-        if e > emax: emax = e
-        nlines.append(len(data[:,0]))
-        ebar = mean( data[:,ecolumn] )
-        esig = std( data[:,ecolumn] )
-        Ebar.append(ebar)
-        Esig.append(esig)
-
-    print "nlines"
-    print nlines
-
-    emax += 1e-4 #so the highest energy returns the last bin, not one past the last bin
-
-    dE = (emax-emin)/(nebins)
-    print emin, " < E < ", emax, " dE = ", dE
-
-    self.visits1d = zeros([nebins,nrep], int32) 
-    self.binenergy = array([ emin + dE*i for i in range(nebins)])
-    visits1d = self.visits1d
-    binenergy = self.binenergy
-    binenergynp = array([ emin + dE*i for i in range(nebins+1)]) #for histogram, numpy wants bin endges, including rightmost edge
-
-    #use exponentially increasing bin width
-    exponential_bins = True
-    if exponential_bins:
-        exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar[0], Esig[0], Ebar[-1], Esig[-1] )
-        binenergy[0:nebins] = ( binenergynp[0:-1])
-
-    #load the energies into visits1d
-    print "reading data from files"
-    for k in range(nrep):
-        with open(filenames[k],"r") as f:
-            lcount = -1
-            lfirst = nlines[k]*fskip
-            print "lfirst ", lfirst
-            edata=genfromtxt(f)[lfirst:,ecolumn]
-            visits1d[:,k], retbins = np.histogram(edata, binenergynp)
-
-    #set visits to zero if the count is below a threshold
-    #the threshold is different for each replica, and is determined by the ratio to the maximum count
-    for k in range(nrep):
-        visitsmax=visits1d[:,k].max()
-        ind=where(visits1d.astype(float)[:,k]/visitsmax<NEGLECT)
-        visits1d[ind[0],k] = 0
+    def __init__(self, filenames, ecolumn, nebins = 200, NEGLECT = 0.01, fskip=0.):
+    
+        nrep = len(filenames)
+    
+    
+        #loop through files and get maximum and minimum energies
+        print "determining emax and emin from input data"
+        emin=1e10
+        emax=-1e10
+        nlines=[]
+        Ebar=[]
+        Esig=[]
+        for f in filenames:
+            data=np.genfromtxt(f)
+            e=data[:,ecolumn].min()
+            if e < emin: emin = e
+            e=data[:,ecolumn].max()
+            if e > emax: emax = e
+            nlines.append(len(data[:,0]))
+            ebar = np.mean( data[:,ecolumn] )
+            esig = np.std( data[:,ecolumn] )
+            Ebar.append(ebar)
+            Esig.append(esig)
+    
+        print "nlines"
+        print nlines
+    
+        emax += 1e-4 #so the highest energy returns the last bin, not one past the last bin
+    
+        dE = (emax-emin)/(nebins)
+        print emin, " < E < ", emax, " dE = ", dE
+    
+        self.visits1d = np.zeros([nebins,nrep], np.int32) 
+        self.binenergy = np.array([ emin + dE*i for i in range(nebins)])
+        visits1d = self.visits1d
+        binenergy = self.binenergy
+        binenergynp = np.array([ emin + dE*i for i in range(nebins+1)]) #for histogram, numpy wants bin endges, including rightmost edge
+    
+        #use exponentially increasing bin width
+        exponential_bins = True
+        if exponential_bins:
+            exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar[0], Esig[0], Ebar[-1], Esig[-1] )
+            binenergy[0:nebins] = ( binenergynp[0:-1])
+    
+        #load the energies into visits1d
+        print "reading data from files"
+        for k in range(nrep):
+            with open(filenames[k],"r") as f:
+                lcount = -1
+                lfirst = nlines[k]*fskip
+                print "lfirst ", lfirst
+                edata=np.genfromtxt(f)[lfirst:,ecolumn]
+                visits1d[:,k], retbins = np.histogram(edata, binenergynp)
+    
+        #set visits to zero if the count is below a threshold
+        #the threshold is different for each replica, and is determined by the ratio to the maximum count
+        for k in range(nrep):
+            visitsmax=visits1d[:,k].max()
+            ind=np.where(visits1d.astype(float)[:,k]/visitsmax<NEGLECT)
+            visits1d[ind[0],k] = 0
 
 
 

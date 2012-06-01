@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import numpy as np #to access np.exp() not built int exp
-from math import *
 #import timeseries # for timeseries analysis 
 #import commands
 #import pdb;
@@ -9,7 +8,7 @@ import os.path
 #import calc_Cv_extrap4_new_utils as whamutil
 import histogram_reweighting1d as WHAM
 import load_data
-import utils
+#import utils
 import getopt, sys
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -21,20 +20,20 @@ from matplotlib.backends.backend_pdf import PdfPages
 #parser.parse_args()
 
 def usage():
-  print sys.argv[0], " [-hF -o output_prefix -r rskip -q qcolumn -e ecolumn -E nebins -c input -T TRANGE] -f nfree"
-  print 'Combine energy and from multiple runs at different temperatures into one histogram and print various quantities.'
-  print '  -h print this help and exit'
-  print '  -f nfree : number of mobile particles, used to determine nqbins and # degrees of freedom'
-  print '  -o output_prefix : change the default output_prefix'
-  print '  -F :  dont use pickle file'
-  print '  -r rskip : skip the first fraction r of the data files'
-  print '  -q qcolumn : which column to get the overlap data from'
-  print '  -e ecolumn : which column to get the energy data from'
-  print '  -E nebins  : number of energy bins (=300)'
-  print '  -c input : Make a linear combination of two order parameters.'
-  print '             Input will have the form "q1column q2column q2weight"'
-  print '             The order parameter will be q = (q1 + q2weight*q2)/(1+q2weight)'
-  print '  -T TRANGE : set TRANGE for the calculation of Fq.  TRANGE should have the format "Tmin Tmax numT"'
+    print sys.argv[0], " [-hF -o output_prefix -r rskip -q qcolumn -e ecolumn -E nebins -c input -T TRANGE] -f nfree"
+    print 'Combine energy and from multiple runs at different temperatures into one histogram and print various quantities.'
+    print '  -h print this help and exit'
+    print '  -f nfree : number of mobile particles, used to determine nqbins and # degrees of freedom'
+    print '  -o output_prefix : change the default output_prefix'
+    print '  -F :  dont use pickle file'
+    print '  -r rskip : skip the first fraction r of the data files'
+    print '  -q qcolumn : which column to get the overlap data from'
+    print '  -e ecolumn : which column to get the energy data from'
+    print '  -E nebins  : number of energy bins (=300)'
+    print '  -c input : Make a linear combination of two order parameters.'
+    print '             Input will have the form "q1column q2column q2weight"'
+    print '             The order parameter will be q = (q1 + q2weight*q2)/(1+q2weight)'
+    print '  -T TRANGE : set TRANGE for the calculation of Fq.  TRANGE should have the format "Tmin Tmax numT"'
 
 usepkl=True
 nfree=1;
@@ -51,50 +50,50 @@ opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:q:c:T:e:E:", ["help", "nfree="
 output = None
 verbose = False
 for o, a in opts:
-  if o == "-f":
-    nfree=int(a)
-  elif o == "-o":
-    outprefix=a
-    print "output_prefix = ", outprefix
-  elif o == "-F":
-    usepkl=False
-  elif o == "-r":
-    rskip=float(a)
-    print "will skip the first ", rskip, "of the data files"
-  elif o == "-q":
-    qcolumn=int(a)
-    print "using qcolumn = ", qcolumn
-  elif o == "-e":
-    ecolumn=int(a)
-    print "using ecolumn = ", ecolumn
-  elif o == "-E":
-    nebins=int(a)
-    print "using nebins = ", nebins
-  elif o == "-c":
-    qcombline=a
-    qcombine = [float(b) for b in qcombline.split()]
-    if len(qcombine) != 3:
-      print "-c: qcombine must have 3 parts: ", qcombine
-      usage()
-      exit(1)
-    print "using qcombine: ", qcombine
-  elif o == "-T":
-    line = [float(b) for b in a.split()]
-    if len(line) != 3:
-      print "-T: TRANGE must have 3 parts: ", qcombine
-      usage()
-      exit(1)
-    TMIN = line[0]
-    TMAX = line[1]
-    NTEMP = int(line[2])
-    TINT=(TMAX-TMIN)/(NTEMP-1)
-    TRANGEi = [ TMIN + i*TINT for i in range(NTEMP) ]
-    print "using TRANGE: ", TRANGEi
-  elif o in ("-h", "--help"):
-    usage()
-    sys.exit()
-  else:
-    assert False, "unhandled option"
+    if o == "-f":
+        nfree=int(a)
+    elif o == "-o":
+        outprefix=a
+        print "output_prefix = ", outprefix
+    elif o == "-F":
+        usepkl=False
+    elif o == "-r":
+        rskip=float(a)
+        print "will skip the first ", rskip, "of the data files"
+    elif o == "-q":
+        qcolumn=int(a)
+        print "using qcolumn = ", qcolumn
+    elif o == "-e":
+        ecolumn=int(a)
+        print "using ecolumn = ", ecolumn
+    elif o == "-E":
+        nebins=int(a)
+        print "using nebins = ", nebins
+    elif o == "-c":
+        qcombline=a
+        qcombine = [float(b) for b in qcombline.split()]
+        if len(qcombine) != 3:
+            print "-c: qcombine must have 3 parts: ", qcombine
+            usage()
+            exit(1)
+        print "using qcombine: ", qcombine
+    elif o == "-T":
+        line = [float(b) for b in a.split()]
+        if len(line) != 3:
+            print "-T: TRANGE must have 3 parts: ", qcombine
+            usage()
+            exit(1)
+        TMIN = line[0]
+        TMAX = line[1]
+        NTEMP = int(line[2])
+        TINT=(TMAX-TMIN)/(NTEMP-1)
+        TRANGEi = [ TMIN + i*TINT for i in range(NTEMP) ]
+        print "using TRANGE: ", TRANGEi
+    elif o in ("-h", "--help"):
+        usage()
+        sys.exit()
+    else:
+        assert False, "unhandled option"
 
 
 
