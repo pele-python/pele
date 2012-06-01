@@ -22,7 +22,7 @@ class wham1d:
     Tlist # Tlist[k] is the temperature of the simulation in filenames[k] 
 
     binenergy = zeros(nebins, float64) #lower edge of bin energy
-    visits1d =  zeros([nebins,nqbins,nrep], integer) #1d histogram of data
+    visits1d =  zeros([nebins,nrep], integer) #1d histograms of data
     """
     #=============================================================================================
     # Constructor.
@@ -34,7 +34,6 @@ class wham1d:
 
         self.nrep = len(Tlist)
         self.nebins = len(binenergy)
-        self.nqbins = 1
         self.Tlist = np.array(Tlist, dtype = np.float64)
         self.binenergy = np.array(binenergy, dtype = np.float64)
         self.visits1d = np.array(visits1d, dtype = np.int32)
@@ -59,6 +58,7 @@ class wham1d:
         ret = quench(X, self.whampot.getEnergyGradient)
         print "quench energy", ret[1]
         X = ret[0]
+        
         self.logn_E = X[nreps:]
         self.w_i_final = X[:nreps]
         

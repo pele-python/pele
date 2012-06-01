@@ -21,18 +21,18 @@ import matplotlib.pyplot as plt
 
 def usage():
     print sys.argv[0], " [-hF -o output_prefix -r rskip -q qcolumn -e ecolumn -E nebins -c input -T TRANGE] -f nfree"
-    print 'Combine energy and from multiple runs at different temperatures into one histogram and print various quantities.'
-    print '  -h print this help and exit'
-    print '  -f nfree : number of mobile particles, used to determine nqbins and # degrees of freedom'
+    print 'Combine energy from multiple runs at different temperatures into one histogram and print various quantities.'
+    print 'The temperatures of the replicas should be stored in file "temperatures"'
+    print '  -h               : print this help and exit'
+    print '  -f nfree         : number of mobile particles used to determine number of degrees of freedom'
     print '  -o output_prefix : change the default output_prefix'
-    print '  -F :  dont use pickle file'
-    print '  -r rskip : skip the first fraction r of the data files'
-    print '  -e ecolumn : which column to get the energy data from'
-    print '  -E nebins  : number of energy bins (=300)'
-    print '  -c input : Make a linear combination of two order parameters.'
-    print '             Input will have the form "q1column q2column q2weight"'
-    print '             The order parameter will be q = (q1 + q2weight*q2)/(1+q2weight)'
-    print '  -T TRANGE : set TRANGE for the calculation of Fq.  TRANGE should have the format "Tmin Tmax numT"'
+    print '  -i input_prefix  : data should be in files of form input_prefix.#'
+    print '  -F               :  dont use pickle file'
+    print '  -r rskip         : skip the first fraction r of the data files'
+    print '  -e ecolumn       : which column to get the energy data from'
+    print '  -E nebins        : number of energy bins (=300)'
+    print '  -T TRANGE        : set TRANGE for the calculation of Cv.  '
+    print '                     TRANGE should have the format "Tmin Tmax numT" (not implemented)'
 
 usepkl=True
 nfree=1;
@@ -46,7 +46,7 @@ nebins=300
 
 
 
-opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:c:T:e:E:", ["help", "nfree="])
+opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:T:e:E:i:", ["help", "nfree="])
 output = None
 verbose = False
 for o, a in opts:
@@ -55,6 +55,9 @@ for o, a in opts:
     elif o == "-o":
         outprefix=a
         print "output_prefix = ", outprefix
+    elif o == "-o":
+        inprefix=a
+        print "output_prefix = ", inprefix
     elif o == "-F":
         usepkl=False
     elif o == "-r":
@@ -66,14 +69,6 @@ for o, a in opts:
     elif o == "-E":
         nebins=int(a)
         print "using nebins = ", nebins
-    elif o == "-c":
-        qcombline=a
-        qcombine = [float(b) for b in qcombline.split()]
-        if len(qcombine) != 3:
-            print "-c: qcombine must have 3 parts: ", qcombine
-            usage()
-            exit(1)
-        print "using qcombine: ", qcombine
     elif o == "-T":
         line = [float(b) for b in a.split()]
         if len(line) != 3:
@@ -99,7 +94,7 @@ if not usepkl or not os.path.isfile(pklname):
 
     #get temperatures and filenames
     Tlist=list(np.genfromtxt('temperatures'))
-    rep1=0 #don't use the first 8 replicas.  There is a better way to do this.
+    rep1=0 #don't use the first rep1 replicas.  There is a better way to do this.
     Tlist=Tlist[(rep1):]
     nrep = len(Tlist)
     filenames=[inprefix+'.'+str(n+rep1+1) for n in range(nrep)]
@@ -125,7 +120,7 @@ if not usepkl or not os.path.isfile(pklname):
 
 else:
     print "=================================================================="
-    print "loading WHAM2d from pickle file: ", pklname
+    print "loading WHAM from pickle file: ", pklname
     print "=================================================================="
     wham = pickle.load(open(pklname,"rb")) 
 
