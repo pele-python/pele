@@ -83,4 +83,28 @@ class WhamPotential(potential):
         energy = np.sum( self.logP * (lognF[np.newaxis,:] - wi[:,np.newaxis] - self.logP - self.reduced_energy)**2 )
         return energy
 
+    def getEnergyGradient(self, X):
+        """
+        X: is the array of unknowns of length nrep + nbins
+            X[0:nrep] = {w_i}         : the replica unknowns
+            X[nrep:] = {log(n_F(E))}  : the bin unknowns
+
+        R(E,T_i) = log(n_F(E)) - log(w_i) - log( P(E,T_i)*exp(E/T_i) )
+    
+        energy = sum_E sum_i P(E,T_i)*|R(E,T_i)|^2
+        """
+        wi = X[:self.nreps]
+        lognF = X[self.nreps:]
+        R = lognF[np.newaxis,:] - wi[:,np.newaxis] - self.logP - self.reduced_energy
+        
+        energy = np.sum( self.logP * (R)**2 )
+        
+        gradient = np.zeros(len(X))
+        gradient[:self.nreps] = -2. * np.sum( self.logP * R, axis=1 )
+        gradient[self.nreps:] = 2. * np.sum( self.logP * R, axis=0 )
+        #print np.shape(gradient)
+        #print gradient
+    
+        return energy, gradient
+
     
