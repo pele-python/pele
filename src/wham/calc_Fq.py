@@ -7,6 +7,7 @@ from math import *
 import pickle
 import os.path
 import histogram_reweighting2d as WHAM
+import load_data
 import getopt, sys
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -121,7 +122,7 @@ if not usepkl or not os.path.isfile(pklname):
     nqbins=nfree+1
   
   
-    data = WHAM.loadData2dExp(filenames, ecolumn, qcolumn, nqbins, fskip=rskip, qcombine=qcombine, nebins=nebins, dEmin=dEmin)
+    data = load_data.loadData2dExp(filenames, ecolumn, qcolumn, nqbins, fskip=rskip, qcombine=qcombine, nebins=nebins, dEmin=dEmin)
   
     wham = WHAM.wham2d(Tlist, data.binenergy, data.binq, data.visits2d)
   

@@ -9,7 +9,7 @@ from numpy import log
 #from matplotlib.pyplot import *
 
 
-def exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar1, sig1, Ebar2, sig2 ):
+def exponentialBinEnergy( emin, emax, nebins, Ebar1, sig1, Ebar2, sig2 ):
     """ 
     Calculate bin edges such that dE increase exponentially with E. This is
     so that the lower temperatures that have narrower energy histograms have
@@ -48,12 +48,32 @@ def exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar1, sig1, Ebar2, s
     ##########################################################################
     #now generate bin edges
     ##########################################################################
+    binenergynp = np.zeros(nebins+1)
     for i in range(nebins):
         binenergynp[i] = emin + dEmin*nebins/log(dEmax/dEmin)*((dEmax/dEmin)**(float(i)/nebins) - 1)
         #print binenergy[i]
     binenergynp[nebins] = emin + dEmin*nebins/log(dEmax/dEmin)*(dEmax/dEmin - 1)
     print "right most bin edge", binenergynp[nebins], "should be ", emax
+    return binenergynp
 
+
+def getNDataLines(fin):
+    nlines = 0
+    for line in fin:
+        if line[0] != '#':
+            nlines += 1
+    return nlines
+    
+
+def readFile(fname, columns):
+    data = []
+    with open(fname, "r") as fin:
+        for line in fin:
+            if line[0] == '#': continue
+            sline = line.split()
+            d = [ float(sline[c]) for c in columns ]
+            data.append(d)
+    return np.array(data)
 
 
 class load_data1dExp:
@@ -80,7 +100,6 @@ class load_data1dExp:
                  exponential_bins = True):
     
         nrep = len(filenames)
-    
     
         #loop through files and get maximum and minimum energies
         print "determining emax and emin from input data"
@@ -119,7 +138,7 @@ class load_data1dExp:
         #if exponential_bins then redo the bin calculation
         #use exponentially increasing bin width
         if exponential_bins:
-            exponentialBinEnergy( binenergynp, emin, emax, nebins, Ebar[0], Esig[0], Ebar[-1], Esig[-1] )
+            binenergynp = exponentialBinEnergy( emin, emax, nebins, Ebar[0], Esig[0], Ebar[-1], Esig[-1] )
             self.binenergy[0:nebins] = ( binenergynp[0:-1])
         else:
             dE = (emax-emin)/(nebins)
@@ -149,6 +168,135 @@ class load_data1dExp:
             ind=np.where(visits1d.astype(float)[:,k]/visitsmax<NEGLECT)
             visits1d[ind[0],k] = 0
 
+def determineBinEdge(nbins, datalist, column, minmax = [], exponential_bins=True):
+    """
+    return the bin edges, including the rightmost edge
+    """
+    #get min and max
+    if len(minmax) == 2:
+        emin = minmax[0]
+        emax = minmax[1]
+    else:
+        emin = min( np.min( data[:,column] ) for data in datalist )
+        emax = max( np.max( data[:,column] ) for data in datalist )
+    
+    print "min max", emin, emax
+    emax += 1e-4 #so the highest energy returns the last bin, not one past the last bin
 
+    if exponential_bins:
+        Ebar = [ np.mean(data[:,column]) for data in datalist ]
+        Esig = [ np.std(data[:,column]) for data in datalist ]
+        binenergynp = exponentialBinEnergy( emin, emax, nbins, Ebar[0], Esig[0], Ebar[-1], Esig[-1] )
+    else:
+        dE = (emax-emin)/(nbins)
+        binenergynp = np.array([ emin + dE*i for i in range(nbins+1)]) 
+        print emin, " < E < ", emax, " dE = ", dE
+    
+    return binenergynp
+        
+
+class loadData2dExp:
+    def __init__(self, filenames, ecolumn, qcolumn, nqbins, qmin = 0, qmax = 1.0, nebins = 200, \
+                 NEGLECT = 0.01, fskip=0., qcombine=[], dEmin=0.1, exponential_bins = True):
+
+        nrep = len(filenames)
+
+        
+        #qcombine = [qcolumn1, qcolumn2, frac]
+        #make a linear combination of order parameters from columns 1 and 2
+        # q = (q1 + q2weight*q2)/(1+q2weight)
+        qcomb = False
+        if len(qcombine) == 3:
+            qcomb = True
+            qcolumn1 = int(qcombine[0])
+            qcolumn2 = int(qcombine[1])
+            q2weight = qcombine[2]   
+            print "qcombine: ", qcolumn1, qcolumn2, q2weight
+            columns  = [ecolumn, qcolumn1, qcolumn2]
+        else:
+            columns = [ecolumn, qcolumn]
+
+        #if the columns have a header, print the name of the column requested
+        with open(filenames[0], "r") as fin:
+            line = fin.readline()
+            sline = line.split()
+            if sline[0][0] == '#':
+                print "column headers ",
+                for c in columns:
+                    print sline[c],
+                print
+
+
+        #######################################################
+        #load data
+        #######################################################
+        #load the data
+        print "loading data"
+        mydatalist = []
+        for fname in filenames:
+            mydata = readFile(fname, columns)
+            mydatalist.append(mydata)
+            print "mydata", np.shape(mydata)
+
+        #discard the first fraction (fskip) lines
+        if fskip > 0:
+            print "fskip", fskip
+            mydatalistnew = []
+            for data in mydatalist:
+                imin = int(fskip * len(data[:,0]))
+                #print "first index", imin
+                #data = data[imin:,:]
+                datanew = data[imin:,:]
+                mydatalistnew.append(datanew)
+            mydatalist = mydatalistnew
+
+
+        if qcomb:
+            #recombine data
+            mydatanew = []
+            for data in mydata:
+                datanew = np.zeros([ len(data[:,0]), 2] )
+                datanew[:,0] = data[:,0]
+                datanew[:,0] = (data[:,1] + data[:,2]*q2weight ) / (1.+q2weight)
+                mydatanew.append( data  )
+            mydatalist = mydatanew
+
+
+        #######################################################
+        #determine histogram bin edges
+        #######################################################
+        binenergynp = determineBinEdge(nebins, mydatalist, column=0, exponential_bins=True)
+        binqnp = determineBinEdge(nqbins, mydatalist, column=1, minmax=[qmin,qmax], exponential_bins=False)
+        self.binq = binqnp[0:-1]
+        self.binenergy = binenergynp[0:-1]
+        binq = self.binq
+        binenergy = self.binenergy
+
+        
+        
+        #######################################################
+        #load data into histogram
+        #######################################################
+
+        
+        visits2d = np.zeros([nebins,nqbins,nrep], np.integer) 
+        self.visits2d = visits2d
+            
+
+        #load the energies into visits2d
+        for k, data in enumerate(mydatalist):
+            e = data[:,0]
+            q = data[:,1]
+            visits2d[:,:,k], xbins, ybins = np.histogram2d(e, q, [binenergynp, binqnp])
+    
+
+        #set visits to zero if the count is below a threshold
+        #the threshold is different for each replica, and is determined by the ratio to the maximum count
+        for k in range(nrep):
+            visitsmax=visits2d[:,:,k].max()
+            minvis = max(1, int(visitsmax * NEGLECT))
+            ind = np.where(visits2d[:,:,k] <= minvis)
+            print k, "total visits ", visits2d[:,:,k].sum(), "max visits ", visitsmax, "max visits to be discarded ", visits2d[ind[0],ind[1],k].max()
+            visits2d[ind[0],ind[1],k] = 0
 
 
