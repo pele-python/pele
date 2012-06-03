@@ -55,15 +55,15 @@ class wham2d:
         nebins = self.nebins
         nqbins = self.nqbins
         nbins = self.nebins * self.nqbins
-        visits = np.zeros([nreps, nebins, nqbins], np.integer)
+        #visits = np.zeros([nreps, nebins, nqbins], np.integer)
         reduced_energy = np.zeros([nreps, nebins, nqbins])
         for k in range(self.nrep):
             for j in range(self.nqbins):
                 for i in range(self.nebins):
-                    visits[k,i,j] = self.visits2d[i,j,k]
+                    #visits[k,i,j] = self.visits2d[i,j,k]
                     reduced_energy[k,i,j] = self.binenergy[i] / (self.Tlist[k]*self.k_B)
                     
-        
+        visits = self.visits2d
         visits = np.reshape( visits, [nreps, nbins ]) 
         reduced_energy = np.reshape( reduced_energy, [nreps, nbins])           
         self.logP = np.where( visits != 0, np.log( visits.astype(float) ), 0 )
@@ -113,7 +113,7 @@ class wham2d:
 
   
     def calc_Fq(self, TRANGE = []):
-        self.allzero2dind = where(self.visits2d.sum(2) == 0)
+        self.allzero2dind = where(self.visits2d.sum(0) == 0)
 
   
         #put some variables in this namespace
@@ -135,11 +135,11 @@ class wham2d:
         #find the ocupied bin with the minimum energy
         EREF=0
         for i in range(nebins):
-            if visits2d[i,:,:].sum() > 0:
+            if visits2d[:,i,:].sum() > 0:
                 EREF = binenergy[i]
                 break
     
-        self.nodataq = where((visits2d.sum(2).sum(0)) == 0)
+        self.nodataq = where((visits2d.sum(0).sum(0)) == 0)
     
         #now calculate P(q,T)
         # P(q,T) = sum_E n(E,q)*exp(-E/T)  
@@ -189,7 +189,7 @@ class wham2d:
         #find the ocupied bin with the minimum energy
         EREF=0
         for i in range(nebins):
-            if visits2d[i,:,:].sum() > 0:
+            if visits2d[:,i,:].sum() > 0:
                 EREF = binenergy[i]
                 break
     
@@ -248,8 +248,8 @@ class wham2d:
         logn_E = zeros(nebins, float64)
         for i in range(nebins):
             logn_E[i] = wham_utils.logSum(logn_Eq[i,:])
-        self.nodatae = where((visits2d.sum(2).sum(1)) == 0)
-        self.allzeroe = (visits2d.sum(2).sum(1)) == 0
+        self.nodatae = where((visits2d.sum(0).sum(1)) == 0)
+        self.allzeroe = (visits2d.sum(0).sum(1)) == 0
         #fout=open("weights.A2d","w")
         #savetxt(fout,column_stack((binenergy,logn_E)))
         #fout.close()

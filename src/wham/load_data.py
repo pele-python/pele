@@ -206,24 +206,24 @@ def binData2d( binenergynp, binqnp, datalist, NEGLECT = 0.01):
     nqbins = len(binqnp) - 1
     nreps = len(datalist)
     
-    visits2d = np.zeros([nebins,nqbins,nreps], np.integer) 
+    visits2d = np.zeros([nreps, nebins, nqbins], np.integer) 
         
 
     #load the energies into visits2d
     for k, data in enumerate(datalist):
         e = data[:,0]
         q = data[:,1]
-        visits2d[:,:,k], xbins, ybins = np.histogram2d(e, q, [binenergynp, binqnp])
+        visits2d[k,:,:], xbins, ybins = np.histogram2d(e, q, [binenergynp, binqnp])
 
 
     #set visits to zero if the count is below a threshold
     #the threshold is different for each replica, and is determined by the ratio to the maximum count
     for k in range(nreps):
-        visitsmax=visits2d[:,:,k].max()
+        visitsmax=visits2d[k,:,:].max()
         minvis = max(1, int(visitsmax * NEGLECT))
-        ind = np.where(visits2d[:,:,k] <= minvis)
-        print k, "total visits ", visits2d[:,:,k].sum(), "max visits ", visitsmax, "max visits to be discarded ", visits2d[ind[0],ind[1],k].max()
-        visits2d[ind[0],ind[1],k] = 0
+        ind = np.where(visits2d[k,:,:] <= minvis)
+        print k, "total visits ", visits2d[k,:,:].sum(), "max visits ", visitsmax, "max visits to be discarded ", visits2d[k,ind[0],ind[1]].max()
+        visits2d[k,ind[0],ind[1]] = 0
     
     return visits2d
 

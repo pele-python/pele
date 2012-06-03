@@ -135,6 +135,9 @@ if not usepkl or not os.path.isfile(pklname):
 
     #create histogram
     visits2d = load_data.binData2d(binenergy1, binq1, datalist)
+    #visits2dnew = np.zeros( [nebins, nqbins, nrep] )
+    #for k in range(nrep): visits2dnew[:,:,k] = visits2d[k,:,:]
+    #visits2d = visits2dnew
   
     wham = WHAM.wham2d(Tlist, binenergy1[:-1], binq1[:-1], visits2d)
   
@@ -150,6 +153,12 @@ else:
     print "=================================================================="
     wham = pickle.load(open(pklname,"rb")) 
 
+visits2d = wham.visits2d
+visits2d = np.zeros( [wham.nebins, wham.nqbins, wham.nrep] )
+#reorder indices
+for k in range((wham.nrep)):
+    visits2d[:,:,k] = wham.visits2d[k,:,:] 
+
 ##############################################################################
 #put data in form appropriate for scatter plots
 ##############################################################################
@@ -160,10 +169,10 @@ log10visits2d = []
 log10n_Eq = []
 for j in range((wham.nqbins)):
     for i in range((wham.nebins)):
-        if wham.visits2d[i,j,:].sum() > 0: #sum over the replicas
+        if visits2d[i,j,:].sum() > 0: #sum over the replicas
             e.append( wham.binenergy[i] )
             q.append( wham.binq[j] )
-            log10visits2d.append( np.log10( wham.visits2d[i,j,:].sum() ) )
+            log10visits2d.append( np.log10( visits2d[i,j,:].sum() ) )
             log10n_Eq.append( wham.logn_Eq[i,j] / log(10.)  )
 
 print len(log10visits2d)
@@ -174,12 +183,12 @@ print len(log10visits2d)
 fname=outprefix+".visits.q"
 print 'writing visits to overlap bins to', fname
 with open(fname,"w") as fout:
-    np.savetxt(fout,wham.visits2d.sum(0)) #sum over the energy
+    np.savetxt(fout,visits2d.sum(0)) #sum over the energy
 #now plot it
 fname+='.pdf'
 plt.xlabel("overlap")
 plt.ylabel("log10(visits)")
-plt.plot(wham.binq, np.log10(wham.visits2d.sum(0)), '.-')
+plt.plot(wham.binq, np.log10(visits2d.sum(0)), '.-')
 plt.savefig(fname)
 plt.clf()
 
@@ -202,7 +211,7 @@ plt.clf()
 fname=outprefix+".visits.E"
 print 'writing visits to energy bins to', fname
 with open(fname,"w") as fout:
-    visitsE = wham.visits2d.sum(1)
+    visitsE = visits2d.sum(1)
     for i in range(wham.nebins):
         if visitsE[i,:].sum() > 0:
             val = visitsE[i,:].sum()
@@ -213,7 +222,7 @@ with open(fname,"w") as fout:
 fname+='.pdf'
 plt.xlabel("energy")
 plt.ylabel("log10(visits)")
-plt.plot(wham.binenergy, np.log10(wham.visits2d.sum(1)), '.-') #sum over q
+plt.plot(wham.binenergy, np.log10(visits2d.sum(1)), '.-') #sum over q
 plt.savefig(fname)
 plt.clf()
 
