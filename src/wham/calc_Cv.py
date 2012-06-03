@@ -107,10 +107,17 @@ if not usepkl or not os.path.isfile(pklname):
 
     print "USING nfree = ", nfree
 
-    data = load_data.load_data1dExp(filenames, ecolumn, nebins=nebins, fskip=rskip)
-    visits1d = data.visits1d
 
-    wham = WHAM.wham1d(Tlist, data.binenergy, visits1d)
+    #load data
+    datalist = load_data.loadData(filenames, [ecolumn], fskip=rskip )
+    
+    #determine bin edges
+    binenergy1 = load_data.determineBinEdge(nebins, datalist, column=0, exponential_bins=True)
+    
+    #histogram the data
+    visits1d = load_data.binData1d(binenergy1, datalist)
+
+    wham = WHAM.wham1d(Tlist, binenergy1[:-1], visits1d)
 
     wham.minimize()
     #wham.globalMinimization()

@@ -127,7 +127,7 @@ if not usepkl or not os.path.isfile(pklname):
     #load data
     columns = [ecolumn]
     if len(qcombine) != 3: columns.append(qcolumn)
-    datalist = load_data.loadData2d(filenames, columns, fskip=rskip, qcombine=qcombine )
+    datalist = load_data.loadData(filenames, columns, fskip=rskip, qcombine=qcombine )
     
     #determine bin edges
     binenergy1 = load_data.determineBinEdge(nebins, datalist, column=0, exponential_bins=True)

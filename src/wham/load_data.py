@@ -76,97 +76,7 @@ def readFile(fname, columns):
     return np.array(data)
 
 
-class load_data1dExp:
-    """
-    load data from files and create histograms
-    
-    filenames: a list of filesnames
-    
-    ecolumn:   the column in the input files that has the energy
-    
-    nebins:    number of bins
-    
-    NEGLECT:   for each replica, discard bins with less fewer visits than 
-                NEGLECT*max_visits[i], where max_visits[i] is the maximum number of
-                visits for replica i
-    
-    fskip:     discard the first fraction (fskip) of data
-    
-    exponential_bins: use exponentially distributed bin sizes. This is so that 
-        lower temperatures that have narrower energy histograms have roughly 
-        the same number of bins.
-    """
-    def __init__(self, filenames, ecolumn, nebins = 200, NEGLECT = 0.01, fskip=0., \
-                 exponential_bins = True):
-    
-        nrep = len(filenames)
-    
-        #loop through files and get maximum and minimum energies
-        print "determining emax and emin from input data"
-        emin=1e10
-        emax=-1e10
-        nlines=[]
-        Ebar=[]
-        Esig=[]
-        for f in filenames:
-            data=np.genfromtxt(f)
-            e=data[:,ecolumn].min()
-            if e < emin: emin = e
-            e=data[:,ecolumn].max()
-            if e > emax: emax = e
-            nlines.append(len(data[:,0]))
-            ebar = np.mean( data[:,ecolumn] )
-            esig = np.std( data[:,ecolumn] )
-            Ebar.append(ebar)
-            Esig.append(esig)
-    
-        print "nlines"
-        print nlines
-    
-        emax += 1e-4 #so the highest energy returns the last bin, not one past the last bin
-    
-        ########################################################
-        #determine bin edges
-        ########################################################
-        self.visits1d = np.zeros([nebins,nrep], np.int32) 
-        self.binenergy = np.zeros(nebins)
-        binenergynp = np.zeros(nebins+1) #for np.histogram, numpy wants bin endges, including rightmost edge
 
-
-    
-    
-        #if exponential_bins then redo the bin calculation
-        #use exponentially increasing bin width
-        if exponential_bins:
-            binenergynp = exponentialBinEnergy( emin, emax, nebins, Ebar[0], Esig[0], Ebar[-1], Esig[-1] )
-            self.binenergy[0:nebins] = ( binenergynp[0:-1])
-        else:
-            dE = (emax-emin)/(nebins)
-            print emin, " < E < ", emax, " dE = ", dE
-            
-            self.binenergy = np.array([ emin + dE*i for i in range(nebins)])
-            binenergynp = np.array([ emin + dE*i for i in range(nebins+1)]) #for histogram, numpy wants bin endges, including rightmost edge
-
-        visits1d = self.visits1d
-
-            
-    
-        #load the energies into visits1d
-        print "reading data from files"
-        for k in range(nrep):
-            with open(filenames[k],"r") as f:
-                lcount = -1
-                lfirst = nlines[k]*fskip
-                print "lfirst ", lfirst
-                edata=np.genfromtxt(f)[lfirst:,ecolumn]
-                visits1d[:,k], retbins = np.histogram(edata, binenergynp)
-    
-        #set visits to zero if the count is below a threshold
-        #the threshold is different for each replica, and is determined by the ratio to the maximum count
-        for k in range(nrep):
-            visitsmax=visits1d[:,k].max()
-            ind=np.where(visits1d.astype(float)[:,k]/visitsmax<NEGLECT)
-            visits1d[ind[0],k] = 0
 
 def determineBinEdge(nbins, datalist, column, minmax = [], exponential_bins=True):
     """
@@ -197,7 +107,7 @@ def determineBinEdge(nbins, datalist, column, minmax = [], exponential_bins=True
 
 
 
-def loadData2d(filenames, columns = [0], fskip=0., qcombine=[]):
+def loadData(filenames, columns = [0], fskip=0., qcombine=[]):
     """
     load data from columns in filenames.  return the data as a list of numpy arrays
     
@@ -268,6 +178,26 @@ def loadData2d(filenames, columns = [0], fskip=0., qcombine=[]):
             mydatanew.append( data  )
         mydatalist = mydatanew
     return mydatalist
+
+
+def binData1d( binenergynp, datalist, NEGLECT = 0.01):
+    #load the energies into visits1d
+    nebins = len(binenergynp) - 1 
+    nreps = len(datalist)
+    visits1d = np.zeros([nebins, nreps])
+    for k, data in enumerate(datalist):
+        e = data[:,0]
+        visits1d[:,k], retbins = np.histogram(e, binenergynp)
+
+    #set visits to zero if the count is below a threshold
+    #the threshold is different for each replica, and is determined by the ratio to the maximum count
+    for k in range(nreps):
+        visitsmax=visits1d[:,k].max()
+        ind=np.where(visits1d.astype(float)[:,k]/visitsmax<NEGLECT)
+        visits1d[ind[0],k] = 0
+    
+    return visits1d
+
 
 
 def binData2d( binenergynp, binqnp, datalist, NEGLECT = 0.01):
