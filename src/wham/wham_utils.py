@@ -36,6 +36,7 @@ def logSum(log_terms):
 def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B):
     #put some variables in this namespace
     nrep, nebins = np.shape(visits1d)
+    print "nreps, nebins", nrep, nebins
 
     allzeroe = (visits1d.sum(0)) == 0
 

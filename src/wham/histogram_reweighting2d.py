@@ -63,11 +63,7 @@ class wham2d:
         visits = np.reshape( visits, [nreps, nbins ]) 
         reduced_energy = np.reshape( reduced_energy, [nreps, nbins])           
         self.logP = np.where( visits != 0, np.log( visits.astype(float) ), 0 )
-        #assert((visits >= 0).all())
-        #print visits
-        #print np.log(np.max(visits))
-        #print self.logP
-        #print np.max(visits), np.max(self.visits2d)
+
         
         from optimize.quench import quench
         from wham_potential import WhamPotential
@@ -96,6 +92,7 @@ class wham2d:
         self.w_i_final = X[:nreps]
         
         self.logn_Eq = np.reshape(self.logn_Eq, [nebins, nqbins])
+        self.logn_Eq = np.where( self.visits2d.sum(0) == 0, self.LOGMIN, self.logn_Eq )
         
         #renormalize logn_Eq
         #self.logn_Eq -= np.min(self.logn_Eq)
@@ -113,11 +110,9 @@ class wham2d:
 
   
         #put some variables in this namespace
-        nrep=self.nrep
         nebins=self.nebins
         nqbins=self.nqbins
         binenergy=self.binenergy
-        binq=self.binq
         visits2d=self.visits2d
         logn_Eq=self.logn_Eq
     
@@ -151,13 +146,13 @@ class wham2d:
       
             logP_Eq[self.allzero2dind[0], self.allzero2dind[1]] = self.LOGMIN
             expoffset = np.nanmax(logP_Eq)
-            print "T expoffset ", T, expoffset
+            #print "T expoffset ", T, expoffset
             logP_Eq -= expoffset
             #P_q = np.exp(logP_Eq).sum(0)
             # sum over the energy
             for j in range(nqbins):
                 logP_q[j] = logSum( logP_Eq[:,j] )
-            logP_q[self.nodataq] = NaN
+            logP_q[self.nodataq] = np.NaN
             F_q[:,n] = -self.k_B*T*logP_q[:]
             fmin = np.nanmin(F_q[:,n])
             F_q[:,n] -= fmin
@@ -167,7 +162,6 @@ class wham2d:
     def calc_qavg(self, TRANGE = []):
         """calculate the average q as a function of temperature"""
         #put some variables in this namespace
-        nrep=self.nrep
         nebins=self.nebins
         nqbins=self.nqbins
         binenergy=self.binenergy
@@ -213,7 +207,7 @@ class wham2d:
             # sum over the energy
             for j in range(nqbins):
                 logP_q[j] = wham_utils.logSum( logP_Eq[:,j] )
-            logP_q[self.nodataq] = NaN
+            logP_q[self.nodataq] = np.NaN
       
             #find mean q
             qmin = min(binq)
@@ -230,73 +224,15 @@ class wham2d:
         return TRANGE,self.qavg
   
   
-    def calc_Cv(self, NDOF, fout):
-  
-        #put some variables in this namespace
-        nrep=self.nrep
-        nebins=self.nebins
-        nqbins=self.nqbins
-        binenergy=self.binenergy
-        binq=self.binq
-        visits2d=self.visits2d
-        logn_Eq=self.logn_Eq
-    
+    def calc_Cv(self, NDOF):
+        nebins = self.nebins
+        visits1d = self.visits2d.sum(2)
         logn_E = np.zeros(nebins)
         for i in range(nebins):
-            logn_E[i] = wham_utils.logSum(logn_Eq[i,:])
-        self.nodatae = np.where((visits2d.sum(0).sum(1)) == 0)
-        self.allzeroe = (visits2d.sum(0).sum(1)) == 0
-        #fout=open("weights.A2d","w")
-        #savetxt(fout,column_stack((binenergy,logn_E)))
-        #fout.close()
-    
-        #find the ocupied bin with the minimum energy
-        for i in range(nebins):
-            if not self.allzeroe[i] :
-                EREF = binenergy[i]
-                break
-    
-        #now calculate partition functions, energy expectation values, and Cv
-        #fout = open("Cv.out.Apy2d", "w")
-        #NDOF = 12*3 # = number of degrees of freedom
-        NTEMP = 100 # number of temperatures to calculate expectation values
-        TMAX = self.Tlist[-1]
-        TMIN = self.Tlist[0]
-        TINT=(TMAX-TMIN)/(NTEMP-1)
-        TRANGE = [ TMIN + i*TINT for i in range(NTEMP) ]
-        for T in TRANGE:
-            kBT = self.k_B*T
-            Z0=0.0
-            Z1=0.0
-            Z2=0.0
-            #find expoffset so the exponentials don't blow up
-            expoffset=-1e10
-            for i in range(nebins):
-                if self.allzeroe[i]: continue
-                EDIFF = (binenergy[i]-EREF)
-                dummy = ( logn_E[i]   -(EDIFF)/(kBT))
-                if dummy > expoffset: expoffset = dummy
-            #do calculation
-            for i in range(nebins):
-                if self.allzeroe[i]: continue
-                EDIFF = (binenergy[i]-EREF)
-                dummy = exp( logn_E[i]   -(EDIFF)/(kBT) - expoffset)
-                Z0 += dummy
-                Z1 += dummy * EDIFF
-                Z2 += dummy * EDIFF * EDIFF
-      
-            if i == nebins-1:
-                dE = binenergy[i]-binenergy[i-1]
-            else:
-                dE = binenergy[i+1]-binenergy[i]
-            if dE/kBT < 1.0E-7:
-                ONEMEXP=-dE/kBT
-            else:
-                ONEMEXP= 1.0-exp(dE/kBT)
-      
-            Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EREF
-            Cv = NDOF/2. + 1.0*(1.0 - dE**2 * exp(dE/kBT)/(ONEMEXP**2*kBT**2)) - (Z1/(Z0*kBT))**2 + Z2/(Z0*kBT**2)
-            np.array([kBT, Z0*exp(expoffset), Z1*exp(expoffset), Z2*exp(expoffset), Eavg, Cv, log(Z0)+expoffset, log(Z1)+expoffset, log(Z2)+expoffset]).tofile(fout," ")
-            fout.write("\n")
+            logn_E[i] = wham_utils.logSum(self.logn_Eq[i,:])
+
+        return wham_utils.calc_Cv(logn_E, visits1d, self.binenergy, \
+                                  NDOF, self.Tlist, self.k_B)
+
   
 

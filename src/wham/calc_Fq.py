@@ -19,24 +19,27 @@ from matplotlib.backends.backend_pdf import PdfPages
 #parser.parse_args()
 
 def usage():
-    print sys.argv[0], " [-hF -o output_prefix -r rskip -q qcolumn -e ecolumn -E nebins -c input -T TRANGE ] -f nfree"
+    print sys.argv[0], " [<options>] -f nfree"
     print 'Combine energy and overlap data from multiple runs at different temperatures into one histogram and print various quantities.'
     print '  -h print this help and exit'
     print '  -f nfree : number of mobile particles, used to determine nqbins and # degrees of freedom'
     print '  -o output_prefix : change the default output_prefix'
+    print '  -i input_prefix  : data should be in files of form input_prefix.#'
     print '  -F :  dont use pickle file'
     print '  -r rskip : skip the first fraction r of the data files'
     print '  -q qcolumn : which column to get the overlap data from'
     print '  -e ecolumn : which column to get the energy data from'
-    print '  -E nebins  : number of energy bins (=300)'
+    print '  -E nebins  : number of energy bins'
+    print '  -Q nqbins  : number of order parameter bins'
     print '  -c input : Make a linear combination of two order parameters.'
     print '             Input will have the form "q1column q2column q2weight"'
     print '             The order parameter will be q = (q1 + q2weight*q2)/(1+q2weight)'
     print '  -T TRANGE : set TRANGE for the calculation of Fq.  TRANGE should have the format "Tmin Tmax numT"'
 
 usepkl=True
-nfree=0;
+nfree=1
 outprefix="out"
+inprefix="overlap"
 rskip=0.0
 qcolumn=3
 ecolumn=2
@@ -44,9 +47,10 @@ qcombine=[]
 TRANGEi=[]
 nebins=300
 dEmin=0.2
+nqbins = 20
 
 
-opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:q:c:T:e:E:", ["help", "nfree="])
+opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:q:c:T:e:E:i:Q:", ["help", "nfree="])
 output = None
 verbose = False
 for o, a in opts:
@@ -55,6 +59,9 @@ for o, a in opts:
     elif o == "-o":
         outprefix=a
         print "output_prefix = ", outprefix
+    elif o == "-i":
+        inprefix=a
+        print "input_prefix = ", inprefix
     elif o == "-F":
         usepkl=False
     elif o == "-r":
@@ -69,6 +76,9 @@ for o, a in opts:
     elif o == "-E":
         nebins=int(a)
         print "using nebins = ", nebins
+    elif o == "-Q":
+        nqbins=int(a)
+        print "using nqbins = ", nqbins
     elif o == "-c":
         qcombline=a
         qcombine = [float(b) for b in qcombline.split()]
@@ -96,11 +106,6 @@ for o, a in opts:
         assert False, "unhandled option"
 
 
-if nfree == 0:
-    print "nfree must be given"
-    usage()
-    exit(1)
-
 
 pklname=outprefix+".pickle"
 if not usepkl or not os.path.isfile(pklname):
@@ -110,16 +115,13 @@ if not usepkl or not os.path.isfile(pklname):
     rep1=0 #don't use the first 8 replicas.  There is a better way to do this.
     Tlist=Tlist[(rep1):]
     nrep = len(Tlist)
-    filenames=['overlap.'+str(n+rep1+1) for n in range(nrep)]
+    filenames=[inprefix+'.'+str(n+rep1+1) for n in range(nrep)]
   
     #OK, now we have a list of temperatures and filenames for each replicas
     print "replica list:"
     for n in range(nrep):
         print Tlist[n], filenames[n]
   
-  
-    print "USING nfree = ", nfree
-    nqbins=nfree+1
   
   
     
@@ -292,6 +294,10 @@ plt.clf()
 
 fname=outprefix+".Cv"
 print 'writing Cv to', fname
-fout=open(fname,"w")
-wham.calc_Cv(nfree*3, fout)
-fout.close()
+#fout=open(fname, "w")
+#wham.calc_Cv(nfree*3, fout)
+#fout.close()
+cvdata = wham.calc_Cv(nfree*3)
+with open(fname,"w") as fout:
+    np.savetxt(fout, cvdata )
+
