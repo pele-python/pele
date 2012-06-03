@@ -195,108 +195,105 @@ def determineBinEdge(nbins, datalist, column, minmax = [], exponential_bins=True
     return binenergynp
         
 
-class loadData2dExp:
-    def __init__(self, filenames, ecolumn, qcolumn, nqbins, qmin = 0, qmax = 1.0, nebins = 200, \
-                 NEGLECT = 0.01, fskip=0., qcombine=[], dEmin=0.1, exponential_bins = True):
-
-        nrep = len(filenames)
-
-        
-        #qcombine = [qcolumn1, qcolumn2, frac]
-        #make a linear combination of order parameters from columns 1 and 2
-        # q = (q1 + q2weight*q2)/(1+q2weight)
-        qcomb = False
-        if len(qcombine) == 3:
-            qcomb = True
-            qcolumn1 = int(qcombine[0])
-            qcolumn2 = int(qcombine[1])
-            q2weight = qcombine[2]   
-            print "qcombine: ", qcolumn1, qcolumn2, q2weight
-            columns  = [ecolumn, qcolumn1, qcolumn2]
-        else:
-            columns = [ecolumn, qcolumn]
-
-        #if the columns have a header, print the name of the column requested
-        with open(filenames[0], "r") as fin:
-            line = fin.readline()
-            sline = line.split()
-            if sline[0][0] == '#':
-                print "column headers ",
-                for c in columns:
-                    print sline[c],
-                print
 
 
-        #######################################################
-        #load data
-        #######################################################
-        #load the data
-        print "loading data"
-        mydatalist = []
-        for fname in filenames:
-            mydata = readFile(fname, columns)
-            mydatalist.append(mydata)
-            print "mydata", np.shape(mydata)
-
-        #discard the first fraction (fskip) lines
-        if fskip > 0:
-            print "fskip", fskip
-            mydatalistnew = []
-            for data in mydatalist:
-                imin = int(fskip * len(data[:,0]))
-                #print "first index", imin
-                #data = data[imin:,:]
-                datanew = data[imin:,:]
-                mydatalistnew.append(datanew)
-            mydatalist = mydatalistnew
-
-
-        if qcomb:
-            #recombine data
-            mydatanew = []
-            for data in mydata:
-                datanew = np.zeros([ len(data[:,0]), 2] )
-                datanew[:,0] = data[:,0]
-                datanew[:,0] = (data[:,1] + data[:,2]*q2weight ) / (1.+q2weight)
-                mydatanew.append( data  )
-            mydatalist = mydatanew
-
-
-        #######################################################
-        #determine histogram bin edges
-        #######################################################
-        binenergynp = determineBinEdge(nebins, mydatalist, column=0, exponential_bins=True)
-        binqnp = determineBinEdge(nqbins, mydatalist, column=1, minmax=[qmin,qmax], exponential_bins=False)
-        self.binq = binqnp[0:-1]
-        self.binenergy = binenergynp[0:-1]
-        binq = self.binq
-        binenergy = self.binenergy
-
-        
-        
-        #######################################################
-        #load data into histogram
-        #######################################################
-
-        
-        visits2d = np.zeros([nebins,nqbins,nrep], np.integer) 
-        self.visits2d = visits2d
-            
-
-        #load the energies into visits2d
-        for k, data in enumerate(mydatalist):
-            e = data[:,0]
-            q = data[:,1]
-            visits2d[:,:,k], xbins, ybins = np.histogram2d(e, q, [binenergynp, binqnp])
+def loadData2d(filenames, columns = [0], fskip=0., qcombine=[]):
+    """
+    load data from columns in filenames.  return the data as a list of numpy arrays
     
+    fskip:  discard the first fraction (fskip) of lines
+    
+    qcombine:  optional:  qcombine = [qcolumn1, qcolumn2, frac]
+        make a linear combination of order parameters from columns 1 and 2
+        q = (q1 + q2weight*q2)/(1+q2weight)
+        
+        if this is chosen, the columns will be appended to the other given columns
 
-        #set visits to zero if the count is below a threshold
-        #the threshold is different for each replica, and is determined by the ratio to the maximum count
-        for k in range(nrep):
-            visitsmax=visits2d[:,:,k].max()
-            minvis = max(1, int(visitsmax * NEGLECT))
-            ind = np.where(visits2d[:,:,k] <= minvis)
-            print k, "total visits ", visits2d[:,:,k].sum(), "max visits ", visitsmax, "max visits to be discarded ", visits2d[ind[0],ind[1],k].max()
-            visits2d[ind[0],ind[1],k] = 0
+    """
+    #qcombine = [qcolumn1, qcolumn2, frac]
+    #make a linear combination of order parameters from columns 1 and 2
+    # q = (q1 + q2weight*q2)/(1+q2weight)
+    qcomb = False
+    if len(qcombine) == 3:
+        qcomb = True
+        qcolumn1 = int(qcombine[0])
+        qcolumn2 = int(qcombine[1])
+        q2weight = qcombine[2]   
+        print "qcombine: ", qcolumn1, qcolumn2, q2weight
+        columns.append( qcolumn1 ) 
+        columns.append( qcolumn2 )
 
+    #if the columns have a header, print the name of the column requested
+    with open(filenames[0], "r") as fin:
+        line = fin.readline()
+        sline = line.split()
+        if sline[0][0] == '#':
+            print "column headers ",
+            for c in columns:
+                print sline[c],
+            print
+
+
+    #######################################################
+    #load data
+    #######################################################
+    #load the data
+    print "loading data"
+    mydatalist = []
+    for fname in filenames:
+        mydata = readFile(fname, columns)
+        mydatalist.append(mydata)
+        print "mydata", np.shape(mydata)
+
+    #discard the first fraction (fskip) lines
+    if fskip > 0:
+        print "fskip", fskip
+        mydatalistnew = []
+        for data in mydatalist:
+            imin = int(fskip * len(data[:,0]))
+            #print "first index", imin
+            #data = data[imin:,:]
+            datanew = data[imin:,:]
+            mydatalistnew.append(datanew)
+        mydatalist = mydatalistnew
+
+
+    if qcomb:
+        #recombine data
+        mydatanew = []
+        for data in mydata:
+            datanew = np.zeros([ len(data[:,0]), 2] )
+            datanew[:,0] = data[:,0]
+            datanew[:,0] = (data[:,1] + data[:,2]*q2weight ) / (1.+q2weight)
+            mydatanew.append( data  )
+        mydatalist = mydatanew
+    return mydatalist
+
+
+def binData2d( binenergynp, binqnp, datalist, NEGLECT = 0.01):
+
+    nebins = len(binenergynp) -1
+    nqbins = len(binqnp) - 1
+    nreps = len(datalist)
+    
+    visits2d = np.zeros([nebins,nqbins,nreps], np.integer) 
+        
+
+    #load the energies into visits2d
+    for k, data in enumerate(datalist):
+        e = data[:,0]
+        q = data[:,1]
+        visits2d[:,:,k], xbins, ybins = np.histogram2d(e, q, [binenergynp, binqnp])
+
+
+    #set visits to zero if the count is below a threshold
+    #the threshold is different for each replica, and is determined by the ratio to the maximum count
+    for k in range(nreps):
+        visitsmax=visits2d[:,:,k].max()
+        minvis = max(1, int(visitsmax * NEGLECT))
+        ind = np.where(visits2d[:,:,k] <= minvis)
+        print k, "total visits ", visits2d[:,:,k].sum(), "max visits ", visitsmax, "max visits to be discarded ", visits2d[ind[0],ind[1],k].max()
+        visits2d[ind[0],ind[1],k] = 0
+    
+    return visits2d
 

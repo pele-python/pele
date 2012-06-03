@@ -122,9 +122,21 @@ if not usepkl or not os.path.isfile(pklname):
     nqbins=nfree+1
   
   
-    data = load_data.loadData2dExp(filenames, ecolumn, qcolumn, nqbins, fskip=rskip, qcombine=qcombine, nebins=nebins, dEmin=dEmin)
+    
+    #data = load_data.loadData2dExp(filenames, ecolumn, qcolumn, nqbins, fskip=rskip, qcombine=qcombine, nebins=nebins, dEmin=dEmin)
+    #load data
+    columns = [ecolumn]
+    if len(qcombine) != 3: columns.append(qcolumn)
+    datalist = load_data.loadData2d(filenames, columns, fskip=rskip, qcombine=qcombine )
+    
+    #determine bin edges
+    binenergy1 = load_data.determineBinEdge(nebins, datalist, column=0, exponential_bins=True)
+    binq1 = load_data.determineBinEdge(nqbins, datalist, column=1, exponential_bins=False)
+
+    #create histogram
+    visits2d = load_data.binData2d(binenergy1, binq1, datalist)
   
-    wham = WHAM.wham2d(Tlist, data.binenergy, data.binq, data.visits2d)
+    wham = WHAM.wham2d(Tlist, binenergy1[:-1], binq1[:-1], visits2d)
   
     wham.minimize()
     
