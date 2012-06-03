@@ -36,12 +36,12 @@ class wham1d:
         self.nebins = len(binenergy)
         self.Tlist = np.array(Tlist, dtype = np.float64)
         self.binenergy = np.array(binenergy, dtype = np.float64)
-        self.visits1d = np.array(visits1d, dtype = np.int32)
+        self.visits1d = np.array(visits1d, dtype = np.integer)
 
     def minimize(self):
         nreps = self.nrep
         nbins = self.nebins
-        visitsT = np.transpose(self.visits1d)
+        visitsT = (self.visits1d)
         #print "min vis", np.min(visitsT)
         self.logP = np.where( visitsT != 0, np.log( visitsT ), 0 )
         #print "minlogp", np.min(self.logP)
@@ -69,7 +69,7 @@ class wham1d:
         """
         nreps = self.nrep
         nbins = self.nebins
-        visitsT = np.transpose(self.visits1d)
+        visitsT = (self.visits1d)
         #print "min vis", np.min(visitsT)
         self.logP = np.where( visitsT != 0, np.log( visitsT ), 0 )
         #print "minlogp", np.min(self.logP)

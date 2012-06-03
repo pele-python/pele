@@ -116,6 +116,7 @@ if not usepkl or not os.path.isfile(pklname):
     
     #histogram the data
     visits1d = load_data.binData1d(binenergy1, datalist)
+    #visits1d = np.transpose(visits1d)
 
     wham = WHAM.wham1d(Tlist, binenergy1[:-1], visits1d)
 
@@ -132,6 +133,7 @@ else:
     wham = pickle.load(open(pklname,"rb")) 
 
 
+visits1d = np.transpose(wham.visits1d)
 
 
 fname=outprefix+".Cv"
@@ -155,7 +157,7 @@ fname=outprefix+".n_E"
 print 'writing density of states, log(n_E) to', fname
 with open(fname,"w") as fout:
     for i in range((wham.nebins)):
-        if wham.visits1d[i,:].sum() > 0:
+        if visits1d[i,:].sum() > 0:
             val=wham.logn_E[i]
             fout.write( str(wham.binenergy[i]) +" "+ str(val) + "\n" ) 
 
@@ -163,15 +165,15 @@ fname=outprefix+".visits"
 print 'writing sum visits to', fname
 with open(fname,"w") as fout:
     for i in range((wham.nebins)):
-        if wham.visits1d[i,:].sum() > 0:
-            val = wham.visits1d[i,:].sum()
+        if visits1d[i,:].sum() > 0:
+            val = visits1d[i,:].sum()
             fout.write( str(wham.binenergy[i]) +" "+ str(val) + "\n" ) 
 
 fname=outprefix+".visits.all"
 print 'writing visits to', fname
 with open(fname,"w") as fout:
     for i in range((wham.nebins)):
-        if wham.visits1d[i,:].sum() > 0:
-            vallist = (wham.visits1d[i,:].tolist())
+        if visits1d[i,:].sum() > 0:
+            vallist = (visits1d[i,:].tolist())
             slist = [ str(v) for v in vallist]
             fout.write( str(wham.binenergy[i]) +" ".join(slist) + "\n" ) 

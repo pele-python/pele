@@ -184,17 +184,17 @@ def binData1d( binenergynp, datalist, NEGLECT = 0.01):
     #load the energies into visits1d
     nebins = len(binenergynp) - 1 
     nreps = len(datalist)
-    visits1d = np.zeros([nebins, nreps])
+    visits1d = np.zeros([nreps, nebins])
     for k, data in enumerate(datalist):
         e = data[:,0]
-        visits1d[:,k], retbins = np.histogram(e, binenergynp)
+        visits1d[k,:], retbins = np.histogram(e, binenergynp)
 
     #set visits to zero if the count is below a threshold
     #the threshold is different for each replica, and is determined by the ratio to the maximum count
     for k in range(nreps):
-        visitsmax=visits1d[:,k].max()
-        ind=np.where(visits1d.astype(float)[:,k]/visitsmax<NEGLECT)
-        visits1d[ind[0],k] = 0
+        visitsmax=visits1d[k,:].max()
+        ind=np.where(visits1d.astype(float)[k,:]/visitsmax<NEGLECT)
+        visits1d[k,ind[0]] = 0
     
     return visits1d
 
