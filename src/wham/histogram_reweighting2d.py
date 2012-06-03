@@ -1,12 +1,8 @@
-from numpy import *
+from numpy import exp, log
 import numpy as np #to access np.exp() not built int exp
-from math import *
-import scipy.optimize
+#from math import *
+#import scipy.optimize
 #import timeseries # for timeseries analysis 
-import commands
-import pdb;
-import pickle
-import load_data
 import wham_utils
 from wham_utils import logSum, logSum1
 #import matplotlib.pyplot as plt
@@ -42,10 +38,10 @@ class wham2d:
         self.nrep = len(Tlist)
         self.nebins = len(binenergy)
         self.nqbins = len(binq)
-        self.Tlist = array(Tlist, dtype = float64)
-        self.binenergy = array(binenergy, dtype = float64)
-        self.binq = array(binq, dtype = float64)
-        self.visits2d = array(visits2d, dtype = int32)
+        self.Tlist = np.array(Tlist)
+        self.binenergy = np.array(binenergy)
+        self.binq = np.array(binq)
+        self.visits2d = np.array(visits2d, dtype = np.integer)
         
     def minimize(self):
         #shape(visits2d) is now (nqbins, nebins, nreps)
@@ -113,7 +109,7 @@ class wham2d:
 
   
     def calc_Fq(self, TRANGE = []):
-        self.allzero2dind = where(self.visits2d.sum(0) == 0)
+        self.allzero2dind = np.where(self.visits2d.sum(0) == 0)
 
   
         #put some variables in this namespace
@@ -132,29 +128,29 @@ class wham2d:
             TINT=(TMAX-TMIN)/(NTEMP-1)
             TRANGE = [ TMIN + i*TINT for i in range(NTEMP) ]
     
-        #find the ocupied bin with the minimum energy
+        #find the occupied bin with the minimum energy
         EREF=0
         for i in range(nebins):
             if visits2d[:,i,:].sum() > 0:
                 EREF = binenergy[i]
                 break
     
-        self.nodataq = where((visits2d.sum(0).sum(0)) == 0)
+        self.nodataq = np.where((visits2d.sum(0).sum(0)) == 0)
     
         #now calculate P(q,T)
         # P(q,T) = sum_E n(E,q)*exp(-E/T)  
         #TRANGE=range(1,9)
-        self.F_q = zeros([nqbins,len(TRANGE)], float64)
+        self.F_q = np.zeros([nqbins,len(TRANGE)])
         F_q = self.F_q
-        logP_Eq = zeros([nebins,nqbins], float64)
-        logP_q = zeros(nqbins, float64)
+        logP_Eq = np.zeros([nebins,nqbins])
+        logP_q = np.zeros(nqbins)
         for n in range(len(TRANGE)):
             T=TRANGE[n]
             for i in range(nebins):
                 logP_Eq[i,:] = logn_Eq[i,:]-(binenergy[i] - EREF)/(self.k_B*T)
       
             logP_Eq[self.allzero2dind[0], self.allzero2dind[1]] = self.LOGMIN
-            expoffset = nanmax(logP_Eq)
+            expoffset = np.nanmax(logP_Eq)
             print "T expoffset ", T, expoffset
             logP_Eq -= expoffset
             #P_q = np.exp(logP_Eq).sum(0)
@@ -163,7 +159,7 @@ class wham2d:
                 logP_q[j] = logSum( logP_Eq[:,j] )
             logP_q[self.nodataq] = NaN
             F_q[:,n] = -self.k_B*T*logP_q[:]
-            fmin = nanmin(F_q[:,n])
+            fmin = np.nanmin(F_q[:,n])
             F_q[:,n] -= fmin
     
         return TRANGE,F_q
@@ -197,13 +193,13 @@ class wham2d:
         #self.nodataq = where((visits2d.sum(2).sum(0)) == 0)
     
         #calculate the mean q at each temperature
-        self.qavg = zeros(len(TRANGE), float64)
+        self.qavg = np.zeros(len(TRANGE))
     
         #now calculate P(q,T)
         # P(q,T) = sum_E n(E,q)*exp(-E/T)  
         #TRANGE=range(1,9)
-        logP_Eq = zeros([nebins,nqbins], float64)
-        logP_q = zeros(nqbins, float64)
+        logP_Eq = np.zeros([nebins,nqbins])
+        logP_q = np.zeros(nqbins)
         for n in range(len(TRANGE)):
             T=TRANGE[n]
             for i in range(nebins):
@@ -225,7 +221,7 @@ class wham2d:
             lqavg = -1.0e30
             lnorm = -1.0e30
             for i in range(0,nqbins): 
-                if not isnan(logP_q[i]):
+                if not np.isnan(logP_q[i]):
                     lnorm = wham_utils.logSum1( lnorm, logP_q[i] ) 
                     lqavg = wham_utils.logSum1( lqavg, logP_q[i] + log(binq[i] - qmin) )
             self.qavg[n] = exp(lqavg - lnorm) + qmin
@@ -245,10 +241,10 @@ class wham2d:
         visits2d=self.visits2d
         logn_Eq=self.logn_Eq
     
-        logn_E = zeros(nebins, float64)
+        logn_E = np.zeros(nebins)
         for i in range(nebins):
             logn_E[i] = wham_utils.logSum(logn_Eq[i,:])
-        self.nodatae = where((visits2d.sum(0).sum(1)) == 0)
+        self.nodatae = np.where((visits2d.sum(0).sum(1)) == 0)
         self.allzeroe = (visits2d.sum(0).sum(1)) == 0
         #fout=open("weights.A2d","w")
         #savetxt(fout,column_stack((binenergy,logn_E)))
@@ -300,7 +296,7 @@ class wham2d:
       
             Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EREF
             Cv = NDOF/2. + 1.0*(1.0 - dE**2 * exp(dE/kBT)/(ONEMEXP**2*kBT**2)) - (Z1/(Z0*kBT))**2 + Z2/(Z0*kBT**2)
-            array([kBT, Z0*exp(expoffset), Z1*exp(expoffset), Z2*exp(expoffset), Eavg, Cv, log(Z0)+expoffset, log(Z1)+expoffset, log(Z2)+expoffset]).tofile(fout," ")
+            np.array([kBT, Z0*exp(expoffset), Z1*exp(expoffset), Z2*exp(expoffset), Eavg, Cv, log(Z0)+expoffset, log(Z1)+expoffset, log(Z2)+expoffset]).tofile(fout," ")
             fout.write("\n")
   
 
