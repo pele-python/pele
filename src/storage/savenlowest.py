@@ -46,7 +46,26 @@ class SaveN(object):
             if(self.onMinimumRemoved):
                 self.onMinimumRemoved(removed)
         self.lock.release()
-            
+        
+    def save(self, filename):
+        import pickle
+        output = open(filename, "w")
+        pickle.dump(self, output)
+        
+    @classmethod
+    def load(filename):
+        import pickle
+        infile = open(filename, "w")
+        return pickle.load(infile)
+    
+    
+    def __getstate__(self):
+        ddict = self.__dict__.copy();
+        ddict["onMinimumAdded"]=None
+        ddict["onMinimumRemoved"]=None
+        ddict["lock"]=None
+        return ddict #.items()
+        
 if __name__ == "__main__":
     import numpy as np
     save = SaveN(nsave = 2)
