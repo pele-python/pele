@@ -97,7 +97,6 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <zorder>sliderFrame</zorder>
          </widget>
         </item>
         <item row="0" column="3">
@@ -213,7 +212,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSimulation">
@@ -320,8 +319,8 @@
    <slot>AlignMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>505</x>
-     <y>476</y>
+     <x>554</x>
+     <y>490</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -336,8 +335,8 @@
    <slot>ConnectMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>623</x>
-     <y>469</y>
+     <x>640</x>
+     <y>490</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -352,8 +351,8 @@
    <slot>SelectMinimum1()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>531</x>
-     <y>206</y>
+     <x>555</x>
+     <y>94</y>
     </hint>
     <hint type="destinationlabel">
      <x>551</x>
@@ -368,8 +367,8 @@
    <slot>SelectMinimum2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>563</x>
-     <y>399</y>
+     <x>555</x>
+     <y>293</y>
     </hint>
     <hint type="destinationlabel">
      <x>275</x>
@@ -384,8 +383,8 @@
    <slot>showFrame()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>352</x>
-     <y>490</y>
+     <x>46</x>
+     <y>488</y>
     </hint>
     <hint type="destinationlabel">
      <x>74</x>
@@ -400,12 +399,44 @@
    <slot>showEnergies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>480</x>
-     <y>509</y>
+     <x>554</x>
+     <y>522</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
      <y>542</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSave</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>save()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>340</x>
+     <y>282</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLoad</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>340</x>
+     <y>282</y>
     </hint>
    </hints>
   </connection>
@@ -420,5 +451,7 @@
   <slot>ConnectMinima()</slot>
   <slot>showFrame()</slot>
   <slot>showEnergies()</slot>
+  <slot>save()</slot>
+  <slot>load()</slot>
  </slots>
 </ui>

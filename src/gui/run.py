@@ -22,7 +22,23 @@ class MyForm(QtGui.QMainWindow):
         self.system = self.systemtype()
         self.system.storage.onMinimumAdded=self.NewMinimum
         self.system.storage.onMinimumRemoved=self.RemoveMinimum
-    
+        
+    def save(self):
+        import pickle
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '.')
+        output = open(filename, "w")
+        pickle.dump(self.system.storage, output)
+        self.system.storage.onMinimumAdded=self.NewMinimum
+        self.system.storage.onMinimumRemoved=self.RemoveMinimum
+       
+    def load(self):
+        import pickle
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open File', '.')
+        infile = open(filename, "r")
+        self.system.storage = pickle.load(infile)
+        for minimum in self.system.storage.data:
+            self.NewMinimum(minimum)
+            
     def SelectMinimum(self, item):
         self.ui.widget.setSystem(self.system)
         self.ui.widget.setCoords(item.coords)
