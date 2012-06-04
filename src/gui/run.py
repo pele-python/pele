@@ -94,9 +94,9 @@ class MyForm(QtGui.QMainWindow):
         self.AddMinimumToList(self.ui.listMinima2, minimum)
 
     def AddMinimumToList(self, obj, minimum):
-        E=minimum[0]
-        minid=minimum[2]
-        coords=minimum[1]
+        E=minimum.E
+        minid=id(minimum)
+        coords=minimum.coords
         item = QMinimumInList('%.4f'%E)
         item.setCoords(coords)
         item.setMinimumId(minid)
@@ -110,7 +110,7 @@ class MyForm(QtGui.QMainWindow):
         self.RemoveMinimumFromList(self.ui.listMinima2,  minimum)
 
     def RemoveMinimumFromList(self, obj, minimum):
-        minid = minimum[2]
+        minid = id(minimum)
         itms = obj.findItems('*', QtCore.Qt.MatchWildcard)
         for i in itms:
             if(i.minid == minid):

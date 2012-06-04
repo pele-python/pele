@@ -44,8 +44,8 @@ opt.run(200)
 
 with open("lowest", "w") as fout:
   fout.write( str(natoms) + "\n")
-  fout.write( str(storage.data[0][0]) + "\n")
-  atoms=storage.data[0][1].reshape(natoms, 3)  
+  fout.write( str(storage.data[0].E) + "\n")
+  atoms=storage.data[0].coords.reshape(natoms, 3)  
   for a in atoms: 
       fout.write( "LA "+ str(a[0])+ " " +  str(a[1]) + " " + str(a[2]) + "\n" ) 
 

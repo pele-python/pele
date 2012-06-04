@@ -5,7 +5,11 @@ Created on Apr 18, 2012
 '''
 
 import threading
-
+class Minimum(object):
+    def __init__(self, E, coords):
+        self.E = E
+        self.coords = coords.copy()
+    
 class SaveN(object):
     '''
     Stores only the nsave lowest minima. Minima are considered as different
@@ -21,21 +25,18 @@ class SaveN(object):
         self.accuracy=accuracy
         self.onMinimumAdded=onMinimumAdded
         self.onMinimumRemoved=onMinimumRemoved
-        self.next_free_id = 1
         self.lock = threading.Lock()
         
     def insert(self, E, coords):
         # does minima already exist, if yes exit?
         self.lock.acquire()
         for i in self.data:
-            if(abs(i[0] - E) < self.accuracy):
+            if(abs(i.E - E) < self.accuracy):
                 self.lock.release()
                 return
                 
-        id = self.next_free_id
-        self.next_free_id+=1
         # otherwise, add it to list & sort
-        new = (E, coords.copy(), id)
+        new = Minimum(E, coords)
         self.data.append(new)
         self.data.sort()
         if(self.onMinimumAdded):
@@ -74,5 +75,5 @@ if __name__ == "__main__":
     save.insert(2., np.random.random(10))
     save.insert(1.001, np.random.random(10))
     for i in save.data:
-        print i
+        print i.E, i.coords
         
