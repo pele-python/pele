@@ -57,7 +57,11 @@ class WhamPotential(potential):
         self.nreps = len( logP[:,0] )
         self.nbins = len( logP[0,:] )
         self.logP = logP
-        self.reduced_energy = reduced_energy
+        self.weight = self.logP + reduced_energy
+        #self.reduced_energy = reduced_energy
+        if ( np.isinf(self.logP).any() or np.isnan(self.logP).any() ):
+            print "logP is NaN or infinite"
+            exit(1)
 
     def getEnergy(self, X):
         """
@@ -78,7 +82,7 @@ class WhamPotential(potential):
                 R = lognF[ibin] - wi[irep] -( logP[irep, ibin]  + reduced_energy[irep, ibin])
                 energy += logP[irep, ibin] * R**2
         """
-        energy = np.sum( self.logP * (lognF[np.newaxis,:] - wi[:,np.newaxis] - self.logP - self.reduced_energy)**2 )
+        energy = np.sum( self.logP * (lognF[np.newaxis,:] - wi[:,np.newaxis] - self.weight)**2 )
         return energy
 
     def getEnergyGradient(self, X):
@@ -93,7 +97,7 @@ class WhamPotential(potential):
         """
         wi = X[:self.nreps]
         lognF = X[self.nreps:]
-        R = lognF[np.newaxis,:] - wi[:,np.newaxis] - self.logP - self.reduced_energy
+        R = lognF[np.newaxis,:] - wi[:,np.newaxis] - self.weight
         
         energy = np.sum( self.logP * (R)**2 )
         

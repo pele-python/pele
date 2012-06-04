@@ -35,10 +35,10 @@ def logSum(log_terms):
 
 def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B):
     #put some variables in this namespace
-    nebins, nrep = np.shape(visits1d)
-    nqbins=1
+    nrep, nebins = np.shape(visits1d)
+    print "nreps, nebins", nrep, nebins
 
-    allzeroe = (visits1d.sum(1)) == 0
+    allzeroe = (visits1d.sum(0)) == 0
 
     #find the ocupied bin with the minimum energy
     for i in range(nebins):
