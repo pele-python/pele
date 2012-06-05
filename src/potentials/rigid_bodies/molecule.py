@@ -218,6 +218,9 @@ def setupLWOTP():
     return otp
 
 def dumbbell(sig1 = 0.35, sig2 = 0.65):
+    """
+    return a dumbell molecule.  i.e. two lj sites attached rigidly
+    """
     pos1 = [0., 0., 0.5]
     pos2 = [0., 0., -0.5]
     dbel = Molecule()

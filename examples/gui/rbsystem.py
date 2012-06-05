@@ -49,7 +49,7 @@ class RBSystem:
         from potentials.rigid_bodies.take_step import RBTakeStep
         step = RBTakeStep()
         opt = bh.BasinHopping(coords,mysys,
-                          temperature=1., takeStep=step)
+                          temperature=1., takeStep=step, outstream=None)
         return opt
     
     def draw(self, coordslinear, index):
@@ -72,9 +72,31 @@ class RBSystem:
             x=xx-com
             GL.glPushMatrix()            
             GL.glTranslate(x[0],x[1],x[2])
-            GLUT.glutSolidSphere(0.5,30,30)
+            GLUT.glutSolidSphere(0.45,30,30)
             GL.glPopMatrix()
-    
+
+        #now try to draw cylinders connecting atoms in a molecule
+        nsites = len(xyz[:,0])
+        z = np.array([0.,0.,1.]) #default cylinder orientation
+        for j1 in range(0,nsites,3):
+            X1 = xyz[j1,:] - com
+            for j2 in range(j1+1,j1+3,1):
+                #draw a cylinder from xyz[j1] to xyz[j2]
+                X2 = xyz[j2,:] - com
+                p = X2-X1 #desired cylinder orientation
+                r = np.linalg.norm(p)
+                t = np.cross(z,p)  #angle about which to rotate
+                a = np.arccos( np.dot( z,p) / r ) #rotation angle
+                a *= (180. / np.pi)  #change units to angles
+                GL.glPushMatrix()
+                GL.glTranslate( X1[0], X1[1], X1[2] )
+                GL.glRotate( a, t[0], t[1], t[2] )
+                GLUT.glutSolidCone(.2,r,30,30)  #I can't seem to draw a cylinder
+                GL.glPopMatrix()
+         
+
+
+
     def Align(self, coords1, coords2):
         from mindist.minpermdist_rbmol import minPermDistRBMol as minpermdist
         dist, X1, X2 = minpermdist( coords1, coords2, self.mysys, niter = 100 )
@@ -82,7 +104,7 @@ class RBSystem:
     
     def createNEB(self, coords1, coords2):
         import potentials.lj as lj
-        return NEB.NEB(coords1, coords2, lj.LJ(), k = 100. ,nimages=20)
+        return NEB.NEB(coords1, coords2, self.mysys, k = 100., nimages=20)
 
        
 

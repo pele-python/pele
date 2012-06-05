@@ -98,7 +98,7 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     print "using basin hopping to optimize rotations + permutations"
     for i in range(niter):
         bh.run(1)
-        Emin = saveit.data[0][0]
+        Emin = saveit.data[0].E
         if abs(Emin-Eminglobal) < 1e-6:
             print "isomer found"
             break
@@ -109,12 +109,13 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     minimum distance structure.
     """
     print "lowest structures found"
-    aamin = saveit.data[0][1]
+    aamin = saveit.data[0].coords
     dmin = 1000.
-    for (E, aa, Id) in saveit.data:
+    for min in saveit.data:
+        aa = min.coords
         coords2 = coordsApplyRotation(coords2in, aa)
         dist, X11, X22 = findBestPermutationRBMol(coords1, coords2, mysys, permlist )
-        print "E %11.5g dist %11.5g" % (E, dist)
+        print "E %11.5g dist %11.5g" % (min.E, dist)
         if dist < dmin:
             dmin = dist
             aamin = aa.copy()
