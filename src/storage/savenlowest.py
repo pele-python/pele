@@ -5,10 +5,15 @@ Created on Apr 18, 2012
 '''
 
 import threading
+
 class Minimum(object):
-    def __init__(self, E, coords):
+    '''
+    class for storing minima
+    '''
+    
+    def __init__(self, E, coords):        
         self.E = E
-        self.coords = coords.copy()
+        self.coords = coords.copy()        
     
 class SaveN(object):
     '''
@@ -64,8 +69,14 @@ class SaveN(object):
         ddict = self.__dict__.copy();
         ddict["onMinimumAdded"]=None
         ddict["onMinimumRemoved"]=None
-        ddict["lock"]=None
+        del ddict["lock"]
         return ddict #.items()
+    
+    def __setstate__(self, dct):
+        self.__dict__.update(dct)
+        self.lock = threading.Lock()
+        
+    
         
 if __name__ == "__main__":
     import numpy as np
