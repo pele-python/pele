@@ -3,7 +3,7 @@ import numpy as np
 import potentials.lj as lj
 #import potentials.ljcpp as lj
 import basinhopping as bh
-import take_step.random_displacement as random_displacement
+from takestep import displace
 
 natoms = 12
 ############################################################
@@ -15,7 +15,7 @@ coords=np.random.random(3*natoms)
 
 potential = lj.LJ()#1.0, 1.0, None)
 
-step = random_displacement.takeStep( stepsize=0.3)
+step = displace.CartesianDisplacement(stepsize=0.3)
 
 opt = bh.BasinHopping(coords, potential, takeStep=step)
 opt.run(100)
@@ -23,10 +23,11 @@ opt.run(100)
 ############################################################
 #Example 2: reading coords from file
 ############################################################
+
 coords=np.loadtxt('coords')
 coords = coords.reshape(coords.size)
 
-step = random_displacement.takeStep( stepsize=0.3)
+step = displace.CartesianDisplacement( stepsize=0.3)
 opt = bh.BasinHopping(coords, potential, takeStep=step)
 
 opt.run(200)
@@ -53,8 +54,10 @@ with open("lowest", "w") as fout:
 #Example 4: adaptive step size
 ############################################################
 
-takeStep = random_displacement.takeStep( stepsize=0.3 )
-takeStep.useAdaptiveStep(acc_ratio = 0.5, freq = 100)
-opt = bh.BasinHopping(coords, potential, takeStep=takeStep)
-opt.run(200)
+from takestep import adaptive
+
+takeStep = displace.CartesianDisplacement( stepsize=0.3 )
+tsAdaptive = adaptive.AdaptiveStepsize(takeStep, acc_ratio = 0.5, frequency = 100)
+opt = bh.BasinHopping(coords, potential, takeStep=tsAdaptive)
+opt.run(1000)
 
