@@ -110,9 +110,9 @@ class wham1d:
 
 
 
-    def calc_Cv(self, NDOF):
+    def calc_Cv(self, NDOF, TRANGE=None, NTEMP=100):
         return wham_utils.calc_Cv(self.logn_E, self.visits1d, self.binenergy, \
-                                  NDOF, self.Tlist, self.k_B)
+                NDOF, self.Tlist, self.k_B, TRANGE, NTEMP)
 
 
 

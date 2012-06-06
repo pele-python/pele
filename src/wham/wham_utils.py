@@ -33,46 +33,38 @@ def logSum(log_terms):
     return log_sum
 
 
-def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B):
+
+def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP=100):
+    
     #put some variables in this namespace
     nrep, nebins = np.shape(visits1d)
     print "nreps, nebins", nrep, nebins
 
-    allzeroe = (visits1d.sum(0)) == 0
+    nz = np.where( visits1d.sum(0) != 0)[0]
 
     #find the ocupied bin with the minimum energy
-    for i in range(nebins):
-        if not allzeroe[i] :
-            EREF = binenergy[i]
-            break
+    EREF = np.min(binenergy[nz])
 
     #now calculate partition functions, energy expectation values, and Cv
-    NTEMP = 100 # number of temperatures to calculate expectation values
-    TMAX = Treplica[-1]
-    TMIN = Treplica[0]
-    TINT=(TMAX-TMIN)/(NTEMP-1)
-    TRANGE = [ TMIN + i*TINT for i in range(NTEMP) ]
+    if TRANGE == None:
+        #NTEMP = 100 # number of temperatures to calculate expectation values
+        TMAX = Treplica[-1]
+        TMIN = Treplica[0]
+        TINT=(TMAX-TMIN)/(NTEMP-1)
+        TRANGE = [ TMIN + i*TINT for i in range(NTEMP) ]
+
     dataout = np.zeros( [NTEMP, 6] )
     for count,T in enumerate(TRANGE):
         kBT = k_B*T
-        Z0=0.0
-        Z1=0.0
-        Z2=0.0
         #find expoffset so the exponentials don't blow up
-        expoffset=-1e10
-        for i in range(nebins):
-            if allzeroe[i]: continue
-            EDIFF = (binenergy[i]-EREF)
-            dummy = ( logn_E[i]   -(EDIFF)/(kBT))
-            if dummy > expoffset: expoffset = dummy
-        #do calculation
-        for i in range(nebins):
-            if allzeroe[i]: continue
-            EDIFF = (binenergy[i]-EREF)
-            dummy = np.exp( logn_E[i]   -(EDIFF)/(kBT) - expoffset)
-            Z0 += dummy
-            Z1 += dummy * EDIFF
-            Z2 += dummy * EDIFF * EDIFF
+        dummy = logn_E[nz] - (binenergy[nz] - EREF)/kBT
+        expoffset = np.max(dummy)
+        dummy = np.exp(dummy)
+        Z0 = np.sum(dummy)
+        Z1 = np.sum( dummy *  (binenergy[nz] - EREF) )
+        Z2 = np.sum( dummy *  (binenergy[nz] - EREF)**2 )
+
+        
 
         if i == nebins-1:
             dE = binenergy[i]-binenergy[i-1]
@@ -84,7 +76,6 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B):
         else:
             ONEMEXP= 1.0-np.exp(dE/kBT)
 
-        #Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EDIFF
         Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EREF
         
         Cv = NDOF/2. + 1.0*(1.0 - dE**2 * np.exp(dE/kBT)/(ONEMEXP**2*kBT**2)) - (Z1/(Z0*kBT))**2 + Z2/(Z0*kBT**2)
