@@ -49,15 +49,15 @@ class ATLJ(potential.potential):
                     double rjk = 0.;
         
                     for (int d=0; d<3; ++d){
-                        drij[d] = coords(j,d) - coords(i,d);
+                        drij[d] = coords(i,d) - coords(j,d);
                         rij += drij[d]*drij[d];
                     }
                     for (int d=0; d<3; ++d){
-                        drjk[d] = coords(k,d) - coords(j,d);
+                        drjk[d] = coords(j,d) - coords(k,d);
                         rjk += drjk[d]*drjk[d];
                     }
                     for (int d=0; d<3; ++d){
-                        drik[d] = coords(k,d) - coords(i,d);
+                        drik[d] = coords(i,d) - coords(k,d);
                         rik += drik[d]*drik[d];
                     }
                     
@@ -65,9 +65,9 @@ class ATLJ(potential.potential):
                     rjk = sqrt(rjk);
                     rik = sqrt(rik);
                     
-                    double ctijk = ( (drij[0]*drjk[0] + drij[1]*drjk[1] + drij[2]*drjk[2]) / (rij * rjk) );
-                    double ctjki = ( (drjk[0]*drik[0] + drjk[1]*drik[1] + drjk[2]*drik[2]) / (rjk * rik) );
-                    double ctkij = ( (drik[0]*drij[0] + drik[1]*drij[1] + drik[2]*drij[2]) / (rik * rij) );
+                    double ctijk = ( -(drij[0]*drjk[0] + drij[1]*drjk[1] + drij[2]*drjk[2]) / (rij * rjk) );
+                    double ctjki = (  (drjk[0]*drik[0] + drjk[1]*drik[1] + drjk[2]*drik[2]) / (rjk * rik) );
+                    double ctkij = (  (drik[0]*drij[0] + drik[1]*drij[1] + drik[2]*drij[2]) / (rik * rij) );
 
                     double r3 = rij*rjk*rik;
                     energy += Z*(1. + 3. * ctijk * ctjki * ctkij) / (r3*r3*r3);
@@ -77,11 +77,55 @@ class ATLJ(potential.potential):
         return_val= energy;
         """
         energy = weave.inline(code, ["coords", "energy", "Z", "natoms"], type_converters=converters.blitz, verbose=2)
+        #print "fast energy", Elj, energy
+        energy += Elj
+        return energy
+
+    def getEnergySlow(self, coords):
+        Elj = self.lj.getEnergy(coords)
+        
+        natoms = coords.size/3
+        X = np.reshape(coords, [natoms,3])
+        Z = self.Z
+        energy = 0.
+        for i in range(natoms):
+            for j in range(i):
+                for k in range(j):
+                    #print i, j, k
+                    drij = X[i,:] - X[j,:]
+                    drik = X[i,:] - X[k,:]
+                    drjk = X[j,:] - X[k,:]
+                    rij = np.linalg.norm( drij )
+                    rik = np.linalg.norm( drik )
+                    rjk = np.linalg.norm( drjk )
+                    energy += Z * (1. + 3.*\
+                            np.dot( drij, -drjk ) * \
+                            np.dot(-drij, -drik ) * \
+                            np.dot( drik,  drjk ) / (rij*rik*rjk)**2) \
+                            / (rij*rik*rjk)**3
+        #print "slow energy", Elj, energy
         energy += Elj
         return energy
 
     
 
+import unittest
+class TestATLJ(unittest.TestCase):
+    def testenergy(self):
+        natoms = 10
+        coords = np.random.uniform(-1,1,natoms*3)*2
+        
+        from optimize.quench import quench
+        lj = LJ()
+        ret = quench(coords, lj.getEnergyGradient)
+        coords = ret[0]
+        
+        
+        atlj = ATLJ(Z=3.)
+        e1 = atlj.getEnergy(coords)
+        e2 = atlj.getEnergySlow(coords)
+        print "%g - %g = %g" % (e1, e2, e1-e2)
+        self.assertTrue( abs(e1 - e2) < 1e-12, "ATLJ: two energy methods give different results: %g - %g = %g" % (e1, e2, e1-e2) )
 
 
 
@@ -90,7 +134,7 @@ def main():
     natoms = 3
     coords = np.random.uniform(-1,1,natoms*3)*2
     
-    lj = ATLJ(Z=3.)
+    lj = ATLJ(Z=1.)
     
     
     E = lj.getEnergy(coords)
@@ -114,8 +158,8 @@ def main():
     printlist = []
     for i in range(100):
         coords = np.random.uniform(-1,1,natoms*3)*2
-        coords = np.array([0,0,1., 0,0,0, 0,0,2])
-        coords[6:] += np.random.uniform(-1,1,3)*0.1
+        #coords = np.array([0,0,1., 0,0,0, 0,0,2])
+        #coords[6:] += np.random.uniform(-1,1,3)*0.1
         ret = quench( coords, lj.getEnergyGradient, iprint=-1 )
         coords = ret[0]
         X = np.reshape(coords, [natoms,3])
@@ -134,4 +178,6 @@ def main():
     #print lj.getEnergyGradientWeave(coords)
 
 if __name__ == "__main__":
-    main()
+    #main()
+    unittest.main()
+
