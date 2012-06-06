@@ -23,6 +23,12 @@ def logSum(log_terms):
     RETURN VALUES
       log_sum is the log of the sum of the terms.
     """
+    try:
+        return logSumFast(log_terms)
+    except:
+        return logSumSlow(log_terms)
+
+def logSumSlow(log_terms):
     log_sum = log_terms[0] 
     for lt in log_terms[1:]:
         if log_sum > lt:
@@ -32,9 +38,27 @@ def logSum(log_terms):
     # return the log sum
     return log_sum
 
-
+def logSumFast(log_terms):
+    from scipy import weave
+    from scipy.weave import converters
+    nterms = len(log_terms)
+    code = """
+    double log_sum = log_terms(0);
+    for (int i = 1; i < nterms; ++i){
+        double lt = log_terms(i);
+        if (log_sum > lt){
+            log_sum = log_sum + log(1.0 + exp(-log_sum + lt) );
+        } else {
+            log_sum = lt + log(1.0 + exp(log_sum - lt) );
+        }
+    }
+    return_val = log_sum;
+    """
+    log_sum = weave.inline(code, ["nterms", "log_terms"], type_converters=converters.blitz, verbose=2)
+    return log_sum
 
 def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP=100):
+    use_log_sum = True
     
     #put some variables in this namespace
     nrep, nebins = np.shape(visits1d)
@@ -43,7 +67,7 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
     nz = np.where( visits1d.sum(0) != 0)[0]
 
     #find the ocupied bin with the minimum energy
-    EREF = np.min(binenergy[nz])
+    EREF = np.min(binenergy[nz]) - 1.
 
     #now calculate partition functions, energy expectation values, and Cv
     if TRANGE == None:
@@ -59,10 +83,21 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
         #find expoffset so the exponentials don't blow up
         dummy = logn_E[nz] - (binenergy[nz] - EREF)/kBT
         expoffset = np.max(dummy)
-        dummy = np.exp(dummy)
-        Z0 = np.sum(dummy)
-        Z1 = np.sum( dummy *  (binenergy[nz] - EREF) )
-        Z2 = np.sum( dummy *  (binenergy[nz] - EREF)**2 )
+        if not use_log_sum:
+            dummy = np.exp(dummy)
+            Z0 = np.sum(dummy)
+            Z1 = np.sum( dummy *  (binenergy[nz] - EREF) )
+            Z2 = np.sum( dummy *  (binenergy[nz] - EREF)**2 )
+            lZ0 = np.log(Z0)
+            lZ1 = np.log(Z1)
+            lZ2 = np.log(Z2)
+        else:
+            lZ0 = logSum( dummy )
+            lZ1 = logSum( dummy + log(binenergy[nz] - EREF) )
+            lZ2 = logSum( dummy + 2.*log(binenergy[nz] - EREF) )
+            Z0 = np.exp( lZ0 )
+            Z1 = np.exp( lZ1 )
+            Z2 = np.exp( lZ2 )
 
         
 
@@ -76,14 +111,16 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
         else:
             ONEMEXP= 1.0-np.exp(dE/kBT)
 
-        Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + Z1/Z0 + EREF
+        Eavg = NDOF*kBT/2.0 + 1.0*(kBT + dE/ONEMEXP) + exp(lZ1-lZ0) + EREF
         
-        Cv = NDOF/2. + 1.0*(1.0 - dE**2 * np.exp(dE/kBT)/(ONEMEXP**2*kBT**2)) - (Z1/(Z0*kBT))**2 + Z2/(Z0*kBT**2)
+        Cv = NDOF/2. + 1.0*(1.0 - dE**2 * exp(dE/kBT)/(ONEMEXP**2*kBT**2)) \
+            - exp(lZ1 - lZ0)**2 / kBT**2 + exp(lZ2-lZ0) / kBT**2
+            #- (Z1/(Z0*kBT))**2 + Z2/(Z0*kBT**2)
         
         dataout[count,0] = T
-        dataout[count,1] = np.log(Z0)+expoffset
-        dataout[count,2] = np.log(Z1)+expoffset
-        dataout[count,3] = np.log(Z2)+expoffset
+        dataout[count,1] = lZ0 + expoffset
+        dataout[count,2] = lZ1 + expoffset
+        dataout[count,3] = lZ2 + expoffset
         dataout[count,4] = Eavg
         dataout[count,5] = Cv
 
@@ -93,3 +130,18 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
         #fout.write("\n")
 
     return dataout
+
+
+import unittest
+class TestLogSum(unittest.TestCase):
+    def testLogSum(self):
+        vals = np.random.rand(50) + 0.001
+        ls1 = logSumSlow(vals)
+        ls2 = logSumFast(vals)
+        print "%g - %g = %g" % (ls1, ls2, ls1-ls2)
+        self.assertTrue( abs(ls1 - ls2) < 1e-12, "logSumFast is different from logSumSlow: %g - %g = %g" % (ls1, ls2, ls1-ls2) )
+
+        
+
+if __name__ == "__main__":
+    unittest.main()
