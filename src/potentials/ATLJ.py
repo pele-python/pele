@@ -3,6 +3,7 @@ import potential
 from scipy import weave
 from scipy.weave import converters
 from lj import LJ
+import fortran.AT as ATfort
 
 
 
@@ -10,7 +11,7 @@ class ATLJ(potential.potential):
     """
     Lennard Jones + three body Axilrod-Teller term
     
-    V = sum_ij VLJ_ij   +  sum_ijk  Z * (1 + 3*cos(t1)*cos(t2*cos(t3)) / (rij * rjk * rik)**3 )
+    V = sum_ij VLJ_ij   +  sum_ijk  Z * (1 + 3*cos(t1)*cos(t2)*cos(t3)) / (rij * rjk * rik)**3 )
     
     where t1, t2, t3 are the internal angles of the triangle ijk
     
@@ -24,7 +25,7 @@ class ATLJ(potential.potential):
         self.lj = LJ(self.sig, self.eps)
 
     
-    def getEnergy(self, coords):
+    def getEnergyWeave(self, coords):
         """
         use weave inline
         """
@@ -81,6 +82,8 @@ class ATLJ(potential.potential):
         energy += Elj
         return energy
 
+
+
     def getEnergySlow(self, coords):
         Elj = self.lj.getEnergy(coords)
         
@@ -107,7 +110,27 @@ class ATLJ(potential.potential):
         energy += Elj
         return energy
 
+    def getEnergyFortran(self, coords):
+        #grad,potel = axt(x,gradt,zstar,[n])
+        natoms = len(coords)/3
+        garbage, e = ATfort.axt(coords, False, self.Z, [natoms])
+        
+        Elj = self.lj.getEnergy(coords)
+        return e + Elj
+
+    def getEnergyGradientFortran(self, coords):
+        #grad,potel = axt(x,gradt,zstar,[n])
+        natoms = len(coords)/3
+        grad, e = ATfort.axt(coords, True, self.Z, [natoms])
+        
+        elj, gradlj = self.lj.getEnergyGradient(coords)
+        return e + elj, grad + gradlj
+
+    def getEnergy(self, coords):
+        return self.getEnergyFortran(coords)
     
+    def getEnergyGradient(self, coords):
+        return self.getEnergyGradientFortran(coords)
 
 import unittest
 class TestATLJ(unittest.TestCase):
@@ -122,10 +145,16 @@ class TestATLJ(unittest.TestCase):
         
         
         atlj = ATLJ(Z=3.)
-        e1 = atlj.getEnergy(coords)
+        e1 = atlj.getEnergyWeave(coords)
         e2 = atlj.getEnergySlow(coords)
-        print "%g - %g = %g" % (e1, e2, e1-e2)
+        #print "%g - %g = %g" % (e1, e2, e1-e2)
         self.assertTrue( abs(e1 - e2) < 1e-12, "ATLJ: two energy methods give different results: %g - %g = %g" % (e1, e2, e1-e2) )
+
+        
+        e1 = atlj.getEnergyFortran(coords)
+        #print "%g - %g = %g" % (e1, e2, e1-e2)
+        #print e1/e2
+        self.assertTrue( abs(e1 - e2) < 1e-12, "ATLJ: fortran energy gives different results: %g - %g = %g" % (e1, e2, e1-e2) )
 
 
 

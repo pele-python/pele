@@ -37,3 +37,11 @@ add_custom_command(
 )
 
 add_custom_target(${utils4} ALL DEPENDS ${utils4}.so)
+
+set(utils5 "AT")
+add_custom_command( 
+  OUTPUT ${utils5}.so
+  DEPENDS ${utils5}.f
+  COMMAND f2py -c -m ${utils5} --fcompiler=gfortran --link-lapack_opt ${utils5}.f > ${utils5}.setup
+)
+add_custom_target(${utils5} ALL DEPENDS ${utils5}.so)
