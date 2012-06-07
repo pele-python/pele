@@ -128,4 +128,16 @@ class BasinHopping(MonteCarlo):
         if self.stepnum % self.printfrq == 0:
             if self.outstream != None:
                 self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(self.trial_energy) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE_old) + " accepted= " + str(self.acceptstep) + "\n" )
-
+    
+    def __getstate__(self):
+        ddict = self.__dict__.copy();
+        del ddict["outstream"]
+        del ddict["potential"]
+        del ddict["acceptTests"]
+        return ddict #.items()
+    
+    def __setstate__(self, dct):
+        self.__dict__.update(dct)
+        self.outstream = sys.stdout
+        self.acceptTests = [self.metrop_test.acceptReject]
+                
