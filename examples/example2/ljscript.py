@@ -15,7 +15,7 @@ coords=np.random.random(3*natoms)
 
 potential = lj.LJ()#1.0, 1.0, None)
 
-step = displace.CartesianDisplacement(stepsize=0.3)
+step = displace.RandomDisplacement(stepsize=0.3)
 
 opt = bh.BasinHopping(coords, potential, takeStep=step)
 opt.run(100)
@@ -27,7 +27,7 @@ opt.run(100)
 coords=np.loadtxt('coords')
 coords = coords.reshape(coords.size)
 
-step = displace.CartesianDisplacement( stepsize=0.3)
+step = displace.RandomDisplacement( stepsize=0.3)
 opt = bh.BasinHopping(coords, potential, takeStep=step)
 
 opt.run(200)
@@ -56,7 +56,7 @@ with open("lowest", "w") as fout:
 
 from takestep import adaptive
 
-takeStep = displace.CartesianDisplacement( stepsize=0.3 )
+takeStep = displace.RandomDisplacement( stepsize=0.3 )
 tsAdaptive = adaptive.AdaptiveStepsize(takeStep, acc_ratio = 0.5, frequency = 100)
 opt = bh.BasinHopping(coords, potential, takeStep=tsAdaptive)
 opt.run(1000)

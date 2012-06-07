@@ -6,16 +6,35 @@ Created on Jun 6, 2012
 
 import numpy as np
 
-class CartesianDisplacement(object):
-    '''
-    classdocs
-    '''
-
-    def __init__(self, stepsize=0.3):
+class RandomDisplacement(object):
+    def __init__(self, stepsize=0.3, first=None, last=None):
         self.stepsize = stepsize
-    
+        self.first = first
+        self.last = last
+
     def takeStep(self, coords):
-        coords += self.stepsize*(np.random.random(len(coords))-0.5)*2.
+        c = coords[self.first:self.last]
+        c += self.stepsize*(np.random.random(len(c))-0.5)*2.
+        pass
         
     def updateStep(self, accepted):
         pass
+            
+class UniformDisplacement(RandomDisplacement):        
+    def takeStep(self, coords):
+        import rotations
+        c = coords[self.first:self.last]        
+        for x in c.reshape(c.size/3,3):
+            x += self.stepsize*rotations.vec_random()
+
+class RotationalDisplacement(RandomDisplacement):
+    def orientational_step(self, coords):
+        """
+        take a random orientational step
+        """
+        import rotations
+        c = coords[self.first:self.last]        
+        for x in c.reshape(c.size/3,3):
+            rotations.takestep_aa( x, self.stepsize ) 
+
+    
