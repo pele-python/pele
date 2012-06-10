@@ -1,13 +1,14 @@
 import numpy as np
 from bfgs import lineSearch, BFGS
 
-class LBFGS(BFGS):
-    def __init__(self, X, G, pot, maxstep = 0.1, M=10):
+class LBFGS:
+    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10):
         self.X = X
-        self.G = G
         self.pot = pot
+        e, self.G = self.pot.getEnergyGradient(self.X)
+        self.funcalls = 1
         self.maxstep = maxstep
-        self.funcalls = 0
+        self.maxErise = maxErise
     
         self.N = len(X)
         self.M = M 
@@ -25,14 +26,14 @@ class LBFGS(BFGS):
         self.rho = np.zeros(M)
         self.k = 0
         
-        self.s[0,:] = X
-        self.y[0,:] = G
+        self.s[0,:] = self.X
+        self.y[0,:] = self.G
         self.rho[0] = 0. #1. / np.dot(X,G)
         
         self.stp = np.zeros(N)
 
-        self.Xold = X.copy()
-        self.Gold = G.copy()
+        self.Xold = self.X.copy()
+        self.Gold = self.G.copy()
     
     def step(self, X, G):
         """
@@ -101,7 +102,7 @@ class LBFGS(BFGS):
         self.X0 = X.copy()
         self.G0 = G.copy()
         self.E0 = E
-        maxErise = .0001
+        maxErise = self.maxErise
         
         stepsize = np.linalg.norm(stp)
         
@@ -116,7 +117,7 @@ class LBFGS(BFGS):
             if (E - self.E0) <= maxErise:
                 break
             else:
-                print "warning: energy incresed, trying a smaller step", E, self.E0, f*stepsize
+                #print "warning: energy incresed, trying a smaller step", E, self.E0, f*stepsize
                 f /= 10.
         
         return X, E, G
@@ -152,23 +153,23 @@ class LBFGS(BFGS):
 
 def test():
     import bfgs
-    natoms = 10
+    natoms = 100
     tol = 1e-5
     
     from potentials.lj import LJ
     pot = LJ()
     
-    X = bfgs.getInitialCoords(natoms, pot)
-    X += np.random.uniform(-1,1,[3*natoms]) * 0.3
-    
+    #X = bfgs.getInitialCoords(natoms, pot)
+    #X += np.random.uniform(-1,1,[3*natoms]) * 0.3
+    X = np.random.uniform(-1,1,[natoms*3])*(1.*natoms)**(1./3)*.5
     
     Xinit = np.copy(X)
     e, g = pot.getEnergyGradient(X)
     print "energy", e
     
-    lbfgs = LBFGS(X, g, pot, maxstep = 0.1)
+    lbfgs = LBFGS(X, pot, maxstep = 0.1)
     
-    ret = lbfgs.run(100, tol = tol, iprint=1)
+    ret = lbfgs.run(10000, tol = tol, iprint=-1)
     print "done", ret[1], ret[2], ret[3], ret[5]
     
     print "now do the same with scipy lbfgs"
@@ -176,10 +177,11 @@ def test():
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
-    print "now do the same with scipy bfgs"
-    from optimize.quench import bfgs as oldbfgs
-    ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
-    print ret[1], ret[2], ret[3]    
+    if False:
+        print "now do the same with scipy bfgs"
+        from optimize.quench import bfgs as oldbfgs
+        ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
+        print ret[1], ret[2], ret[3]    
     
     if False:
         print "now do the same with gradient + linesearch"
@@ -187,8 +189,12 @@ def test():
         ret = gpl.run(1000, tol = 1e-6)
         print ret[1], ret[2], ret[3]    
             
-    
-    
+    if True:
+        print "calling from wrapper function"
+        from optimize.quench import lbfgs_py
+        ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
+        print ret[1], ret[2], ret[3]    
+
         
 if __name__ == "__main__":
     test()
