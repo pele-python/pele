@@ -27,10 +27,12 @@ def lineSearch(X, V, pot, aguess = 0.1, tol = 1e-3):
     
     i'm sure there's a better way to do this
     """
+    tol /= np.sqrt(len(X)) #normalize the tolerance because we're reducing dimensionality
     ls = LineSearchPot(X, V, pot)
     
     einit = pot.getEnergy(X)
-    from optimize.quench import quench
+    #from optimize.quench import steepest_descent as quench
+    from optimize.quench import quench as quench
     a = np.zeros(1) * aguess
     ret = quench(a, ls.getEnergyGradient, tol=tol)
     a = ret[0][0]
@@ -77,6 +79,82 @@ class BFGS:
         #solve for p in B*p = G
         self.stp = -np.linalg.solve(B, G)
         
+        self.takeStep(X, self.stp)
+        
+            
+        
+        
+        self.k += 1
+        
+        self.Gprev[:] = G[:]
+        #self.Bprev[:] = B[:] 
+        return X
+
+    def takeStep(self, X, stp):
+        self.stp = stp
+        #we have the step direction.  now take the step
+        stepsize = self.getStepSize(X, self.stp)
+        snorm = np.linalg.norm(self.stp)
+        self.stp *= stepsize / snorm
+        smax = np.max(np.abs(self.stp))
+        if True and smax > self.maxstep:
+            #print "reducing step from", smax, "to", self.maxstep
+            self.stp *= self.maxstep / smax
+        #print "    step size", np.linalg.norm(self.stp)
+        X += self.stp
+
+    
+    def getStepSize(self, X, stp):
+        aguess = np.linalg.norm(stp)
+        a, e, funcalls = lineSearch(X, stp, self.pot, aguess = aguess, tol = self.tol*.05)
+        self.funcalls += funcalls
+        return a
+    
+        
+    
+    def run(self, nsteps = 1000, tol = 1e-6, iprint = -1):
+        self.tol = tol
+        X = self.X
+        sqrtN = np.sqrt(self.N)
+        
+        from printing.print_atoms_xyz import printAtomsXYZ as printxyz
+        if iprint > 0: fout = open("out.xyz", "w")
+        i = 1
+        self.funcalls += 1
+        e, G = self.pot.getEnergyGradient(X)
+        while i < nsteps:
+            X = self.step(X, G)
+            e, G = self.pot.getEnergyGradient(X)
+            
+            rms = np.linalg.norm(G) / sqrtN
+
+            i += 1
+            self.funcalls += 1
+            
+            if iprint > 0:
+                if i % iprint == 0:
+                    print "energy", e, rms
+                    printxyz(fout, X, line2="%g %g" % (e, rms))
+      
+            if rms < self.tol:
+                break
+        return X, e, rms, self.funcalls, G , i
+    
+class GradientPlusLinesearch(BFGS):
+    """
+    this is only for testing.  Anything using linesearch should run better than this.
+    """
+    def __init__(self, X, pot, maxstep):
+        self.maxstep = maxstep
+        self.pot = pot
+        self.X = X
+        self.funcalls = 0
+        self.N = len(X)
+    
+    def step(self, X, G):
+        #solve for p in B*p = G
+        self.stp = -G
+        
         
         #we have the step direction.  now take the step
         stepsize = self.getStepSize(X, self.stp)
@@ -89,48 +167,10 @@ class BFGS:
         #print "    step size", np.linalg.norm(self.stp)
         X += self.stp
         
-            
-        
-        
-        self.k += 1
-        
-        self.Gprev[:] = G[:]
-        #self.Bprev[:] = B[:] 
         return X
-    
-    def getStepSize(self, X, stp):
-        aguess = np.linalg.norm(stp)
-        a, e, funcalls = lineSearch(X, stp, self.pot, aguess = aguess, tol = self.tol)
-        self.funcalls += funcalls
-        return a
-    
-    def run(self, nsteps = 1000, tol = 1e-6):
-        self.tol = tol
-        X = self.X
-        sqrtN = np.sqrt(self.N)
-        
-        from printing.print_atoms_xyz import printAtomsXYZ as printxyz
-        fout = open("out.xyz", "w")
-        i = 1
-        self.funcalls += 1
-        e, G = self.pot.getEnergyGradient(X)
-        while i < nsteps:
-            X = self.step(X, G)
-            e, G = self.pot.getEnergyGradient(X)
-            
-            rms = np.linalg.norm(G) / sqrtN
-            printxyz(fout, X, line2="%g %g" % (e, rms))
 
-            i += 1
-            self.funcalls += 1
-            
-            if True:
-                print "energy", e, rms
-            
-            if rms < self.tol:
-                break
-        
-        return X, e, rms, self.funcalls, G 
+
+    
 
 
 def getInitialCoords(natoms, pot):
@@ -169,7 +209,7 @@ def test():
     
     lbfgs = BFGS(X, pot, maxstep = 0.1)
     
-    ret = lbfgs.run(100, tol = 1e-6)
+    ret = lbfgs.run(100, tol = tol, iprint=1)
     print "done", ret[1], ret[2], ret[3]
     
     print "now do the same with old lbfgs"
@@ -182,6 +222,12 @@ def test():
     ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
+    print "now do the same with old gradient + linesearch"
+    gpl = GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
+    ret = gpl.run(100, tol = 1e-6)
+    print ret[1], ret[2], ret[3]    
+    
+
 
         
 if __name__ == "__main__":
