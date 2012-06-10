@@ -57,6 +57,17 @@ class LBFGS(BFGS):
             s[km1,:] = X - self.Xold
             y[km1,:] = G - self.Gold
             rho[km1] = 1. / np.dot(s[km1,:], y[km1,:])
+            
+            #update the approximation for the diagonal inverse hessian
+            YY = np.dot( y[km1,:], y[km1,:] )
+            if YY == 0.:
+                print "warning: resetting YY to 1 in lbfgs", YY
+                YY = 1.
+            YS = 1./rho[km1]
+            if YS == 0.:
+                print "warning: resetting YS to 1 in lbfgs", YS
+                YS = 1.
+            self.H0[ki] = YS / YY
 
         self.Xold[:] = X[:]
         self.Gold[:] = G[:]
@@ -79,17 +90,69 @@ class LBFGS(BFGS):
         self.stp[:] = -z[:]
         
         #we now have the step direction.  now take the step
-        self.takeStep(X, self.stp)
+        #self.takeStep(X, self.stp)
         #print "step size", np.linalg.norm(self.stp)
         
         self.k += 1
-        return X
+        return self.stp
+
+    def takeStepNoLineSearch(self, X, E, G, stp):
+        f = 1.
+        self.X0 = X.copy()
+        self.G0 = G.copy()
+        self.E0 = E
+        maxErise = .0001
+        
+        stepsize = np.linalg.norm(stp)
+        
+        if f*stepsize > self.maxstep:
+            f = self.maxstep / stepsize
+        
+        while True:
+            X = self.X0 + f * stp
+            E, G = self.pot.getEnergyGradient(X)
+            self.funcalls += 1
+            
+            if (E - self.E0) <= maxErise:
+                break
+            else:
+                print "warning: energy incresed, trying a smaller step", E, self.E0, f*stepsize
+                f /= 10.
+        
+        return X, E, G
+                
+    def run(self, nsteps = 1000, tol = 1e-6, iprint = -1):
+        self.tol = tol
+        X = self.X
+        sqrtN = np.sqrt(self.N)
+        
+        i = 1
+        self.funcalls += 1
+        e, G = self.pot.getEnergyGradient(X)
+        while i < nsteps:
+            stp = self.step(X, G)
+            
+            X, e, G = self.takeStepNoLineSearch(X, e, G, stp)
+            #e, G = self.pot.getEnergyGradient(X)
+            
+            rms = np.linalg.norm(G) / sqrtN
+
+            i += 1
+            
+            if iprint > 0:
+                if i % iprint == 0:
+                    print "quench step", i, e, rms, self.funcalls
+      
+            if rms < self.tol:
+                break
+        return X, e, rms, self.funcalls, G , i
+   
 
         
 
 def test():
     import bfgs
-    natoms = 100
+    natoms = 10
     tol = 1e-5
     
     from potentials.lj import LJ
@@ -105,7 +168,7 @@ def test():
     
     lbfgs = LBFGS(X, g, pot, maxstep = 0.1)
     
-    ret = lbfgs.run(1000, tol = tol, iprint=-1)
+    ret = lbfgs.run(100, tol = tol, iprint=1)
     print "done", ret[1], ret[2], ret[3], ret[5]
     
     print "now do the same with scipy lbfgs"
@@ -121,7 +184,7 @@ def test():
     if False:
         print "now do the same with gradient + linesearch"
         gpl = bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
-        ret = gpl.run(100, tol = 1e-6)
+        ret = gpl.run(1000, tol = 1e-6)
         print ret[1], ret[2], ret[3]    
             
     
