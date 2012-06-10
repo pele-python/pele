@@ -41,6 +41,21 @@ def lineSearch(X, V, pot, aguess = 0.1, tol = 1e-3):
     
     #print "    linesearch step size", a, e, einit, e - einit, funcalls
     return a, e, funcalls
+
+def lineSearchScipy(X, V, pot, aguess = 0.1, tol = 1e-3, G = None):
+    """
+    js850> this doesn't seem to work
+    """
+    import scipy.optimize
+    V = V.copy() 
+    V /= np.linalg.norm(V)
+    #ret = scipy.optimize.line_search(pot.getEnergy, pot.getGradient, X, V, gfk = G, old_fval = E)
+    ret = scipy.optimize.line_search(pot.getEnergy, pot.getGradient, X, V, gfk = G)
+    a = ret[0]
+    funcalls = ret[1] + ret[2]
+    return a, funcalls
+    
+
         
 
 class BFGS:
@@ -65,6 +80,7 @@ class BFGS:
         self.stp = np.zeros(N)
     
     def step(self, X, G):
+        self.G = G
         B = self.B
         
         if self.k > 0:
@@ -107,6 +123,8 @@ class BFGS:
     def getStepSize(self, X, stp):
         aguess = np.linalg.norm(stp)
         a, e, funcalls = lineSearch(X, stp, self.pot, aguess = aguess, tol = self.tol*.05)
+        #a2, funcalls2 = lineSearchScipy(X, stp, self.pot, aguess = aguess, tol = self.tol*.05, G = self.G)
+        #print "step size", a, a2, funcalls, funcalls2
         self.funcalls += funcalls
         return a
     
@@ -117,8 +135,6 @@ class BFGS:
         X = self.X
         sqrtN = np.sqrt(self.N)
         
-        from printing.print_atoms_xyz import printAtomsXYZ as printxyz
-        if iprint > 0: fout = open("out.xyz", "w")
         i = 1
         self.funcalls += 1
         e, G = self.pot.getEnergyGradient(X)
@@ -133,8 +149,7 @@ class BFGS:
             
             if iprint > 0:
                 if i % iprint == 0:
-                    print "energy", e, rms
-                    printxyz(fout, X, line2="%g %g" % (e, rms))
+                    print "quench step", i, e, rms, self.funcalls
       
             if rms < self.tol:
                 break
@@ -152,6 +167,7 @@ class GradientPlusLinesearch(BFGS):
         self.N = len(X)
     
     def step(self, X, G):
+        self.G = G
         #solve for p in B*p = G
         self.stp = -G
         
@@ -187,7 +203,7 @@ def getInitialCoords(natoms, pot):
 
 
 def test():
-    natoms = 10
+    natoms = 100
     tol = 1e-6
     
     from potentials.lj import LJ
@@ -212,12 +228,12 @@ def test():
     ret = lbfgs.run(100, tol = tol, iprint=1)
     print "done", ret[1], ret[2], ret[3]
     
-    print "now do the same with old lbfgs"
+    print "now do the same with scipy lbfgs"
     from optimize.quench import quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
-    print "now do the same with old bfgs"
+    print "now do the same with scipy bfgs"
     from optimize.quench import bfgs as oldbfgs
     ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    

@@ -38,6 +38,8 @@ class LBFGS(BFGS):
         """
         see http://en.wikipedia.org/wiki/Limited-memory_BFGS
         """
+        self.G = G #saved for the line search
+        
         s = self.s
         y = self.y
         a = self.a
@@ -87,7 +89,7 @@ class LBFGS(BFGS):
 
 def test():
     import bfgs
-    natoms = 10
+    natoms = 100
     tol = 1e-5
     
     from potentials.lj import LJ
@@ -106,18 +108,18 @@ def test():
     ret = lbfgs.run(1000, tol = tol, iprint=-1)
     print "done", ret[1], ret[2], ret[3], ret[5]
     
-    print "now do the same with old lbfgs"
+    print "now do the same with scipy lbfgs"
     from optimize.quench import quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
-    print "now do the same with old bfgs"
+    print "now do the same with scipy bfgs"
     from optimize.quench import bfgs as oldbfgs
     ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
     if False:
-        print "now do the same with old gradient + linesearch"
+        print "now do the same with gradient + linesearch"
         gpl = bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
         ret = gpl.run(100, tol = 1e-6)
         print ret[1], ret[2], ret[3]    
