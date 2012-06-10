@@ -20,11 +20,10 @@ class LBFGS(BFGS):
         #self.beta = np.zeros(M) #working space
         
         self.q = np.zeros(N)  #working space
-        self.z = np.zeros(N)  #working space
         
         self.H0 = np.ones(M) * 1. #initial guess for the hessian
         self.rho = np.zeros(M)
-        self.k = -1
+        self.k = 0
         
         self.s[0,:] = X
         self.y[0,:] = G
@@ -32,15 +31,17 @@ class LBFGS(BFGS):
         
         self.stp = np.zeros(N)
 
-        self.Xold = np.zeros(N)
-        self.Gold = np.zeros(N)
+        self.Xold = X.copy()
+        self.Gold = G.copy()
     
     def step(self, X, G):
+        """
+        see http://en.wikipedia.org/wiki/Limited-memory_BFGS
+        """
         s = self.s
         y = self.y
         a = self.a
         q = self.q
-        z = self.z
         rho = self.rho
         M = self.M
         
@@ -49,27 +50,27 @@ class LBFGS(BFGS):
         
         
         #we have a new X and G, save in s and y
-        if k >= 0:
-            s[ki,:] = X - self.Xold
-            y[ki,:] = G - self.Gold
-            rho[ki] = 1. / np.dot(s[ki,:], y[ki,:])
+        if k > 0:
+            km1 = (k + M - 1) % M  #=k-1  cyclical
+            s[km1,:] = X - self.Xold
+            y[km1,:] = G - self.Gold
+            rho[km1] = 1. / np.dot(s[km1,:], y[km1,:])
+
         self.Xold[:] = X[:]
         self.Gold[:] = G[:]
-        
+
         
         q[:] = G[:]
         myrange = [ i % M for i in range(max([0,k-M]), k, 1) ]
-        print "myrange", myrange, ki, k
+        #print "myrange", myrange, ki, k
         for i in reversed(myrange):
-            #i = i1 % M
-            #print i, len(a), len(rho), np.shape(s)
             a[i] = rho[i] * np.dot( s[i,:], q )
             q -= a[i] * y[i,:]
         
-        z[:] = self.H0[ki] * q[:]
+        #z[:] = self.H0[ki] * q[:]
+        z = q #q is not used anymore, so we can use it as workspace
+        z *= self.H0[ki]
         for i in myrange:
-            #i = i1 % M
-            #print i
             beta = rho[i] * np.dot( y[i,:], z )
             z += s[i,:] * (a[i] - beta)
         
@@ -102,7 +103,7 @@ def test():
     
     lbfgs = LBFGS(X, g, pot, maxstep = 0.1)
     
-    ret = lbfgs.run(1000, tol = tol, iprint=1)
+    ret = lbfgs.run(1000, tol = tol, iprint=-1)
     print "done", ret[1], ret[2], ret[3], ret[5]
     
     print "now do the same with old lbfgs"
