@@ -104,13 +104,18 @@ def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     return opt.coords, e, rms, opt.nsteps
 
 
-def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, gtol = 1e-3):
+def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, gtol = 1e-3, maxstep = -1.):
     N = len(x0)
     x=x0.copy()
     E, V = getEnergyGradient(x)
     funcalls = 1
     for k in xrange(nsteps):
-        x -= V * dx
+        stp = -V * dx
+        if maxstep > 0:
+            stpsize = np.max(np.abs(V))
+            if stpsize > maxstep:
+                stp *= maxstep / stpsize                
+        x += stp
         E, V = getEnergyGradient(x)
         funcalls += 1
         rms = np.linalg.norm(V)/np.sqrt(N)
@@ -123,3 +128,13 @@ def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 10
 
 def steepest_descent(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     return _steepest_descent(coords, getEnergyGradient, iprint = iprint, gtol = tol)
+
+def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+    pot = getEnergyGradientWrapper(getEnergyGradient)
+    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol = tol, full_output = True, disp=False)
+    x = ret[0]
+    E = ret[1]
+    g = ret[2]
+    rms = np.linalg.norm(g)/np.sqrt(len(g))
+    funcalls = ret[4] + ret[5]
+    return x, E, rms, funcalls
