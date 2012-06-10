@@ -17,20 +17,23 @@ class LBFGS(BFGS):
         self.s = np.zeros([M,N])  #position updates
         self.y = np.zeros([M,N])  #gradient updates
         self.a = np.zeros(M)  #approximation for the inverse hessian
-        self.beta = np.zeros(M) #working space
+        #self.beta = np.zeros(M) #working space
         
         self.q = np.zeros(N)  #working space
         self.z = np.zeros(N)  #working space
         
         self.H0 = np.ones(M) * 1. #initial guess for the hessian
         self.rho = np.zeros(M)
-        self.k = 0
+        self.k = -1
         
         self.s[0,:] = X
         self.y[0,:] = G
-        self.rho[0] = 1. / np.dot(X,G)
+        self.rho[0] = 0. #1. / np.dot(X,G)
         
         self.stp = np.zeros(N)
+
+        self.Xold = np.zeros(N)
+        self.Gold = np.zeros(N)
     
     def step(self, X, G):
         s = self.s
@@ -39,7 +42,6 @@ class LBFGS(BFGS):
         q = self.q
         z = self.z
         rho = self.rho
-        beta = self.beta
         M = self.M
         
         k = self.k
@@ -47,14 +49,17 @@ class LBFGS(BFGS):
         
         
         #we have a new X and G, save in s and y
-        if k != 0:
-            s[ki,:] = X - s[ki-1,:]
-            y[ki,:] = G - y[ki-1,:]
+        if k >= 0:
+            s[ki,:] = X - self.Xold
+            y[ki,:] = G - self.Gold
             rho[ki] = 1. / np.dot(s[ki,:], y[ki,:])
+        self.Xold[:] = X[:]
+        self.Gold[:] = G[:]
+        
         
         q[:] = G[:]
         myrange = [ i % M for i in range(max([0,k-M]), k, 1) ]
-        #print "myrange", myrange, ki, k
+        print "myrange", myrange, ki, k
         for i in reversed(myrange):
             #i = i1 % M
             #print i, len(a), len(rho), np.shape(s)
@@ -65,8 +70,8 @@ class LBFGS(BFGS):
         for i in myrange:
             #i = i1 % M
             #print i
-            beta[i] = rho[i] * np.dot( y[i,:], z )
-            z += s[i,:] * (a[i] - beta[i])
+            beta = rho[i] * np.dot( y[i,:], z )
+            z += s[i,:] * (a[i] - beta)
         
         self.stp[:] = -z[:]
         
