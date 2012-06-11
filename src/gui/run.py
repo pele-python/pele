@@ -78,6 +78,7 @@ class MyForm(QtGui.QMainWindow):
     def showEnergies(self):
         import pylab as pl
         neb = self.neb
+        pl.ion()
         pl.plot(neb.energies, "o-", label="neb energies")
         cl=[]
         en=[]

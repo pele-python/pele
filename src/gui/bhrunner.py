@@ -27,7 +27,9 @@ class BHProcess(mp.Process):
         self.system = system
     
     def run(self):
-        np.random.seed(int(time.time()*10000.))
+        seed = int(time.time())#*100.)
+        print seed
+        np.random.seed(seed)
         print np.random.random(2)
         opt = self.system.createBasinHopping()
         opt.storage = self.insert
