@@ -21,10 +21,10 @@ class AdaptiveStepsize(object):
         self.nsteps = 0
 
     
-    def takeStep(self, coords):
+    def takeStep(self, coords, **kwargs):
         self.stepclass.takeStep(coords)
         
-    def updateStep(self, accepted):
+    def updateStep(self, accepted, **kwargs):
         """tell us whether a step was accepted or rejected"""
         self.nsteps += 1
         if accepted: 

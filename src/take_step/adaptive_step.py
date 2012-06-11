@@ -49,7 +49,7 @@ class manageStepSize:
         self.naccepted = 0
         print "accrat was ", rat, "new stepsize is ", self.stepsize, "f is", self.f
 
-    def insertStep(self, accepted ):
+    def insertStep(self, accepted, **kwargs):
         """tell us whether a step was accepted or rejected"""
         if accepted: 
             self.naccepted += 1

@@ -17,14 +17,14 @@ class TakeStepMonteCarlo:
         
         self.mcstep = displace.RandomDisplacement(stepsize=stepsize)
     
-    def takeStep(self, coords):
+    def takeStep(self, coords, **kwargs):
         #make a new monte carlo class
         mc = MonteCarlo(coords, self.potential, self.mcstep, 
                         temperature = self.T, outstream=None)
         mc.run( self.nsteps )
         coords[:] = mc.coords[:]
     
-    def updateStep(self, acc):
+    def updateStep(self, acc, **kwargs):
         pass
         
 

@@ -54,13 +54,13 @@ class takeStep(object):
 
 
             
-    def takeStep(self, coords):
+    def takeStep(self, coords, **kwargs):
         self.nsteps += 1
         if self.last_adaptive_step != None and self.nsteps > self.last_adaptive_step:
             self.useFixedStep() 
         coords += self.getStepSize()*(self.RNG(len(coords))-0.5)*2.
         
-    def updateStepDoNothing(self, accepted):
+    def updateStepDoNothing(self, accepted, **kwargs):
         pass
     
                     

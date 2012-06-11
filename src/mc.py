@@ -102,7 +102,7 @@ class MonteCarlo(object):
         #########################################################################
         #take step
         #########################################################################
-        self.takeStep.takeStep(self.trial_coords)
+        self.takeStep.takeStep(self.trial_coords, driver=self)
         
         #########################################################################
         #calculate new energy
@@ -136,7 +136,7 @@ class MonteCarlo(object):
         #self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(newE) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE) + " accepted= " + str(acceptstep) + "\n" )
         self.printStep()
         try:
-            self.takeStep.updateStep(acceptstep)
+            self.takeStep.updateStep(acceptstep, driver=self)
         except:
             print "WARNING: takeStep.updateStep() not implemented"
         if acceptstep:

@@ -30,7 +30,7 @@ class RBTakeStep:
         self.steporder = [self.translation_step, self.orientational_step]
         self.nstep_types = len(self.steporder)
     
-    def takeStep(self, coords):
+    def takeStep(self, coords, **kwargs):
         """
         take steps in the order defined by self.steporder
         """
@@ -65,7 +65,7 @@ class RBTakeStep:
         for j in range(nmol):
             rot.takestep_aa( coords[3*nmol + 3*j : 3*nmol + 3*j + 3], maxtheta )
 
-    def updateStep(self, accepted):
+    def updateStep(self, accepted, **kwargs):
         pass
 
 

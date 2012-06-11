@@ -101,7 +101,7 @@ class BasinHopping(MonteCarlo):
         #########################################################################
         #take step
         #########################################################################
-        self.takeStep.takeStep(self.coords_after_step)
+        self.takeStep.takeStep(self.coords_after_step, driver=self)
 
         #########################################################################
         #quench
