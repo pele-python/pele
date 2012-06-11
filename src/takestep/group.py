@@ -29,11 +29,12 @@ class BlockMoves(object):
         self._counter += 1
         if(self._counter > self._steptakers[self._current][0]):
             self._current += 1
-            if(self._current >= self.steptakers.size):
+            self._counter = 0
+            if(self._current >= len(self._steptakers)):
                 self._current = 0
-        self.steptakers[self._current].takeStep(coords)
+        self._steptakers[self._current][1].takeStep(coords)
        
     def updateStep(self, accepted):
-        self.steptakers[self._current].updateStep(accepted)
+        self._steptakers[self._current][1].updateStep(accepted)
     
     
