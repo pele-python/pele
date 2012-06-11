@@ -36,7 +36,7 @@ class AdaptiveStepsize(object):
     def adjustStep(self):
         """adjust stepsize"""
         rat = float(self.naccepted)/self.nsteps
-        if rat < self.accrat:
+        if rat > self.accrat:
             self.stepclass.stepsize /= self.factor
         else:
             self.stepclass.stepsize *= self.factor
