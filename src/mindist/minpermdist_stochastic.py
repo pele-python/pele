@@ -74,7 +74,7 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
     print "using basin hopping to optimize rotations + permutations"
     for i in range(niter):
         bh.run(1)
-        Emin = saveit.data[0][0]
+        Emin = saveit.data[0].E
         if abs(Emin-Eminglobal) < 1e-6:
             print "isomer found"
             break
@@ -85,14 +85,14 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
     minimum distance structure.
     """
     print "lowest structures found"
-    aamin = saveit.data[0][1]
+    aamin = saveit.data[0].coords
     dmin, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
-    for (E, aa,id) in saveit.data:
-        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aa), permlist )
-        print "E %11.5g dist %11.5g" % (E, dist)
+    for minimum in saveit.data:
+        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, minimum.coords), permlist )
+        print "E %11.5g dist %11.5g" % (minimum.E, dist)
         if dist < dmin:
             dmin = dist
-            aamin = aa
+            aamin = min.coords
 
     ###################################################################
     #we've optimized the rotation in a permutation independent manner

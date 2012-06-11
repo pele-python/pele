@@ -131,9 +131,9 @@ class MinPermDistPotential(potential.potential):
 
 
 class RandomRotationTakeStep(object):
-    def takeStep(self, aa):
+    def takeStep(self, aa, **kwargs):
         return random_rotation(aa)
-    def updateStep(self, accept):
+    def updateStep(self, accept, **kwargs):
         pass
 
 def random_rotation( aa):
