@@ -57,17 +57,18 @@ class LBFGS:
             km1 = (k + M - 1) % M  #=k-1  cyclical
             s[km1,:] = X - self.Xold
             y[km1,:] = G - self.Gold
-            rho[km1] = 1. / np.dot(s[km1,:], y[km1,:])
+            
+            YS = np.dot(s[km1,:], y[km1,:])
+            if YS == 0.:
+                print "warning: resetting YS to 1 in lbfgs", YS
+                YS = 1.            
+            rho[km1] = 1. / YS
             
             #update the approximation for the diagonal inverse hessian
             YY = np.dot( y[km1,:], y[km1,:] )
             if YY == 0.:
                 print "warning: resetting YY to 1 in lbfgs", YY
                 YY = 1.
-            YS = 1./rho[km1]
-            if YS == 0.:
-                print "warning: resetting YS to 1 in lbfgs", YS
-                YS = 1.
             self.H0[ki] = YS / YY
 
         self.Xold[:] = X[:]
