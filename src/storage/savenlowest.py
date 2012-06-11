@@ -5,6 +5,7 @@ Created on Apr 18, 2012
 '''
 
 import threading
+import operator
 
 class Minimum(object):
     '''
@@ -43,7 +44,7 @@ class SaveN(object):
         # otherwise, add it to list & sort
         new = Minimum(E, coords)
         self.data.append(new)
-        self.data.sort()
+        self.data.sort(key=operator.attrgetter('E'))
         if(self.onMinimumAdded):
             self.onMinimumAdded(new)
         # remove if too many entries
