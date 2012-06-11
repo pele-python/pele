@@ -57,6 +57,7 @@ class BasinHopping(MonteCarlo):
             temperature=1.0, \
             nometropolis=False, \
             quenchRoutine = quench.quench, \
+            quenchParameters = dict(), \
             outstream = sys.stdout
             ):
         #########################################################################
@@ -69,12 +70,14 @@ class BasinHopping(MonteCarlo):
               outstream)
 
         self.quenchRoutine = quenchRoutine
-
+        self.quenchParameters = quenchParameters
+        
         #########################################################################
         #do initial quench
         #########################################################################
         self.markovE_old = self.markovE
-        newcoords, Equench, self.rms, self.funcalls = self.quenchRoutine(self.coords, self.potential.getEnergyGradient)
+        newcoords, Equench, self.rms, self.funcalls = \
+            self.quenchRoutine(self.coords, self.potential.getEnergyGradient, **self.quenchParameters)
 
         self.coords = newcoords
         self.markovE = Equench
@@ -103,7 +106,8 @@ class BasinHopping(MonteCarlo):
         #########################################################################
         #quench
         #########################################################################
-        ret = self.quenchRoutine(self.coords_after_step, self.potential.getEnergyGradient)
+        ret = self.quenchRoutine(self.coords_after_step, \
+                                 self.potential.getEnergyGradient, **self.quenchParameters)
         self.trial_coords = ret[0]
         self.trial_energy = ret[1] 
         self.rms = ret[2]
