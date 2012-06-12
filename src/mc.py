@@ -135,10 +135,10 @@ class MonteCarlo(object):
         acceptstep, newcoords, newE = self.mcStep()
         #self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(newE) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE) + " accepted= " + str(acceptstep) + "\n" )
         self.printStep()
-        try:
-            self.takeStep.updateStep(acceptstep, driver=self)
-        except:
-            print "WARNING: takeStep.updateStep() not implemented"
+#       try:
+        self.takeStep.updateStep(acceptstep, driver=self)
+#        except:
+#            print "WARNING: takeStep.updateStep() not implemented"
         if acceptstep:
             if(self.storage):
                 self.storage(newE, newcoords)
