@@ -92,7 +92,7 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
         print "E %11.5g dist %11.5g" % (minimum.E, dist)
         if dist < dmin:
             dmin = dist
-            aamin = min.coords
+            aamin = minimum.coords
 
     ###################################################################
     #we've optimized the rotation in a permutation independent manner

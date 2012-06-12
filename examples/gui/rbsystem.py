@@ -72,7 +72,7 @@ class RBSystem:
             x=xx-com
             GL.glPushMatrix()            
             GL.glTranslate(x[0],x[1],x[2])
-            GLUT.glutSolidSphere(0.45,30,30)
+            GLUT.glutSolidSphere(0.4,30,30)
             GL.glPopMatrix()
 
         #now try to draw cylinders connecting atoms in a molecule

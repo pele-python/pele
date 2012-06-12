@@ -49,6 +49,13 @@ class LJ(potential.potential):
                     self.getEnergyGradientList = self.getEnergyGradientListFortran
                 except:
                     print "using slow python LJ implimentation"
+            #js850> getEnergyGradientList only implemented for fortran
+            try:
+                import fortran.lj as ljf
+                self.ljf = ljf
+                self.getEnergyGradientList = self.getEnergyGradientListFortran
+            except:
+                pass
 
     def getSep_periodic(self, vec1, vec2 ):
         assert len(vec1) == 3, "get_sep: vec length not 3"
