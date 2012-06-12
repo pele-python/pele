@@ -57,4 +57,4 @@ xyzout = open("out.xyz", "w")
 printevent = PrintEvent(xyzout, 300)
 mc.addEventAfterStep(printevent.printwrapper)
 
-mc.run(100000)
+mc.run(10000)
