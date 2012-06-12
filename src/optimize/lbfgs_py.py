@@ -9,6 +9,7 @@ class LBFGS:
         self.funcalls = 1
         self.maxstep = maxstep
         self.maxErise = maxErise
+        self.events = []
     
         self.N = len(X)
         self.M = M 
@@ -34,6 +35,8 @@ class LBFGS:
 
         self.Xold = self.X.copy()
         self.Gold = self.G.copy()
+        
+        self.nfailed = 0
     
     def step(self, X, G):
         """
@@ -100,33 +103,63 @@ class LBFGS:
 
     def takeStepNoLineSearch(self, X, E, G, stp):
         f = 1.
-        self.X0 = X.copy()
-        self.G0 = G.copy()
-        self.E0 = E
+        X0 = X.copy()
+        G0 = G.copy()
+        E0 = E
         maxErise = self.maxErise
+        
+        if np.dot(G, stp) > 0:
+            #print "overlap was negative, reversing step direction"
+            stp = -stp
+            self.stp = stp
         
         stepsize = np.linalg.norm(stp)
         
         if f*stepsize > self.maxstep:
             f = self.maxstep / stepsize
         
+        nincrease = 0
         while True:
-            X = self.X0 + f * stp
+            X = X0 + f * stp
             E, G = self.pot.getEnergyGradient(X)
             self.funcalls += 1
             
-            if (E - self.E0) <= maxErise:
+            if (E - E0) <= maxErise:
                 break
             else:
-                #print "warning: energy incresed, trying a smaller step", E, self.E0, f*stepsize
+                #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize
                 f /= 10.
+                nincrease += 1
+
+        if nincrease <= 1:
+            self.nfailed = 0
+        else:
+            self.nfailed += 1
+            if False and self.nfailed > 3:
+                print "resetting H0"
+                print self.H0
+                self.reset()
+        
+        if False and self.k <= 1:
+            print G0
+            print stp
+            print G
+            
         
         return X, E, G
+    
+    def reset(self):
+        self.H0[:] = 1.
+        self.k = 0
+    
+    def attachEvent(self, event):
+        self.events.append(event)
                 
     def run(self, nsteps = 1000, tol = 1e-6, iprint = -1):
         self.tol = tol
         X = self.X
         sqrtN = np.sqrt(self.N)
+        
         
         i = 1
         self.funcalls += 1
@@ -144,33 +177,48 @@ class LBFGS:
             if iprint > 0:
                 if i % iprint == 0:
                     print "quench step", i, e, rms, self.funcalls
+            for event in self.events:
+                event( coords=X, energy=e, rms=rms )
       
             if rms < self.tol:
                 break
         return X, e, rms, self.funcalls, G , i
    
 
-        
+class PrintEvent:
+    def __init__(self, fname):
+        self.fout = open(fname, "w")
+        self.coordslist = []
 
-def test():
-    import bfgs
-    natoms = 100
-    tol = 1e-5
+    def __call__(self, coords, **kwargs):
+        from printing.print_atoms_xyz import printAtomsXYZ as printxyz 
+        printxyz(self.fout, coords)
+        self.coordslist.append( coords.copy() )
+        
     
-    from potentials.lj import LJ
-    pot = LJ()
+
+def test(pot, natoms = 100, iprint=-1):
+    import bfgs
+    
     
     #X = bfgs.getInitialCoords(natoms, pot)
     #X += np.random.uniform(-1,1,[3*natoms]) * 0.3
     X = np.random.uniform(-1,1,[natoms*3])*(1.*natoms)**(1./3)*.5
     
+    runtest(X, pot, natoms, iprint)
+
+def runtest(X, pot, natoms = 100, iprint=-1):
+    tol = 1e-5
+
     Xinit = np.copy(X)
     e, g = pot.getEnergyGradient(X)
     print "energy", e
     
     lbfgs = LBFGS(X, pot, maxstep = 0.1)
+    printevent = PrintEvent( "debugout.xyz")
+    lbfgs.attachEvent(printevent)
     
-    ret = lbfgs.run(10000, tol = tol, iprint=-1)
+    ret = lbfgs.run(10000, tol = tol, iprint=iprint)
     print "done", ret[1], ret[2], ret[3], ret[5]
     
     print "now do the same with scipy lbfgs"
@@ -190,15 +238,33 @@ def test():
         ret = gpl.run(1000, tol = 1e-6)
         print ret[1], ret[2], ret[3]    
             
-    if True:
+    if False:
         print "calling from wrapper function"
         from optimize.quench import lbfgs_py
         ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
 
+
+    if True:
+        import utils.pymolwrapper as pym
+        pym.start()
+        for n, coords in enumerate(printevent.coordslist):
+            coords=coords.reshape(natoms, 3)
+            pym.draw_spheres(coords, "A", n)
+
         
 if __name__ == "__main__":
-    test()
+    from potentials.lj import LJ
+    from potentials.ATLJ import ATLJ
+    pot = ATLJ()
+
+    #test(pot, natoms=3, iprint=1)
+    
+    coords = np.loadtxt("coords")
+    print coords.size
+    coords = np.reshape(coords, coords.size)
+    print coords
+    runtest(coords, pot, natoms=3, iprint=1)
     
 
 
