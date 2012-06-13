@@ -1,14 +1,10 @@
 import distpot
 import numpy as np
-import rotations as rot
-from optimize.quench import quench
-import basinhopping
-import storage.savenlowest as storage
+import pygmin.rotations as rot
+from pygmin.optimize.quench import quench
+from  pygmin import basinhopping
+import pygmin.storage.savenlowest as storage
 from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
-
-
-
-
 
 def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
     """

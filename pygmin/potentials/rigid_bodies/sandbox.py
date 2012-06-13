@@ -1,6 +1,6 @@
 import numpy as np
 import molecule
-import rotations as rot
+import pygmin.rotations as rot
 #from potentials.rigid_body_potential import RigidBodyPotential
 from rigid_body_system import RigidBodySystem
 
@@ -48,7 +48,7 @@ def random_coords(nmol, nsites = None):
 def test_sandbox(nmol = 6):
     from numpy import sin, cos, pi
     import copy
-    from potentials.lj import LJ
+    from pygmin.potentials.lj import LJ
 
     #define the molecule types.
     #here use only one type, LWOTP
@@ -102,7 +102,7 @@ def test_sandbox(nmol = 6):
     print "max error in gradient", maxgraddiff, "max relative", maxgrad_relative
 
     #do a quench to make sure everything is working well
-    import optimize.quench as quench
+    import pygmin.optimize.quench as quench
     coords, E, rms, funcalls = quench.quench(coords, mysys.getEnergyGradient, iprint=-1)
     print "postquench E", E, "rms", rms, "funtion calls", funcalls
     xyz = mysys.getxyz(coords )
@@ -112,7 +112,7 @@ def test_sandbox(nmol = 6):
     #print the saved coords
     fname = "otp.xyz"
     print "saving xyz coords to", fname
-    from printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     with open(fname, "w") as fout:
         for xyz, line2 in printlist:
             printxyz( fout, xyz, line2=line2, atom_type=["N", "O", "O"])
@@ -156,7 +156,7 @@ def test_sandbox_dumbbell():
     print "max error in gradient", maxgraddiff, "max relative", maxgrad_relative
 
     #do a quench to make sure everything is working well
-    import optimize.quench as quench
+    import pygmin.optimize.quench as quench
     coords, E, rms, funcalls = quench.quench(coords, mysys.getEnergyGradient, iprint=-1)
     print "postquench E", E, "rms", rms, "funtion calls", funcalls
 

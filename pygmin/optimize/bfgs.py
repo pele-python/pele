@@ -1,6 +1,6 @@
 import numpy as np
 #from itertools import xrange
-from potentials.potential import potential as basepotential
+from pygmin.potentials.potential import potential as basepotential
 
 class LineSearchPot(basepotential):
     """
@@ -32,7 +32,7 @@ def lineSearch(X, V, pot, aguess = 0.1, tol = 1e-3):
     
     einit = pot.getEnergy(X)
     #from optimize.quench import steepest_descent as quench
-    from optimize.quench import quench as quench
+    from quench import quench as quench
     a = np.zeros(1) * aguess
     ret = quench(a, ls.getEnergyGradient, tol=tol)
     a = ret[0][0]
@@ -190,8 +190,8 @@ class GradientPlusLinesearch(BFGS):
 
 
 def getInitialCoords(natoms, pot):
-    from basinhopping import BasinHopping
-    from takestep.displace import RandomDisplacement
+    from pygmin.basinhopping import BasinHopping
+    from pygmin.takestep.displace import RandomDisplacement
     takestep = RandomDisplacement(0.3)
     X = np.random.uniform(-1,1,natoms*3)*(1.*natoms)**(1./3)*.1
     bh = BasinHopping(X, pot, takestep)
@@ -206,7 +206,7 @@ def test():
     natoms = 100
     tol = 1e-6
     
-    from potentials.lj import LJ
+    from pygmin.potentials.lj import LJ
     pot = LJ()
     
     X = getInitialCoords(natoms, pot)
@@ -229,12 +229,12 @@ def test():
     print "done", ret[1], ret[2], ret[3]
     
     print "now do the same with scipy lbfgs"
-    from optimize.quench import quench
+    from quench import quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
     print "now do the same with scipy bfgs"
-    from optimize.quench import bfgs as oldbfgs
+    from quench import bfgs as oldbfgs
     ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     

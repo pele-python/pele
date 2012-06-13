@@ -8,15 +8,16 @@ import optimize.quench as quench
         
 
         
-natoms = 16
+natoms = 4
 
 # create PatchyParticle potential
 pot = salt.salt()    
 
 # load coords array
 x = np.random.random(3*natoms+6)
-x[-6:-3] = 5
+x[-6:-3] = 3
 x[-3:]=0.
+x[-2]=3.
 
 #for i in xrange(0,4):
 #    for j in xrange(0,4):
@@ -27,15 +28,15 @@ x[-3:]=0.
 #exit()
 #x,e,t1,t2 = quench.fire(x, pot.getEnergyGradient)
 #print "start"
-x[1]=0.0
+#x[1]=0.0
 e,g = pot.getEnergyGradient(x)
 print e,pot.getEnergy(x)
 print g
 #print "numerical"
-gn = pot.NumericalDerivative(x, 1e-8)
+gn = pot.NumericalDerivative(x, 1e-6)
 print gn
 #print "difference"
-print (g-gn)
+print (g-gn)/g
 #exit()
 a=x.copy()
 pot.toReal(a)

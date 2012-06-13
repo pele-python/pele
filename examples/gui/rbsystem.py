@@ -2,9 +2,9 @@ from PyQt4 import QtGui
 import NewLJ
 import sys
 import numpy as np
-from storage import savenlowest
+from pygmin.storage import savenlowest
 import time
-from NEB import NEB
+from pygmin.NEB import NEB
         
 class RBSystem:
     def __init__(self):
@@ -18,10 +18,10 @@ class RBSystem:
         self.storage = savenlowest.SaveN(self.nsave)
 
     def createSystem(self):
-        import potentials.lj as lj
-        import potentials.rigid_bodies.molecule as molecule
-        from potentials.rigid_bodies.molecule import setupLWOTP
-        from potentials.rigid_bodies.sandbox import RBSandbox
+        import pygmin.potentials.lj as lj
+        import pygmin.potentials.rigid_bodies.molecule as molecule
+        from pygmin.potentials.rigid_bodies.molecule import setupLWOTP
+        from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
         #setup otp molecule
         otp = setupLWOTP()
         #set up interactions between sites
@@ -34,8 +34,8 @@ class RBSystem:
         
         
     def createBasinHopping(self):
-        import basinhopping as bh
-        import rotations as rot
+        import pygmin.basinhopping as bh
+        import pygmin.rotations as rot
         mysys = self.createSystem()
         nsites = mysys.nsites
         nmol = self.nmol
@@ -46,7 +46,7 @@ class RBSystem:
             k = nmol*3 + 3*i
             coords[k : k + 3] = rot.random_aa()
         #set up take step routine
-        from potentials.rigid_bodies.take_step import RBTakeStep
+        from pygmin.potentials.rigid_bodies.take_step import RBTakeStep
         step = RBTakeStep()
         opt = bh.BasinHopping(coords,mysys,
                           temperature=1., takeStep=step, outstream=None)
@@ -98,12 +98,12 @@ class RBSystem:
 
 
     def Align(self, coords1, coords2):
-        from mindist.minpermdist_rbmol import minPermDistRBMol as minpermdist
+        from pygmin.mindist.minpermdist_rbmol import minPermDistRBMol as minpermdist
         dist, X1, X2 = minpermdist( coords1, coords2, self.mysys, niter = 100 )
         return X1, X2
     
     def createNEB(self, coords1, coords2):
-        import potentials.lj as lj
+        import pygmin.potentials.lj as lj
         return NEB.NEB(coords1, coords2, self.mysys, k = 100., nimages=20)
 
        
@@ -118,5 +118,5 @@ class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
         return int(self.lineNsave.text())
         
 if __name__ == "__main__":
-    import gui.run
-    gui.run.run_gui(RBSystem)
+    import pygmin.gui.run as gr
+    gr.run_gui(RBSystem)

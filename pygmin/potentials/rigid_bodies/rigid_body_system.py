@@ -1,5 +1,5 @@
 import numpy as np
-from potentials.potential import potential as basepotential
+from pygmin.potentials.potential import potential as basepotential
 #from potentials.rigid_body_potential import RigidBodyPotential
 import copy
 
