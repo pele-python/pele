@@ -9,15 +9,15 @@
 
 using namespace wales;
 
-double g_eps11=16.8*123.984/1000./96.;
-double g_eps22=14.9*123.984/1000./96.;
+double g_eps11=0.;//16.8*123.984/1000./96.;
+double g_eps22=0.;//14.9*123.984/1000./96.;
 double g_eps12=sqrt(g_eps11*g_eps22);
 double g_sigma11=1.98;
 double g_sigma22=5.24;
 double g_sigma12=0.5*(g_sigma11+g_sigma22);
-double g_q1=1.18*sqrt(17.5);
-double g_q2=-1.18*sqrt(17.5);
-double _cutoff=10.0;
+double g_q1=1.18; //;*sqrt(17.5);
+double g_q2=-1.18;
+double _cutoff=1.0;
 
 using namespace votca::tools;
 
@@ -40,7 +40,8 @@ public:
 			_charges[i+n/2] = g_q2;
 		}
 
-		_ewald.setAlpha(0.4);
+		//_ewald.setTolerance(1.0, 1e-5);
+		_ewald.setAlpha(1./0.320163);
 	}
 
 	void setLattice(double lattice[]) {
@@ -105,6 +106,7 @@ public:
 	}
 
 	double addPressure() {
+		return 0.;
 		double volume = (getA()^getB())*getC();
 		double p = 0.1;
 		double gp[6];
@@ -172,14 +174,14 @@ public:
 		//_images.clear();
 		//_images.push_back(vec(0,0,0));
 		//return;
-		int n=10;
+		int n=1;
 		for(int i=-n; i<=n; ++i)
 			for(int j=-n; j<=n; ++j)
 				for(int k=-n; k<=n; ++k) {
 					vec v = i*a + j*b + k*c;
-					if(abs(v) < 3.*_cutoff) {
+//	if(abs(v) < 2.*_cutoff) {
 						_images.push_back(v);
-					}
+					//}
 				}
 	}
 
@@ -217,10 +219,11 @@ public:
 		double energy=0;
 		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6))
 #ifdef USE_EWALD
-				+ _sys.ewald().PairEnergy(_cutoff, _q12);
+				+ 0; //_sys.ewald().PairEnergy(_cutoff, _q12);
 #else
 				+ _q12/_cutoff;
 #endif
+		_cut_shift = 0.;
 		if(_offset1 == _offset2) {
 			for(int i=_offset1; i<_offset1 + _n1; ++i)
 				for(int j=i; j<_offset1 + _n1; ++j) {
@@ -239,7 +242,8 @@ public:
 
 	double CalcGradient() {
 		double energy=0;
-		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6)) + _q12/_cutoff;
+		_cut_shift = 4.*_eps*(pow(_sigma/_cutoff,12) - pow(_sigma/_cutoff, 6)) + _sys.ewald()._f*_q12/_cutoff;
+		_cut_shift = 0.;
 		if(_offset1 == _offset2) {
 			for(int i=_offset1; i<_offset1 + _n1; ++i)
 				for(int j=i; j<_offset1 + _n1; ++j) {
@@ -256,7 +260,7 @@ public:
 
 	double eval_pair_gradient(int i, int j) {
 		vec gtmp;
-		vec d = _sys.mindist(_sys.pos(i), _sys.pos(j));
+		vec d = _sys.pos(i) - _sys.pos(j); //_sys.mindist(_sys.pos(i), _sys.pos(j));
 		double energy = 0;
 		for(int l=0; l<_sys.images().size(); ++l) {
 		energy+=pair_gradient(d+_sys.images()[l], gtmp);
@@ -287,7 +291,7 @@ public:
 		if(r2>_cutoff*_cutoff || r2 < 1e-8) {
 			return 0.;
 		}
-		return 4.*_eps*(pow(_sigma*_sigma/r2,6) - pow(_sigma*_sigma/r2, 3)) - _cut_shift;
+		return 4.*_eps*(pow(_sigma*_sigma/r2,6) - pow(_sigma*_sigma/r2, 3)) - _cut_shift
 #ifdef USE_EWALD
 				+ _sys.ewald().PairEnergy(sqrt(r2), _q12);
 #else
@@ -311,11 +315,12 @@ public:
 
 		g*=4.0*_eps*(12.*r12 -  6.*r6)/r2 + _q12/(r2*r);
 
+	//	printf("%f %f %f\n", r, _q12/r , _cut_shift);
 		return 4.*_eps*(r12 - r6) - _cut_shift
 //#ifdef USE_EWALD
 //				+ _sys.ewald().PairEnergy(r, _q12);
 //#else
-				+ _q12/r;
+				+ _sys.ewald()._f*_q12/r;
 //#endif
 	}
 
@@ -349,11 +354,11 @@ double energy(boost::python::numeric::array& px)
 	energy += aa.CalcEnergy();
 	energy += ab.CalcEnergy();
 	energy += bb.CalcEnergy();
-	energy += sys.addPressure();
+	//energy += sys.addPressure();
 #ifdef USE_EWALD
 	Ewald::zip_vectors adapter(sys.pos(), sys.charges());
-	cout << "foo" << endl;
 	int ii=0;
+	double dd = energy;
 	for(Ewald::zip_vectors::iterator i= adapter.begin();
 			i != adapter.end(); ++i) {
 		//cout << "bla" << (*i)->getPos() << " " << (*i)->getQ() << endl
@@ -361,7 +366,10 @@ double energy(boost::python::numeric::array& px)
 		//++ii;
 	}
 	energy += sys.ewald().EnergyKSpace(adapter);
+	cout << "Pair " << dd << endl;
+
 #endif
+
 	return energy;
 }
 
@@ -384,9 +392,12 @@ double gradient(boost::python::numeric::array& px, boost::python::numeric::array
 
 	double energy=0;
 	energy += aa.CalcGradient();
+	cout << energy << endl;
 	energy += ab.CalcGradient();
+	cout << energy << endl;
 	energy += bb.CalcGradient();
-	energy += sys.addPressure();
+	cout << energy << endl;
+	//energy += sys.addPressure();
 	sys.getGradient(&g[0]);
 	return energy;
 }
