@@ -3,10 +3,10 @@
 #Example 4: adaptive step size
 ############################################################
 import numpy as np
-import potentials.lj as lj
-import basinhopping as bh
-from takestep import displace
-from takestep import adaptive
+import pygmin.potentials.lj as lj
+import pygmin.basinhopping as bh
+from pygmin.takestep import displace
+from pygmin.takestep import adaptive
 
 natoms = 12
 

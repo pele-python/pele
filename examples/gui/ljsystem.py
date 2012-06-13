@@ -2,9 +2,9 @@ from PyQt4 import QtGui
 import NewLJ
 import sys
 import numpy as np
-from storage import savenlowest
+from pygmin.storage import savenlowest
 import time
-from NEB import NEB
+from pygmin.NEB import NEB
         
 class LJSystem:
     def __init__(self):
@@ -17,12 +17,12 @@ class LJSystem:
         self.storage = savenlowest.SaveN(self.nsave)
         
     def createBasinHopping(self):
-        import basinhopping as bh
-        import potentials.lj as lj
-        from take_step import random_displacement
+        import pygmin.basinhopping as bh
+        import pygmin.potentials.lj as lj
+        from pygmin.takestep import displace
         coords = np.random.random(3 * self.natoms)
         potential = lj.LJ()
-        step = random_displacement.takeStep(stepsize=0.5)
+        step = displace.RandomDisplacement(stepsize=0.5)
         opt = bh.BasinHopping(coords,potential,
                           temperature=1., takeStep=step)
         return opt
@@ -39,12 +39,12 @@ class LJSystem:
             GL.glPopMatrix()
     
     def Align(self, coords1, coords2):
-        from mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
+        from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
         dist, X1, X2 = minpermdist( coords1, coords2, niter = 100 )
         return X1, X2
     
     def createNEB(self, coords1, coords2):
-        import potentials.lj as lj
+        import pygmin.potentials.lj as lj
         return NEB.NEB(coords1, coords2, lj.LJ(), k = 100. ,nimages=20)
 
        
@@ -59,5 +59,5 @@ class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
         return int(self.lineNsave.text())
         
 if __name__ == "__main__":
-    import gui.run
-    gui.run.run_gui(LJSystem)
+    import pygmin.gui.run as gr
+    gr.run_gui(LJSystem)

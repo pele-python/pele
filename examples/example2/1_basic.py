@@ -3,9 +3,9 @@
 #Example 1: Simple basin hopping using defaults
 ############################################################
 import numpy as np
-import potentials.lj as lj
-import basinhopping as bh
-from takestep import displace
+import pygmin.potentials.lj as lj
+import pygmin.basinhopping as bh
+from pygmin.takestep import displace
 
 natoms = 12
 
@@ -20,7 +20,7 @@ opt.run(100)
 
 # some visualization
 try: 
-    import utils.pymolwrapper as pym
+    import pygmin.utils.pymolwrapper as pym
     pym.start()
     pym.draw_spheres(opt.coords, "A", 1)
 except:
