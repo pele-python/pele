@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 import numpy as np
-from take_step.adaptive_step import manageStepSize
+from pygmin.take_step.adaptive_step import manageStepSize
 
 
 class takeStep(object):

@@ -1,5 +1,5 @@
 import numpy as np
-from potentials.soft_sphere import SoftSphere, putInBox
+from pygmin.potentials.soft_sphere import SoftSphere, putInBox
 
 
 natoms = 120
@@ -22,7 +22,7 @@ print "initial energy", E
 #set up quench routine
 #from optimize.quench import fire as quench
 #from optimize.quench import cg as quench
-from optimize.quench import quench as quench #numpy lbfgs routine
+from pygmin.optimize.quench import quench as quench #numpy lbfgs routine
 #from optimize.quench import fmin as quench
 #from optimize.quench import steepest_descent as quench
 
@@ -39,7 +39,7 @@ coords = ret[0]
 #set up the step taking routine
 #Normal basin hopping takes each step from the quenched coords.  This modified step taking routine takes a step from the 
 #last accepted coords, not from the quenched coords
-from take_step.random_displacement import takeStep
+from pygmin.take_step.random_displacement import takeStep
 takestep = takeStep(stepsize=.01)
 
 
@@ -53,7 +53,7 @@ accept_test_list = [dostuff.acceptReject]
 
 
 #set up basin hopping
-from mc import MonteCarlo
+from pygmin.mc import MonteCarlo
 temperature = 1.0
 event_after_step = []
 mc = MonteCarlo(coords, pot, takestep, \

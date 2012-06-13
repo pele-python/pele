@@ -1,5 +1,5 @@
 import numpy as np
-from potentials.potential import potential
+from pygmin.potentials.potential import potential
 from fortran.soft_sphere_pot import soft_sphere_pot
 #energy,force = soft_sphere_pot(dimen,x,diams,[npart])
 
@@ -59,14 +59,14 @@ def test_soft_sphere(natoms = 9):
     printlist.append((coords.copy(), "intial coords"))
     
     #test a quench with default lbfgs
-    from optimize.quench import quench
+    from pygmin.optimize.quench import quench
     coords, E, rms, funcalls = quench(coords, pot.getEnergyGradient, iprint=-1)
     printlist.append((coords.copy(), "intial coords"))
     print "energy post quench", pot.getEnergy(coords)
 
     fname = "out.xyz"
     print "saving coordinates to", fname
-    from printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     with open(fname, "w") as fout:
         for xyz,line2 in printlist:
             xyz = putInBox(xyz, boxl)
