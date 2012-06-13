@@ -1,10 +1,10 @@
 import distpot
 import numpy as np
 import copy
-import rotations as rot
-from optimize.quench import quench
-import basinhopping
-import storage.savenlowest as storage
+import pygmin.rotations as rot
+from pygmin.optimize.quench import quench
+from pygmin import basinhopping
+import pygmin.storage.savenlowest as storage
 from mindistutils import CoMToOrigin, alignRotation, findBestPermutationRBMol, getDistaa
 from aamindist import aadistance
 
@@ -159,10 +159,10 @@ class TestMinPermDistRBMol_OTP(unittest.TestCase):
     it has one internal symmetry
     """
     def setUp(self):
-        from potentials.rigid_bodies.molecule import Molecule, setupLWOTP
-        from potentials.rigid_bodies.sandbox import RBSandbox
-        from potentials.lj import LJ
-        from optimize.quench import quench
+        from pygmin.potentials.rigid_bodies.molecule import Molecule, setupLWOTP
+        from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
+        from pygmin.potentials.lj import LJ
+        from pygmin.optimize.quench import quench
         
         #set up system
         nmol = 5
@@ -254,7 +254,7 @@ def test(coords1, coords2, mysys, permlist):
 
     printlist.append((coords1.copy(), "coords1 after mindist"))
     printlist.append((coords2.copy(), "coords2 after mindist"))
-    import printing.print_atoms_xyz as printxyz
+    import pygmin.printing.print_atoms_xyz as printxyz
     with open("otp.xyz", "w") as fout:
         for coords, line2 in printlist:
             xyz = mysys.getxyz(coords)
@@ -265,9 +265,9 @@ def test(coords1, coords2, mysys, permlist):
 
 
 def test_LWOTP(nmol = 5):
-    from potentials.rigid_bodies.molecule import Molecule, setupLWOTP
-    from potentials.rigid_bodies.sandbox import RBSandbox
-    from potentials.lj import LJ
+    from pygmin.potentials.rigid_bodies.molecule import Molecule, setupLWOTP
+    from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
+    from pygmin.potentials.lj import LJ
 
     printlist = []
     

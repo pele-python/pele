@@ -1,7 +1,7 @@
 import numpy as np
-import potentials.rigid_bodies.molecule as molecule
-import potentials.rigid_bodies.sandbox as sandbox
-import rotations as rot
+import pygmin.potentials.rigid_bodies.molecule as molecule
+import pygmin.potentials.rigid_bodies.sandbox as sandbox
+import pygmin.rotations as rot
 import copy
 
 np.random.seed(0)
@@ -26,7 +26,7 @@ otp.insert_site(0, pos3 )
 
 # define the interaction matrix for the system.
 # for LWOTP there is only one atom type, so this is trivial
-from potentials.lj import LJ
+from  pygmin.potentials.lj import LJ
 lj = LJ()
 interaction_matrix = [[lj]]
 
@@ -47,15 +47,15 @@ for i in range(nmol):
 
 
 #set up the takestep routine
-from potentials.rigid_bodies.take_step import RBTakeStep
+from  pygmin.potentials.rigid_bodies.take_step import RBTakeStep
 takestep = RBTakeStep()
 
 #set up the class to save lowest energy structures
-from storage.savenlowest import SaveN
+from pygmin.storage.savenlowest import SaveN
 saveit = SaveN(100)
 
 #set up basinhopping
-from basinhopping import BasinHopping
+from  pygmin.basinhopping import BasinHopping
 bh = BasinHopping(coords, mysys, takestep, storage=saveit.insert )
 
 #run basin hopping
@@ -66,7 +66,7 @@ bh.run(40)
 #print the saved coords
 fname = "otp.xyz"
 print "saving xyz coords to", fname
-from printing.print_atoms_xyz import printAtomsXYZ as printxyz
+from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
 with open(fname, "w") as fout:
     for minimum in saveit.data:
         xyz = mysys.getxyz(minimum.coords)
