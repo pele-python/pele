@@ -98,7 +98,7 @@ class LBFGS:
             if (E - E0) <= maxErise:
                 break
             else:
-                print "warning: energy increased, trying a smaller step", E, E0, f*stepsize
+                #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize
                 f /= 10.
                 nincrease += 1
                 if nincrease > 5:
@@ -193,6 +193,7 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     ret = lbfgs.run(10000, tol = tol, iprint=iprint)
     print "done", ret[1], ret[2], ret[3], ret[5]
     
+    print ""
     print "now do the same with scipy lbfgs"
     from pygmin.optimize.quench import quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
@@ -216,6 +217,14 @@ def runtest(X, pot, natoms = 100, iprint=-1):
         from pygmin.optimize.quench import lbfgs_py
         ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
+        
+    if True:
+        print ""
+        print "now do the same with lbfgs_py"
+        from pygmin.optimize.quench import lbfgs_py
+        ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
+        print ret[1], ret[2], ret[3]    
+
 
 
     if False:
@@ -231,7 +240,7 @@ if __name__ == "__main__":
     #from pygmin.potentials.ATLJ import ATLJ as Pot
     pot = Pot()
 
-    test(pot, natoms=3, iprint=1)
+    test(pot, natoms=100, iprint=-1)
     exit(1)
     
     coords = np.loadtxt("coords")
