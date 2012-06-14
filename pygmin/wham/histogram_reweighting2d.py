@@ -65,7 +65,7 @@ class wham2d:
         self.logP = np.where( visits != 0, np.log( visits.astype(float) ), 0 )
 
         
-        from optimize.quench import quench
+        from pygmin.optimize.quench import quench
         from wham_potential import WhamPotential
         whampot = WhamPotential( self.logP, reduced_energy )
         
@@ -77,9 +77,9 @@ class wham2d:
         
         global_min = False
         if global_min:
-            from basinhopping import BasinHopping
-            from take_step.random_displacement import takeStep
-            takestep = takeStep(stepsize=10.)
+            from pygmin.basinhopping import BasinHopping
+            from pygmin.takestep.displace import RandomDisplacement
+            takestep = RandomDisplacement(stepsize=10.)
             takestep.useAdaptiveStep()
             takestep.adaptive_class.f = 2.
             bh = BasinHopping(X, whampot, takestep)

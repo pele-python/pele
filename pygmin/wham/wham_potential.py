@@ -1,5 +1,5 @@
 import numpy as np
-from potentials.potential import potential
+from pygmin.potentials.potential import potential
 
 class WhamPotential(potential):
     """

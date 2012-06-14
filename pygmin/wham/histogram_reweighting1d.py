@@ -54,7 +54,7 @@ class wham1d:
         print "energy", E 
         
         print "quenching"
-        from optimize.quench import quench
+        from pygmin.optimize.quench import quench
         ret = quench(X, self.whampot.getEnergyGradient)
         print "quench energy", ret[1]
         X = ret[0]
@@ -82,13 +82,13 @@ class wham1d:
         print "energy", E 
         
         print "quenching"
-        from optimize.quench import quench
+        from pygmin.optimize.quench import quench
         ret = quench(X, self.whampot.getEnergyGradient)
         print "quench energy", ret[1]
         
-        from basinhopping import BasinHopping
-        from take_step.random_displacement import takeStep
-        takestep = takeStep(stepsize=10)
+        from pygmin.basinhopping import BasinHopping
+        from pygmin.takestep.displace import RandomDisplacement
+        takestep = RandomDisplacement(stepsize=10)
         takestep.useAdaptiveStep()
         takestep.adaptive_class.f = 1.5 #i have no idea what a good stepsize should be
         bh = BasinHopping(X, self.whampot, takestep )
