@@ -15,7 +15,18 @@ class ColdFusionCheck(potential):
     def getEnergyGradient(self, coords):
         E, grad = self.potential.getEnergyGradient(coords)
         if(E<self.coldfusionlimit):
-            print "Cold fusion detected"
             grad[:]=0.
-            E = self.coldfusionenergy
         return E, grad
+    
+    def __call__(self, E, conf, **kwargs):
+        if E < self.coldfusionlimit:
+            print "Cold fusion detected, energy was " + str(E)
+            #kwargs['driver'].trial_energy = self.coldfusionenergy
+            return False
+        return True
+        
+def addColdFusionCheck(basinhopping, coldfusionlimit=-1000, coldfusionenergy=1000000):
+    pot = basinhopping.potential
+    cfPot = ColdFusionCheck(pot, coldfusionlimit=coldfusionlimit, coldfusionenergy=coldfusionenergy)
+    basinhopping.potential = cfPot
+    basinhopping.confCheck.append(cfPot)
