@@ -5,35 +5,29 @@ Created on Jun 6, 2012
 '''
 
 import numpy as np
+from generic import TakestepSlice
+from pygmin import rotations
 
-class RandomDisplacement(object):
-    def __init__(self, stepsize=0.3, first=None, last=None):
-        self.stepsize = stepsize
-        self.first = first
-        self.last = last
-
+class RandomDisplacement(TakestepSlice):
+    def __init__(self, stepsize=1.0):
+        TakestepSlice.__init__(self, stepsize=stepsize)
     def takeStep(self, coords, **kwargs):
-        c = coords[self.first:self.last]
+        c = coords[self.srange]
         c += self.stepsize*(np.random.random(len(c))-0.5)*2.
         pass
-        
-    def updateStep(self, accepted, **kwargs):
-        pass
             
-class UniformDisplacement(RandomDisplacement):        
+class UniformDisplacement(TakestepSlice):        
     def takeStep(self, coords, **kwargs):
-        import rotations
-        c = coords[self.first:self.last]        
+        c = coords[slice]        
         for x in c.reshape(c.size/3,3):
             x += self.stepsize*rotations.vec_random()
 
-class RotationalDisplacement(RandomDisplacement):
-    def orientational_step(self, coords, **kwargs):
+class RotationalDisplacement(TakestepSlice):
+    def takeStep(self, coords, **kwargs):
         """
         take a random orientational step
         """
-        import rotations
-        c = coords[self.first:self.last]        
+        c = coords[slice]        
         for x in c.reshape(c.size/3,3):
             rotations.takestep_aa( x, self.stepsize ) 
 
