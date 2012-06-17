@@ -17,7 +17,7 @@ class Metropolis:
 
         return acceptstep
 
-    def acceptReject(self, Eold, Enew, qcoords=[], coords=[]):
+    def __call__(self, Eold, Enew, qcoords=[], coords=[]):
         return self.acceptRejectE(Eold, Enew)
 
 class MetropolisNonQuench:

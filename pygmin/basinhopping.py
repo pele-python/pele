@@ -23,21 +23,17 @@ class BasinHopping(MonteCarlo):
           takeStep.takeStep(coords)       #actually takes the step
           takeStep.updateStep(coords)     #for adaptive step size management
   
-      acceptTests:  ([]) 
-          An optional list of functions which return False if a quench should be
-          rejected.  The Metropolis test is added to this list by default unless
-          the input "nometropolis" is set to False. Each test in the list takes
-          the form
-
-          accept = test(Eold, Enew, new_coords):
-
+      acceptTests:  (None) 
+          Acceptance criterion for check.  If None is given, metropolis is used.
+  
+      confCheck: ([])
+          list of checks if current configuration is valid. This is executed before acceptTest
+          and accepTest is only called if all checks return True.
+  
       temperature:  (1.0)
           The temperature used in the metropolis criterion.  If no temperature is
           passed, the default 1.0 is used unless the flag "nometropolis" is set
           to False
-
-      nometropolis: (False)
-          Flag to disable the Metropolis accept reject test.
 
       event_after_step:  ([])
           An optional list of functions which act just after each monte carlo
@@ -53,21 +49,23 @@ class BasinHopping(MonteCarlo):
     """
 
     def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
-            acceptTests=[],  \
+            acceptTest=None,  \
             temperature=1.0, \
-            nometropolis=False, \
             quenchRoutine = quench.quench, \
             quenchParameters = dict(), \
+            confCheck = [], \
             outstream = sys.stdout
             ):
         #########################################################################
         #initialize MonteCarlo base class
         #########################################################################
-        MonteCarlo.__init__(self, coords, potential, takeStep, storage, event_after_step, \
-              acceptTests,  \
-              temperature, \
-              nometropolis, \
-              outstream)
+        MonteCarlo.__init__(self, coords, potential, takeStep, \
+                            storage=storage, \
+                            event_after_step=event_after_step, \
+                            acceptTest=acceptTest,  \
+                            temperature=temperature, \
+                            confCheck = confCheck, \
+                            outstream=outstream)
 
         self.quenchRoutine = quenchRoutine
         self.quenchParameters = quenchParameters
@@ -114,15 +112,24 @@ class BasinHopping(MonteCarlo):
         self.funcalls = ret[3]
 
         #########################################################################
+        # check if step is a valid configuration, otherwise reject
+        #########################################################################
+        self.acceptstep = True
+        for check in self.confCheck:
+            if not check(self.trial_energy, self.trial_coords, driver=self):
+                self.acceptstep=False
+        
+        #########################################################################
         #check whether step is accepted with user defined tests.  If any returns
         #false then reject step.
         #########################################################################
-        self.acceptstep = True
-        for test in self.acceptTests:
-            if not test(self.markovE, self.trial_energy, self.trial_coords, self.coords_after_step):
-                self.acceptstep = False
+        if self.acceptstep:
+            self.acceptstep = self.acceptTest(self.markovE, self.trial_energy, self.coords, self.trial_coords)
 
         #########################################################################
+    
+        
+        
         #return new coords and energy and whether or not they were accepted
         #########################################################################
         return self.acceptstep, self.trial_coords, self.trial_energy

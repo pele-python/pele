@@ -26,22 +26,20 @@ class MonteCarlo(object):
           takeStep.takeStep(coords)       #actually takes the step
           takeStep.updateStep(coords)     #for adaptive step size management
   
-      acceptTests:  ([]) 
-          An optional list of functions which return False if a quench should be
-          rejected.  The Metropolis test is added to this list by default unless
-          the input "nometropolis" is set to False. Each test in the list takes
-          the form
+      acceptTest:  (None) 
+          Acceptance criterion for check.  If None is given, metropolis is used.
    
           accept = test(Eold, Enew, new_coords):
+          
+      confCheck: ([])
+          list of checks if current configuration is valid. This is executed before acceptTest
+          and accepTest is only called if all checks return True.
   
       temperature:  (1.0)
           The temperature used in the metropolis criterion.  If no temperature is
           passed, the default 1.0 is used unless the flag "nometropolis" is set
           to False
-  
-      nometropolis: (False)
-          Flag to disable the Metropolis accept reject test.
-      
+       
       event_after_step:  ([])
           An optional list of functions which act just after each monte carlo
           round.  Each even in the list takes the form
@@ -53,9 +51,9 @@ class MonteCarlo(object):
     """
   
     def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
-            acceptTests=[],  \
+            acceptTest=None,  \
             temperature=1.0, \
-            nometropolis=False, \
+            confCheck=[], \
             outstream = sys.stdout
             ):
         #note: make a local copy of lists of events so that an inputted list is not modified.
@@ -64,19 +62,18 @@ class MonteCarlo(object):
         self.potential = potential
         self.takeStep = takeStep
         self.event_after_step = copy.copy(event_after_step)
-        self.acceptTests = copy.copy(acceptTests)
         self.temperature = temperature
-        self.nometropolis = nometropolis
         self.naccepted = 0
-    
+        
         self.outstream = outstream
         self.printfrq = 1 #controls how often printing is done
-
+        self.confCheck = confCheck
     
-        if not self.nometropolis:
-            self.metrop_test = metropolis.Metropolis(self.temperature)
-            self.acceptTests.append( self.metrop_test.acceptReject )
-    
+        if acceptTest:
+            self.acceptTest = acceptTest 
+        else:
+            self.acceptTest = metropolis.Metropolis(self.temperature)
+        
         self.stepnum = 0
     
         #########################################################################
@@ -103,22 +100,29 @@ class MonteCarlo(object):
         #take step
         #########################################################################
         self.takeStep.takeStep(self.trial_coords, driver=self)
-        
+                
         #########################################################################
         #calculate new energy
         #########################################################################
         self.trial_energy = self.potential.getEnergy(self.trial_coords)
         
         
+        
+        #########################################################################
+        # check if step is a valid configuration, otherwise reject
+        #########################################################################
+        self.acceptstep = True
+        for check in self.confCheck:
+            if not check(self.trial_energy, self.trial_coords, driver=self):
+                self.acceptstep=False
+        
         #########################################################################
         #check whether step is accepted with user defined tests.  If any returns
         #false then reject step.
         #########################################################################
-        self.acceptstep = True
-        for test in self.acceptTests:
-            if not test(self.markovE, self.trial_energy, self.coords, self.trial_coords):
-                self.acceptstep = False
-    
+        if self.acceptstep:
+            self.acceptstep = self.acceptTest(self.markovE, self.trial_energy, self.coords, self.trial_coords)
+            
         #########################################################################
         #return new coords and energy and whether or not they were accepted
         #########################################################################
