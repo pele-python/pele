@@ -102,6 +102,25 @@ class LBFGS:
         return self.stp
 
     def takeStepNoLineSearch(self, X, E, G, stp):
+        """
+        We now have a proposed step.  This function will make sure it is 
+        a good step and then take it.
+        
+        1) if the step is not anti-aligned with the gradient (i.e. downhill), then reverse the step
+        
+        2) if the step is larger than maxstep, then rescale the step
+        
+        3) calculate the energy and gradient of the new position
+        
+        4) if the step increases the energy by more than maxErise, 
+            then reduce the step size and go to 3)
+                
+        *The below is not implemented yet.  It's on the TODO list
+        
+        6) if failures occur too many times, restart the quench process from the current configuration
+        
+        7) if we're still failing then abort
+        """
         f = 1.
         X0 = X.copy()
         G0 = G.copy()
@@ -191,7 +210,7 @@ class PrintEvent:
         self.coordslist = []
 
     def __call__(self, coords, **kwargs):
-        from printing.print_atoms_xyz import printAtomsXYZ as printxyz 
+        from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz 
         printxyz(self.fout, coords)
         self.coordslist.append( coords.copy() )
         
@@ -222,31 +241,32 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     print "done", ret[1], ret[2], ret[3], ret[5]
     
     print "now do the same with scipy lbfgs"
-    from optimize.quench import quench
+    from pygmin.optimize.quench import quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
     if False:
         print "now do the same with scipy bfgs"
-        from optimize.quench import bfgs as oldbfgs
+        from pygmin.optimize.quench import bfgs as oldbfgs
         ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
     
     if False:
         print "now do the same with gradient + linesearch"
+        import bfgs
         gpl = bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
         ret = gpl.run(1000, tol = 1e-6)
         print ret[1], ret[2], ret[3]    
             
     if False:
         print "calling from wrapper function"
-        from optimize.quench import lbfgs_py
+        from pygmin.optimize.quench import lbfgs_py
         ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
 
 
     if True:
-        import utils.pymolwrapper as pym
+        import pygmin.utils.pymolwrapper as pym
         pym.start()
         for n, coords in enumerate(printevent.coordslist):
             coords=coords.reshape(natoms, 3)
@@ -254,8 +274,8 @@ def runtest(X, pot, natoms = 100, iprint=-1):
 
         
 if __name__ == "__main__":
-    from potentials.lj import LJ
-    from potentials.ATLJ import ATLJ
+    from pygmin.potentials.lj import LJ
+    from pygmin.potentials.ATLJ import ATLJ
     pot = ATLJ()
 
     #test(pot, natoms=3, iprint=1)

@@ -1,8 +1,9 @@
 import numpy as np
 from bfgs import lineSearch, BFGS
+import lbfgs_py
 from mylbfgs_updatestep import mylbfgs_updatestep
 
-class LBFGS:
+class LBFGS(lbfgs_py.LBFGS):
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10):
         self.X = X
         self.pot = pot
@@ -120,52 +121,7 @@ class LBFGS:
         
         return X, E, G
     
-    def reset(self):
-        self.H0[:] = 1.
-        self.k = 0
-    
-    def attachEvent(self, event):
-        self.events.append(event)
-                
-    def run(self, nsteps = 1000, tol = 1e-6, iprint = -1):
-        self.tol = tol
-        X = self.X
-        sqrtN = np.sqrt(self.N)
-        
-        
-        i = 1
-        self.funcalls += 1
-        e, G = self.pot.getEnergyGradient(X)
-        while i < nsteps:
-            stp = self.step(X, G)
-            
-            X, e, G = self.takeStepNoLineSearch(X, e, G, stp)
-            #e, G = self.pot.getEnergyGradient(X)
-            
-            rms = np.linalg.norm(G) / sqrtN
 
-            i += 1
-            
-            if iprint > 0:
-                if i % iprint == 0:
-                    print "quench step", i, e, rms, self.funcalls
-            for event in self.events:
-                event( coords=X, energy=e, rms=rms )
-      
-            if rms < self.tol:
-                break
-        return X, e, rms, self.funcalls, G , i
-   
-
-class PrintEvent:
-    def __init__(self, fname):
-        self.fout = open(fname, "w")
-        self.coordslist = []
-
-    def __call__(self, coords, **kwargs):
-        from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz 
-        printxyz(self.fout, coords)
-        self.coordslist.append( coords.copy() )
         
     
 
@@ -180,7 +136,9 @@ def test(pot, natoms = 100, iprint=-1):
     runtest(X, pot, natoms, iprint)
 
 def runtest(X, pot, natoms = 100, iprint=-1):
+    from lbfgs_py import PrintEvent
     tol = 1e-5
+    maxstep = 0.005
 
     Xinit = np.copy(X)
     e, g = pot.getEnergyGradient(X)
@@ -227,7 +185,7 @@ def runtest(X, pot, natoms = 100, iprint=-1):
 
 
 
-    if False:
+    if True:
         import pygmin.utils.pymolwrapper as pym
         pym.start()
         for n, coords in enumerate(printevent.coordslist):
@@ -236,11 +194,11 @@ def runtest(X, pot, natoms = 100, iprint=-1):
 
         
 if __name__ == "__main__":
-    from pygmin.potentials.lj import LJ as Pot
-    #from pygmin.potentials.ATLJ import ATLJ as Pot
+    #from pygmin.potentials.lj import LJ as Pot
+    from pygmin.potentials.ATLJ import ATLJ as Pot
     pot = Pot()
 
-    test(pot, natoms=100, iprint=-1)
+    test(pot, natoms=3, iprint=-1)
     exit(1)
     
     coords = np.loadtxt("coords")
