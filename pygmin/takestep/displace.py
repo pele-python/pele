@@ -13,12 +13,11 @@ class RandomDisplacement(TakestepSlice):
         TakestepSlice.__init__(self, stepsize=stepsize)
     def takeStep(self, coords, **kwargs):
         c = coords[self.srange]
-        c += self.stepsize*(np.random.random(len(c))-0.5)*2.
-        pass
+        c += self.stepsize*(np.random.random(c.shape)-0.5)*2.
             
 class UniformDisplacement(TakestepSlice):        
     def takeStep(self, coords, **kwargs):
-        c = coords[slice]        
+        c = coords[self.srange]        
         for x in c.reshape(c.size/3,3):
             x += self.stepsize*rotations.vec_random()
 
