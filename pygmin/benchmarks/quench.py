@@ -49,10 +49,12 @@ class QuenchBenchmark(object):
     def run(self, Emin,coords):
         for minimizer in self.minimizer:
             self.potential.reset()
-            E,x = minimizer[1](self.potential, coords)
+            E,grad = self.potential.getEnergyGradient(coords)
+            #self.potential.energies.append(E)
+            x, E, tmp, tmp = minimizer[1](coords, self.potential.getEnergyGradient)
             minimizer[2] = E
             minimizer[3] = np.array(self.potential.energies).copy()-Emin
-            print E,Emin
+            print "Minimizer " + minimizer[0] + ": " + str(E)
             
     def plot(self):
         import pylab as pl
@@ -64,36 +66,33 @@ class QuenchBenchmark(object):
         pl.xlabel("energy evaluations")
         pl.ylabel("energy")
         pl.show()
-    
-    
-def lbfgs(pot, coords):
-    tmp,E,dictio = scipy.optimize.fmin_l_bfgs_b(pot.getEnergyGradient, coords, iprint=-1, pgtol=1e-8)
-    return E,tmp
-
-def lbfgs2(pot, coords):
-    tmp,E,dictio = scipy.optimize.fmin_l_bfgs_b(pot.getEnergy, coords, fprime=pot.getGradient, iprint=-1, pgtol=1e-6)
-    return E,tmp
-
-def cg(pot, coords):
-    r = scipy.optimize.fmin_cg(pot.getEnergy, np.array(coords), fprime=pot.getGradient)
-    return r[1],r[0]
 
 if __name__ == "__main__":
-    import potentials.lj as lj
+    import pygmin.potentials.lj as lj
     import scipy.optimize
-    
+    from pygmin.optimize import quench
     print "Running benchmark with lennard jones potential"
     pot = lj.LJ()
     
     natoms = 36
     
-    E,coords=lbfgs(pot, np.random.random(3*natoms)*10.0)
-    coords = coords + np.random.random(coords.shape)*0.2
-    Emin,tmp = lbfgs(pot,coords)
+    coords = np.random.random(3*natoms)*10.0
+    coords, E, tmp, tmp=quench.quench(coords, pot.getEnergyGradient, tol=1e-3)
+    
+    coords = coords + np.random.random(coords.shape)*0.1
+    tmp, Emin, tmp, tmp = quench.quench(coords, pot.getEnergyGradient, tol=1e-3)
     
     bench = QuenchBenchmark(pot)
-    bench.addMinimizer("lbfgs", lbfgs2)
-    bench.addMinimizer("cg", cg)
-    print Emin
+    bench.addMinimizer("lbfgs", quench.quench)
+    bench.addMinimizer("mylbfgs", quench.mylbfgs)
+    bench.addMinimizer("lbfgs_py", quench.lbfgs_py)
+    bench.addMinimizer("lbfgs_ase", quench.lbfgs_ase)
+    bench.addMinimizer("cg", quench.cg)
+    bench.addMinimizer("fire", quench.fire)
+    bench.addMinimizer("bfgs", quench.bfgs)
+    #bench.addMinimizer("fmin", quench.fmin)
+    #bench.addMinimizer("steep", quench.steepest_descent)
+    
+    print "The reference energy is " + str(Emin)
     bench.run(Emin,coords)
     bench.plot()
