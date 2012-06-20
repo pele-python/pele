@@ -62,7 +62,7 @@ class Fire(object):
             dr = self.maxmove * dr / normdr
         self.coords= coords + dr
      
-    def run(self, fmax=5e-3, steps=1000):
+    def run(self, fmax=1e-3, steps=100000):
         """Run structure optimization algorithm.
 
         This method will return when the forces on all individual
