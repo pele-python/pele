@@ -49,6 +49,8 @@ class QuenchBenchmark(object):
     def run(self, Emin,coords):
         for minimizer in self.minimizer:
             self.potential.reset()
+            print "Testing Minimizer " + minimizer[0]
+            
             E,grad = self.potential.getEnergyGradient(coords)
             #self.potential.energies.append(E)
             x, E, tmp, tmp = minimizer[1](coords, self.potential.getEnergyGradient)
