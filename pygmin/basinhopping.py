@@ -144,11 +144,9 @@ class BasinHopping(MonteCarlo):
         ddict = self.__dict__.copy();
         del ddict["outstream"]
         del ddict["potential"]
-        del ddict["acceptTests"]
         return ddict #.items()
     
     def __setstate__(self, dct):
         self.__dict__.update(dct)
         self.outstream = sys.stdout
-        self.acceptTests = [self.metrop_test.acceptReject]
                 
