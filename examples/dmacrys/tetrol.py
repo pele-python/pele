@@ -48,27 +48,39 @@ step = TestStep()
 #0.542180299636
 import pickle
 
+print "hallo"
 
-if True:
-    save = pickle.load(open("storage.1"))
+save = pickle.load(open("storage"))
+save.nsave = 1000
+#save = savenlowest.SaveN(nsave=50, accuracy=1e-4)
+
+if False:
     Eref = save.data[0].E
     GMIN.writeCIF("test.cif", save.data[0].coords)
+    print "blas"
+    i=1
+    print save
     for m in save.data:
     #    #print m.coords
-        coords, E, tmp, tmp2 = quench.lbfgs_py(m.coords, pot.getEnergyGradient, maxErise=2e-2, M=100, tol=1e-4)
+        coords, E, tmp, tmp2 = quench.lbfgs_py(m.coords, pot.getEnergyGradient, maxErise=2e-2, M=100, tol=1e-10)
         #print m.E, E
-        m.coords = coords
-        print m.E - Eref, E - save.data[0].E
-        m.E = E
-    exit()
+        #m.coords = coords
+        #print m.E - Eref, E - save.data[0].E
+        print m.E - Eref
+        #m.E = E
+        print "Exporting"
+        #print "lowest%3d.cif"%(i)
+        GMIN.writeCIF("cif/lowest%03d.cif"%(i), m.coords)
+        i+=1
 
-save = savenlowest.SaveN(nsave=50, accuracy=1e-4)
+    exit()
 
 opt = bh.BasinHopping(coords, pot, takeStep=step, quenchRoutine=quenchCrystal, temperature=0.4, storage=save)
 addColdFusionCheck(opt)
 pickle.dump(step, open("bh.dump", "w"))
 
 opt.quenchParameters["tol"]=1e-4
+opt.quenchParameters["nsteps"]=1000
 opt.quenchParameters["maxErise"]=2e-2
 opt.quenchParameters["maxstep"]=0.1
 opt.quenchParameters["M"]=100
@@ -77,6 +89,11 @@ for i in xrange(1,50):
     opt.run(100)
     import pickle
     pickle.dump(save, open("storage."+str(i), "w"))
+    pickle.dump(save, open("storage", "w"))
+    i=0
+    for m in save.data:
+        i+=1
+        GMIN.writeCIF("cif/lowest%03d.cif"%(i), m.coords)
 
 #xa = np.zeros(3*GMIN.getNAtoms())
 #GMIN.toAtomistic(xa, coords)
