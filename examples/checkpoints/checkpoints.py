@@ -1,8 +1,8 @@
 # -*- coding: iso-8859-1 -*-
 import numpy as np
-import potentials.lj as lj
-import basinhopping as bh
-from takestep import displace
+import pygmin.potentials.lj as lj
+import pygmin.basinhopping as bh
+from pygmin.takestep import displace
 import pickle
 
 print "Setting up basin hopping class"
@@ -10,7 +10,7 @@ print "Setting up basin hopping class"
 natoms = 12
 coords=np.random.random(3*natoms)
 potential = lj.LJ()#1.0, 1.0, None)
-step = displace.CartesianDisplacement(stepsize=0.3)
+step = displace.RandomDisplacement(stepsize=0.3)
 opt = bh.BasinHopping(coords, potential, takeStep=step)
 
 print "Do 10 basin hopping steps"
