@@ -33,6 +33,9 @@ class SaveN(object):
         self.onMinimumRemoved=onMinimumRemoved
         self.lock = threading.Lock()
         
+    def __call__(self, E, coords):
+        self.insert(E, coords)
+        
     def insert(self, E, coords):
         # does minima already exist, if yes exit?
         self.lock.acquire()
