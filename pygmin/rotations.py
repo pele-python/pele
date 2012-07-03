@@ -181,3 +181,19 @@ def vec_random():
 
 
 dprand = lambda: np.random.rand()
+
+def q_slerp (a, b,t):
+    if(t<=0.):
+        return a
+    if(t>=1.):
+        return b
+    costheta = np.dot(a, b)
+    
+    c = b
+    # if theta > 180., go other direction
+    if (costheta < 0.0):
+        costheta = -costheta
+        c = -c
+    theta = np.arccos (costheta)
+   
+    return (np.sin ((1.0 - t) * theta) * a + np.sin (t * theta) * c) / np.sin (theta)
