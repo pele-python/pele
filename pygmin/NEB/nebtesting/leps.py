@@ -118,4 +118,4 @@ class leps:
                                JBCred*JACred - \
                                JABred*JACred ))
 
-        return self.getEnergy(r),[ Fx, Fy ]
+        return self.getEnergy(r),numpy.array([ Fx, Fy ])

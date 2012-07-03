@@ -214,32 +214,58 @@ import nebtesting as test
 
 if __name__ == "__main__":
     import pylab as pl
-    x = np.arange(.5, 3., .1)
-    y = np.arange(.5, 3., .1)
+    x = np.arange(.5, 5., .05)
+    y = np.arange(.5, 5., .05)
     z = np.zeros([len(x), len(y)])
     potential = test.leps()
     for i in range(0, len(x)):
         for j in range(0, len(y)):
                 z[j, i] = potential.getEnergy([x[i], y[j]])
     print "done"
+    #z[z>0.] = 0.
     #pl.imshow(z)
     #pl.show()
     initial = np.array([.75, 2.]) #np.random.random(3)
     final = np.array([2., .75]) #np.random.random(3)
+#    from pygmin.optimize import quench
+#    print "quench initial"
+#    ret = quench.lbfgs_py(initial, potential.getEnergyGradient)
+#    initial = ret[0]
+#    print "quench final"
+#    ret = quench.quench(final, potential.getEnergyGradient)    
+#    final = ret[0]
+#    print "done with quenching"
+#    print initial, final
     #print "Initial: ", initial
     #print "Final: ", final
     #pl.imshow(z)
     
     neb = NEB(initial, final, potential, nimages=20, k=1000)
     tmp = neb.coords
-    
-    pl.contourf(x, y, z)
-    pl.colorbar()
-    pl.plot(tmp[:, 0], tmp[:, 1], 'o-')
-    neb.optimize(quenchRoutine=quench.fire)
+    energies_interpolate = neb.energies.copy()
+    pl.figure()
+    pl.subplot(1,2,1)
+    pl.subplots_adjust(wspace=0.3, left=0.05, right=0.95, bottom = 0.14)
 
+    pl.title("path")
+    #pl.contourf(x, y, z)
+    pl.pcolor(x, y, z, vmax=-0.5, cmap=pl.cm.PuBu)
+    pl.colorbar()
+    pl.plot(tmp[:, 0], tmp[:, 1], 'ko-')
+    print "optimizing NEB"
+    neb.optimize(quenchRoutine=quench.fire)
+    print "done"
     tmp = neb.coords
     pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')
-    pl.figure()
-    pl.plot(neb.energies)
+    pl.xlabel("x")
+    pl.ylabel("y")
+    pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)
+    
+    pl.subplot(1,2,2)
+    pl.title("energy")
+    pl.plot(energies_interpolate, 'ko-', label="interpolate")
+    pl.plot(neb.energies, 'ro-', label="neb")
+    pl.xlabel("image")
+    pl.ylabel("energy")
+    pl.legend(loc='best')
     pl.show()          
