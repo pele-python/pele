@@ -14,7 +14,7 @@ class CoordsAdapter():
         self.posAtoms=None
         self.posRigid=None
         self.rotRigid=None
-        self.lattce=None
+        self.lattice=None
         
         if natoms > 0:
             self.posAtoms = self.coords[6*nrigid:6*nrigid+3*natoms].reshape(natoms, 3)
