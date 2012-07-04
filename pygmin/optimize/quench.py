@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.optimize
 
 """
 wrappers for the various optimizers.
@@ -29,6 +28,7 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     """
     a wrapper function for lbfgs routine in scipy
     """
+    import scipy.optimize
     newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(getEnergyGradient, coords, iprint=iprint, pgtol=tol)
     V = dictionary["grad"]
     funcalls = dictionary["funcalls"]
@@ -55,6 +55,7 @@ def cg(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     """
     a wrapper function for conjugate gradient routine in scipy
     """
+    import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output = True)
     newcoords = ret[0]
@@ -78,6 +79,7 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     
     This algorithm only uses function values, not derivatives or second derivatives.
     """
+    import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)  #this is really stupid
     ret = scipy.optimize.fmin(pot.getEnergy, coords, ftol=tol, full_output = True)
     newcoords = ret[0]
@@ -130,6 +132,7 @@ def steepest_descent(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     return _steepest_descent(coords, getEnergyGradient, iprint = iprint, gtol = tol)
 
 def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+    import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol = tol, full_output = True, disp=False)
     x = ret[0]
