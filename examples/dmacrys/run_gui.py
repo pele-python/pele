@@ -49,9 +49,12 @@ class CrystalSystem:
         t = np.cross(z,p)  #angle about which to rotate
         a = np.arccos( np.dot( z,p) / r ) #rotation angle
         a *= (180. / np.pi)  #change units to angles
+        if(np.dot(t,t) < 1e-6):
+             t = [1.,0.,0.]
         GL.glPushMatrix()
         GL.glTranslate( X1[0], X1[1], X1[2] )
-        GL.glRotate( a, t[0], t[1], t[2] )
+        if (np.linalg.norm(t) > 1e-3):
+            GL.glRotate( a, t[0], t[1], t[2] )
         g=GLU.gluNewQuadric()
         GLU.gluCylinder(g, .1,0.1,r,30,30)  #I can't seem to draw a cylinder
         GL.glPopMatrix()
@@ -90,15 +93,34 @@ class CrystalSystem:
         GL.glPopMatrix()
         
     def Align(self, coords1, coords2):
-        #from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
-        #dist, X1, X2 = minpermdist( coords1, coords2, niter = 100 )
-        #return X1, X2
-        return coords2, coords1
+        import pygmin.rotations as rot
+        c1 = CoordsAdapter(nrigid=2, nlattice=6, coords=coords1)
+        c2 = CoordsAdapter(nrigid=2, nlattice=6, coords=coords2)
+        for i in xrange(2):
+            q1 = rot.aa2q(c1.rotRigid[i])
+            q2 = rot.aa2q(c2.rotRigid[i])
+            if(np.dot(q1,q2)<0):
+                q2=-q2
+            c2.rotRigid[i] = rot.q2aa(q2) 
+            
+        return coords1, coords2
     
     def createNEB(self, coords1, coords2):
+        from pygmin import rotations as rot
         pot = gminpot.GMINPotental(GMIN)
-        return NEB.NEB(coords1, coords2, pot, k = 100. ,nimages=20)
+        neb = NEB.NEB(coords1, coords2, pot, k = 100. ,nimages=20)
+        # replace rotational interpolation by slerp
+        c1 = CoordsAdapter(nrigid=2, nlattice=6, coords=neb.coords[0, :])
+        c2 = CoordsAdapter(nrigid=2, nlattice=6, coords=neb.coords[-1, :])
 
+        for i in xrange(1, neb.nimages):
+            ci = CoordsAdapter(nrigid=2, nlattice=6, coords=neb.coords[i, :])
+            t = float(i) / float(neb.nimages)
+            for j in xrange(2):
+                ci.rotRigid[j] =  rot.q2aa(rot.q_slerp(
+                                       rot.aa2q(c1.rotRigid[j]),
+                                       rot.aa2q(c2.rotRigid[j]), t))
+        return neb
                
 if __name__ == "__main__":
     import pygmin.gui.run as gr
