@@ -78,6 +78,9 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
         TRANGE = [ TMIN + i*TINT for i in range(NTEMP) ]
 
     dataout = np.zeros( [NTEMP, 6] )
+    if abs(binenergy[-1] - binenergy[-2]) > 1e-7:
+        print "calc_Cv: WARNING: dE is not treated correctly for exponential energy bins"
+
     for count,T in enumerate(TRANGE):
         kBT = k_B*T
         #find expoffset so the exponentials don't blow up
@@ -99,8 +102,9 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
             Z1 = np.exp( lZ1 )
             Z2 = np.exp( lZ2 )
 
-        
-
+        i = nebins-1
+        #if abs(binenergy[-1] - binenergy[-2]) > 1e-7:
+        #    print "calc_Cv: WARNING: dE is not treated correctly for exponential bins"
         if i == nebins-1:
             dE = binenergy[i]-binenergy[i-1]
         else:

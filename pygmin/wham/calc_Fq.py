@@ -32,6 +32,7 @@ def usage():
     print '  -E nebins  : number of energy bins'
     print '  -Q nqbins  : number of order parameter bins'
     print '  -c input : Make a linear combination of two order parameters.'
+    print '  -L         : use linear, not exponential energy bins.'
     print '             Input will have the form "q1column q2column q2weight"'
     print '             The order parameter will be q = (q1 + q2weight*q2)/(1+q2weight)'
     print '  -T TRANGE : set TRANGE for the calculation of Fq.  TRANGE should have the format "Tmin Tmax numT"'
@@ -48,9 +49,10 @@ TRANGEi=[]
 nebins=300
 dEmin=0.2
 nqbins = 20
+use_exponential_bins = True
 
 
-opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:q:c:T:e:E:i:Q:", ["help", "nfree="])
+opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:q:c:T:e:E:i:Q:L", ["help", "nfree="])
 output = None
 verbose = False
 for o, a in opts:
@@ -79,6 +81,9 @@ for o, a in opts:
     elif o == "-Q":
         nqbins=int(a)
         print "using nqbins = ", nqbins
+    elif o == "-L":
+        use_exponential_bins = False
+        print "using linear, not exponential energy bins"
     elif o == "-c":
         qcombline=a
         qcombine = [float(b) for b in qcombline.split()]
@@ -132,7 +137,7 @@ if not usepkl or not os.path.isfile(pklname):
     datalist = load_data.loadData(filenames, columns, fskip=rskip, qcombine=qcombine )
     
     #determine bin edges
-    binenergy1 = load_data.determineBinEdge(nebins, datalist, column=0, exponential_bins=True)
+    binenergy1 = load_data.determineBinEdge(nebins, datalist, column=0, exponential_bins=use_exponential_bins)
     binq1 = load_data.determineBinEdge(nqbins, datalist, column=1, exponential_bins=False)
 
     #create histogram
