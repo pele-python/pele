@@ -52,6 +52,34 @@ def coords3ToCoords2(coords3):
         coords2[i,:] = make2dVector( coords3[i,:] )
     return coords2
 
+def makeGrad2(vec2, grad3):
+    grad2 = np.zeros(2)
+    c0 = cos(vec2[0])
+    c1 = cos(vec2[1])
+    s0 = sin(vec2[0])
+    s1 = sin(vec2[1])
+    #grad2[0] = -s0/s1 * grad3[0] + c0/s1 * grad3[1]
+    grad2[0] = -s0 * grad3[0] + c0 * grad3[1]
+    grad2[1] = c0*c1 * grad3[0] + s0*c1 * grad3[1] - s1 * grad3[2]
+    grad2[0] *= s1 #I need this to agree with the numerical gradient, but I think it shouldn't be there
+    return grad2
+
+
+def grad3ToGrad2(coords2, grad3):
+    if len(np.shape(grad3)) == 1:
+        nvec = len(grad3) / 3
+        grad3 = np.reshape(grad3, [nvec, 3])
+    else:
+        nvec = len(grad3[:,0])
+    if len(np.shape(coords2)) == 1:
+        coords2 = np.reshape(coords2, [nvec, 2])
+    grad2 = np.zeros([nvec, 2])
+    for i in range(nvec):
+        grad2[i,:] = makeGrad2( coords2[i,:], grad3[i,:] )
+    return grad2
+
+
+
 
 class HeisenbergModel(BasePotential):
     """
@@ -110,6 +138,35 @@ class HeisenbergModel(BasePotential):
         #print "EJ EH", E, Efields
         return E + Efields
         
+    def getEnergyGradient(self, coords):
+        """
+        coords is a list of (theta, phi) spherical coordinates of the spins
+        where phi is the azimuthal angle (angle to the z axis) 
+        """
+        coords3 = coords2ToCoords3( coords )
+        coords2 = coords
+            
+        E = 0.
+        grad3 = np.zeros( [self.nspins, 3] )
+        for edge in self.G.edges():
+            u = self.indices[edge[0]]
+            v = self.indices[edge[1]]
+            E -= np.dot( coords3[u,:], coords3[v,:] )
+            
+            grad3[u,:] -= coords3[v,:]
+            grad3[v,:] -= coords3[u,:]
+        
+        Efields = -np.sum( self.fields * coords3 )
+        grad3 -= self.fields
+        
+        #for i in range(self.nspins):
+        #    grad3[i,:] /= np.linalg.norm( grad3[i,:] )
+        
+        grad2 = grad3ToGrad2(coords2, grad3)
+        grad2 = np.reshape(grad2, self.nspins*2)
+        
+        #print "EJ EH", E, Efields
+        return E + Efields, grad2
 
 
 
@@ -126,11 +183,11 @@ def test_basin_hopping(pot, angles):
 
 def test():
     pi = np.pi
-    L = 4
+    L = 8
     nspins = L**2
     
     #phases = np.zeros(nspins)
-    pot = HeisenbergModel( dim = [L,L], field_disorder = 2.) #, phases=phases)
+    pot = HeisenbergModel( dim = [L,L], field_disorder = 1.) #, phases=phases)
     
     coords = np.zeros([nspins, 2])
     for i in range(nspins): 
@@ -142,10 +199,10 @@ def test():
         for i in range(nspins): normfields[i,:] /= np.linalg.norm(normfields[i,:])
         coords = coords3ToCoords2( np.reshape(normfields, [nspins*3] ) )
         coords  = np.reshape(coords, nspins*2)
-    print np.shape(coords)
+    #print np.shape(coords)
     coordsinit = np.copy(coords)
     
-    print "fields", pot.fields
+    #print "fields", pot.fields
     print coords
     
     if False:
@@ -159,23 +216,28 @@ def test():
 
     e = pot.getEnergy(coords)
     print "energy ", e
-    print "numerical gradient"
-    ret = pot.getEnergyGradientNumerical(coords)
-    print ret[1]
     if False:
-        print "analytical gradient"
-        ret2 = pot.getEnergyGradient(coords)
-        print ret2[1]
-        print ret[0]
-        print ret2[0]
-    
+        print "numerical gradient"
+        ret = pot.getEnergyGradientNumerical(coords)
+        print ret[1]
+        if True:
+            print "analytical gradient"
+            ret2 = pot.getEnergyGradient(coords)
+            print ret2[1]
+            print ret[0]
+            print ret2[0]
+            print "ratio"
+            print ret2[1] / ret[1]
+            print "inverse sin"
+            print 1./sin(coords)
+            print cos(coords)
 
     
     print "try a quench"
     from pygmin.optimize.quench import mylbfgs
     ret = mylbfgs(coords, pot.getEnergyGradient)
     
-    print "quenched e = ", ret[1]
+    print "quenched e = ", ret[1], "funcalls", ret[3]
     print ret[0]
     with open("out.spins", "w") as fout:
         s = coords2ToCoords3( ret[0] )
@@ -189,7 +251,8 @@ def test():
     coords3 = coords2ToCoords3( ret[0] )
     m = np.linalg.norm( coords3.sum(0) ) / nspins
     print "magnetization after quench", m
-    #test_basin_hopping(pot, coords)
+    
+    test_basin_hopping(pot, coords)
     
 
 if __name__ == "__main__":
