@@ -1,5 +1,6 @@
-minGMIN, a minimal version of GMIN, originally written by David Wales.  Desiged
-to find the global energy minimum for molecular systems
+mingmin, a minimal version of GMIN written in python.  GMIN was originally
+written by David Wales and is desiged to find the global energy minimum for
+molecular systems
 
 http://www-wales.ch.cam.ac.uk/software.html
 
@@ -12,13 +13,13 @@ To use the C++ potentials you need to have boost-python, boost-dev and python-de
 
 to compile:
 
-cmake .
-
-make 
+$ cmake .
+$ make 
 
 
 PYTHONPATH:  
-make sure to add the directory mingmin/src/ to your PYTHONPATH environment variable
+make sure to add the directory mingmin/ to your PYTHONPATH environment variable
+
 
 === running ===
 see the examples in the examples folder
