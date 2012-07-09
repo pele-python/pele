@@ -46,7 +46,7 @@ class XYModel(BasePotential):
         self.G = nx.grid_graph(dim, periodic=True)
         
         self.phases = dict()
-        for edge in nx.dfs_edges(self.G):
+        for edge in self.G.edges():
             self.phases[edge] = np.random.uniform(-phi, phi)
         nx.set_edge_attributes(self.G, "phase", self.phases)
         
@@ -56,25 +56,27 @@ class XYModel(BasePotential):
         for node in self.G.nodes():
             self.indices[node] = i
             i += 1 
+        
+        self.num_edges = self.G.number_of_edges()
 
         
         
     def getEnergy(self, angles):
         #do internal energies first
         E = 0.
-        for edge in nx.dfs_edges(self.G):
+        for edge in self.G.edges():
             phase = self.phases[edge]
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
             E += np.cos( -angles[u] + angles[v] + phase )
-        E = self.nspins - E
+        E = self.num_edges - E
         return E
         
     def getEnergyGradient(self, angles):
         #do internal energies first
         E = 0.
         grad = np.zeros(self.nspins)
-        for edge in nx.dfs_edges(self.G):
+        for edge in self.G.edges():
             phase = self.phases[edge]
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
@@ -83,7 +85,7 @@ class XYModel(BasePotential):
             g = -np.sin( -angles[u] + angles[v] + phase )
             grad[u] += g
             grad[v] += -g
-        E = self.nspins - E
+        E = self.num_edges - E
         return E, grad
 
 
