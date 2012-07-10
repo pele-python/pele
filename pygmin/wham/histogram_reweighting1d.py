@@ -114,9 +114,9 @@ class wham1d:
 
 
 
-    def calc_Cv(self, NDOF, TRANGE=None, NTEMP=100):
+    def calc_Cv(self, NDOF, TRANGE=None, NTEMP=100, use_log_sum = None):
         return wham_utils.calc_Cv(self.logn_E, self.visits1d, self.binenergy, \
-                NDOF, self.Tlist, self.k_B, TRANGE, NTEMP)
+                NDOF, self.Tlist, self.k_B, TRANGE, NTEMP, use_log_sum = use_log_sum)
 
 
 

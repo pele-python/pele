@@ -26,7 +26,7 @@ def logSum(log_terms):
     try:
         return logSumFast(log_terms)
     except:
-        print "using slow logsum, install scipy weave inline blitz to speed up"
+        #print "using slow logsum, install scipy weave inline blitz to speed up"
         return logSumSlow(log_terms)
 
 def logSumSlow(log_terms):
@@ -58,15 +58,18 @@ def logSumFast(log_terms):
     log_sum = weave.inline(code, ["nterms", "log_terms"], type_converters=converters.blitz, verbose=2)
     return log_sum
 
-def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP=100):
-    try:
-        logSumFast( np.array([.1, .2, .3]) )
-        use_log_sum = True
-        print "using logsum"
-    except:
-        #dont use log sum unless the fast logsum is working
-        print "not using logsum because it's too slow.  Install scipy weave to use the fast version of logsum"
-        use_log_sum = False
+def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP=100, use_log_sum = None):
+    if use_log_sum == None:
+        try:
+            logSumFast( np.array([.1, .2, .3]) )
+            use_log_sum = True
+            print "using logsum"
+        except:
+            #dont use log sum unless the fast logsum is working
+            print "not using logsum because it's too slow.  Install scipy weave to use the fast version of logsum"
+            use_log_sum = False
+    else:
+        print "use_log_sum = ", use_log_sum
     
 
     #put some variables in this namespace
@@ -87,7 +90,7 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
         TRANGE = [ TMIN + i*TINT for i in range(NTEMP) ]
 
     dataout = np.zeros( [NTEMP, 6] )
-    if abs(binenergy[-1] - binenergy[-2]) > 1e-7:
+    if abs((binenergy[-1] - binenergy[-2]) - (binenergy[-2] - binenergy[-3]) ) > 1e-7:
         print "calc_Cv: WARNING: dE is not treated correctly for exponential energy bins"
 
     for count,T in enumerate(TRANGE):
