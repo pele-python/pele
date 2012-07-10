@@ -58,6 +58,18 @@ def quenchCrystal(coords, pot, **kwargs):
     calls+=callsn
     return coords, E, rms, calls
 
+
+def compareMinima(min1, min2):
+    from pygmin.utils import lattice
+    vol1 = lattice.volume(min1.coords[-6:])
+    vol2 = lattice.volume(min2.coords[-6:])
+    print "volume", vol1 - vol2
+    print "energy", min1.E, min2.E
+    if(np.abs(vol1 - vol2) < 0.01):        
+        return True
+    print "found minma with different volume"
+    return False
+
 GMIN.initialize()   
 pot = gminpot.GMINPotental(GMIN)
 print "get coords"
@@ -84,7 +96,8 @@ print "hallo"
 
 save = pickle.load(open("storage"))
 save.nsave = 1000
-#save = savenlowest.SaveN(nsave=50, accuracy=1e-4)
+save = savenlowest.SaveN(nsave=100, accuracy=1e-2)
+save.compareMinima = compareMinima
 
 if False:
     Eref = save.data[0].E
@@ -122,7 +135,7 @@ opt.quenchParameters["maxstep"]=0.1
 opt.quenchParameters["M"]=100
 
 for i in xrange(1,50):
-    opt.run(100)
+    opt.run(3)
     import pickle
     pickle.dump(save, open("storage."+str(i), "w"))
     pickle.dump(save, open("storage", "w"))
