@@ -50,6 +50,7 @@ class Reseeding(object):
             print "The energy did not improve after " + str(self._noimprove) + \
                 " steps, reseeding"
             self.reseed.takeStep(coords, **kwargs)
+            kwargs['driver'].acceptTest.forceAccept()
         else:
             self.takestep.takeStep(coords, **kwargs)
        

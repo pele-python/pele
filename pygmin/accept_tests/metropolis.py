@@ -4,8 +4,12 @@ class Metropolis:
     def __init__(self, temperature, random=np.random.rand):
         self.random = random
         self.temperature = temperature
+        self._accept_next = False
 
     def acceptRejectE(self, Eold, Enew):
+        if(self._accept_next):            
+            self._accept_next = False
+            return True
         if Enew < Eold: return True
         acceptstep = True
         wcomp = (Enew - Eold)/self.temperature
@@ -16,6 +20,12 @@ class Metropolis:
         #print "mc step: Eo", Eold, "En", Enew, "accepted", acceptstep, w, self.temperature
 
         return acceptstep
+    
+    '''
+        Force acception of the next step. This is useful for reseeding.
+    '''
+    def forceAccept(self):
+        self._accept_next = True
 
     def __call__(self, Eold, Enew, qcoords=[], coords=[]):
         return self.acceptRejectE(Eold, Enew)
