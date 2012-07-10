@@ -65,14 +65,19 @@ class wham2d:
         self.logP = np.where( visits != 0, np.log( visits.astype(float) ), 0 )
 
         
-        from pygmin.optimize.quench import quench
         from wham_potential import WhamPotential
         whampot = WhamPotential( self.logP, reduced_energy )
         
         nvar = nbins + nreps
         X = np.random.rand(nvar)
         print "initial energy", whampot.getEnergy(X)
-        ret = quench(X, whampot.getEnergyGradient)
+        try: 
+            from pygmin.optimize.quench import mylbfgs as quench
+            ret = quench(X, whampot.getEnergyGradient, iprint=-1, maxstep = 1e4)
+        except:
+            from pygmin.optimize.quench import quench as quench
+            ret = quench(X, whampot.getEnergyGradient)            
+
         print "quenched energy", ret[1]
         
         global_min = False

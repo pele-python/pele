@@ -54,8 +54,12 @@ class wham1d:
         print "energy", E 
         
         print "quenching"
-        from pygmin.optimize.quench import quench
-        ret = quench(X, self.whampot.getEnergyGradient)
+        try: 
+            from pygmin.optimize.quench import mylbfgs as quench
+            ret = quench(X, self.whampot.getEnergyGradient, iprint=-1, maxstep = 1e4)
+        except:
+            from pygmin.optimize.quench import quench as quench
+            ret = quench(X, self.whampot.getEnergyGradient)            
         print "quench energy", ret[1]
         X = ret[0]
         
