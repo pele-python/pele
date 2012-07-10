@@ -95,7 +95,7 @@ class aaDistTest(unittest.TestCase):
 
         self.assertTrue(distbefore >= distafter, "distance between aa vectors increased")
         
-        import rotations as rot
+        import pygmin.rotations as rot
         
         rot1 = rot.aa2mx( self.v1 )
         rot1i = rot.aa2mx( self.v1in )
@@ -127,7 +127,7 @@ def test(v1in, v2in, aadistfunc = aadistance):
     v3n = np.linalg.norm(v1)
     v4n = np.linalg.norm(v2)
     print "final norms  ", v3n, v4n
-    import rotations as rot
+    import pygmin.rotations as rot
     print "v1 unchanged:", all( (rot.aa2mx( v1) ==  rot.aa2mx( v1in))[:].tolist() )
     print "v2 unchanged:", all( (rot.aa2mx( v2) ==  rot.aa2mx( v2in))[:].tolist() )
 
