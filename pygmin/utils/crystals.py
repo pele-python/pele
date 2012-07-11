@@ -2,9 +2,13 @@ import lattice
 import vec3
 from pygmin import rotations
 import numpy as np
+from pygmin.takestep import generic
+from pygmin.optimize import quench
 
 tol_rot = 3.1415 / 180. # standard tolerance is 1 deg
 tol_shift = 0.01 # standard tolerance is 0.1 in absolute coordinates
+
+GMIN=None
 
 def compareTransformed(coords1, coords2, x1, x2, M):
     # the lattice matrix
@@ -61,4 +65,40 @@ def compareStructures(coords1, coords2):
     #pickle.dump(coords2, open("2.dat", "w"))
     #exit()
     return False
-            
+
+class GenRandomCrystal(generic.TakestepInterface):
+    def __init__(self, coordsadapter, volume=None, shear=2., expand=2.0):
+        self.volume = volume
+        self.shear = shear
+        self.expand = expand
+        self.coordsadapter = coordsadapter
+        
+    def takeStep(self, coords, **kwargs):        
+        ca = self.coordsadapter        
+        ca.updateCoords(coords)
+        
+        volumeTarget = 2.*lattice.volume(ca.lattice)
+        # first choose random positions and rotations
+        for i in xrange(2):
+            ca.posRigid[i] = np.random.random()
+            ca.rotRigid[i] = rotations.random_aa()
+         
+        # random box
+        ca.lattice[[0,3,5]] = 1.0 + self.expand * np.random.random(3)  
+        ca.lattice[[1,2,4]] = self.shear * np.random.random(3)
+        
+        if(self.volume != None):
+            volumeTarget = self.volume[0] + (self.volume[1] - self.volume[0]) * np.random.random()
+                    
+        vol = lattice.volume(ca.lattice)
+        ca.lattice[:] = ca.lattice * (volumeTarget / vol)**(1.0/3.0)
+        GMIN.reduceCell(coords)
+        
+def quenchCrystal(coords, pot, **kwargs):
+    coords, E, rms, calls = quench.lbfgs_py(coords, pot, **kwargs)
+    #while(GMIN.reduceCell(coords)):
+    if(GMIN.reduceCell(coords)):
+        #print "Reduced cell, redo minimization"
+        coords, E, rms, callsn = quench.lbfgs_py(coords, pot, **kwargs)
+        calls+=callsn
+    return coords, E, rms, calls            
