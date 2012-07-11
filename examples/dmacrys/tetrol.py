@@ -15,7 +15,6 @@ class DMACRYSTakestep(generic.TakestepInterface):
 class TestStep(generic.TakestepInterface):
     def takeStep(self, coords, **kwargs):
         from pygmin.takestep import buildingblocks as bb
-        print coords.size
         ca = CoordsAdapter(nrigid=2, nlattice=6, coords=coords)
         bb.rotate(1.6, ca.rotRigid)
         ca.lattice*=1.2
@@ -60,16 +59,15 @@ def quenchCrystal(coords, pot, **kwargs):
 
 
 def compareMinima(min1, min2):
-    from pygmin.utils import lattice
-    vol1 = lattice.volume(min1.coords[-6:])
-    vol2 = lattice.volume(min2.coords[-6:])
-    print "volume", vol1 - vol2
-    print "energy", min1.E, min2.E
-    if(np.abs(vol1 - vol2) < 0.01):        
-        return True
-    print "found minma with different volume"
-    return False
-
+    from pygmin.utils import crystals
+    from pygmin.utils import rbtools
+    ca1 = rbtools.CoordsAdapter(nrigid=2, nlattice=6, coords=min1.coords)
+    ca2 = rbtools.CoordsAdapter(nrigid=2, nlattice=6, coords=min2.coords)
+    match = crystals.compareStructures(ca1, ca2)
+    if not match:
+        print "Found minimum with similar energy but different structure"
+    return match
+    
 GMIN.initialize()   
 pot = gminpot.GMINPotental(GMIN)
 print "get coords"
