@@ -83,6 +83,43 @@ def q2mx( qin ):
     RMX[2,1] = 2.*(Q3Q4 + Q1Q2);
     return RMX
 
+def mx2q(mi):
+    q = np.zeros(4)
+    m = np.transpose(mi)
+    trace=m[0,0] + m[1,1]+m[2,2]
+
+    if (trace > 0.):
+        s = np.sqrt(trace+1.0) * 2.0
+        q[0] = 0.25 * s
+        q[1] = (m[1,2] - m[2,1]) / s
+        q[2] = (m[2,0] - m[0,2]) / s
+        q[3] = (m[0,1] - m[1,0]) / s
+    elif ((m[0,0] > m[1,1]) and (m[0,0] > m[2,2])):
+        s=np.sqrt(1.0 + m[0,0] - m[1,1] - m[2,2]) * 2.0
+        q[0] = (m[1,2] - m[2,1]) / s
+        q[1] = 0.25 * s
+        q[2] = (m[1,0] + m[0,1]) / s
+        q[3] = (m[2,0] + m[0,2]) / s
+    elif (m[1,1] > m[2,2]):
+        s = np.sqrt(1.0 + m[1,1] - m[0,0] - m[2,2]) * 2.0
+        q[0] = (m[2,0] - m[0,2]) / s
+        q[1] = (m[1,0] + m[0,1]) / s
+        q[2] = 0.25 * s
+        q[3] = (m[2,1] + m[1,2]) / s
+    else:
+        s = np.sqrt(1.0 + m[2,2] - m[0,0] - m[1,1]) * 2.0
+        q[0] = (m[0,1] - m[1,0]) / s
+        q[1] = (m[2,0] + m[0,2]) / s
+        q[2] = (m[2,1] + m[1,2]) / s
+        q[3] = 0.25 * s
+
+    if(q[0] < 0):
+        q = -q
+    return q
+
+def mx2aa(m):
+    return q2aa(mx2q(m))
+
 def rot_q2mx(qin):
     m = np.zeros([3,3], np.float64)
 
