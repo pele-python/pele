@@ -22,7 +22,7 @@ class SaveN(object):
     if energy differs by more than accuracy
     '''
 
-    def __init__(self, nsave=1, accuracy=1e-3, onMinimumAdded=None, onMinimumRemoved=None):
+    def __init__(self, nsave=1, accuracy=1e-3, onMinimumAdded=None, onMinimumRemoved=None, compareMinima=None):
         '''
         Constructor
         '''
@@ -31,21 +31,26 @@ class SaveN(object):
         self.accuracy=accuracy
         self.onMinimumAdded=onMinimumAdded
         self.onMinimumRemoved=onMinimumRemoved
+        self.compareMinima=compareMinima
         self.lock = threading.Lock()
         
     def __call__(self, E, coords):
         self.insert(E, coords)
         
     def insert(self, E, coords):
+        new = Minimum(E, coords)
         # does minima already exist, if yes exit?
         self.lock.acquire()
         for i in self.data:
             if(abs(i.E - E) < self.accuracy):
+                if(self.compareMinima):
+                    if(self.compareMinima(new, i) == False):
+                        continue                
+                
                 self.lock.release()
                 return
                 
         # otherwise, add it to list & sort
-        new = Minimum(E, coords)
         self.data.append(new)
         self.data.sort(key=operator.attrgetter('E'))
         if(self.onMinimumAdded):

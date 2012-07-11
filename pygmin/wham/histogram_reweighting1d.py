@@ -54,8 +54,12 @@ class wham1d:
         print "energy", E 
         
         print "quenching"
-        from pygmin.optimize.quench import quench
-        ret = quench(X, self.whampot.getEnergyGradient)
+        try: 
+            from pygmin.optimize.quench import mylbfgs as quench
+            ret = quench(X, self.whampot.getEnergyGradient, iprint=-1, maxstep = 1e4)
+        except:
+            from pygmin.optimize.quench import quench as quench
+            ret = quench(X, self.whampot.getEnergyGradient)            
         print "quench energy", ret[1]
         X = ret[0]
         
@@ -110,9 +114,9 @@ class wham1d:
 
 
 
-    def calc_Cv(self, NDOF, TRANGE=None, NTEMP=100):
+    def calc_Cv(self, NDOF, TRANGE=None, NTEMP=100, use_log_sum = None):
         return wham_utils.calc_Cv(self.logn_E, self.visits1d, self.binenergy, \
-                NDOF, self.Tlist, self.k_B, TRANGE, NTEMP)
+                NDOF, self.Tlist, self.k_B, TRANGE, NTEMP, use_log_sum = use_log_sum)
 
 
 
