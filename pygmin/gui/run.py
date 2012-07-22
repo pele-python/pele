@@ -15,17 +15,23 @@ class MyForm(QtGui.QMainWindow):
         QtGui.QWidget.__init__(self)
         self.ui = MainWindow.Ui_MainWindow()
         self.ui.setupUi(self)
+        self.listMinima = [
+                           self.ui.listWidget,
+                           self.ui.listMinima1,
+                           self.ui.listMinima2,
+                           self.ui.listFrom
+                           ]
         self.systemtype = systemtype
         self.NewSystem()
+        self.transition=None
         
     def NewSystem(self):
         self.system = self.systemtype()
         self.system.storage.onMinimumAdded=self.NewMinimum
         self.system.storage.onMinimumRemoved=self.RemoveMinimum
-        self.ui.listWidget.clear()
-        self.ui.listMinima1.clear()
-        self.ui.listMinima2.clear()
-
+        for l in self.listMinima:
+            l.clear()
+        
     def save(self):
         import pickle
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '.')
@@ -45,6 +51,9 @@ class MyForm(QtGui.QMainWindow):
     def SelectMinimum(self, item):
         self.ui.widget.setSystem(self.system)
         self.ui.widget.setCoords(item.coords)
+        self.ui.oglTS.setSystem(self.system)
+        self.ui.oglTS.setCoords(item.coords)
+        
 
     def SelectMinimum1(self, item):
         self.ui.oglPath.setSystem(self.system)
@@ -55,7 +64,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(item.coords, index=2)
         self.neb = None
-        
+    
     def AlignMinima(self):
         coords1 = self.ui.oglPath.coords[1]
         coords2 = self.ui.oglPath.coords[2]
@@ -93,36 +102,39 @@ class MyForm(QtGui.QMainWindow):
         pl.show()
      
     def NewMinimum(self, minimum):
-        self.AddMinimumToList(self.ui.listWidget, minimum)
-        self.AddMinimumToList(self.ui.listMinima1, minimum)
-        self.AddMinimumToList(self.ui.listMinima2, minimum)
-
-    def AddMinimumToList(self, obj, minimum):
         E=minimum.E
         minid=id(minimum)
         coords=minimum.coords
-        item = QMinimumInList('%.4f'%E)
-        item.setCoords(coords)
-        item.setMinimumId(minid)
-        obj.addItem(item)    
-        obj.sortItems(1)
-        
-    
-    def RemoveMinimum(self, minimum):
-        self.RemoveMinimumFromList(self.ui.listWidget,  minimum)
-        self.RemoveMinimumFromList(self.ui.listMinima1,  minimum)
-        self.RemoveMinimumFromList(self.ui.listMinima2,  minimum)        
-
-    def RemoveMinimumFromList(self, obj, minimum):
-        minid = id(minimum)
-        itms = obj.findItems('*', QtCore.Qt.MatchWildcard)
-        for i in itms:
-            if(i.minid == minid):
-                obj.takeItem(obj.row(i))
+        for obj in self.listMinima:
+            item = QMinimumInList('%.4f'%E)
+            item.setCoords(coords)
+            item.setMinimumId(minid)
+            obj.addItem(item)    
+            obj.sortItems(1)
                 
+    def RemoveMinimum(self, minimum):
+        minid = id(minimum)
+        for obj in self.listMinima:
+            itms = obj.findItems('*', QtCore.Qt.MatchWildcard)
+            for i in itms:
+                if(i.minid == minid):
+                    obj.takeItem(obj.row(i))
+                        
     def StartBasinHopping(self):
         self.bhrunner = bhrunner.BHRunner(self.system)
         self.bhrunner.start()
+    
+    def tsSearch(self):
+        import numpy as np
+        ts = self.system.findTS(self.ui.oglTS.coords[1])
+        self.transition = [ts[1][0], ts[0][0], ts[2][0]]
+
+    def showFrameTS(self, i):
+        if(self.transition):
+            self.ui.oglTS.setCoords(self.transition[i])
+
+    def selectTransition(self):
+        pass
     
 def run_gui(systemtype):
     app = QtGui.QApplication(sys.argv)

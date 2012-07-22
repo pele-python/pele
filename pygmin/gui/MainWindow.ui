@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>681</width>
-    <height>566</height>
+    <width>692</width>
+    <height>555</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -202,6 +202,108 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>TS search</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_8">
+        <item row="1" column="0">
+         <widget class="QSlider" name="sliderTS">
+          <property name="maximum">
+           <number>2</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <layout class="QGridLayout" name="gridLayout_6">
+          <property name="leftMargin">
+           <number>20</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>20</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="btnTSSearch">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>100</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Find TS</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>Path</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="0">
+         <widget class="Show3D" name="oglTS" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0">
+          <item>
+           <widget class="QListWidget" name="listFrom">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>200</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListWidget" name="listTo">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>200</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -211,7 +313,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>681</width>
+     <width>692</width>
      <height>23</height>
     </rect>
    </property>
@@ -287,8 +389,8 @@
    <slot>StartBasinHopping()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>658</x>
-     <y>488</y>
+     <x>669</x>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>432</x>
@@ -319,8 +421,8 @@
    <slot>AlignMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>554</x>
-     <y>490</y>
+     <x>565</x>
+     <y>479</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -335,8 +437,8 @@
    <slot>ConnectMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>640</x>
-     <y>490</y>
+     <x>651</x>
+     <y>479</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -351,7 +453,7 @@
    <slot>SelectMinimum1()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>555</x>
+     <x>566</x>
      <y>94</y>
     </hint>
     <hint type="destinationlabel">
@@ -367,8 +469,8 @@
    <slot>SelectMinimum2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>555</x>
-     <y>293</y>
+     <x>566</x>
+     <y>287</y>
     </hint>
     <hint type="destinationlabel">
      <x>275</x>
@@ -384,7 +486,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>46</x>
-     <y>488</y>
+     <y>477</y>
     </hint>
     <hint type="destinationlabel">
      <x>74</x>
@@ -399,8 +501,8 @@
    <slot>showEnergies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>554</x>
-     <y>522</y>
+     <x>565</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -440,6 +542,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>listFrom</sender>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>SelectMinimum()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>587</x>
+     <y>138</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>553</x>
+     <y>528</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnTSSearch</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>tsSearch()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>612</x>
+     <y>499</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>627</x>
+     <y>528</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listTo</sender>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>selectTransition()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>533</x>
+     <y>353</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>342</x>
+     <y>526</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sliderTS</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showFrameTS()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>150</x>
+     <y>502</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>172</x>
+     <y>526</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectMinimum()</slot>
@@ -453,5 +619,8 @@
   <slot>showEnergies()</slot>
   <slot>save()</slot>
   <slot>load()</slot>
+  <slot>tsSearch()</slot>
+  <slot>selectTransition()</slot>
+  <slot>showFrameTS()</slot>
  </slots>
 </ui>

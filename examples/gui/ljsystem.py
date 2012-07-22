@@ -4,8 +4,9 @@ import sys
 import numpy as np
 from pygmin.storage import savenlowest
 import time
-from pygmin.NEB import NEB
-        
+from pygmin.NEB import NEB,dimer,tstools
+import pygmin.potentials.lj as lj
+                
 class LJSystem:
     def __init__(self):
         dlg = NewLJDialog()
@@ -44,9 +45,17 @@ class LJSystem:
         return X1, X2
     
     def createNEB(self, coords1, coords2):
-        import pygmin.potentials.lj as lj
         return NEB.NEB(coords1, coords2, lj.LJ(), k = 100. ,nimages=20)
-
+    
+    def findTS(self, coords):
+        pot = lj.LJ()
+        tau = np.random.random(coords.shape) - 0.5
+        x0,E,tau = dimer.findTS(pot, coords+5e-1*tau, tau)
+        m1,m2 = tstools.minima_from_ts(pot.getEnergyGradient, x0, tau, displace=1e-2)
+        print "Energies: ", m1[1],E,m2[1]
+        return [x0,E],m1,m2
+    
+        
        
 
 class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
