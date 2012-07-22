@@ -4,9 +4,9 @@ from pygmin.optimize import quench
 xt=[]
 tt=[]
 
-def findTS(potential, x0, direction, **kwargs):
+def findTS(potential, x0, direction, tol=1.0e-3, maxstep=0.1, **kwargs):
     search = DimerSearch(potential, x0, direction, **kwargs)
-    x, E, tmp1, tmp2 = quench.mylbfgs(x0, search.getEnergyGradient)
+    x, E, tmp1, tmp2 = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep)
     return x,E,search.tau
 
 class DimerSearch(object):
@@ -19,7 +19,7 @@ class DimerSearch(object):
     '''
 
 
-    def __init__(self, potential, center, direction, delta=1e-3, max_rotsteps=5000, theta_cut=0.1):
+    def __init__(self, potential, center, direction, delta=1e-5, max_rotsteps=10, theta_cut=0.05):
         '''
         Constructor
         '''
@@ -127,19 +127,24 @@ if __name__ == "__main__":
 
     pl.pcolor(x, y, z, vmax=-0.5, cmap=pl.cm.PuBu)
     tau=np.array([0.,-1.])#np.random.random(2)-0.5
-    x1 = x0 + 0.2*tau
+    x1 = x0 + 0.1*tau
     pl.plot([x0[0], x1[0]], [x0[1], x1[1]])
     x0,E,tau = findTS(potential, x0, tau)
-    x1 = x0 + 0.2*tau
+    x1 = x0 + 0.1*tau
     pl.plot([x0[0], x1[0]], [x0[1], x1[1]])
     pl.colorbar()
     pl.xlabel("x")
     pl.ylabel("y")
     pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)
     for i in range(len(xt)):
-        pl.plot(xt[i][0], xt[i][1], 'x')
-        pl.plot([xt[i][0],xt[i][0] + 0.1*tt[i][0]], [xt[i][1],xt[i][1]+ 0.1*tt[i][1]], '-')
+        pl.plot(xt[i][0], xt[i][1], 'o')
+        pl.plot([xt[i][0],xt[i][0] + 0.05*tt[i][0]], [xt[i][1],xt[i][1]+ 0.05*tt[i][1]], '-')
     print E
+    import tstools
+    potential.trajectory = []
+    m1,m2 = tstools.minima_from_ts(potential.getEnergyGradient, x0, tau, displace=1e-1)
+    for xt in potential.trajectory:
+      pl.plot(xt[0], xt[1], 'x')
     
     pl.show()          
 
