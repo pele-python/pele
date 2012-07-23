@@ -45,3 +45,11 @@ add_custom_command(
   COMMAND f2py -c -m ${utils5} --fcompiler=gfortran --link-lapack_opt ${utils5}.f > ${utils5}.setup
 )
 add_custom_target(${utils5} ALL DEPENDS ${utils5}.so)
+
+set(utils6 "lj_hess")
+add_custom_command( 
+  OUTPUT ${utils6}.so
+  DEPENDS ${utils6}.f
+  COMMAND f2py -c -m ${utils6} --fcompiler=gfortran --f77flags="-ffixed-line-length-none" --link-lapack_opt ${utils6}.f > ${utils6}.setup
+)
+add_custom_target(${utils6} ALL DEPENDS ${utils6}.so)

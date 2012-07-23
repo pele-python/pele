@@ -136,6 +136,11 @@ class LJ(potential.potential):
         ilist -= 1
         return E, grad 
     
+    def getEnergyGradientHessian(self, coords):
+        from fortran.lj_hess import ljdiff
+        g, energy, hess = ljdiff(coords, True, True)
+        return energy, g, hess
+    
 
 
 def main():
