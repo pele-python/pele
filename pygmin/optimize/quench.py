@@ -143,9 +143,9 @@ def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     return x, E, rms, funcalls
 
 
-def _lbfgs_py(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
+def _lbfgs_py(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, **kwargs):
     from lbfgs_py import LBFGS
-    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
+    lbfgs = LBFGS(coords, pot, maxstep = maxstep, **kwargs)
     
     ret = lbfgs.run(nsteps, tol, iprint)
     coords = ret[0]

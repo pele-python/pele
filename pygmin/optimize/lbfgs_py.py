@@ -2,13 +2,14 @@ import numpy as np
 from bfgs import lineSearch, BFGS
 
 class LBFGS:
-    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10):
+    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10, rel_energy = False):
         self.X = X
         self.pot = pot
         e, self.G = self.pot.getEnergyGradient(self.X)
         self.funcalls = 1
         self.maxstep = maxstep
         self.maxErise = maxErise
+        self.rel_energy = rel_energy #use relative energy comparison for maxErise 
         self.events = []
     
         self.N = len(X)
@@ -143,7 +144,13 @@ class LBFGS:
             E, G = self.pot.getEnergyGradient(X)
             self.funcalls += 1
             
-            if (E - E0) <= maxErise:
+            if self.rel_energy: 
+                if E == 0: E = 1e-100
+                dE = (E - E0)/abs(E)
+                #print dE
+            else:
+                dE = E - E0
+            if dE <= maxErise:
                 break
             else:
                 #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize
