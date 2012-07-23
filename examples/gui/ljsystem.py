@@ -47,10 +47,36 @@ class LJSystem:
     def createNEB(self, coords1, coords2):
         return NEB.NEB(coords1, coords2, lj.LJ(), k = 100. ,nimages=20)
     
+    def zeroEigenVecs(self, coords):
+        # translational eigenvectors
+        x1 = np.zeros(coords.shape)
+        x2 = x1.copy()
+        x3 = x1.copy()
+        x1.reshape(coords.size/3,3)[:,0] = 1.
+        x2.reshape(coords.size/3,3)[:,1] = 1.
+        x3.reshape(coords.size/3,3)[:,2] = 1.
+        Rx = np.array([[ 1.,  0.,  0.],
+                       [ 0.,  0.,  1.],
+                       [ 0., -1.,  0.]])
+        Ry = np.array([[ 0.,  0.,  1.],
+                       [ 0.,  1.,  0.],
+                       [-1.,  0.,  0.]])
+        Rz = np.array([[ 0.,  1., 0.],
+                       [-1.,  0., 0.],
+                       [ 0.,  0., 1.]])
+        x = coords.reshape(coords.size/3,3)
+        r1 = np.dot(Rx,x.transpose()).transpose().reshape(coords.shape)
+        r2 = np.dot(Ry,x.transpose()).transpose().reshape(coords.shape)
+        r3 = np.dot(Rz,x.transpose()).transpose().reshape(coords.shape)
+
+        return [x1/np.linalg.norm(x1), x2/np.linalg.norm(x2), x3/np.linalg.norm(x3), 
+                r1/np.linalg.norm(r1), r2/np.linalg.norm(r2), r3/np.linalg.norm(r3)]
+    
     def findTS(self, coords):
         pot = lj.LJ()
         tau = np.random.random(coords.shape) - 0.5
-        x0,E,tau = dimer.findTS(pot, coords+5e-1*tau, tau)
+                
+        x0,E,tau = dimer.findTS(pot, coords+1e-2*tau, tau, zeroEigenVecs=self.zeroEigenVecs)
         m1,m2 = tstools.minima_from_ts(pot.getEnergyGradient, x0, tau, displace=1e-2)
         print "Energies: ", m1[1],E,m2[1]
         return [x0,E],m1,m2

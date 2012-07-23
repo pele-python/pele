@@ -4,7 +4,7 @@ from pygmin.optimize import quench
 xt=[]
 tt=[]
 
-def findTS(potential, x0, direction, tol=1.0e-3, maxstep=0.1, **kwargs):
+def findTS(potential, x0, direction, tol=1.0e-10, maxstep=0.1, **kwargs):
     search = DimerSearch(potential, x0, direction, **kwargs)
     x, E, tmp1, tmp2 = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep)
     return x,E,search.tau
@@ -19,7 +19,7 @@ class DimerSearch(object):
     '''
 
 
-    def __init__(self, potential, center, direction, delta=1e-5, max_rotsteps=10, theta_cut=0.05):
+    def __init__(self, potential, center, direction, delta=1e-5, max_rotsteps=10, theta_cut=0.05, zeroEigenVecs=None):
         '''
         Constructor
         '''
@@ -28,7 +28,8 @@ class DimerSearch(object):
         self.tau = direction/np.linalg.norm(direction)
         self.delta = 1e-3
         self.max_rotsteps = max_rotsteps
-        self.theta_cut = theta_cut
+        self.theta_cut = theta_cut#
+        self.zeroEigenVecs = zeroEigenVecs
         
     def getEnergyGradient(self, x0):
         E,g = self.step(x0)
@@ -43,13 +44,34 @@ class DimerSearch(object):
         self.updateRotation(x0, E0, grad0)
         return E0,grad0
     
-    def updateRotation(self, x0, E0, grad0):
+    def updateRotation(self, x0, E0, grad0_):
         iter_rot = 0
+        
+        # get the zero eigenvalues
+        zev = []
+        if(self.zeroEigenVecs):
+            zev = self.zeroEigenVecs(x0)
+
+        # remove zero eigenvalues from gradient
+        grad0 = grad0_.copy()
+        for ev in zev:
+            grad0 -= np.dot(grad0,ev)*ev
+
+            
         while iter_rot < self.max_rotsteps:
             #self.tau = self.tau/np.linalg.norm(self.tau)
             # construct dimer image and get energy + gradient
+            
+            # remove zero eigenvalues from tau
+            for ev in zev:
+                self.tau -= np.dot(self.tau,ev)*ev
+            self.tau /= np.linalg.norm(self.tau)
+            
             x1 = x0 + self.tau*self.delta
             E1, grad1 = self.potential.getEnergyGradient(x1)
+            # remove zero eigenvalues from gradient
+            for ev in zev:
+                grad1 -= np.dot(grad1,ev)*ev
             #grad1=-grad1
             #if(E1 > E0):
             #    self.tau = - self.tau
@@ -74,10 +96,19 @@ class DimerSearch(object):
             
             # create rotated trial dimer
             taup = self.rotate(self.tau, Theta, theta1)
+            # remove zero eigenvalues from tau
+            for ev in zev:
+                taup -= np.dot(taup,ev)*ev
+            taup /= np.linalg.norm(taup)
+            
             x1p = x0 + self.delta * taup
             
             # get the new energy and gradient at trial conviguration
             E1p, grad1p = self.potential.getEnergyGradient(x1p)
+            # remove zero eigenvalues from gradient
+            for ev in zev:
+                grad1p -= np.dot(grad1p,ev)*ev
+
             #grad1p = -grad1p
             # get curvature for trial point
             Cp = np.dot((grad1p - grad0), taup)/self.delta
@@ -88,6 +119,12 @@ class DimerSearch(object):
             theta_min=0.5*np.arctan(b1/a1)
             self.tau = self.rotate(self.tau, Theta, theta_min)
             
+            # remove zero eigenvalues from tau
+            for ev in zev:
+                self.tau -= np.dot(self.tau,ev)*ev
+            self.tau /= np.linalg.norm(self.tau)
+            
+
             if np.abs(theta_min) < self.theta_cut:
                 return
             iter_rot+=1
@@ -135,16 +172,16 @@ if __name__ == "__main__":
     pl.colorbar()
     pl.xlabel("x")
     pl.ylabel("y")
-    pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)
     for i in range(len(xt)):
         pl.plot(xt[i][0], xt[i][1], 'o')
         pl.plot([xt[i][0],xt[i][0] + 0.05*tt[i][0]], [xt[i][1],xt[i][1]+ 0.05*tt[i][1]], '-')
     print E
     import tstools
     potential.trajectory = []
-    m1,m2 = tstools.minima_from_ts(potential.getEnergyGradient, x0, tau, displace=1e-1)
+    m1,m2 = tstools.minima_from_ts(potential.getEnergyGradient, x0, tau, displace=1e-2)
     for xt in potential.trajectory:
       pl.plot(xt[0], xt[1], 'x')
+    pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)
     
     pl.show()          
 
