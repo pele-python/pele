@@ -123,9 +123,16 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwar
         if rms < tol:
             break
     
+    if tspot.eigval >= 0.:
+        print "warning: transition state has positive eigenvalue", tspot.eigval
+    if rms > tol:
+        print "warning: transition state search appears to have failed: rms", rms
+    
     return coords, tspot.eigval, tspot.eigvec, E, grad, rms
 
-
+###################################################################
+#below here only stuff for testing
+###################################################################
 
 def testgetcoordsLJ():
     a = 1.12 #2.**(1./6.)
