@@ -60,7 +60,7 @@ class TransitionStateRefinement(basepot):
         self.H0 = quencher.H0
         #ret = quench(self.eigvec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, rel_energy=True)
         self.eigval = ret[1]
-        self.eigvec = -ret[0]
+        self.eigvec = ret[0]
 
         
         print "eigenvalue is estimated to be", self.eigval

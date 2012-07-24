@@ -29,8 +29,9 @@ class LowestEigPot(basepot):
         """
         vecl = 1.
         vec_in /= np.linalg.norm(vec_in)
+        vec_in = orthogopt(vec_in, self.coords, True)
+
         vec = vec_in / np.linalg.norm(vec_in)
-        vec = orthogopt(vec, self.coords, True)
         coordsnew = self.coords - self.diff * vec
         Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
         
@@ -57,6 +58,7 @@ class LowestEigPot(basepot):
         grad -= np.dot(grad, vec) * vec
         
         return diag2, grad
+
         
 def testpot2():
     from pygmin.potentials.lj import LJ
@@ -136,9 +138,59 @@ def testpot1():
     print ret[1]
     print ret[0]
 
+def testpot3():
+    from transition_state_refinement import guesstsLJ, analyticalLowestEigenvalue
+    pot, coords, coords1, coords2 = guesstsLJ()
+    coordsinit = np.copy(coords)
+
+    eigpot = LowestEigPot(coords, pot)
+    
+    vec = np.random.rand(len(coords))
+    
+    from pygmin.optimize.quench import lbfgs_py as quench
+    ret = quench(vec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, \
+                 rel_energy = True)
+
+    eigval = ret[1]
+    eigvec = ret[0]
+    print "eigenvalue ", eigval
+    print "eigenvector", eigvec
+
+    if True:
+        e, g, hess = pot.getEnergyGradientHessian(coords)
+        u, v = np.linalg.eig(hess)
+        u = u.real
+        v = v.real
+        print "eigenvalues", sorted(u)
+        #for i in range(len(u)):
+        #    print "eigenvalue", u[i], "eigenvector", v[:,i]
+        #find minimum eigenvalue, vector
+        imin = 0
+        umin = 10.
+        for i in range(len(u)):
+            if np.abs(u[i]) < 1e-10: continue
+            if u[i] < umin:
+                umin = u[i]
+                imin = i
+        #print "lowest eigenvalue ", umin, imin
+        #print "lowest eigenvector", v[:,imin]
+        
+        
+        
+        trueval, truevec = u[imin], v[:,imin]
+        print "analytical lowest eigenvalue", trueval
+        maxdiff = np.max(np.abs(truevec - eigvec))
+        print "maximum difference between estimated and analytical eigenvectors", maxdiff, \
+            np.linalg.norm(eigvec), np.linalg.norm(truevec), np.dot(truevec, eigvec)
+        if True:
+            print eigvec
+            print truevec
+
+
 
 if __name__ == "__main__":
-    testpot1()
+    #testpot1()
+    testpot3()
     
     
     
