@@ -238,10 +238,14 @@ def testpot1():
     
     with open("out.xyz", "w") as fout:
         e = pot.getEnergy(coords1)
+        print "energy of minima 1", e
         printxyz(fout, coords1, line2=str(e))
-        e = pot.getEnergy(coordsinit)
+        e, grad = pot.getEnergyGradient(coordsinit)
+        print "energy of NEB guess for the transition state", e, "rms grad", \
+            np.linalg.norm(grad) / np.sqrt(float(len(coords))/3.)
         printxyz(fout, coordsinit, line2=str(e))
         e = pot.getEnergy(coords2)
+        print "energy of minima 2", e
         printxyz(fout, coords2, line2=str(e))
         
         #mess up coords a bit
@@ -251,7 +255,8 @@ def testpot1():
 
         
         printevent = PrintEvent(fout)
-        ret = findTransitionState(coords, pot, event=printevent, verbose = True)
+        print "starting the transition state search"
+        ret = findTransitionState(coords, pot, event=printevent, verbose = False)
         
         coords, eval, evec, e, grad, rms = ret
         e = pot.getEnergy(coords)
@@ -261,6 +266,18 @@ def testpot1():
     print "energy", e
     print "rms grad", rms
     print "eigenvalue", eval
+    
+    if True:
+        print "now try the same search with the dimer method"
+        from pygmin.NEB.dimer import findTS as dimerfindTS
+        coords = coordsinit.copy()
+        tau = np.random.uniform(-1,1,len(coords))
+        tau /= np.linalg.norm(tau)
+        x, e, vec = dimerfindTS(pot, coords, tau )
+        enew, grad = pot.getEnergyGradient(coords)
+        print "energy", e
+        print "rms grad", np.linalg.norm(grad) / np.sqrt(float(len(coords))/3.)
+
 
 
 if __name__ == "__main__":

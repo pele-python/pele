@@ -173,9 +173,9 @@ def _mylbfgs(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, 
     funcalls = ret[3]
     return coords, e, rms, funcalls
 
-def mylbfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1):
+def mylbfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1, **kwargs):
     pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = _mylbfgs(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep)
+    ret = _mylbfgs(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep, **kwargs)
     return ret
 
 def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
