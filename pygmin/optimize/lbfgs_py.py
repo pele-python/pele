@@ -2,7 +2,7 @@ import numpy as np
 from bfgs import lineSearch, BFGS
 
 class LBFGS:
-    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10, rel_energy = False):
+    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10, rel_energy = False, H0=None):
         self.X = X
         self.pot = pot
         e, self.G = self.pot.getEnergyGradient(self.X)
@@ -24,7 +24,10 @@ class LBFGS:
         
         self.q = np.zeros(N)  #working space
         
-        self.H0 = np.ones(M) * 1. #initial guess for the hessian
+        if H0 == None:
+            self.H0 = np.ones(M) * 1. #initial guess for the hessian
+        else:
+            self.H0 = H0
         self.rho = np.zeros(M)
         self.k = 0
         

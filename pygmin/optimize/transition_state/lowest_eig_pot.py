@@ -28,6 +28,7 @@ class LowestEigPot(basepot):
         vec is a guess for the lowest eigenvector.  It should be normalized
         """
         vecl = 1.
+        vec_in /= np.linalg.norm(vec_in)
         vec = vec_in / np.linalg.norm(vec_in)
         vec = orthogopt(vec, self.coords, True)
         coordsnew = self.coords - self.diff * vec

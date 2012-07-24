@@ -42,10 +42,10 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     rms = V.std()
     return newcoords, newE, rms, funcalls 
 
-def fire(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+def fire(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.5):
     import fire as fire
     import numpy as np
-    opt = fire.Fire(coords, getEnergyGradient)
+    opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep)
     opt.run()
     e,g = getEnergyGradient(opt.coords)
     rms = np.linalg.norm(g)/np.sqrt(len(g))
@@ -106,7 +106,8 @@ def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     return opt.coords, e, rms, opt.nsteps
 
 
-def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, gtol = 1e-3, maxstep = -1.):
+def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, \
+                      gtol = 1e-3, maxstep = -1., event=None):
     N = len(x0)
     x=x0.copy()
     E, V = getEnergyGradient(x)
@@ -124,12 +125,14 @@ def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 10
         if iprint > 0:
             if funcalls % iprint == 0: 
                 print "step %8d energy %20.12g rms gradient %20.12g" % (funcalls, E, rms)
+        if event != None:
+            event(E, x, rms)
         if rms < gtol:
             break
     return x, E, rms, funcalls
 
-def steepest_descent(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
-    return _steepest_descent(coords, getEnergyGradient, iprint = iprint, gtol = tol)
+def steepest_descent(coords, getEnergyGradient, iprint = -1, tol = 1e-3, **kwargs):
+    return _steepest_descent(coords, getEnergyGradient, iprint = iprint, gtol = tol, **kwargs)
 
 def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     import scipy.optimize
