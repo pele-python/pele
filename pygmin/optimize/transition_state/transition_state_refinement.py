@@ -33,141 +33,98 @@ class TransitionStateRefinement(basepot):
     this is a potential wrapper for use in an optimization package.  The intent
     is to try to locate the nearest transition state of the system.
     
-    For each call of getEnergyGradient it will
+    Usage:
     
-    1) try to estimate the lowest nonzero eigenvalue and corresponding eigenvector of the Hermitian
-    
-    2) return a gradient vector which points downhill in all directions, but uphill in the direction 
-    of the eigenvector
-    """
-    def __init__(self, pot, coords):
-        print "WARNING: TransitionStateRefinement is still in beta and probably not working"
-        self.pot = pot
-        self.eigvec = np.random.rand(len(coords))
-        self.H0 = None    
-    
-    def getEnergyGradient(self, coords):
+    getLowestEigenvalue():
+        will attempt to calculate the lowest eigenvalue and corresponding eigenvector.
         
-        #try to estimate the lowest nonzero eigenvalue and corresponding eigenvector of the Hermitian
+    stepUphill():
+        will take a step uphill along the eigenvector
+    
+    getEnergyGradient():
+        will return the gradient with the component along the eigenvector removed.  This is for
+        energy minimization in the space tangent to the gradient    
+    """
+    def __init__(self, pot, coords, verbose=False):
+        self.pot = pot
+        self.eigvec = np.random.rand(len(coords)) #initial random guess
+        self.verbose = verbose
+        self.H0 = None
+    
+    def getLowestEigenvalue(self, coords, iprint=400, tol = 1e-6, **kwargs):
         eigpot = LowestEigPot(coords, self.pot)
-        from pygmin.optimize.quench import lbfgs_py as quench
         from pygmin.optimize.lbfgs_py import LBFGS
-        print ""
-        print "estimating lowest eigenvalue and eigenvector"
-        quencher = LBFGS(self.eigvec, eigpot, maxstep=1e-3, \
-                         rel_energy = True, H0 = self.H0)
-        ret = quencher.run(iprint = 400, tol=1e-6)
+        quencher = LBFGS(self.eigvec, eigpot, maxstep=1e-2, \
+                         rel_energy = True, H0 = self.H0, **kwargs)
+        ret = quencher.run(iprint = iprint, tol=tol)
         self.H0 = quencher.H0
         #ret = quench(self.eigvec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, rel_energy=True)
         self.eigval = ret[1]
         self.eigvec = ret[0]
+        
+        if self.verbose: #debugging
+            print ""
+            print "eigenvalue is estimated to be", self.eigval
+            try:
+                trueval, truevec = analyticalLowestEigenvalue(coords, self.pot)
+                print "analytical lowest eigenvalue", trueval
+                print "overlap between estimated and analytical eigenvectors", \
+                    np.dot(truevec, self.eigvec)
+                if True:
+                    print self.eigvec
+                    print truevec
+            except:
+                pass
 
         
-        print "eigenvalue is estimated to be", self.eigval
-        if True:
-            trueval, truevec = analyticalLowestEigenvalue(coords, self.pot)
-            print "analytical lowest eigenvalue", trueval
-            maxdiff = np.max(np.abs(truevec - self.eigvec))
-            print "maximum difference between estimated and analytical eigenvectors", maxdiff, \
-                np.linalg.norm(self.eigvec), np.linalg.norm(truevec), np.dot(truevec, self.eigvec)
-            if True:
-                print self.eigvec
-                print truevec
-            
-        
-        
-        self.e, self.grad = self.pot.getEnergyGradient(coords)
-        self.rms = np.linalg.norm(self.grad) / np.sqrt(len(self.grad)/3)
-        print "energy rms", self.e, self.rms
-        #remove the component of the gradient along the eigenvector
-        F = np.dot(self.grad, self.eigvec)
-        
-        #determine how large a step to take along the eigenvector
+        return self.eigval, self.eigvec
+
+    def stepUphill(self, coords, maxstep = 0.1):
+        e, grad = self.pot.getEnergyGradient(coords)
+        F = np.dot(grad, self.eigvec) 
         h = 2.*F/ np.abs(self.eigval) / (1. + np.sqrt(1.+4.*F**2/self.eigval**2 ))
-        print "stepsize h", h
-        newgrad = self.grad + (- F + h) * self.eigvec
-        
-        print "rms of newgrad", np.linalg.norm(newgrad) / np.sqrt(len(newgrad)/3)
-        print "dot(eigvec, grad)", np.dot(self.grad, self.eigvec)
-        
-        self.h = h
-        
-        return 0., newgrad
 
-class NegativePot(basepot):
-    def __init__(self, pot):
-        self.pot = pot
-    def getEnergy(self, coords):
-        e = self.pot.getEnergy(coords)
-        return -e
+        if np.abs(h) > maxstep:
+            h *= maxstep / abs(h)
+        coords += h * self.eigvec
 
+    
     def getEnergyGradient(self, coords):
-        e, g = self.pot.getEnergyGradient(coords)
-        return -e, -g
+        """
+        return the energy and the gradient with the component along the eigvec removed.
+        For use in energy minimization in the space perpendicular to eigvec
+        """
+        e, grad = self.pot.getEnergyGradient(coords)
+        #norm = np.sum(self.eigvec)
+        grad -= np.dot(grad, self.eigvec) * self.eigvec
+        return e, grad
 
-class TangentPot(basepot):
-    """
-    project the N dimensional potential into a one dimensional 
-    problem along the line defined by X + a*V
-    """
-    def __init__(self, vec, pot):
-        self.V = vec.copy()
-        self.pot = pot
-        self.Vnorm = np.linalg.norm(self.V)
-        self.V /= self.Vnorm
-    def getEnergy(self, coords):
-        return self.pot.getEnergy( coords )
-    def getEnegyGradient(self, coords):
-        e, g = self.pot.getEnergyGradient( coords )
-        #project g onto V
-        g -= np.dot(self.V, g)*self.V
-        return e, g
 
-def findTransitionState(coords, pot):
-    from pygmin.optimize.lbfgs_py import LBFGS
-    from pygmin.optimize.bfgs import lineSearch as linesearch
+def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwargs):
     from pygmin.optimize.quench import lbfgs_py as quench
-    tspot = TransitionStateRefinement(pot, coords)
-    negpot = NegativePot(pot)
-
+    tspot = TransitionStateRefinement(pot, coords, **kwargs)
+    rmsnorm = 1./np.sqrt(float(len(coords))/3.)
     
-    lbfgs = LBFGS(coords, pot)
-    neglbfgs = LBFGS(coords, negpot)
-    
-    nsteps = 100
-    fout =open("out1.xyz", "w")
-    from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     for i in xrange(nsteps):
-        p, dx = tspot.getEnergyGradient(coords)
-        E = tspot.e
-        grad = tspot.grad
-        eigvec = tspot.eigvec
-        
+        tspot.getLowestEigenvalue(coords)   
                 
-        print "maximize the energy in the direction parallel to eigvec"
-        if True:
-            h = tspot.h
-            if np.abs(h) > 0.1:
-                h *= 0.1 / abs(h)
-            dx = h * eigvec
-            coords += h*eigvec
-            e = pot.getEnergy(coords)
-        else:
-            coords, E, grad = neglbfgs.takeStepNoLineSearch(coords, -E, -grad, dx)
-            E = -E
-            grad = -grad
-
+        #print "step uphill in the energy in the direction parallel to eigvec"
+        tspot.stepUphill(coords)
         
-        print "minimize the energy in the direction perpendicular to eigvec"
-        tangentpot = TangentPot(eigvec, pot)
-        ret = quench(coords, tangentpot.getEnegyGradient)
+        
+        #print "minimize the energy in the direction perpendicular to eigvec"
+        ret = quench(coords, tspot.getEnergyGradient)
         coords = ret[0]
-        E = ret[1]
+        E, grad = pot.getEnergyGradient(coords)
+        rms = np.linalg.norm(grad) * rmsnorm
         
-        printxyz(fout, coords, line2=str(E))
+        if event != None:
+            event(E, coords, rms)
+        if rms < tol:
+            break
+    
+    return coords, tspot.eigval, tspot.eigvec, E, grad, rms
 
-
-    fout.close()
 
 
 def testgetcoordsLJ():
@@ -273,16 +230,9 @@ def testpot1():
     print "initial G", g, np.linalg.norm(g)
     
 
-    tspot = TransitionStateRefinement(pot, coords)
-    #e, g = tspot.getEnergyGradient(coords)
-    print "so called energy", e 
-    print "gradient", g
     
     
     from pygmin.printing.print_atoms_xyz import PrintEvent
-    from pygmin.optimize.quench import steepest_descent as quench
-    #ret = quench(coords, tspot.getEnergyGradient, iprint=1, tol = 1e-2, maxstep = 1e-1, dx = 1e-2)
-    #ret = quench(coords, tspot.getEnergyGradient, iprint=1, tol = 1e-2, maxstep = 1e-1)
 
     #print ret
     
@@ -294,16 +244,23 @@ def testpot1():
         e = pot.getEnergy(coords2)
         printxyz(fout, coords2, line2=str(e))
         
-        findTransitionState(coords, pot)
+        #mess up coords a bit
+        coords += np.random.uniform(-1,1,len(coords))*0.05
+        e = pot.getEnergy(coords)
+        printxyz(fout, coords, line2=str(e))
 
-        if False:
-            printevent = PrintEvent(fout)
-            ret = quench(coords, tspot.getEnergyGradient, iprint=1, tol = 1e-3, maxstep = 1e-3, \
-                        dx = 1e-4, nsteps=100, event=printevent)
-            e = pot.getEnergy(ret[0])
-            printxyz(fout, ret[0], line2=str(e))
+        
+        printevent = PrintEvent(fout)
+        ret = findTransitionState(coords, pot, event=printevent, verbose = True)
+        
+        coords, eval, evec, e, grad, rms = ret
+        e = pot.getEnergy(coords)
+        printxyz(fout, coords2, line2=str(e))
 
-    
+    print "finished searching for transition state"
+    print "energy", e
+    print "rms grad", rms
+    print "eigenvalue", eval
 
 
 if __name__ == "__main__":

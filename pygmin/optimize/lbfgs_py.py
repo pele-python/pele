@@ -184,7 +184,7 @@ class LBFGS:
     def attachEvent(self, event):
         self.events.append(event)
                 
-    def run(self, nsteps = 1000, tol = 1e-6, iprint = -1):
+    def run(self, nsteps = 10000, tol = 1e-6, iprint = -1):
         self.tol = tol
         X = self.X
         sqrtN = np.sqrt(self.N)
