@@ -106,14 +106,22 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwar
     rmsnorm = 1./np.sqrt(float(len(coords))/3.)
     
     for i in xrange(nsteps):
-        tspot.getLowestEigenvalue(coords)   
+        tspot.getLowestEigenvalue(coords)
+        if tspot.eigval > 0.:
+            print "warning transition state search found positive lowest eigenvalue", tspot.eigval, \
+                "step", i
+        if i > 0:
+            overlap = np.dot(oldeigvec, tspot.eigvec)
+            if overlap < 0.5:
+                print "warning: the new eigenvector has low overlap with previous", overlap
+        oldeigvec = tspot.eigvec.copy()  
                 
         #print "step uphill in the energy in the direction parallel to eigvec"
         tspot.stepUphill(coords)
         
         
         #print "minimize the energy in the direction perpendicular to eigvec"
-        ret = quench(coords, tspot.getEnergyGradient)
+        ret = quench(coords, tspot.getEnergyGradient, nsteps=10)
         coords = ret[0]
         E, grad = pot.getEnergyGradient(coords)
         rms = np.linalg.norm(grad) * rmsnorm
@@ -235,6 +243,7 @@ def testpot1():
     e, g = pot.getEnergyGradient(coords)
     print "initial E", e
     print "initial G", g, np.linalg.norm(g)
+    print ""
     
 
     
@@ -262,6 +271,7 @@ def testpot1():
 
         
         printevent = PrintEvent(fout)
+        print ""
         print "starting the transition state search"
         ret = findTransitionState(coords, pot, event=printevent, verbose = False)
         

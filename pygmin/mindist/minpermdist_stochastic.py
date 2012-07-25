@@ -6,7 +6,7 @@ from  pygmin import basinhopping
 import pygmin.storage.savenlowest as storage
 from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
 
-def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
+def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
     """
     Minimize the distance between two clusters.  The following symmetries will be accounted for
     
@@ -50,29 +50,29 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
     # set up potential
     ######################################
     pot = distpot.MinPermDistPotential( X1, X2, 0.2, permlist )
-    if True:
+    if verbose:
         #print some stuff. not necessary
         Emin = pot.getEnergy(aamin)
         dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
         print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
     takestep = distpot.RandomRotationTakeStep()
-    bh = basinhopping.BasinHopping( aamin, pot, takestep, storage=saveit.insert)
+    bh = basinhopping.BasinHopping( aamin, pot, takestep, storage=saveit.insert, outstream = None)
 
 
     Eminglobal = pot.globalEnergyMin() #condition for determining isomer
-    print "global Emin", Eminglobal
+    if verbose: print "global Emin", Eminglobal
 
     ##########################################################################
     # run basin hopping for ninter steps or until the global minimum is found
     # (i.e. determine they are isomers)
     ##########################################################################
-    print "using basin hopping to optimize rotations + permutations"
+    if verbose: print "using basin hopping to optimize rotations + permutations"
     for i in range(niter):
         bh.run(1)
         Emin = saveit.data[0].E
         if abs(Emin-Eminglobal) < 1e-6:
-            print "isomer found"
+            if verbose: print "isomer found"
             break
 
     """
@@ -80,12 +80,12 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = []):
     Check a number of the lowest energy structures. To ensure get the correct
     minimum distance structure.
     """
-    print "lowest structures found"
+    if verbose: print "lowest structures found"
     aamin = saveit.data[0].coords
     dmin, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
     for minimum in saveit.data:
         dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, minimum.coords), permlist )
-        print "E %11.5g dist %11.5g" % (minimum.E, dist)
+        if verbose: print "E %11.5g dist %11.5g" % (minimum.E, dist)
         if dist < dmin:
             dmin = dist
             aamin = minimum.coords

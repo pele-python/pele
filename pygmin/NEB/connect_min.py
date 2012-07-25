@@ -6,31 +6,34 @@ from pygmin.storage.savenlowest import Minimum
 from min_ts_graph import TransitionState
 import networkx as nx
 
-def connectMinima(min1, min2, pot, graph):
+def connectMinima(min1, min2, pot, graph, mindist):
     """
     create a connection between two minima composed of discrete sets of minima and transition states
     """
-    
     min1id = graph.addMin(min1)
     min2id = graph.addMin(min2)
-    return connectMinimaID(min1id, min2id, pot, graph)
+    return connectMinimaID(min1id, min2id, pot, graph, mindist)
 
-def connectMinimaID(min1id, min2id, pot, graph):
+def connectMinimaID(min1id, min2id, pot, graph, mindist):
     if graph.areConnected(min1id, min2id):
         return
-    print "warning connectMinima is not working yet"
+    print "warning connectMinima is still in beta"
 
     print ""
     print "starting connect run to try to connect minima", min1id, min2id
-    print "runing NEB"
+    print "minimizing the distance between the two minima"
     min1 = graph.node2min[min1id]
     min2 = graph.node2min[min2id]
-    neb = NEB(min1.coords, min2.coords, pot)
+    dist, newcoords1, newcoords2 = mindist(min1.coords, min2.coords) 
+    print "runing NEB"
+    neb = NEB(newcoords1, newcoords2, pot)
     neb.optimize()
     neb.MakeAllMaximaClimbing()
     neb.optimize()
 
     minimalist = [min1id]
+    nclimbing = np.sum( [neb.isclimbing[i] for i in range(neb.nimages) ])
+    print "from NEB search found", nclimbing, "climbing images"
     
     for i in range(neb.nimages):
         if neb.isclimbing[i]:
@@ -74,11 +77,18 @@ def connectMinimaID(min1id, min2id, pot, graph):
     print "done with NEB, the minima are still not connected."
     print "will now try to fill in the gaps"
     print "the minima to connect are", minimalist
+    #we should choose the next minima pair to try to connect in a more clever way.
     for i in range(len(minimalist)-1):
         id1 = minimalist[i]
         id2 = minimalist[i+1]
         print "id1 id2", id1, id2
-        ret = connectMinimaID(id1, id2, pot, graph)
+        #note: this should be redone, it can enter an endless loop in some cases
+        #  if the order goes something like this
+        #  connect(1,2)
+        #      connect(1,3)
+        #          connect(1,2)
+        # minimalist should be passed to connect
+        ret = connectMinimaID(id1, id2, pot, graph, mindist)
         if graph.areConnected(min1id, min2id):
             return
 
@@ -90,8 +100,8 @@ def connectMinimaID(min1id, min2id, pot, graph):
 def test():
     from min_ts_graph import MinTSGraph, getSetOfMinLJ
     from pygmin.optimize.quench import lbfgs_py as quench
-    from pygmin.storage.savenlowest import Minimum
-    natoms = 8
+    from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
+    natoms = 27
     #get min1
     pot, saveit = getSetOfMinLJ(natoms)
     min1 = saveit.data[0]
@@ -101,7 +111,7 @@ def test():
     min1id = graph.addMin(min1)
     min2id = graph.addMin(min2)
  
-    connectMinima(min1, min2, pot, graph)
+    connectMinima(min1, min2, pot, graph, mindist)
     
     print graph
     for node in graph.graph.nodes():
@@ -120,12 +130,8 @@ def test():
             n2 = path[i+1]
             m1 = graph.node2min[n1]
             m2 = graph.node2min[n2]
-            e2ts = graph.tstates()
-            try:
-                ts = e2ts[ (n1,n2)]
-            except:
-                ts = e2ts[ (n2,n1)]
-            print "path", m1.E, ts.E, m2.E
+            ts = graph.getTS(n1, n2)
+            print "path", n1, "->", n2, m1.E, "/->", ts.E, "\->", m2.E
             fout.write("%f\n" % m1.E)
             fout.write("%f\n" % ts.E)
         n2 = path[-1]

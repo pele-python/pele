@@ -71,6 +71,12 @@ class MinTSGraph(object):
     
     def tstates(self):
         return nx.get_edge_attributes(self.graph, "ts")
+    def getTS(self, minkey1, minkey2):
+        e2ts = self.tstates()
+        try:
+            return e2ts[(minkey1, minkey2)]
+        except:
+            return e2ts[(minkey2, minkey1)]
 
 def getSetOfMinLJ(natoms = 11): #for testing purposes
     from pygmin.potentials.lj import LJ
