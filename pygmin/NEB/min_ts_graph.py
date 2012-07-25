@@ -79,7 +79,7 @@ class MinTSGraph(object):
     def getPath(self, min1, min2):
         minkey1 = self.minToKey(min1)
         minkey2 = self.minToKey(min2)
-        return self.getPath(minkey1, minkey2)
+        return self._getPath(minkey1, minkey2)
     def _getPath(self, minkey1, minkey2):
         try:
             return nx.bidirectional_dijkstra(self.graph, minkey1, minkey2)

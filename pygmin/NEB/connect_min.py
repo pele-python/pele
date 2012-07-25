@@ -193,7 +193,11 @@ def test():
         Ets = ts.E
         print node1, node2, "E", E1, Ets, E2
         
-    distances, path = nx.bidirectional_dijkstra(graph.graph, min1id, min2id)
+    ret = graph.getPath(min1, min2)
+    if ret == None:
+        print "no path found"
+        return
+    distances, path = ret
     with open("path.out", "w") as fout:
         for i in range(len(path)-1):
             n1 = path[i]
