@@ -4,9 +4,9 @@ from pygmin.optimize import quench
 xt=[]
 tt=[]
 
-def findTS(potential, x0, direction, tol=1.0e-10, maxstep=0.1, **kwargs):
+def findTS(potential, x0, direction, tol=1.0e-6, maxstep=0.1, **kwargs):
     search = DimerSearch(potential, x0, direction, **kwargs)
-    x, E, tmp1, tmp2 = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep)
+    x, E, tmp1, tmp2 = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=10.)
     return x,E,search.tau
 
 class DimerSearch(object):
@@ -19,30 +19,57 @@ class DimerSearch(object):
     '''
 
 
-    def __init__(self, potential, center, direction, delta=1e-5, max_rotsteps=10, theta_cut=0.05, zeroEigenVecs=None):
+    def __init__(self, potential, x0, direction, delta=1e-5, max_rotsteps=100, theta_cut=0.05, zeroEigenVecs=None):
         '''
         Constructor
         '''
+        # potential to work with
         self.potential = potential
-        self.x0 = center
-        self.tau = direction/np.linalg.norm(direction)
+        # point to start search from
+        self.x0 = x0
+        # size of the dimer
         self.delta = 1e-3
+        # maximum number of dimer rotation updates per step
         self.max_rotsteps = max_rotsteps
-        self.theta_cut = theta_cut#
+        # threshold to perform dimer rotation updates
+        self.theta_cut = theta_cut
+        # callback to calculate zero eigenvectors
         self.zeroEigenVecs = zeroEigenVecs
+        # searches starting in this direction have already been performed
+        self.tau_done=[]
+        # current list of eigenvectors to projected out
+        self.tau_ignore=[]
+        self.findNextTS(direction)
+    
+    def findNextTS(self, direction):
+        self.tau = direction/np.linalg.norm(direction)
+        E,g = self.potential.getEnergyGradient(x0)
+        self.updateRotation(x0, E, g)
+        import copy
+        self.tau_ignore=copy.copy(self.tau_done)
+        self.tau_done.append([self.tau.copy(), 0.])
         
     def getEnergyGradient(self, x0):
-        E,g = self.step(x0)
+        E,g = self.potential.getEnergyGradient(x0)
+        self.updateRotation(x0, E, g)
+        
         g = g - 2.*np.dot(g, self.tau)*self.tau
         xt.append(x0)
         tt.append(self.tau)
         return E,g
+    
+    def orthogonalize(self, x, vecs, vecs2=None):
+        for v in vecs:
+            x -= np.dot(x, v)*v
+        if(vecs2):
+            for v in vecs2:
+                x -= np.dot(x, v)*v
         
-    def step(self, x0):
-        E0,grad0 = self.potential.getEnergyGradient(x0)
-        # TODO: check convergence
-        self.updateRotation(x0, E0, grad0)
-        return E0,grad0
+    
+    def getOrthogonalGradient(self, x, eigenvecs1, eigenvecs2=None):
+        E, g = self.potential.getEnergyGradient(x)
+        #self.orthogonalize(g, eigenvecs1, eigenvecs2)
+        return g
     
     def updateRotation(self, x0, E0, grad0_):
         iter_rot = 0
@@ -54,28 +81,24 @@ class DimerSearch(object):
 
         # remove zero eigenvalues from gradient
         grad0 = grad0_.copy()
-        for ev in zev:
-            grad0 -= np.dot(grad0,ev)*ev
+        self.orthogonalize(grad0, zev, [v[0] for v in self.tau_ignore])
 
+        # update ignore list for eigenvalues
+        for t in self.tau_ignore:
+            grad1 = self.getOrthogonalGradient(x0 + t[1]*self.delta, zev)
+            t[1] = np.dot((grad1 - grad0), t[1])/self.delta
             
         while iter_rot < self.max_rotsteps:
             #self.tau = self.tau/np.linalg.norm(self.tau)
             # construct dimer image and get energy + gradient
             
             # remove zero eigenvalues from tau
-            for ev in zev:
-                self.tau -= np.dot(self.tau,ev)*ev
+            self.orthogonalize(self.tau, zev, [v[0] for v in self.tau_ignore])
             self.tau /= np.linalg.norm(self.tau)
             
             x1 = x0 + self.tau*self.delta
-            E1, grad1 = self.potential.getEnergyGradient(x1)
-            # remove zero eigenvalues from gradient
-            for ev in zev:
-                grad1 -= np.dot(grad1,ev)*ev
-            #grad1=-grad1
-            #if(E1 > E0):
-            #    self.tau = - self.tau
-            #    continue
+            grad1 = self.getOrthogonalGradient(x1, zev, [v[0] for v in self.tau_ignore])
+            
             # calculate the rotational force of dimer
             F_rot = -2.*(grad1 - grad0) + 2.*np.dot(grad1 - grad0, self.tau)*self.tau
             
@@ -86,7 +109,7 @@ class DimerSearch(object):
             # calculate curvature C and derivative of curvature
             C = np.dot((grad1 - grad0), self.tau)/self.delta
             dC = 2.*np.dot((grad1 - grad0), Theta)/self.delta
-            
+            #print C,self.tau
             # calculate estimated rotation angle
             theta1=-0.5*np.arctan(dC/(2.*np.abs(C)))
             
@@ -97,17 +120,13 @@ class DimerSearch(object):
             # create rotated trial dimer
             taup = self.rotate(self.tau, Theta, theta1)
             # remove zero eigenvalues from tau
-            for ev in zev:
-                taup -= np.dot(taup,ev)*ev
+            self.orthogonalize(taup, zev, [v[0] for v in self.tau_ignore])
             taup /= np.linalg.norm(taup)
             
             x1p = x0 + self.delta * taup
             
             # get the new energy and gradient at trial conviguration
-            E1p, grad1p = self.potential.getEnergyGradient(x1p)
-            # remove zero eigenvalues from gradient
-            for ev in zev:
-                grad1p -= np.dot(grad1p,ev)*ev
+            grad1p = self.getOrthogonalGradient(x1p, zev, [v[0] for v in self.tau_ignore])
 
             #grad1p = -grad1p
             # get curvature for trial point
@@ -120,8 +139,7 @@ class DimerSearch(object):
             self.tau = self.rotate(self.tau, Theta, theta_min)
             
             # remove zero eigenvalues from tau
-            for ev in zev:
-                self.tau -= np.dot(self.tau,ev)*ev
+            self.orthogonalize(self.tau, zev, [v[0] for v in self.tau_ignore])
             self.tau /= np.linalg.norm(self.tau)
             
 
@@ -163,7 +181,7 @@ if __name__ == "__main__":
     #final = np.array([2., .75]) #np.random.random(3)
 
     pl.pcolor(x, y, z, vmax=-0.5, cmap=pl.cm.PuBu)
-    tau=np.array([0.,-1.])#np.random.random(2)-0.5
+    tau=np.array([0.5,-1.])#np.random.random(2)-0.5
     x1 = x0 + 0.1*tau
     pl.plot([x0[0], x1[0]], [x0[1], x1[1]])
     x0,E,tau = findTS(potential, x0, tau)
