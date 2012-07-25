@@ -31,13 +31,13 @@ class MinTSGraph(object):
         nx.set_edge_attributes(self.graph, "ts", dict())
         #nx.set_node_attributes( self.graph )
         self.nmin = 0
-        self.Etol = 1e-3
+        #self.Etol = 1e-3
     
-    def newKey(self):
+    def _newKey(self):
         self.nmin += 1
         return self.nmin
 
-    def isMinInGraph(self, min1):
+    def minToKey(self, min1):
         for node in self.graph.nodes():
             min2 = self.node2min[node]
             if sameMin(min1, min2):
@@ -45,22 +45,29 @@ class MinTSGraph(object):
         return None
     
     def addMin(self, min):
-        node = self.isMinInGraph(min)
-        if node != None: return node
+        key = self.minToKey(min)
+        if key != None: return key
         
         #it's not in the graph, so get a label for it
-        key = self.newKey()
+        key = self._newKey()
         self.graph.add_node(key)
         self.node2min[key] = min
         return key
     
-    def addTS(self, minkey1, minkey2, ts):
-        edge = self.graph.add_edge(minkey1, minkey2, ts=ts)
-        #print "adding edge", edge
-        #self.edge2ts[edge] = ts
-        return edge
+    def addTS(self, min1, min2, ts):
+        minkey1 = self.minToKey(min1)
+        minkey2 = self.minToKey(min2)
+        return self._addTS(minkey1, minkey2, ts)
     
-    def areConnected(self, minkey1, minkey2):
+    def _addTS(self, minkey1, minkey2, ts):
+        self.graph.add_edge(minkey1, minkey2, ts=ts)
+    
+    def areConnected(self, min1, min2):
+        minkey1 = self.minToKey(min1)
+        minkey2 = self.minToKey(min2)
+        return self._areConnected(minkey1, minkey2)
+    
+    def _areConnected(self, minkey1, minkey2):
         try:
             ret = nx.bidirectional_dijkstra(self.graph, minkey1, minkey2)
             if ret != None:
@@ -68,10 +75,27 @@ class MinTSGraph(object):
             else: return False
         except nx.NetworkXNoPath:
             return False
+        
+    def getPath(self, min1, min2):
+        minkey1 = self.minToKey(min1)
+        minkey2 = self.minToKey(min2)
+        return self.getPath(minkey1, minkey2)
+    def _getPath(self, minkey1, minkey2):
+        try:
+            return nx.bidirectional_dijkstra(self.graph, minkey1, minkey2)
+        except nx.NetworkXNoPath:
+            return None
+
     
     def tstates(self):
         return nx.get_edge_attributes(self.graph, "ts")
-    def getTS(self, minkey1, minkey2):
+    
+    def getTS(self, min1, min2):
+        minkey1 = self.minToKey(min1)
+        minkey2 = self.minToKey(min2)
+        return self._getTS(minkey1, minkey2)
+        
+    def _getTS(self, minkey1, minkey2):
         e2ts = self.tstates()
         try:
             return e2ts[(minkey1, minkey2)]
