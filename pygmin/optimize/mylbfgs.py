@@ -110,8 +110,8 @@ class LBFGS(lbfgs_py.LBFGS):
         else:
             self.nfailed += 1
             if True and self.nfailed > 10:
-                print "too many failures, exiting"
-                exit(1) 
+                raise(BaseException("mylbfgs: too many failures, exiting"))
+                
         
         if False and self.k <= 1:
             print G0
