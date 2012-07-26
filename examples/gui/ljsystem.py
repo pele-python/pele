@@ -74,10 +74,9 @@ class LJSystem:
     
     def findTS(self, coords):
         pot = lj.LJ()
-        tau = np.random.random(coords.shape) - 0.5
                 
-        x0,E,tau = dimer.findTS(pot, coords+1e-2*tau, tau, zeroEigenVecs=self.zeroEigenVecs)
-        m1,m2 = tstools.minima_from_ts(pot.getEnergyGradient, x0, tau, displace=1e-2)
+        x0,E,ret = dimer.findTS(coords, pot, zeroEigenVecs=self.zeroEigenVecs)
+        m1,m2 = tstools.minima_from_ts(pot.getEnergyGradient, x0, ret["eigenvec"], displace=1e-2)
         print "Energies: ", m1[1],E,m2[1]
         return [x0,E],m1,m2
     
