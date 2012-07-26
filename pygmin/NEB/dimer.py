@@ -4,10 +4,21 @@ from pygmin.optimize import quench
 xt=[]
 tt=[]
 
-def findTS(potential, x0, direction, tol=1.0e-6, maxstep=0.1, **kwargs):
-    search = DimerSearch(potential, x0, direction, **kwargs)
-    x, E, tmp1, tmp2 = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=10.)
-    return x,E,search.tau
+# add event callback
+def findTS(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, **kwargs):
+    '''
+    Wrapper for DimerSearch to find transition states
+    '''    
+    search = DimerSearch(x0, potential, direction=direction, **kwargs)
+    x, E, rms, tmp = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=10.)
+    
+    ret = dict()
+    ret["eigenvec"]=search.tau
+    # TODO
+    ret["eigenval"]=0.0
+    ret["rms"]=rms
+    
+    return x,E,ret
 
 class DimerSearch(object):
     '''
@@ -19,7 +30,7 @@ class DimerSearch(object):
     '''
 
 
-    def __init__(self, potential, x0, direction, delta=1e-5, max_rotsteps=100, theta_cut=0.05, zeroEigenVecs=None):
+    def __init__(self, x0, potential, direction=None, delta=1e-5, max_rotsteps=100, theta_cut=0.05, zeroEigenVecs=None):
         '''
         Constructor
         '''
@@ -39,12 +50,15 @@ class DimerSearch(object):
         self.tau_done=[]
         # current list of eigenvectors to projected out
         self.tau_ignore=[]
+        
+        if(direction==None):
+            direction=np.random.random(x0.shape) - 0.5
         self.findNextTS(direction)
     
     def findNextTS(self, direction):
         self.tau = direction/np.linalg.norm(direction)
-        E,g = self.potential.getEnergyGradient(x0)
-        self.updateRotation(x0, E, g)
+        E,g = self.potential.getEnergyGradient(self.x0)
+        self.updateRotation(self.x0, E, g)
         import copy
         self.tau_ignore=copy.copy(self.tau_done)
         self.tau_done.append([self.tau.copy(), 0.])
@@ -58,6 +72,7 @@ class DimerSearch(object):
         tt.append(self.tau)
         return E,g
     
+    # should this be iterative?, go to utility with ljsyszem zero eigenvecs
     def orthogonalize(self, x, vecs, vecs2=None):
         for v in vecs:
             x -= np.dot(x, v)*v
@@ -184,7 +199,8 @@ if __name__ == "__main__":
     tau=np.array([0.5,-1.])#np.random.random(2)-0.5
     x1 = x0 + 0.1*tau
     pl.plot([x0[0], x1[0]], [x0[1], x1[1]])
-    x0,E,tau = findTS(potential, x0, tau)
+    x0,E,ret = findTS(x0, potential, tau)
+    tau=ret["eigenvec"]
     x1 = x0 + 0.1*tau
     pl.plot([x0[0], x1[0]], [x0[1], x1[1]])
     pl.colorbar()
