@@ -52,7 +52,7 @@ nqbins = 20
 use_exponential_bins = True
 
 
-opts, args = getopt.getopt(sys.argv[1:], "hf:o:Fr:q:c:T:e:E:i:Q:L", ["help", "nfree="])
+opts, args = getopt.gnu_getopt(sys.argv[1:], "hf:o:Fr:q:c:T:e:E:i:Q:L", ["help", "nfree="])
 output = None
 verbose = False
 for o, a in opts:
@@ -208,7 +208,7 @@ with open(fname,"w") as fout:
 fname+='.pdf'
 plt.xlabel("overlap")
 plt.ylabel("markov energy")
-plt.scatter(q,e,c=log10visits2d)
+plt.scatter(q,e,c=log10visits2d, lw=0)
 cbar = plt.colorbar()
 cbar.set_label("log10(visits)")
 plt.savefig(fname)
@@ -246,7 +246,7 @@ with open(fname,"w") as fout:
 fname+='.pdf'
 plt.xlabel("overlap")
 plt.ylabel("markov energy")
-plt.scatter(q,e,c=log10n_Eq)
+plt.scatter(q,e,c=log10n_Eq, lw=0)
 cbar=plt.colorbar()
 cbar.set_label("log10( n(E,q) )")
 plt.savefig(fname)

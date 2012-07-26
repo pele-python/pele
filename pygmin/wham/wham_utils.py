@@ -39,7 +39,11 @@ def logSumSlow(log_terms):
     # return the log sum
     return log_sum
 
-def logSumFast(log_terms):
+def logSumFort(log_terms):
+    import _wham_utils
+    return _wham_utils.logsum(log_terms)
+
+def logSumWeave(log_terms):
     from scipy import weave
     from scipy.weave import converters
     nterms = len(log_terms)
@@ -57,6 +61,16 @@ def logSumFast(log_terms):
     """
     log_sum = weave.inline(code, ["nterms", "log_terms"], type_converters=converters.blitz, verbose=2)
     return log_sum
+
+def logSumFast(log_terms):
+    """
+    there are two options available in case the user doesn't have package scipy (as
+    is the case on some clusters) or doesn't have f2py
+    """
+    try:
+        return logSumFort(log_terms)
+    except:
+        return logSumWeave(log_terms)
 
 def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP=100, use_log_sum = None):
     if use_log_sum == None:
@@ -153,7 +167,13 @@ class TestLogSum(unittest.TestCase):
     def testLogSum(self):
         vals = np.random.rand(50) + 0.001
         ls1 = logSumSlow(vals)
-        ls2 = logSumFast(vals)
+        ls2 = logSumWeave(vals)
+        print "%g - %g = %g" % (ls1, ls2, ls1-ls2)
+        self.assertTrue( abs(ls1 - ls2) < 1e-12, "logSumFast is different from logSumSlow: %g - %g = %g" % (ls1, ls2, ls1-ls2) )
+    def testLogFort(self):
+        vals = np.random.rand(50) + 0.001
+        ls1 = logSumSlow(vals)
+        ls2 = logSumFort(vals)
         print "%g - %g = %g" % (ls1, ls2, ls1-ls2)
         self.assertTrue( abs(ls1 - ls2) < 1e-12, "logSumFast is different from logSumSlow: %g - %g = %g" % (ls1, ls2, ls1-ls2) )
 

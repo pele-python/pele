@@ -153,7 +153,7 @@ def loadData(filenames, columns = [0], fskip=0., qcombine=[]):
     for fname in filenames:
         mydata = readFile(fname, columns)
         mydatalist.append(mydata)
-        print "mydata", np.shape(mydata)
+        #print "mydata", np.shape(mydata)
 
     #discard the first fraction (fskip) lines
     if fskip > 0:

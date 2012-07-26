@@ -100,8 +100,10 @@ class wham2d:
         self.logn_Eq = np.where( self.visits2d.sum(0) == 0, self.LOGMIN, self.logn_Eq )
         
         #renormalize logn_Eq
-        #self.logn_Eq -= np.min(self.logn_Eq)
-        #self.allzero2dind = where(self.visits2d.sum(2) == 0)
+        #self.allzero2dind = np.where(self.visits2d.sum(2) == 0)
+        #self.notzero2dind = np.where(self.visits2d.sum(2) != 0)
+        #print self.allzero2dind
+        #self.logn_Eq -= np.min(self.logn_Eq[ self.notzero2dind[1], self.notzero2dind[0] ])
 
         #self.logn_Eq[self.allzero2dind] = 0
 
