@@ -10,7 +10,11 @@ def findTS(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, **kwargs):
     Wrapper for DimerSearch to find transition states
     '''    
     search = DimerSearch(x0, potential, direction=direction, **kwargs)
-    x, E, rms, tmp = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=10.)
+    #search.findNextTS(direction)
+    #search.findNextTS(direction)
+    #search.findNextTS(direction)
+    #x, E, rms, tmp = quench.fire(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep) 
+    x, E, rms, tmp = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=1000.)
     
     ret = dict()
     ret["eigenvec"]=search.tau
@@ -30,7 +34,7 @@ class DimerSearch(object):
     '''
 
 
-    def __init__(self, x0, potential, direction=None, delta=1e-5, max_rotsteps=100, theta_cut=0.05, zeroEigenVecs=None):
+    def __init__(self, x0, potential, direction=None, delta=1e-5, max_rotsteps=1000, theta_cut=0.001, zeroEigenVecs=None, step_callback=None):
         '''
         Constructor
         '''
@@ -51,11 +55,13 @@ class DimerSearch(object):
         # current list of eigenvectors to projected out
         self.tau_ignore=[]
         
-        if(direction==None):
-            direction=np.random.random(x0.shape) - 0.5
         self.findNextTS(direction)
     
     def findNextTS(self, direction):
+        if(direction==None):
+            #while True:
+            direction=np.random.random(self.x0.shape) - 0.5
+            #    self.orthogonalize(x, self.t, vecs2)
         self.tau = direction/np.linalg.norm(direction)
         E,g = self.potential.getEnergyGradient(self.x0)
         self.updateRotation(self.x0, E, g)
@@ -67,7 +73,15 @@ class DimerSearch(object):
         E,g = self.potential.getEnergyGradient(x0)
         self.updateRotation(x0, E, g)
         
+        x1 = x0 + self.tau*self.delta
+        E,grad1 = self.potential.getEnergyGradient(x1)            
+        C = np.dot((grad1 - g), self.tau)/self.delta
+        
+        self.tau_ignore[:] = [t for t in self.tau_ignore if np.abs(t[1]) < np.abs(C) + 1.] 
+                             
+            
         g = g - 2.*np.dot(g, self.tau)*self.tau
+                
         xt.append(x0)
         tt.append(self.tau)
         return E,g
@@ -83,7 +97,7 @@ class DimerSearch(object):
     
     def getOrthogonalGradient(self, x, eigenvecs1, eigenvecs2=None):
         E, g = self.potential.getEnergyGradient(x)
-        #self.orthogonalize(g, eigenvecs1, eigenvecs2)
+        self.orthogonalize(g, eigenvecs1, eigenvecs2)
         return g
     
     def updateRotation(self, x0, E0, grad0_):
@@ -100,8 +114,9 @@ class DimerSearch(object):
 
         # update ignore list for eigenvalues
         for t in self.tau_ignore:
-            grad1 = self.getOrthogonalGradient(x0 + t[1]*self.delta, zev)
-            t[1] = np.dot((grad1 - grad0), t[1])/self.delta
+            E,grad1 = self.potential.getEnergyGradient(x0 + t[0]*self.delta)
+            #grad1 = self.getOrthogonalGradient(x0 + t[1]*self.delta, zev)
+            t[1] = np.dot((grad1 - grad0), t[0])/self.delta
             
         while iter_rot < self.max_rotsteps:
             #self.tau = self.tau/np.linalg.norm(self.tau)
