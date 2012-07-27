@@ -30,8 +30,10 @@ class MyStep(generic.TakestepInterface):
         from pygmin.takestep import buildingblocks as bb
         ca = CoordsAdapter(nrigid=GMIN.getNRigidBody(), nlattice=6, coords=coords)
         bb.rotate(1.6, ca.rotRigid)
-        ca.lattice*=1.2        
-
+        #from pygmin.utils import lattice
+        #bb.reduced_coordinates_displace(0.0, lattice.lowerTriangular(ca.lattice), ca.posRigid)
+        ca.lattice*=1.2      
+        
 def compareMinima(min1, min2):
     from pygmin.utils import rbtools
     ca1 = rbtools.CoordsAdapter(nrigid=GMIN.getNRigidBody(), nlattice=6, coords=min1.coords)
@@ -79,4 +81,4 @@ for i in xrange(1,nsteps/dump_frequency):
     i=0
     for m in save.data:
         i+=1
-        GMIN.writeCIF("cif/lowest%03d.cif"%(i), m.coords)
+        GMIN.writeCIF("cif/lowest%03d.cif"%(i), m.coords, "E"+str(m.E))
