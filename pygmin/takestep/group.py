@@ -51,6 +51,7 @@ class Reseeding(object):
                 " steps, reseeding"
             self.reseed.takeStep(coords, **kwargs)
             kwargs['driver'].acceptTest.forceAccept()
+            self.lowest = None
         else:
             self.takestep.takeStep(coords, **kwargs)
        
