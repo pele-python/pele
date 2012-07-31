@@ -38,7 +38,7 @@ def compareMinima():
 
 # initialize GMIN
 GMIN.initialize()
-pot = gminpotential.GMINPotental(GMIN)
+pot = gminpotential.GMINPotential(GMIN)
 crystals.GMIN = GMIN
 
 # open the storage class

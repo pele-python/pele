@@ -6,7 +6,7 @@ from pygmin.optimize import quench
 from pygmin.takestep import displace
 
 GMIN.initialize()   
-pot = gminpot.GMINPotental(GMIN)
+pot = gminpot.GMINPotential(GMIN)
 
 coords = pot.getCoords()
 

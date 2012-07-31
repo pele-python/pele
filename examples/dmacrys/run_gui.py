@@ -24,7 +24,7 @@ class CrystalSystem:
         
     def createBasinHopping(self):
         GMIN.initialize()   
-        pot = gminpot.GMINPotental(GMIN)
+        pot = gminpot.GMINPotential(GMIN)
         coords = pot.getCoords()
 
         step = TestStep()
@@ -98,7 +98,7 @@ class CrystalSystem:
     
     def createNEB(self, coords1, coords2):
         from pygmin.utils import rotations as rot
-        pot = gminpot.GMINPotental(GMIN)
+        pot = gminpot.GMINPotential(GMIN)
         neb = NEB.NEB(coords1, coords2, pot, k = 100. ,nimages=20)
         # replace rotational interpolation by slerp
         c1 = CoordsAdapter(nrigid=2, nlattice=6, coords=neb.coords[0, :])

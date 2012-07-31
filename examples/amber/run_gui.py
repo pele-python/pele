@@ -18,8 +18,8 @@ class CrystalSystem:
 #        self.bondList = bondList 
         
     def createBasinHopping(self):
-        GMIN.initialize()   
-        pot = gminpot.GMINPotental(GMIN)
+        #GMIN.initialize()   
+        pot = gminpot.GMINPotential(GMIN)
         coords = pot.getCoords()
 
         step = displace.RandomDisplacement()
@@ -70,7 +70,7 @@ class CrystalSystem:
         return coords2, coords1
     
     def createNEB(self, coords1, coords2):
-        pot = gminpot.GMINPotental(GMIN)
+        pot = gminpot.GMINPotential(GMIN)
         return NEB.NEB(coords1, coords2, pot, k = 100. ,nimages=20)
 
                

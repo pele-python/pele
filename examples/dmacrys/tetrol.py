@@ -32,7 +32,7 @@ class MyStep(generic.TakestepInterface):
         ca.lattice*=1.2              
     
 GMIN.initialize()
-pot = gminpot.GMINPotental(GMIN)
+pot = gminpot.GMINPotential(GMIN)
 
 coords = pot.getCoords()
 print "initial energy ", pot.getEnergy(coords)

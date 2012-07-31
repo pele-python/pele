@@ -7,7 +7,7 @@ Created on 3 Jun 2012
 import potential
 import numpy as np
 
-class GMINPotental(potential.potential):
+class GMINPotential(potential.potential):
     '''
     classdocs
     '''
