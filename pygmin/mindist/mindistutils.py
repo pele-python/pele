@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-import pygmin.rotations as rot
+import pygmin.utils.rotations as rot
 import itertools
 
 def alignCoM( X1, X2):

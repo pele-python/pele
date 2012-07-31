@@ -1,5 +1,5 @@
 import numpy as np
-import pygmin.rotations as rot
+import pygmin.utils.rotations as rot
 from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
 from scipy import weave
 from scipy.weave import converters

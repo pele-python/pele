@@ -35,7 +35,7 @@ class RBSystem:
         
     def createBasinHopping(self):
         import pygmin.basinhopping as bh
-        import pygmin.rotations as rot
+        import pygmin.utils.rotations as rot
         mysys = self.createSystem()
         nsites = mysys.nsites
         nmol = self.nmol

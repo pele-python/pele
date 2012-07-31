@@ -1,6 +1,6 @@
 import numpy as np
 import molecule
-import pygmin.rotations as rot
+import pygmin.utils.rotations as rot
 #from potentials.rigid_body_potential import RigidBodyPotential
 from rigid_body_system import RigidBodySystem
 

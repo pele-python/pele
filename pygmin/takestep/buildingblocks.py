@@ -1,5 +1,5 @@
 import numpy as np
-from pygmin import rotations
+from pygmin.utils import rotations
 from pygmin.utils import vec3
 
 def uniform_displace(stepsize, coords):

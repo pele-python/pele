@@ -1,11 +1,5 @@
 import numpy as np
-import rotations as rot
 from mindistutils import CoMToOrigin, alignRotation
-
-
-
-
-
 
 def minDist(X1, X2):
     """

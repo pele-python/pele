@@ -86,7 +86,7 @@ class CrystalSystem:
         GL.glPopMatrix()
         
     def Align(self, coords1, coords2):
-        import pygmin.rotations as rot
+        import pygmin.utils.rotations as rot
         c1 = CoordsAdapter(nrigid=2, nlattice=6, coords=coords1)
         c2 = CoordsAdapter(nrigid=2, nlattice=6, coords=coords2)
         for i in xrange(2):
@@ -99,7 +99,7 @@ class CrystalSystem:
         return coords1, coords2
     
     def createNEB(self, coords1, coords2):
-        from pygmin import rotations as rot
+        from pygmin.utils import rotations as rot
         pot = gminpot.GMINPotental(GMIN)
         neb = NEB.NEB(coords1, coords2, pot, k = 100. ,nimages=20)
         # replace rotational interpolation by slerp

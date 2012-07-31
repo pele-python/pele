@@ -1,6 +1,6 @@
 import lattice
 import vec3
-from pygmin import rotations
+from pygmin.utils import rotations
 import numpy as np
 from pygmin.takestep import generic
 from pygmin.optimize import quench

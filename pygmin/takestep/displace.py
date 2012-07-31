@@ -6,7 +6,7 @@ Created on Jun 6, 2012
 
 import numpy as np
 from generic import TakestepSlice
-from pygmin import rotations
+from pygmin.utils import rotations
 
 class RandomDisplacement(TakestepSlice):
     def __init__(self, stepsize=1.0):

@@ -1,5 +1,5 @@
 import dmagmin_ as GMIN
-from pygmin import rotations
+from pygmin.utils import rotations
 from pygmin.takestep import generic
 from pygmin.optimize import quench
 import crystals
