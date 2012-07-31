@@ -1,6 +1,4 @@
 # -*- coding: iso-8859-1 -*-
-import numpy as np
-from math import *
 import sys
 import accept_tests.metropolis as metropolis
 import copy

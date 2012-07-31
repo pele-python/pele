@@ -84,9 +84,9 @@ class LJ(potential.potential):
         }
         return_val= energy;
         """
-        code2 = """
-        energy = sig2 + eps;
-        """
+#        code2 = """
+#        energy = sig2 + eps;
+#        """
         energy = weave.inline(code, ["coords", "energy", "sig2", "eps", "natoms"], type_converters=converters.blitz, verbose=2)
         #ret = weave.inline(code2, ["energy", "sig2", "eps"], type_converters=converters.blitz, verbose=2)
         return energy
@@ -130,9 +130,9 @@ class LJ(potential.potential):
         }
         return_val= energy;
         """
-        code2 = """
-        energy = sig2 + eps;
-        """
+#        code2 = """
+#        energy = sig2 + eps;
+#        """
         energy = weave.inline(code, ["coords", "V", "energy", "sig2", "eps", "natoms"], type_converters=converters.blitz, verbose=2)
         #ret = weave.inline(code2, ["energy", "sig2", "eps"], type_converters=converters.blitz, verbose=2)
         return energy, V

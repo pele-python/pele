@@ -1,9 +1,7 @@
 from PyQt4 import QtGui
 import NewLJ
-import sys
 import numpy as np
 from pygmin.storage import savenlowest
-import time
 from pygmin.NEB import NEB,dimer,tstools
 import pygmin.potentials.lj as lj
                 
@@ -19,7 +17,6 @@ class LJSystem:
         
     def createBasinHopping(self):
         import pygmin.basinhopping as bh
-        import pygmin.potentials.lj as lj
         from pygmin.takestep import displace
         coords = np.random.random(3 * self.natoms)
         potential = lj.LJ()

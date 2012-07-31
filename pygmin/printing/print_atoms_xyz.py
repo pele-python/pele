@@ -10,8 +10,8 @@ def printAtomsXYZ(fout, coords, line2="", atom_type=["LA"]):
     ...
     """
     natoms = len(coords)/3
-    if isinstance(atom_type, str):
-        atomtype = [atom_type]
+#    if isinstance(atom_type, str):
+#        atomtype = [atom_type]
     natomtypes = len(atom_type)
     fout.write( str(natoms) + "\n")
     fout.write( str(line2) + "\n")

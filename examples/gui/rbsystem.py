@@ -1,9 +1,7 @@
 from PyQt4 import QtGui
 import NewLJ
-import sys
 import numpy as np
 from pygmin.storage import savenlowest
-import time
 from pygmin.NEB import NEB
         
 class RBSystem:
@@ -19,7 +17,6 @@ class RBSystem:
 
     def createSystem(self):
         import pygmin.potentials.lj as lj
-        import pygmin.potentials.rigid_bodies.molecule as molecule
         from pygmin.potentials.rigid_bodies.molecule import setupLWOTP
         from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
         #setup otp molecule
@@ -103,7 +100,6 @@ class RBSystem:
         return X1, X2
     
     def createNEB(self, coords1, coords2):
-        import pygmin.potentials.lj as lj
         return NEB.NEB(coords1, coords2, self.mysys, k = 100., nimages=20)
 
        

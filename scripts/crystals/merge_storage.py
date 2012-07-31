@@ -3,9 +3,8 @@ Created on Jul 27, 2012
 
 @author: vr274
 '''
-from pygmin.utils.rbtools import *
 from pygmin.storage import savenlowest
-from pygmin.utils import crystals,dmagmin
+from pygmin.utils import dmagmin
 import pickle
 
 save = savenlowest.SaveN(nsave=1000, accuracy=1e-3, compareMinima=dmagmin.compareMinima)

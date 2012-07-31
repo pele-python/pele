@@ -46,7 +46,6 @@ def random_coords(nmol, nsites = None):
 
 
 def test_sandbox(nmol = 6):
-    from numpy import sin, cos, pi
     import copy
     from pygmin.potentials.lj import LJ
 

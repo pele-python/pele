@@ -5,7 +5,6 @@ from pygmin.takestep import generic,group
 from pygmin.utils.rbtools import *
 from pygmin.potentials.coldfusioncheck import addColdFusionCheck
 from pygmin.storage import savenlowest
-from pygmin.utils import crystals
 from pygmin.utils import dmagmin
 
 import pickle

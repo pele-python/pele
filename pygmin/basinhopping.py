@@ -1,6 +1,5 @@
 # -*- coding: iso-8859-1 -*-
 import sys
-import optimize.quench as quench
 from mc import MonteCarlo
 import defaults
 

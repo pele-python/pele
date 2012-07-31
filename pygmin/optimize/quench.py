@@ -17,11 +17,11 @@ class getEnergyGradientWrapper:
     def __init__(self, getEnergyGradient):
         self. getEnergyGradient = getEnergyGradient
     def getEnergy(self, coords):
-        e, g = self.getEnergyGradient(coords)
+        ret = self.getEnergyGradient(coords)
         return e
     def getGradient( self, coords ):
-        e, g = self.getEnergyGradient(coords)
-        return g
+        ret = self.getEnergyGradient(coords)
+        return ret[1]
 
 
 def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
@@ -44,7 +44,6 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
 
 def fire(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.5):
     import fire as fire
-    import numpy as np
     opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep)
     opt.run()
     e,g = getEnergyGradient(opt.coords)
@@ -98,7 +97,6 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
 
 def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     import fire as fire
-    import numpy as np
     opt = fire.Fire(coords, getEnergyGradient)
     opt.run()
     e,g = getEnergyGradient(opt.coords)

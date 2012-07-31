@@ -1,8 +1,6 @@
 import dmagmin_ as GMIN
 import pickle
-import sys
-import pygmin.printing.print_atoms_xyz as pr
-import numpy as np
+#import sys
 
 from optparse import OptionParser
 

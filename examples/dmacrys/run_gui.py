@@ -1,11 +1,9 @@
 import numpy as np
 from pygmin.storage import savenlowest
-import time
 from pygmin.NEB import NEB
 from pygmin.utils.rbtools import *
 import dmagmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
-from pygmin.optimize import quench
 from pygmin.takestep import generic
 from pygmin.potentials.coldfusioncheck import addColdFusionCheck
 import pygmin.basinhopping as bh
@@ -35,7 +33,7 @@ class CrystalSystem:
         return opt
     
     def drawCylinder(self, X1, X2):
-        from OpenGL import GL,GLUT, GLU
+        from OpenGL import GL, GLU
         z = np.array([0.,0.,1.]) #default cylinder orientation
         p = X2-X1 #desired cylinder orientation
         r = np.linalg.norm(p)
@@ -43,7 +41,7 @@ class CrystalSystem:
         a = np.arccos( np.dot( z,p) / r ) #rotation angle
         a *= (180. / np.pi)  #change units to angles
         if(np.dot(t,t) < 1e-6):
-             t = [1.,0.,0.]
+            t = [1.,0.,0.]
         GL.glPushMatrix()
         GL.glTranslate( X1[0], X1[1], X1[2] )
         if (np.linalg.norm(t) > 1e-3):
