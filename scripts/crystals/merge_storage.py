@@ -7,16 +7,6 @@ from pygmin.utils.rbtools import *
 from pygmin.storage import savenlowest
 from pygmin.utils import crystals
 import pickle
-    
-def compareMinima(min1, min2):
-    from pygmin.utils import rbtools
-    ca1 = rbtools.CoordsAdapter(nrigid=GMIN.getNRigidBody(), nlattice=6, coords=min1.coords)
-    ca2 = rbtools.CoordsAdapter(nrigid=GMIN.getNRigidBody(), nlattice=6, coords=min2.coords)
-    match = crystals.compareStructures(ca1, ca2)
-    if not match:
-        print "Found minimum with similar energy but different structure"
-    return match
-    
 
 save = savenlowest.SaveN(nsave=1000, accuracy=1e-3)
 save.compareMinima = compareMinima

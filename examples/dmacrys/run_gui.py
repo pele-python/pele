@@ -9,6 +9,7 @@ from pygmin.optimize import quench
 from pygmin.takestep import generic
 from pygmin.potentials.coldfusioncheck import addColdFusionCheck
 import pygmin.basinhopping as bh
+from pygmin.utils import dmagmin
 
 class TestStep(generic.TakestepInterface):
     def takeStep(self, coords, **kwargs):
@@ -17,14 +18,6 @@ class TestStep(generic.TakestepInterface):
         ca = CoordsAdapter(nrigid=2, nlattice=6, coords=coords)
         bb.rotate(1.6, ca.rotRigid)
         ca.lattice*=1.2
-    
-def quenchCrystal(coords, pot, **kwargs):
-    coords, E, rms, calls = quench.lbfgs_py(coords, pot, **kwargs)
-    while(GMIN.reduceCell(coords)):
-        print "Reduced cell, redo minimization"
-        coords, E, rms, callsn = quench.lbfgs_py(coords, pot, **kwargs)
-        calls+=callsn
-    return coords, E, rms, calls
         
 class CrystalSystem:
     def __init__(self):
@@ -37,7 +30,7 @@ class CrystalSystem:
         coords = pot.getCoords()
 
         step = TestStep()
-        opt = bh.BasinHopping(coords, pot, takeStep=step, quenchRoutine=quenchCrystal, temperature=0.4, storage=self.storage)
+        opt = bh.BasinHopping(coords, pot, takeStep=step, quenchRoutine=dmagmin.quenchCrystal, temperature=0.4, storage=self.storage)
         addColdFusionCheck(opt)
         return opt
     

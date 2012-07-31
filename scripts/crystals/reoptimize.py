@@ -1,8 +1,9 @@
 import pickle
 import dmagmin_ as GMIN
-from pygmin.utils import crystals
+from pygmin.utils import crystals,dmagmin
 from pygmin.potentials import gminpotential 
 from optparse import OptionParser
+
 
 # add some program options
 parser = OptionParser(usage = "usage: %prog [options] arg1 arg2")
@@ -47,7 +48,7 @@ save = pickle.load(open(infile,"r"))
 i=0
 for m in save.data:
     i+=1
-    ret = crystals.quenchCrystal(m.coords, pot.getEnergyGradient, tol=options.tol, maxErise=options.maxErise)
+    ret = dmagmin.quenchCrystal(m.coords, pot.getEnergyGradient, tol=options.tol, maxErise=options.maxErise)
     print "minimum",i,"energy (old energy)",ret[1],"(%f)"%(m.E)
     m.E = ret[1]
     m.coords = ret[0]
