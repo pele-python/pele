@@ -1,14 +1,15 @@
 from sqlalchemy import Column, Integer, Float, PickleType
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, deferred
 import globals
 
 class Minimum(globals.Base):
-    __tablename__ = 'minima'
+    __tablename__ = 'tbl_minima'
 
-    id = Column(Integer, primary_key=True)
+    _id = Column(Integer, primary_key=True)
     energy = Column(Float)
-    coords = Column(PickleType)
+    # deferred means the object is loaded on demand, that saves some time / memory for huge graphs
+    coords = deferred(Column(PickleType)) 
     
     def __init__(self, energy, coords):
         self.energy = energy
@@ -17,16 +18,17 @@ class Minimum(globals.Base):
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
 class TransitionState(globals.Base):
-    __tablename__ = "transition_states"
-    id = Column(Integer, primary_key=True)
+    __tablename__ = "tbl_transition_states"
+    _id = Column(Integer, primary_key=True)
     energy = Column(Float)
     coords = Column(PickleType)
     
-    _minimum1_id = Column(Integer, ForeignKey('minima.id'))
-    minimum1 = relationship("Minimum")
+    _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
+    minimum1 = relationship("Minimum", primaryjoin="Minimum._id==TransitionState._minimum1_id")
 
-    #__minimum2_id = Column(Integer, ForeignKey('minima.id'))
-    #minimum2 = relationship("Minimum")
+    
+    _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
+    minimum2 = relationship("Minimum", primaryjoin="Minimum._id==TransitionState._minimum2_id")
     
     def __init__(self, energy, min1, min2):
         self.energy = energy
@@ -51,10 +53,10 @@ if __name__ == "__main__":
     min2 = Minimum(2., np.random.random(10))
     
     session.add_all([min1, min2])
-    session.flush()
-    ts = TransitionState(3., min1, min2)
-    session.add(TransitionState(3., min1, min2))
+    #session.flush()
+    #ts = TransitionState(3., min1, min2)
+    #session.add(ts)
     
-    session.flush()
-    print min1.id, min2.id, ts.id, ts._minimum1_id
-    print min1.coords
+    #session.flush()
+    #print min1._id, min2._id, ts._id, ts._minimum1_id
+    #print min1.coords
