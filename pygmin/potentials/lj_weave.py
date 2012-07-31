@@ -155,8 +155,8 @@ def main():
     print V
 
     print "try a quench slow"
-    from optimize.quench import quench
-    ret = quench( coords, lj.getEnergyGradientSlow, iprint=-1 )
+    from pygmin import defaults
+    ret = defaults.quench( coords, lj.getEnergyGradientSlow, iprint=-1, **defaults.quenchParams)
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
     print "energy ", ret[1]
     print "rms gradient", ret[2]
@@ -164,7 +164,7 @@ def main():
     
     print "try a quench weave"
     eweave, vweave = lj.getEnergyGradient(coords)
-    ret = quench( coords0, lj.getEnergyGradient, iprint=-1 )
+    ret = defaults.quench( coords0, lj.getEnergyGradient, iprint=-1, **defaults.quenchParams )
     print "energy weave", eweave
     print "energy weave post quench", ret[1]
     

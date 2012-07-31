@@ -112,8 +112,9 @@ import unittest
 from testmindist import TestMinDist
 class TestMinPermDistStochastic_BLJ(TestMinDist):
     def setUp(self):
-        from potentials.ljpshift import LJpshift as BLJ
-        from optimize.quench import quench 
+        from pygmin.potentials.ljpshift import LJpshift as BLJ
+        from pygmin import defaults
+        
         self.natoms = 25
         self.ntypeA = int(self.natoms * .8)
         self.pot = BLJ(self.natoms, self.ntypeA)
@@ -122,7 +123,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         self.X1 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
         #run a quench so the structure is not crazy
-        ret = quench(self.X1, self.pot.getEnergyGradient)
+        ret = defaults.quench(self.X1, self.pot.getEnergyGradient, defaults.quenchParams)
         self.X1 = ret[0]
         
 
@@ -199,7 +200,7 @@ def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz"):
     printlist.append((X2.copy(), "X2 final"))
 
 
-    import printing.print_atoms_xyz as printxyz
+    import pygmin.printing.print_atoms_xyz as printxyz
     with open(fname, "w") as fout:
         for xyz, line2 in printlist:
             printxyz.printAtomsXYZ(fout, xyz, line2=line2 +" "+ str(lj.getEnergy(xyz)))
@@ -210,7 +211,7 @@ def test_binary_LJ(natoms = 12):
     printlist = []
     
     ntypea = int(natoms*.8)
-    from potentials.ljpshift import LJpshift
+    from pygmin.potentials.ljpshift import LJpshift
     lj = LJpshift(natoms, ntypea)
     permlist = [range(ntypea), range(ntypea, natoms)]
 
@@ -269,7 +270,7 @@ def test_binary_LJ(natoms = 12):
         
         
 def test_LJ(natoms = 12):
-    from potentials.lj import LJ
+    from pygmin.potentials.lj import LJ
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     #quench X1

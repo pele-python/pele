@@ -228,7 +228,7 @@ def dumbbell(sig1 = 0.35, sig2 = 0.65):
     dbel.insert_site(1, pos2)
     dbel.correctCoM()
     
-    from potentials.lj import LJ
+    from pygmin.potentials.lj import LJ
     lj1 = LJ(sig = 2.*sig1)
     lj2 = LJ(sig = 2.*sig2)
     lj12 = LJ(sig = sig1+sig2)
@@ -242,7 +242,7 @@ def test_molecule():
     otp = setupLWOTP()
 
     xyz = otp.getxyz()
-    from printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     import sys
     #with open("out.xyz", "w") as fout:
     printxyz(sys.stdout, xyz)
