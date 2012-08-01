@@ -287,14 +287,14 @@ def testpot1():
     
     if True:
         print "now try the same search with the dimer method"
-        from pygmin.NEB.dimer import findTS as dimerfindTS
+        from pygmin.NEB.dimer import findTransitionState as dimerfindTS
         coords = coordsinit.copy()
         tau = np.random.uniform(-1,1,len(coords))
         tau /= np.linalg.norm(tau)
-        x, e, vec = dimerfindTS(pot, coords, tau )
-        enew, grad = pot.getEnergyGradient(coords)
-        print "energy", e
-        print "rms grad", np.linalg.norm(grad) / np.sqrt(float(len(coords))/3.)
+        ret = dimerfindTS(coords, pot, tau )
+        enew, grad = pot.getEnergyGradient(ret.coords)
+        print "energy", enew
+        print "rms grad", np.linalg.norm(grad) / np.sqrt(float(len(ret.coords))/3.)
 
 
 

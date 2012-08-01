@@ -5,7 +5,7 @@ xt=[]
 tt=[]
 
 # add event callback
-def findTS(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, **kwargs):
+def findTransitionState(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, **kwargs):
     '''
     Wrapper for DimerSearch to find transition states
     '''    
@@ -15,15 +15,10 @@ def findTS(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, **kwargs):
     #search.findNextTS(direction)
     #x, E, rms, tmp = quench.fire(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep) 
     x, E, rms, tmp = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=1000.)
+        
+    from collections import namedtuple
+    return namedtuple("TransitionStateResults", "coords,energy,eigenval,eigenvec,rms")(x, E, 0.0, search.tau, rms)
     
-    ret = dict()
-    ret["eigenvec"]=search.tau
-    # TODO
-    ret["eigenval"]=0.0
-    ret["rms"]=rms
-    
-    return x,E,ret
-
 class DimerSearch(object):
     '''
     single ended transition search method using hybrid eigenvector following / dimer method. 
@@ -214,8 +209,10 @@ if __name__ == "__main__":
     tau=np.array([0.5,-1.])#np.random.random(2)-0.5
     x1 = x0 + 0.1*tau
     pl.plot([x0[0], x1[0]], [x0[1], x1[1]])
-    x0,E,ret = findTS(x0, potential, tau)
-    tau=ret["eigenvec"]
+    ret = findTransitionState(x0, potential, tau)
+    x0 = ret.coords
+    tau=ret.eigenvec
+    E = ret.energy
     x1 = x0 + 0.1*tau
     pl.plot([x0[0], x1[0]], [x0[1], x1[1]])
     pl.colorbar()
