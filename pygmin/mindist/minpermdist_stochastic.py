@@ -123,7 +123,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         self.X1 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
         #run a quench so the structure is not crazy
-        ret = defaults.quench(self.X1, self.pot.getEnergyGradient, defaults.quenchParams)
+        ret = defaults.quenchRoutine(self.X1, self.pot.getEnergyGradient, **defaults.quenchParams)
         self.X1 = ret[0]
         
 

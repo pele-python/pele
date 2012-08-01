@@ -32,7 +32,7 @@ class DoubleEndedConnect(object):
 
     def addMinimum(self, *args):
         m = self.graph.addMinimum(*args)
-        if not m._id in self.idlist and m._id != self.minstart._id and m._id != self.minend._id:
+        if not m in self.idlist and not (m is self.minstart) and not (m is self.minend):
             self.idlist.append(m)
         return m
         
