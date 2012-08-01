@@ -1,26 +1,63 @@
-'''
-Created on Aug 1, 2012
+from optparse import OptionParser
 
-@author: vr274
-'''
-
-from pygmin.storage.database import Storage
-
-if __name__ == '__main__':
-    db = Storage(db="../pygmin/NEB/test.db")
+def main():
+    # add some program options
+    parser = OptionParser(usage = "usage: %prog [options] storage")
     
+    from pygmin.storage.database import Storage
+    
+    parser.add_option("--write-disconnect",
+                      dest="writeDPS", action="store_true",
+                      help="generate min.dat and ts.dat to use with disconnectDPS")
+    parser.add_option("-m",
+                      dest="writeMinima", action="store_true",
+                      help="dump minima to screen")
+    parser.add_option("-t",
+                      dest="writeTS", action="store_true",
+                      help="dump transition states to screen")
+    
+    (options, args) = parser.parse_args()
+    
+    # print help if no input file is given
+    if(len(args) != 1):
+        parser.print_help()
+        exit(-1)
+        
+    db = Storage(db=args[0])
+
+    if(options.writeMinima):
+        print "List of minima:"
+        print "---------------"
+        for m in db.minima():
+            print "%f\t\tid %d"%(m.energy, m._id)
+        print "END\n"
+    
+    if(options.writeTS):
+        print "List of transition states:"
+        print "--------------------------"
+        for ts in db.transition_states():
+            print "%d\t<->\t%d\tid %d\tenergies %f %f %f"%\
+                (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
+        print "END\n"
+        
+    if(options.writeDPS):
+        writeDPS(db)
+        
+
+def writeDPS(db):
     minindex={}
     out = open("min.data", "w")
     i=1
-    print "foo"
     for m in db.minima():
         minindex[m]=i
         i+=1
         out.write("%f 0.0 1 0.0 0.0 0.0\n"%(m.energy))
-        print "%f 0.0 1 0.0 0.0 0.0"%(m.energy)
-        
     out = open("ts.data", "w")
+    ti=0
     for ts in db.transition_states():
+        ti+=1
         out.write("%f 0.0 1 %d %d 0.0 0.0 0.0\n"%(ts.energy, minindex[ts.minimum1], minindex[ts.minimum2]))
-        print "%f 0.0 1 %d %d 0.0 0.0 0.0"%(ts.energy, minindex[ts.minimum1], minindex[ts.minimum2])
-        
+    print "Written %d minima and %d transition states"%(i, ti)
+
+if __name__ == "__main__":
+    main()    
