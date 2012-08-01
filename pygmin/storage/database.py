@@ -59,7 +59,7 @@ class TransitionState(Base):
                             backref='right_edges')
     '''second minimum which connects to transition state'''
     
-    def __init__(self, energy, min1, min2):
+    def __init__(self, energy, coords, min1, min2):
         self.energy = energy
         self.minimum1 = min1
         self.minimum2 = min2
@@ -146,12 +146,40 @@ class Storage(object):
         self.lock.release()
         return new
     
+    def addTransitionState(self, E, coords, min1, min2, commit=True):
+        candidates = self.session.query(TransitionState).\
+            filter(TransitionState.minimum1==min1).\
+            filter(TransitionState.minimum1==min2).\
+            filter(TransitionState.energy > E-self.accuracy).\
+            filter(TransitionState.energy<E+self.accuracy)
+        
+        for m in candidates:
+            #if(self.compareMinima):
+            #    if(self.compareMinima(new, m) == False):
+            #        continue
+            #self.lock.release() 
+            return m
+        
+        new = TransitionState(E, coords, min1, min2)
+            
+        self.session.add(new)
+        if(commit):
+            self.session.commit()
+        return new
+    
     def minima(self):
         '''iterate over all minima in database
         
         :returns: query for all minima in database ordered in ascendind energy
         '''
         return self.session.query(Minimum).order_by(Minimum.energy).all()
+    
+    def transition_states(self):
+        '''iterate over all minima in database
+        
+        :returns: query for all minima in database ordered in ascendind energy
+        '''
+        return self.session.query(TransitionState).all()
     
     def minimum_adder(self):
         '''wrapper class to add minima
@@ -165,7 +193,7 @@ class Storage(object):
             def __init__(self, db):
                 self.db = db
             def __call__(self, E, coords):
-                db.addMinimum(E, coords)
+                self.db.addMinimum(E, coords)
         return minimum_adder(self)
 
 if __name__ == "__main__":    

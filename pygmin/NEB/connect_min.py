@@ -3,7 +3,6 @@ from pygmin.NEB.NEB import NEB
 from pygmin.optimize.transition_state.transition_state_refinement import findTransitionState
 import tstools
 from pygmin.storage.savenlowest import Minimum 
-from min_ts_graph import TransitionState
 import networkx as nx
 import copy
 import itertools
@@ -14,53 +13,34 @@ class DoubleEndedConnect(object):
         self.graph = graph
         self.minstart = min1
         self.minend = min2
-        self.minstartid = graph.addMin(self.minstart)
-        self.minendid = graph.addMin(self.minend)
         self.pot = pot
         self.mindist = mindist
-        self.idlist = []
         self.distmatrix = dict()
         self.pairsNEB = dict()
+        self.idlist = []
         
-    def _getDist(self, min1id, min2id):
-        min1 = self.graph.node2min[min1id]
-        min2 = self.graph.node2min[min2id]
-        return self.getDist(min1, min2)
     def getDist(self, min1, min2):
-        id1 = self.graph.minToKey(min1)
-        id2 = self.graph.minToKey(min2)
-        dist = self.distmatrix.get((id1, id2))
+        dist = self.distmatrix.get((min1, min2))
         if dist == None:
-            dist = self.distmatrix.get((id2, id1))
+            dist = self.distmatrix.get((min1, min2))
         if dist != None:
             return dist
-        print "calculating distance between", id1, id2
+        print "calculating distance between", min1._id, min2._id
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
-        self.distmatrix[(id1,id2)] = dist
+        self.distmatrix[(min1,min2)] = dist
         return dist
 
-    def addTS(self, min1, min2, ts):
-        id1 = self.addMin(min1)
-        id2 = self.addMin(min2)
-        if id1 == id2:
-            print "warning: stepping off the transition state resulted in twice the same minima", id1
-        else:
-            print "adding transition state", id1, id2
-            self.graph.addTS(min1, min2, ts)
-
-    def addMin(self, min):
-        id = self.graph.addMin(min)
-        if not id in self.idlist and id != self.minstartid and id != self.minendid:
-            self.idlist.append(id)
-        return id
-
+    def addMinimum(self, *args):
+        m = self.graph.addMinimum(*args)
+        if not m._id in self.idlist and m._id != self.minstart._id and m._id != self.minend._id:
+            self.idlist.append(m)
+        return m
+        
     def doNEB(self, min1, min2):
         graph = self.graph
-        min1id = graph.minToKey(min1)
-        min2id = graph.minToKey(min2)
-        self.pairsNEB[(min1id, min2id)] = True
+        self.pairsNEB[(min1, min2)] = True
         print ""
-        print "starting NEB run to try to connect minima", min1id, min2id
+        print "starting NEB run to try to connect minima", min1._id, min2._id
         print "minimizing the distance between the two minima"
         dist, newcoords1, newcoords2 = self.mindist(min1.coords, min2.coords) 
         print "runing NEB"
@@ -79,19 +59,26 @@ class DoubleEndedConnect(object):
                 ret = findTransitionState(coords, self.pot)
                 coords, eigval, eigvec, E, grad, rms = ret
     
-                ts = TransitionState(coords, E, eigvec, eigval)
                 print "falling off either side of transition state to find new minima"
-                ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = ts.eigenvec, \
+                ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = eigvec, \
                     displace=1e-3, quenchParameters={"tol":1e-7})
                 
-                newmin1 = Minimum(ret1[1], ret1[0])
-                newmin2 = Minimum(ret2[1], ret2[0])
-                self.addTS( newmin1, newmin2, ts)
-                
-                connected = graph._areConnected(min1id, min2id)
+                min1 = self.addMinimum(ret1[1], ret1[0])
+                min2 = self.addMinimum(ret2[1], ret2[0])
+                if min1 is min2:
+                    print "warning: stepping off the transition state resulted in twice the same minima", min1._id
+                else:
+                    print "adding transition state", min1._id, min2._id
+                    #ts = TransitionState(coords, E, eigvec, eigval)
+                    #self.graph.addTransitionState(min1, min2, ts)   self.addTS( newmin1, newmin2, ts)
+                    from pygmin.storage.database import TransitionState
+                    ts = self.graph.addTransitionState(E, coords, min1, min2) #, eigvec, eigval)
+                    graph.refresh()
+                    
+                connected = graph.areConnected(min1, min2)
                 print "connected yet?", connected
                 if connected:
-                    break
+                    break            
                 
     def getNextPair(self):
         """
@@ -102,48 +89,44 @@ class DoubleEndedConnect(object):
         #sort minimalist by distance to min1
         print "getting next pair to try to connect"
         print "sorting minimalist"
+        
         minimalistbackup = copy.copy(self.idlist)
-        def getDist(id1):
-            min = self.graph.node2min[id1]
-            return self.getDist(self.minstart, min)
+        def getDist(m):
+            return self.getDist(self.minstart, m)
         self.idlist = sorted(self.idlist, key=getDist)
     
         idlist = copy.copy(self.idlist)
-        idlist.insert(0, self.minstartid)
-        idlist.append(self.minendid)
+        idlist.insert(0, self.minstart)
+        idlist.append(self.minend)
         print idlist
         
         def mydist( mpair ):
-            return self._getDist(mpair[0], mpair[1])
+            return self.getDist(mpair[0], mpair[1])
         pairlist = sorted( itertools.combinations(idlist,2), key=mydist )
 
         if True:
             
             if True:
-                for id1, id2 in pairlist:
-                    print id1, id2, self._getDist( id1, id2 )
+                for m1, m2 in pairlist:
+                    print m1._id, m2._id, self.getDist( m1, m2 )
 
-            for id1, id2 in pairlist:
-                if self.graph._areConnected(id1, id2):
+            for m1, m2 in pairlist:
+                if self.graph.areConnected(m1, m2):
                     continue
-                if self.pairsNEB.has_key( (id1,id2) ) or self.pairsNEB.has_key( (id2,id1) ):
+                if self.pairsNEB.has_key( (m1,m2) ) or self.pairsNEB.has_key( (m2,m1) ):
                     continue
-                min1 = self.graph.node2min[id1]
-                min2 = self.graph.node2min[id2]
-                return min1, min2
+                return m1, m2
 
         if False:
             #we should choose the next minima pair to try to connect in a more clever way.
             for i in range(len(idlist)-1):
-                id1 = idlist[i]
-                id2 = idlist[i+1]
-                if self.graph._areConnected(id1, id2):
+                m1 = idlist[i]
+                m2 = idlist[i+1]
+                if self.graph.areConnected(m1, m2):
                     continue
-                if self.pairsNEB.has_key( (id1,id2) ) or self.pairsNEB.has_key( (id2,id1) ):
+                if self.pairsNEB.has_key( (m1,m2) ) or self.pairsNEB.has_key( (m2,m1) ):
                     continue
-                min1 = self.graph.node2min[id1]
-                min2 = self.graph.node2min[id2]
-                return min1, min2
+                return m1, m2
     
     
         return None, None
@@ -154,44 +137,56 @@ class DoubleEndedConnect(object):
         """
         self.doNEB(self.minstart, self.minend)
         while True: 
-            if self.graph._areConnected(self.minstartid, self.minendid):
+            if self.graph.areConnected(self.minstart, self.minend):
                 return
             
             min1, min2 = self.getNextPair()
             if min1 == None:
                 break
             self.doNEB(min1, min2)
-        print "failed to find connection between", self.minstartid, self.minendid
+        print "failed to find connection between", self.minstart._id, self.minend._id
     
-    
+def getSetOfMinLJ(natoms = 11): #for testing purposes
+    from pygmin.potentials.lj import LJ
+    pot = LJ()
+    coords = np.random.uniform(-1,1,natoms*3)
+    from pygmin.basinhopping import BasinHopping
+    from pygmin.takestep.displace import RandomDisplacement
+    from pygmin.takestep.adaptive import AdaptiveStepsize
+    from pygmin.storage.database import Storage
+    saveit = Storage(db="test.db")
+    takestep1 = RandomDisplacement()
+    takestep = AdaptiveStepsize(takestep1, frequency=15)
+    bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)
+    bh.run(100)
+    return pot, saveit
 
 
 def test():
-    from min_ts_graph import MinTSGraph, getSetOfMinLJ
+    from graph import Graph
     from pygmin.optimize.quench import lbfgs_py as quench
     from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
+    from pygmin.storage.database import Storage
     natoms = 27
     #get min1
     pot, saveit = getSetOfMinLJ(natoms)
-    min1 = saveit.data[0]
-    min2 = saveit.data[1]
-    
-    graph = MinTSGraph()
-    min1id = graph.addMin(min1)
-    min2id = graph.addMin(min2)
+#    from pygmin.potentials.lj import LJ
+#    pot = LJ()
+#    saveit = Storage(db="test.db")
+    graph = Graph(saveit)
+    minima = saveit.minima()
+    min1 = minima[0]
+    min2 = minima[1]
+    print min1.energy, min2.energy
  
     connect = DoubleEndedConnect(min1, min2, pot, graph, mindist)
     connect.connect()
     
     print graph
     for node in graph.graph.nodes():
-        print node, graph.node2min[node].E
-    for edge, ts in graph.tstates().items():
-        node1, node2 = edge 
-        E1 = graph.node2min[node1].E
-        E2 = graph.node2min[node2].E
-        Ets = ts.E
-        print node1, node2, "E", E1, Ets, E2
+        print node, node.energy
+    for ts in graph.storage.transition_states():
+        print ts.minimum1._id,ts.minimum2._id, "E", ts.minimum1.energy, ts.minimum2.energy, ts.minimum2.energy
         
     ret = graph.getPath(min1, min2)
     if ret == None:
@@ -200,17 +195,17 @@ def test():
     distances, path = ret
     with open("path.out", "w") as fout:
         for i in range(len(path)-1):
-            n1 = path[i]
-            n2 = path[i+1]
-            m1 = graph.node2min[n1]
-            m2 = graph.node2min[n2]
-            ts = graph._getTS(n1, n2)
-            print "path", n1, "->", n2, m1.E, "/->", ts.E, "\->", m2.E
-            fout.write("%f\n" % m1.E)
-            fout.write("%f\n" % ts.E)
-        n2 = path[-1]
-        m2 = graph.node2min[n2]
-        fout.write("%f\n" % m2.E)
+            m1 = path[i]
+            m2 = path[i+1]
+            n1 = m1._id
+            m2 = m2._id
+#            ts = graph._getTS(n1, n2)
+#            print "path", n1, "->", n2, m1.E, "/->", ts.E, "\->", m2.E
+            fout.write("%f\n" % m1.energy)
+            fout.write("%f\n" % ts.energy)
+        m2 = path[-1]
+        n2 = m2._id
+        fout.write("%f\n" % m2.energy)
 
 
 if __name__ == "__main__":
