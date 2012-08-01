@@ -136,7 +136,8 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwar
     if rms > tol:
         print "warning: transition state search appears to have failed: rms", rms
     
-    return coords, tspot.eigval, tspot.eigvec, E, grad, rms
+    from collections import namedtuple
+    return namedtuple("TransitionStateResults", "coords,energy,eigenval,eigenvec,grad,rms")(coords, E, tspot.eigval, tspot.eigvec, grad, rms)
 
 ###################################################################
 #below here only stuff for testing
@@ -275,14 +276,14 @@ def testpot1():
         print "starting the transition state search"
         ret = findTransitionState(coords, pot, event=printevent, verbose = False)
         
-        coords, eval, evec, e, grad, rms = ret
-        e = pot.getEnergy(coords)
+        #coords, eval, evec, e, grad, rms = ret
+        e = pot.getEnergy(ret.coords)
         printxyz(fout, coords2, line2=str(e))
 
     print "finished searching for transition state"
     print "energy", e
-    print "rms grad", rms
-    print "eigenvalue", eval
+    print "rms grad", ret.rms
+    print "eigenvalue", ret.eigenval
     
     if True:
         print "now try the same search with the dimer method"

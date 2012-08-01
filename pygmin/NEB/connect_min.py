@@ -57,10 +57,11 @@ class DoubleEndedConnect(object):
                 coords = neb.coords[i,:]
                 print "refining transition state from NEB climbing image"
                 ret = findTransitionState(coords, self.pot)
-                coords, eigval, eigvec, E, grad, rms = ret
-    
+                #coords, eigval, eigvec, E, grad, rms = ret
+                coords = ret.coords
+                E = ret.energy
                 print "falling off either side of transition state to find new minima"
-                ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = eigvec, \
+                ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
                     displace=1e-3, quenchParameters={"tol":1e-7})
                 
                 min1 = self.addMinimum(ret1[1], ret1[0])
