@@ -11,7 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   quenching
    database
+   transitionstates
 
 Indices and tables
 ==================
