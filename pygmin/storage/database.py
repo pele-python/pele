@@ -1,3 +1,4 @@
+"""This module implements storage of pygmin simulation data in a relational database"""
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -13,12 +14,15 @@ verbose=False
 Base = declarative_base()
 
 class Minimum(Base):
+    '''Base class to store minima'''
     __tablename__ = 'tbl_minima'
 
     _id = Column(Integer, primary_key=True)
-    energy = Column(Float)
+    energy = Column(Float) 
+    '''energy of the minimum'''
     # deferred means the object is loaded on demand, that saves some time / memory for huge graphs
-    coords = deferred(Column(PickleType)) 
+    coords = deferred(Column(PickleType))
+    '''coordinatse of the minimum'''
     
     def right_neighbors(self):
         return [x.higher_node for x in self.left_edges]
@@ -33,21 +37,27 @@ class Minimum(Base):
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
 class TransitionState(Base):
+    '''Base class to store transition states'''
     __tablename__ = "tbl_transition_states"
     _id = Column(Integer, primary_key=True)
+    
     energy = Column(Float)
+    '''energy of transition state'''
+    
     coords = Column(PickleType)
+    '''coordinates of transition state'''
     
     _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum1 = relationship("Minimum",
                             primaryjoin="Minimum._id==TransitionState._minimum1_id",
                             backref='left_edges')
-
+    '''first minimum which connects to transition state'''
     
     _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum2 = relationship("Minimum",
                             primaryjoin="Minimum._id==TransitionState._minimum2_id",
                             backref='right_edges')
+    '''second minimum which connects to transition state'''
     
     def __init__(self, energy, min1, min2):
         self.energy = energy
@@ -56,6 +66,21 @@ class TransitionState(Base):
 
 
 class Storage(object):
+    '''Database storage class
+    
+    The Storage class handles the connection to the database.
+
+    :Example:
+
+    >>> from pygmin.storage import database
+    >>> db = database.Storage(db="test.db")
+    >>> for energy in np.random.random(10):
+    >>>     a.addMinimum(energy, np.random.random(10)
+    >>>
+    >>> for minimum in database.minima():
+    >>>     print minimum.energy
+    
+    '''
     engine = None
     Session = None
     accuracy = 1e-3
@@ -90,6 +115,8 @@ class Storage(object):
     def addMinimum(self, E, coords, commit=True):
         """add a new minimum to database
         
+        - **parameters**, **types**, **return** and **return types**::
+        
         :param E: energy
         :type E: float
         :param coords: coordinates of the minimum
@@ -120,9 +147,20 @@ class Storage(object):
         return new
     
     def minima(self):
+        '''iterate over all minima in database
+        
+        :returns: query for all minima in database ordered in ascendind energy
+        '''
         return self.session.query(Minimum).order_by(Minimum.energy).all()
     
     def minimum_adder(self):
+        '''wrapper class to add minima
+        
+        Since pickle cannot handle pointer to member functions, this class wraps the call to
+        add minimum.
+        
+        :returns: add minimum handler
+        '''
         class minimum_adder:
             def __init__(self, db):
                 self.db = db
