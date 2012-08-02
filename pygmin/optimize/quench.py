@@ -45,7 +45,7 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
 def fire(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.5):
     import fire as fire
     opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep)
-    opt.run()
+    opt.run(fmax=tol)
     e,g = getEnergyGradient(opt.coords)
     rms = np.linalg.norm(g)/np.sqrt(len(g))
     return opt.coords, e, rms, opt.nsteps
