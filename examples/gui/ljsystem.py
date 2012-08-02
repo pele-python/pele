@@ -72,10 +72,10 @@ class LJSystem:
     def findTS(self, coords):
         pot = lj.LJ()
                 
-        x0,E,ret = dimer.findTS(coords, pot, zeroEigenVecs=self.zeroEigenVecs)
-        m1,m2 = tstools.minima_from_ts(pot.getEnergyGradient, x0, ret["eigenvec"], displace=1e-2)
-        print "Energies: ", m1[1],E,m2[1]
-        return [x0,E],m1,m2
+        ret = dimer.findTransitionState(coords+np.random.random(coords.shape)*0.01, pot, zeroEigenVecs=self.zeroEigenVecs, tol=1.e-6)
+        m1,m2 = tstools.minima_from_ts(pot.getEnergyGradient, ret.coords, ret.eigenvec, displace=1e-2)
+        print "Energies: ", m1[1],ret.energy,m2[1]
+        return [ret.coords,ret.energy],m1,m2
     
         
        
