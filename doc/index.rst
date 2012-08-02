@@ -14,6 +14,7 @@ Contents:
    quenching
    database
    transitionstates
+   utils
 
 Indices and tables
 ==================
