@@ -61,7 +61,7 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     print "energy", e
     
     lbfgs = LBFGS(X, pot, maxstep = 0.1)
-    #printevent = PrintEvent( "debugout.xyz")
+    printevent = PrintEvent( "debugout.xyz")
     #lbfgs.attachEvent(printevent)
     
     ret = lbfgs.run(10000, tol = tol, iprint=iprint)
@@ -89,7 +89,7 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     if True:
         print ""
         print "calling from wrapper function"
-        from pygmin.optimize.quench import mylbfgs_callback as quench
+        from pygmin.optimize.quench import mylbfgs as quench
         ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
         

@@ -24,7 +24,7 @@ def coordsApplyRotation(coordsin, aa):
 
 
 
-def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
+def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None, verbose=False):
     """
     Minimize the distance between two clusters.  The following symmetries will be accounted for
     
@@ -33,14 +33,15 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     Global rotational symmetry
 
     Permutational symmetry
-
     
     This method uses basin hopping to find the rotation of X2 which best
     optimizes the overlap (an effective energy) between X1 and X2.  The overlap
-    is defined to be permutation independent.
+    is chosen to be permutation independent.
 
-    Once the rotation is optimized, the correct permutation can be determined
+    Once the rotation is optimized, the correct permutation of rigid bodies can be determined
     deterministically using the Hungarian algorithm.
+    
+    Finally 
     
     input:
     
@@ -85,17 +86,17 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
         #print "initial energy", Emin, "dist", dist
     saveit = storage.SaveN( 20 )
     takestep = distpot.RandomRotationTakeStep()
-    bh = basinhopping.BasinHopping( aamin, pot, takestep, storage=saveit.insert)
+    bh = basinhopping.BasinHopping( aamin, pot, takestep, storage=saveit.insert, outstream=None)
 
 
     Eminglobal = pot.globalEnergyMin() #condition for determining isomer
-    print "global Emin", Eminglobal
+    if verbose: print "global Emin", Eminglobal
 
     ##########################################################################
     # run basin hopping for ninter steps or until the global minimum is found
     # (i.e. determine they are isomers)
     ##########################################################################
-    print "using basin hopping to optimize rotations + permutations"
+    if verbose: print "using basin hopping to optimize rotations + permutations"
     for i in range(niter):
         bh.run(1)
         Emin = saveit.data[0].E
@@ -108,14 +109,14 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     Check a number of the lowest energy structures. To ensure get the correct
     minimum distance structure.
     """
-    print "lowest structures found"
+    if verbose: print "lowest structures found"
     aamin = saveit.data[0].coords
     dmin = 1000.
     for min in saveit.data:
         aa = min.coords
         coords2 = coordsApplyRotation(coords2in, aa)
         dist, X11, X22 = findBestPermutationRBMol(coords1, coords2, mysys, permlist )
-        print "E %11.5g dist %11.5g" % (min.E, dist)
+        if verbose: print "E %11.5g dist %11.5g" % (min.E, dist)
         if dist < dmin:
             dmin = dist
             aamin = aa.copy()
@@ -127,10 +128,10 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None):
     dbefore = getDistaa(coords1, coords2in, mysys)
     coords2 = coordsApplyRotation(coords2in, aamin)
     dafter = getDistaa(coords1, coords2, mysys)
-    print "dist before, after applying rotation from basin hopping", dbefore, dafter, mysys.getEnergy(coords2in), mysys.getEnergy(coords2)
+    if verbose: print "dist before, after applying rotation from basin hopping", dbefore, dafter, mysys.getEnergy(coords2in), mysys.getEnergy(coords2)
     dmin, coords1, coords2min = findBestPermutationRBMol(coords1, coords2, mysys, permlist )
     #dafter = getDistaa(coords1, coords2min, mysys)
-    print "dist findBestPerm", dmin, mysys.getEnergy(coords2min)
+    if verbose: print "dist findBestPerm", dmin, mysys.getEnergy(coords2min)
 
 
     ###################################################################

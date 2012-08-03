@@ -216,6 +216,9 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
     return dist, X1, X2
 
 def findBestPermutation( X1, X2, permlist = [] ):
+    """
+    find the permutation of the atoms which minimizes the distance |X1-X2|
+    """
     if len(permlist) == 0:
         permlist = [range(len(X1)/3)]
     for atomlist in permlist:
@@ -249,6 +252,9 @@ def getDistaa(coords1, coords2, mysys):
 
 
 def findBestPermutationRBMol_list(coords1, coords2, mol, mollist):
+    """
+    find the permutation of the molecules which minimizes the distance between the two coordinates
+    """
     try:
         from munkres import Munkres
     except:
@@ -303,6 +309,11 @@ def findBestPermutationRBMol_list(coords1, coords2, mol, mollist):
     return dist, coords1, coords2
 
 def findBestPermutationRBMol(coords1, coords2, mysys, permlist):
+    """
+    find the best permutation of the molecules.  
+    
+    then, for each molecule, apply the symmetry operation which minimized the distance
+    """
     nmol = len(coords1) / 3 / 2
     if len(permlist) == 0:
         permlist = [range(nmol)]

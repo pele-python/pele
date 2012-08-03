@@ -104,7 +104,8 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwar
     from pygmin.optimize.quench import lbfgs_py as quench
     tspot = TransitionStateRefinement(pot, coords, **kwargs)
     rmsnorm = 1./np.sqrt(float(len(coords))/3.)
-    
+    oldeigvec = None
+
     for i in xrange(nsteps):
         tspot.getLowestEigenvalue(coords)
         if tspot.eigval > 0.:

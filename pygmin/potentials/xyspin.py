@@ -46,11 +46,15 @@ class XYModel(BasePotential):
         self.G = nx.grid_graph(dim, periodic=True)
         
         self.phases = dict()
-        for edge in self.G.edges():
-            self.phases[edge] = np.random.uniform(-phi, phi)
+        binary_disorder = True
+        if binary_disorder:
+            for edge in self.G.edges():
+                self.phases[edge] = phi * np.random.random_integers(0,1)
+        else:
+            for edge in self.G.edges():
+                self.phases[edge] = np.random.uniform(-phi, phi)
         nx.set_edge_attributes(self.G, "phase", self.phases)
-        
-                
+
         self.indices = dict()
         i = 0
         for node in self.G.nodes():
@@ -69,7 +73,8 @@ class XYModel(BasePotential):
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
             E += np.cos( -angles[u] + angles[v] + phase )
-        E = self.num_edges - E
+        #E = self.num_edges - E
+        E = - E
         return E
         
     def getEnergyGradient(self, angles):
@@ -85,7 +90,8 @@ class XYModel(BasePotential):
             g = -np.sin( -angles[u] + angles[v] + phase )
             grad[u] += g
             grad[v] += -g
-        E = self.num_edges - E
+        #E = self.num_edges - E
+        E =  - E
         return E, grad
 
 
