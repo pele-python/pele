@@ -90,7 +90,7 @@ def main():
     print "dist returned    ", dist
     print "dist from coords ", distfinal
 
-    import printing.print_atoms_xyz as printxyz
+    import pygmin.printing.print_atoms_xyz as printxyz
     with open("out.xyz", "w") as fout:
         CoMToOrigin(X1i)
         CoMToOrigin(X2i)

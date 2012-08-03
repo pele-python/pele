@@ -139,7 +139,7 @@ class TestATLJ(unittest.TestCase):
         natoms = 10
         coords = np.random.uniform(-1,1,natoms*3)*2
         
-        from optimize.quench import quench
+        from pygmin.optimize.quench import quench
         lj = LJ()
         ret = quench(coords, lj.getEnergyGradient)
         coords = ret[0]
@@ -161,7 +161,7 @@ class TestATLJ(unittest.TestCase):
         natoms = 10
         coords = np.random.uniform(-1,1,natoms*3)*2
         
-        from optimize.quench import quench
+        from pygmin.optimize.quench import quench
         lj = LJ()
         #ret = quench(coords, lj.getEnergyGradient)
         #coords = ret[0]
@@ -198,14 +198,14 @@ def main():
     print V
 
     print "try a quench"
-    from optimize.quench import quench
+    from pygmin.optimize.quench import quench
     ret = quench( coords, lj.getEnergyGradient, iprint=-1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
     print "energy ", ret[1]
     print "rms gradient", ret[2]
     print "number of function calls", ret[3]
 
-    from printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     coords = ret[0]
 
     printlist = []

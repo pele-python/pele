@@ -26,7 +26,7 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
     
     input:
     
-    permlist  ([range(natoms)]) 
+    :permlist:  ([range(natoms)]) 
         A list of lists of atoms which are interchangable.
         e.g. for a 50/50 binary mixture, permlist = [ range(1,natoms/2), range(natoms/2,natoms) ]
     """

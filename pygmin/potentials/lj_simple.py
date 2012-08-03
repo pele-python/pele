@@ -60,7 +60,7 @@ def main():
     print V
 
     print "try a quench"
-    from optimize.quench import quench
+    from pygmin.optimize.quench import quench
     ret = quench( coords, lj.getEnergyGradient, iprint=-1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
     print "energy ", ret[1]

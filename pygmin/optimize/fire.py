@@ -98,7 +98,7 @@ class Fire(object):
         return np.linalg.norm(forces)/math.sqrt(len(forces)) < self.fmax
 
 if __name__ == "__main__":
-    import potentials.lj as lj
+    import pygmin.potentials.lj as lj
     pot = lj.LJ()
     coords = 10.*np.random.random(300)
     opt = Fire(coords, pot.getEnergyGradient, dtmax=0.1, dt=0.01, maxmove=0.01)
