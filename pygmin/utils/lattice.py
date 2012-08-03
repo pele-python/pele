@@ -85,15 +85,15 @@ class Cell(object):
         return collections.namedtuple("CellAngle", "a, b, c, alpha, beta, gamma")(
            a, b, c,
            acos(0.5 * self._d / b / c),
-           acos(0.5 * self._e_ / a / c),
-           acos(0.5 * self._f_ / a / b))
+           acos(0.5 * self._e / a / c),
+           acos(0.5 * self._f / a / b))
     
     def get_lower_triangular(self):
         ''' calculate the lower triangular lattice matrix
             :returns: lower triangular matrix
         '''
         p = self.get_with_angles()
-        m=np.zeros(3,3)
+        m=np.zeros([3,3])
         m[2,2]=p.c
         m[1,1]=p.b*sin(p.alpha)
         m[2,1]=p.b*cos(p.alpha)
@@ -108,7 +108,7 @@ class Cell(object):
             :returns: upper triangular matrix
         '''
         p = self.get_with_angles()
-        m=np.zeros(3,3)
+        m=np.zeros([3 ,3])
         
         v=sqrt(1-cos(p.alpha)*cos(p.alpha)-cos(p.beta)*cos(p.beta)\
                -cos(p.gamma)*cos(p.gamma)+2*cos(p.alpha)*cos(p.beta)*cos(p.gamma))
@@ -132,3 +132,4 @@ class Cell(object):
         m[2,0]=0
         m[2,1]=0
         m[2,2]=1/cc
+        return m
