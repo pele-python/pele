@@ -3,7 +3,7 @@ from pygmin.storage import savenlowest
 import time
 from pygmin.NEB import NEB
 from pygmin.utils.rbtools import *
-import pygmin.utils.readAmberParam as readAmb
+import pygmin.utils.amber as readAmb
 import ambgmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
 from pygmin.optimize import quench

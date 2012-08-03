@@ -52,7 +52,7 @@ class DimerSearch(object):
         
         self.findNextTS(direction)
     
-    def findNextTS(self, direction):
+    def findNextTS(self, direction=None):
         if(direction==None):
             #while True:
             direction=np.random.random(self.x0.shape) - 0.5
