@@ -68,4 +68,4 @@ for i in xrange(1,nsteps/dump_frequency):
     i=0
     for m in save.data:
         i+=1
-        GMIN.writeCIF("cif/lowest%03d.cif"%(i), m.coords, "E"+str(m.E))
+        GMIN.writeCIF("cif/lowest%03d.cif"%(i), m.coords, "E"+str(m.energy))

@@ -64,8 +64,8 @@ bh.run(400)
 print "minima found"
 with open("out.spin", "w") as fout:
     for min in storage.data:
-        print "energy", min.E
-        fout.write("#%g\n" % (min.E))
+        print "energy", min.energy
+        fout.write("#%g\n" % (min.energy))
         printspins(fout, pot, min.coords)
         fout.write('\n\n')
         """
@@ -76,7 +76,7 @@ with open("out.spin", "w") as fout:
 
 with open("out.energies", "w") as fout:
     for min in storage.data:
-        fout.write("%g\n" % (min.E))
+        fout.write("%g\n" % (min.energy))
 
 
 

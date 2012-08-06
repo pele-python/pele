@@ -13,7 +13,7 @@ class Minimum(object):
     '''
     
     def __init__(self, E, coords):        
-        self.E = E
+        self.energy = E
         self.coords = coords.copy()        
     
 class SaveN(object):
@@ -36,13 +36,16 @@ class SaveN(object):
         
     def __call__(self, E, coords):
         self.insert(E, coords)
+
+    def addMinimum(self, E, coords):
+        self.insert(E, coords)
         
     def insert(self, E, coords):
         new = Minimum(E, coords)
         # does minima already exist, if yes exit?
         self.lock.acquire()
         for i in self.data:
-            if(abs(i.E - E) < self.accuracy):
+            if(abs(i.energy - E) < self.accuracy):
                 if(self.compareMinima):
                     if(self.compareMinima(new, i) == False):
                         continue                
@@ -52,7 +55,7 @@ class SaveN(object):
                 
         # otherwise, add it to list & sort
         self.data.append(new)
-        self.data.sort(key=operator.attrgetter('E'))
+        self.data.sort(key=operator.attrgetter('energy'))
         if(self.onMinimumAdded):
             self.onMinimumAdded(new)
         # remove if too many entries
@@ -95,5 +98,5 @@ if __name__ == "__main__":
     save.insert(2., np.random.random(10))
     save.insert(1.001, np.random.random(10))
     for i in save.data:
-        print i.E, i.coords
+        print i.energy, i.coords
         

@@ -148,11 +148,12 @@ class Storage(object):
                     continue
             self.lock.release() 
             return m
-        
         self.session.add(new)
         if(commit):
             self.session.commit()
         self.lock.release()
+        if(self.onMinimumAdded):
+            self.onMinimumAdded(new)
         return new
     
     def addTransitionState(self, E, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):

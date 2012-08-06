@@ -70,7 +70,7 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
     if verbose: print "using basin hopping to optimize rotations + permutations"
     for i in range(niter):
         bh.run(1)
-        Emin = saveit.data[0].E
+        Emin = saveit.data[0].energy
         if abs(Emin-Eminglobal) < 1e-6:
             if verbose: print "isomer found"
             break
@@ -85,7 +85,7 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
     dmin, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
     for minimum in saveit.data:
         dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, minimum.coords), permlist )
-        if verbose: print "E %11.5g dist %11.5g" % (minimum.E, dist)
+        if verbose: print "E %11.5g dist %11.5g" % (minimum.energy, dist)
         if dist < dmin:
             dmin = dist
             aamin = minimum.coords

@@ -99,7 +99,7 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None, verb
     if verbose: print "using basin hopping to optimize rotations + permutations"
     for i in range(niter):
         bh.run(1)
-        Emin = saveit.data[0].E
+        Emin = saveit.data[0].energy
         if abs(Emin-Eminglobal) < 1e-6:
             print "isomer found"
             break
@@ -116,7 +116,7 @@ def minPermDistRBMol(coords1, coords2, mysys, niter = 100, permlist = None, verb
         aa = min.coords
         coords2 = coordsApplyRotation(coords2in, aa)
         dist, X11, X22 = findBestPermutationRBMol(coords1, coords2, mysys, permlist )
-        if verbose: print "E %11.5g dist %11.5g" % (min.E, dist)
+        if verbose: print "E %11.5g dist %11.5g" % (min.energy, dist)
         if dist < dmin:
             dmin = dist
             aamin = aa.copy()
