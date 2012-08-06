@@ -54,7 +54,8 @@ class BasinHopping(MonteCarlo):
             quenchRoutine = defaults.quenchRoutine, \
             quenchParameters = defaults.quenchParams, \
             confCheck = [], \
-            outstream = sys.stdout
+            outstream = sys.stdout,
+            insert_rejected = False
             ):
         #########################################################################
         #initialize MonteCarlo base class
@@ -80,6 +81,8 @@ class BasinHopping(MonteCarlo):
         self.coords = newcoords
         self.markovE = Equench
 
+        self.insert_rejected = insert_rejected
+        
         if(self.storage):
             self.storage(self.markovE, self.coords)
         

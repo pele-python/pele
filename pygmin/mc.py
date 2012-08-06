@@ -47,6 +47,8 @@ class MonteCarlo(object):
       outstream: (stdout)
           the file stream to print quench information to
     """
+    
+    insert_rejected = False
   
     def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
             acceptTest=None,  \
@@ -141,9 +143,10 @@ class MonteCarlo(object):
         self.takeStep.updateStep(acceptstep, driver=self)
 #        except:
 #            print "WARNING: takeStep.updateStep() not implemented"
+        if(self.storage or self.insert_rejected):
+            self.storage(newE, newcoords)
+
         if acceptstep:
-            if(self.storage):
-                self.storage(newE, newcoords)
             self.coords = newcoords
             self.markovE = newE
             self.naccepted += 1
