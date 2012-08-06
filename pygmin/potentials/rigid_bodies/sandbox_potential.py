@@ -37,7 +37,8 @@ class RBSandboxPotential(basepotential):
         RB:  a RigidBodySystem object
 
         interaction_matrix:  a matrix that defines the interactions between site types.
-            inter = interaction_matrix[site1.type][site2.type] is the interaction between site1 and site2
+            inter = interaction_matrix[site1.type][site2.type] is the potential class 
+                    between site type site1 and site type site2
             inter.getEnergy(coords) returns the energy of the interaction
         """
 
@@ -71,6 +72,14 @@ class RBSandboxPotential(basepotential):
     def buildInteractionLists(self, RB, interaction_matrix ):
         """
         build interaction lists from site types and interaction_matrix
+        
+        This builds self.ilist, which is a list interaction lists.  
+            An interaction list is a list of site pairs which interact with 
+                the same potential
+            There will be one interaction list for each potential type.
+            e.g. i1, i2 = self.ilist[0][0] where i1 and i2 are the indices of 
+                sites in the xyz representation 
+            
         """
         self.ilists = []
         type2ilist = dict()
@@ -79,6 +88,7 @@ class RBSandboxPotential(basepotential):
                 t1 = site1.type
                 i1 = site1.index
                 for site2 in mol2.sitelist:
+                    #find out what is the potential between site1 and site2
                     t2 = site2.type
                     i2 = site2.index
                     tp = (t1,t2)
@@ -88,7 +98,7 @@ class RBSandboxPotential(basepotential):
                         inter = interaction_matrix[t1][t2]
                         type2ilist[tp] = InteractionList(inter, (t1,t2) )
                         self.ilists.append( type2ilist[tp] )
-                        if t1 != t2:
+                        if t1 != t2: #make type2ilist symmetric
                             type2ilist[tpi] = type2ilist[ tp ]
                     type2ilist[tp].addPair( (i1,i2) )
         

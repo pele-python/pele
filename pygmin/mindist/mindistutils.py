@@ -148,7 +148,7 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
     For a given set of positions X1 and X2, find the best permutation of the
     atoms in X2.
 
-    Use an implimentation of the Hungarian Algorithm in the Python package
+    Use an implementation of the Hungarian Algorithm in the Python package
     index (PyPi) called munkres (another name for the algorithm).  The
     hungarian algorithm time scales as O(n^3), much faster than the O(n!) from
     looping through all permutations.

@@ -35,20 +35,21 @@ class LJ(potential.potential):
         if not self.periodic:
             try: 
                 import cpp.ljcpp_ as ljc
-                print "using fast cpp LJ implimentation"
+                print "using fast cpp LJ implementation"
                 self.ljc = ljc
                 self.getEnergy = self.getEnergyFast
                 self.getEnergyGradient = self.getEnergyGradientFast
             except:
                 try: 
                     import fortran.lj as ljf
-                    print "using fast fortran LJ implimentation"
+                    print "using fast fortran LJ implementation"
                     self.ljf = ljf
                     self.getEnergy = self.getEnergyFortran
                     self.getEnergyGradient = self.getEnergyGradientFortran
                     self.getEnergyGradientList = self.getEnergyGradientListFortran
+                    self.getEnergyList = self.getEnergyListFortran
                 except:
-                    print "using slow python LJ implimentation"
+                    print "using slow python LJ implementation"
             #js850> getEnergyGradientList only implemented for fortran
             try:
                 import fortran.lj as ljf
@@ -56,6 +57,19 @@ class LJ(potential.potential):
                 self.getEnergyGradientList = self.getEnergyGradientListFortran
             except:
                 pass
+        else:
+            try: 
+                import fortran.lj as ljf
+                print "using fast fortran LJ implementation"
+                self.ljf = ljf
+                self.getEnergy = self.getEnergyFortran
+                self.getEnergyGradient = self.getEnergyGradientFortran
+                self.getEnergyGradientList = self.getEnergyGradientListFortran
+                self.getEnergyList = self.getEnergyListFortran
+            except:
+                print "using slow python LJ implementation"
+
+            
 
     def getSep_periodic(self, vec1, vec2 ):
         assert len(vec1) == 3, "get_sep: vec length not 3"
@@ -119,24 +133,40 @@ class LJ(potential.potential):
 
     def getEnergyFortran(self, coords):
         natoms = len(coords) / 3
-        E = self.ljf.ljenergy(coords, self.eps, self.sig, [natoms])
+        E = self.ljf.ljenergy(
+                coords, self.eps, self.sig, self.periodic, self.boxl, [natoms])
         return E
 
     def getEnergyGradientFortran(self, coords):
         natoms = len(coords) / 3
-        E, grad = self.ljf.ljenergy_gradient(coords, self.eps, self.sig, [natoms])
+        E, grad = self.ljf.ljenergy_gradient(
+                coords, self.eps, self.sig, self.periodic, self.boxl, [natoms])
         return E, grad 
+    
+    def getEnergyListFortran(self, coords, ilist):
+        #ilist = ilist_i.getNPilist()
+        ilist += 1 #fortran indexing
+        nlist = len(ilist)
+        natoms = len(coords) / 3
+        E = self.ljf.energy_ilist(
+                coords, self.eps, self.sig, ilist, self.periodic, 
+                self.boxl, [natoms, nlist])
+        ilist -= 1
+        return E
     
     def getEnergyGradientListFortran(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
         ilist += 1 #fortran indexing
         nlist = len(ilist)
         natoms = len(coords) / 3
-        E, grad = self.ljf.energy_gradient_ilist(coords, self.eps, self.sig, ilist, [natoms, nlist])
+        E, grad = self.ljf.energy_gradient_ilist(
+                coords, self.eps, self.sig, ilist, self.periodic, 
+                self.boxl, [natoms, nlist])
         ilist -= 1
         return E, grad 
     
     def getEnergyGradientHessian(self, coords):
+        if self.periodic: raise Exception("Hessian not implemented for periodic boundaries")
         from fortran.lj_hess import ljdiff
         g, energy, hess = ljdiff(coords, True, True)
         return energy, g, hess
