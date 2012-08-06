@@ -73,7 +73,7 @@ class DoubleEndedConnect(object):
                     #ts = TransitionState(coords, E, eigvec, eigval)
                     #self.graph.addTransitionState(min1, min2, ts)   self.addTS( newmin1, newmin2, ts)
                     from pygmin.storage.database import TransitionState
-                    ts = self.graph.addTransitionState(E, coords, min1, min2) #, eigvec, eigval)
+                    ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=ret.eigenvec, eigenval=ret.eigenval)
                     graph.refresh()
                     
                 connected = graph.areConnected(min1, min2)

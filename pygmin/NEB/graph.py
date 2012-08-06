@@ -28,8 +28,8 @@ class Graph(object):
     def addMinimum(self, *args):
         return self.storage.addMinimum(*args)
     
-    def addTransitionState(self, *args):
-        return self.storage.addTransitionState(*args)
+    def addTransitionState(self, *args, **kwargs):
+        return self.storage.addTransitionState(*args, **kwargs)
             
     def areConnected(self, min1, min2):
         try:
