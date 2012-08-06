@@ -59,10 +59,19 @@ class TransitionState(Base):
                             backref='right_edges')
     '''second minimum which connects to transition state'''
     
-    def __init__(self, energy, coords, min1, min2):
+    eigenval = Column(Float)
+    '''coordinates of transition state'''
+
+    eigenvec = Column(PickleType)
+    '''coordinates of transition state'''
+    
+    
+    def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
         self.energy = energy
         self.minimum1 = min1
         self.minimum2 = min2
+        self.eigenvec = eigenvec
+        self.eigenval = eigenval
 
 
 class Storage(object):
@@ -146,7 +155,7 @@ class Storage(object):
         self.lock.release()
         return new
     
-    def addTransitionState(self, E, coords, min1, min2, commit=True):
+    def addTransitionState(self, E, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):
         candidates = self.session.query(TransitionState).\
             filter(TransitionState.minimum1==min1).\
             filter(TransitionState.minimum1==min2).\
@@ -160,7 +169,7 @@ class Storage(object):
             #self.lock.release() 
             return m
         
-        new = TransitionState(E, coords, min1, min2)
+        new = TransitionState(E, coords, min1, min2, eigenval=eigenval, eigenvec=eigenvec)
             
         self.session.add(new)
         if(commit):
@@ -199,12 +208,15 @@ class Storage(object):
 if __name__ == "__main__":    
     db = Storage()#db="test.db")
     m1 = db.addMinimum(1., np.random.random(10))
-    db.addMinimum(3., np.random.random(10))
+    m2 = db.addMinimum(3., np.random.random(10))
     db.addMinimum(2., np.random.random(10))
     db.addMinimum(1.001, np.random.random(10))
     db.minimum_adder()(7, np.random.random(10))
+    ts = db.addTransitionState(10., None, m1, m2)
+    ts.eigenval=11.
+    
     
     for m in db.minima():
         print m._id, m.energy
-    #for i in db.minima():
-    #    print i
+    for i in db.transition_states():
+        print i, i.energy, i.eigenval, i.eigenvec
