@@ -189,6 +189,7 @@ class LBFGS:
         self.events.append(event)
                 
     def run(self, nsteps = 10000, tol = 1e-6, iprint = -1):
+        #iprint =40
         self.tol = tol
         X = self.X
         sqrtN = np.sqrt(self.N)
@@ -200,7 +201,13 @@ class LBFGS:
         while i < nsteps:
             stp = self.step(X, G)
             
-            X, e, G = self.takeStepNoLineSearch(X, e, G, stp)
+            try:
+                X, e, G = self.takeStepNoLineSearch(X, e, G, stp)
+            except BaseException:
+                print "Warning: problem with takeStepNoLineSearch, ending quench"
+                rms = np.linalg.norm(G) / sqrtN
+                print "    on failure: quench step", i, e, rms, self.funcalls
+                break
             #e, G = self.pot.getEnergyGradient(X)
             
             rms = np.linalg.norm(G) / sqrtN
