@@ -157,9 +157,14 @@ class Storage(object):
         return new
     
     def addTransitionState(self, E, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):
+        if(min1.energy < min2.energy):
+            m1,m2 = min1,min2
+        else:
+            m1,m2 = min2,min1
+            
         candidates = self.session.query(TransitionState).\
-            filter(TransitionState.minimum1==min1).\
-            filter(TransitionState.minimum1==min2).\
+            filter(TransitionState.minimum1==m1).\
+            filter(TransitionState.minimum2==m2).\
             filter(TransitionState.energy > E-self.accuracy).\
             filter(TransitionState.energy<E+self.accuracy)
         
@@ -167,10 +172,10 @@ class Storage(object):
             #if(self.compareMinima):
             #    if(self.compareMinima(new, m) == False):
             #        continue
-            #self.lock.release() 
+            #self.lock.release()
             return m
         
-        new = TransitionState(E, coords, min1, min2, eigenval=eigenval, eigenvec=eigenvec)
+        new = TransitionState(E, coords, m1, m2, eigenval=eigenval, eigenvec=eigenvec)
             
         self.session.add(new)
         if(commit):
