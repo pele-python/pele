@@ -159,11 +159,15 @@ class LBFGS:
                 #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize
                 f /= 10.
                 nincrease += 1
+                if nincrease > 5:
+                    break
 
         if nincrease <= 1:
             self.nfailed = 0
         else:
             self.nfailed += 1
+            if True and self.nfailed > 10:
+                raise(BaseException("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
             if False and self.nfailed > 3:
                 print "resetting H0"
                 print self.H0

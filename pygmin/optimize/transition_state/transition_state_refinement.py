@@ -1,5 +1,6 @@
 import numpy as np
 from lowest_eig_pot import LowestEigPot
+from orthogopt import orthogopt
 from pygmin.potentials.potential import potential as basepot
 from pygmin.storage.savenlowest import SaveN
 
@@ -45,14 +46,16 @@ class TransitionStateRefinement(basepot):
         will return the gradient with the component along the eigenvector removed.  This is for
         energy minimization in the space tangent to the gradient    
     """
-    def __init__(self, pot, coords, verbose=False):
+    def __init__(self, pot, coords, verbose=False, orthogZeroEigs = orthogopt):
         self.pot = pot
         self.eigvec = np.random.rand(len(coords)) #initial random guess
         self.verbose = verbose
         self.H0 = None
+        self.orthogZeroEigs = orthogZeroEigs
     
-    def getLowestEigenvalue(self, coords, iprint=400, tol = 1e-6, **kwargs):
-        eigpot = LowestEigPot(coords, self.pot)
+    def getLowestEigenvalue(
+                self, coords, iprint=400, tol = 1e-6, **kwargs):
+        eigpot = LowestEigPot(coords, self.pot, orthogZeroEigs = self.orthogZeroEigs)
         from pygmin.optimize.lbfgs_py import LBFGS
         quencher = LBFGS(self.eigvec, eigpot, maxstep=1e-2, \
                          rel_energy = True, H0 = self.H0, **kwargs)

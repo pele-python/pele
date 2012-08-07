@@ -2,6 +2,8 @@ import numpy as np
 from pygmin.potentials.potential import potential as basepot
 from orthogopt import orthogopt
 
+
+
 class LowestEigPot(basepot):
     """
     this is a potential wrapper designed to use optimization to find the eigenvector
@@ -9,13 +11,18 @@ class LowestEigPot(basepot):
     
     here the energy corresponds to the eigenvalue, and the coordinates to be optimized is the eigenvector
     """
-    def __init__(self, coords, pot):
+    def __init__(self, coords, pot, orthogZeroEigs = orthogopt):
         """
-        coords is the point in space where we want to compute the lowest eigenvector
+        :coords: is the point in space where we want to compute the lowest eigenvector
         
-        pot is the potential of the system.  
+        :pot: is the potential of the system.  
             i.e. pot.getEnergyGradient(coords) gives the energy and gradient
+        
+        :orthogZeroEigs: the function which makes a vector orthogonal to the known
+            eigenvectors with zero eigenvalues.  The default assumes global
+            translational and rotational symmetry
         """
+        self.orthogZeroEigs = orthogZeroEigs
         self.coords = np.copy(coords)
         self.pot = pot
         self.E, self.G = self.pot.getEnergyGradient(self.coords)
@@ -29,7 +36,8 @@ class LowestEigPot(basepot):
         """
         vecl = 1.
         vec_in /= np.linalg.norm(vec_in)
-        vec_in = orthogopt(vec_in, self.coords, True)
+        if self.orthogZeroEigs is not None:
+            vec_in = self.orthogZeroEigs(vec_in, self.coords, True)
 
         vec = vec_in / np.linalg.norm(vec_in)
         coordsnew = self.coords - self.diff * vec
@@ -50,7 +58,8 @@ class LowestEigPot(basepot):
         
         #GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2
         grad = (Gplus - Gminus) / (self.diff*vecl**2) - 2.0 * diag2 * vec / vecl**2
-        grad = orthogopt(grad, self.coords, False)
+        if self.orthogZeroEigs is not None:
+            grad = self.orthogZeroEigs(grad, self.coords, False)
         """
         C  Project out any component of the gradient along LOCALV (which is a unit vector)
         C  This is a big improvement for DFTB.

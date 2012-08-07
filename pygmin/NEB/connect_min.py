@@ -9,7 +9,7 @@ import itertools
 
 
 class DoubleEndedConnect(object):
-    def __init__(self, min1, min2, pot, graph, mindist):
+    def __init__(self, min1, min2, pot, graph, mindist, findTSParams = dict() ):
         self.graph = graph
         self.minstart = min1
         self.minend = min2
@@ -18,6 +18,7 @@ class DoubleEndedConnect(object):
         self.distmatrix = dict()
         self.pairsNEB = dict()
         self.idlist = []
+        self.findTSParams = findTSParams
         
     def getDist(self, min1, min2):
         dist = self.distmatrix.get((min1, min2))
@@ -34,9 +35,9 @@ class DoubleEndedConnect(object):
         m = self.graph.addMinimum(*args)
         if not m in self.idlist and not (m is self.minstart) and not (m is self.minend):
             self.idlist.append(m)
-        return m
-        
-    def doNEB(self, min1, min2):
+        return m    
+    
+    def doNEB(self, min1, min2, **optkwargs):
         graph = self.graph
         self.pairsNEB[(min1, min2)] = True
         print ""
@@ -45,7 +46,7 @@ class DoubleEndedConnect(object):
         dist, newcoords1, newcoords2 = self.mindist(min1.coords, min2.coords) 
         print "runing NEB"
         neb = NEB(newcoords1, newcoords2, self.pot)
-        neb.optimize()
+        neb.optimize(**optkwargs)
         neb.MakeAllMaximaClimbing()
         neb.optimize()
     
@@ -56,7 +57,7 @@ class DoubleEndedConnect(object):
             if neb.isclimbing[i]:
                 coords = neb.coords[i,:]
                 print "refining transition state from NEB climbing image"
-                ret = findTransitionState(coords, self.pot)
+                ret = findTransitionState(coords, self.pot, **self.findTSParams)
                 #coords, eigval, eigvec, E, grad, rms = ret
                 coords = ret.coords
                 E = ret.energy

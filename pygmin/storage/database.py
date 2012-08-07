@@ -185,14 +185,14 @@ class Storage(object):
     def minima(self):
         '''iterate over all minima in database
         
-        :returns: query for all minima in database ordered in ascendind energy
+        :returns: query for all minima in database ordered in ascending energy
         '''
         return self.session.query(Minimum).order_by(Minimum.energy).all()
     
     def transition_states(self):
-        '''iterate over all minima in database
+        '''iterate over all transition states in database
         
-        :returns: query for all minima in database ordered in ascendind energy
+        :returns: query for all transition states in database ordered in ascending energy
         '''
         return self.session.query(TransitionState).all()
     

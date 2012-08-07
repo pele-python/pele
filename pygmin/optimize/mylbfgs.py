@@ -4,22 +4,10 @@ import lbfgs_py
 from mylbfgs_updatestep import mylbfgs_updatestep
 
 class LBFGS(lbfgs_py.LBFGS):
-    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10):
-        self.X = X
-        self.pot = pot
-        e, self.G = self.pot.getEnergyGradient(self.X)
-        self.funcalls = 1
-        self.maxstep = maxstep
-        self.maxErise = maxErise
-        self.events = []
-    
-        self.N = len(X)
-        self.M = M 
+    def __init__(self, X, pot, **lbfgs_py_kwargs):
+        lbfgs_py.LBFGS.__init__(self, X, pot, **lbfgs_py_kwargs)
         N = self.N
         M = self.M
-        
-        #self.beta = np.zeros(M) #working space
-        
         
         self.H0 = np.ones(N) * 1. #initial guess for the hessian
         
@@ -27,12 +15,6 @@ class LBFGS(lbfgs_py.LBFGS):
         self.iter = 0
         self.point = 0
         
-        
-        self.stp = np.zeros(N)
-        self.Xold = self.X.copy()
-        self.Gold = self.G.copy()
-        
-        self.nfailed = 0
     
     def step(self, X, G):
         """
@@ -72,55 +54,6 @@ class LBFGS(lbfgs_py.LBFGS):
         self.point = self.iter % self.M
         
         return self.stp
-
-    def takeStepNoLineSearch(self, X, E, G, stp):
-        f = 1.
-        X0 = X.copy()
-        G0 = G.copy()
-        E0 = E
-        maxErise = self.maxErise
-        
-        if np.dot(G, stp) > 0:
-            #print "overlap was negative, reversing step direction"
-            stp = -stp
-            self.stp = stp
-        
-        stepsize = np.linalg.norm(stp)
-        
-        if f*stepsize > self.maxstep:
-            f = self.maxstep / stepsize
-        
-        nincrease = 0
-        while True:
-            X = X0 + f * stp
-            E, G = self.pot.getEnergyGradient(X)
-            self.funcalls += 1
-            
-            if (E - E0) <= maxErise:
-                break
-            else:
-                #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize
-                f /= 10.
-                nincrease += 1
-                if nincrease > 5:
-                    break
-
-        if nincrease <= 1:
-            self.nfailed = 0
-        else:
-            self.nfailed += 1
-            if True and self.nfailed > 10:
-                raise(BaseException("mylbfgs: too many failures, exiting"))
-                
-        
-        if False and self.k <= 1:
-            print G0
-            print stp
-            print G
-            
-        
-        return X, E, G
-    
 
         
     

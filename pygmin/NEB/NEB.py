@@ -3,6 +3,7 @@ import numpy as np
 def distance_cart(x1, x2):
     return x2 - x1
 
+import pygmin.defaults as defaults
 import pygmin.optimize.quench as quench
 
 class NEB:
@@ -16,11 +17,11 @@ class NEB:
     distance  (distance_cart):
         distance function for the elastic band
     
-    nimages (10):
+    nimages (20):
         number of moving images for the band. The number includes 
         the endpoints and must be bigger than 2
         
-    k (1.0):
+    k (100.0):
         elastic constant for band
         
     """
@@ -48,7 +49,9 @@ class NEB:
         # the active range of the coords, endpoints are fixed
         self.active = self.coords[1:nimages-1,:]  
     
-    def optimize(self, quenchRoutine=quench.quench, **kwargs):
+    def optimize(
+                 self, quenchRoutine=defaults.quenchRoutine, 
+                 quenchParams = defaults.quenchParams):
         """
         Optimize the band
     
@@ -58,9 +61,10 @@ class NEB:
         #if(quench==None):
         #    quench = self.default_quench
         #print "kwargs", kwargs
+        print "NEB optimize: quenchParams", quenchParams
         tmp,E,tmp3,tmp4 = quenchRoutine(
-                    self.active.reshape(self.active.size), self.getEnergyGradient, 
-                    **kwargs)
+                    self.active.reshape(self.active.size), self.getEnergyGradient)#, 
+                    #**quenchParams)
         self.active[:,:] = tmp.reshape(self.active.shape)
         for i in xrange(0,self.nimages):
             self.energies[i] = self.potential.getEnergy(self.coords[i,:])        

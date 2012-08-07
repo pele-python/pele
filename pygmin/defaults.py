@@ -1,7 +1,7 @@
 from optimize import quench
 from NEB import dimer
 
-quenchRoutine = quench.mylbfgs
+quenchRoutine = quench.lbfgs_py
 quenchParams = dict()
 
 tsSearchRoutine = dimer
