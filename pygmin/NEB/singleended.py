@@ -12,16 +12,23 @@ from pygmin.utils import zeroev
 
 def _uphill_search(x0, search, push, push_minrms):
     ev = search.tau
-        
+    evecs = search.get_eigenvecs(x0)
+    #print len(evecs)
     x1 = x0.copy()
     while True:
         x1+=push*ev
-        e,g = search.potential.getEnergyGradient(x1)
+        g = search.getOrthogonalGradient(x1, evecs)
+        #print np.linalg.norm(g)
         rms = np.linalg.norm(g)/np.sqrt(len(g))
+        #print "rms",rms
         if (rms > push_minrms):
+        #    print "rms final",rms
             break
-    
-    return quench.fire(x0, search.getEnergyGradient, tol=1e-4, maxstep=0.01)
+    #x1 = x0 + np.random.random(x0.shape)*0.1
+    #search.tau_done=[]
+    #search.x0 = x1
+    #search.findNextTS()
+    return quench.fire(x1, search.getEnergyGradient, tol=1e-6)
         
 def find_escape_pathes(minimum, potential, graph, ntries=1, push=1.e-2, push_minrms=1.e-2):
     print "Single ended search for minimum", minimum._id, minimum.energy
@@ -33,8 +40,8 @@ def find_escape_pathes(minimum, potential, graph, ntries=1, push=1.e-2, push_min
         x_ts, energy_ts, rms, tmp = _uphill_search(minimum.coords, search, push, push_minrms)
         ret1, ret2 = tstools.minima_from_ts(potential.getEnergyGradient, x_ts, displace=1e-2)
         
-        min1 = graph.addMinimum(ret1[1], ret2[0])
-        min2 = graph.addMinimum(ret1[1], ret2[0])
+        min1 = graph.addMinimum(ret1[1], ret1[0])
+        min2 = graph.addMinimum(ret2[1], ret2[0])
         
         if(not min1 is minimum and not min2 is minimum):
             print "Warning in single ended search: did not find initial minimum during quench from transition state"
@@ -51,8 +58,11 @@ def find_escape_pathes(minimum, potential, graph, ntries=1, push=1.e-2, push_min
 if __name__ == "__main__":
     from graph import Graph
     from connect_min import getSetOfMinLJ
-     
+    from pygmin import defaults
+    
     natoms = 8
+    
+    defaults.quenchRoutine = quench.fire
     pot, saveit = getSetOfMinLJ(natoms)
     graph = Graph(saveit)
  

@@ -1,5 +1,6 @@
 import numpy as np
 from pygmin.optimize import quench
+from pygmin.utils.zeroev import gramm_schmidt
 
 xt=[]
 tt=[]
@@ -13,8 +14,8 @@ def findTransitionState(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, 
     #search.findNextTS(direction)
     #search.findNextTS(direction)
     #search.findNextTS(direction)
-    #x, E, rms, tmp = quench.fire(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep) 
-    x, E, rms, tmp = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=1000.)
+    x, E, rms, tmp = quench.fire(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep) 
+    #x, E, rms, tmp = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=1000.)
         
     from collections import namedtuple
     return namedtuple("TransitionStateResults", "coords,energy,eigenval,eigenvec,rms")(x, E, 0.0, search.tau, rms)
@@ -59,13 +60,14 @@ class DimerSearch(object):
             #    self.orthogonalize(x, self.t, vecs2)
         self.tau = direction/np.linalg.norm(direction)
         E,g = self.potential.getEnergyGradient(self.x0)
-        self.updateRotation(self.x0, E, g)
         import copy
         self.tau_ignore=copy.copy(self.tau_done)
+        self.updateRotation(self.x0, E, g)
         self.tau_done.append([self.tau.copy(), 0.])
         
     def getEnergyGradient(self, x0):
         E,g = self.potential.getEnergyGradient(x0)
+        #print "step",np.linalg.norm(x0-self.x0),E
         self.updateRotation(x0, E, g)
         
         x1 = x0 + self.tau*self.delta
@@ -74,26 +76,32 @@ class DimerSearch(object):
         
         self.tau_ignore[:] = [t for t in self.tau_ignore if np.abs(t[1]) < np.abs(C) + 1.] 
                              
-            
+        
+        #print self.tau_ignore
+        
         g = g - 2.*np.dot(g, self.tau)*self.tau
                 
-        xt.append(x0)
-        tt.append(self.tau)
+        # xt.append(x0)
+        # tt.append(self.tau)
         return E,g
     
     # should this be iterative?, go to utility with ljsyszem zero eigenvecs
-    def orthogonalize(self, x, vecs, vecs2=None):
+    def orthogonalize(self, x, vecs):
+        #print len(vecs)
         for v in vecs:
-            x -= np.dot(x, v)*v
-        if(vecs2):
-            for v in vecs2:
-                x -= np.dot(x, v)*v
-        
+            x -= np.dot(x, v)*v 
     
-    def getOrthogonalGradient(self, x, eigenvecs1, eigenvecs2=None):
+    def getOrthogonalGradient(self, x, eigenvecs):
         E, g = self.potential.getEnergyGradient(x)
-        self.orthogonalize(g, eigenvecs1, eigenvecs2)
+        self.orthogonalize(g, eigenvecs)
         return g
+    
+    def get_eigenvecs(self, x0):
+        zev = []
+        if(self.zeroEigenVecs):
+            zev = self.zeroEigenVecs(x0)
+        # print "lenzev", len(zev)
+        return gramm_schmidt(zev + [v[0] for v in self.tau_ignore])
     
     def updateRotation(self, x0, E0, grad0_):
         iter_rot = 0
@@ -105,8 +113,15 @@ class DimerSearch(object):
 
         # remove zero eigenvalues from gradient
         grad0 = grad0_.copy()
-        self.orthogonalize(grad0, zev, [v[0] for v in self.tau_ignore])
+        evecs = gramm_schmidt(zev + [v[0] for v in self.tau_ignore])
+        self.orthogonalize(grad0, evecs)
 
+        #print u
+        #print np.dot(u[3],u[4]),np.dot(u[3],u[5]),np.dot(u[5],u[4])
+        #print self.potential.getEnergy(x0) - self.potential.getEnergy(x0 + 1e-8*u[3]/1e-8),\
+        #self.potential.getEnergy(x0) - self.potential.getEnergy(x0 + 1e-8*u[4]/1e-8),\
+        #self.potential.getEnergy(x0) - self.potential.getEnergy(x0 + 1e-8*u[5]/1e-8)
+        #print gramm_schmidt(zev)
         # update ignore list for eigenvalues
         for t in self.tau_ignore:
             E,grad1 = self.potential.getEnergyGradient(x0 + t[0]*self.delta)
@@ -118,11 +133,11 @@ class DimerSearch(object):
             # construct dimer image and get energy + gradient
             
             # remove zero eigenvalues from tau
-            self.orthogonalize(self.tau, zev, [v[0] for v in self.tau_ignore])
+            self.orthogonalize(self.tau, evecs)
             self.tau /= np.linalg.norm(self.tau)
             
             x1 = x0 + self.tau*self.delta
-            grad1 = self.getOrthogonalGradient(x1, zev, [v[0] for v in self.tau_ignore])
+            grad1 = self.getOrthogonalGradient(x1, evecs)
             
             # calculate the rotational force of dimer
             F_rot = -2.*(grad1 - grad0) + 2.*np.dot(grad1 - grad0, self.tau)*self.tau
@@ -145,13 +160,13 @@ class DimerSearch(object):
             # create rotated trial dimer
             taup = self.rotate(self.tau, Theta, theta1)
             # remove zero eigenvalues from tau
-            self.orthogonalize(taup, zev, [v[0] for v in self.tau_ignore])
+            self.orthogonalize(taup, evecs)
             taup /= np.linalg.norm(taup)
             
             x1p = x0 + self.delta * taup
             
             # get the new energy and gradient at trial conviguration
-            grad1p = self.getOrthogonalGradient(x1p, zev, [v[0] for v in self.tau_ignore])
+            grad1p = self.getOrthogonalGradient(x1p, evecs)
 
             #grad1p = -grad1p
             # get curvature for trial point
@@ -164,7 +179,7 @@ class DimerSearch(object):
             self.tau = self.rotate(self.tau, Theta, theta_min)
             
             # remove zero eigenvalues from tau
-            self.orthogonalize(self.tau, zev, [v[0] for v in self.tau_ignore])
+            self.orthogonalize(self.tau, evecs)
             self.tau /= np.linalg.norm(self.tau)
             
 
