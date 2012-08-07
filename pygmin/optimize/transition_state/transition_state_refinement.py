@@ -187,11 +187,17 @@ def guesstsATLJ():
 
 def guessts(coords1, coords2, pot):
     from pygmin.optimize.quench import lbfgs_py as quench
+    from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
+    from pygmin.NEB.NEB import NEB
     ret1 = quench(coords1, pot.getEnergyGradient)
     ret2 = quench(coords2, pot.getEnergyGradient)
     coords1 = ret1[0]
     coords2 = ret2[0]
-    from pygmin.NEB.NEB import NEB
+    natoms = len(coords1)/3
+    dist, coords1, coords2 = mindist(coords1, coords2, permlist=[range(natoms)])
+    print "dist", dist
+    print "energy coords1", pot.getEnergy(coords1)
+    print "energy coords2", pot.getEnergy(coords2)
     neb = NEB(coords1, coords2, pot)
     neb.optimize()
     neb.MakeAllMaximaClimbing()
@@ -199,6 +205,7 @@ def guessts(coords1, coords2, pot):
     for i in xrange(len(neb.energies)):
         if(neb.isclimbing[i]):
             coords = neb.coords[i,:]
+    print "exiting"; exit()
     return pot, coords, neb.coords[0,:], neb.coords[-1,:]
 
 
