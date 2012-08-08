@@ -53,3 +53,12 @@ add_custom_command(
   COMMAND f2py -c -m ${utils6} --fcompiler=gfortran --f77flags="-ffixed-line-length-none" --link-lapack_opt ${utils6}.f > ${utils6}.setup
 )
 add_custom_target(${utils6} ALL DEPENDS ${utils6}.so)
+
+
+set(utils7 "ljcut")
+add_custom_command( 
+  OUTPUT ${utils7}.so
+  DEPENDS ${utils7}.f90
+  COMMAND f2py -c -m ${utils7} --fcompiler=gfortran --link-lapack_opt ${utils7}.f90 > ${utils7}.setup
+)
+add_custom_target(${utils7} ALL DEPENDS ${utils7}.so)

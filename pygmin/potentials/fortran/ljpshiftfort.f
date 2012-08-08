@@ -57,8 +57,8 @@ C
 
       N=NATOMS
       CUTAA=CUTOFF
-      CUTAB=CUTOFF*SIGAB
-      CUTBB=CUTOFF*SIGBB
+      CUTAB=CUTOFF!*SIGAB !this is taken care of in the python module
+      CUTBB=CUTOFF!*SIGBB !this is taken care of in the python module
       IRCUT2AA = 1.D0/CUTAA**2
       IRCUT2AB = 1.D0/CUTAB**2
       IRCUT2BB = 1.D0/CUTBB**2
