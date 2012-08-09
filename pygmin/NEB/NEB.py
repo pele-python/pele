@@ -1,4 +1,5 @@
 import numpy as np
+import os.path
 
 def distance_cart(x1, x2):
     return x2 - x1
@@ -25,13 +26,22 @@ class NEB:
         elastic constant for band
         
     """
-    def __init__(self, initial, final, potential, distance=distance_cart, nimages=20, k=100.0):
+    getEnergyCount = 0
+    printStateFile = None
+    def __init__(
+                 self, initial, final, potential, distance=distance_cart, 
+                 nimages=20, k=100.0, iprint=1):
         self.distance = distance
         self.potential = potential
         self.k = k
         self.nimages = nimages
+        self.iprint = iprint
+
+        self.getEnergyCount = 0
+        self.printStateFile = None
+
         
-        #initialiye coordinate&gradient array
+        #initialize coordinate&gradient array
         self.coords = np.zeros([nimages, initial.size])
         self.energies=np.zeros(nimages)
         self.isclimbing=[]
@@ -50,21 +60,44 @@ class NEB:
         self.active = self.coords[1:nimages-1,:]  
     
     def optimize(
-                 self, quenchRoutine=defaults.quenchRoutine, 
-                 quenchParams = defaults.quenchParams):
+                 self, quenchRoutine=None, 
+                 quenchParams = None):
         """
         Optimize the band
+        
+        Note: the potential for the NEB optimization is not Hamiltonian.
+            This means that there is no meaningful energy associated with the potential.  
+            Therefore, during the optimization, we can do gradient following, 
+            but we can't rely on the energy for, e.g. determining step size, 
+            which is the default behavior for many optimizers.  This can be worked around by choosing a 
+            small step size and a large maxErise, or by using an optimizer that uses only gradients.
+            
+            scipy.lbfgs_b seems to work with NEB pretty well, but lbfgs_py and mylbfgs tend to fail.  If 
+            you must use one of those try, e.g. maxErise = 1., maxstep=0.01, tol=1e-2 
     
-        quenchRoutine (quench.quench):
+        :quenchRoutine:
             quench algorithm to use for optimization.
+            
+        :quenchParams:
+            parameters for the quench
         """
+        if quenchRoutine is None:
+            quenchRoutine = defaults.NEBquenchRoutine
+        if quenchParams is None:
+            quenchParams = defaults.NEBquenchParams
         #if(quench==None):
         #    quench = self.default_quench
         #print "kwargs", kwargs
-        print "NEB optimize: quenchParams", quenchParams
-        tmp,E,tmp3,tmp4 = quenchRoutine(
-                    self.active.reshape(self.active.size), self.getEnergyGradient)#, 
-                    #**quenchParams)
+        #print "NEB optimize: quenchParams", quenchParams
+        #if not quenchParams.has_key("maxErise"):
+        #    quenchParams["maxErise"] = 10.
+        #if not quenchParams.has_key("maxstep"):
+        #    quenchParams["maxstep"] = .01
+        tmp,E,rms,tmp4 = quenchRoutine(
+                    self.active.reshape(self.active.size), self.getEnergyGradient, 
+                    **quenchParams)
+        if rms < 0.1:
+            print "NEB: warning, the rms gradient after the neb optimization seems large", rms
         self.active[:,:] = tmp.reshape(self.active.shape)
         for i in xrange(0,self.nimages):
             self.energies[i] = self.potential.getEnergy(self.coords[i,:])        
@@ -99,8 +132,12 @@ class NEB:
                     [self.energies[i+1],tmp[i+1, :]],
                     realgrad[i,:]
                     )
-            
-        return E,grad.reshape(grad.size)
+        if self.iprint > 0:
+            if self.getEnergyCount % self.iprint == 0:
+                self.printState()
+        self.getEnergyCount += 1
+        return E, grad.reshape(grad.size)
+        #return 0., grad.reshape(grad.size)
             
     def tangent_old(self, central, left, right):
         """
@@ -216,7 +253,38 @@ class NEB:
         for i in xrange(1,len(self.energies)-1):
             if(self.energies[i] > self.energies[i-1] and self.energies[i] > self.energies[i+1]):
                 self.isclimbing[i] = True
+
+    def printState(self):
+        """
+        print the current state of the NEB.  Useful for bug testing
+        """
+        if self.printStateFile is None:
+            #get a unique file name
+            for n in range(500):
+                self.printStateFile = "neb.EofS.%04d" % (n)
+                if not os.path.isfile(self.printStateFile):
+                    break  
+            print "NEB energies will be written to", self.printStateFile
+        #fname = "neb.EofS.%04d" % (self.getEnergyCount)
+        #fname = "neb.EofS.all"
+        with open(self.printStateFile, "a") as fout:
+            fout.write( "\n\n" )
+            fout.write("#neb step: %d\n" % (self.getEnergyCount))
+            S = 0.
+            for i in range(self.nimages):
+                if i == 0:
+                    dist = 0.
+                else:
+                    dist = self.distance( self.coords[i,:], self.coords[i-1,:] )
+                    dist = np.linalg.norm(dist)
+                S += dist
+                #print "S",S, "E",self.energies[i], "dist", dist
+                fout.write("%f %g\n" % (S, self.energies[i]))
             
+            
+        
+    
+       
 import nebtesting as test
 
 if __name__ == "__main__":

@@ -6,3 +6,6 @@ quenchParams = dict()
 
 tsSearchRoutine = dimer
 tsSearchParams = dict()
+
+NEBquenchRoutine = quench.quench
+NEBquenchParams = dict()

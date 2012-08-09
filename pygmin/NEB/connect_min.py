@@ -9,7 +9,7 @@ import itertools
 
 
 class DoubleEndedConnect(object):
-    def __init__(self, min1, min2, pot, graph, mindist, findTSParams = dict() ):
+    def __init__(self, min1, min2, pot, graph, mindist, findTSParams = None, NEB_optimize_quenchParams = None ):
         self.graph = graph
         self.minstart = min1
         self.minend = min2
@@ -19,6 +19,7 @@ class DoubleEndedConnect(object):
         self.pairsNEB = dict()
         self.idlist = []
         self.findTSParams = findTSParams
+        self.NEB_optimize_quenchParams = NEB_optimize_quenchParams
         
     def getDist(self, min1, min2):
         dist = self.distmatrix.get((min1, min2))
@@ -37,18 +38,18 @@ class DoubleEndedConnect(object):
             self.idlist.append(m)
         return m    
     
-    def doNEB(self, min1, min2, **optkwargs):
+    def doNEB(self, minNEB1, minNEB2):
         graph = self.graph
-        self.pairsNEB[(min1, min2)] = True
+        self.pairsNEB[(minNEB1, minNEB2)] = True
         print ""
-        print "starting NEB run to try to connect minima", min1._id, min2._id
-        print "minimizing the distance between the two minima"
-        dist, newcoords1, newcoords2 = self.mindist(min1.coords, min2.coords) 
-        print "runing NEB"
+        #print "minimizing the distance between the two minima"
+        dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords) 
+        print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
+        #print "runing NEB"
         neb = NEB(newcoords1, newcoords2, self.pot)
-        neb.optimize(**optkwargs)
+        neb.optimize(quenchParams = self.NEB_optimize_quenchParams)
         neb.MakeAllMaximaClimbing()
-        neb.optimize()
+        #neb.optimize(quenchParams = self.NEB_optimize_quenchParams)
     
         nclimbing = np.sum( [neb.isclimbing[i] for i in range(neb.nimages) ])
         print "from NEB search found", nclimbing, "climbing images"
@@ -56,8 +57,10 @@ class DoubleEndedConnect(object):
         for i in range(neb.nimages):
             if neb.isclimbing[i]:
                 coords = neb.coords[i,:]
+                np.savetxt("climbingimage", coords)
+                #print "exiting", exit(1)
                 print "refining transition state from NEB climbing image"
-                ret = findTransitionState(coords, self.pot, **self.findTSParams)
+                ret = findTransitionState(coords, self.pot, tsSearchParams = self.findTSParams)
                 #coords, eigval, eigvec, E, grad, rms = ret
                 coords = ret.coords
                 E = ret.energy
@@ -77,7 +80,7 @@ class DoubleEndedConnect(object):
                     ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=ret.eigenvec, eigenval=ret.eigenval)
                     graph.refresh()
                     
-                connected = graph.areConnected(min1, min2)
+                connected = graph.areConnected(minNEB1, minNEB2)
                 print "connected yet?", connected
                 if connected:
                     break            
@@ -137,6 +140,10 @@ class DoubleEndedConnect(object):
         """
         the main loop of the algorithm
         """
+        print "starting a double ended search to try to connect minima", self.minstart._id, self.minend._id
+        if self.graph.areConnected(self.minstart, self.minend):
+            print "aborting double ended connect:  minima are already connected"
+            return
         self.doNEB(self.minstart, self.minend)
         while True: 
             if self.graph.areConnected(self.minstart, self.minend):
@@ -147,7 +154,10 @@ class DoubleEndedConnect(object):
                 break
             self.doNEB(min1, min2)
         print "failed to find connection between", self.minstart._id, self.minend._id
-    
+
+
+
+
 def getSetOfMinLJ(natoms = 11): #for testing purposes
     from pygmin.potentials.lj import LJ
     pot = LJ()
@@ -169,6 +179,8 @@ def test():
     from pygmin.optimize.quench import lbfgs_py as quench
     from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
     from pygmin.storage.database import Storage
+    import pygmin.defaults as defaults
+    defaults.quenchParams = {"iprint": 1}
     natoms = 27
     #get min1
     pot, saveit = getSetOfMinLJ(natoms)
@@ -180,15 +192,22 @@ def test():
     min1 = minima[0]
     min2 = minima[1]
     print min1.energy, min2.energy
+    
+    if False:
+        #test to see if min1 and min2 are already connected
+        connected = graph.areConnected(min1, min2)
+        print "at start are minima connected?", connected
+        return
  
     connect = DoubleEndedConnect(min1, min2, pot, graph, mindist)
     connect.connect()
     
-    print graph
-    for node in graph.graph.nodes():
-        print node, node.energy
+    if False:
+        print graph
+        for node in graph.graph.nodes():
+            print node._id, node.energy
     for ts in graph.storage.transition_states():
-        print ts.minimum1._id,ts.minimum2._id, "E", ts.minimum1.energy, ts.minimum2.energy, ts.minimum2.energy
+        print ts.minimum1._id,ts.minimum2._id, "E", ts.minimum1.energy, ts.minimum2.energy, ts.energy
         
     ret = graph.getPath(min1, min2)
     if ret == None:

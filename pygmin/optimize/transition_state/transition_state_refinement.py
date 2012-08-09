@@ -3,6 +3,7 @@ from lowest_eig_pot import LowestEigPot
 from orthogopt import orthogopt
 from pygmin.potentials.potential import potential as basepot
 from pygmin.storage.savenlowest import SaveN
+import pygmin.defaults as defaults
 
 def analyticalLowestEigenvalue(coords, pot):
     e, g, hess = pot.getEnergyGradientHessian(coords)
@@ -103,11 +104,15 @@ class TransitionStateRefinement(basepot):
         return e, grad
 
 
-def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwargs):
-    from pygmin.optimize.quench import lbfgs_py as quench
+def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSearchParams = None, **kwargs):
+    #from pygmin.optimize.quench import lbfgs_py as quench
+    quenchRoutine = defaults.quenchRoutine
     tspot = TransitionStateRefinement(pot, coords, **kwargs)
     rmsnorm = 1./np.sqrt(float(len(coords))/3.)
     oldeigvec = None
+    
+    iprint = defaults.quenchParams.get("iprint")
+    if iprint is None: iprint = -1
 
     for i in xrange(nsteps):
         tspot.getLowestEigenvalue(coords)
@@ -123,12 +128,42 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwar
         #print "step uphill in the energy in the direction parallel to eigvec"
         tspot.stepUphill(coords)
         
+        if True:
+            #refine the eigenector again
+            tspot.getLowestEigenvalue(coords)
+            if tspot.eigval > 0.:
+                print "warning transition state search found positive lowest eigenvalue", tspot.eigval, \
+                    "step", i
+            if i > 0:
+                overlap = np.dot(oldeigvec, tspot.eigvec)
+                if overlap < 0.5:
+                    print "warning: the new eigenvector has low overlap with previous", overlap
+            oldeigvec = tspot.eigvec.copy()  
+
+        
+        #get the component of the gradient parallel to eigvec
+        E, grad = pot.getEnergyGradient(coords)
+        gradpar = np.dot(grad, tspot.eigvec) / np.linalg.norm(tspot.eigvec)
+        
         
         #print "minimize the energy in the direction perpendicular to eigvec"
-        ret = quench(coords, tspot.getEnergyGradient, nsteps=10)
+        """
+        now minimize the energy in the space perpendicular to eigvec.
+        There's no point in spending much effort on this until 
+        we've gotten close to the transition state.  So limit the number of steps
+        to 10 until we get close.
+        """
+        nstepsperp = 10
+        if np.abs(gradpar) <= tol*2.:
+            nstepsperp = 1000
+        ret = quenchRoutine(coords, tspot.getEnergyGradient, nsteps=nstepsperp, tol=tol*0.2)
         coords = ret[0]
         E, grad = pot.getEnergyGradient(coords)
         rms = np.linalg.norm(grad) * rmsnorm
+        
+        if iprint > 0:
+            if i % iprint == 0:
+                print "findTransitionState:", i, E, rms, "eigenvalue", tspot.eigval, "rms perpendicular", ret[2], "grad parallel", gradpar
         
         if event != None:
             event(E, coords, rms)
@@ -199,13 +234,13 @@ def guessts(coords1, coords2, pot):
     print "energy coords1", pot.getEnergy(coords1)
     print "energy coords2", pot.getEnergy(coords2)
     neb = NEB(coords1, coords2, pot)
+    #neb.optimize(quenchParams={"iprint" : 1})
     neb.optimize()
     neb.MakeAllMaximaClimbing()
     neb.optimize()
     for i in xrange(len(neb.energies)):
         if(neb.isclimbing[i]):
             coords = neb.coords[i,:]
-    print "exiting"; exit()
     return pot, coords, neb.coords[0,:], neb.coords[-1,:]
 
 

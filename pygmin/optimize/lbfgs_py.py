@@ -41,6 +41,7 @@ class LBFGS:
         self.Gold = self.G.copy()
         
         self.nfailed = 0
+        self.nfail_reset = 0
     
     def step(self, X, G):
         """
@@ -140,7 +141,9 @@ class LBFGS:
         
         if f*stepsize > self.maxstep:
             f = self.maxstep / stepsize
-        
+        #print "dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
+
+        #self.nfailed = 0
         nincrease = 0
         while True:
             X = X0 + f * stp
@@ -156,22 +159,31 @@ class LBFGS:
             if dE <= maxErise:
                 break
             else:
-                #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize
+                #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize, nincrease
                 f /= 10.
                 nincrease += 1
                 if nincrease > 5:
                     break
 
-        if nincrease <= 1:
+        if nincrease <= 2:
             self.nfailed = 0
         else:
             self.nfailed += 1
+            if False and self.nfailed > 10:
+                raise(Exception("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
             if True and self.nfailed > 10:
-                raise(BaseException("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
-            if False and self.nfailed > 3:
-                print "resetting H0"
-                print self.H0
+                #print "lbfgs: having trouble finding a good step size. dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
+                print "lbfgs: having trouble finding a good step size.", f*stepsize, stepsize
+                #print "resetting H0"
+                #print self.H0
+                self.nfail_reset += 1
+                if self.nfail_reset > 10:
+                    raise(Exception("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
                 self.reset()
+                self.nfailed = 0
+                E = E0
+                G = G0
+                X = X0
         
         if False and self.k <= 1:
             print G0
@@ -203,7 +215,7 @@ class LBFGS:
             
             try:
                 X, e, G = self.takeStepNoLineSearch(X, e, G, stp)
-            except BaseException:
+            except Exception:
                 print "Warning: problem with takeStepNoLineSearch, ending quench"
                 rms = np.linalg.norm(G) / sqrtN
                 print "    on failure: quench step", i, e, rms, self.funcalls

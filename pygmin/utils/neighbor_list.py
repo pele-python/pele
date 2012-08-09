@@ -98,7 +98,7 @@ class NeighborListSubset(object):
         else:
             self.onelist = False
             self.Blist = np.array(np.copy(Blist))
-        print "onelist", self.onelist
+        #print "onelist", self.onelist
 
         if self.onelist:
             listmaxlen = len(self.Alist)*(len(self.Alist)-1)/2
@@ -107,7 +107,7 @@ class NeighborListSubset(object):
         self.neib_list = np.zeros([listmaxlen, 2], np.integer)
         self.nlistmax = listmaxlen
         self.nlist = 0
-        print "shape neib_list", np.shape(self.neib_list)
+        #print "shape neib_list", np.shape(self.neib_list)
         
         self.oldcoords = np.zeros([natoms,3])            
         #self.buildList(coords)
