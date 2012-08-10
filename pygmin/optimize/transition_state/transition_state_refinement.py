@@ -111,7 +111,7 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSear
     rmsnorm = 1./np.sqrt(float(len(coords))/3.)
     oldeigvec = None
     
-    iprint = defaults.quenchParams.get("iprint")
+    iprint = defaults.tsSearchParams.get("iprint")
     if iprint is None: iprint = -1
 
     for i in xrange(nsteps):
@@ -169,6 +169,9 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSear
             event(E, coords, rms)
         if rms < tol:
             break
+    
+    print "findTransitionState done:", i, E, rms, "eigenvalue", tspot.eigval
+
     
     if tspot.eigval >= 0.:
         print "warning: transition state has positive eigenvalue", tspot.eigval

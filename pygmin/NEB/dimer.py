@@ -6,7 +6,7 @@ xt=[]
 tt=[]
 
 # add event callback
-def findTransitionState(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, **kwargs):
+def findTransitionState(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, iprint=-1, **kwargs):
     '''
     Wrapper for DimerSearch to find transition states
     '''    
@@ -14,7 +14,7 @@ def findTransitionState(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, 
     #search.findNextTS(direction)
     #search.findNextTS(direction)
     #search.findNextTS(direction)
-    x, E, rms, tmp = quench.fire(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep) 
+    x, E, rms, tmp = quench.fire(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, iprint=iprint) 
     #x, E, rms, tmp = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=1000.)
         
     from collections import namedtuple

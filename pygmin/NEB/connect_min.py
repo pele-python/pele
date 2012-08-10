@@ -21,26 +21,79 @@ class DoubleEndedConnect(object):
         self.findTSParams = findTSParams
         self.NEB_optimize_quenchParams = NEB_optimize_quenchParams
         
+        self.Gdist = nx.Graph() 
+        self.initializeGdist()
+    
+    def initializeGdist(self):
+        """
+        Initialize the graph Gdist. Gdist is used to help try to find the 
+        optimal way to try to connect minstart and minend.
+        
+        Gdist has a vertex for minstart, minend and every new minima found.  (see note)
+        
+        Gdist has an edge between (almost) every minima.
+        
+        the edge weight is:
+            if self.graph.areConnected(u,v):
+                weight(u,v) = 0.
+            else:
+                weight(u,v) = self.getDist(u,v)
+        
+        edges are removed from the graph when an NEB is done to try to connect them.
+        
+        note: currently we initialize Gdist only with minstart and minend.  If we use
+        all the other minima in self.graph we might be able to find a better path or
+        find it more quickly.  But if the database of minima is large calculating the
+        distances between every minima can take a long time
+        """
+        nx.set_edge_attributes(self.Gdist, "dist", dict())
+        dist = self.getDist(self.minstart, self.minend)
+        self.Gdist.add_edge(self.minstart, self.minend, dist=dist)
+    def addNodeGdist(self, min1):
+        """
+        add node to graph Gdist.  Add an edge to all existing nodes with weight
+        given by the distance.  If the minima are connected in self.graph make the 
+        weight 0.
+        """
+        self.Gdist.add_node(min1)
+        for min2 in self.Gdist.nodes():
+            if min2 is not min1:
+                if not self.graph.areConnected(min1, min2):
+                    dist = self.getDist(min1, min2)
+                else:
+                    dist = 0.
+                self.Gdist.add_edge(min1, min2, dist=dist)
+                    
+
+        
+    
     def getDist(self, min1, min2):
         dist = self.distmatrix.get((min1, min2))
-        if dist == None:
-            dist = self.distmatrix.get((min1, min2))
-        if dist != None:
+        #if dist is None:
+        #    dist = self.distmatrix.get((min1, min2))
+        if dist is not None:
             return dist
-        print "calculating distance between", min1._id, min2._id
+        #print "calculating distance between", min1._id, min2._id
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
         self.distmatrix[(min1,min2)] = dist
+        self.distmatrix[(min2,min1)] = dist
         return dist
 
     def addMinimum(self, *args):
         m = self.graph.addMinimum(*args)
+        self.graph.refresh() #this could be slow
         if not m in self.idlist and not (m is self.minstart) and not (m is self.minend):
             self.idlist.append(m)
+        self.addNodeGdist(m)
         return m    
     
     def doNEB(self, minNEB1, minNEB2):
         graph = self.graph
         self.pairsNEB[(minNEB1, minNEB2)] = True
+        """
+        record some data so we don't try this NEB again
+        """
+        self.Gdist.remove_edge(minNEB1, minNEB2)
         print ""
         #print "minimizing the distance between the two minima"
         dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords) 
@@ -79,6 +132,10 @@ class DoubleEndedConnect(object):
                     from pygmin.storage.database import TransitionState
                     ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=ret.eigenvec, eigenval=ret.eigenval)
                     graph.refresh()
+                    """
+                    set the weight to zero in Gdist
+                    """
+                    self.Gdist.add_edge(min1, min2, dist=0.)
                     
                 connected = graph.areConnected(minNEB1, minNEB2)
                 print "connected yet?", connected
@@ -87,6 +144,8 @@ class DoubleEndedConnect(object):
                 
     def getNextPair(self):
         """
+        this is now obsolete
+        
         this is the function which attempts to find a clever pair of minima to try to connect
         with the ultimate goal of connecting minstart and minend
         """
@@ -136,21 +195,78 @@ class DoubleEndedConnect(object):
     
         return None, None
     
+    def getNextPairNew(self):
+        """
+        this is the function which attempts to find a clever pair of minima to try to 
+        connect with the ultimate goal of connecting minstart and minend
+        
+        this method can be described as follows:
+        
+        make a new graph Gnew which is complete (all vetices connected).  The edges
+        have a weight given by
+        
+        if self.graph.areConnected(u,v):
+            weight(u,v) = 0.
+        else:
+            weight(u,v) = mindist(u,v)
+        
+        if an NEB has been attempted between u and v then the edge is removed.
+        
+        we then find the shortest path between minstart and minend.  We return
+        the pair in this path which has edge weight with the smallest non zero value 
+        """
+        print "finding a good pair to try to connect"
+        try:
+            path = nx.shortest_path(
+                    self.Gdist, self.minstart, self.minend, weight="dist")
+        except nx.NetworkXNoPath:
+            print "Can't find any way to try to connect the minima"
+            return None, None
+        
+        print "best guess for path"
+        
+        #path is a list of nodes
+        distances = nx.get_edge_attributes(self.Gdist, "dist")
+        distmin = 1e100
+        minpair = (None, None)
+        for i in range(1,len(path)):
+            min1 = path[i-1]
+            min2 = path[i]
+            dist = distances.get((min1,min2))
+            if dist is None:
+                dist = distances.get((min2,min1))
+            #print "dist", dist
+            print "    path guess", min1._id, min2._id, dist
+            if dist > 1e-10 and dist < distmin:
+                distmin = dist
+                minpair = (min1, min2)
+        return minpair
+                
+                
+            
+        
+        
+
+    
     def connect(self):
         """
         the main loop of the algorithm
         """
-        print "starting a double ended search to try to connect minima", self.minstart._id, self.minend._id
-        if self.graph.areConnected(self.minstart, self.minend):
-            print "aborting double ended connect:  minima are already connected"
-            return
-        self.doNEB(self.minstart, self.minend)
+#        print "starting a double ended search to try to connect minima", self.minstart._id, self.minend._id
+#        if self.graph.areConnected(self.minstart, self.minend):
+#            print "aborting double ended connect:  minima are already connected"
+#            return
+#        
+#        if True:
+#            min1, min2 = self.getNextPairNew()
+#
+#        self.doNEB(self.minstart, self.minend)
         while True: 
             if self.graph.areConnected(self.minstart, self.minend):
                 return
             
-            min1, min2 = self.getNextPair()
-            if min1 == None:
+            min1, min2 = self.getNextPairNew()
+            if min1 is None or min2 is None:
                 break
             self.doNEB(min1, min2)
         print "failed to find connection between", self.minstart._id, self.minend._id
@@ -166,7 +282,10 @@ def getSetOfMinLJ(natoms = 11): #for testing purposes
     from pygmin.takestep.displace import RandomDisplacement
     from pygmin.takestep.adaptive import AdaptiveStepsize
     from pygmin.storage.database import Storage
-    saveit = Storage(db="test.db")
+    import os
+    dbfile = "test.db"
+    os.remove(dbfile)
+    saveit = Storage(db=dbfile)
     takestep1 = RandomDisplacement()
     takestep = AdaptiveStepsize(takestep1, frequency=15)
     bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)

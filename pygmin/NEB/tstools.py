@@ -18,7 +18,7 @@ def minima_from_ts(getEnergyGradient, xt, n=None, displace=1e-3,
     x2 = xt + displace*n
     e1,g1 = getEnergyGradient(x1)
     e2,g2 = getEnergyGradient(x2)
-    print np.dot(g1,g2)
+    #print np.dot(g1,g2)
     minimum1 = quenchRoutine(x1, getEnergyGradient, **quenchParameters)
     minimum2 = quenchRoutine(x2, getEnergyGradient, **quenchParameters)
     return minimum1, minimum2
