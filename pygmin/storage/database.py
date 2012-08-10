@@ -73,6 +73,29 @@ class TransitionState(Base):
         self.eigenvec = eigenvec
         self.eigenval = eigenval
 
+class Distance(Base):
+    '''Base class to store transition states'''
+    __tablename__ = "tbl_distances"
+    _id = Column(Integer, primary_key=True)
+    
+    dist = Column(Float)
+    '''energy of transition state'''
+        
+    _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
+    minimum1 = relationship("Minimum",
+                            primaryjoin="Minimum._id==Distance._minimum1_id")
+    '''first minimum which connects to transition state'''
+    
+    _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
+    minimum2 = relationship("Minimum",
+                            primaryjoin="Minimum._id==Distance._minimum2_id")
+    '''second minimum which connects to transition state'''
+    
+    
+    def __init__(self, dist, min1, min2):
+        self.dist = dist
+        self.minimum1 = min1
+        self.minimum2 = min2
 
 class Storage(object):
     '''Database storage class
@@ -181,6 +204,49 @@ class Storage(object):
         if(commit):
             self.session.commit()
         return new
+    
+    def setDistance(self, dist, min1, min2, commit=True):
+        if(min1.energy < min2.energy):
+            m1,m2 = min1,min2
+        else:
+            m1,m2 = min2,min1
+            
+        candidates = self.session.query(Distance).\
+            filter(Distance.minimum1==m1).\
+            filter(Distance.minimum2==m2)
+        
+        for m in candidates:
+            #if(self.compareMinima):
+            #    if(self.compareMinima(new, m) == False):
+            #        continue
+            #self.lock.release()
+            return m
+        
+        new = Distance(dist, m1, m2)
+            
+        self.session.add(new)
+        if(commit):
+            self.session.commit()
+        return new
+    def getDistance(self, min1, min2, commit=True):
+        if(min1.energy < min2.energy):
+            m1,m2 = min1,min2
+        else:
+            m1,m2 = min2,min1
+            
+        candidates = self.session.query(Distance).\
+            filter(Distance.minimum1==m1).\
+            filter(Distance.minimum2==m2)
+       
+        for m in candidates:
+            #if(self.compareMinima):
+            #    if(self.compareMinima(new, m) == False):
+            #        continue
+            #self.lock.release()
+            return m.dist
+        return None
+        
+
     
     def minima(self):
         '''iterate over all minima in database

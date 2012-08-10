@@ -9,7 +9,9 @@ import itertools
 
 
 class DoubleEndedConnect(object):
-    def __init__(self, min1, min2, pot, graph, mindist, findTSParams = None, NEB_optimize_quenchParams = None ):
+    def __init__(
+                 self, min1, min2, pot, graph, mindist, database=None, findTSParams = None, 
+                 NEB_optimize_quenchParams = None, use_all_min=False):
         self.graph = graph
         self.minstart = min1
         self.minend = min2
@@ -20,11 +22,14 @@ class DoubleEndedConnect(object):
         self.idlist = []
         self.findTSParams = findTSParams
         self.NEB_optimize_quenchParams = NEB_optimize_quenchParams
+        self.database = database
         
+
         self.Gdist = nx.Graph() 
-        self.initializeGdist()
+        self.initializeGdist(use_all_min)
+        
     
-    def initializeGdist(self):
+    def initializeGdist(self, use_all_min):
         """
         Initialize the graph Gdist. Gdist is used to help try to find the 
         optimal way to try to connect minstart and minend.
@@ -49,6 +54,12 @@ class DoubleEndedConnect(object):
         nx.set_edge_attributes(self.Gdist, "dist", dict())
         dist = self.getDist(self.minstart, self.minend)
         self.Gdist.add_edge(self.minstart, self.minend, dist=dist)
+        if use_all_min:
+            """
+            add all minima in self.graph to self.Gdist
+            """
+            for m in self.graph.graph.nodes():
+                self.addNodeGdist(m)
     def addNodeGdist(self, min1):
         """
         add node to graph Gdist.  Add an edge to all existing nodes with weight
@@ -65,15 +76,25 @@ class DoubleEndedConnect(object):
                 self.Gdist.add_edge(min1, min2, dist=dist)
                     
 
-        
-    
     def getDist(self, min1, min2):
-        dist = self.distmatrix.get((min1, min2))
-        #if dist is None:
-        #    dist = self.distmatrix.get((min1, min2))
+        if self.database is None:
+            return self.getDistNoDB(min1, min2)
+        dist = self.database.getDistance(min1, min2)
         if dist is not None:
             return dist
-        #print "calculating distance between", min1._id, min2._id
+        print "calculating distance between", min1._id, min2._id
+        dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
+        self.database.setDistance(dist, min1, min2)
+        #self.distmatrix[(min1,min2)] = dist
+        #self.distmatrix[(min2,min1)] = dist
+        return dist
+
+    
+    def getDistNoDB(self, min1, min2):
+        dist = self.distmatrix.get((min1, min2))
+        if dist is not None:
+            return dist
+        print "calculating distance between", min1._id, min2._id
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
         self.distmatrix[(min1,min2)] = dist
         self.distmatrix[(min2,min1)] = dist
@@ -300,14 +321,14 @@ def test():
     from pygmin.storage.database import Storage
     import pygmin.defaults as defaults
     defaults.quenchParams = {"iprint": 1}
-    natoms = 27
+    natoms = 17
     #get min1
-    pot, saveit = getSetOfMinLJ(natoms)
+    pot, database = getSetOfMinLJ(natoms)
 #    from pygmin.potentials.lj import LJ
 #    pot = LJ()
 #    saveit = Storage(db="test.db")
-    graph = Graph(saveit)
-    minima = saveit.minima()
+    graph = Graph(database)
+    minima = database.minima()
     min1 = minima[0]
     min2 = minima[1]
     print min1.energy, min2.energy
@@ -318,7 +339,7 @@ def test():
         print "at start are minima connected?", connected
         return
  
-    connect = DoubleEndedConnect(min1, min2, pot, graph, mindist)
+    connect = DoubleEndedConnect(min1, min2, pot, graph, mindist, database=database)
     connect.connect()
     
     if False:
