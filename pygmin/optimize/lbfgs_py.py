@@ -91,13 +91,18 @@ class LBFGS:
             q -= a[i] * y[i,:]
         
         #z[:] = self.H0[ki] * q[:]
-        z = q #q is not used anymore, so we can use it as workspace
+        z = q #q is not used anymore after this, so we can use it as workspace
         z *= self.H0[ki]
         for i in myrange:
             beta = rho[i] * np.dot( y[i,:], z )
             z += s[i,:] * (a[i] - beta)
         
         self.stp[:] = -z[:]
+        
+        if k == 0:
+            #make first guess for the step length cautious
+            gnorm = np.linalg.norm(G)
+            self.stp *= min(gnorm, 1./gnorm)
         
         #we now have the step direction.  now take the step
         #self.takeStep(X, self.stp)
@@ -119,12 +124,14 @@ class LBFGS:
         
         4) if the step increases the energy by more than maxErise, 
             then reduce the step size and go to 3)
+        
+        5) if the step is reduced more than 10 times and the energy is still not acceptable
+            increment nfail, reset the lbfgs optimizer and continue
+            
+        6) if nfail is greater than 5 abort the quench
                 
         *The below is not implemented yet.  It's on the TODO list
         
-        6) if failures occur too many times, restart the quench process from the current configuration
-        
-        7) if we're still failing then abort
         """
         f = 1.
         X0 = X.copy()
@@ -162,25 +169,23 @@ class LBFGS:
                 #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize, nincrease
                 f /= 10.
                 nincrease += 1
-                if nincrease > 5:
+                if nincrease > 10:
                     break
 
-        if nincrease <= 2:
-            self.nfailed = 0
-        else:
+        if nincrease > 10:
             self.nfailed += 1
-            if False and self.nfailed > 10:
+            if self.nfailed > 10:
                 raise(Exception("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
-            if True and self.nfailed > 10:
+            if True:
                 #print "lbfgs: having trouble finding a good step size. dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
                 print "lbfgs: having trouble finding a good step size.", f*stepsize, stepsize
                 #print "resetting H0"
                 #print self.H0
-                self.nfail_reset += 1
+                #self.nfail_reset += 1
                 if self.nfail_reset > 10:
                     raise(Exception("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
                 self.reset()
-                self.nfailed = 0
+                #self.nfailed = 0
                 E = E0
                 G = G0
                 X = X0
@@ -228,7 +233,7 @@ class LBFGS:
             
             if iprint > 0:
                 if i % iprint == 0:
-                    print "quench step", i, e, rms, self.funcalls
+                    print "lbfgs:", i, e, rms, self.funcalls
             for event in self.events:
                 event( coords=X, energy=e, rms=rms )
       

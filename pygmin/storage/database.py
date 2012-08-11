@@ -161,7 +161,7 @@ class Storage(object):
         self.lock.acquire()
         candidates = self.session.query(Minimum).\
             filter(Minimum.energy > E-self.accuracy).\
-            filter(Minimum.energy<E+self.accuracy)
+            filter(Minimum.energy < E+self.accuracy)
         
         new = Minimum(E, coords)
             
@@ -189,7 +189,7 @@ class Storage(object):
             filter(TransitionState.minimum1==m1).\
             filter(TransitionState.minimum2==m2).\
             filter(TransitionState.energy > E-self.accuracy).\
-            filter(TransitionState.energy<E+self.accuracy)
+            filter(TransitionState.energy < E+self.accuracy)
         
         for m in candidates:
             #if(self.compareMinima):

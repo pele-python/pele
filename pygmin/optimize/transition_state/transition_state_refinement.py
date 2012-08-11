@@ -47,12 +47,19 @@ class TransitionStateRefinement(basepot):
         will return the gradient with the component along the eigenvector removed.  This is for
         energy minimization in the space tangent to the gradient    
     """
-    def __init__(self, pot, coords, verbose=False, orthogZeroEigs = orthogopt):
+    def __init__(self, pot, coords, verbose=False, orthogZeroEigs = 0):
+        """
+        :orthogZeroEigs: the function which makes a vector orthogonal to known zero 
+            eigenvectors
+            default value is 0, which means use the default function orthogopt.
+            if None is pass then no function will be used
+        """
         self.pot = pot
         self.eigvec = np.random.rand(len(coords)) #initial random guess
         self.verbose = verbose
         self.H0 = None
         self.orthogZeroEigs = orthogZeroEigs
+
     
     def getLowestEigenvalue(
                 self, coords, iprint=400, tol = 1e-6, **kwargs):
@@ -107,18 +114,33 @@ class TransitionStateRefinement(basepot):
 def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSearchParams = None, **kwargs):
     #from pygmin.optimize.quench import lbfgs_py as quench
     quenchRoutine = defaults.quenchRoutine
-    tspot = TransitionStateRefinement(pot, coords, **kwargs)
+    if tsSearchParams is None:
+        tsSearchParams = defaults.tsSearchParams
+    iprint = tsSearchParams.get("iprint")
+    if iprint is None: iprint = -1
+    if tsSearchParams.has_key("orthogZeroEigs"):
+        has_orthogZeroEigs = True
+        orthogZeroEigs = tsSearchParams["orthogZeroEigs"]  #this could meaninfully be None
+    else:
+        has_orthogZeroEigs = False
+
+        
+            
+    if has_orthogZeroEigs:
+        tspot = TransitionStateRefinement(pot, coords, orthogZeroEigs=orthogZeroEigs, **kwargs)
+    else:
+        tspot = TransitionStateRefinement(pot, coords, **kwargs)
     rmsnorm = 1./np.sqrt(float(len(coords))/3.)
     oldeigvec = None
     
-    iprint = defaults.tsSearchParams.get("iprint")
-    if iprint is None: iprint = -1
 
     for i in xrange(nsteps):
         tspot.getLowestEigenvalue(coords)
         if tspot.eigval > 0.:
             print "warning transition state search found positive lowest eigenvalue", tspot.eigval, \
                 "step", i
+            if i == 0: 
+                print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
         if i > 0:
             overlap = np.dot(oldeigvec, tspot.eigvec)
             if overlap < 0.5:

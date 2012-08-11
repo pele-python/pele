@@ -11,7 +11,7 @@ class LowestEigPot(basepot):
     
     here the energy corresponds to the eigenvalue, and the coordinates to be optimized is the eigenvector
     """
-    def __init__(self, coords, pot, orthogZeroEigs = orthogopt):
+    def __init__(self, coords, pot, orthogZeroEigs = 0):
         """
         :coords: is the point in space where we want to compute the lowest eigenvector
         
@@ -22,17 +22,21 @@ class LowestEigPot(basepot):
             eigenvectors with zero eigenvalues.  The default assumes global
             translational and rotational symmetry
         """
-        self.orthogZeroEigs = orthogZeroEigs
         self.coords = np.copy(coords)
         self.pot = pot
         self.E, self.G = self.pot.getEnergyGradient(self.coords)
+        if orthogZeroEigs == 0:
+            self.orthogZeroEigs = orthogopt
+        else:
+            self.orthogZeroEigs = orthogZeroEigs
+        #print "orthogZeroEigs", self.orthogZeroEigs
         
         self.diff = 1e-3
     
     
     def getEnergyGradient(self, vec_in):
         """
-        vec is a guess for the lowest eigenvector.  It should be normalized
+        :vec_in: is a guess for the lowest eigenvector.  It should be normalized
         """
         vecl = 1.
         vec_in /= np.linalg.norm(vec_in)
