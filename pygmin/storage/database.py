@@ -32,7 +32,7 @@ class Minimum(Base):
 
     def __init__(self, energy, coords):
         self.energy = energy
-        self.coords = coords
+        self.coords = np.copy(coords)
     
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
@@ -68,9 +68,10 @@ class TransitionState(Base):
     
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
         self.energy = energy
+        self.coords = np.copy(coords)
         self.minimum1 = min1
         self.minimum2 = min2
-        self.eigenvec = eigenvec
+        self.eigenvec = np.copy(eigenvec)
         self.eigenval = eigenval
 
 class Distance(Base):
@@ -204,6 +205,23 @@ class Storage(object):
         if(commit):
             self.session.commit()
         return new
+    def getTransitionState(self, min1, min2):
+        if(min1.energy < min2.energy):
+            m1,m2 = min1,min2
+        else:
+            m1,m2 = min2,min1
+            
+        candidates = self.session.query(TransitionState).\
+            filter(TransitionState.minimum1==m1).\
+            filter(TransitionState.minimum2==m2)
+        
+        for m in candidates:
+            #if(self.compareMinima):
+            #    if(self.compareMinima(new, m) == False):
+            #        continue
+            #self.lock.release()
+            return m
+        return None
     
     def setDistance(self, dist, min1, min2, commit=True):
         if(min1.energy < min2.energy):
