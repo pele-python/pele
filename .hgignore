@@ -1,0 +1,15 @@
+syntax: glob
+
+*.so
+*.o
+*~
+CMakeCache.txt
+CMakeFiles
+*.pyc
+cmake_install.cmake
+Makefile
+*.setup
+*.mod
+coords.txt
+*.xyz
+
