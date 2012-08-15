@@ -280,20 +280,27 @@ class Storage(object):
         '''
         return self.session.query(TransitionState).all()
     
-    def minimum_adder(self):
+    def minimum_adder(self, Ecut=None):
         '''wrapper class to add minima
         
         Since pickle cannot handle pointer to member functions, this class wraps the call to
         add minimum.
         
+        :param Ecut: energy cutoff, don't add minima which are higher in energy
+        :type Ecut: float
+        
         :returns: add minimum handler
         '''
         class minimum_adder:
-            def __init__(self, db):
+            def __init__(self, db, Ecut):
                 self.db = db
+                self.Ecut = Ecut
             def __call__(self, E, coords):
+                if(self.Ecut):
+                    if(E > self.Ecut):
+                        return None
                 self.db.addMinimum(E, coords)
-        return minimum_adder(self)
+        return minimum_adder(self, Ecut)
 
 if __name__ == "__main__":    
     db = Storage()#db="test.db")
