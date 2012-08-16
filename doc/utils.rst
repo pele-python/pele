@@ -9,7 +9,7 @@ Helper functions
       :members:
       :undoc-members:
 
-.. automodule:: pygmin.utils.rbtool 
+.. automodule:: pygmin.utils.rbtools 
       :members:
       :undoc-members:
 
