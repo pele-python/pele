@@ -1,4 +1,5 @@
-"""This module implements storage of pygmin simulation data in a relational database"""
+"""Storage for simulation data in a relational database
+"""
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -14,30 +15,81 @@ verbose=False
 Base = declarative_base()
 
 class Minimum(Base):
-    '''Base class to store minima'''
+    '''Minimum object
+    
+    The Minimum class represents a minimum in the databae.
+    
+    Parameters
+    ----------
+    energy : float
+    coords : numpy array
+        coordinates
+    
+    Attributes
+    ----------
+    energy : float
+    coords : numpy array
+    
+    Notes
+    -----
+    
+    To avoid any double entries of minima and be able to compare them,
+    only use Storage.addMinimum to create a minimum object.
+    
+    '''
     __tablename__ = 'tbl_minima'
 
     _id = Column(Integer, primary_key=True)
     energy = Column(Float) 
-    '''energy of the minimum'''
     # deferred means the object is loaded on demand, that saves some time / memory for huge graphs
     coords = deferred(Column(PickleType))
-    '''coordinatse of the minimum'''
+    '''coordinates'''
     
+    def __init__(self, energy, coords):
+        self.energy = energy
+        self.coords = np.copy(coords)
+ 
     def right_neighbors(self):
         return [x.higher_node for x in self.left_edges]
 
     def left_neighbors(self):
         return [x.lower_node for x in self.right_edges]
-
-    def __init__(self, energy, coords):
-        self.energy = energy
-        self.coords = np.copy(coords)
-    
+   
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
 class TransitionState(Base):
-    '''Base class to store transition states'''
+    '''Transition state object 
+       
+    The TransitionState class represents a saddle point in the databae.     
+    
+    Parameters
+    ----------
+    energy : float
+    coords : numpy array
+    min1: Minimum object
+        first minimum
+    min2: Minimum object
+        first minimum
+    eigenval: float, optional
+        lowest (single negative) eigenvalue of the sadle point
+    eigenvec: numpy array, optional
+        eigenvector which correpsonds to the negative eigenvalue 
+    
+    Attributes
+    ----------
+    energy : float
+    coords : numpy array
+    minimum1: Minimum object
+    minimum2: Minium object
+    eigenval: float
+    eigenvec: numpy array
+    
+    Notes
+    -----
+    To avoid any double entries and be able to compare them, only use 
+    Storage.addTransitionState to create a TransitionStateobject.
+    
+    '''
     __tablename__ = "tbl_transition_states"
     _id = Column(Integer, primary_key=True)
     
@@ -75,22 +127,39 @@ class TransitionState(Base):
         self.eigenval = eigenval
 
 class Distance(Base):
-    '''Base class to store transition states'''
+    '''object to store distances between minima
+    
+    Parameters
+    ----------
+    dist: float
+        distance between minima
+    min1: Minimum object
+        first minimum
+    min2: Minimum object
+        second minimum
+        
+    Attributes
+    ----------
+    dist: float
+    minimum1: Minimum object
+    minimum2: Minimum object
+    
+    '''
     __tablename__ = "tbl_distances"
     _id = Column(Integer, primary_key=True)
     
     dist = Column(Float)
-    '''energy of transition state'''
+    '''distance between minima'''
         
     _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum1 = relationship("Minimum",
                             primaryjoin="Minimum._id==Distance._minimum1_id")
-    '''first minimum which connects to transition state'''
+    '''first minimum'''
     
     _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum2 = relationship("Minimum",
                             primaryjoin="Minimum._id==Distance._minimum2_id")
-    '''second minimum which connects to transition state'''
+    '''second minimum'''
     
     
     def __init__(self, dist, min1, min2):
@@ -101,10 +170,38 @@ class Distance(Base):
 class Storage(object):
     '''Database storage class
     
-    The Storage class handles the connection to the database.
+    The Storage class handles the connection to the database. It has functions to create new Minima,
+    TransitionState and Distance objects. The objects are persistent in the database and exist as
+    soon as the Storage class in connected to the database. If any value in the objects is changed,
+    the changes are automatically persistent in the database (TODO: be careful, check commit transactions, ...)
+    
+    Storage uses SQLAlchemy to connect to the database. Check the web page for available connectors. Unless
+    you know better, the standard sqlite should be used. The database can be generated in memory (default) or
+    written to a file if db is specified when creating the class.
 
-    :Example:
+    Parameters
+    ----------
+    accuracy : float, optional
+        energy tolerance to cound minima as equal
+    db : string, optional
+        database to connect to
+    connect_string : string, optional
+        connection string, default is sqlite database
+    
 
+    Attributes
+    ----------
+    engine : sqlalchemy database engine
+    session : sqlalchemy session
+    
+    accuracy : float
+    onMinimumRemoved : list of function
+    onMinimumAdded : list of funtion
+    compareMinima
+    
+    Example
+    -------
+    
     >>> from pygmin.storage import database
     >>> db = database.Storage(db="test.db")
     >>> for energy in np.random.random(10):
@@ -116,6 +213,7 @@ class Storage(object):
     '''
     engine = None
     Session = None
+    session = None
     accuracy = 1e-3
     onMinimumRemoved=[]
     onMinimumAdded=[]
@@ -123,17 +221,6 @@ class Storage(object):
     
     def __init__(self, accuracy=1e-3, db=":memory:", connect_string='sqlite:///%s',\
                  onMinimumAdded=None, onMinimumRemoved=None, compareMinima=None):
-        """Constructor for database storage class
-
-        :param accuracy: energy tolerance to cound minima as equal
-        :type accuracy: float
-        :param db: database to connect to
-        :type db: string
-        :param connect_string: connection string, default is sqlite database
-        :type connect_string: string
-        :type message: string
-        """
-
         self.engine = create_engine(connect_string%(db), echo=verbose)
         Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
@@ -148,16 +235,19 @@ class Storage(object):
     def addMinimum(self, E, coords, commit=True):
         """add a new minimum to database
         
-        - **parameters**, **types**, **return** and **return types**::
+        Parameters
+        ----------
+        energy : float
+        coords : numpy.array
+            coordinates of the minimum
+        commit : boolean, optional
+            commit changes to database, default is True
         
-        :param E: energy
-        :type E: float
-        :param coords: coordinates of the minimum
-        :type coords: np.array
-        :param commit: commit changes to database
-        :type commit: boolean
-        :returns: minimum which was added
-        :rtype: Minimum
+        Returns
+        -------
+        minimum : Minimum
+            minimum which was added
+            
         """
         self.lock.acquire()
         candidates = self.session.query(Minimum).\
@@ -269,14 +359,20 @@ class Storage(object):
     def minima(self):
         '''iterate over all minima in database
         
-        :returns: query for all minima in database ordered in ascending energy
+        Returns
+        -------
+        minima : list of Minimum objects
+            query for all minima in database ordered in ascending energy
         '''
         return self.session.query(Minimum).order_by(Minimum.energy).all()
     
     def transition_states(self):
         '''iterate over all transition states in database
         
-        :returns: query for all transition states in database ordered in ascending energy
+        Returns
+        -------
+        ts: list of TransitionState objects
+            query for all transition states in database ordered in ascending energy
         '''
         return self.session.query(TransitionState).all()
     
@@ -286,10 +382,16 @@ class Storage(object):
         Since pickle cannot handle pointer to member functions, this class wraps the call to
         add minimum.
         
-        :param Ecut: energy cutoff, don't add minima which are higher in energy
-        :type Ecut: float
+        Parameters
+        ----------
+        Ecut: float, optional
+             energy cutoff, don't add minima which are higher in energy
         
-        :returns: add minimum handler
+        Returns
+        -------
+        handler: minimum_adder class
+            minimum handler to add minima
+            
         '''
         class minimum_adder:
             def __init__(self, db, Ecut):

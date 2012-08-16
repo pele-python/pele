@@ -12,4 +12,8 @@ Makefile
 *.mod
 coords.txt
 *.xyz
+*.orig
+
+doc/generated
+doc/_build
 

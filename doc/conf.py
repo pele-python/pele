@@ -26,7 +26,10 @@ sys.path.insert(0, os.path.abspath('sphinxext'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.pngmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.pngmath',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.autosummary',
+              'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -85,13 +88,14 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+modindex_common_prefix = ['pygmin.']
 
 
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
+html_style = 'scipy.css'
 html_theme = 'default'
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -215,3 +219,5 @@ man_pages = [
     ('index', 'pygmin', u'pygmin Documentation',
      [u'Victor Rühle, Jacob Stevenson'], 1)
 ]
+
+autosummary_generate = True
