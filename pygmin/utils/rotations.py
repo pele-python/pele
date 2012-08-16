@@ -155,7 +155,7 @@ def random_q():
     uniform random rotation in angle axis formulation
     input: 3 uniformly distributed random numbers
     uses the algorithm given in
-     K. Shoemake, Uniform random rotations, Graphics Gems III, pages 124-132. Academic, New York, 1992.
+    K. Shoemake, Uniform random rotations, Graphics Gems III, pages 124-132. Academic, New York, 1992.
     This first generates a random rotation in quaternion representation. We should substitute this by
     a direct angle axis generation, but be careful: the angle of rotation in angle axis representation
     is NOT uniformly distributed

@@ -1,5 +1,59 @@
 class CoordsAdapter():
+    '''Wrapper to access coordinate array for rigid body systems
+    
+    The CoordsAdapter is a wrapper for a coords array. It creates views to directly
+    access rigid body position & rotations, atom positions and lattice coordinates.
+    This offers a convenient way to access coorinates without the hazzle of 
+    indexing
+
+    :Example:
+
+    >>> import numpy as np
+    >>> from pygmin.utils.rbtools import CoordsAdapter
+    >>> 
+    >>> nrigid = 10
+    >>> coords = np.zeros(6*nrigid)
+    >>> ca = CoordsAdapter(nrigid=nrigid, coords=coords)
+    >>>
+    >>> ca.posRigid[0] = np.random.random(3)
+    >>> ca.rotRigid[0] = np.random.random(3)
+    
+    '''
+    
+    nrigid = 0
+    ''' number of rigid bodies '''
+    natoms = 0
+    ''' number of single atoms '''
+    nlattice = 0
+    ''' number of lattice degrees of freedom '''
+    coords = None
+    ''' coordinate array '''
+    
+    posAtoms=None
+    ''' array view for atom positions of dimenstion [3,nrigid] '''
+    posRigid=None
+    ''' array view for rigid body positions of dimenstion [3,nrigid] '''
+    rotRigid=None
+    ''' array view for rigid body rotations of dimenstion [3,nrigid] '''
+    lattice=None
+    ''' array view for lattice coordinates of dimenstion [nlattice] '''
+    
     def __init__(self, nrigid=0, natoms=0, nlattice=0, coords=None):
+        ''' initialize the coorinate wrapper
+        
+        Initializes the coordinate wrapper. The coorinates array can be
+        either specified directly in the constructor or later changed
+        via updateCoords.
+        
+        :param nrigid: numper of rigid bodies
+        :type nrigid: int
+        :param natoms: number of single atoms
+        :type natoms: int
+        :param nlattice: number of lattice degrees of freedom
+        :type nlattice: 0
+        :param coords: the coordinate array
+        :type coords: numpy.array
+        '''
         self.nrigid = nrigid
         self.natoms = natoms
         self.nlattice = nlattice
@@ -7,6 +61,14 @@ class CoordsAdapter():
             self.updateCoords(coords)
         
     def updateCoords(self, coords):
+        ''' update the coordinate array
+        
+        This function can be called if the coordinate adapter should point
+        to a different coordinate array.
+        
+        :param coords: the coordinate array
+        :type coords: numpy.array
+        '''
         natoms = self.natoms
         nrigid = self.nrigid
         self.coords = coords

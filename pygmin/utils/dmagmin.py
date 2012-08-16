@@ -16,13 +16,28 @@ def compareMinima(min1, min2):
 
 # generate a random crystal structure
 class GenRandomCrystal(generic.TakestepInterface):
+    ''' takestep class to generate a random crystal
+    
+        GenRandomCrystal is a takestep class which generates a random crystal structure.
+        It can be either used as a standard takestep routine to perform a random search
+        or as a reseeding routine in combination with pygmin.takestep.group.Reseeding
+    '''
+    
     def __init__(self, coordsadapter, volume=None, shear=2., expand=2.0):
+        '''
+        :param volume: volume bounds of the generated cell [min, max]. None to use 2* current volume
+        :param shear: maximum off diagonal matrix element for lattice matrix
+        :param expane: maxumum assymmetry of the cell, 0 means generate a cubic cell
+        
+        ''' 
+        
         self.volume = volume
         self.shear = shear
         self.expand = expand
         self.coordsadapter = coordsadapter
         
-    def takeStep(self, coords, **kwargs):        
+    def takeStep(self, coords, **kwargs):
+        ''' takeStep routine to generate random cell '''        
         ca = self.coordsadapter        
         ca.updateCoords(coords)
         
@@ -45,6 +60,7 @@ class GenRandomCrystal(generic.TakestepInterface):
         
 # special quencher for crystals
 def quenchCrystal(coords, pot, **kwargs):
+    ''' Special quench routine for crystals which makes sure that the final structure is a reduced cell '''
     coords, E, rms, calls = quench.lbfgs_py(coords, pot, **kwargs)
     #while(GMIN.reduceCell(coords)):
     if(GMIN.reduceCell(coords)):
