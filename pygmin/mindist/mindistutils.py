@@ -264,7 +264,7 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
     atomlistnp = np.array(atomlist)
     X13 = np.reshape(X1, [-1,3])[atomlistnp,:]
     X23 = np.reshape(X2, [-1,3])[atomlistnp,:]
-    cost = (((X13[np.newaxis,:] - X23[:,np.newaxis,:])**2).sum(2))
+    cost = np.sqrt(((X13[np.newaxis,:] - X23[:,np.newaxis,:])**2).sum(2))
     #cost = np.sqrt(cost)
 
 
@@ -297,9 +297,11 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
     # apply the permutation
     #########################################
     costnew = 0.;
+    distnew = 0.
     X2old = np.copy(X2)
     for (iold, inew) in newind:
         costnew    += cost[iold,inew]
+        distnew    += cost[iold,inew]**2
         if iold != inew:
             atomiold = atomlist[iold]
             atominew = atomlist[inew]
@@ -314,7 +316,8 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
     #print "costold    ", costold, np.sqrt(costold)
     #print "costnew    ", costnew, np.sqrt(costnew)
 
-    dist = np.sqrt(costnew)
+    dist = np.sqrt(distnew)
+    #js850> 16/08/2012  I haven't tested if the distance returned is correct.  It's not generally used though.
     return dist, X1, X2
 
 def findBestPermutation( X1, X2, permlist = [] ):
