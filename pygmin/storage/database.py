@@ -75,22 +75,20 @@ class TransitionState(Base):
         self.eigenval = eigenval
 
 class Distance(Base):
-    '''Base class to store transition states'''
+    '''Base class to store "mindist" distances between minima'''
     __tablename__ = "tbl_distances"
     _id = Column(Integer, primary_key=True)
     
     dist = Column(Float)
-    '''energy of transition state'''
+    '''distance'''
         
     _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum1 = relationship("Minimum",
                             primaryjoin="Minimum._id==Distance._minimum1_id")
-    '''first minimum which connects to transition state'''
     
     _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum2 = relationship("Minimum",
                             primaryjoin="Minimum._id==Distance._minimum2_id")
-    '''second minimum which connects to transition state'''
     
     
     def __init__(self, dist, min1, min2):

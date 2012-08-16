@@ -141,45 +141,50 @@ class DoubleEndedConnect(object):
             print "WARNING: found zero climbing images.  Are the minima really the same?"
             print "         energies:", minNEB1.energy, minNEB2.energy, "distance", dist 
         
-        for i in range(neb.nimages):
-            if neb.isclimbing[i]:
-                coords = neb.coords[i,:]
-                np.savetxt("climbingimage", coords)
-                #print "exiting", exit(1)
-                print "refining transition state from NEB climbing image"
-                ret = findTransitionState(coords, self.pot, tsSearchParams = self.tsSearchParams)
-                #coords, eigval, eigvec, E, grad, rms = ret
-                coords = ret.coords
-                E = ret.energy
-                print "falling off either side of transition state to find new minima"
-                ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
-                    displace=1e-3, quenchParameters={"tol":1e-7})
-                
-                min1 = self.addMinimum(ret1[1], ret1[0])
-                min2 = self.addMinimum(ret2[1], ret2[0])
-                if min1 == min2:
-                    print "warning: stepping off the transition state resulted in twice the same minima", min1._id
-                else:
-                    print "adding transition state", min1._id, min2._id
-                    #ts = TransitionState(coords, E, eigvec, eigval)
-                    #self.graph.addTransitionState(min1, min2, ts)   self.addTS( newmin1, newmin2, ts)
-                    from pygmin.storage.database import TransitionState
-                    ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=ret.eigenvec, eigenval=ret.eigenval)
-                    graph.refresh()
-                    """
-                    set the weight to zero in Gdist.
-                    """
+        climbing_images = [ (neb.energies[i], i) for i in range(neb.nimages) 
+                           if neb.isclimbing[i] ]
+        climbing_images = sorted(climbing_images, reverse=True) #highest energies first
+        
+        for energy, i in climbing_images:
+            coords = neb.coords[i,:]
+            np.savetxt("climbingimage", coords)
+            #print "exiting", exit(1)
+            print "refining transition state from NEB climbing image"
+            ret = findTransitionState(coords, self.pot, tsSearchParams = self.tsSearchParams)
+            #coords, eigval, eigvec, E, grad, rms = ret
+            coords = ret.coords
+            E = ret.energy
+            if ret.eigenval >= 0.:
+                print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
+            print "falling off either side of transition state to find new minima"
+            ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
+                displace=1e-3, quenchParameters={"tol":1e-7})
+            
+            min1 = self.addMinimum(ret1[1], ret1[0])
+            min2 = self.addMinimum(ret2[1], ret2[0])
+            if min1 == min2:
+                print "warning: stepping off the transition state resulted in twice the same minima", min1._id
+            else:
+                print "adding transition state", min1._id, min2._id
+                #ts = TransitionState(coords, E, eigvec, eigval)
+                #self.graph.addTransitionState(min1, min2, ts)   self.addTS( newmin1, newmin2, ts)
+                from pygmin.storage.database import TransitionState
+                ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=ret.eigenvec, eigenval=ret.eigenval)
+                graph.refresh()
+                """
+                set the weight to zero in Gdist.
+                """
 #                    if (min1,min2) in self.Gdist.edges() or (min2,min1) in self.Gdist.edges():
 #                    #path = nx.shortest_path(self.Gdist, min1, min2)
 #                    #print "mypath", path
 #                    #if path is not None and len(path) == 2:
 #                        print "found edge"
-                    self.Gdist.add_edge(min1, min2, {"dist":0., "dist2":0.})
-                    
-                connected = graph.areConnected(minNEB1, minNEB2)
-                print "connected yet?", connected
-                if connected:
-                    break
+                self.Gdist.add_edge(min1, min2, {"dist":0., "dist2":0.})
+                
+            connected = graph.areConnected(minNEB1, minNEB2)
+            print "connected yet?", connected
+            if connected:
+                break
         #if the minima are still not connected, remove this edge so we don't try this NEB again
         if not self.graph.areConnected(minNEB1, minNEB2):
             self.Gdist.remove_edge(minNEB1, minNEB2)
@@ -346,7 +351,7 @@ def test():
     from pygmin.storage.database import Storage
     import pygmin.defaults as defaults
     defaults.quenchParams = {"iprint": 1}
-    natoms = 17
+    natoms = 11
     #get min1
     pot, database = getSetOfMinLJ(natoms)
 #    from pygmin.potentials.lj import LJ
