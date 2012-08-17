@@ -53,7 +53,19 @@ Building blocks to design custom takestep routines
     rotate
     reduced_coordinates_displace
     
+
+The takestep interface
+
+.. autosummary::
+   :toctree: generated/
+
+    TakestepInterface
+    Takestep
+    TakestepSlice
+
+
 """
+
 
 from buildingblocks import *
 from generic import *

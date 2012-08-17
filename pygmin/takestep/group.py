@@ -7,23 +7,61 @@ Created on Jun 7, 2012
 from .generic import TakestepInterface
 
 class GroupSteps(TakestepInterface):
+    '''group several takestep objects
+    
+    This class is a wrapper for takestep objects to group several takestep
+    objects into one and perform all takesteps simultaneously.
+    
+    Parameters
+    ----------
+    steptakers : list of takestep objects
+        list of takestep objects to combine to a single one
+    '''
     def __init__(self, steptakers):
-        self.steptakers = steptakers
+        self._steptakers = steptakers
 
     def takeStep(self, coords, **kwargs):
-        for step in self.steptakers:
+        for step in self._steptakers:
             step.takeStep(coords, **kwargs)
        
     def updateStep(self, accepted, **kwargs):
-        for step in self.steptakers:
+        for step in self._steptakers:
             step.updateStep(accepted, **kwargs)
 
 class BlockMoves(TakestepInterface):
+    '''block based step taking
+    
+    This class is a wrapper for takestep objects to group several takestep
+    objects into one and perform takestep moves block wise, changine the takestep
+    mechanism after a given amount of steps.
+    
+    Takestep objects can be added with addBlock
+    
+    ::
+    
+        step1 = RandomDisplacement()
+        step2 = RandomRotation()
+        
+        step = BlockMoves()
+        step.addBlock(100, step1)
+        step.addBlock(100, step2)        
+        
+    '''
     def __init__(self):
         self._steptakers = []
         self._current = 0
         self._counter = 0
 
+    '''add a takestep object
+        
+    Parameters
+    ----------
+    nsteps: integer
+        number of steps to perform this type of step
+    takestep: takestep object
+        takestep object to call for this block
+        
+    '''
     def addBlock(self, nsteps, takestep):
         self._steptakers.append([nsteps, takestep])
       
@@ -40,6 +78,25 @@ class BlockMoves(TakestepInterface):
         self._steptakers[self._current][1].updateStep(accepted, **kwargs)
 
 class Reseeding(TakestepInterface):
+    '''Reseeding if energy did not improve
+    
+    This class wraps 2 takestep objects, one for a regular takestep move, and a
+    reseeding step which is executed if the energy of the basin hopping run did not
+    improve after a given number of steps.
+    
+    The energy is considered as improved if it is lower than the lowest energy found 
+    during the current cycle.
+        
+    Parameters
+    ----------
+    takestep : takestep object
+        takestep object to perform regular step taking
+    reseed : takestep object
+        takestep object to do reseeding, e.g. generate a new random configuration    
+    maxnoimprove : integer
+        do 1 reseeding step if the energy did not improve after so many steps.
+        
+    '''
     def __init__(self, takestep, reseed, maxnoimprove=100):
         self.takestep = takestep
         self.reseed = reseed

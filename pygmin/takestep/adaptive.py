@@ -8,8 +8,23 @@ from .generic import TakestepInterface
 import numpy as np
 
 class AdaptiveStepsize(TakestepInterface):
-    '''
-    Adaptive stepsize
+    '''Adaptive stepsize adjustment
+    
+    AdaptiveStepsize is a warpper for a takestep object and automatically adjusts
+    the stepsize by calling takestep.scale() to obtain a certain acceptance
+    ration during basing hopping runs.
+    
+    Parameters
+    ----------
+    stepclass : takestep object
+        the takestep object which performs the takestep
+    acc_ratio : float
+        target acceptance ratio
+    factor : float
+        factor to adjust the stepsize if acc_ratio is too high.
+    frequency : integer
+        adjust the stepsize every frequency steps    
+    
     '''
 
     def __init__(self, stepclass, acc_ratio=0.5, factor=0.9, frequency=1000):
@@ -35,7 +50,7 @@ class AdaptiveStepsize(TakestepInterface):
             self.nsteps = 0
                         
     def adjustStep(self):
-        """adjust stepsize"""
+        """adjust the stepsize"""
         rat = float(self.naccepted)/self.nsteps
         if rat > self.accrat:
             self.stepclass.scale( 1./ self.factor)
