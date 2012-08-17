@@ -332,11 +332,11 @@ def getSetOfMinLJ(natoms = 11): #for testing purposes
     from pygmin.basinhopping import BasinHopping
     from pygmin.takestep.displace import RandomDisplacement
     from pygmin.takestep.adaptive import AdaptiveStepsize
-    from pygmin.storage.database import Storage
+    from pygmin.storage.database import Database
     import os
     dbfile = "test.db"
     os.remove(dbfile)
-    saveit = Storage(db=dbfile)
+    saveit = Database(db=dbfile)
     takestep1 = RandomDisplacement()
     takestep = AdaptiveStepsize(takestep1, frequency=15)
     bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)
@@ -348,7 +348,7 @@ def test():
     from graph import Graph
     from pygmin.optimize.quench import lbfgs_py as quench
     from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
-    from pygmin.storage.database import Storage
+    from pygmin.storage.database import Database
     import pygmin.defaults as defaults
     defaults.quenchParams = {"iprint": 1}
     natoms = 11
@@ -356,7 +356,7 @@ def test():
     pot, database = getSetOfMinLJ(natoms)
 #    from pygmin.potentials.lj import LJ
 #    pot = LJ()
-#    saveit = Storage(db="test.db")
+#    saveit = Database(db="test.db")
     graph = Graph(database)
     minima = database.minima()
     min1 = minima[0]
