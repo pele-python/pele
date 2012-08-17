@@ -4,9 +4,10 @@ Created on Jun 6, 2012
 @author: vr274
 '''
 
+from .generic import TakestepInterface
 import numpy as np
 
-class AdaptiveStepsize(object):
+class AdaptiveStepsize(TakestepInterface):
     '''
     Adaptive stepsize
     '''

@@ -4,7 +4,9 @@ Created on Jun 7, 2012
 @author: vr274
 '''
 
-class GroupSteps(object):
+from .generic import TakestepInterface
+
+class GroupSteps(TakestepInterface):
     def __init__(self, steptakers):
         self.steptakers = steptakers
 
@@ -16,7 +18,7 @@ class GroupSteps(object):
         for step in self.steptakers:
             step.updateStep(accepted, **kwargs)
 
-class BlockMoves(object):
+class BlockMoves(TakestepInterface):
     def __init__(self):
         self._steptakers = []
         self._current = 0
@@ -37,7 +39,7 @@ class BlockMoves(object):
     def updateStep(self, accepted, **kwargs):
         self._steptakers[self._current][1].updateStep(accepted, **kwargs)
 
-class Reseeding(object):
+class Reseeding(TakestepInterface):
     def __init__(self, takestep, reseed, maxnoimprove=100):
         self.takestep = takestep
         self.reseed = reseed
