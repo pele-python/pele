@@ -11,6 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   global_optimization
    quenching
    database
    transitionstates
