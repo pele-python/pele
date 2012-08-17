@@ -127,7 +127,7 @@ class TransitionState(Base):
         self.eigenval = eigenval
 
 class Distance(Base):
-    '''object to store distances between minima
+    '''object to store "mindist" distances between minima
     
     Parameters
     ----------
