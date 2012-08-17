@@ -398,7 +398,7 @@ class Storage(object):
                 self.db = db
                 self.Ecut = Ecut
             def __call__(self, E, coords):
-                if(self.Ecut):
+                if(not self.Ecut is None):
                     if(E > self.Ecut):
                         return None
                 self.db.addMinimum(E, coords)
