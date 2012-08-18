@@ -149,7 +149,7 @@ if __name__ == "__main__":
         print ""
         print "comparing with fortran version"
         test(v1, v2, aadistfort)
-    except:
+    except ImportError:
         pass
     
     unittest.main()

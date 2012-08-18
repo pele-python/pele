@@ -22,7 +22,7 @@ class InteractionList:
     def getNPilist(self):
         try:
             return self.npilist
-        except:
+        except AttributeError: #if self.npilist is not defined yet
             #convert ilist to np array, but do it only once.  It's quite slow
             self.npilist = np.array(self.ilist)
             return self.npilist

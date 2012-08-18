@@ -43,7 +43,7 @@ class MetropolisNonQuench:
         self.Enew = self.potential.getEnergy(coords)
         try:
             self.Eold
-        except:
+        except AttributeError:
             self.Eold = self.Enew
         #print "Eold Enew", self.Eold, self.Enew
         return self.metropolis.acceptReject(self.Eold, self.Enew)
@@ -56,3 +56,8 @@ class MetropolisNonQuench:
             self.Eold = self.Enew
 
 
+if __name__ == "__main__":
+    met = Metropolis(1.0)
+    
+    
+    

@@ -277,15 +277,16 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
         newind1 = hungarian.lap(cost)
         newind = [(i, j) for i,j in enumerate(newind1[0])]
         #print "hungari newind", newind
-    except:
+    except ImportError:
         try:
             #use the munkres package
             #convert cost matrix to a form used by munkres
+            from munkres import Munkres
             matrix = cost.tolist()
             m = Munkres()
             newind = m.compute(matrix)
             #print "munkres newind", newind
-        except:
+        except ImportError:
             print "ERROR: findBestPermutation> You must install either the hungarian or the munkres package to use the Hungarian algorithm"
             dist = np.linalg.norm( X1 - X2 )
             return dist, X1, X2
@@ -368,14 +369,7 @@ def getDistaa(coords1, coords2, mysys):
 def findBestPermutationRBMol_list(coords1, coords2, mol, mollist):
     """
     find the permutation of the molecules which minimizes the distance between the two coordinates
-    """
-    try:
-        from munkres import Munkres
-    except:
-        print "munkres package not installed, skipping Hungarian algorithm"
-        dist = 1000. #return something obviously not correct #np.linalg.norm( coords1 , coords2 )
-        return dist, coords1, coords2
-    
+    """    
     nmol = len(coords1) / 3 / 2
     nperm = len(mollist)
     coords2old = coords2.copy()
@@ -399,8 +393,26 @@ def findBestPermutationRBMol_list(coords1, coords2, mol, mollist):
     #########################################
     # run the hungarian algorithm
     #########################################
-    m = Munkres()
-    newind = m.compute(matrix)
+    try:
+        #use the hungarian package which is compiled
+        import hungarian
+        newind1 = hungarian.lap(cost)
+        newind = [(i, j) for i,j in enumerate(newind1[0])]
+        #print "hungari newind", newind
+    except ImportError:
+        try:
+            #use the munkres package
+            #convert cost matrix to a form used by munkres
+            from munkres import Munkres
+            matrix = cost.tolist()
+            m = Munkres()
+            newind = m.compute(matrix)
+            #print "munkres newind", newind
+        except ImportError:
+            print "ERROR: findBestPermutation> You must install either the hungarian or the munkres package to use the Hungarian algorithm"
+            #raise Exception("ERROR: findBestPermutation> You must install either the hungarian or the munkres package to use the Hungarian algorithm")
+            dist = np.linalg.norm( coords1 - coords2 )
+            return dist, coords1, coords2
 
 
     #########################################

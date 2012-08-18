@@ -1,5 +1,6 @@
 import numpy as np
 from bfgs import lineSearch, BFGS
+from optimization_exceptions import LineSearchError
 
 class LBFGS:
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10, rel_energy = False, H0=None, events=[]):
@@ -175,7 +176,7 @@ class LBFGS:
         if nincrease > 10:
             self.nfailed += 1
             if self.nfailed > 10:
-                raise(Exception("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
+                raise(LineSearchError("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
             if True:
                 #print "lbfgs: having trouble finding a good step size. dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
                 print "lbfgs: having trouble finding a good step size.", f*stepsize, stepsize
@@ -183,7 +184,7 @@ class LBFGS:
                 #print self.H0
                 #self.nfail_reset += 1
                 if self.nfail_reset > 10:
-                    raise(Exception("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
+                    raise(LineSearchError("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
                 self.reset()
                 #self.nfailed = 0
                 E = E0
@@ -220,7 +221,7 @@ class LBFGS:
             
             try:
                 X, e, G = self.takeStepNoLineSearch(X, e, G, stp)
-            except Exception:
+            except LineSearchError:
                 print "Warning: problem with takeStepNoLineSearch, ending quench"
                 rms = np.linalg.norm(G) / sqrtN
                 print "    on failure: quench step", i, e, rms, self.funcalls

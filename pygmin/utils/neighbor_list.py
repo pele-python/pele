@@ -325,7 +325,7 @@ def test(natoms = 40, boxl=None):
             pym.draw_spheres(np.reshape(coords,[-1,3]), "A", 1)
             pym.draw_spheres(np.reshape(ret1[0],[-1,3]), "A", 2)
             pym.draw_spheres(np.reshape(ret2[0],[-1,3]), "A", 3)
-        except:
+        except ImportError:
             print "Could not draw using pymol, skipping this step" 
     
 def test2():

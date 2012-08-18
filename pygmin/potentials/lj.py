@@ -21,6 +21,7 @@ class LJ(potential.potential):
         if self.boxl == None:
             self.getSep = self.getSep_abs
             self.periodic = False
+            self.boxl = 10000.
         else:
             self.getSep = self.getSep_periodic
             self.periodic = True
@@ -34,28 +35,28 @@ class LJ(potential.potential):
         self.getEnergyGradient = self.getEnergyGradientSlow
         if not self.periodic:
             try: 
-                import cpp.ljcpp_ as ljc
-                print "using fast cpp LJ implementation"
-                self.ljc = ljc
-                self.getEnergy = self.getEnergyFast
-                self.getEnergyGradient = self.getEnergyGradientFast
-            except:
+                import fortran.lj as ljf
+                print "using fast fortran LJ implementation"
+                self.ljf = ljf
+                self.getEnergy = self.getEnergyFortran
+                self.getEnergyGradient = self.getEnergyGradientFortran
+                self.getEnergyGradientList = self.getEnergyGradientListFortran
+                self.getEnergyList = self.getEnergyListFortran
+            except ImportError:
                 try: 
-                    import fortran.lj as ljf
-                    print "using fast fortran LJ implementation"
-                    self.ljf = ljf
-                    self.getEnergy = self.getEnergyFortran
-                    self.getEnergyGradient = self.getEnergyGradientFortran
-                    self.getEnergyGradientList = self.getEnergyGradientListFortran
-                    self.getEnergyList = self.getEnergyListFortran
-                except:
+                    import cpp.ljcpp_ as ljc
+                    print "using fast cpp LJ implementation"
+                    self.ljc = ljc
+                    self.getEnergy = self.getEnergyFast
+                    self.getEnergyGradient = self.getEnergyGradientFast
+                except ImportError:
                     print "using slow python LJ implementation"
             #js850> getEnergyGradientList only implemented for fortran
             try:
                 import fortran.lj as ljf
                 self.ljf = ljf
                 self.getEnergyGradientList = self.getEnergyGradientListFortran
-            except:
+            except ImportError:
                 pass
         else:
             try: 
@@ -66,7 +67,7 @@ class LJ(potential.potential):
                 self.getEnergyGradient = self.getEnergyGradientFortran
                 self.getEnergyGradientList = self.getEnergyGradientListFortran
                 self.getEnergyList = self.getEnergyListFortran
-            except:
+            except ImportError:
                 print "using slow python LJ implementation"
 
             
