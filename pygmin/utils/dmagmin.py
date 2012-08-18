@@ -43,7 +43,7 @@ class GenRandomCrystal(generic.TakestepInterface):
         
         volumeTarget = 2.*lattice.volume(ca.lattice)
         # first choose random positions and rotations
-        for i in xrange(2):
+        for i in xrange(GMIN.getNRigidBody()):
             ca.posRigid[i] = np.random.random()
             ca.rotRigid[i] = rotations.random_aa()
          
