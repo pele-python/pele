@@ -1,4 +1,4 @@
-"""Storage for simulation data in a relational database
+"""Database for simulation data in a relational database
 """
 import sqlalchemy
 from sqlalchemy import create_engine
@@ -34,7 +34,7 @@ class Minimum(Base):
     -----
     
     To avoid any double entries of minima and be able to compare them,
-    only use Storage.addMinimum to create a minimum object.
+    only use Database.addMinimum to create a minimum object.
     
     '''
     __tablename__ = 'tbl_minima'
@@ -87,7 +87,7 @@ class TransitionState(Base):
     Notes
     -----
     To avoid any double entries and be able to compare them, only use 
-    Storage.addTransitionState to create a TransitionStateobject.
+    Database.addTransitionState to create a TransitionStateobject.
     
     '''
     __tablename__ = "tbl_transition_states"
@@ -167,15 +167,15 @@ class Distance(Base):
         self.minimum1 = min1
         self.minimum2 = min2
 
-class Storage(object):
+class Database(object):
     '''Database storage class
     
-    The Storage class handles the connection to the database. It has functions to create new Minima,
+    The Database class handles the connection to the database. It has functions to create new Minima,
     TransitionState and Distance objects. The objects are persistent in the database and exist as
-    soon as the Storage class in connected to the database. If any value in the objects is changed,
+    soon as the Database class in connected to the database. If any value in the objects is changed,
     the changes are automatically persistent in the database (TODO: be careful, check commit transactions, ...)
     
-    Storage uses SQLAlchemy to connect to the database. Check the web page for available connectors. Unless
+    Database uses SQLAlchemy to connect to the database. Check the web page for available connectors. Unless
     you know better, the standard sqlite should be used. The database can be generated in memory (default) or
     written to a file if db is specified when creating the class.
 
@@ -203,7 +203,7 @@ class Storage(object):
     -------
     
     >>> from pygmin.storage import database
-    >>> db = database.Storage(db="test.db")
+    >>> db = database.Database(db="test.db")
     >>> for energy in np.random.random(10):
     >>>     a.addMinimum(energy, np.random.random(10)
     >>>
@@ -398,14 +398,14 @@ class Storage(object):
                 self.db = db
                 self.Ecut = Ecut
             def __call__(self, E, coords):
-                if(self.Ecut):
+                if(not self.Ecut is None):
                     if(E > self.Ecut):
                         return None
                 self.db.addMinimum(E, coords)
         return minimum_adder(self, Ecut)
 
 if __name__ == "__main__":    
-    db = Storage()#db="test.db")
+    db = Database()#db="test.db")
     m1 = db.addMinimum(1., np.random.random(10))
     m2 = db.addMinimum(3., np.random.random(10))
     db.addMinimum(2., np.random.random(10))
