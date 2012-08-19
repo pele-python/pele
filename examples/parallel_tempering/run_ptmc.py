@@ -1,17 +1,23 @@
 import numpy as np
-import potentials.lj as lj
+import pygmin.potentials.lj as lj
 #import potentials.ljcpp as lj
-from mc import MonteCarlo 
-import take_step.random_displacement as random_displacement
-from ptmc import PTMC, getTemps
+from pygmin.mc import MonteCarlo 
+from pygmin.takestep import RandomDisplacement, AdaptiveStepsize
+from pygmin.ptmc import PTMC, getTemps
 import copy
-from tools.histogram import EnergyHistogram
-from optimize.quench import quench
-from accept_tests.spherical_container import SphericalContainer
+from pygmin.tools.histogram import EnergyHistogram, PrintHistogram
+from pygmin.optimize.quench import quench
+from pygmin.accept_tests.spherical_container import SphericalContainer
 
 natoms = 31
+nreplicas = 4
+Tmin = 0.2
+Tmax = 0.4
+
 nsteps_equil = 10000
-nsteps_tot   = 10000
+nsteps_tot   = 100000
+histiprint  =  10000
+exchange_frq = 100*nreplicas
 
 coords=np.random.random(3*natoms)
 #quench the coords so we start from a reasonable location
@@ -19,9 +25,6 @@ mypot = lj.LJ()
 ret = quench(coords, mypot.getEnergyGradient)
 coords = ret[0]
 
-nreplicas = 4
-Tmin = 0.2
-Tmax = 0.4
 
 Tlist = getTemps(Tmin, Tmax, nreplicas)
 replicas = []
@@ -33,8 +36,9 @@ for i in range(nreplicas):
     T = Tlist[i]
     potential = lj.LJ()
     
-    takestep = random_displacement.takeStep( stepsize=0.01)
-    takesteplist.append( takestep )
+    takestep = RandomDisplacement( stepsize=0.01)
+    adaptive = AdaptiveStepsize(takestep, last_step = nsteps_equil)
+    takesteplist.append( adaptive )
     
     file = "mcout." + str(i+1)
     ostream = open(file, "w")
@@ -48,7 +52,8 @@ for i in range(nreplicas):
     
     mc = MonteCarlo(coords, potential, takeStep=takestep, temperature=T, \
                     outstream=ostream, event_after_step = event_after_step, \
-                    acceptTests = accept_tests)
+                    confCheck = accept_tests)
+    mc.histogram = hist #for convienence
     mc.printfrq = 1
     replicas.append(mc)
 
@@ -62,7 +67,7 @@ for i in range(nreplicas):
 
 
 #attach an event to print xyz coords
-from printing.print_atoms_xyz import PrintEvent
+from pygmin.printing.print_atoms_xyz import PrintEvent
 printxyzlist = []
 for n, rep in enumerate(replicas):
     outf = "dumpstruct.%d.xyz" % (n+1) 
@@ -71,15 +76,16 @@ for n, rep in enumerate(replicas):
     rep.addEventAfterStep(printxyz)
     
 
-
-
-#do some equilibration steps to find a good step size
-for takestep in takesteplist:
-    takestep.useAdaptiveStep(last_adaptive_step = nsteps_equil)
+#attach an event to print histograms
+for n, rep in enumerate(replicas):
+    outf = "hist.%d" % (n+1)
+    histprint = PrintHistogram(outf, rep.histogram, histiprint)
+    rep.addEventAfterStep(histprint)
 
 
 ptmc = PTMC(replicas)
-ptmc.exchange_frq = 100
+ptmc.use_independent_exchange = True
+ptmc.exchange_frq = exchange_frq
 ptmc.run(nsteps_tot)
 
 
@@ -91,22 +97,23 @@ ptmc.run(nsteps_tot)
 #ptmc.run(30000)
 
 
+if False: #this doesn't work
+    print "final energies"
+    for rep in ptmc.replicas:
+        print rep.temperature, rep.markovE
+    for rep in ptmc.replicas_par:
+        print rep.mcsys.markovE
+    for k in range(nreplicas):
+        e,T = ptmc.getRepEnergyT(k)
+        print T, e
 
-print "final energies"
-for rep in ptmc.replicas:
-    print rep.temperature, rep.markovE
-for rep in ptmc.replicas_par:
-    print rep.mcsys.markovE
-for k in range(nreplicas):
-    e,T = ptmc.getRepEnergyT(k)
-    print T, e
-
-print "histograms"
-for i,hist in enumerate(histograms):
-    fname = "hist." + str(i)
-    print fname
-    with open(fname, "w") as fout:
-        for (e, visits) in hist:
-            fout.write( "%g %d\n" % (e, visits) )
+if False: #this doesn't work
+    print "histograms"
+    for i,hist in enumerate(histograms):
+        fname = "hist." + str(i)
+        print fname
+        with open(fname, "w") as fout:
+            for (e, visits) in hist:
+                fout.write( "%g %d\n" % (e, visits) )
 
 ptmc.end() #close the open threads
