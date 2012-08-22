@@ -54,7 +54,7 @@ class MonteCarlo(object):
             acceptTest=None,  \
             temperature=1.0, \
             confCheck=[], \
-            outstream = sys.stdout
+            outstream = sys.stdout, store_initial=True
             ):
         #note: make a local copy of lists of events so that an inputted list is not modified.
         self.coords = copy.copy(coords)
@@ -80,7 +80,7 @@ class MonteCarlo(object):
         #store intial structure
         #########################################################################
         energy = self.potential.getEnergy(self.coords)
-        if(self.storage):
+        if(self.storage and store_initial):
             self.storage(energy, self.coords)
           
         self.markovE = energy
