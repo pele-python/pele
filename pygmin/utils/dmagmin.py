@@ -23,7 +23,7 @@ class GenRandomCrystal(generic.TakestepInterface):
         or as a reseeding routine in combination with pygmin.takestep.group.Reseeding
     '''
     
-    def __init__(self, coordsadapter, volume=None, shear=2., expand=2.0):
+    def __init__(self, coordsadapter, volume=None, shear=2., expand=2.0, expand_current=1.2, overlap=None):
         '''
         :param volume: volume bounds of the generated cell [min, max]. None to use 2* current volume
         :param shear: maximum off diagonal matrix element for lattice matrix
@@ -35,29 +35,46 @@ class GenRandomCrystal(generic.TakestepInterface):
         self.shear = shear
         self.expand = expand
         self.coordsadapter = coordsadapter
+        self.expand_current = expand_current
+        self.overlap = overlap
         
     def takeStep(self, coords, **kwargs):
         ''' takeStep routine to generate random cell '''        
         ca = self.coordsadapter        
         ca.updateCoords(coords)
         
-        volumeTarget = 2.*lattice.volume(ca.lattice)
-        # first choose random positions and rotations
-        for i in xrange(GMIN.getNRigidBody()):
-            ca.posRigid[i] = np.random.random()
-            ca.rotRigid[i] = rotations.random_aa()
-         
-        # random box
-        ca.lattice[[0,3,5]] = 1.0 + self.expand * np.random.random(3)  
-        ca.lattice[[1,2,4]] = self.shear * np.random.random(3)
+        atomistic = np.zeros(3*GMIN.getNAtoms())
+        valid_configuration = False
+        for i in xrange(50):
+            volumeTarget = self.expand_current*lattice.volume(ca.lattice)
+             
+            # random box
+            ca.lattice[[0,3,5]] = 1.0 + self.expand * np.random.random(3)  
+            ca.lattice[[1,2,4]] = self.shear * np.random.random(3)
+            
+            if(self.volume != None):
+                volumeTarget = self.volume[0] + (self.volume[1] - self.volume[0]) * np.random.random()
+                        
+            vol = lattice.volume(ca.lattice)
+            ca.lattice[:] = ca.lattice * (volumeTarget / vol)**(1.0/3.0)
+            GMIN.reduceCell(coords)
+            
+            for i in xrange(50):# first choose random positions and rotations
+                for i in xrange(GMIN.getNRigidBody()):
+                    ca.posRigid[i] = np.random.random()
+                    ca.rotRigid[i] = rotations.random_aa()
         
-        if(self.volume != None):
-            volumeTarget = self.volume[0] + (self.volume[1] - self.volume[0]) * np.random.random()
-                    
-        vol = lattice.volume(ca.lattice)
-        ca.lattice[:] = ca.lattice * (volumeTarget / vol)**(1.0/3.0)
-        GMIN.reduceCell(coords)
-        
+                if self.overlap is None:
+                    return
+            
+            
+                GMIN.toAtomistic(atomistic, coords)
+                if not crystals.has_overlap(atomistic, self.overlap):
+                    return
+                            
+            print "Could generate valid configuration for current box, choose new box"
+        raise Exception("GenRandomCrystal: failed to generate a non-overlapping configuration")
+            
 # special quencher for crystals
 def quenchCrystal(coords, pot, **kwargs):
     ''' Special quench routine for crystals which makes sure that the final structure is a reduced cell '''
