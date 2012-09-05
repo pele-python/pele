@@ -5,7 +5,7 @@ Created on Jun 6, 2012
 '''
 
 import numpy as np
-from generic import TakestepSlice
+from generic import TakestepSlice, TakestepInterface
 from pygmin.utils import rotations
 
 class RandomDisplacement(TakestepSlice):
@@ -54,6 +54,14 @@ class RotationalDisplacement(TakestepSlice):
         """
         c = coords[slice]        
         for x in c.reshape(c.size/3,3):
-            rotations.takestep_aa( x, self.stepsize ) 
-
+            rotations.takestep_aa( x, self.stepsize )
+            
+class RandomCluster(TakestepInterface):
+    '''Generate a random configuration
+    '''
+    def __init__(self, volume=1.0):
+        self.volume = volume
+    
+    def takeStep(self, coords, **kwargs):
+            coords[:] = np.random.random(coords.shape)*(self.volume**(1./3.))
     
