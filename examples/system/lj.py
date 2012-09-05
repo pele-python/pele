@@ -4,7 +4,7 @@ from pygmin import system
 
 natoms = 13
 
-class LJSystem(system.System):    
+class LJSystem(system.ClusterSystem):    
     def create_potential(self):
         return LJ()
         
