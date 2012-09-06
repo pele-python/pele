@@ -197,7 +197,7 @@ class PTMC(object):
         newindices = [ val for val in enumerate(newindices) if val[0] != val[1] ]
         energy_coords = []#[ None for i in range(len(newindices))]
         #get old coordinates and energies
-        for oldindex, newindex in newindices:
+        for newindex, oldindex in newindices:
             self.communicators[oldindex].send(("return energy coords",))
             E, coords = self.communicators[oldindex].recv()
             energy_coords.append( (newindex, E, coords) )
@@ -247,12 +247,23 @@ class PTExchangeIndependent(object):
         self.nreps = len(self.beta)
         self.replicas = np.array(range(self.nreps))
         self.nsteps = self.nreps**3 #this is rule of thumb
+        self.naccept = 0
+        self.acccount = np.zeros(self.nreps)
+        """
+        note:
+        replicas[i] is the label of the replica which is currently at i.  E.g.
+        after the monte carlo run.  Replica replicas[i] should be moved to
+        position i
+
+        """
 
     def run(self):
-        nsteps = 10
+        nsteps = self.nreps**3
         for i in range(nsteps):
             self.mcstep()
         #print self.replicas
+        print "accept ratio", float(self.naccept) / nsteps, nsteps, self.naccept
+        print self.acccount
 
     def getPair(self):
         i=0
@@ -267,9 +278,9 @@ class PTExchangeIndependent(object):
         j1 = self.replicas[i1]
         j2 = self.replicas[i2]
         e1 = self.energies[j1]
-        beta1 = self.beta[j1]
         e2 = self.energies[j2]
-        beta2 = self.beta[j2]
+        beta1 = self.beta[i1]
+        beta2 = self.beta[i2]
 
         w = min( 1. , np.exp( (e1-e2) * (beta1-beta2) ) )
         rand = np.random.rand()
@@ -279,6 +290,8 @@ class PTExchangeIndependent(object):
             k = self.replicas[i1]
             self.replicas[i1] = self.replicas[i2]
             self.replicas[i2] = k
+            self.naccept += 1
+            self.acccount[[i1,i2]] += 1
         else:
             #reject step
             #print "reject step"
