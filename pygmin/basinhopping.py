@@ -66,7 +66,7 @@ class BasinHopping(MonteCarlo):
                             acceptTest=acceptTest,  \
                             temperature=temperature, \
                             confCheck = confCheck, \
-                            outstream=outstream)
+                            outstream=outstream,store_initial=False)
 
         self.quenchRoutine = quenchRoutine
         self.quenchParameters = quenchParameters
