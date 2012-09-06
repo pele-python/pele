@@ -219,7 +219,7 @@ class Database(object):
     onMinimumAdded=[]
     compareMinima=None
     
-    def __init__(self, accuracy=1e-3, db=":memory:", connect_string='sqlite:///%s',\
+    def __init__(self, db=":memory:", accuracy=1e-3, connect_string='sqlite:///%s',\
                  onMinimumAdded=None, onMinimumRemoved=None, compareMinima=None):
         self.engine = create_engine(connect_string%(db), echo=verbose)
         Base.metadata.create_all(self.engine)
