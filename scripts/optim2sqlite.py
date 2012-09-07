@@ -1,19 +1,38 @@
 from pygmin.storage.database import Database, Minimum, TransitionState
 import time
-db = Database(db="storage.sqlite")
- 
-i=1
+import numpy as np
+from pygmin.potentials.lj import LJ
+
+natoms = 38
+pot = LJ()
+
+# open database
+db = Database(db="storagetmp.sqlite")
+
+# counter to keep track of added minima
+mini=1
 minima={}
-t0 = time.time()
-tt = t0
+
+# for timing
+tt = t0 = time.time()
+
+# open coordinate file
+fcoords = open("extractedmin")
 
 print "Reading minima"
+# loop over all lines in min
 for line in open("min.data"):
-    energy, frequency, pgorder, itx, ity, itz = line.split()
-    min1 = Minimum(float(energy), None)
+    coords = np.zeros(3*natoms)
+    for i in xrange(natoms):
+        x = fcoords.readline().split()
+        coords[i*3:i*3+3] = [float(y) for y in x] 
+    energy, frequency, pgorder, itx, ity, itz = line.split()    
+    print energy, pot.getEnergy(coords)
+    min1 = Minimum(float(energy), coords)    
     db.session.add(min1)
-    minima[i]=min1
-    i+=1
+    minima[mini]=min1
+    mini+=1    
+
 print "%.1f seconds"%(time.time() - tt)
 tt = time.time()
 print "Commiting changes to database"
