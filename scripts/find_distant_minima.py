@@ -7,13 +7,13 @@ from  pygmin.NEB.graph import Graph
 import time
 import pickle
 
-distance = 1
-npairs = 200
+distances = range(1,2) 
+npairs = 5
 
 db = Database(db = "storage.sqlite")
     
 
-possible_starts = db.session.query(Minimum).order_by(Minimum.energy).limit(100).all()
+possible_starts = db.session.query(Minimum).order_by(Minimum.energy).limit(1).all()
 print len(possible_starts)
 
 t0 = time.time()
@@ -25,7 +25,7 @@ print "%.1f seconds"%(time.time() - t0)
 
 
 
-for distance in xrange(1,10):
+for distance in distances:
     print "processing distance", distance
     pairs=set()
     outfile = "coords.%d.dat"%(distance)
@@ -51,8 +51,9 @@ for distance in xrange(1,10):
         
     bench_pairs=[]
     for n,pair in zip(xrange(len(pairs)), pairs):
+        path = nx.bidirectional_dijkstra(graph.graph, pair[0], pair[1])
         dist, X1, X2 = minpermdist( pair[0].coords, pair[1].coords, niter = 100 )
         print "%d/%d (%d): distance for"%(n+1, npairs, distance), pair[0]._id, pair[1]._id, dist
-        bench_pairs.append((X1.copy(), X2.copy()))
+        bench_pairs.append((X1.copy(), X2.copy(), [mini._id for mini in path[1]]))
     
     pickle.dump(bench_pairs, open(outfile, "w"))
