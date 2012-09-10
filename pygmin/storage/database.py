@@ -121,8 +121,13 @@ class TransitionState(Base):
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
         self.energy = energy
         self.coords = np.copy(coords)
-        self.minimum1 = min1
-        self.minimum2 = min2
+        if(min1._id < min2._id):
+            self.minimum1 = min1
+            self.minimum2 = min2
+        else:
+            self.minimum1 = min2
+            self.minimum2 = min1
+            
         self.eigenvec = np.copy(eigenvec)
         self.eigenval = eigenval
 
