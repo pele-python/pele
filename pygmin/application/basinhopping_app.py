@@ -2,9 +2,12 @@ from pygmin.basinhopping import BasinHopping
 from pygmin import takestep
 from application_base import Application
 from pygmin.storage.database import Database
+from pygmin import defaults
 
 class AppBasinHopping(Application):
     accuracy = 1e-3
+    quenchParameters=defaults.quenchParams
+    quenchRoutine=defaults.quenchRoutine
     
     def create_takestep(self):
         return takestep.RandomDisplacement()
@@ -12,7 +15,7 @@ class AppBasinHopping(Application):
     def initial_coords(self):
         raise Exception("system does not implement initial_coords")
 
-    def create_basinhopping(self):
+    def create_basinhopping(self, add_minimum=None):
         pot = self.create_potential()
         coords = self.initial_coords()
         step = self.create_takestep()
@@ -21,8 +24,12 @@ class AppBasinHopping(Application):
         
         print "Initial energy ", pot.getEnergy(coords)
 
+        if(add_minimum is None):
+            add_minimum = self.database.minimum_adder()
         return BasinHopping(coords, pot, takeStep=step, 
-                           temperature=opts.temperature, storage=self.database.minimum_adder())
+                           temperature=opts.temperature, storage=add_minimum,
+                           quenchRoutine=self.quenchRoutine,
+                           quenchParameters = self.quenchParameters)
         
     def add_options(self):
         self.add_option("--db",type="string",
@@ -43,10 +50,15 @@ class AppBasinHopping(Application):
         
         
 class AppClusterBH(AppBasinHopping):
+    def create_takestep_step(self):
+        return takestep.UniformDisplacement(stepsize=self.options.stepsize) 
+    def create_takestep_reseed(self):
+        return takestep.RandomCluster(volume=1.0)
+        
     def create_takestep(self):
-        step = takestep.UniformDisplacement(stepsize=self.options.stepsize)
+        step = self.create_takestep_step()
         if(not self.options.reseed is None):
-            reseed = takestep.RandomCluster(volume=1.0)
+            reseed = self.create_takestep_reseed()
             return takestep.Reseeding(step, reseed, self.options.reseed)
         return step
         
