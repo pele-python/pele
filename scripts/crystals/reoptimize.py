@@ -3,12 +3,12 @@ import dmagmin_ as GMIN
 from pygmin.utils import crystals,dmagmin
 from pygmin.potentials import gminpotential 
 from optparse import OptionParser
-
+from pygmin.storage.database import Database
 
 # add some program options
-parser = OptionParser(usage = "usage: %prog [options] arg1 arg2")
-parser.add_option("-f", "--file", dest="filename",
-                  help="write report to FILE", metavar="FILE")
+parser = OptionParser(usage = "usage: %prog [options] database")
+#parser.add_option("-f", "--file", dest="filename",
+#                 help="write report to FILE", metavar="FILE")
 parser.add_option("--tol",
                   dest="tol", default=1e-4, action="store",type="float",
                   help="tolerance for quench")
@@ -28,29 +28,27 @@ if(len(args) != 1):
 
 infile = args[0]
 outfile = infile
-# use input file for output unless specified otherwise
-if(options.out!=None):
-    outfile = options.out
    
-# fake compareMinima function
-def compareMinima():
-    pass
-
 # initialize GMIN
 GMIN.initialize()
 pot = gminpotential.GMINPotential(GMIN)
 crystals.GMIN = GMIN
 
 # open the storage class
-save = pickle.load(open(infile,"r"))
+db_in = Database(db=infile)
+if(options.out!=None):
+    outfile = options.out
+    db_out = Database(db=outfile)
 
-#loop over minima
-i=0
-for m in save.data:
-    i+=1
+print "Start to reoptimize minima"
+for m in db_in.minima():
+    print "optimizing minima",m._id,", energy", m.energy
     ret = dmagmin.quenchCrystal(m.coords, pot.getEnergyGradient, tol=options.tol, maxErise=options.maxErise)
-    print "minimum",i,"energy (old energy)",ret[1],"(%f)"%(m.E)
-    m.E = ret[1]
-    m.coords = ret[0]
-    pickle.dump(save, open(outfile, "w"))
+    print "new energy",ret[1],"(difference %f)"%(ret[1] - m.energy)
+    print
+    if(options.out!=None):
+        db_out.addMinimum(ret[1], ret[0])
+    else:
+        m.energy = ret[1]
+        m.coords = ret[2]
     
