@@ -92,20 +92,24 @@ def quenchCrystal(coords, pot, **kwargs):
     return coords, E, rms, calls
 
 class TakestepDMAGMIN(takestep.TakestepInterface):
-    def __init__(self, expand=1.0, rotate=1.6, translate=0., nmols=None, overlap_cutoff=None):
+    def __init__(self, expand=1.0, rotate=1.6, translate=0., nmols=None, overlap_cutoff=None, max_volume=None):
         self.expand = expand
         self.rotate = rotate
         self.translate = translate
         self.nmols=nmols
         self.overlap_cutoff = overlap_cutoff
+        self.max_volume = max_volume
         
     def takeStep(self, coords, **kwargs):
         from pygmin.takestep import buildingblocks as bb
+        
         ca = CoordsAdapter(nrigid=GMIN.getNRigidBody(), nlattice=6, coords=coords)
-        
+                
         conf_ok = False
+        if(not self.overlap_cutoff is None):
+            safe_coords = coords.copy()
         
-        while not conf_ok:        
+        while conf_ok is False:        
             indices=None
             if(self.nmols):
                 indices=[]
@@ -118,14 +122,21 @@ class TakestepDMAGMIN(takestep.TakestepInterface):
                 
             #from pygmin.utils import lattice
             #bb.reduced_coordinates_displace(0.0, lattice.lowerTriangular(ca.lattice), ca.posRigid)
-            ca.lattice*=1.2
+            ca.lattice[:]*=self.expand
+
+            if(self.max_volume):
+                vol = lattice.volume(ca.lattice)
+                if(vol > self.max_volume):
+                    ca.lattice[:]*=(self.max_volume / vol)**(1./3.)
             
             conf_ok = True
-            print "overlap", self.overlap_cutoff
             if(self.overlap_cutoff):
                 atomistic = np.zeros(3*GMIN.getNAtoms())
                 GMIN.toAtomistic(atomistic, coords)                
-                conf_ok = not crystals.has_overlap(coords, self.overlap_cutoff)                
+                overlap =  crystals.has_overlap(atomistic, self.overlap_cutoff)
+                if(overlap is True):
+                    conf_ok = False
+                    coords[:] = safe_coords           
               
 
 class AppDMAGMINBH(AppClusterBH):
