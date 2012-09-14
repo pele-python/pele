@@ -50,5 +50,6 @@ for m in db_in.minima():
         db_out.addMinimum(ret[1], ret[0])
     else:
         m.energy = ret[1]
-        m.coords = ret[2]
+        m.coords = ret[0]
+        db_in.session.commit()
     
