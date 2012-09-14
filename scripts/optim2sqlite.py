@@ -34,7 +34,11 @@ for line in open("min.data"):
     min1 = Minimum(float(energy), coords)    
     db.session.add(min1)
     minima[mini]=min1
-    mini+=1        
+    if(mini%10000 == 0):
+        print "commiting the next 10000 minima, %d in total"%(mini)
+        db.session.commit()
+    mini+=1
+           
 
 print "%.1f seconds"%(time.time() - tt)
 tt = time.time()
@@ -46,12 +50,17 @@ tt = time.time()
 
 print "Reading transition states"
 fcoords = open("extractedts")
+tsi=1
 for line in open("ts.data"):
     coords = read_coords(fcoords) 
     energy, frequency, pgorder, min1, min2, itx, ity, itz = line.split()
     ts = TransitionState(float(energy), coords, minima[int(min1)], minima[int(min2)])
     db.session.add(ts)
     #db.addTransitionState(float(energy), None, minima[int(min1)], minima[int(min2)], commit=False)
+    if(tsi%10000 == 0):
+        print "commiting the next 10000 transition states, %d in total"%(tsi)
+        db.session.commit()
+    tsi+=1
 print "%.1f seconds"%(time.time() - tt)
 tt = time.time()
 print "Commiting changes to database"
