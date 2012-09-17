@@ -121,8 +121,13 @@ class TransitionState(Base):
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
         self.energy = energy
         self.coords = np.copy(coords)
-        self.minimum1 = min1
-        self.minimum2 = min2
+        if(min1._id < min2._id):
+            self.minimum1 = min1
+            self.minimum2 = min2
+        else:
+            self.minimum1 = min2
+            self.minimum2 = min1
+            
         self.eigenvec = np.copy(eigenvec)
         self.eigenval = eigenval
 
@@ -219,7 +224,7 @@ class Database(object):
     onMinimumAdded=[]
     compareMinima=None
     
-    def __init__(self, accuracy=1e-3, db=":memory:", connect_string='sqlite:///%s',\
+    def __init__(self, db=":memory:", accuracy=1e-3, connect_string='sqlite:///%s',\
                  onMinimumAdded=None, onMinimumRemoved=None, compareMinima=None):
         self.engine = create_engine(connect_string%(db), echo=verbose)
         Base.metadata.create_all(self.engine)
