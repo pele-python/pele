@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-import pygmin.rotations as rot
+import pygmin.utils.rotations as rot
 import pygmin.potentials.potential as potential
 
 
@@ -62,11 +62,11 @@ class MinPermDistPotential(potential.potential):
             from overlap import overlap, overlap_gradient
             self.overlap = overlap
             self.overlap_gradient = overlap_gradient
-        except:
+        except ImportError:
             #self.overlap = overlap_fast
             self.overlap = overlap_fast
             self.overlap_gradient = overlap_gradient_slow
-            print "Using python energy calculation. Compile overlap.f90 to speed things up (a little)"
+            print "MinPermDistPotential> Using python energy calculation. Compile overlap.f90 to speed things up (a little)"
 
         self.setUpRigidBodies()
 

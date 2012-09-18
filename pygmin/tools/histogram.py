@@ -47,3 +47,27 @@ class HistIter(object):
             raise StopIteration
         return (self.hist.emin + self.hist.de * self.counter), \
             self.hist.visits[self.counter]
+            
+class PrintHistogram(object):
+    def __init__(self, fname, hist, interval):
+        self.fname = fname
+        self.hist = hist
+        self.interval = interval
+        self.outstream = open(self.fname, "w")
+        self.count = 0
+    
+    def printHis(self):
+        for e, count in self.hist:
+            #print "%g %d\n" % (e, count),
+            self.outstream.write("%g %d\n" % (e, count))
+        self.outstream.write("\n\n")
+        
+    
+    def printEvent(self):
+        self.count +=1
+        if self.count % self.interval == 0:
+            self.printHis()
+    def __call__(self, a, b, c, **kwargs):
+        self.printEvent()
+            
+

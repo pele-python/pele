@@ -17,11 +17,11 @@ class getEnergyGradientWrapper:
     def __init__(self, getEnergyGradient):
         self. getEnergyGradient = getEnergyGradient
     def getEnergy(self, coords):
-        e, g = self.getEnergyGradient(coords)
-        return e
+        ret = self.getEnergyGradient(coords)
+        return ret[1]
     def getGradient( self, coords ):
-        e, g = self.getEnergyGradient(coords)
-        return g
+        ret = self.getEnergyGradient(coords)
+        return ret[1]
 
 
 def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
@@ -44,9 +44,8 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
 
 def fire(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.5):
     import fire as fire
-    import numpy as np
-    opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep)
-    opt.run()
+    opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep, iprint=iprint)
+    opt.run(fmax=tol)
     e,g = getEnergyGradient(opt.coords)
     rms = np.linalg.norm(g)/np.sqrt(len(g))
     return opt.coords, e, rms, opt.nsteps
@@ -98,7 +97,6 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
 
 def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     import fire as fire
-    import numpy as np
     opt = fire.Fire(coords, getEnergyGradient)
     opt.run()
     e,g = getEnergyGradient(opt.coords)
@@ -189,9 +187,9 @@ def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxste
     funcalls = ret[3]
     return coords, e, rms, funcalls
 
-def mylbfgs_callback(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1):
-    pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = _mylbfgs_callback(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep)
-    return ret
+#def mylbfgs_callback(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1):
+#    pot = getEnergyGradientWrapper(getEnergyGradient)
+#    ret = _mylbfgs_callback(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep)
+#    return ret
 
 

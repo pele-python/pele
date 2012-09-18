@@ -5,10 +5,24 @@ Created on Jun 6, 2012
 '''
 
 import numpy as np
-from generic import TakestepSlice
-from pygmin import rotations
+from generic import TakestepSlice, TakestepInterface
+from pygmin.utils import rotations
 
 class RandomDisplacement(TakestepSlice):
+    '''Random displacement on each individual coordinate
+    
+    RandomDisplacement is the most basic step taking routine. It simply
+    displaces each coordinate my a random value.
+    
+    Parameters
+    ----------
+    
+    stepsize : float
+        magnitue of random displacement
+        
+    '''
+    
+      
     def __init__(self, stepsize=1.0):
         TakestepSlice.__init__(self, stepsize=stepsize)
     def takeStep(self, coords, **kwargs):
@@ -16,18 +30,38 @@ class RandomDisplacement(TakestepSlice):
         c += self.stepsize*(np.random.random(c.shape)-0.5)*2.
             
 class UniformDisplacement(TakestepSlice):        
+    '''Displace each atom be a uniform random vector
+    
+    The routine generates a proper uniform random unitvector to displace
+    atoms.
+        
+    '''
     def takeStep(self, coords, **kwargs):
         c = coords[self.srange]        
         for x in c.reshape(c.size/3,3):
             x += self.stepsize*rotations.vec_random()
 
 class RotationalDisplacement(TakestepSlice):
+    '''Random rotation for angle axis vector
+    
+    RotationalDisplacement performs a proper random rotation. If the coordinate array contains
+    positions and orientations, make sure to specify the correct slice for the angle axis 
+    coordinates.    
+    '''
     def takeStep(self, coords, **kwargs):
         """
         take a random orientational step
         """
         c = coords[slice]        
         for x in c.reshape(c.size/3,3):
-            rotations.takestep_aa( x, self.stepsize ) 
-
+            rotations.takestep_aa( x, self.stepsize )
+            
+class RandomCluster(TakestepInterface):
+    '''Generate a random configuration
+    '''
+    def __init__(self, volume=1.0):
+        self.volume = volume
+    
+    def takeStep(self, coords, **kwargs):
+            coords[:] = np.random.random(coords.shape)*(self.volume**(1./3.))
     

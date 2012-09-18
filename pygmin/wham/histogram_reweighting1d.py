@@ -57,7 +57,7 @@ class wham1d:
         try: 
             from pygmin.optimize.quench import mylbfgs as quench
             ret = quench(X, self.whampot.getEnergyGradient, iprint=-1, maxstep = 1e4)
-        except:
+        except ImportError:
             from pygmin.optimize.quench import quench as quench
             ret = quench(X, self.whampot.getEnergyGradient)            
         print "quench energy", ret[1]

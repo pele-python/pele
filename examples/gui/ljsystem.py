@@ -1,9 +1,7 @@
 from PyQt4 import QtGui
 import NewLJ
-import sys
 import numpy as np
 from pygmin.storage import savenlowest
-import time
 from pygmin.NEB import NEB,dimer,tstools
 import pygmin.potentials.lj as lj
                 
@@ -19,7 +17,6 @@ class LJSystem:
         
     def createBasinHopping(self):
         import pygmin.basinhopping as bh
-        import pygmin.potentials.lj as lj
         from pygmin.takestep import displace
         coords = np.random.random(3 * self.natoms)
         potential = lj.LJ()
@@ -75,10 +72,10 @@ class LJSystem:
     def findTS(self, coords):
         pot = lj.LJ()
                 
-        x0,E,ret = dimer.findTS(coords, pot, zeroEigenVecs=self.zeroEigenVecs)
-        m1,m2 = tstools.minima_from_ts(pot.getEnergyGradient, x0, ret["eigenvec"], displace=1e-2)
-        print "Energies: ", m1[1],E,m2[1]
-        return [x0,E],m1,m2
+        ret = dimer.findTransitionState(coords+np.random.random(coords.shape)*0.01, pot, zeroEigenVecs=self.zeroEigenVecs, tol=1.e-6)
+        m1,m2 = tstools.minima_from_ts(pot.getEnergyGradient, ret.coords, ret.eigenvec, displace=1e-2)
+        print "Energies: ", m1[1],ret.energy,m2[1]
+        return [ret.coords,ret.energy],m1,m2
     
         
        

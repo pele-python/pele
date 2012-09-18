@@ -2,7 +2,7 @@ import numpy as np
 import unittest
 
 def randomCoordsAA(nmol):
-    import pygmin.rotations as rot
+    import pygmin.utils.rotations as rot
     coords = np.zeros(2*3*nmol, np.float64)
     coords[0:3*nmol] = np.random.uniform(-1,1,[nmol*3]) * 1.3*(3*nmol)**(1./3)
     for i in range(nmol):

@@ -9,7 +9,7 @@ from pygmin.potentials.coldfusioncheck import addColdFusionCheck
 
 GMIN.initialize()   
 #pot = PotWrap(GMIN) 
-pot = gminpot.GMINPotental(GMIN)
+pot = gminpot.GMINPotential(GMIN)
 
 coords = pot.getCoords()
 print "initial energy is a", pot.getEnergy(coords)

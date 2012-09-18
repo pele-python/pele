@@ -90,20 +90,20 @@ class LJpshift(potential.potential):
         return potel
 
     def updateEnergyGradient(self, potel, V, coords, i, j, T):
-       r2,dr = self.getSep( coords[range(i*3,i*3+3)], coords[range(j*3,j*3+3)] )
-       ir2 = 1./r2
-       if ir2 > T.ircut2:
-           ir6=ir2**3
-           #potel += 4.*T.eps*(T.sig6*ir6*(T.sig6*ir6-1.0) + T.rconst*r2 + T.const)
-           potel += self.vij(r2, ir6, T)
-           ir8=ir6*ir2
-           ir14=ir8*ir6
-           #g = -8.0*T.eps*(3.0*(2.0*ir14*(T.sig12)-ir8*T.sig6)-T.rconst)
-           g = self.dvij(ir8, ir14, T)
-           for k in range(3):
-              V[i*3+k] += -g * dr[k]
-              V[j*3+k] += g * dr[k]
-       return potel, V
+        r2,dr = self.getSep( coords[range(i*3,i*3+3)], coords[range(j*3,j*3+3)] )
+        ir2 = 1./r2
+        if ir2 > T.ircut2:
+            ir6=ir2**3
+            #potel += 4.*T.eps*(T.sig6*ir6*(T.sig6*ir6-1.0) + T.rconst*r2 + T.const)
+            potel += self.vij(r2, ir6, T)
+            ir8=ir6*ir2
+            ir14=ir8*ir6
+            #g = -8.0*T.eps*(3.0*(2.0*ir14*(T.sig12)-ir8*T.sig6)-T.rconst)
+            g = self.dvij(ir8, ir14, T)
+            for k in range(3):
+                V[i*3+k] += -g * dr[k]
+                V[j*3+k] += g * dr[k]
+        return potel, V
 
     def getEnergy(self, coords):
         natoms = self.natoms

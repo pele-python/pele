@@ -102,7 +102,7 @@ class MyForm(QtGui.QMainWindow):
         pl.show()
      
     def NewMinimum(self, minimum):
-        E=minimum.E
+        E=minimum.energy
         minid=id(minimum)
         coords=minimum.coords
         for obj in self.listMinima:

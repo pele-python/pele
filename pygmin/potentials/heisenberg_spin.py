@@ -1,7 +1,7 @@
 import numpy as np
 from copy import copy
 from pygmin.potentials.potential import potential as BasePotential
-import pygmin.rotations as rotations
+import pygmin.utils.rotations as rotations
 from numpy import sin, cos
 
 import networkx as nx

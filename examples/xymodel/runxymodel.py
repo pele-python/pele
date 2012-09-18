@@ -20,7 +20,7 @@ def printspins(fout, pot, angles):
 
 
 pi = np.pi
-L = 6
+L = 24
 nspins = L**2
 
 #phases = np.zeros(nspins)
@@ -36,11 +36,12 @@ print "energy ", e
 
 
 #try a quench
-from pygmin.optimize.quench import mylbfgs
-ret = mylbfgs(angles, pot.getEnergyGradient)
-
-print "quenched e = ", ret[1]
-print ret[0]
+if False:
+    from pygmin.optimize.quench import mylbfgs
+    ret = mylbfgs(angles, pot.getEnergyGradient)
+    
+    print "quenched e = ", ret[1]
+    print ret[0]
 
 
 #set up and run basin hopping
@@ -54,17 +55,17 @@ from pygmin.storage import savenlowest
 #the cyclical periodicity of angles
 takestep = RandomDisplacement(stepsize = np.pi/4)
 takestepa = AdaptiveStepsize(takestep, frequency = 20)
-storage = savenlowest.SaveN(20)
+storage = savenlowest.SaveN(500)
 
 
 bh = BasinHopping( angles, pot, takestepa, temperature = 1.01, storage = storage)
-bh.run(200)
+bh.run(400)
 
 print "minima found"
 with open("out.spin", "w") as fout:
     for min in storage.data:
-        print "energy", min.E
-        fout.write("#%g\n" % (min.E))
+        print "energy", min.energy
+        fout.write("#%g\n" % (min.energy))
         printspins(fout, pot, min.coords)
         fout.write('\n\n')
         """
@@ -72,6 +73,12 @@ with open("out.spin", "w") as fout:
         set size ratio -1
         plot 'out.spin' index 0 u 1:2 w p pt 5, '' index 0 u 1:2:($3*0.5):($4*0.5) w vectors
         """
+
+with open("out.energies", "w") as fout:
+    for min in storage.data:
+        fout.write("%g\n" % (min.energy))
+
+
 
 try:
     lowest = storage.data[0].coords

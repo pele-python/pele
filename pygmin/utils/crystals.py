@@ -1,9 +1,8 @@
 import lattice
 import vec3
-from pygmin import rotations
+from pygmin.utils import rotations
 import numpy as np
-from pygmin.takestep import generic
-from pygmin.optimize import quench
+import vec3
 
 tol_rot = 3.1415 / 180. # standard tolerance is 1 deg
 tol_shift = 0.01 # standard tolerance is 0.1 in absolute coordinates
@@ -66,39 +65,39 @@ def compareStructures(coords1, coords2):
     #exit()
     return False
 
-class GenRandomCrystal(generic.TakestepInterface):
-    def __init__(self, coordsadapter, volume=None, shear=2., expand=2.0):
-        self.volume = volume
-        self.shear = shear
-        self.expand = expand
-        self.coordsadapter = coordsadapter
-        
-    def takeStep(self, coords, **kwargs):        
-        ca = self.coordsadapter        
-        ca.updateCoords(coords)
-        
-        volumeTarget = 2.*lattice.volume(ca.lattice)
-        # first choose random positions and rotations
-        for i in xrange(2):
-            ca.posRigid[i] = np.random.random()
-            ca.rotRigid[i] = rotations.random_aa()
-         
-        # random box
-        ca.lattice[[0,3,5]] = 1.0 + self.expand * np.random.random(3)  
-        ca.lattice[[1,2,4]] = self.shear * np.random.random(3)
-        
-        if(self.volume != None):
-            volumeTarget = self.volume[0] + (self.volume[1] - self.volume[0]) * np.random.random()
-                    
-        vol = lattice.volume(ca.lattice)
-        ca.lattice[:] = ca.lattice * (volumeTarget / vol)**(1.0/3.0)
-        GMIN.reduceCell(coords)
-        
-def quenchCrystal(coords, pot, **kwargs):
-    coords, E, rms, calls = quench.lbfgs_py(coords, pot, **kwargs)
-    #while(GMIN.reduceCell(coords)):
-    if(GMIN.reduceCell(coords)):
-        #print "Reduced cell, redo minimization"
-        coords, E, rms, callsn = quench.lbfgs_py(coords, pot, **kwargs)
-        calls+=callsn
-    return coords, E, rms, calls            
+def has_overlap(coords, cutoff=1.0):
+    ml = lattice.lowerTriangular(coords[-6:])
+    natoms = coords.size/3-2
+    atoms = coords.reshape(coords.size/3,3)[:-2]
+    # mi = vec3.invert3x3(ml)
+    
+    mindist = 1000.
+
+    a = ml[:,0]
+    b = ml[:,1]
+    c = ml[:,2]
+
+    for i in xrange(natoms):
+        for j in xrange(i+1,natoms):
+            #d = np.dot(mi, atoms[i] - atoms[j])
+            #d -= np.floor(d)
+            #d[d>0.5] -= 1.
+            #r_ij = np.linalg.norm(np.dot(ml, d))
+            
+            r_i = atoms[i]
+            r_j = atoms[j]
+            r_tp = r_j - r_i;
+            r_dp = r_tp - c*int(r_tp[2]/c[2])
+            r_sp = r_dp - b*int(r_dp[1]/b[1])
+            r_ij = r_sp - a*int(r_sp[0]/a[0])
+
+            r = np.linalg.norm(r_ij)
+            if(r < cutoff):
+                # print "overlapping distance is", r
+                return True
+            mindist = min(mindist, r)
+                
+    #print "the minimum distance ist", mindist
+    return False
+    
+    

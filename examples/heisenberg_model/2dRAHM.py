@@ -1,7 +1,7 @@
 import numpy as np
 from copy import copy
 from pygmin.potentials.heisenberg_spin_RA import HeisenbergModelRA
-import pygmin.rotations as rotations
+import pygmin.utils.rotations as rotations
 from numpy import sin, cos
 
 import networkx as nx
@@ -77,8 +77,8 @@ print "lowest structures fount:"
 with open("out.spins", "w") as fout:
     for min in storage.data:
         m = getm( min.coords )
-        print "energy", min.E, "magnetization", m
-        fout.write( "energy %g magnetization %g\n" % (min.E, m) )
+        print "energy", min.energy, "magnetization", m
+        fout.write( "energy %g magnetization %g\n" % (min.energy, m) )
         printspins(fout, pot, min.coords)
         fout.write("\n\n")
 

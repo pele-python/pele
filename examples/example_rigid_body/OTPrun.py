@@ -1,7 +1,7 @@
 import numpy as np
 import pygmin.potentials.rigid_bodies.molecule as molecule
 import pygmin.potentials.rigid_bodies.sandbox as sandbox
-import pygmin.rotations as rot
+import pygmin.utils.rotations as rot
 import copy
 
 np.random.seed(0)

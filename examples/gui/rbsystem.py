@@ -1,9 +1,7 @@
 from PyQt4 import QtGui
 import NewLJ
-import sys
 import numpy as np
 from pygmin.storage import savenlowest
-import time
 from pygmin.NEB import NEB
         
 class RBSystem:
@@ -19,7 +17,6 @@ class RBSystem:
 
     def createSystem(self):
         import pygmin.potentials.lj as lj
-        import pygmin.potentials.rigid_bodies.molecule as molecule
         from pygmin.potentials.rigid_bodies.molecule import setupLWOTP
         from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
         #setup otp molecule
@@ -35,13 +32,13 @@ class RBSystem:
         
     def createBasinHopping(self):
         import pygmin.basinhopping as bh
-        import pygmin.rotations as rot
+        import pygmin.utils.rotations as rot
         mysys = self.createSystem()
         nsites = mysys.nsites
         nmol = self.nmol
         #set up initial coords
         coords = np.zeros(2*3*nmol)
-        coords[0:nmol*3] = np.random.uniform(-1,1,[nmol*3]) * 1.8*(nsites)**(1./3)
+        coords[0:nmol*3] = np.random.uniform(-1,1,[nmol*3]) * 1.0*(nsites)**(1./3)
         for i in range(nmol):
             k = nmol*3 + 3*i
             coords[k : k + 3] = rot.random_aa()
@@ -103,7 +100,6 @@ class RBSystem:
         return X1, X2
     
     def createNEB(self, coords1, coords2):
-        import pygmin.potentials.lj as lj
         return NEB.NEB(coords1, coords2, self.mysys, k = 100., nimages=20)
 
        

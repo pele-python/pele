@@ -17,7 +17,7 @@ def energy_density_plot(storage):
         ml = lattice.lowerTriangular(ca.lattice)
         volume = np.dot(ml[:,0],np.cross(ml[:,1], ml[:,2]))
         rho.append(1./volume)
-        ener.append(minimum.E)        
+        ener.append(minimum.energy)        
     return rho, ener           
         
 if __name__ == '__main__':

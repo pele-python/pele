@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 import sys
-import optimize.quench as quench
 from mc import MonteCarlo
+import defaults
 
 class BasinHopping(MonteCarlo):
     """A class to run the basin hopping algorithm
@@ -51,10 +51,11 @@ class BasinHopping(MonteCarlo):
     def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
             acceptTest=None,  \
             temperature=1.0, \
-            quenchRoutine = quench.quench, \
-            quenchParameters = dict(), \
+            quenchRoutine = defaults.quenchRoutine, \
+            quenchParameters = defaults.quenchParams, \
             confCheck = [], \
-            outstream = sys.stdout
+            outstream = sys.stdout,
+            insert_rejected = False
             ):
         #########################################################################
         #initialize MonteCarlo base class
@@ -65,7 +66,7 @@ class BasinHopping(MonteCarlo):
                             acceptTest=acceptTest,  \
                             temperature=temperature, \
                             confCheck = confCheck, \
-                            outstream=outstream)
+                            outstream=outstream,store_initial=False)
 
         self.quenchRoutine = quenchRoutine
         self.quenchParameters = quenchParameters
@@ -80,6 +81,8 @@ class BasinHopping(MonteCarlo):
         self.coords = newcoords
         self.markovE = Equench
 
+        self.insert_rejected = insert_rejected
+        
         if(self.storage):
             self.storage(self.markovE, self.coords)
         

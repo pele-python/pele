@@ -1,6 +1,6 @@
 import numpy as np
 import molecule
-import pygmin.rotations as rot
+import pygmin.utils.rotations as rot
 #from potentials.rigid_body_potential import RigidBodyPotential
 from rigid_body_system import RigidBodySystem
 
@@ -46,7 +46,6 @@ def random_coords(nmol, nsites = None):
 
 
 def test_sandbox(nmol = 6):
-    from numpy import sin, cos, pi
     import copy
     from pygmin.potentials.lj import LJ
 

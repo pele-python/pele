@@ -1,6 +1,4 @@
 # -*- coding: iso-8859-1 -*-
-import numpy as np
-from math import *
 import sys
 import accept_tests.metropolis as metropolis
 import copy
@@ -49,12 +47,14 @@ class MonteCarlo(object):
       outstream: (stdout)
           the file stream to print quench information to
     """
+    
+    insert_rejected = False
   
     def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
             acceptTest=None,  \
             temperature=1.0, \
             confCheck=[], \
-            outstream = sys.stdout
+            outstream = sys.stdout, store_initial=True
             ):
         #note: make a local copy of lists of events so that an inputted list is not modified.
         self.coords = copy.copy(coords)
@@ -80,7 +80,7 @@ class MonteCarlo(object):
         #store intial structure
         #########################################################################
         energy = self.potential.getEnergy(self.coords)
-        if(self.storage):
+        if(self.storage and store_initial):
             self.storage(energy, self.coords)
           
         self.markovE = energy
@@ -143,9 +143,10 @@ class MonteCarlo(object):
         self.takeStep.updateStep(acceptstep, driver=self)
 #        except:
 #            print "WARNING: takeStep.updateStep() not implemented"
+        if(self.storage or self.insert_rejected):
+            self.storage(newE, newcoords)
+
         if acceptstep:
-            if(self.storage):
-                self.storage(newE, newcoords)
             self.coords = newcoords
             self.markovE = newE
             self.naccepted += 1

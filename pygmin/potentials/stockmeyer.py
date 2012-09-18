@@ -1,4 +1,3 @@
-from math import *
 import numpy as np
 import stock.stockaa_ as s
 
@@ -11,10 +10,10 @@ class LJ:
     def getEnergy(self, coords):
         print "getting energy only"
         grad=np.zeros(coords.shape[0], np.float64)
-        E = s.gradient(coords, grad, mu)
+        E = s.gradient(coords, grad, self.mu)
         return E
 
     def getEnergyGradient(self, coords):
         grad=np.zeros(coords.shape[0], np.float64)
-        E = s.gradient(coords, grad, mu)
+        E = s.gradient(coords, grad, self.mu)
         return E, grad 

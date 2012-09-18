@@ -3,7 +3,7 @@ from pygmin.storage import savenlowest
 import time
 from pygmin.NEB import NEB
 from pygmin.utils.rbtools import *
-import pygmin.utils.readAmberParam as readAmb
+import pygmin.utils.amber as readAmb
 import ambgmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
 from pygmin.optimize import quench
@@ -18,8 +18,8 @@ class CrystalSystem:
 #        self.bondList = bondList 
         
     def createBasinHopping(self):
-        GMIN.initialize()   
-        pot = gminpot.GMINPotental(GMIN)
+        #GMIN.initialize()   
+        pot = gminpot.GMINPotential(GMIN)
         coords = pot.getCoords()
 
         step = displace.RandomDisplacement()
@@ -70,7 +70,7 @@ class CrystalSystem:
         return coords2, coords1
     
     def createNEB(self, coords1, coords2):
-        pot = gminpot.GMINPotental(GMIN)
+        pot = gminpot.GMINPotential(GMIN)
         return NEB.NEB(coords1, coords2, pot, k = 100. ,nimages=20)
 
                

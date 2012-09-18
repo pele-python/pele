@@ -1,7 +1,9 @@
 import numpy as np
 from lowest_eig_pot import LowestEigPot
+from orthogopt import orthogopt
 from pygmin.potentials.potential import potential as basepot
 from pygmin.storage.savenlowest import SaveN
+import pygmin.defaults as defaults
 
 def analyticalLowestEigenvalue(coords, pot):
     e, g, hess = pot.getEnergyGradientHessian(coords)
@@ -45,14 +47,23 @@ class TransitionStateRefinement(basepot):
         will return the gradient with the component along the eigenvector removed.  This is for
         energy minimization in the space tangent to the gradient    
     """
-    def __init__(self, pot, coords, verbose=False):
+    def __init__(self, pot, coords, verbose=False, orthogZeroEigs = 0):
+        """
+        :orthogZeroEigs: the function which makes a vector orthogonal to known zero 
+            eigenvectors
+            default value is 0, which means use the default function orthogopt.
+            if None is pass then no function will be used
+        """
         self.pot = pot
         self.eigvec = np.random.rand(len(coords)) #initial random guess
         self.verbose = verbose
         self.H0 = None
+        self.orthogZeroEigs = orthogZeroEigs
+
     
-    def getLowestEigenvalue(self, coords, iprint=400, tol = 1e-6, **kwargs):
-        eigpot = LowestEigPot(coords, self.pot)
+    def getLowestEigenvalue(
+                self, coords, iprint=400, tol = 1e-6, **kwargs):
+        eigpot = LowestEigPot(coords, self.pot, orthogZeroEigs = self.orthogZeroEigs)
         from pygmin.optimize.lbfgs_py import LBFGS
         quencher = LBFGS(self.eigvec, eigpot, maxstep=1e-2, \
                          rel_energy = True, H0 = self.H0, **kwargs)
@@ -100,16 +111,36 @@ class TransitionStateRefinement(basepot):
         return e, grad
 
 
-def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwargs):
-    from pygmin.optimize.quench import lbfgs_py as quench
-    tspot = TransitionStateRefinement(pot, coords, **kwargs)
+def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSearchParams = None, **kwargs):
+    #from pygmin.optimize.quench import lbfgs_py as quench
+    quenchRoutine = defaults.quenchRoutine
+    if tsSearchParams is None:
+        tsSearchParams = defaults.tsSearchParams
+    iprint = tsSearchParams.get("iprint")
+    if iprint is None: iprint = -1
+    if tsSearchParams.has_key("orthogZeroEigs"):
+        has_orthogZeroEigs = True
+        orthogZeroEigs = tsSearchParams["orthogZeroEigs"]  #this could meaninfully be None
+    else:
+        has_orthogZeroEigs = False
+
+        
+            
+    if has_orthogZeroEigs:
+        tspot = TransitionStateRefinement(pot, coords, orthogZeroEigs=orthogZeroEigs, **kwargs)
+    else:
+        tspot = TransitionStateRefinement(pot, coords, **kwargs)
     rmsnorm = 1./np.sqrt(float(len(coords))/3.)
+    oldeigvec = None
     
+
     for i in xrange(nsteps):
         tspot.getLowestEigenvalue(coords)
         if tspot.eigval > 0.:
             print "warning transition state search found positive lowest eigenvalue", tspot.eigval, \
                 "step", i
+            if i == 0: 
+                print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
         if i > 0:
             overlap = np.dot(oldeigvec, tspot.eigvec)
             if overlap < 0.5:
@@ -119,24 +150,58 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, **kwar
         #print "step uphill in the energy in the direction parallel to eigvec"
         tspot.stepUphill(coords)
         
+        if True:
+            #refine the eigenector again
+            tspot.getLowestEigenvalue(coords)
+            if tspot.eigval > 0.:
+                print "warning transition state search found positive lowest eigenvalue", tspot.eigval, \
+                    "step", i
+            if i > 0:
+                overlap = np.dot(oldeigvec, tspot.eigvec)
+                if overlap < 0.5:
+                    print "warning: the new eigenvector has low overlap with previous", overlap
+            oldeigvec = tspot.eigvec.copy()  
+
+        
+        #get the component of the gradient parallel to eigvec
+        E, grad = pot.getEnergyGradient(coords)
+        gradpar = np.dot(grad, tspot.eigvec) / np.linalg.norm(tspot.eigvec)
+        
         
         #print "minimize the energy in the direction perpendicular to eigvec"
-        ret = quench(coords, tspot.getEnergyGradient, nsteps=10)
+        """
+        now minimize the energy in the space perpendicular to eigvec.
+        There's no point in spending much effort on this until 
+        we've gotten close to the transition state.  So limit the number of steps
+        to 10 until we get close.
+        """
+        nstepsperp = 10
+        if np.abs(gradpar) <= tol*2.:
+            nstepsperp = 1000
+        ret = quenchRoutine(coords, tspot.getEnergyGradient, nsteps=nstepsperp, tol=tol*0.2)
         coords = ret[0]
         E, grad = pot.getEnergyGradient(coords)
         rms = np.linalg.norm(grad) * rmsnorm
+        
+        if iprint > 0:
+            if i % iprint == 0:
+                print "findTransitionState:", i, E, rms, "eigenvalue", tspot.eigval, "rms perpendicular", ret[2], "grad parallel", gradpar
         
         if event != None:
             event(E, coords, rms)
         if rms < tol:
             break
     
+    print "findTransitionState done:", i, E, rms, "eigenvalue", tspot.eigval
+
+    
     if tspot.eigval >= 0.:
         print "warning: transition state has positive eigenvalue", tspot.eigval
     if rms > tol:
         print "warning: transition state search appears to have failed: rms", rms
     
-    return coords, tspot.eigval, tspot.eigvec, E, grad, rms
+    from collections import namedtuple
+    return namedtuple("TransitionStateResults", "coords,energy,eigenval,eigenvec,grad,rms")(coords, E, tspot.eigval, tspot.eigvec, grad, rms)
 
 ###################################################################
 #below here only stuff for testing
@@ -182,12 +247,19 @@ def guesstsATLJ():
 
 def guessts(coords1, coords2, pot):
     from pygmin.optimize.quench import lbfgs_py as quench
+    from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
+    from pygmin.NEB.NEB import NEB
     ret1 = quench(coords1, pot.getEnergyGradient)
     ret2 = quench(coords2, pot.getEnergyGradient)
     coords1 = ret1[0]
     coords2 = ret2[0]
-    from pygmin.NEB.NEB import NEB
+    natoms = len(coords1)/3
+    dist, coords1, coords2 = mindist(coords1, coords2, permlist=[range(natoms)])
+    print "dist", dist
+    print "energy coords1", pot.getEnergy(coords1)
+    print "energy coords2", pot.getEnergy(coords2)
     neb = NEB(coords1, coords2, pot)
+    #neb.optimize(quenchParams={"iprint" : 1})
     neb.optimize()
     neb.MakeAllMaximaClimbing()
     neb.optimize()
@@ -275,25 +347,25 @@ def testpot1():
         print "starting the transition state search"
         ret = findTransitionState(coords, pot, event=printevent, verbose = False)
         
-        coords, eval, evec, e, grad, rms = ret
-        e = pot.getEnergy(coords)
+        #coords, eval, evec, e, grad, rms = ret
+        e = pot.getEnergy(ret.coords)
         printxyz(fout, coords2, line2=str(e))
 
     print "finished searching for transition state"
     print "energy", e
-    print "rms grad", rms
-    print "eigenvalue", eval
+    print "rms grad", ret.rms
+    print "eigenvalue", ret.eigenval
     
     if True:
         print "now try the same search with the dimer method"
-        from pygmin.NEB.dimer import findTS as dimerfindTS
+        from pygmin.NEB.dimer import findTransitionState as dimerfindTS
         coords = coordsinit.copy()
         tau = np.random.uniform(-1,1,len(coords))
         tau /= np.linalg.norm(tau)
-        x, e, vec = dimerfindTS(pot, coords, tau )
-        enew, grad = pot.getEnergyGradient(coords)
-        print "energy", e
-        print "rms grad", np.linalg.norm(grad) / np.sqrt(float(len(coords))/3.)
+        ret = dimerfindTS(coords, pot, tau )
+        enew, grad = pot.getEnergyGradient(ret.coords)
+        print "energy", enew
+        print "rms grad", np.linalg.norm(grad) / np.sqrt(float(len(ret.coords))/3.)
 
 
 

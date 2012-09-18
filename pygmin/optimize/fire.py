@@ -13,7 +13,7 @@ class Fire(object):
     
     def __init__(self, coords, potential, restart=None, logfile='-', trajectory=None,
                  dt=0.1, maxmove=0.5, dtmax=1., Nmin=5, finc=1.1, fdec=0.5,
-                 astart=0.1, fa=0.99, a=0.1):
+                 astart=0.1, fa=0.99, a=0.1, iprint=-1):
         #Optimizer.__init__(self, atoms, restart, logfile, trajectory)
 
         self.dt = dt
@@ -30,6 +30,7 @@ class Fire(object):
         self.potential=potential
         self.v = None
         self.nsteps=0
+        self.iprint = iprint
         
     def initialize(self):
         self.v = None
@@ -79,7 +80,12 @@ class Fire(object):
                 return
             self.step(-f)
             self.nsteps += 1
+            if self.iprint > 0:
+                if step % self.iprint == 0:
+                    rms = np.linalg.norm(f)/np.sqrt(len(f))
+                    print "fire:", step, E, rms
             step += 1
+                    
 
     def converged(self, forces=None):
         """Did the optimization converge?"""
@@ -98,7 +104,7 @@ class Fire(object):
         return np.linalg.norm(forces)/math.sqrt(len(forces)) < self.fmax
 
 if __name__ == "__main__":
-    import potentials.lj as lj
+    import pygmin.potentials.lj as lj
     pot = lj.LJ()
     coords = 10.*np.random.random(300)
     opt = Fire(coords, pot.getEnergyGradient, dtmax=0.1, dt=0.01, maxmove=0.01)

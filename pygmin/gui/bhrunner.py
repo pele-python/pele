@@ -86,7 +86,7 @@ class BHRunner(QtCore.QObject):
         
     def minimum_found(self,minimum):
         self.lock.acquire()
-        self.system.storage.insert(minimum[0],minimum[1])
+        self.system.storage.addMinimum(minimum[0],minimum[1])
         self.lock.release()
     
 def found(m):

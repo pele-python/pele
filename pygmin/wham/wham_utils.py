@@ -25,7 +25,7 @@ def logSum(log_terms):
     """
     try:
         return logSumFast(log_terms)
-    except:
+    except ImportError:
         #print "using slow logsum, install scipy weave inline blitz to speed up"
         return logSumSlow(log_terms)
 
@@ -69,7 +69,7 @@ def logSumFast(log_terms):
     """
     try:
         return logSumFort(log_terms)
-    except:
+    except ImportError:
         return logSumWeave(log_terms)
 
 def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP=100, use_log_sum = None):
@@ -78,7 +78,7 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
             logSumFast( np.array([.1, .2, .3]) )
             use_log_sum = True
             print "using logsum"
-        except:
+        except ImportError:
             #dont use log sum unless the fast logsum is working
             print "not using logsum because it's too slow.  Install scipy weave to use the fast version of logsum"
             use_log_sum = False
