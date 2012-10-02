@@ -24,12 +24,13 @@ class getEnergyGradientWrapper:
         return ret[1]
 
 
-def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3, nsteps=15000):
     """
     a wrapper function for lbfgs routine in scipy
     """
     import scipy.optimize
-    newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(getEnergyGradient, coords, iprint=iprint, pgtol=tol)
+    newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(getEnergyGradient, 
+            coords, iprint=iprint, pgtol=tol, maxfun=nsteps)
     V = dictionary["grad"]
     funcalls = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
@@ -39,13 +40,19 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
             print "too many function evaluations"
         else:
             print dictionary['task']
+    #note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
+    #tolerance exactly
+    if True:
+        maxV = np.max( np.abs(V) )
+        if maxV > tol:
+            print "warning: scipy lbfgs quench seems to have failed. max(V)", maxV, "tol", tol
     rms = V.std()
     return newcoords, newE, rms, funcalls 
 
-def fire(coords, getEnergyGradient, tol = 1e-3, maxstep = 0.5, **kwargs):
+def fire(coords, getEnergyGradient, tol = 1e-3, nsteps=100000, maxstep = 0.5, **kwargs):
     import fire as fire
     opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep, **kwargs)
-    opt.run(fmax=tol)
+    opt.run(fmax=tol, steps=nsteps)
     e,g = getEnergyGradient(opt.coords)
     rms = np.linalg.norm(g)/np.sqrt(len(g))
     return opt.coords, e, rms, opt.nsteps

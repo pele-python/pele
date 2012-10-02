@@ -5,7 +5,7 @@ from optimization_exceptions import LineSearchError
 class LBFGS:
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10, 
                  rel_energy = False, H0=None, events=[],
-                 alternate_stop_criterion = None):
+                 alternate_stop_criterion = None, debug=False):
         self.X = X
         self.pot = pot
         e, self.G = self.pot.getEnergyGradient(self.X)
@@ -16,6 +16,7 @@ class LBFGS:
         self.events = events #a list of events to run during the optimization
     
         self.alternate_stop_criterion = alternate_stop_criterion
+        self.debug = debug #print debug messages
         
         self.N = len(X)
         self.M = M 
@@ -171,7 +172,8 @@ class LBFGS:
             if dE <= maxErise:
                 break
             else:
-                #print "warning: energy increased, trying a smaller step", E, E0, f*stepsize, nincrease
+                if self.debug:
+                    print "warning: energy increased, trying a smaller step", E, E0, f*stepsize, nincrease
                 f /= 10.
                 nincrease += 1
                 if nincrease > 10:

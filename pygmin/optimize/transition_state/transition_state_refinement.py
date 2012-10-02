@@ -112,6 +112,9 @@ class TransitionStateRefinement(basepot):
 
 
 def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSearchParams = None, **kwargs):
+    """
+    The routine to find the nearest transition state
+    """
     #from pygmin.optimize.quench import lbfgs_py as quench
     quenchRoutine = defaults.quenchRoutine
     if tsSearchParams is None:
