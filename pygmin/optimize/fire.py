@@ -5,6 +5,8 @@ Created on 30 Apr 2012
 '''
 
 import numpy as np
+import math
+
 
 class Fire(object):
     '''
@@ -13,7 +15,8 @@ class Fire(object):
     
     def __init__(self, coords, potential, restart=None, logfile='-', trajectory=None,
                  dt=0.1, maxmove=0.5, dtmax=1., Nmin=5, finc=1.1, fdec=0.5,
-                 astart=0.1, fa=0.99, a=0.1, iprint=-1):
+                 astart=0.1, fa=0.99, a=0.1, iprint=-1,
+                 alternate_stop_criterion = None):
         #Optimizer.__init__(self, atoms, restart, logfile, trajectory)
 
         self.dt = dt
@@ -31,6 +34,7 @@ class Fire(object):
         self.v = None
         self.nsteps=0
         self.iprint = iprint
+        self.alternate_stop_criterion = alternate_stop_criterion
         
     def initialize(self):
         self.v = None
@@ -76,7 +80,12 @@ class Fire(object):
             E,f = self.potential(self.coords)
             #self.call_observers()
             #print E
-            if self.converged(f):
+            if self.alternate_stop_criterion is None:
+                i_am_done = self.converged(f)
+            else:
+                i_am_done = self.alternate_stop_criterion(energy = E, gradient = f, 
+                                                          tol=self.fmax)                
+            if i_am_done:
                 return
             self.step(-f)
             self.nsteps += 1
@@ -98,8 +107,6 @@ class Fire(object):
         #print (forces**2).sum()
         #print max(forces)
         #return (forces**2).sum().max() < self.fmax**2
-        import numpy as np
-        import math
         #print np.linalg.norm(forces)/math.sqrt(len(forces))
         return np.linalg.norm(forces)/math.sqrt(len(forces)) < self.fmax
 

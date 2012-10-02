@@ -42,9 +42,9 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     rms = V.std()
     return newcoords, newE, rms, funcalls 
 
-def fire(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.5):
+def fire(coords, getEnergyGradient, tol = 1e-3, maxstep = 0.5, **kwargs):
     import fire as fire
-    opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep, iprint=iprint)
+    opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep, **kwargs)
     opt.run(fmax=tol)
     e,g = getEnergyGradient(opt.coords)
     rms = np.linalg.norm(g)/np.sqrt(len(g))
@@ -160,9 +160,9 @@ def lbfgs_py(coords, getEnergyGradient, iprint = -1, tol = 1e-3, nsteps = 10000,
     ret = _lbfgs_py(coords, pot, iprint = iprint, tol = tol, nsteps = nsteps, **kwargs)
     return ret
 
-def _mylbfgs(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
+def _mylbfgs(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10, **kwargs):
     from mylbfgs import LBFGS
-    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
+    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise, **kwargs)
     
     ret = lbfgs.run(nsteps, tol, iprint)
     coords = ret[0]

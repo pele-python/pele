@@ -3,7 +3,9 @@ from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
 
 class LBFGS:
-    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10, rel_energy = False, H0=None, events=[]):
+    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10, 
+                 rel_energy = False, H0=None, events=[],
+                 alternate_stop_criterion = None):
         self.X = X
         self.pot = pot
         e, self.G = self.pot.getEnergyGradient(self.X)
@@ -13,6 +15,8 @@ class LBFGS:
         self.rel_energy = rel_energy #use relative energy comparison for maxErise 
         self.events = events #a list of events to run during the optimization
     
+        self.alternate_stop_criterion = alternate_stop_criterion
+        
         self.N = len(X)
         self.M = M 
         N = self.N
@@ -238,8 +242,15 @@ class LBFGS:
             for event in self.events:
                 event( coords=X, energy=e, rms=rms )
       
-            if rms < self.tol:
+            if self.alternate_stop_criterion is None:
+                i_am_done = rms < self.tol
+            else:
+                i_am_done = self.alternate_stop_criterion(energy = e, gradient = G, 
+                                                          tol=self.tol)
+                
+            if i_am_done:
                 break
+            
         return X, e, rms, self.funcalls, G , i
    
 
