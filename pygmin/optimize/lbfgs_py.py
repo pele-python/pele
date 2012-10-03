@@ -3,7 +3,7 @@ from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
 
 class LBFGS:
-    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=10, 
+    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
                  rel_energy = False, H0=None, events=[],
                  alternate_stop_criterion = None, debug=False):
         self.X = X

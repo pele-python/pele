@@ -50,6 +50,9 @@ def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3, nsteps=15000):
     return newcoords, newE, rms, funcalls 
 
 def fire(coords, getEnergyGradient, tol = 1e-3, nsteps=100000, maxstep = 0.5, **kwargs):
+    """
+    A wrapper function for the pygmin FIRE implementation
+    """
     import fire as fire
     opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep, **kwargs)
     opt.run(fmax=tol, steps=nsteps)
@@ -102,13 +105,13 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     rms = np.linalg.norm(g)/np.sqrt(len(g))
     return newcoords, e, rms, funcalls 
 
-def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
-    import fire as fire
-    opt = fire.Fire(coords, getEnergyGradient)
-    opt.run()
-    e,g = getEnergyGradient(opt.coords)
-    rms = np.linalg.norm(g)/np.sqrt(len(g))
-    return opt.coords, e, rms, opt.nsteps
+#def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+#    import fire as fire
+#    opt = fire.Fire(coords, getEnergyGradient)
+#    opt.run()
+#    e,g = getEnergyGradient(opt.coords)
+#    rms = np.linalg.norm(g)/np.sqrt(len(g))
+#    return opt.coords, e, rms, opt.nsteps
 
 
 def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, \
@@ -137,9 +140,15 @@ def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 10
     return x, E, rms, funcalls
 
 def steepest_descent(coords, getEnergyGradient, iprint = -1, tol = 1e-3, **kwargs):
+    """
+    a wrapper function for steepest descent minimization
+    """
     return _steepest_descent(coords, getEnergyGradient, iprint = iprint, gtol = tol, **kwargs)
 
 def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+    """
+    a wrapper function for the scipy BFGS algorithm
+    """
     import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol = tol, full_output = True, disp=False)
@@ -163,13 +172,18 @@ def _lbfgs_py(coords, pot, nsteps = 10000, iprint = -1, tol = 1e-3, **kwargs):
     return coords, e, rms, funcalls
 
 def lbfgs_py(coords, getEnergyGradient, iprint = -1, tol = 1e-3, nsteps = 10000, **kwargs):
+    """
+    A wrapper function for the python implementation of LBFGS without linesearch.
+    
+    This is designed to be as similar as possible to GMIN's LBFGS algorithm
+    """
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = _lbfgs_py(coords, pot, iprint = iprint, tol = tol, nsteps = nsteps, **kwargs)
     return ret
 
-def _mylbfgs(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10, **kwargs):
+def _mylbfgs(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, **kwargs):
     from mylbfgs import LBFGS
-    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise, **kwargs)
+    lbfgs = LBFGS(coords, pot, **kwargs)
     
     ret = lbfgs.run(nsteps, tol, iprint)
     coords = ret[0]
@@ -179,11 +193,19 @@ def _mylbfgs(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, 
     return coords, e, rms, funcalls
 
 def mylbfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1, **kwargs):
+    """
+    A wrapper function for another LBFGS implementation.  This version uses 
+    the GMIN fortran code to update the Hessian approximation and generate 
+    a trial step.   The actual step taking algorithm is the same as lbfgs_py.  
+    """
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = _mylbfgs(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep, **kwargs)
     return ret
 
 def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
+    """
+    js850> I think this might not be working but I can't remember
+    """
     from mylbfgs_callback import LBFGS
     lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
     
