@@ -143,7 +143,7 @@ class MonteCarlo(object):
         self.takeStep.updateStep(acceptstep, driver=self)
 #        except:
 #            print "WARNING: takeStep.updateStep() not implemented"
-        if(self.storage or self.insert_rejected):
+        if(self.storage and (self.insert_rejected or acceptstep)):
             self.storage(newE, newcoords)
 
         if acceptstep:

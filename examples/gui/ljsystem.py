@@ -22,7 +22,8 @@ class LJSystem:
         potential = lj.LJ()
         step = displace.RandomDisplacement(stepsize=0.5)
         opt = bh.BasinHopping(coords,potential,
-                          temperature=1., takeStep=step)
+                          temperature=1., takeStep=step,
+                          outstream = None)
         return opt
     
     def draw(self, coordslinear, index):

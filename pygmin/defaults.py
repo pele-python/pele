@@ -7,5 +7,5 @@ quenchParams = dict()
 tsSearchRoutine = dimer
 tsSearchParams = dict()
 
-NEBquenchRoutine = quench.quench
+NEBquenchRoutine = quench.lbfgs_py
 NEBquenchParams = dict()
