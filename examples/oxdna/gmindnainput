@@ -1,0 +1,32 @@
+##############################
+####  PROGRAM PARAMETERS  ####
+##############################
+backend = CPU
+backend_precision = double
+debug = 1
+
+##############################
+####    SIM PARAMETERS    ####
+##############################
+T = 0.110
+verlet_skin = 0.05
+
+##############################
+####    INPUT / OUTPUT    ####
+##############################
+topology = gmindnatop 
+conf_file = gmindnainput
+trajectory_file = trajectory.dat
+refresh_vel = 1
+log_file = gmindnalog.dat
+no_stdout_energy = 0
+restart_step_counter = 0
+energy_file = energy.dat
+conf_output_dir = confs
+print_conf_interval = 1000000
+print_conf_ppc = 51
+print_energy_every = 1000
+time_scale = linear
+external_forces = 0
+
+

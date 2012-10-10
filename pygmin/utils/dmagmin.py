@@ -104,7 +104,11 @@ class TakestepDMAGMIN(takestep.TakestepInterface):
         from pygmin.takestep import buildingblocks as bb
         
         ca = CoordsAdapter(nrigid=GMIN.getNRigidBody(), nlattice=6, coords=coords)
-                
+        
+        #tmp = np.loadtxt("aligned.dat")
+        #coords[-6:]=tmp[-6:]        
+        #coords[:]=tmp[:]
+        #return        
         conf_ok = False
         if(not self.overlap_cutoff is None):
             safe_coords = coords.copy()
@@ -143,6 +147,7 @@ class AppDMAGMINBH(AppClusterBH):
     overlap_cutoff = None
     displace_nmols = None
     genrandom_volume = None
+    random_start = False
     
     def __init__(self):       
         AppClusterBH.__init__(self)
@@ -157,7 +162,12 @@ class AppDMAGMINBH(AppClusterBH):
         self.quenchRoutine=quenchCrystal
     
     def initial_coords(self):
-        return self.create_potential().getCoords()
+        coords = self.create_potential().getCoords()
+        if(not self.random_start):
+            return coords
+        rand = self.create_takestep_reseed()
+        rand.takeStep(coords)
+        return coords
         
     def create_potential(self):
         return GMINPotential(GMIN)
