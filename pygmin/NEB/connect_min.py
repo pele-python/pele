@@ -7,6 +7,7 @@ import networkx as nx
 import copy
 import itertools
 
+__all__ = ["DoubleEndedConnect"]
 
 class DoubleEndedConnect(object):
     def __init__(

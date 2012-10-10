@@ -3,7 +3,7 @@ from pygmin.potentials.potential import potential
 from fortran.soft_sphere_pot import soft_sphere_pot
 #energy,force = soft_sphere_pot(dimen,x,diams,[npart])
 
-
+__all__ = ["SoftSphere"]
 
 
 

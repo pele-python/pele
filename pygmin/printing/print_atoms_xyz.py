@@ -1,3 +1,5 @@
+__all__ = ["printAtomsXYZ", "PrintEvent"]
+
 def printAtomsXYZ(fout, coords, line2="", atom_type=["LA"]):
     """
     print atomic coordinate in vmd xyz format:
@@ -22,6 +24,9 @@ def printAtomsXYZ(fout, coords, line2="", atom_type=["LA"]):
 
 class PrintEvent(object):
     def __init__(self, fout, frq = 1, atom_type=["LA"]):
+        """
+        for passing a print event to minimizers and other objects
+        """
         if isinstance(fout, str): 
             fname = fout      
             self.fout = open(fname, "w")

@@ -1,5 +1,7 @@
 from potential import potential
 
+__all__ = ["ColdFusionCheck", "addColdFusionCheck"]
+
 class ColdFusionCheck(potential):
     def __init__(self, potential, coldfusionlimit=-1000, coldfusionenergy=1000000):
         self.potential = potential

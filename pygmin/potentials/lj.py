@@ -2,6 +2,8 @@ from math import *
 import numpy as np #to access np.exp() not built int exp
 import potential
 
+__all__ = ["LJ"]
+
 def apply_periodic( dr, boxl ):
     for i in xrange(len(dr)):
         #print i, boxl, dr[i],int(dr[i]/(boxl)),

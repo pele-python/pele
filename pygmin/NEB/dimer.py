@@ -2,6 +2,8 @@ import numpy as np
 from pygmin.optimize import quench
 from pygmin.utils.zeroev import gramm_schmidt
 
+__all__ = ["findTransitionState"]
+
 xt=[]
 tt=[]
 

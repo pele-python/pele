@@ -4,6 +4,8 @@ Created on Jun 6, 2012
 @author: vr274
 '''
 
+__all__ = ["AdaptiveStepsize"]
+
 from .generic import TakestepInterface
 import numpy as np
 

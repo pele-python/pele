@@ -4,6 +4,8 @@ from pygmin.utils import rotations
 import numpy as np
 import vec3
 
+__all__ = ["compareTransformed", "compareStructures", "has_overlap"]
+
 tol_rot = 3.1415 / 180. # standard tolerance is 1 deg
 tol_shift = 0.01 # standard tolerance is 0.1 in absolute coordinates
 

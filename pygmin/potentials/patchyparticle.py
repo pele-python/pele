@@ -8,13 +8,15 @@ import potential
 import pygmin
 import numpy as np
 
+__all__ = ["PatchyParticle"]
+
 class PatchyParticle(potential.potential):
     '''
     classdocs
     '''
 
 
-    def __init__(selfparams):
+    def __init__(self, params):
         '''
         Constructor
         '''

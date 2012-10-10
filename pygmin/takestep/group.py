@@ -6,6 +6,8 @@ Created on Jun 7, 2012
 
 from .generic import TakestepInterface
 
+__all__ = ["GroupSteps", "BlockMoves", "Reseeding"]
+
 class GroupSteps(TakestepInterface):
     '''group several takestep objects
     

@@ -1,3 +1,5 @@
+__all__ = ["DontLeaveBasin"]
+
 class DontLeaveBasin:
     """
     reject the step if the new energy is different from the old energy

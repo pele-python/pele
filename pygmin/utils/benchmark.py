@@ -7,6 +7,8 @@ Created on 6 Apr 2012
 import numpy as np
 import copy
 
+__all__ = ["QuenchBenchmark"]
+
 class PotentialWrapper(object):
     def __init__(self, potential):
         self.potential=potential

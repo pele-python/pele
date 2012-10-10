@@ -6,6 +6,8 @@ from  pygmin import basinhopping
 import pygmin.storage.savenlowest as storage
 from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
 
+__all__ = ["minPermDistStochastic"]
+
 def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
     """
     Minimize the distance between two clusters.  The following symmetries will be accounted for

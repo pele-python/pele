@@ -8,6 +8,7 @@ import networkx as nx
 
 from pygmin.potentials.heisenberg_spin import make3dVector,  make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
 
+__all__ = ["HeisenbergModelRA"]
 
 
 

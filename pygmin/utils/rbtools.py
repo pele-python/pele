@@ -1,3 +1,4 @@
+__all__ = ["CoordsAdapter"]
 class CoordsAdapter():
     '''Wrapper to access coordinate array for rigid body systems
     

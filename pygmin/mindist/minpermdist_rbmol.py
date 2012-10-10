@@ -8,6 +8,8 @@ import pygmin.storage.savenlowest as storage
 from mindistutils import CoMToOrigin, alignRotation, findBestPermutationRBMol, getDistaa
 from aamindist import aadistance
 
+__all__ = ["minPermDistRBMol"]
+
 def coordsApplyRotation(coordsin, aa):
     coords = coordsin.copy()
     nmol = len(coords) / 3 / 2

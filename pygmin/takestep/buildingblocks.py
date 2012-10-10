@@ -2,6 +2,8 @@ import numpy as np
 from pygmin.utils import rotations
 from pygmin.utils import vec3
 
+__all__ = ["uniform_displace", "rotate", "reduced_coordinates_displace"]
+
 def uniform_displace(stepsize, coords, indices=None):
     '''uniform random displacement
     

@@ -4,6 +4,7 @@ from pygmin.potentials.potential import potential as BasePotential
 
 import networkx as nx
 
+__all__ = ["XYModel"]
 
 class RectangularLattice(object):
     """
@@ -37,7 +38,7 @@ class RectangularLattice(object):
 
 class XYModel(BasePotential):
     """
-    1d xymodel
+    xy model
     """
     def __init__(self, dim = [4, 4], phi=np.pi):
         self.dim = copy(dim)

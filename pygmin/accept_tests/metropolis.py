@@ -1,5 +1,7 @@
 import numpy as np
 
+__all__ = ["Metropolis"]
+
 class Metropolis:
     def __init__(self, temperature, random=np.random.rand):
         self.random = random

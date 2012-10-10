@@ -1,6 +1,8 @@
 '''Wrapper to represent a storage class as a graph'''
 import networkx as nx
 
+__all__ = ["Graph"]
+
 class Graph(object):
     '''
     Wrapper to represent a storage class as a graph

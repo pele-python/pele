@@ -8,6 +8,9 @@ import numpy as np
 from generic import TakestepSlice, TakestepInterface
 from pygmin.utils import rotations
 
+__all__ = ["RandomDisplacement", "UniformDisplacement", 
+           "RotationalDisplacement", "RandomCluster"]
+
 class RandomDisplacement(TakestepSlice):
     '''Random displacement on each individual coordinate
     
