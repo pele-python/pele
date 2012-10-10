@@ -3,6 +3,7 @@
 #Example 1: Simple basin hopping using defaults
 ############################################################
 import numpy as np
+
 import pygmin.potentials.lj as lj
 import pygmin.basinhopping as bh
 from pygmin.takestep import displace
