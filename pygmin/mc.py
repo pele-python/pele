@@ -85,9 +85,11 @@ class MonteCarlo(object):
           
         self.markovE = energy
     
-    def setPrinting(self, ostream, frq):
-        self.outstream = ostream
-        self.printfrq = frq
+    def setPrinting(self, ostream="default", frq=None):
+        if ostream != "default": #ostream = None is valid input
+            self.outstream = ostream
+        if frq is not None:
+            self.printfrq = frq
     
     def addEventAfterStep(self, event):
         self.event_after_step.append( event )
