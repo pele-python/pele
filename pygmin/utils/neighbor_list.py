@@ -2,6 +2,9 @@ import numpy as np
 from pygmin.potentials.potential import potential as basepot
 import _fortran_utils
 
+__all__ = ["NeighborList", "NeighborListSubset", "NeighborListPotential", "MultiComponentSystem", 
+           "makeBLJNeighborListPot"]
+
 class NeighborList(object):
     """
     this class will create and keep a neighbor list updated

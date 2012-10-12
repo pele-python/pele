@@ -6,6 +6,7 @@ from numpy import sin, cos
 
 import networkx as nx
 
+__all__ = ["HeisenbergModel"]
 
 def make3dVector(u):
     """

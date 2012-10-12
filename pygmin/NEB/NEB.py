@@ -1,6 +1,8 @@
 import numpy as np
 import os.path
 
+__all__ = ["NEB"]
+
 def distance_cart(x1, x2):
     return x2 - x1
 

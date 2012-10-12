@@ -5,6 +5,7 @@ from scipy.weave import converters
 from lj import LJ
 import fortran.AT as ATfort
 
+__all__ = ["ATLJ"]
 
 
 class ATLJ(potential.potential):

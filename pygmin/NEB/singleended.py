@@ -4,6 +4,8 @@ Single ended searches
 @author: ruehle
 '''
 
+__all__ = ["find_escape_pathes"]
+
 import numpy as np
 from dimer import DimerSearch
 from pygmin.optimize import quench

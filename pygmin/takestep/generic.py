@@ -1,3 +1,5 @@
+__all__ = ["TakestepInterface", "Takestep", "TakestepSlice"]
+
 class TakestepInterface(object):
     '''Interface for step taking classes'''
     

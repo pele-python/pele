@@ -3,6 +3,8 @@ import numpy as np #to access np.exp() not built int exp
 import fortran.ljpshiftfort as ljpshiftfort
 import potential
 
+__all__ = ["LJpshift"]
+
 def apply_periodic( dr, boxl ):
     for i in range(len(dr)):
         #print i, boxl, dr[i],int(dr[i]/(boxl)),

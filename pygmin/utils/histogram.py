@@ -1,5 +1,6 @@
 import numpy as np
 
+__all__ = ["EnergyHistogram", "PrintHistogram"]
 
 class EnergyHistogram(object):
     """

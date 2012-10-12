@@ -7,6 +7,8 @@ Created on 3 Jun 2012
 import potential
 import numpy as np
 
+__all__ = ["GMINPotential"]
+
 class GMINPotential(potential.potential):
     '''
     classdocs

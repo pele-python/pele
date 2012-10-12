@@ -1,5 +1,7 @@
 import numpy as np
 
+__all__ = ["invert3x3"]
+
 def invert3x3(A):
 	Ainv = np.zeros([3,3])
 	Ainv[0,0] = A[1,1]*A[2,2] - A[2,1]*A[1,2]

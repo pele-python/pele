@@ -55,7 +55,7 @@ for o, a in opts:
     elif o == "-o":
         outprefix=a
         print "output_prefix = ", outprefix
-    elif o == "-o":
+    elif o == "-i":
         inprefix=a
         print "output_prefix = ", inprefix
     elif o == "-F":
@@ -85,6 +85,8 @@ for o, a in opts:
         usage()
         sys.exit()
     else:
+        print "don't understand argument", o, a
+        usage()
         assert False, "unhandled option"
 
 

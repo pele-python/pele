@@ -67,10 +67,12 @@ def getNDataLines(fin):
 
 def readFile(fname, columns):
     data = []
+    ncolumns = max(columns)
     with open(fname, "r") as fin:
         for line in fin:
             if line[0] == '#': continue
             sline = line.split()
+            if len(sline) < ncolumns+1: break
             d = [ float(sline[c]) for c in columns ]
             data.append(d)
     return np.array(data)

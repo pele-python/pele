@@ -10,7 +10,10 @@ from pygmin.application import AppClusterBH
 from pygmin.application.basinhopping_app import AppBasinHopping
 from pygmin.potentials.coldfusioncheck import addColdFusionCheck
 from pygmin.potentials.gminpotential import GMINPotential 
- 
+
+__all__ = ["compareMinima", "GenRandomCrystal", "quenchCrystal",
+           "TakestepDMAGMIN", "AppDMAGMINBH"]
+
 # compare 2 minima
 def compareMinima(min1, min2):
     from pygmin.utils import rbtools

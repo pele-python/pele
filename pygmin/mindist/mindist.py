@@ -1,9 +1,12 @@
 import numpy as np
 from mindistutils import CoMToOrigin, alignRotation
 
+__all__ = ["minDist"]
+
 def minDist(X1, X2):
     """
-    Minimize the distance between two clusters.  The following symmetries will be accounted for
+    Minimize the distance between two clusters.  The following symmetries 
+    will be accounted for.
     
     Translational symmetry
 

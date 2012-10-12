@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 import sys
-from mc import MonteCarlo
-import defaults
+from pygmin.mc import MonteCarlo
+import pygmin.defaults as defaults
 
 class BasinHopping(MonteCarlo):
     """A class to run the basin hopping algorithm

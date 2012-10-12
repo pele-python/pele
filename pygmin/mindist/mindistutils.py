@@ -3,6 +3,10 @@ import copy
 import pygmin.utils.rotations as rot
 import itertools
 
+__all__ = ["ComToOrigin", "getAlignRotation", "alignRotation", 
+           "findBestPermutation", "findBestPermutationRBMol", "aa2xyz",
+           "getDistxyz", "getDistaa"]
+
 def alignCoM( X1, X2):
     """
     align the center of mass of X2 with that of X1
@@ -17,12 +21,10 @@ def CoMToOrigin( X1):
     """
     move the center of mass to the origin
     """
-    natoms = len(X1) / 3
-    for i in xrange(3):
-        com = np.sum( X1[i::3] )
-        com /= natoms
-        X1[i::3] -= com
-    return X1
+    X1 = np.reshape(X1, [-1,3])
+    natoms = len(X1[:,0])
+    com = X1.sum(0) / natoms
+    X1 -= com
 
 
 def getAlignRotation(XA, XB):

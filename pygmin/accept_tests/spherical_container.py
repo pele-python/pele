@@ -1,5 +1,7 @@
 import numpy as np
 
+__all__ = ["SphericalContainer"]
+
 class SphericalContainer(object):
     """
     a class to make sure the cluster doesn't leave a sphercial region of

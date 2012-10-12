@@ -1,5 +1,7 @@
 import string 
 
+__all__ = ["readAmberParam"]
+
 class readAmberParam:
     """Extract info from coords.prmtop
     
