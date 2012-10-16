@@ -16,7 +16,7 @@ def uniform_displace(stepsize, coords, indices=None):
     '''
     if(indices):
         for i in indices:
-            coords[i] += stepsize*rotations.vec_random()
+            coords[i] += np.random.random()*stepsize*rotations.vec_random()
         return
     
     for x in coords:

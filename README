@@ -4,21 +4,36 @@ molecular systems
 
 http://www-wales.ch.cam.ac.uk/software.html
 
+INSTALLATION
+------------
 
 Compilation is required for use of the fast potentials, those written in C++ and/or fortran)
 
-To use the fortran potentials you need f2py, which is part of the numpy package
+Required packages:  
 
-To use the C++ potentials you need to have boost-python, boost-dev and python-dev installed
+1. f2py
+     part of numpy, for fortran potentials 
+2. boost-python, boost-dev and python-dev
+     for C++ potentials 
+3. networkx
+     https://networkx.lanl.gov
+     ( $easy_install networkx ) 
+     for plotting disconn graphs  
+4. munkres
+     
+5. SQLAlchemy 0.7 
+    http://www.sqlalchemy.org/
+    ( $easy_install SQLAlchemy ) 
+    for managing database of stationary points 
 
-to compile:
+Compilation:
 
 $ cmake .
 $ make 
 
 
 PYTHONPATH:  
-make sure to add the directory mingmin/ to your PYTHONPATH environment variable
+make sure to add the directory PyGMIN/ to your PYTHONPATH environment variable
 
 
 === running ===

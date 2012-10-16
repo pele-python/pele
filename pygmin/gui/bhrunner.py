@@ -34,7 +34,8 @@ class BHProcess(mp.Process):
         opt = self.system.createBasinHopping()
         opt.storage = self.insert
         #while(True):
-        opt.run(500)
+        print 'bhrunner.py: number of BH steps set to 1'
+        opt.run(1)
         
     def insert(self, E, coords):
             self.comm.send([E,coords])
