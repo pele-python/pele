@@ -18,12 +18,12 @@ def determinePushoff(
         e, grad = getEnergyGradient(coords)
     gpar0 = np.dot(grad, vec)/vnorm
     step = stepmin / vnorm
-    print "gpar0", gpar0
+    #print "gpar0", gpar0
     while True:
         coords1 = step * vec + coords
         e, grad = getEnergyGradient(coords1)
         gpar = np.dot(grad, vec)/vnorm
-        print "gpar", gpar, gpar0, abs((gpar-gpar0) / gpar0), step
+        #print "gpar", gpar, gpar0, abs((gpar-gpar0) / gpar0), step
         if abs((gpar-gpar0) / gpar0) > gdiff:
             break
         if step > stepmax:

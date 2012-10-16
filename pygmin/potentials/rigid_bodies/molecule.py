@@ -22,7 +22,7 @@ class Site:
     """
     def __init__(self, sitetype, position):
         self.type = sitetype
-        assert( len(position) == 3 )
+        assert len(position) == 3, "error, len(position) must be 3, but it is %d" % len(position)
         self.position = np.array(position) #position in molecule frame
         self.abs_position = np.array(position) #absolute position in space
         self.drdp = np.zeros([3,3]) #derivatives of position w.r.t. aa

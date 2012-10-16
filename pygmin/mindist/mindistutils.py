@@ -3,7 +3,7 @@ import copy
 import pygmin.utils.rotations as rot
 import itertools
 
-__all__ = ["ComToOrigin", "getAlignRotation", "alignRotation", 
+__all__ = ["CoMToOrigin", "getAlignRotation", "alignRotation", 
            "findBestPermutation", "findBestPermutationRBMol", "aa2xyz",
            "getDistxyz", "getDistaa"]
 
@@ -25,6 +25,7 @@ def CoMToOrigin( X1):
     natoms = len(X1[:,0])
     com = X1.sum(0) / natoms
     X1 -= com
+    return X1.reshape(-1)
 
 
 def getAlignRotation(XA, XB):
