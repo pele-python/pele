@@ -5,16 +5,6 @@ import potential
 
 __all__ = ["LJpshift"]
 
-def apply_periodic( dr, boxl ):
-    for i in range(len(dr)):
-        #print i, boxl, dr[i],int(dr[i]/(boxl)),
-        dr[i] -= boxl*int(dr[i]/(boxl)) 
-        #if abs(dr[i]) > (0.5*boxl): dr[i] = boxl - abs(dr[i])
-        if dr[i] >= (0.5*boxl): dr[i] -= boxl
-        elif dr[i] < (-0.5*boxl): dr[i] += boxl
-    #print "dr ",dr
-    return dr;
-
 
 class BLJ_interaction_type:
     """
@@ -77,5 +67,48 @@ class LJpshift(potential.potential):
                 self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig, \
                 [self.natoms])
         return E, V
+
+if __name__ == "__main__":
+    import pygmin.potentials.ljpshift as ljpshift
+    import pygmin.defaults as defaults
+    fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench"
+    fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords"
+    #fname = "out.coords"
+    if False:
+        coords = np.array(np.loadtxt(fname))
+        coords = coords.reshape(-1)
+        boxl = 11.05209
+    else:
+        natoms = 200
+        coords = np.random.uniform(-1,1,natoms*3)*(natoms)**(1./3)/2
+        print "max, min coords", coords.max(), coords.min()
+        boxl = 4
+
+    natoms = len(coords) /3
+    ntypeA = int(natoms*0.8)
+    rcut = 2.5
+    print "natoms", natoms, "ntypea", ntypeA
+    
+    bljslow = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
+    blj =              LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
+    
+    ebljslow = bljslow.getEnergy(coords)
+    print "blj energy slow", ebljslow
+    eblj = blj.getEnergy(coords)
+    print "blj energy     ", eblj
+    
+    print "quenching coords"
+    ret1 = defaults.quenchRoutine(coords, blj.getEnergyGradient, iprint=-11)
+    coords = ret1[0]
+    
+    ebljslow = bljslow.getEnergy(coords)
+    print "blj energy slow", ebljslow
+    eblj = blj.getEnergy(coords)
+    print "blj energy     ", eblj
+
+
+
+    
+
 
 

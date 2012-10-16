@@ -5,17 +5,21 @@ import potential
 __all__ = ["LJpshift"]
 
 def apply_periodic( dr, boxl ):
-    for i in range(len(dr)):
-        #print i, boxl, dr[i],int(dr[i]/(boxl)),
-        dr[i] -= boxl*int(dr[i]/(boxl)) 
-        #if abs(dr[i]) > (0.5*boxl): dr[i] = boxl - abs(dr[i])
-        if dr[i] >= (0.5*boxl): dr[i] -= boxl
-        elif dr[i] < (-0.5*boxl): dr[i] += boxl
-    #print "dr ",dr
+    dr -= boxl * np.rint(dr/boxl)
+#    for i in range(len(dr)):
+#        #print i, boxl, dr[i],int(dr[i]/(boxl)),
+#        dr[i] -= boxl*int(dr[i]/(boxl)) 
+#        #if abs(dr[i]) > (0.5*boxl): dr[i] = boxl - abs(dr[i])
+#        if dr[i] >= (0.5*boxl): dr[i] -= boxl
+#        elif dr[i] < (-0.5*boxl): dr[i] += boxl
+#    #print "dr ",dr
     return dr;
 
 
 class BLJ_interaction_type:
+    """
+    holds the parameters for a given interaction type: AA, AB, BB
+    """
     def __init__(self, eps, sig, rcut):
         self.eps = eps
         self.sig = sig

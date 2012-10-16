@@ -86,7 +86,7 @@ integer, intent(in) :: natoms, nlist, ilist(nlist, 2)
 double precision, intent(in) :: coords(3*natoms), sig, eps, boxl, rcut
 double precision, intent(out) :: e
 logical, intent(in) :: periodic
-double precision dr(3), sig6, sig12, r2, ir2, ir6, ir12, g, iboxl
+double precision dr(3), sig6, sig12, r2, ir2, ir6, ir12, iboxl
 integer j1, j2, i1, i2, n
 double precision rcut2, rcut6, A1, B1
 
