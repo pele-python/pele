@@ -123,6 +123,9 @@ class DoubleEndedConnect(object):
         #record some data so we don't try this NEB again
         if self.pairsNEB.has_key((minNEB1, minNEB2)):
             print "WARNING: redoing NEB for minima", minNEB1._id, minNEB2._id
+            print "         aborting NEB"
+            self.Gdist.remove_edge(minNEB1, minNEB2)
+            return
         self.pairsNEB[(minNEB1, minNEB2)] = True
         self.pairsNEB[(minNEB2, minNEB1)] = True
         #self.Gdist.remove_edge(minNEB1, minNEB2)
@@ -145,7 +148,9 @@ class DoubleEndedConnect(object):
         climbing_images = [ (neb.energies[i], i) for i in range(neb.nimages) 
                            if neb.isclimbing[i] ]
         climbing_images = sorted(climbing_images, reverse=True) #highest energies first
-        
+
+        #js850> only look at the highest clibming image.  the others are likely to be crap
+        climbing_images = [climbing_images[0]]
         for energy, i in climbing_images:
             coords = neb.coords[i,:]
             np.savetxt("climbingimage", coords)
@@ -157,6 +162,8 @@ class DoubleEndedConnect(object):
             E = ret.energy
             if ret.eigenval >= 0.:
                 print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
+                print "         not adding transition state"
+                continue
             print "falling off either side of transition state to find new minima"
             ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
                 displace=1e-3, quenchParameters={"tol":1e-7})
@@ -167,9 +174,6 @@ class DoubleEndedConnect(object):
                 print "warning: stepping off the transition state resulted in twice the same minima", min1._id
             else:
                 print "adding transition state", min1._id, min2._id
-                #ts = TransitionState(coords, E, eigvec, eigval)
-                #self.graph.addTransitionState(min1, min2, ts)   self.addTS( newmin1, newmin2, ts)
-                from pygmin.storage.database import TransitionState
                 ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=ret.eigenvec, eigenval=ret.eigenval)
                 graph.refresh()
                 """
