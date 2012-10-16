@@ -1,0 +1,180 @@
+Starting serial execution
+
+ Here is the input file:
+
+Minimization                                                                   
+ &cntrl                                                                        
+  imin=1,                                                                      
+  maxcyc=1,                                                                    
+  ncyc=1,                                                                      
+  igb=6,                                                                       
+  saltcon=0.2,                                                                 
+  ntx=1,                                                                       
+  ntb=0,                                                                       
+  cut=999.0,                                                                   
+  rgbmax=12.0,                                                                 
+  ifswitch=1                                                                   
+ /                                                                             
+| Flags:                                                                        
+| New format PARM file being parsed.
+| Version =    1.000 Date = 05/24/11 Time = 14:54:36
+ Implicit solvent radii are H(N)-modified Bondi radii (mbondi2)                                             
+keyword> RADIUS set to 999 for AMBER9 run
+keywords> input coordinates for AMBER9 system will be read from 
+coords.inpcrd
+type: 
+inpcrd
+
+          -------------------------------------------------------
+          Amber 9  SANDER                              2006
+          -------------------------------------------------------
+
+| Run on 10/15/2012 at 23:04:16
+  [-O]verwriting output
+
+File Assignments:
+|  MDIN: min.in                                                                
+| MDOUT: min.out                                                               
+|INPCRD: coords.inpcrd                                                         
+|  PARM: coords.prmtop                                                         
+|RESTRT: coords.rst                                                            
+|  REFC: refc                                                                  
+| MDVEL: mdvel                                                                 
+|  MDEN: mden                                                                  
+| MDCRD: coords.mdcrd                                                          
+|MDINFO: mdinfo                                                                
+|INPDIP: inpdip                                                                
+|RSTDIP: rstdip                                                                
+
+
+ Here is the input file:
+
+Minimization                                                                   
+ &cntrl                                                                        
+  imin=1,                                                                      
+  maxcyc=1,                                                                    
+  ncyc=1,                                                                      
+  igb=6,                                                                       
+  saltcon=0.2,                                                                 
+  ntx=1,                                                                       
+  ntb=0,                                                                       
+  cut=999.0,                                                                   
+  rgbmax=12.0,                                                                 
+  ifswitch=1                                                                   
+ /                                                                             
+
+--------------------------------------------------------------------------------
+   1.  RESOURCE   USE: 
+--------------------------------------------------------------------------------
+
+| Flags:                                                                        
+ NATOM  =      22 NTYPES =       7 NBONH =      12 MBONA  =       9
+ NTHETH =      25 MTHETA =      11 NPHIH =      42 MPHIA  =      24
+ NHPARM =       0 NPARM  =       0 NNB   =      99 NRES   =       3
+ NBONA  =       9 NTHETA =      11 NPHIA =      24 NUMBND =       8
+ NUMANG =      16 NPTRA  =      19 NATYP =       7 NPHB   =       0
+ IFBOX  =       0 NMXRS  =      10 IFCAP =       0 NEXTRA =       0
+ NCOPY  =       0
+
+ Implicit solvent radii are H(N)-modified Bondi radii (mbondi2)                                             
+
+|     Memory Use     Allocated
+|     Real                1592
+|     Hollerith            137
+|     Integer            21034
+|     Max Pairs              1
+|     nblistReal             0
+|     nblist Int             0
+|       Total               95 kbytes
+| Duplicated    0 dihedrals
+| Duplicated    0 dihedrals
+
+--------------------------------------------------------------------------------
+   2.  CONTROL  DATA  FOR  THE  RUN
+--------------------------------------------------------------------------------
+
+ACE                                                                             
+
+General flags:
+     imin    =       1, nmropt  =       0
+     ifswitch=       1, fswitchbeta=  10.000
+ mdread> force-shifting cutoff will be used for electrostatics, fswitchbeta=  10.000
+ mdread> Stoddard-Ford cutoff will be used for van der Waals interactions
+
+Nature and format of input:
+     ntx     =       1, irest   =       0, ntrx    =       1
+
+Nature and format of output:
+     ntxo    =       1, ntpr    =      50, ntrx    =       1, ntwr    =     500
+     iwrap   =       0, ntwx    =       0, ntwv    =       0, ntwe    =       0
+     ioutfm  =       0, ntwprt  =       0, idecomp =       0, rbornstat=      0
+
+Potential function:
+     ntf     =       1, ntb     =       0, igb     =       6, nsnb    =      25
+     ipol    =       0, gbsa    =       0, iesp    =       0
+     dielc   =   1.00000, cut     = 999.00000, intdiel =   1.00000
+     saltcon =   0.20000, offset  =   0.09000, gbalpha=    1.00000
+     gbbeta  =   0.00000, gbgamma =   0.00000, surften =   0.00500
+     rdt     =   0.00000, rgbmax  =  12.00000
+     alpb  =        0
+     scnb    =   2.00000, scee    =   1.20000
+
+Frozen or restrained atoms:
+     ibelly  =       0, ntr     =       0
+
+Energy minimization:
+     maxcyc  =       1, ncyc    =       1, ntmin   =       1
+     dx0     =   0.01000, drms    =   0.00010
+|  INFO: Old style inpcrd file read
+
+
+--------------------------------------------------------------------------------
+   3.  ATOMIC COORDINATES AND VELOCITIES
+--------------------------------------------------------------------------------
+
+ACE                                                                             
+ begin time read from input coords =     0.000 ps
+
+ Number of triangulated 3-point waters found:        0
+keywords> reading AMBER inpcrd coordinate format
+Initial coordinates:
+       -0.8823998000        2.6018494000       -1.8615158000
+       -1.2288946000        2.7570873000       -0.8415078000
+       -2.3168395000        2.7708382000       -0.8154453000
+       -0.8443475000        3.7048415000       -0.4662789000
+       -0.7202671000        1.6395964000        0.0378128000
+        0.0140124000        1.8863362000        0.9858296000
+       -1.0950001000        0.4039277000       -0.2875763000
+       -1.6812900000        0.2854991000       -1.0966935000
+       -0.7411489000       -0.8037152000        0.4674023000
+       -0.8005454000       -0.5624677000        1.5301526000
+       -1.8050655000       -1.8752313000        0.1831082000
+       -1.6037279000       -2.7588663000        0.7905400000
+       -2.7959811000       -1.4949936000        0.4335420000
+       -1.7775844000       -2.1593061000       -0.8698879000
+        0.7110592000       -1.2802973000        0.2141744000
+        0.9428807000       -2.4230055000       -0.1764572000
+        1.6898736000       -0.3874718000        0.4056651000
+        1.4127002000        0.5348605000        0.7277772000
+        3.1113075000       -0.6553568000        0.1997047000
+        3.2833781000       -0.9539000000       -0.8360722000
+        3.6971333000        0.2378183000        0.4208617000
+        3.4307469000       -1.4680432000        0.8548643000
+  22 AMBER9 atoms
+io1> checking the energy of the saved coordinates in the chain
+Container radius=      999.0000000000
+Sloppy quench tolerance for RMS gradient    0.0000010000
+In run   1 temperature fixed at    1.000    
+Step size and angular threshold will be adjusted for acceptance ratio       0.5000 initial values=      0.0000      0.0000
+Configuration will be reset to quench geometry
+Sampling using Boltzmann weights
+Nocedal LBFGS minimisation
+Number of updates before reset in LBFGS=  1000
+Maximum step size=        1.0000000000
+Guess for initial diagonal elements in LBFGS=  0.1000    
+Final quench tolerance for RMS gradient    0.0000010000
+Energy difference criterion for minima=   0.0200000000
+Maximum number of iterations: sloppy quenches 20000 final quenches 60000
+Run   1:         0 steps with temperature scaled by  0.10000000E+01
+Debug printing is on
+Maximum allowed energy rise during a minimisation=    0.1000000000E-03
