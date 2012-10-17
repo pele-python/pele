@@ -1,5 +1,9 @@
+import ambgmin_ as GMIN
+import pygmin.potentials.gminpotential as gminpot
+from pygmin.optimize.quench import quench, cg , fire 
+
 import numpy as np
-# from copy import copy
+from copy import copy
 from pygmin.potentials.potential import potential as BasePotential
 
 from simtk.openmm.app import * 
@@ -22,12 +26,15 @@ class OpenmmAmbPot(BasePotential):
         self.natoms = np.size(self.coords, 0)
         print self.natoms 
 
-        forcefield = ForceField('amber99sb.xml')
-        system = forcefield.createSystem(self.pdb.topology, nonbondedMethod=ff.NoCutoff)
-        integrator = VerletIntegrator(0.001*picosecond)
-        self.simulation = Simulation(self.pdb.topology, system, integrator)
-                                
-                                        
+        # todo - take system setup out of constructor
+        prmtop = AmberPrmtopFile('coords.prmtop')
+        inpcrd = AmberInpcrdFile('coords.inpcrd')
+        system = prmtop.createSystem(nonbondedMethod=ff.NoCutoff )
+        integrator = VerletIntegrator(0.001*picoseconds)
+        self.simulation = Simulation(prmtop.topology, system, integrator)
+
+        # ---------------------------------------------------------------------------
+                                                        
     def getEnergy(self, coordsVec ):
         
         # copy to data structure which can be passed to openmm  
@@ -41,9 +48,9 @@ class OpenmmAmbPot(BasePotential):
         state = self.simulation.context.getState(getEnergy=True)
         E = state.getPotentialEnergy()
         return E/ kilojoule_per_mole # to return a float 
-        
-    def getEnergyGradient(self,coordsVec):
-        
+        # ---------------------------------------------------------------------------        
+
+    def getEnergyGradient(self,coordsVec):        
         # copy to data structure which can be passed to openmm  
         coordsLoc = [] ;         
         for i in range(coordsVec.size/3):
@@ -55,68 +62,91 @@ class OpenmmAmbPot(BasePotential):
         
         # remove units before returning         
         E    = state.getPotentialEnergy() / kilojoule_per_mole
-#        grad = state.getForces(asNumpy=True) / (kilojoule_per_mole/nanometer)
         grad = state.getForces(asNumpy=True) / (kilojoule_per_mole / nanometer)
-        print grad[1]
-        
-        # reshape to a 1-D array 
+                 
         g = np.zeros(3*self.natoms)
-        ct= 0;         
-        for i in grad:
-            for j in i:
-                g[ct] = j
-                ct=ct+1  
+        self.copyList2vector(g, grad ) # reshape to a 1-D array
 
-        return E  , g
+        return E  , -g # todo: g or -g ? 
+        # ---------------------------------------------------------------------------        
+
+    def copyList2vector(self,outvec,inlist):        
+        ct= 0;         
+        for i in inlist:
+            for j in i:
+                outvec[ct] = j
+                ct=ct+1  
+        # ---------------------------------------------------------------------------        
+
         
 if __name__ == "__main__":
     
-    pdbfname = '/home/ss2029/WORK/PyGMIN/examples/OpenMM/compare_with_ambgmin/coords.pdb'
+    pdbfname = 'coords.pdb'
     pot = OpenmmAmbPot( pdbfname )
     
-    coordsVec = np.random.uniform(-1,1,pot.natoms*3)*2
- 
     # get coords from pdb file 
-    pdb1 = PDBFile(pdbfname)
-    coords1= pdb1.getPositions(asNumpy=True)/nanometer     
-    ct=0 
-    for i in coords1:
-        for j in i:            
-            coordsVec[ct]=j
-            ct=ct+1  
+    pdb    = PDBFile(pdbfname)   
+    coords = pdb.getPositions(asNumpy=True)/nanometer # PDBFile converts coords to nm
+    
+    # copy coords to coordsVec      
+    coordsVec = np.zeros( 3*pot.natoms, np.float64 )
+    pot.copyList2vector(coordsVec, coords ) 
             
+    # test getEnergy and gradients 
     e = pot.getEnergy(coordsVec)    
-    print "energy ", e
+    print "---energy "
+    print  e
             
     print "---numerical gradient"
-    ret = pot.getEnergyGradientNumerical(coordsVec)
-    print ret[1][0]
+    enum, gnum = pot.getEnergyGradientNumerical(coordsVec)
+    print enum   
+    print gnum[0:5]
+    
     print "---openmm gradient"
-    ret = pot.getEnergyGradient(coordsVec)  
-    print ret[1][0]
+    eo,go = pot.getEnergyGradient(coordsVec)  
+    print eo  # energy 
+    print go[0:5]    
 
-    ##----------------------------
+    print "\n-----------------"    
+    print "quench\n"
     
-    print "trying a quench"
-    
-    from pygmin.optimize.quench import quench, cg , fire 
+    # lbfgs 
+    #  ret = quench( coordsVec, pot.getEnergyGradient, iprint=-1 , tol = 1e-3, nsteps=100) 
+    # core dump! 
 
-# lbfgs 
-#    ret = quench( coordsVec, pot.getEnergyGradient, iprint=-1 , tol = 1e-3, nsteps=100) 
-     # core dump! 
-
-# cg  
-#    ret = cg( coordsVec, pot.getEnergyGradient) 
+    # cg  
+    #    ret = cg( coordsVec, pot.getEnergyGradient) 
     # runtime error -- ValueError: The truth value of an array with more than ...
     
-# fire   
-    ret = fire( coordsVec, pot.getEnergyGradient, tol = 1e-3, nsteps=1) # ValueError: The truth value of an array with more than ...
-    # works but after 1000 iterations gives an energy of -90.9378267921 higher than initial energy of -90.9364375726!
+    # fire   
+    retOpmm = fire( coordsVec, pot.getEnergyGradient, tol = 1e-3, nsteps=1000) 
+    # works but quenched energy is higher! 
     
-    print "energy ", ret[1]
-    print "rms gradient", ret[2]
-    print "number of function calls", ret[3]    
+    print "quenched energy ", retOpmm[1]
+    print "rms gradient", retOpmm[2]
+    print "number of function calls", retOpmm[3]    
         
+    # -------- GMIN 
+    print "\n\nCompare with GMIN"    
+    GMIN.initialize()   # reads coords.inpcrd and coords.prmtop 
+    pot = gminpot.GMINPotential(GMIN)
 
+    coords = pot.getCoords()
+    enerGmin = pot.getEnergy(coords)
+    egmin,gminEGrad = pot.getEnergyGradient(coords)
+    
+    retGmin = fire( coords, pot.getEnergyGradient, tol = 1e-3, nsteps=1000)
 
+    print " -- pre-quench --" 
+    print "E       gmin : ", egmin 
+    print "       openmm: ", eo/4.184
+     
+    print "grad    gmin : ", gminEGrad[0:3]
+    print "       openmm: ", go[0:3]/41.84
+
+    print " -- post-quench --" 
+    print "E       gmin : ", retGmin[1]
+    print "       openmm: ", retOpmm[1]/4.184     
+
+    print "end"
 
