@@ -1,40 +1,71 @@
-mingmin, a minimal version of GMIN written in python.  GMIN was originally
+PyGMIN, a python version of GMIN, OPTIM, and PATHSAMPLE.  GMIN was originally
 written by David Wales and is desiged to find the global energy minimum for
-molecular systems
+molecular systems.
 
 http://www-wales.ch.cam.ac.uk/software.html
 
-INSTALLATION
-------------
-
-Compilation is required for use of the fast potentials, those written in C++ and/or fortran)
+===INSTALLATION===
 
 Required packages:  
 
-1. f2py
-     part of numpy, for fortran potentials 
-2. boost-python, boost-dev and python-dev
-     for C++ potentials 
-3. networkx
+python packages
+----------------
+  numpy (with f2py)
+  scipy
+  networkx
      https://networkx.lanl.gov
-     ( $easy_install networkx ) 
-     for plotting disconn graphs  
-4. munkres
+     ( $ easy_install networkx ) 
+     for graph functionality
+  munkres
+     ( $ easy_install munkres ) 
+     for min dist routines
      
-5. SQLAlchemy 0.7 
-    http://www.sqlalchemy.org/
-    ( $easy_install SQLAlchemy ) 
-    for managing database of stationary points 
+  SQLAlchemy 0.7 
+     http://www.sqlalchemy.org/
+     ( $ easy_install SQLAlchemy ) 
+     for managing database of stationary points 
 
-Compilation:
 
+External packages
+-----------------
+  boost-python, boost-dev and python-dev
+     for C++ potentials and GMIN interface
+
+
+Compilation
+-----------
+
+Compilation is required for use of the fast potentials, those written in C++
+and/or fortran)
+
+using setup.py:
+The standard python setup utility (distutils).  There are lots of options for
+how and where to install. For more information
+$ python setup.py --help 
+or, for even more options
+$ python setup.py --help-commands
+
+Developers probably want to install "in-place", i.e. build the extension
+modules in their current directories.
+$ python setup.py build_ext -i
+
+Users can install pygmin in the standard python package location.
+$ python setup.py build
+$ python setup.py install [--prefix=mydir --home]
+Add --prefix=mydir, or --home to install locally
+
+
+
+using cmake:
+The following is equivalent to python setup.py build_ext -i
 $ cmake .
 $ make 
 
 
 PYTHONPATH:  
-make sure to add the directory PyGMIN/ to your PYTHONPATH environment variable
+----------
+make sure to add the install directory to your PYTHONPATH environment variable.
 
 
-=== running ===
+=== Running ===
 see the examples in the examples folder
