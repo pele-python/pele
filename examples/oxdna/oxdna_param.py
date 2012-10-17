@@ -1,4 +1,4 @@
-import time
+
 from pygmin.storage.database import Database
 import numpy as np
 from pygmin.potentials import GMINPotential
