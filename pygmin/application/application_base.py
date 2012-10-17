@@ -30,9 +30,6 @@ class Application(object):
         print args, kwargs
         grp.add_option(*args, **kwargs)
     
-    def add_options(self):
-        pass
-    
     def run(self):
         raise Exception("run not implemented for application")
     

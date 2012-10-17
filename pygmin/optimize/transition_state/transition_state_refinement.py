@@ -1,4 +1,8 @@
 import numpy as np
+import copy
+from collections import namedtuple
+
+
 from lowest_eig_pot import LowestEigPot
 from orthogopt import orthogopt
 from pygmin.potentials.potential import potential as basepot
@@ -110,7 +114,137 @@ class TransitionStateRefinement(basepot):
         return e, grad
 
 
-def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSearchParams = None, **kwargs):
+
+class FindTransitionState(object):
+    def __init__(self, coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSearchParams = None, **kwargs):
+        """
+        this is the class which implements the routine for finding the transition state
+        """
+        self.pot = pot
+        self.kwargs = kwargs
+        self.tangent_space_quencher = defaults.quenchRoutine
+        self.coords = np.copy(coords)
+        self.tol = tol
+        self.nsteps = nsteps
+        self.event = event
+        #self.tangent_space_quench_params = copy.copy(defaults.quenchParams)
+
+        if tsSearchParams is None:
+            tsSearchParams = defaults.tsSearchParams
+        self.iprint = tsSearchParams.get("iprint")
+        if self.iprint is None: iprint = -1
+        if tsSearchParams.has_key("orthogZeroEigs"):
+            has_orthogZeroEigs = True
+            orthogZeroEigs = tsSearchParams["orthogZeroEigs"]  #this could meaninfully be None
+        else:
+            has_orthogZeroEigs = False
+    
+        self.lowestEigenvectorQuenchParams = defaults.lowestEigenvectorQuenchParams
+            
+                
+        if has_orthogZeroEigs:
+            self.tspot = TransitionStateRefinement(pot, coords, orthogZeroEigs=orthogZeroEigs, **kwargs)
+        else:
+            self.tspot = TransitionStateRefinement(pot, coords, **kwargs)
+        
+        self.rmsnorm = 1./np.sqrt(float(len(coords))/3.)
+        self.oldeigvec = None
+
+    def run(self):
+        coords = np.copy(self.coords)
+        for i in xrange(self.nsteps):
+            
+            #get the lowest eigenvalue and eigenvector
+            coords = self.getLowestEigenvalue(coords, i)
+            
+            #step uphill along the direction of the lowest eigenvector
+            coords = self.stepUphill(coords)
+
+            if False:
+                #maybe we want to update the lowest eigenvector now that we've moved?
+                #david thinks this is a bad idea
+                coords = self.getLowestEigenvalue(coords, i)
+
+            #minimize the coordinates in the space perpendicular to the lowest eigenvector
+            coords, rms = self.minimizeTangentSpace(coords)
+
+
+            #check if we are done and print some stuff
+            E, grad = self.pot.getEnergyGradient(coords)
+            rms = np.linalg.norm(grad) * self.rmsnorm
+            gradpar = np.dot(grad, self.tspot.eigvec) / np.linalg.norm(self.tspot.eigvec)
+            
+            if self.iprint > 0:
+                if i % self.iprint == 0:
+                    print "findTransitionState:", i, E, rms, "eigenvalue", self.tspot.eigval, "rms perpendicular", rms, "grad parallel", gradpar
+            
+            if callable(self.event):
+                self.event(E, coords, rms)
+            if rms < self.tol:
+                break
+
+        #done, print some data
+        print "findTransitionState done:", i, E, rms, "eigenvalue", self.tspot.eigval
+    
+        #check if results make sense
+        if self.tspot.eigval >= 0.:
+            print "warning: transition state has positive eigenvalue", self.tspot.eigval
+        if rms > self.tol:
+            print "warning: transition state search appears to have failed: rms", rms
+
+        #return results
+        return namedtuple("TransitionStateResults", "coords,energy,eigenval,eigenvec,grad,rms,nsteps")(
+                    coords, E, self.tspot.eigval, self.tspot.eigvec, grad, rms, i)
+
+
+
+        
+    def getLowestEigenvalue(self, coords, i):
+        self.tspot.getLowestEigenvalue(coords, **self.lowestEigenvectorQuenchParams)
+        if self.tspot.eigval > 0.:
+            print "warning transition state search found positive lowest eigenvalue", self.tspot.eigval, \
+                "step", i
+            if i == 0: 
+                print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
+        if i > 0:
+            overlap = np.dot(self.oldeigvec, self.tspot.eigvec)
+            if overlap < 0.5:
+                print "warning: the new eigenvector has low overlap with previous", overlap
+        self.oldeigvec = self.tspot.eigvec.copy()  
+
+        return coords
+    
+    def minimizeTangentSpace(self, coords):
+        """
+        now minimize the energy in the space perpendicular to eigvec.
+        There's no point in spending much effort on this until 
+        we've gotten close to the transition state.  So limit the number of steps
+        to 10 until we get close.
+        """
+        tol = self.tol
+        E, grad = self.pot.getEnergyGradient(coords)
+        gradpar = np.dot(grad, self.tspot.eigvec) / np.linalg.norm(self.tspot.eigvec)
+        nstepsperp = 10
+        if np.abs(gradpar) <= tol*2.:
+            nstepsperp = 100
+
+        ret = self.tangent_space_quencher(coords, self.tspot.getEnergyGradient, nsteps=nstepsperp, tol=tol*0.2)
+        coords = ret[0]
+        return coords, ret[2]
+
+    def stepUphill(self, coords):
+        self.tspot.stepUphill(coords)
+        return coords
+
+def findTransitionState(*args, **kwargs):
+    """
+    simply a wrapper for initializing and running FindTransitionState
+    """
+    finder = FindTransitionState(*args, **kwargs)
+    return finder.run()
+
+
+def findTransitionStateOld(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSearchParams = None, **kwargs):
     """
     The routine to find the nearest transition state
     """
@@ -209,7 +343,6 @@ def findTransitionState(coords, pot, tol = 1e-4, event=None, nsteps=1000, tsSear
     if rms > tol:
         print "warning: transition state search appears to have failed: rms", rms
     
-    from collections import namedtuple
     return namedtuple("TransitionStateResults", "coords,energy,eigenval,eigenvec,grad,rms,nsteps")(coords, E, tspot.eigval, tspot.eigvec, grad, rms, i)
 
 ###################################################################
@@ -269,9 +402,9 @@ def guessts(coords1, coords2, pot):
     print "energy coords2", pot.getEnergy(coords2)
     neb = NEB(coords1, coords2, pot)
     #neb.optimize(quenchParams={"iprint" : 1})
-    neb.optimize()
+    neb.optimize(quenchParams={"iprint": 30, "nsteps":100})
     neb.MakeAllMaximaClimbing()
-    neb.optimize()
+    neb.optimize(quenchParams={"iprint": 30, "nsteps":100})
     for i in xrange(len(neb.energies)):
         if(neb.isclimbing[i]):
             coords = neb.coords[i,:]
@@ -350,11 +483,14 @@ def testpot1():
         e = pot.getEnergy(coords)
         printxyz(fout, coords, line2=str(e))
 
+        defaults.quenchParams["iprint"] = 1
+        #defaults.lowestEigenvectorQuenchParams["iprint"] = 1
+        defaults.tsSearchParams["iprint"] = 1
         
         printevent = PrintEvent(fout)
         print ""
         print "starting the transition state search"
-        ret = findTransitionState(coords, pot, event=printevent, verbose = False)
+        ret = findTransitionStateNew(coords, pot, event=printevent, verbose = False)
         
         #coords, eval, evec, e, grad, rms = ret
         e = pot.getEnergy(ret.coords)
@@ -365,7 +501,7 @@ def testpot1():
     print "rms grad", ret.rms
     print "eigenvalue", ret.eigenval
     
-    if True:
+    if False:
         print "now try the same search with the dimer method"
         from pygmin.NEB.dimer import findTransitionState as dimerfindTS
         coords = coordsinit.copy()

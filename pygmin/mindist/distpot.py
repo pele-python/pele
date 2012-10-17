@@ -50,9 +50,9 @@ class MinPermDistPotential(potential.potential):
     instance something with a slower decay than exp(-R**2).
     """
     def __init__(self, XA, XB, L=0.2, permlist = []):
-        self.XA0 = copy.copy(XA)
-        self.XB0 = copy.copy(XB)
-        self.XB = copy.copy(XB)
+        self.XA0 = np.copy(XA)
+        self.XB0 = np.copy(XB)
+        self.XB = np.copy(XB)
         self.nsites = len(XA)/3
         self.L2 = L*L
         self.permlist = permlist

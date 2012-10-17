@@ -1,6 +1,9 @@
 import numpy as np
 from pygmin.potentials.potential import potential as basepot
 import _fortran_utils
+from pygmin.potentials.ljcut import LJCut as LJ
+import pygmin.potentials.ljpshift as ljpshift
+
 
 __all__ = ["NeighborList", "NeighborListSubset", "NeighborListPotential", "MultiComponentSystem", 
            "makeBLJNeighborListPot"]
@@ -250,8 +253,7 @@ def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
     """
     recreate the binary lj with atom typea A,B from 3 interaction lists AA, BB, AB
     """
-    from pygmin.potentials.ljcut import LJCut as LJ
-    import pygmin.potentials.ljpshiftfast as ljpshift
+    print "making BLJ neighborlist potential", natoms, ntypeA, rcut, boxl
     #rcut = 2.5
     #natoms = 40
     if ntypeA is None:
@@ -264,8 +266,8 @@ def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
 
         
     ljAA = LJ(eps=blj.AA.eps, sig=blj.AA.sig, rcut=rcut*blj.AA.sig, boxl=boxl)
-    ljBB = LJ(eps=blj.BB.eps, sig=blj.BB.sig, rcut=rcut*blj.AA.sig, boxl=boxl)
-    ljAB = LJ(eps=blj.AB.eps, sig=blj.AB.sig, rcut=rcut*blj.AA.sig, boxl=boxl)
+    ljBB = LJ(eps=blj.BB.eps, sig=blj.BB.sig, rcut=rcut*blj.BB.sig, boxl=boxl)
+    ljAB = LJ(eps=blj.AB.eps, sig=blj.AB.sig, rcut=rcut*blj.AB.sig, boxl=boxl)
     
     nlAA = NeighborListSubset(natoms, rcut, Alist, boxl=boxl )
     nlBB = NeighborListSubset(natoms, rcut, Blist, boxl=boxl )
@@ -332,22 +334,29 @@ def test(natoms = 40, boxl=None):
             print "Could not draw using pymol, skipping this step" 
     
 def test2():
-    import pygmin.potentials.ljpshiftfast as ljpshift
+    import pygmin.potentials.ljpshiftfast as ljpshiftfast
+    import pygmin.potentials.ljpshift as ljpshift
     import pygmin.defaults as defaults
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench"
-    fname = "out.coords"
+    fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords"
+    #fname = "out.coords"
     if False:
         coords = np.array(np.loadtxt(fname))
+        coords = coords.reshape(-1)
+        boxl = 11.05209
     else:
         natoms = 200
         coords = np.random.uniform(-1,1,natoms*3)*(natoms)**(1./3)/2
+        print "max, min coords", coords.max(), coords.min()
+        boxl = 5
 
     natoms = len(coords) /3
     ntypeA = int(natoms*0.8)
     rcut = 2.5
-    boxl = 4
+    print "natoms", natoms, "ntypea", ntypeA
     
     blj = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
+    bljfast = ljpshiftfast.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
 
     pot = makeBLJNeighborListPot(natoms, ntypeA=ntypeA, rcut=rcut, boxl=boxl)
     
@@ -364,11 +373,34 @@ def test2():
     print "energy difference from getEnergyGradient", (e2 - e1)
     print "largest gradient difference", np.max(np.abs(g2-g1))
     print "rms gradients", np.linalg.norm(g1)/np.sqrt(len(g1)), np.linalg.norm(g2)/np.sqrt(len(g1))
+    
+    if False:
+        print "quenching"
+        ret1 = defaults.quenchRoutine(coords, blj.getEnergyGradient, iprint=-11)
+        np.savetxt("out.coords", ret1[0])
+        print "energy from quench1", ret1[1]
+        ret2 = defaults.quenchRoutine(coords, pot.getEnergyGradient, iprint=-1)
+        print "energy from quench2", ret2[1]
+        print "max, min quenched coords", coords.max(), coords.min()
+
+
+        print "ret1 evaluated in both potentials", pot.getEnergy(ret1[0]), blj.getEnergy(ret1[0])
+        print "ret2 evaluated in both potentials", pot.getEnergy(ret2[0]), blj.getEnergy(ret2[0])
+    elif True:
+        print "quenching"
+        ret2 = defaults.quenchRoutine(coords, pot.getEnergyGradient, iprint=-1)
+        print "energy from quench2", ret2[1]
+        print "max, min quenched coords", ret2[0].max(), ret2[0].min()
+
+        print "ret2 evaluated in both potentials", pot.getEnergy(ret2[0]), blj.getEnergy(ret2[0])
+        print "and in blj fast                  ", bljfast.getEnergy(ret2[0])
+
+        
 
 
     
 if __name__ == "__main__":
-    #test2()
+    test2()
     test(natoms=100, boxl=None)
     
        
