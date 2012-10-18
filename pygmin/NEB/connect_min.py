@@ -10,9 +10,18 @@ import itertools
 __all__ = ["DoubleEndedConnect"]
 
 class DoubleEndedConnect(object):
+    """
+    todo:
+    
+    if NEB + TS search fails, then retry again with more NEB steps
+    
+    allow user to pass database instead of graph
+    
+    fail gracefuly
+    """
     def __init__(
                  self, min1, min2, pot, graph, mindist, database=None, tsSearchParams = None, 
-                 NEB_optimize_quenchParams = None, use_all_min=False):
+                 NEB_optimize_quenchParams = None, use_all_min=False, verbosity=1):
         self.graph = graph
         self.minstart = min1
         self.minend = min2
@@ -24,10 +33,18 @@ class DoubleEndedConnect(object):
         self.tsSearchParams = tsSearchParams
         self.NEB_optimize_quenchParams = NEB_optimize_quenchParams
         self.database = database
+        self.verbosity = verbosity
         
 
         self.Gdist = nx.Graph() 
         self.initializeGdist(use_all_min)
+        
+        print "************************************************************"
+        print "staring a double ended connect run between"
+        print "        minimum 1: id %d energy %f" % (self.minstart._id, self.minstart.energy)
+        print "        minimum 2: id %d energy %f" % (self.minend._id, self.minend.energy)
+        print "        dist %f" % self.getDist(self.minstart, self.minend)
+        print "************************************************************"
         
     
     def initializeGdist(self, use_all_min):
@@ -62,6 +79,7 @@ class DoubleEndedConnect(object):
             """
             for m in self.graph.graph.nodes():
                 self.addNodeGdist(m)
+
     def addNodeGdist(self, min1):
         """
         add node to graph Gdist.  Add an edge to all existing nodes with weight
@@ -69,6 +87,8 @@ class DoubleEndedConnect(object):
         weight 0.
         """
         self.Gdist.add_node(min1)
+        print "calculating distances between minimum", min1._id
+        print "    and all others.  This could take some time"
         for min2 in self.Gdist.nodes():
             if min2 != min1:
                 if not self.graph.areConnected(min1, min2):
@@ -89,7 +109,8 @@ class DoubleEndedConnect(object):
         if dist is not None:
             return dist
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
-        print "calculated distance between", min1._id, min2._id, dist
+        if self.verbosity > 1:
+            print "calculated distance between", min1._id, min2._id, dist
         self.database.setDistance(dist, min1, min2)
         #self.distmatrix[(min1,min2)] = dist
         #self.distmatrix[(min2,min1)] = dist
@@ -279,7 +300,7 @@ class DoubleEndedConnect(object):
             print "Can't find any way to try to connect the minima"
             return None, None
         
-        print "best guess for path"
+        print "best guess for path.  (dist=0.0 means the path is known)"
         
         #path is a list of nodes
         distances = nx.get_edge_attributes(self.Gdist, "dist")
