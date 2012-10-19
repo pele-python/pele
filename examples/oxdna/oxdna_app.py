@@ -34,6 +34,10 @@ class OXDNATakestep(takestep.TakestepInterface):
         self.rotate *= factor
         self.displace *= factor
 
+    @property
+    def stepsize(self):
+        return [self.rotate, self.displace]
+
 # this class should generate a fully random configuration
 class OXDNAReseed(takestep.TakestepInterface):
     def __init__(self, radius=3.0):
@@ -44,7 +48,7 @@ class OXDNAReseed(takestep.TakestepInterface):
         ca = CoordsAdapter(nrigid=coords.size/6, coords = coords)
         
         # random displacement for positions
-        #ca.posRigid[:] = 2.*self.radius*(np.random.random(ca.posRigid.shape)-0.5)
+        ca.posRigid[:] = 2.*self.radius*(np.random.random(ca.posRigid.shape)-0.5)
         
         # random rotation for angle-axis vectors
         for rot in ca.rotRigid:
@@ -67,11 +71,18 @@ class AppOXDNA(AppBasinHopping):
     # Block moves should go in here as well
     def create_takestep(self):    
         # we combine a normal step taking
-        step = OXDNATakestep(displace=self.options.displace, rotate=self.options.rotate)
+        # step = OXDNATakestep(displace=self.options.displace, rotate=self.options.rotate)
+        group = takestep.BlockMoves()
+
+        step1 = takestep.AdaptiveStepsize(OXDNATakestep(displace=self.options.displace, rotate=0.), frequency=50)
+        step2 = takestep.AdaptiveStepsize(OXDNATakestep(displace=0., rotate=self.options.rotate), frequency=50)
+        group.addBlock(100, step1)
+        group.addBlock(100, step2)
+
         # with a generate random configuration
         genrandom = OXDNAReseed()
         # in a reseeding takestep procedure
-        reseed = takestep.Reseeding(step, genrandom, maxnoimprove=self.options.reseed)
+        reseed = takestep.Reseeding(group, genrandom, maxnoimprove=self.options.reseed)
         return reseed
     
     # generate some initial coordinates for basin hopping
