@@ -12,7 +12,7 @@ import parameters
 # This is the takestep routine for OXDNA. It is a standard rigid body takestep
 # routine, but I put it here to be able to start modifying it
 class OXDNATakestep(takestep.TakestepInterface):
-    def __init__(self, displace=1.0, rotate=0.5*pi):
+    def __init__(self, displace=1.0, rotate=1.):
         self.displace = displace
         self.rotate = rotate
         
@@ -22,7 +22,6 @@ class OXDNATakestep(takestep.TakestepInterface):
         
         # random displacement for positions
         ca.posRigid[:] += 2.*self.displace*(np.random.random(ca.posRigid.shape)-0.5)
-        
         # random rotation for angle-axis vectors
         takestep.rotate(self.rotate, ca.rotRigid)
         
@@ -30,6 +29,10 @@ class OXDNATakestep(takestep.TakestepInterface):
     def scale(self, factor):
         self.rotate *= factor
         self.displace *= factor
+        
+    @property
+    def stepsize(self):
+        return [self.rotate, self.displace]
 
 # this class should generate a fully random configuration
 class OXDNAReseed(takestep.TakestepInterface):
@@ -58,17 +61,22 @@ coords=np.random.random(coords.shape)
 # create takestep routine
 
 # we combine a normal step taking
-step = OXDNATakestep(displace=parameters.displace, rotate=parameters.rotate)
+group = takestep.BlockMoves()
+
+step1 = takestep.AdaptiveStepsize(OXDNATakestep(displace=parameters.displace, rotate=0.), frequency=50)
+step2 = takestep.AdaptiveStepsize(OXDNATakestep(displace=0., rotate=parameters.rotate), frequency=50)
+group.addBlock(100, step1)
+group.addBlock(100, step2)
 # with a generate random configuration
 genrandom = OXDNAReseed()
 # in a reseeding takestep procedure
-reseed = takestep.Reseeding(step, genrandom, maxnoimprove=parameters.reseed)
+reseed = takestep.Reseeding(group, genrandom, maxnoimprove=parameters.reseed)
     
 # store all minima in a database
 db = Database(db="storage.sqlite", accuracy=1e-2)
 
 # create Basinhopping object
-opt = BasinHopping(coords, potential, reseed, db.minimum_adder())
+opt = BasinHopping(coords, potential, reseed, db.minimum_adder(), temperature=parameters.temperature)
 
 # run for 100 steps
 opt.run(parameters.nsteps)
