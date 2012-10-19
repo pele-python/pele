@@ -120,6 +120,25 @@ class FindTransitionState(object):
         """
         this is the class which implements the routine for finding the transition state
         """
+        """
+        notes: this class needs to deal with
+        
+        params for stepUphill : 
+            probably only maxstep
+        
+        params for lowest eigenvector search : 
+            should be passable and loaded from defaults.
+            important params : 
+                max steps 
+                what to do if a negative eigenvector is found
+                what to do if small overlap with previous eigenvector
+        
+        params for tangent space search : 
+            should be passable and loaded from defaults.
+            
+        
+        **tolerance for any of the minimizations must be at least as tight as the total minimization or it will never end
+        """
         self.pot = pot
         self.kwargs = kwargs
         self.tangent_space_quencher = defaults.quenchRoutine
@@ -135,7 +154,7 @@ class FindTransitionState(object):
         if self.iprint is None: iprint = -1
         if tsSearchParams.has_key("orthogZeroEigs"):
             has_orthogZeroEigs = True
-            orthogZeroEigs = tsSearchParams["orthogZeroEigs"]  #this could meaninfully be None
+            orthogZeroEigs = tsSearchParams["orthogZeroEigs"]  #this could meaningfully be None
         else:
             has_orthogZeroEigs = False
     

@@ -1,7 +1,7 @@
 """Database for simulation data in a relational database
 """
 import sqlalchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, and_, or_
 from sqlalchemy.orm import sessionmaker
 import threading
 import numpy as np
@@ -278,14 +278,14 @@ class Database(object):
         return new
     
     def addTransitionState(self, E, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):
-        if(min1.energy < min2.energy):
-            m1,m2 = min1,min2
-        else:
-            m1,m2 = min2,min1
-            
+        m1, m2 = min1, min2    
         candidates = self.session.query(TransitionState).\
-            filter(TransitionState.minimum1==m1).\
-            filter(TransitionState.minimum2==m2).\
+            filter(or_(
+                       and_(TransitionState.minimum1==m1, 
+                            TransitionState.minimum2==m2),
+                       and_(TransitionState.minimum1==m2, 
+                            TransitionState.minimum2==m1),
+                       )).\
             filter(TransitionState.energy > E-self.accuracy).\
             filter(TransitionState.energy < E+self.accuracy)
         
@@ -295,23 +295,26 @@ class Database(object):
             #        continue
             #self.lock.release()
             return m
-        
+
+        if(m2.energy < m1.energy):
+            m1,m2 = m2,m1
         new = TransitionState(E, coords, m1, m2, eigenval=eigenval, eigenvec=eigenvec)
             
         self.session.add(new)
         if(commit):
             self.session.commit()
         return new
+
     def getTransitionState(self, min1, min2):
-        if(min1.energy < min2.energy):
-            m1,m2 = min1,min2
-        else:
-            m1,m2 = min2,min1
-            
+        m1, m2 = min1, min2
         candidates = self.session.query(TransitionState).\
-            filter(TransitionState.minimum1==m1).\
-            filter(TransitionState.minimum2==m2)
-        
+            filter(or_(
+                       and_(TransitionState.minimum1==m1, 
+                            TransitionState.minimum2==m2),
+                       and_(TransitionState.minimum1==m2, 
+                            TransitionState.minimum2==m1),
+                       ))
+
         for m in candidates:
             #if(self.compareMinima):
             #    if(self.compareMinima(new, m) == False):
@@ -321,14 +324,14 @@ class Database(object):
         return None
     
     def setDistance(self, dist, min1, min2, commit=True):
-        if(min1.energy < min2.energy):
-            m1,m2 = min1,min2
-        else:
-            m1,m2 = min2,min1
-            
+        m1, m2 = min1, min2
         candidates = self.session.query(Distance).\
-            filter(Distance.minimum1==m1).\
-            filter(Distance.minimum2==m2)
+            filter(or_(
+                       and_(Distance.minimum1==m1, 
+                            Distance.minimum2==m2),
+                       and_(Distance.minimum1==m2, 
+                            Distance.minimum2==m1),
+                       ))
         
         for m in candidates:
             #if(self.compareMinima):
@@ -344,15 +347,15 @@ class Database(object):
             self.session.commit()
         return new
     def getDistance(self, min1, min2, commit=True):
-        if(min1.energy < min2.energy):
-            m1,m2 = min1,min2
-        else:
-            m1,m2 = min2,min1
-            
+        m1, m2 = min1, min2
         candidates = self.session.query(Distance).\
-            filter(Distance.minimum1==m1).\
-            filter(Distance.minimum2==m2)
-       
+            filter(or_(
+                       and_(Distance.minimum1==m1, 
+                            Distance.minimum2==m2),
+                       and_(Distance.minimum1==m2, 
+                            Distance.minimum2==m1),
+                       ))
+
         for m in candidates:
             #if(self.compareMinima):
             #    if(self.compareMinima(new, m) == False):
@@ -361,7 +364,16 @@ class Database(object):
             return m.dist
         return None
         
+    def distances(self):
+        '''iterate over all distances in database
+        
+        Returns
+        -------
+        distance : list of Distance objects
+        '''
+        return self.session.query(Distance).all()
 
+        
     
     def minima(self):
         '''iterate over all minima in database

@@ -10,9 +10,18 @@ import itertools
 __all__ = ["DoubleEndedConnect"]
 
 class DoubleEndedConnect(object):
+    """
+    todo:
+    
+    if NEB + TS search fails, then retry again with more NEB steps
+    
+    allow user to pass database instead of graph
+    
+    fail gracefully
+    """
     def __init__(
                  self, min1, min2, pot, graph, mindist, database=None, tsSearchParams = None, 
-                 NEB_optimize_quenchParams = None, use_all_min=False):
+                 NEB_optimize_quenchParams = dict(), use_all_min=False, verbosity=1):
         self.graph = graph
         self.minstart = min1
         self.minend = min2
@@ -24,10 +33,18 @@ class DoubleEndedConnect(object):
         self.tsSearchParams = tsSearchParams
         self.NEB_optimize_quenchParams = NEB_optimize_quenchParams
         self.database = database
+        self.verbosity = verbosity
         
 
         self.Gdist = nx.Graph() 
         self.initializeGdist(use_all_min)
+        
+        print "************************************************************"
+        print "staring a double ended connect run between"
+        print "        minimum 1: id %d energy %f" % (self.minstart._id, self.minstart.energy)
+        print "        minimum 2: id %d energy %f" % (self.minend._id, self.minend.energy)
+        print "        dist %f" % self.getDist(self.minstart, self.minend)
+        print "************************************************************"
         
     
     def initializeGdist(self, use_all_min):
@@ -62,6 +79,7 @@ class DoubleEndedConnect(object):
             """
             for m in self.graph.graph.nodes():
                 self.addNodeGdist(m)
+
     def addNodeGdist(self, min1):
         """
         add node to graph Gdist.  Add an edge to all existing nodes with weight
@@ -69,6 +87,8 @@ class DoubleEndedConnect(object):
         weight 0.
         """
         self.Gdist.add_node(min1)
+        print "calculating distances between minimum", min1._id
+        print "    and all others.  This could take some time"
         for min2 in self.Gdist.nodes():
             if min2 != min1:
                 if not self.graph.areConnected(min1, min2):
@@ -89,7 +109,8 @@ class DoubleEndedConnect(object):
         if dist is not None:
             return dist
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
-        print "calculated distance between", min1._id, min2._id, dist
+        if self.verbosity > 1:
+            print "calculated distance between", min1._id, min2._id, dist
         self.database.setDistance(dist, min1, min2)
         #self.distmatrix[(min1,min2)] = dist
         #self.distmatrix[(min2,min1)] = dist
@@ -113,141 +134,102 @@ class DoubleEndedConnect(object):
             self.idlist.append(m)
         self.addNodeGdist(m)
         return m    
-    
-    def doNEB(self, minNEB1, minNEB2):
+
+    def refineTS(self, coords):
+        """
+        find nearest transition state to NEB climbing image
+        
+        return True if we find a valid transition state
+        
+        return False if something goes wrong
+        """
+        #run ts search algorithm
+        print "refining transition state from NEB climbing image"
+        ret = findTransitionState(coords, self.pot, tsSearchParams = self.tsSearchParams)
+        
+        #check to make sure it is a valid transition state 
+        coords = ret.coords
+        E = ret.energy
+        if ret.eigenval >= 0.:
+            print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
+            print "         not adding transition state"
+            return False
+        
+        #find the minima which this transition state connects
+        print "falling off either side of transition state to find new minima"
+        ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
+            displace=1e-3, quenchParameters={"tol":1e-7})
+        
+        #add the new minima to the graph (they may already be in there)
+        min1 = self.addMinimum(ret1[1], ret1[0])
+        min2 = self.addMinimum(ret2[1], ret2[0])
+        if min1 == min2:
+            print "warning: stepping off the transition state resulted in twice the same minima", min1._id
+            return False
+        
+        #the transition state is good, add it to the graph
+        print "adding transition state", min1._id, min2._id
+        ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=ret.eigenvec, eigenval=ret.eigenval)
+        self.graph.refresh()
+        """
+        set the weight to zero in Gdist.
+        """
+        self.Gdist.add_edge(min1, min2, {"dist":0., "dist2":0.})
+        return True
+        
+   
+    def doNEB(self, minNEB1, minNEB2, repetition = 0):
         """
         do NEB between minNEB1 and minNEB2.  refine any transition state candidates and
         minimize from either side of the transition state to find two new minima.
         """
         graph = self.graph
-        #record some data so we don't try this NEB again
-        if self.pairsNEB.has_key((minNEB1, minNEB2)):
+        
+        #Make sure we haven't already tried this NEB pair and
+        #record some data so we don't try it again in the future
+        if self.pairsNEB.has_key((minNEB1, minNEB2)) and repetition == 0:
             print "WARNING: redoing NEB for minima", minNEB1._id, minNEB2._id
             print "         aborting NEB"
             self.Gdist.remove_edge(minNEB1, minNEB2)
-            return
+            return True
         self.pairsNEB[(minNEB1, minNEB2)] = True
         self.pairsNEB[(minNEB2, minNEB1)] = True
-        #self.Gdist.remove_edge(minNEB1, minNEB2)
+
+        #arrange the coordinates to minimize the distance between them        
+        dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords)
+        
+        #run NEB 
         print ""
-        #print "minimizing the distance between the two minima"
-        dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords) 
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
-        #print "runing NEB"
         neb = NEB(newcoords1, newcoords2, self.pot)
         neb.optimize(quenchParams = self.NEB_optimize_quenchParams)
         neb.MakeAllMaximaClimbing()
-        #neb.optimize(quenchParams = self.NEB_optimize_quenchParams)
     
+        #get the transition state candidates from the NEB result
         nclimbing = np.sum( [neb.isclimbing[i] for i in range(neb.nimages) ])
         print "from NEB search found", nclimbing, "climbing images"
         if nclimbing == 0:
             print "WARNING: found zero climbing images.  Are the minima really the same?"
-            print "         energies:", minNEB1.energy, minNEB2.energy, "distance", dist 
-        
+            print "         energies:", minNEB1.energy, minNEB2.energy, "distance", dist  
+            return False   
         climbing_images = [ (neb.energies[i], i) for i in range(neb.nimages) 
                            if neb.isclimbing[i] ]
         climbing_images = sorted(climbing_images, reverse=True) #highest energies first
 
-        #js850> only look at the highest clibming image.  the others are likely to be crap
+        #find the nearest transition state the the transition state candidate
+        #js850> only look at the highest climbing image.  the others are likely to be crap
         climbing_images = [climbing_images[0]]
-        for energy, i in climbing_images:
-            coords = neb.coords[i,:]
-            np.savetxt("climbingimage", coords)
-            #print "exiting", exit(1)
-            print "refining transition state from NEB climbing image"
-            ret = findTransitionState(coords, self.pot, tsSearchParams = self.tsSearchParams)
-            #coords, eigval, eigvec, E, grad, rms = ret
-            coords = ret.coords
-            E = ret.energy
-            if ret.eigenval >= 0.:
-                print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
-                print "         not adding transition state"
-                continue
-            print "falling off either side of transition state to find new minima"
-            ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
-                displace=1e-3, quenchParameters={"tol":1e-7})
-            
-            min1 = self.addMinimum(ret1[1], ret1[0])
-            min2 = self.addMinimum(ret2[1], ret2[0])
-            if min1 == min2:
-                print "warning: stepping off the transition state resulted in twice the same minima", min1._id
-            else:
-                print "adding transition state", min1._id, min2._id
-                ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=ret.eigenvec, eigenval=ret.eigenval)
-                graph.refresh()
-                """
-                set the weight to zero in Gdist.
-                """
-#                    if (min1,min2) in self.Gdist.edges() or (min2,min1) in self.Gdist.edges():
-#                    #path = nx.shortest_path(self.Gdist, min1, min2)
-#                    #print "mypath", path
-#                    #if path is not None and len(path) == 2:
-#                        print "found edge"
-                self.Gdist.add_edge(min1, min2, {"dist":0., "dist2":0.})
-                
-            connected = graph.areConnected(minNEB1, minNEB2)
-            print "connected yet?", connected
-            if connected:
-                break
+        energy, i = climbing_images[0]
+        coords = neb.coords[i,:]
+        ts_success = self.refineTS(coords)
+        
         #if the minima are still not connected, remove this edge so we don't try this NEB again
         if not self.graph.areConnected(minNEB1, minNEB2):
             self.Gdist.remove_edge(minNEB1, minNEB2)
             
-                
-    def getNextPair(self):
-        """
-        this is now obsolete
-        
-        this is the function which attempts to find a clever pair of minima to try to connect
-        with the ultimate goal of connecting minstart and minend
-        """
-    
-        #sort minimalist by distance to min1
-        print "getting next pair to try to connect"
-        print "sorting minimalist"
-        
-        minimalistbackup = copy.copy(self.idlist)
-        def getDist(m):
-            return self.getDist(self.minstart, m)
-        self.idlist = sorted(self.idlist, key=getDist)
-    
-        idlist = copy.copy(self.idlist)
-        idlist.insert(0, self.minstart)
-        idlist.append(self.minend)
-        print idlist
-        
-        def mydist( mpair ):
-            return self.getDist(mpair[0], mpair[1])
-        pairlist = sorted( itertools.combinations(idlist,2), key=mydist )
-
-        if True:
+        return ts_success
             
-            if True:
-                for m1, m2 in pairlist:
-                    print m1._id, m2._id, self.getDist( m1, m2 )
-
-            for m1, m2 in pairlist:
-                if self.graph.areConnected(m1, m2):
-                    continue
-                if self.pairsNEB.has_key( (m1,m2) ) or self.pairsNEB.has_key( (m2,m1) ):
-                    continue
-                return m1, m2
-
-        if False:
-            #we should choose the next minima pair to try to connect in a more clever way.
-            for i in range(len(idlist)-1):
-                m1 = idlist[i]
-                m2 = idlist[i+1]
-                if self.graph.areConnected(m1, m2):
-                    continue
-                if self.pairsNEB.has_key( (m1,m2) ) or self.pairsNEB.has_key( (m2,m1) ):
-                    continue
-                return m1, m2
-    
-    
-        return None, None
-    
+                
     def getNextPairNew(self):
         """
         this is the function which attempts to find a clever pair of minima to try to 
@@ -279,7 +261,7 @@ class DoubleEndedConnect(object):
             print "Can't find any way to try to connect the minima"
             return None, None
         
-        print "best guess for path"
+        print "best guess for path.  (dist=0.0 means the path is known)"
         
         #path is a list of nodes
         distances = nx.get_edge_attributes(self.Gdist, "dist")

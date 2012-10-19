@@ -15,10 +15,10 @@ class getEnergyGradientWrapper:
     return either the energy or gradient, not both.  This is quite wasteful
     """
     def __init__(self, getEnergyGradient):
-        self. getEnergyGradient = getEnergyGradient
+        self.getEnergyGradient = getEnergyGradient
     def getEnergy(self, coords):
         ret = self.getEnergyGradient(coords)
-        return ret[1]
+        return ret[0]
     def getGradient( self, coords ):
         ret = self.getEnergyGradient(coords)
         return ret[1]
@@ -66,7 +66,7 @@ def cg(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     """
     import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output = True)
+    ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output=True, disp=iprint>0)
     newcoords = ret[0]
     #e = ret[1]
     funcalls = ret[2]
@@ -151,7 +151,7 @@ def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     """
     import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol = tol, full_output = True, disp=False)
+    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol = tol, full_output = True, disp=iprint>0)
     x = ret[0]
     E = ret[1]
     g = ret[2]
