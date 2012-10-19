@@ -18,7 +18,7 @@ class getEnergyGradientWrapper:
         self. getEnergyGradient = getEnergyGradient
     def getEnergy(self, coords):
         ret = self.getEnergyGradient(coords)
-        return ret[1]
+        return ret[0]
     def getGradient( self, coords ):
         ret = self.getEnergyGradient(coords)
         return ret[1]
