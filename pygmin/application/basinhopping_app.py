@@ -8,6 +8,7 @@ class AppBasinHopping(Application):
     accuracy = 1e-3
     quenchParameters=defaults.quenchParams
     quenchRoutine=defaults.quenchRoutine
+    default_temperature = 1.0
     
     def create_takestep(self):
         return takestep.RandomDisplacement()
@@ -37,11 +38,11 @@ class AppBasinHopping(Application):
                           help="database to store results")
     
         self.add_option("-T","--temperature",type="float",
-                          dest="temperature", default=1.0,
+                          dest="temperature", default=self.default_temperature,
                           help="temperature for the basin hopping run",
                           group="Basin Hopping")
         self.add_option("-n","--nsteps",type="int",
-                          dest="nsteps", default=100,
+                          dest="nsteps", default=1000,
                           help="numper of steps for basin hopping run")
                 
     def run(self):        

@@ -56,8 +56,9 @@ class OXDNAReseed(takestep.TakestepInterface):
 
 # this is the base application which controls the program flow
 class AppOXDNA(AppBasinHopping):
-    target=-17.7371736249
-
+    target=-19.40126
+    default_temperature = 0.1
+    
     def __init__(self, *args, **kwargs):
         AppBasinHopping.__init__(self, *args, **kwargs)
         self.quenchRoutine = defaults.quenchRoutine
@@ -99,11 +100,11 @@ class AppOXDNA(AppBasinHopping):
     def add_options(self):
         AppBasinHopping.add_options(self)
         self.add_option("-d","--displace",type="float",
-                  dest="displace", default=1.0,
+                  dest="displace", default=.5,
                   help="dispacement for random step taking",
                   group="OXDNA specific")
         self.add_option("-r","--rotate",type="float",
-                  dest="rotate", default=pi,
+                  dest="rotate", default=0.5,
                   help="rotations for random step taking",
                   group="OXDNA specific")
         self.add_option("--reseed",type="int",
