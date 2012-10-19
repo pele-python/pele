@@ -61,9 +61,8 @@ class NEB:
         # the active range of the coords, endpoints are fixed
         self.active = self.coords[1:nimages-1,:]  
     
-    def optimize(
-                 self, quenchRoutine=None, 
-                 quenchParams = None):
+    def optimize(self, quenchRoutine=None, 
+                 quenchParams = dict()):
         """
         Optimize the band
         
@@ -85,16 +84,11 @@ class NEB:
         """
         if quenchRoutine is None:
             quenchRoutine = defaults.NEBquenchRoutine
-        if quenchParams is None:
-            quenchParams = defaults.NEBquenchParams
-        #if(quench==None):
-        #    quench = self.default_quench
-        #print "kwargs", kwargs
-        #print "NEB optimize: quenchParams", quenchParams
-        #if not quenchParams.has_key("maxErise"):
-        #    quenchParams["maxErise"] = 10.
-        #if not quenchParams.has_key("maxstep"):
-        #    quenchParams["maxstep"] = .01
+        #combine default and passed params.  passed params will overwrite default
+        quenchParams = dict(defaults.NEBquenchParams.items() + 
+                            quenchParams.items() )
+
+        print quenchParams
         tmp,E,rms,tmp4 = quenchRoutine(
                     self.active.reshape(self.active.size), self.getEnergyGradient, 
                     **quenchParams)

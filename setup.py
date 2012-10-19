@@ -30,20 +30,7 @@ fortran_modules = [
               ["pygmin/utils/_fortran_utils.f90"]),
                 ]
 
-cxx_modules = [
-    Extension("pygmin.potentials.cpp.lj", 
-              ["pygmin/potentials/cpp/lj.cpp"],
-              include_dirs=["include"]),
-    Extension("pygmin.potentials.stock.stockaa", 
-              ["pygmin/potentials/stock/stockaa.cpp"],
-              include_dirs=["include"]),
-    Extension("pygmin.potentials.salt_.matrix", 
-              ["pygmin/potentials/salt_/matrix.cpp"],
-              include_dirs=["include"]),
-    Extension("pygmin.potentials.salt_.salt", 
-              ["pygmin/potentials/salt_/salt.cpp"],
-              include_dirs=["include"]),
-             ]
+cxx_modules = [ ]
 
 hasboost = True
 if hasboost:
@@ -57,10 +44,12 @@ setup(name='PyGMIN',
       url='http://github.com/js850/minGMIN.git',
       packages=["pygmin", 
                 "pygmin.potentials",
+                "pygmin.potentials.rigid_bodies",
                 "pygmin.gui",
                 "pygmin.mindist",
                 "pygmin.optimize",
                 "pygmin.optimize.transition_state",
+                "pygmin.NEB",
                 "pygmin.printing",
                 "pygmin.takestep",
                 "pygmin.utils",
