@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from pygmin.application import AppBasinHopping
 from pygmin import defaults
@@ -7,6 +8,9 @@ from pygmin import takestep
 from math import pi
 from pygmin.utils.rbtools import CoordsAdapter
 from pygmin.utils import rotations
+
+EDIFF=0.01
+t0=time.clock()
 
 # This is the takestep routine for OXDNA. It is a standard rigid body takestep
 # routine, but I put it here to be able to start modifying it
@@ -48,13 +52,16 @@ class OXDNAReseed(takestep.TakestepInterface):
 
 # this is the base application which controls the program flow
 class AppOXDNA(AppBasinHopping):
+    target=-17.7371736249
+
     def __init__(self, *args, **kwargs):
         AppBasinHopping.__init__(self, *args, **kwargs)
         self.quenchRoutine = defaults.quenchRoutine
+        self.potential = GMINPotential(GMIN)
         
     # create potentia which calls GMIN
     def create_potential(self):
-        return GMINPotential(GMIN)
+        return self.potential
     
     # This routine implements how basin hopping should do the step taking
     # Block moves should go in here as well
@@ -93,6 +100,23 @@ class AppOXDNA(AppBasinHopping):
                   help="maximum number of steps with no improvement",
                   group="Basinhopping")
         
+    def create_basinhopping(self, add_minimum=None):
+        if(self.target != None):
+            add_minimum = self.check_converged
+
+        self.opt = AppBasinHopping.create_basinhopping(self, add_minimum=self.check_converged)
+	return self.opt
+ 
+    def check_converged(self, E, coords):
+        if(E<(self.target+EDIFF)):
+            print "#found minimum"
+            t1= time.clock()
+            timespent= t1 - t0
+            print "quenches functioncalls timespent"
+            print "%d %d %f"%(self.opt.stepnum, self.potential.ncalls, timespent)
+            exit()
+
+
         
 if __name__ == "__main__":
     # let GMIN do some initialization
