@@ -21,7 +21,7 @@ class DoubleEndedConnect(object):
     """
     def __init__(
                  self, min1, min2, pot, graph, mindist, database=None, tsSearchParams = None, 
-                 NEB_optimize_quenchParams = None, use_all_min=False, verbosity=1):
+                 NEB_optimize_quenchParams = dict(), use_all_min=False, verbosity=1):
         self.graph = graph
         self.minstart = min1
         self.minend = min2
@@ -178,7 +178,7 @@ class DoubleEndedConnect(object):
         return True
         
    
-    def doNEB(self, minNEB1, minNEB2):
+    def doNEB(self, minNEB1, minNEB2, repetition = 0):
         """
         do NEB between minNEB1 and minNEB2.  refine any transition state candidates and
         minimize from either side of the transition state to find two new minima.
@@ -187,7 +187,7 @@ class DoubleEndedConnect(object):
         
         #Make sure we haven't already tried this NEB pair and
         #record some data so we don't try it again in the future
-        if self.pairsNEB.has_key((minNEB1, minNEB2)):
+        if self.pairsNEB.has_key((minNEB1, minNEB2)) and repetition == 0:
             print "WARNING: redoing NEB for minima", minNEB1._id, minNEB2._id
             print "         aborting NEB"
             self.Gdist.remove_edge(minNEB1, minNEB2)
