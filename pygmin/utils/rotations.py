@@ -193,7 +193,7 @@ def small_random_aa(maxtheta):
     # this is not completely right but should be ok
     if maxtheta < rot_epsilon:
         p = p*dprand()*maxtheta
-        return
+        return p
 
     s = 1. / (np.sin(0.5*maxtheta)**2)
     # now choose the angle theta in range 0:step
