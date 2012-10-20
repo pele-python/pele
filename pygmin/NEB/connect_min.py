@@ -1,11 +1,13 @@
 import numpy as np
-from pygmin.NEB.NEB import NEB
-from pygmin.optimize.transition_state.transition_state_refinement import findTransitionState
-import tstools
-from pygmin.storage.savenlowest import Minimum 
 import networkx as nx
 import copy
 import itertools
+
+import tstools
+from pygmin.NEB.NEB import NEB
+from pygmin.optimize.transition_state.transition_state_refinement import findTransitionState
+from pygmin.storage.savenlowest import Minimum 
+import pygmin.defaults as defaults
 
 __all__ = ["DoubleEndedConnect"]
 
@@ -197,12 +199,35 @@ class DoubleEndedConnect(object):
 
         #arrange the coordinates to minimize the distance between them        
         dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords)
+        print ""
+        
+        #change parameters for second repetition
+        NEB_optimize_quenchParams = copy.copy(self.NEB_optimize_quenchParams)
+        NEBparams = copy.copy(defaults.NEBparams)
+        if repetition > 0:
+            print "running NEB a second time"
+            #double the number of steps
+            print "    doubling the number of steps"
+            if NEB_optimize_quenchParams.has_key("nsteps"):
+                nsteps = NEB_optimize_quenchParams["nsteps"]
+            else:
+                nsteps = 100
+            NEB_optimize_quenchParams["nsteps"] = nsteps * (repetition+1)
+            
+            #double the number of images
+            print "    doubling the number of images"
+            if NEBparams.has_key("nimages"):
+                nimages = NEBparams["nimages"]
+            else:
+                nimages = 20
+            NEBparams["nimages"] = nimages * (repetition+1)
+
+            
         
         #run NEB 
-        print ""
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
-        neb = NEB(newcoords1, newcoords2, self.pot)
-        neb.optimize(quenchParams = self.NEB_optimize_quenchParams)
+        neb = NEB(newcoords1, newcoords2, self.pot, **NEBparams)
+        neb.optimize(quenchParams = NEB_optimize_quenchParams)
         neb.MakeAllMaximaClimbing()
     
         #get the transition state candidates from the NEB result
@@ -280,25 +305,12 @@ class DoubleEndedConnect(object):
                 minpair = (min1, min2)
         return minpair
                 
-                
-            
-        
-        
-
     
     def connect(self):
         """
         the main loop of the algorithm
         """
-#        print "starting a double ended search to try to connect minima", self.minstart._id, self.minend._id
-#        if self.graph.areConnected(self.minstart, self.minend):
-#            print "aborting double ended connect:  minima are already connected"
-#            return
-#        
-#        if True:
-#            min1, min2 = self.getNextPairNew()
-#
-#        self.doNEB(self.minstart, self.minend)
+        NEBattempts = 2;
         while True: 
             if self.graph.areConnected(self.minstart, self.minend):
                 return
@@ -306,7 +318,10 @@ class DoubleEndedConnect(object):
             min1, min2 = self.getNextPairNew()
             if min1 is None or min2 is None:
                 break
-            self.doNEB(min1, min2)
+            for i in range(NEBattempts):
+                NEB_success = self.doNEB(min1, min2, i)#
+                if NEB_success:
+                    break
         print "failed to find connection between", self.minstart._id, self.minend._id
 
 

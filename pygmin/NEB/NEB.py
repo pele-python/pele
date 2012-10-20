@@ -30,8 +30,7 @@ class NEB:
     """
     getEnergyCount = 0
     printStateFile = None
-    def __init__(
-                 self, initial, final, potential, distance=distance_cart, 
+    def __init__(self, initial, final, potential, distance=distance_cart, 
                  nimages=20, k=100.0, iprint=1):
         self.distance = distance
         self.potential = potential
@@ -88,7 +87,6 @@ class NEB:
         quenchParams = dict(defaults.NEBquenchParams.items() + 
                             quenchParams.items() )
 
-        print quenchParams
         tmp,E,rms,tmp4 = quenchRoutine(
                     self.active.reshape(self.active.size), self.getEnergyGradient, 
                     **quenchParams)

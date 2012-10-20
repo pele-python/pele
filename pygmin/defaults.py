@@ -86,6 +86,7 @@ tsSearchParams = dict()
 
 lowestEigenvectorQuenchParams = dict()
 
+NEBparams = dict()
 NEBquenchRoutine = quench.quench
 NEBquenchParams = dict()
 NEBquenchParams["nsteps"] = 100
