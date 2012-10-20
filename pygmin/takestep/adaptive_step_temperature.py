@@ -5,8 +5,11 @@ class AdaptiveStepsizeTemperature(object):
     todo: 
         make the interface with changing the temperature not quite so ugly
     """
-    def __init__(self, stepclass, target_accept_prob = 0.5, interval=50, Tfactor=0.9, 
-                 sfactor=0.9, ediff=.001, verbose=True):
+    def __init__(self, stepclass, 
+                 target_new_min_prob=0.8, 
+                 target_new_min_accept_prob=0.3, 
+                 interval=100, Tfactor=0.95, sfactor=0.95, ediff=.001, 
+                 verbose=True):
         """
         adjust both the stepsize and the temperature adaptively
         
@@ -15,8 +18,20 @@ class AdaptiveStepsizeTemperature(object):
         
         stepclass : 
             the step taking class
-        target_accept_prob : 
-            the target acceptance probability
+        target_new_min_prob : 
+            the target probability for a step ending up in a new minimum.
+            Used to adjust the stepsize.
+        target_new_min_accept_prob : 
+            the target probability that a step that ends in a new minimum is accepted.
+            Use to adjust the temperature
+            
+            Note: the total acceptance probability is
+            
+                accrat = 1 - target_new_min_prob * (1 - target_new_min_accept_prob)
+            
+            so if you want a total acceptance probability of 0.5, you must choose both other 
+            probabilities accordingly
+            
         interval : 
             the interval at which to adjust temperature and stepsize
         Tfactor : 
@@ -38,7 +53,8 @@ class AdaptiveStepsizeTemperature(object):
         a move that ended up in a different minimum
         """
         self.stepclass = stepclass
-        self.target_accept_prob = target_accept_prob
+        self.target_new_min_accept_prob = target_new_min_accept_prob
+        self.target_new_min_prob = target_new_min_prob
         self.interval = interval
         self.Tfactor = Tfactor
         self.sfactor = sfactor
@@ -90,14 +106,16 @@ class AdaptiveStepsizeTemperature(object):
             self.coords = np.copy(trial_coords)
        
         if self.nattempts % self.interval == 0:
+            if self.verbose:
+                print "acceptance probability %.4g" % (float(self.naccept) / self.nattempts)
             self.adjustStep()
             self.adjustTemp(driver)
             self.reset()
         
     def adjustStep(self):
         """adjust the step size"""
-        fsame = float(self.nsame) / self.nattempts
-        if fsame > self.target_accept_prob:
+        fnew = 1. - float(self.nsame) / self.nattempts
+        if fnew < self.target_new_min_prob:
             self.stepclass.scale(1. / self.sfactor)
         else:
             self.stepclass.scale(self.sfactor)
@@ -105,8 +123,8 @@ class AdaptiveStepsizeTemperature(object):
             print "naccept nsame ndiff, naccept_diff %d %d %d %d" % (
                 self.naccept, self.nsame, self.nattempts-self.nsame,
                 self.naccept-self.nsame)
-            print "stepsize is now %.4g ratio %.4g" %(self.stepclass.stepsize,
-                                                      fsame)
+            print "stepsize    is now %.4g ratio %.4g" %(self.stepclass.stepsize,
+                                                      fnew)
             
             
     def adjustTemp(self, driver):
@@ -117,7 +135,7 @@ class AdaptiveStepsizeTemperature(object):
             faccept = 1
         else:
             faccept = float(ndiff_accept) / ndiff
-        if faccept > self.target_accept_prob:
+        if faccept > self.target_new_min_accept_prob:
             driver.acceptTest.temperature *= self.Tfactor
         else:
             driver.acceptTest.temperature /= self.Tfactor
@@ -138,10 +156,9 @@ if __name__ == "__main__":
     coords=np.random.random(3*natoms)
     potential = lj.LJ()
     
-    takeStep = displace.RandomDisplacement( stepsize=0.3 )
-    tsAdaptive = AdaptiveStepsizeTemperature(takeStep, target_accept_prob=0.5,
-                                             interval=100)
+    takeStep = displace.RandomDisplacement( stepsize=0.4 )
+    tsAdaptive = AdaptiveStepsizeTemperature(takeStep, interval=300)
     opt = bh.BasinHopping(coords, potential, takeStep=tsAdaptive)
     opt.printfrq = 50
-    opt.run(1000)
+    opt.run(5000)
         
