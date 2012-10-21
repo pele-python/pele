@@ -4,7 +4,7 @@ from optimization_exceptions import LineSearchError
 
 class LBFGS:
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
-                 rel_energy = False, H0=None, events=[],
+                 rel_energy = False, H0=1., events=[],
                  alternate_stop_criterion=None, debug=False,
                  iprint=-1, nsteps=10000, tol=1e-6):
         """
@@ -32,8 +32,9 @@ class LBFGS:
         rel_energy : bool
             if True, then maxErise the the *relative* maximum the energy is allowed
             to rise during a step
-        H0 : array, length M
-            the initial guess for the Hessian 
+        H0 : float
+            the initial guess for the inverse diagonal Hessian.  This particular
+            implementation of LBFGS takes all the inverse diagonal components to be the same. 
         events : list of callables
             these are called after each iteration.  events can also be added using
             attachEvent()
@@ -83,10 +84,7 @@ class LBFGS:
         
         self.q = np.zeros(N)  #working space
         
-        if H0 == None:
-            self.H0 = np.ones(M) * 1. #initial guess for the hessian
-        else:
-            self.H0 = H0
+        self.H0 = H0
         self.rho = np.zeros(M)
         self.k = 0
         
@@ -139,7 +137,7 @@ class LBFGS:
             if YY == 0.:
                 print "warning: resetting YY to 1 in lbfgs", YY
                 YY = 1.
-            self.H0[ki] = YS / YY
+            self.H0 = YS / YY
 
         self.Xold[:] = X[:]
         self.Gold[:] = G[:]
@@ -154,7 +152,7 @@ class LBFGS:
         
         #z[:] = self.H0[ki] * q[:]
         z = q #q is not used anymore after this, so we can use it as workspace
-        z *= self.H0[ki]
+        z *= self.H0
         for i in myrange:
             beta = rho[i] * np.dot( y[i,:], z )
             z += s[i,:] * (a[i] - beta)
@@ -262,7 +260,7 @@ class LBFGS:
         return X, E, G
     
     def reset(self):
-        self.H0[:] = 1.
+        self.H0 = 1.
         self.k = 0
     
     def attachEvent(self, event):
@@ -275,9 +273,8 @@ class LBFGS:
         tol = self.tol
         iprint = self.iprint
         nsteps = self.nsteps
-        
+                
         #iprint =40
-        self.tol = tol
         X = self.X
         sqrtN = np.sqrt(self.N)
         

@@ -17,8 +17,9 @@ class LBFGS(lbfgs_py.LBFGS):
         N = self.N
         M = self.M
         
-        #js850> why is H0 length N here and length M in lbfgs_py?
-        self.H0 = np.ones(N) * 1. #initial guess for the hessian
+        #in fortran mylbfgs H0 is a vector of length N with all the elements the same
+        #specifying initial H0 is not implemented here
+        self.H0vec = np.ones(N) * self.H0 #initial guess for the hessian
 
         self.W = np.zeros(N*(2*M+1)+2*M) #mylbfgs working space
         self.iter = 0
@@ -55,7 +56,7 @@ class LBFGS(lbfgs_py.LBFGS):
 
         
         #print self.iter, self.point
-        self.stp = mylbfgs_updatestep(self.iter, self.M, G, self.W, self.H0, self.point, [self.N])
+        self.stp = mylbfgs_updatestep(self.iter, self.M, G, self.W, self.H0vec, self.point, [self.N])
         
         #print "stp", np.linalg.norm(self.stp), self.stp
         #print "G", self.G
