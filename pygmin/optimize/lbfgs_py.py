@@ -84,7 +84,10 @@ class LBFGS:
         
         self.q = np.zeros(N)  #working space
         
-        self.H0 = H0
+        if H0 is None:
+            self.H0 = 1.
+        else:
+            self.H0 = H0
         self.rho = np.zeros(M)
         self.k = 0
         

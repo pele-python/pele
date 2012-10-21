@@ -152,6 +152,10 @@ class DoubleEndedConnect(object):
         #check to make sure it is a valid transition state 
         coords = ret.coords
         E = ret.energy
+        if not ret.success:
+            print "transition state search failed"
+            return False
+            
         if ret.eigenval >= 0.:
             print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
             print "         not adding transition state"
@@ -306,20 +310,22 @@ class DoubleEndedConnect(object):
         return minpair
                 
     
-    def connect(self):
+    def connect(self, maxiter=100):
         """
         the main loop of the algorithm
         """
         NEBattempts = 2;
-        while True: 
+        for i in maxiter: 
             if self.graph.areConnected(self.minstart, self.minend):
                 return
             
+            print ""
+            print "starting connect cycle", i
             min1, min2 = self.getNextPairNew()
             if min1 is None or min2 is None:
                 break
             for i in range(NEBattempts):
-                NEB_success = self.doNEB(min1, min2, i)#
+                NEB_success = self.doNEB(min1, min2, i)
                 if NEB_success:
                     break
         print "failed to find connection between", self.minstart._id, self.minend._id

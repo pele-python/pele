@@ -1,13 +1,15 @@
 import numpy as np
 import copy
 from collections import namedtuple
-
+from scipy.optimize import Result
 
 from lowest_eig_pot import LowestEigPot
 from orthogopt import orthogopt
 from pygmin.potentials.potential import potential as basepot
 from pygmin.storage.savenlowest import SaveN
 import pygmin.defaults as defaults
+
+__all__ = ["findTransitionState"]
 
 def analyticalLowestEigenvalue(coords, pot):
     e, g, hess = pot.getEnergyGradientHessian(coords)
@@ -53,10 +55,14 @@ class TSRefinementPotential(basepot):
     """
     def __init__(self, pot, coords, verbose=False, orthogZeroEigs = 0):
         """
+        Parameters
+        ----------
+        
         :orthogZeroEigs: the function which makes a vector orthogonal to known zero 
             eigenvectors
-            default value is 0, which means use the default function orthogopt.
-            if None is pass then no function will be used
+            The default value is 0, which means use the default function orthogopt which assumes
+            rotational and translational invariance.
+            If None is pass then no function will be used
         """
         self.pot = pot
         self.eigvec = np.random.rand(len(coords)) #initial random guess
@@ -134,6 +140,11 @@ class TSRefinementPotential(basepot):
 
 
 class FindTransitionState(object):
+    """
+    todo:
+        if the eigenvalue sign goes from positive to negative,
+        go back to where it was negative and take a smaller step
+    """
     def __init__(self, coords, pot, tol = 1e-4, event=None, nsteps=1000, 
                  tsSearchParams = None, nfail_max=5, **kwargs):
         """
@@ -254,8 +265,8 @@ class FindTransitionState(object):
                 self.event(E, coords, rms)
             if rms < self.tol:
                 break
-            if self.nfail > self.nfail_max:
-                print "findTransitionState fail"
+            if self.nfail >= self.nfail_max:
+                print "stopping findTransitionState.  too many failures in eigenvector search"
                 break
 
         #done, print some data
@@ -266,11 +277,21 @@ class FindTransitionState(object):
             print "warning: transition state has positive eigenvalue", self.tspot.eigval
         if rms > self.tol:
             print "warning: transition state search appears to have failed: rms", rms
+            success = False
+        else:
+            success = True
 
         #return results
-        return namedtuple("TransitionStateResults", "coords,energy,eigenval,eigenvec,grad,rms,nsteps")(
-                    coords, E, self.tspot.eigval, self.tspot.eigvec, grad, rms, i)
-
+        res = Result()
+        res.coords = coords
+        res.energy = E
+        res.eigenval = self.tspot.eigval
+        res.eigenvec = self.tspot.eigvec
+        res.grad = grad
+        res.rms = rms
+        res.nsteps = i
+        res.success = success
+        return res
 
 
         
@@ -476,8 +497,8 @@ def testpot1():
         printevent = PrintEvent(fout)
         print ""
         print "starting the transition state search"
-        ret = findTransitionStateNew(coords, pot, event=printevent, verbose = False)
-        
+        ret = findTransitionState(coords, pot, event=printevent, verbose = False)
+        print ret
         #coords, eval, evec, e, grad, rms = ret
         e = pot.getEnergy(ret.coords)
         printxyz(fout, coords2, line2=str(e))
