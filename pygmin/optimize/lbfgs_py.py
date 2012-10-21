@@ -4,8 +4,59 @@ from optimization_exceptions import LineSearchError
 
 class LBFGS:
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
-                 rel_energy = False, H0=None, events=[],
-                 alternate_stop_criterion = None, debug=False):
+                 rel_energy = False, H0=1., events=[],
+                 alternate_stop_criterion=None, debug=False,
+                 iprint=-1, nsteps=10000, tol=1e-6):
+        """
+        minimize a function using the LBFGS routine
+        
+        Parameters
+        ----------
+        X : array
+            the starting configuration for the minimization
+        pot :
+            the potential object
+        nsteps : int
+            the maximum number of iterations
+        tol : float
+            the minimization will stop when the rms grad is less than tol
+        iprint : int
+            how often to print status information
+        maxstep : float
+            the maximum step size
+        maxErise : float
+            the maximum the energy is alowed to rise during a step.
+            The step size will be reduced until this condition is satisfied.
+        M : int
+            the number of previous iterations to use in determining the optimal step
+        rel_energy : bool
+            if True, then maxErise the the *relative* maximum the energy is allowed
+            to rise during a step
+        H0 : float
+            the initial guess for the inverse diagonal Hessian.  This particular
+            implementation of LBFGS takes all the inverse diagonal components to be the same. 
+        events : list of callables
+            these are called after each iteration.  events can also be added using
+            attachEvent()
+        alternate_stop_criterion : callable
+            this criterion will be used rather than rms gradiant to determine when
+            to stop the iteration
+        debug : 
+            print debugging information
+             
+        Notes
+        -----
+        This each iteration of this minimization routine is composed of the 
+        following parts
+        
+        1) determine a step size and direction using the LBFGS algorithm
+        
+        2) ensure the step size is appropriate (see maxErise and maxstep).
+           Reduce the step size until conditions are satisfied.
+        
+        3) take step
+        
+        """
         self.X = X
         self.pot = pot
         e, self.G = self.pot.getEnergyGradient(self.X)
@@ -14,6 +65,9 @@ class LBFGS:
         self.maxErise = maxErise
         self.rel_energy = rel_energy #use relative energy comparison for maxErise 
         self.events = events #a list of events to run during the optimization
+        self.iprint = iprint
+        self.nsteps = nsteps
+        self.tol = tol
     
         self.alternate_stop_criterion = alternate_stop_criterion
         self.debug = debug #print debug messages
@@ -30,8 +84,8 @@ class LBFGS:
         
         self.q = np.zeros(N)  #working space
         
-        if H0 == None:
-            self.H0 = np.ones(M) * 1. #initial guess for the hessian
+        if H0 is None:
+            self.H0 = 1.
         else:
             self.H0 = H0
         self.rho = np.zeros(M)
@@ -49,9 +103,12 @@ class LBFGS:
         self.nfailed = 0
         self.nfail_reset = 0
     
-    def step(self, X, G):
+    def getStep(self, X, G):
         """
-        see http://en.wikipedia.org/wiki/Limited-memory_BFGS
+        Calculate a step direction and step size using the 
+        LBFGS algorithm
+        
+        http://en.wikipedia.org/wiki/Limited-memory_BFGS
         """
         self.G = G #saved for the line search
         
@@ -83,7 +140,7 @@ class LBFGS:
             if YY == 0.:
                 print "warning: resetting YY to 1 in lbfgs", YY
                 YY = 1.
-            self.H0[ki] = YS / YY
+            self.H0 = YS / YY
 
         self.Xold[:] = X[:]
         self.Gold[:] = G[:]
@@ -98,7 +155,7 @@ class LBFGS:
         
         #z[:] = self.H0[ki] * q[:]
         z = q #q is not used anymore after this, so we can use it as workspace
-        z *= self.H0[ki]
+        z *= self.H0
         for i in myrange:
             beta = rho[i] * np.dot( y[i,:], z )
             z += s[i,:] * (a[i] - beta)
@@ -117,7 +174,7 @@ class LBFGS:
         self.k += 1
         return self.stp
 
-    def takeStepNoLineSearch(self, X, E, G, stp):
+    def adjustStepSize(self, X, E, G, stp):
         """
         We now have a proposed step.  This function will make sure it is 
         a good step and then take it.
@@ -182,7 +239,7 @@ class LBFGS:
         if nincrease > 10:
             self.nfailed += 1
             if self.nfailed > 10:
-                raise(LineSearchError("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
+                raise(LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
             if True:
                 #print "lbfgs: having trouble finding a good step size. dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
                 print "lbfgs: having trouble finding a good step size.", f*stepsize, stepsize
@@ -190,7 +247,7 @@ class LBFGS:
                 #print self.H0
                 #self.nfail_reset += 1
                 if self.nfail_reset > 10:
-                    raise(LineSearchError("lbfgs: too many failures in takeStepNoLineSearch, exiting"))
+                    raise(LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
                 self.reset()
                 #self.nfailed = 0
                 E = E0
@@ -206,15 +263,21 @@ class LBFGS:
         return X, E, G
     
     def reset(self):
-        self.H0[:] = 1.
+        self.H0 = 1.
         self.k = 0
     
     def attachEvent(self, event):
         self.events.append(event)
                 
-    def run(self, nsteps = 10000, tol = 1e-6, iprint = -1):
+    def run(self):
+        """
+        the main loop of the algorithm
+        """
+        tol = self.tol
+        iprint = self.iprint
+        nsteps = self.nsteps
+                
         #iprint =40
-        self.tol = tol
         X = self.X
         sqrtN = np.sqrt(self.N)
         
@@ -223,12 +286,12 @@ class LBFGS:
         self.funcalls += 1
         e, G = self.pot.getEnergyGradient(X)
         while i < nsteps:
-            stp = self.step(X, G)
+            stp = self.getStep(X, G)
             
             try:
-                X, e, G = self.takeStepNoLineSearch(X, e, G, stp)
+                X, e, G = self.adjustStepSize(X, e, G, stp)
             except LineSearchError:
-                print "Warning: problem with takeStepNoLineSearch, ending quench"
+                print "Warning: problem with adjustStepSize, ending quench"
                 rms = np.linalg.norm(G) / sqrtN
                 print "    on failure: quench step", i, e, rms, self.funcalls
                 break
@@ -242,12 +305,12 @@ class LBFGS:
                 if i % iprint == 0:
                     print "lbfgs:", i, e, rms, self.funcalls
             for event in self.events:
-                event( coords=X, energy=e, rms=rms )
+                event(coords=X, energy=e, rms=rms)
       
             if self.alternate_stop_criterion is None:
                 i_am_done = rms < self.tol
             else:
-                i_am_done = self.alternate_stop_criterion(energy = e, gradient = G, 
+                i_am_done = self.alternate_stop_criterion(energy=e, gradient=G, 
                                                           tol=self.tol)
                 
             if i_am_done:

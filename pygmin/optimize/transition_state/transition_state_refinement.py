@@ -1,13 +1,15 @@
 import numpy as np
 import copy
 from collections import namedtuple
-
+from scipy.optimize import Result
 
 from lowest_eig_pot import LowestEigPot
 from orthogopt import orthogopt
 from pygmin.potentials.potential import potential as basepot
 from pygmin.storage.savenlowest import SaveN
 import pygmin.defaults as defaults
+
+__all__ = ["findTransitionState"]
 
 def analyticalLowestEigenvalue(coords, pot):
     e, g, hess = pot.getEnergyGradientHessian(coords)
@@ -53,10 +55,14 @@ class TSRefinementPotential(basepot):
     """
     def __init__(self, pot, coords, verbose=False, orthogZeroEigs = 0):
         """
+        Parameters
+        ----------
+        
         :orthogZeroEigs: the function which makes a vector orthogonal to known zero 
             eigenvectors
-            default value is 0, which means use the default function orthogopt.
-            if None is pass then no function will be used
+            The default value is 0, which means use the default function orthogopt which assumes
+            rotational and translational invariance.
+            If None is pass then no function will be used
         """
         self.pot = pot
         self.eigvec = np.random.rand(len(coords)) #initial random guess
@@ -65,12 +71,29 @@ class TSRefinementPotential(basepot):
         self.orthogZeroEigs = orthogZeroEigs
 
     
-    def getLowestEigenvalue(self, coords, iprint=400, tol=1e-6, nsteps=500, **kwargs):
+    def getLowestEigenvalue(self, coords, **kwargs):
+        """
+        use LowestEigPot to find the lowest eigenvector using the LBFGS minimizer
+        """
+        #combine kwargs with defaults.lowestEigenvectorQuenchParams
+        kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 
+                      kwargs.items())
+        
+        if kwargs.has_key("tol"):
+            tol = kwargs["tol"]
+        else:
+            tol = 1e-6
+            kwargs["tol"] = tol
+        
+        #set up potential for minimization        
         eigpot = LowestEigPot(coords, self.pot, orthogZeroEigs=self.orthogZeroEigs)
+        
+        #minimize, using the last eigenvector as a starting point
+        #and starting with H0 from last minimization 
         from pygmin.optimize.lbfgs_py import LBFGS
-        quencher = LBFGS(self.eigvec, eigpot, 
-                         rel_energy=True, H0=self.H0, **kwargs)
-        ret = quencher.run(iprint=iprint, tol=tol, nsteps=nsteps)
+        quencher = LBFGS(self.eigvec, eigpot, rel_energy=True, H0=self.H0, 
+                         **kwargs)
+        ret = quencher.run()
         self.H0 = quencher.H0
         #ret = quench(self.eigvec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, rel_energy=True)
         self.eigval = ret[1]
@@ -117,13 +140,49 @@ class TSRefinementPotential(basepot):
 
 
 class FindTransitionState(object):
+    """
+    todo:
+        if the eigenvalue sign goes from positive to negative,
+        go back to where it was negative and take a smaller step
+    """
     def __init__(self, coords, pot, tol = 1e-4, event=None, nsteps=1000, 
                  tsSearchParams = None, nfail_max=5, **kwargs):
         """
-        this is the class which implements the routine for finding the transition state
+        This class implements the routine for finding the nearest transition state
+        
+        Parameters
+        ----------
+        coords : 
+            the starting coordinates
+        pot : 
+            the potential class
+        tol : 
+            the tolerance for the rms gradient
+        event : callable
+            This will be called after each step
+        nsteps : 
+            number of iterations
+        nfail_max :
+            if the lowest eigenvector search fails this many times in a row than the
+            algorithm ends
+        kwargs : 
+            additional parameters passed to the
+        
+            
+        
+        Notes
+        -----
+        
+        It is composed of the following steps
+            1) Find eigenvector corresponding to the lowest *nonzero* eigenvector.  
+            
+            2) Step uphill in the direction of the lowest eigenvector
+            
+            3) minimize in the space tangent to the lowest eigenvector
+         
         """
         """
-        notes: this class needs to deal with
+        implementation notes: this class needs to deal with
         
         params for stepUphill : 
             probably only maxstep
@@ -139,12 +198,9 @@ class FindTransitionState(object):
             should be passable and loaded from defaults.
             
         
-        **tolerance for any of the minimizations must be at least as tight as the total minimization or it will never end
+        **tolerance for any of the minimizations must be at least as tight 
+        as the total minimization or it will never end
         
-        note: This, when the lowest eigenvalue search is repeatedly failing, this routine can
-            take a very long time.  We should recognize those  situations and fail early.
-            Probably we should recognize when the lowest eigenvalue search fails and just end 
-            if it fails 10 times in row.
         """
         self.pot = pot
         self.tangent_space_quencher = defaults.quenchRoutine
@@ -209,8 +265,8 @@ class FindTransitionState(object):
                 self.event(E, coords, rms)
             if rms < self.tol:
                 break
-            if self.nfail > self.nfail_max:
-                print "findTransitionState fail"
+            if self.nfail >= self.nfail_max:
+                print "stopping findTransitionState.  too many failures in eigenvector search"
                 break
 
         #done, print some data
@@ -221,11 +277,21 @@ class FindTransitionState(object):
             print "warning: transition state has positive eigenvalue", self.tspot.eigval
         if rms > self.tol:
             print "warning: transition state search appears to have failed: rms", rms
+            success = False
+        else:
+            success = True
 
         #return results
-        return namedtuple("TransitionStateResults", "coords,energy,eigenval,eigenvec,grad,rms,nsteps")(
-                    coords, E, self.tspot.eigval, self.tspot.eigvec, grad, rms, i)
-
+        res = Result()
+        res.coords = coords
+        res.energy = E
+        res.eigenval = self.tspot.eigval
+        res.eigenvec = self.tspot.eigvec
+        res.grad = grad
+        res.rms = rms
+        res.nsteps = i
+        res.success = success
+        return res
 
 
         
@@ -431,8 +497,8 @@ def testpot1():
         printevent = PrintEvent(fout)
         print ""
         print "starting the transition state search"
-        ret = findTransitionStateNew(coords, pot, event=printevent, verbose = False)
-        
+        ret = findTransitionState(coords, pot, event=printevent, verbose = False)
+        print ret
         #coords, eval, evec, e, grad, rms = ret
         e = pot.getEnergy(ret.coords)
         printxyz(fout, coords2, line2=str(e))

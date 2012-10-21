@@ -5,19 +5,31 @@ from mylbfgs_updatestep import mylbfgs_updatestep
 
 class LBFGS(lbfgs_py.LBFGS):
     def __init__(self, X, pot, **lbfgs_py_kwargs):
+        """
+        this class inherits everything from the pythonic LBFGS
+        except the implementation of the LBFGS (determining an appropriate
+        step size and direction). This is reimplemented 
+        using the Fortran code from GMIN.
+        """
         lbfgs_py.LBFGS.__init__(self, X, pot, **lbfgs_py_kwargs)
+        
+        
         N = self.N
         M = self.M
         
-        self.H0 = np.ones(N) * 1. #initial guess for the hessian
-        
+        #in fortran mylbfgs H0 is a vector of length N with all the elements the same
+        #specifying initial H0 is not implemented here
+        self.H0vec = np.ones(N) * self.H0 #initial guess for the hessian
+
         self.W = np.zeros(N*(2*M+1)+2*M) #mylbfgs working space
         self.iter = 0
         self.point = 0
         
     
-    def step(self, X, G):
+    def getStep(self, X, G):
         """
+        use the Fortran LBFGS code from GMIN to get the step
+        size and direction.
         """
         self.X = X
         self.G = G
@@ -44,7 +56,7 @@ class LBFGS(lbfgs_py.LBFGS):
 
         
         #print self.iter, self.point
-        self.stp = mylbfgs_updatestep(self.iter, self.M, G, self.W, self.H0, self.point, [self.N])
+        self.stp = mylbfgs_updatestep(self.iter, self.M, G, self.W, self.H0vec, self.point, [self.N])
         
         #print "stp", np.linalg.norm(self.stp), self.stp
         #print "G", self.G
@@ -77,11 +89,12 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     e, g = pot.getEnergyGradient(X)
     print "energy", e
     
-    lbfgs = LBFGS(X, pot, maxstep = 0.1)
+    lbfgs = LBFGS(X, pot, maxstep = 0.1, nsteps=10000, tol=tol,
+                  iprint=iprint)
     printevent = PrintEvent( "debugout.xyz")
     lbfgs.attachEvent(printevent)
     
-    ret = lbfgs.run(10000, tol = tol, iprint=iprint)
+    ret = lbfgs.run()
     print "done", ret[1], ret[2], ret[3], ret[5]
     
     print ""
