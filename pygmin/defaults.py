@@ -85,6 +85,10 @@ tsSearchRoutine = dimer
 tsSearchParams = dict()
 
 lowestEigenvectorQuenchParams = dict()
+lowestEigenvectorQuenchParams["iprint"] = 400 
+lowestEigenvectorQuenchParams["tol"] = 1e-6 
+lowestEigenvectorQuenchParams["nsteps"] = 500 
+
 
 NEBparams = dict()
 NEBquenchRoutine = quench.quench

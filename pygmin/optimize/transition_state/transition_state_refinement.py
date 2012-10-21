@@ -65,12 +65,29 @@ class TSRefinementPotential(basepot):
         self.orthogZeroEigs = orthogZeroEigs
 
     
-    def getLowestEigenvalue(self, coords, iprint=400, tol=1e-6, nsteps=500, **kwargs):
+    def getLowestEigenvalue(self, coords, **kwargs):
+        """
+        use LowestEigPot to find the lowest eigenvector using the LBFGS minimizer
+        """
+        #combine kwargs with defaults.lowestEigenvectorQuenchParams
+        kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 
+                      kwargs.items())
+        
+        if kwargs.has_key("tol"):
+            tol = kwargs["tol"]
+        else:
+            tol = 1e-6
+            kwargs["tol"] = tol
+        
+        #set up potential for minimization        
         eigpot = LowestEigPot(coords, self.pot, orthogZeroEigs=self.orthogZeroEigs)
+        
+        #minimize, using the last eigenvector as a starting point
+        #and starting with H0 from last minimization 
         from pygmin.optimize.lbfgs_py import LBFGS
-        quencher = LBFGS(self.eigvec, eigpot, 
-                         rel_energy=True, H0=self.H0, **kwargs)
-        ret = quencher.run(iprint=iprint, tol=tol, nsteps=nsteps)
+        quencher = LBFGS(self.eigvec, eigpot, rel_energy=True, H0=self.H0, 
+                         **kwargs)
+        ret = quencher.run()
         self.H0 = quencher.H0
         #ret = quench(self.eigvec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, rel_energy=True)
         self.eigval = ret[1]
@@ -120,10 +137,41 @@ class FindTransitionState(object):
     def __init__(self, coords, pot, tol = 1e-4, event=None, nsteps=1000, 
                  tsSearchParams = None, nfail_max=5, **kwargs):
         """
-        this is the class which implements the routine for finding the transition state
+        This class implements the routine for finding the nearest transition state
+        
+        Parameters
+        ----------
+        coords : 
+            the starting coordinates
+        pot : 
+            the potential class
+        tol : 
+            the tolerance for the rms gradient
+        event : callable
+            This will be called after each step
+        nsteps : 
+            number of iterations
+        nfail_max :
+            if the lowest eigenvector search fails this many times in a row than the
+            algorithm ends
+        kwargs : 
+            additional parameters passed to the
+        
+            
+        
+        Notes
+        -----
+        
+        It is composed of the following steps
+            1) Find eigenvector corresponding to the lowest *nonzero* eigenvector.  
+            
+            2) Step uphill in the direction of the lowest eigenvector
+            
+            3) minimize in the space tangent to the lowest eigenvector
+         
         """
         """
-        notes: this class needs to deal with
+        implementation notes: this class needs to deal with
         
         params for stepUphill : 
             probably only maxstep
@@ -139,12 +187,9 @@ class FindTransitionState(object):
             should be passable and loaded from defaults.
             
         
-        **tolerance for any of the minimizations must be at least as tight as the total minimization or it will never end
+        **tolerance for any of the minimizations must be at least as tight 
+        as the total minimization or it will never end
         
-        note: This, when the lowest eigenvalue search is repeatedly failing, this routine can
-            take a very long time.  We should recognize those  situations and fail early.
-            Probably we should recognize when the lowest eigenvalue search fails and just end 
-            if it fails 10 times in row.
         """
         self.pot = pot
         self.tangent_space_quencher = defaults.quenchRoutine
