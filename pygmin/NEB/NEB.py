@@ -12,29 +12,24 @@ import pygmin.optimize.quench as quench
 class NEB:
     """Nudged elastic band implementation
 
-    intial: 
-        first point of band
+    intial: iteratable 
+        iteratable object of all images
         
-    final: last point of band
-    
     distance  (distance_cart):
         distance function for the elastic band
-    
-    nimages (20):
-        number of moving images for the band. The number includes 
-        the endpoints and must be bigger than 2
-        
+            
     k (100.0):
         elastic constant for band
         
     """
     getEnergyCount = 0
     printStateFile = None
-    def __init__(self, initial, final, potential, distance=distance_cart, 
-                 nimages=20, k=100.0, iprint=1):
+    def __init__(self, path, potential, distance=distance_cart, 
+                 k=100.0, iprint=1):
         self.distance = distance
         self.potential = potential
         self.k = k
+        nimages = len(path)
         self.nimages = nimages
         self.iprint = iprint
 
@@ -43,18 +38,16 @@ class NEB:
 
         
         #initialize coordinate&gradient array
-        self.coords = np.zeros([nimages, initial.size])
+        self.coords = np.zeros([nimages, path[0].size])
         self.energies=np.zeros(nimages)
         self.isclimbing=[]
         for i in xrange(nimages):
             self.isclimbing.append(False)
             
-        #interpolate initial points
-        self.interpolate(initial, final, nimages)        
-        
-        # copy initial and final structure
-        self.coords[0,:] = initial
-        self.coords[-1,:] = final
+        # copy initial path
+        for i,x in zip(xrange(self.nimages), path):
+            self.coords[i,:] = x
+           
         for i in xrange(0,nimages):
             self.energies[i] = potential.getEnergy(self.coords[i,:])
         # the active range of the coords, endpoints are fixed
@@ -220,17 +213,7 @@ class NEB:
         if(isclimbing):
             return greal - 2.*np.dot(greal, t) * t
         return (gperp + gs_par + gstar)
-    
-    def interpolate(self, initial, final, nimages):
-        """
-        Does the initial interpolation to generate initial guess for path.        
-        So far this only is a linear interpolation.
-        
-        """
-        delta = self.distance(initial, final) / (nimages-1)
-        for i in xrange(1, nimages):
-            self.coords[i, :] =  initial + delta * i
-            
+                
     def MakeHighestImageClimbing(self):
         """
         Make the image with the highest energy a climbing image        
@@ -283,6 +266,8 @@ import nebtesting as test
 
 if __name__ == "__main__":
     import pylab as pl
+    from interpolate import InterpolatedPath
+    
     x = np.arange(.5, 5., .05)
     y = np.arange(.5, 5., .05)
     z = np.zeros([len(x), len(y)])
@@ -309,7 +294,7 @@ if __name__ == "__main__":
     #print "Final: ", final
     #pl.imshow(z)
     
-    neb = NEB(initial, final, potential, nimages=20, k=1000)
+    neb = NEB(InterpolatedPath(initial, final, 20) ,potential, k=1000)
     tmp = neb.coords
     energies_interpolate = neb.energies.copy()
     pl.figure()
