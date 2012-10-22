@@ -5,6 +5,7 @@ import itertools
 
 import tstools
 from pygmin.NEB.NEB import NEB
+from pygmin.NEB import InterpolatedPath
 from pygmin.optimize.transition_state.transition_state_refinement import findTransitionState
 from pygmin.storage.savenlowest import Minimum 
 import pygmin.defaults as defaults
@@ -231,7 +232,7 @@ class DoubleEndedConnect(object):
         
         #run NEB 
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
-        neb = NEB(newcoords1, newcoords2, self.pot, **NEBparams)
+        neb = NEB(InterpolatedPath(newcoords1, newcoords2, 30), self.pot, **NEBparams)
         neb.optimize(quenchParams = NEB_optimize_quenchParams)
         neb.MakeAllMaximaClimbing()
     
