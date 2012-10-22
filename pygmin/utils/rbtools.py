@@ -60,7 +60,10 @@ class CoordsAdapter():
         self.nlattice = nlattice
         if(coords!=None):
             self.updateCoords(coords)
-        
+
+    def copy(self):
+        return CoordsAdapter(nrigid = self.nrigid, natoms=self.natoms, nlattice=self.nlattice, coords=self.coords)
+    
     def updateCoords(self, coords):
         ''' update the coordinate array
         
