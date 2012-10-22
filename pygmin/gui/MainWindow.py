@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Mon Jul 23 01:10:30 2012
+# Created: Sat Oct 20 00:38:11 2012
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -195,7 +195,7 @@ class Ui_MainWindow(object):
         self.menubar.setGeometry(QtCore.QRect(0, 0, 692, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuSimulation = QtGui.QMenu(self.menubar)
-        self.menuSimulation.setTitle(QtGui.QApplication.translate("MainWindow", "Simulation", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuSimulation.setTitle(QtGui.QApplication.translate("MainWindow", "Database", None, QtGui.QApplication.UnicodeUTF8))
         self.menuSimulation.setObjectName(_fromUtf8("menuSimulation"))
         self.menuHelp = QtGui.QMenu(self.menubar)
         self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
@@ -207,18 +207,16 @@ class Ui_MainWindow(object):
         self.actionNew = QtGui.QAction(MainWindow)
         self.actionNew.setText(QtGui.QApplication.translate("MainWindow", "New", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNew.setObjectName(_fromUtf8("actionNew"))
-        self.actionSave = QtGui.QAction(MainWindow)
-        self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSave.setObjectName(_fromUtf8("actionSave"))
-        self.actionLoad = QtGui.QAction(MainWindow)
-        self.actionLoad.setText(QtGui.QApplication.translate("MainWindow", "Load", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionLoad.setObjectName(_fromUtf8("actionLoad"))
+        self.actionClear = QtGui.QAction(MainWindow)
+        self.actionClear.setText(QtGui.QApplication.translate("MainWindow", "Clear Database", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClear.setObjectName(_fromUtf8("actionClear"))
+        self.actionConnect = QtGui.QAction(MainWindow)
+        self.actionConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect to Database", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionConnect.setObjectName(_fromUtf8("actionConnect"))
         self.actionAbout = QtGui.QAction(MainWindow)
         self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAbout.setObjectName(_fromUtf8("actionAbout"))
-        self.menuSimulation.addAction(self.actionNew)
-        self.menuSimulation.addAction(self.actionSave)
-        self.menuSimulation.addAction(self.actionLoad)
+        self.menuSimulation.addAction(self.actionConnect)
         self.menuHelp.addAction(self.actionAbout)
         self.menubar.addAction(self.menuSimulation.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -227,15 +225,13 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.listWidget, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum)
         QtCore.QObject.connect(self.btnRun, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.StartBasinHopping)
-        QtCore.QObject.connect(self.actionNew, QtCore.SIGNAL(_fromUtf8("activated()")), MainWindow.NewSystem)
         QtCore.QObject.connect(self.btnAlign, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.AlignMinima)
         QtCore.QObject.connect(self.btnConnect, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.ConnectMinima)
         QtCore.QObject.connect(self.listMinima1, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum1)
         QtCore.QObject.connect(self.listMinima2, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum2)
         QtCore.QObject.connect(self.sliderFrame, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), MainWindow.showFrame)
         QtCore.QObject.connect(self.btnEnergies, QtCore.SIGNAL(_fromUtf8("pressed()")), MainWindow.showEnergies)
-        QtCore.QObject.connect(self.actionSave, QtCore.SIGNAL(_fromUtf8("activated()")), MainWindow.save)
-        QtCore.QObject.connect(self.actionLoad, QtCore.SIGNAL(_fromUtf8("activated()")), MainWindow.load)
+        QtCore.QObject.connect(self.actionConnect, QtCore.SIGNAL(_fromUtf8("activated()")), MainWindow.connect)
         QtCore.QObject.connect(self.listFrom, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum)
         QtCore.QObject.connect(self.btnTSSearch, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.tsSearch)
         QtCore.QObject.connect(self.listTo, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.selectTransition)

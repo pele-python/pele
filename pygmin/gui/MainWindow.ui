@@ -319,11 +319,9 @@
    </property>
    <widget class="QMenu" name="menuSimulation">
     <property name="title">
-     <string>Simulation</string>
+     <string>Database</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionLoad"/>
+    <addaction name="actionConnect"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -340,14 +338,14 @@
     <string>New</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="actionClear">
    <property name="text">
-    <string>Save</string>
+    <string>Clear Database</string>
    </property>
   </action>
-  <action name="actionLoad">
+  <action name="actionConnect">
    <property name="text">
-    <string>Load</string>
+    <string>Connect to Database</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -395,22 +393,6 @@
     <hint type="destinationlabel">
      <x>432</x>
      <y>188</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionNew</sender>
-   <signal>activated()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>NewSystem()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>282</y>
     </hint>
    </hints>
   </connection>
@@ -511,26 +493,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionSave</sender>
+   <sender>actionConnect</sender>
    <signal>activated()</signal>
    <receiver>MainWindow</receiver>
-   <slot>save()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>282</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionLoad</sender>
-   <signal>activated()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>load()</slot>
+   <slot>connect()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -565,8 +531,8 @@
    <slot>tsSearch()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>612</x>
-     <y>499</y>
+     <x>565</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>627</x>
@@ -622,5 +588,6 @@
   <slot>tsSearch()</slot>
   <slot>selectTransition()</slot>
   <slot>showFrameTS()</slot>
+  <slot>connect()</slot>
  </slots>
 </ui>

@@ -31,11 +31,11 @@ class BHProcess(mp.Process):
         print seed
         np.random.seed(seed)
         print np.random.random(2)
-        opt = self.system.createBasinHopping()
+        opt = self.system.create_basinhopping()
         opt.storage = self.insert
         #while(True):
-        print 'bhrunner.py: number of BH steps set to 1'
-        opt.run(1)
+        #print 'bhrunner.py: number of BH steps set to 1'
+        opt.run(500)
         
     def insert(self, E, coords):
             self.comm.send([E,coords])
@@ -86,7 +86,7 @@ class BHRunner(QtCore.QObject):
         
     def minimum_found(self,minimum):
         self.lock.acquire()
-        self.system.storage.addMinimum(minimum[0],minimum[1])
+        self.system.database.addMinimum(minimum[0],minimum[1])
         self.lock.release()
     
 def found(m):
