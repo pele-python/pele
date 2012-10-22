@@ -97,8 +97,6 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
         #it is not
         eigenvec0 = np.random.uniform(-1, 1, coords.shape)
         eigenvec0 /= np.linalg.norm(eigenvec0)
-        print eigenvec0.shape
-        print eigenvec0
     
     #set up potential for minimization    
     eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs)

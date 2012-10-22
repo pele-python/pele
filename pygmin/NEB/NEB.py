@@ -81,8 +81,6 @@ class NEB(object):
         tmp,E,rms,tmp4 = quenchRoutine(
                     self.active.reshape(self.active.size), self.getEnergyGradient, 
                     **quenchParams)
-        if rms > 1.0:
-            print "NEB: warning, the rms gradient after the neb optimization seems large", rms
         self.active[:,:] = tmp.reshape(self.active.shape)
         for i in xrange(0,self.nimages):
             self.energies[i] = self.potential.getEnergy(self.coords[i,:])        

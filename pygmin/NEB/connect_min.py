@@ -5,7 +5,7 @@ import itertools
 
 import tstools
 from pygmin.NEB.NEB import NEB
-from pygmin.NEB import InterpolatedPath
+from pygmin.NEB import InterpolatedPath, InterpolatedPathDensity
 from pygmin.optimize.transition_state.transition_state_refinement import findTransitionState
 from pygmin.storage.savenlowest import Minimum 
 import pygmin.defaults as defaults
@@ -38,6 +38,7 @@ class DoubleEndedConnect(object):
         self.database = database
         self.verbosity = verbosity
         
+        self.NEB_image_density = 10.
 
         self.Gdist = nx.Graph() 
         self.initializeGdist(use_all_min)
@@ -210,6 +211,7 @@ class DoubleEndedConnect(object):
         #change parameters for second repetition
         NEB_optimize_quenchParams = copy.copy(self.NEB_optimize_quenchParams)
         NEBparams = copy.copy(defaults.NEBparams)
+        image_density = self.NEB_image_density
         if repetition > 0:
             print "running NEB a second time"
             #double the number of steps
@@ -222,19 +224,21 @@ class DoubleEndedConnect(object):
             
             #double the number of images
             print "    doubling the number of images"
-            if NEBparams.has_key("nimages"):
-                nimages = NEBparams["nimages"]
-            else:
-                nimages = 20
-            NEBparams["nimages"] = nimages * (repetition+1)
+            image_density *= (repetition+1)
 
             
         
         #run NEB 
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
-        neb = NEB(InterpolatedPath(newcoords1, newcoords2, 30), self.pot, **NEBparams)
+        neb = NEB(InterpolatedPathDensity(newcoords1, newcoords2, dist, 
+                                          density=image_density), self.pot, **NEBparams)
         neb.optimize(quenchParams = NEB_optimize_quenchParams)
         neb.MakeAllMaximaClimbing()
+
+        print "optimizing climbing images for a small number of steps"
+        NEB_optimize_quenchParams["nsteps"] = 10
+        neb.optimize(quenchParams = NEB_optimize_quenchParams)
+
     
         #get the transition state candidates from the NEB result
         nclimbing = np.sum( [neb.isclimbing[i] for i in range(neb.nimages) ])

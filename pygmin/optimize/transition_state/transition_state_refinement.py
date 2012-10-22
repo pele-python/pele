@@ -212,16 +212,20 @@ class FindTransitionState(object):
         
         self.reduce_step = 0
         self.step_factor = .1
+        self.nnegative = 0
+        self.nnegative_max = max(10, self.nsteps / 5)
         
     def saveState(self, coords):
         self.saved_coords = np.copy(coords)
         self.saved_eigenvec = np.copy(self.eigenvec)
         self.saved_eigenval = self.eigenval
-    
+        #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
+
     def resetState(self, coords):
         coords = np.copy(self.saved_coords)
         self.eigenvec = np.copy(self.saved_eigenvec)
         self.eigenval = self.saved_eigenval
+        self.oldeigenvec = np.copy(self.eigenvec)
         return coords
 
     def run(self):
@@ -236,6 +240,10 @@ class FindTransitionState(object):
                 self.saveState(coords)
                 self.reduce_step = 0
             else:
+                self.nnegative += 1
+                if self.nnegative > self.nnegative_max:
+                    print "warning: negative eigenvalue found too many times. ending", self.nnegative
+                    break
                 print "the eigenvalue turned negative. Resetting last good values and taking smaller steps"
                 coords = self.resetState(coords)
                 self.reduce_step += 1
@@ -310,9 +318,9 @@ class FindTransitionState(object):
                                     orthogZeroEigs=self.orthogZeroEigs,
                                     **self.lowestEigenvectorQuenchParams)
         
-        if res.eigenval > 0.:
-            print "warning transition state search found positive lowest eigenvalue", res.eigenval, \
-                "step", i
+#        if res.eigenval > 0.:
+#            print "warning transition state search found positive lowest eigenvalue", res.eigenval, \
+#                "step", i
         if i > 0:
             overlap = np.dot(self.oldeigenvec, res.eigenvec)
             if overlap < 0.5:

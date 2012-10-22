@@ -13,6 +13,25 @@ def interpolate_linear(initial, final, t):
     '''
     return (1.-t)*initial + t*final
 
+def InterpolatedPathDensity(initial, final, distance, density=10., **kwargs):
+    """
+    Return a InterpolatedPath object with the appropriate 
+    number of images corresponding to the given density
+    
+    Params
+    ------
+    density : 
+        number of images per "unit" separation
+    kwargs : 
+        parameters passed to InterpolatedPath
+    """
+    if distance > 1:
+        nimages = int(density * distance)
+    else:
+        nimages = int(density)
+    return InterpolatedPath(initial, final, nimages, **kwargs)
+    
+
 class InterpolatedPath(object):
     '''
         Wraps interpolation that it can be accessed like a list / array without storing the nodes
