@@ -61,7 +61,7 @@ class InterpolatedPath(object):
     
     def __getitem__(self, index):
         assert index>=0 and index<=self.nimages
-        return self.interpolator(self.initial, self.final, float(index) / float(self.nimages))           
+        return self.interpolator(self.initial, self.final, float(index) / float(self.nimages-1))           
          
     #required iterable elements
     class Iterator(object):
@@ -73,7 +73,7 @@ class InterpolatedPath(object):
             return self
         
         def next(self):
-            if self.index == self.path.nimages:
+            if self.index == self.path.nimages-1:
                 raise StopIteration
             self.index += 1
             return self.path.__getitem__(self.index)
@@ -85,5 +85,8 @@ if __name__ == "__main__":
     path = InterpolatedPath(0., 1., 10)
     print len(path)
     print path[5]
-    for i in path:
-        print i
+    
+    i=0
+    for x in path:
+        print i,x
+        i+=1
