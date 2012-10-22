@@ -199,12 +199,30 @@ class FindTransitionState(object):
             self.tangent_space_quench_params.clear("tol")
         self.nsteps_tangent1 = 10
         self.nsteps_tangent2 = 100
+        if self.tangent_space_quench_params.has_key("maxstep"):
+            self.maxstep_tangent = self.tangent_space_quench_params["maxstep"]
+            self.tangent_space_quench_params.clear("maxstep")
+        else:            
+            self.maxstep_tangent = 0.1 #this should be determined in a better way
+
 
         #set some parameters used in finding lowest eigenvector
         #initial guess for Hermitian
         self.H0 = None 
         
+        self.reduce_step = 0
+        self.step_factor = .1
         
+    def saveState(self, coords):
+        self.saved_coords = np.copy(coords)
+        self.saved_eigenvec = np.copy(self.eigenvec)
+        self.saved_eigenval = self.eigenval
+    
+    def resetState(self, coords):
+        coords = np.copy(self.saved_coords)
+        self.eigenvec = np.copy(self.saved_eigenvec)
+        self.eigenval = self.saved_eigenval
+        return coords
 
     def run(self):
         coords = np.copy(self.coords)
@@ -212,6 +230,15 @@ class FindTransitionState(object):
             
             #get the lowest eigenvalue and eigenvector
             self.getLowestEigenVector(coords, i)
+            
+            #check to make sure the eigenvector is ok
+            if i == 0 or self.eigenval <= 0:
+                self.saveState(coords)
+                self.reduce_step = 0
+            else:
+                print "the eigenvalue turned negative. Resetting last good values and taking smaller steps"
+                coords = self.resetState(coords)
+                self.reduce_step += 1
             
             #step uphill along the direction of the lowest eigenvector
             coords = self.stepUphill(coords)
@@ -316,9 +343,16 @@ class FindTransitionState(object):
         if np.abs(gradpar) <= self.tol*2.:
             nstepsperp = self.nsteps_tangent2
 
+        maxstep = self.maxstep_tangent
+        if self.reduce_step > 0:
+            maxstep *= (self.step_factor)**self.reduce_step
+
+
+
         tspot = TSRefinementPotential(self.pot, self.eigenvec)
         ret = self.tangent_space_quencher(coords, tspot.getEnergyGradient, 
                                           nsteps=nstepsperp, tol=self.tol_tangent,
+                                          maxstep=maxstep,
                                           **self.tangent_space_quench_params)
         coords = ret[0]
         rms = ret[2]
@@ -333,8 +367,13 @@ class FindTransitionState(object):
         F = np.dot(grad, self.eigenvec) 
         h = 2.*F/ np.abs(self.eigenval) / (1. + np.sqrt(1.+4.*F**2/self.eigenval**2 ))
 
-        if np.abs(h) > self.max_uphill_step:
-            h *= self.max_uphill_step / abs(h)
+        maxstep = self.max_uphill_step
+        if self.reduce_step > 0:
+            maxstep *= (self.step_factor)**self.reduce_step
+
+
+        if np.abs(h) > maxstep:
+            h *= maxstep / abs(h)
         coords += h * self.eigenvec
 
         return coords
