@@ -35,7 +35,7 @@ class LowestEigPot(basepot):
         else:
             self.orthogZeroEigs = orthogZeroEigs
         #print "orthogZeroEigs", self.orthogZeroEigs
-        
+                
         self.diff = dx
     
     

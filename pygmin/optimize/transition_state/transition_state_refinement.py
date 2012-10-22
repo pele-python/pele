@@ -7,7 +7,8 @@ from lowest_eig_pot import LowestEigPot, findLowestEigenVector
 from pygmin.potentials.potential import potential as basepot
 from pygmin.storage.savenlowest import SaveN
 import pygmin.defaults as defaults
-from pygmin.defaults import lowestEigenvectorQuenchParams
+from pygmin.NEB import InterpolatedPath
+
 
 __all__ = ["findTransitionState", "FindTransitionState"]
 
@@ -85,16 +86,18 @@ class TSRefinementPotential(basepot):
 
 class FindTransitionState(object):
     """
-    todo:
-        if the eigenvalue sign goes from positive to negative,
-        go back to where it was negative and take a smaller step
+    This class implements the routine for finding the nearest transition state
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=1000, 
                  nfail_max=5, eigenvec=None, iprint=-1, orthogZeroEigs=0,
-                 lowestEigenvectorQuenchParams=dict()
+                 lowestEigenvectorQuenchParams=dict(),
+                 tangentSpaceQuenchParams=dict(), 
+                 max_uphill_step=0.1,
                  ):
         """
         This class implements the routine for finding the nearest transition state
+        
+        ***orthogZeroEigs is system dependent, don't forget to set it***
         
         Parameters
         ----------
@@ -111,11 +114,21 @@ class FindTransitionState(object):
         nfail_max :
             if the lowest eigenvector search fails this many times in a row than the
             algorithm ends
-        kwargs : 
-            additional parameters passed to the
         eigenvec : 
             a guess for the initial lowest eigenvector
-        
+        iprint :
+            the interval at which to print status messages
+        orthogZeroEigs : callable
+            this function makes a vector orthogonal to the known zero eigenvectors
+                orthogZeroEigs=0  : default behavior, assume translational and rotational symmetry
+                orthogZeroEigs=None : the vector is unchanged
+        lowestEigenvectorQuenchParams : dict 
+            these parameters are passed to the quench routine for he lowest eigenvector search 
+        tangentSpaceQuenchParams : dict 
+            these parameters are passed quench routine for the minimization in the space
+            tabgent to the lowest eigenvector 
+        max_uphill_step : 
+            the maximum step uphill along the direction of the lowest eigenvector
             
         
         Notes
@@ -145,13 +158,16 @@ class FindTransitionState(object):
         params for tangent space search : 
             should be passable and loaded from defaults.
             
-        
-        **tolerance for any of the minimizations must be at least as tight 
-        as the total minimization or it will never end
+
+        todo:
+            if the eigenvalue sign goes from positive to negative,
+            go back to where it was negative and take a smaller step
+            
+            The tolerances for the various steps of this algorithm must be correlated.
+            if the tol for tangent space search is lower than the total tol, then it will never finish
         
         """
         self.pot = pot
-        self.tangent_space_quencher = defaults.quenchRoutine
         self.coords = np.copy(coords)
         self.tol = tol
         self.nsteps = nsteps
@@ -162,11 +178,28 @@ class FindTransitionState(object):
         self.orthogZeroEigs = orthogZeroEigs
         self.iprint = iprint
         self.lowestEigenvectorQuenchParams = lowestEigenvectorQuenchParams
-        #self.tangent_space_quench_params = copy.copy(defaults.quenchParams)
+        self.max_uphill_step = max_uphill_step
+        self.tangent_space_quencher = defaults.tangentSpaceQuenchRoutine
+        self.tangent_space_quench_params = dict(defaults.tangentSpaceQuenchParams.items() +
+                                                tangentSpaceQuenchParams.items())
             
         
         self.rmsnorm = 1./np.sqrt(float(len(coords))/3.)
         self.oldeigenvec = None
+
+        #set tolerance for the tangent space minimization.  
+        #Be sure it is tighter tolerance than self.tol
+        self.tol_tangent = self.tol * 0.2
+        if self.tangent_space_quench_params.has_key("tol"):
+            self.tol_tangent = min(self.tol_tangent, 
+                                   self.tangent_space_quench_params["tol"])
+            self.tangent_space_quench_params.clear("tol")
+        self.nsteps_tangent1 = 10
+        self.nsteps_tangent2 = 100
+
+        #set some parameters used in finding lowest eigenvector
+        #initial guess for Hermitian
+        self.H0 = None 
 
     def run(self):
         coords = np.copy(self.coords)
@@ -194,7 +227,8 @@ class FindTransitionState(object):
             
             if self.iprint > 0:
                 if i % self.iprint == 0:
-                    print "findTransitionState:", i, E, rms, "eigenvalue", self.eigenval, "rms perpendicular", tangentrms, "grad parallel", gradpar
+                    print "findTransitionState:", i, E, rms, "eigenvalue", self.eigenval, \
+                          "rms perpendicular", tangentrms, "grad parallel", gradpar
             
             if callable(self.event):
                 self.event(E, coords, rms)
@@ -234,8 +268,6 @@ class FindTransitionState(object):
 
         
     def getLowestEigenVector(self, coords, i):
-        if not hasattr(self, "H0"):
-            self.H0 = None
         res = findLowestEigenVector(coords, self.pot, H0=self.H0, eigenvec0=self.eigenvec, 
                                     orthogZeroEigs=self.orthogZeroEigs,
                                     **self.lowestEigenvectorQuenchParams)
@@ -268,20 +300,22 @@ class FindTransitionState(object):
         we've gotten close to the transition state.  So limit the number of steps
         to 10 until we get close.
         """
-        tol = self.tol
+        #determine the number of steps
         E, grad = self.pot.getEnergyGradient(coords)
         gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
-        nstepsperp = 10
-        if np.abs(gradpar) <= tol*2.:
-            nstepsperp = 100
+        nstepsperp = self.nsteps_tangent1
+        if np.abs(gradpar) <= self.tol*2.:
+            nstepsperp = self.nsteps_tangent2
 
         tspot = TSRefinementPotential(self.pot, self.eigenvec)
-        ret = self.tangent_space_quencher(coords, tspot.getEnergyGradient, nsteps=nstepsperp, tol=tol*0.2)
+        ret = self.tangent_space_quencher(coords, tspot.getEnergyGradient, 
+                                          nsteps=nstepsperp, tol=self.tol_tangent,
+                                          **self.tangent_space_quench_params)
         coords = ret[0]
         rms = ret[2]
         return coords, rms
 
-    def stepUphill(self, coords, maxstep = 0.1):
+    def stepUphill(self, coords):
         """
         step uphill in the direction of self.eigenvec.  self.eigenval is used
         to determine the best stepsize
@@ -290,8 +324,8 @@ class FindTransitionState(object):
         F = np.dot(grad, self.eigenvec) 
         h = 2.*F/ np.abs(self.eigenval) / (1. + np.sqrt(1.+4.*F**2/self.eigenval**2 ))
 
-        if np.abs(h) > maxstep:
-            h *= maxstep / abs(h)
+        if np.abs(h) > self.max_uphill_step:
+            h *= self.max_uphill_step / abs(h)
         coords += h * self.eigenvec
 
         return coords
@@ -338,7 +372,7 @@ def guesstsATLJ():
     coords1 = ret1[0]
     coords2 = ret2[0]
     from pygmin.NEB.NEB import NEB
-    neb = NEB(coords1, coords2, pot)
+    neb = NEB(InterpolatedPath(coords1, coords2, 30), pot)
     neb.optimize()
     neb.MakeAllMaximaClimbing()
     #neb.optimize()
@@ -360,7 +394,7 @@ def guessts(coords1, coords2, pot):
     print "dist", dist
     print "energy coords1", pot.getEnergy(coords1)
     print "energy coords2", pot.getEnergy(coords2)
-    neb = NEB(coords1, coords2, pot)
+    neb = NEB(InterpolatedPath(coords1, coords2, 20), pot)
     #neb.optimize(quenchParams={"iprint" : 1})
     neb.optimize(quenchParams={"iprint": -30, "nsteps":100})
     neb.MakeAllMaximaClimbing()

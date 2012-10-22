@@ -88,7 +88,10 @@ tsSearchParams = dict()
 lowestEigenvectorQuenchParams = dict()
 lowestEigenvectorQuenchParams["iprint"] = 400 
 lowestEigenvectorQuenchParams["tol"] = 1e-6 
-lowestEigenvectorQuenchParams["nsteps"] = 500 
+lowestEigenvectorQuenchParams["nsteps"] = 500
+
+tangentSpaceQuenchRoutine = quench.lbfgs_py
+tangentSpaceQuenchParams = dict()
 
 
 NEBparams = dict()
