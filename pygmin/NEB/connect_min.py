@@ -23,7 +23,7 @@ class DoubleEndedConnect(object):
     fail gracefully
     """
     def __init__(
-                 self, min1, min2, pot, graph, mindist, database=None, tsSearchParams = None, 
+                 self, min1, min2, pot, graph, mindist, database=None, tsSearchParams=dict(), 
                  NEB_optimize_quenchParams = dict(), use_all_min=False, verbosity=1):
         self.graph = graph
         self.minstart = min1
@@ -148,7 +148,8 @@ class DoubleEndedConnect(object):
         """
         #run ts search algorithm
         print "refining transition state from NEB climbing image"
-        ret = findTransitionState(coords, self.pot, tsSearchParams = self.tsSearchParams)
+        kwargs = dict(defaults.tsSearchParams.items() + self.tsSearchParams.items())
+        ret = findTransitionState(coords, self.pot, **kwargs)
         
         #check to make sure it is a valid transition state 
         coords = ret.coords
@@ -316,7 +317,7 @@ class DoubleEndedConnect(object):
         the main loop of the algorithm
         """
         NEBattempts = 2;
-        for i in maxiter: 
+        for i in range(maxiter): 
             if self.graph.areConnected(self.minstart, self.minend):
                 return
             

@@ -9,23 +9,21 @@ def distance_cart(x1, x2):
 import pygmin.defaults as defaults
 import pygmin.optimize.quench as quench
 
-class NEB:
-    """Nudged elastic band implementation
-
-    intial: iteratable 
-        iteratable object of all images
-        
-    distance  (distance_cart):
-        distance function for the elastic band
-            
-    k (100.0):
-        elastic constant for band
-        
-    """
-    getEnergyCount = 0
-    printStateFile = None
+class NEB(object):
     def __init__(self, path, potential, distance=distance_cart, 
-                 k=100.0, iprint=1):
+                 k=100.0, iprint=-1):
+        """Nudged elastic band implementation
+    
+        intial: iteratable 
+            iteratable object of all images
+            
+        distance  (distance_cart):
+            distance function for the elastic band
+                
+        k (100.0):
+            elastic constant for band
+            
+        """
         self.distance = distance
         self.potential = potential
         self.k = k
