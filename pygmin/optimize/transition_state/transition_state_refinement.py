@@ -93,6 +93,7 @@ class FindTransitionState(object):
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.1,
+                 demand_initial_negative_vec=True
                  ):
         """
         This class implements the routine for finding the nearest transition state
@@ -129,6 +130,8 @@ class FindTransitionState(object):
             tabgent to the lowest eigenvector 
         max_uphill_step : 
             the maximum step uphill along the direction of the lowest eigenvector
+        demand_initial_negative_vec : bool
+            if True, abort if the initial lowest eigenvector is positive
             
         
         Notes
@@ -182,7 +185,7 @@ class FindTransitionState(object):
         self.tangent_space_quencher = defaults.tangentSpaceQuenchRoutine
         self.tangent_space_quench_params = dict(defaults.tangentSpaceQuenchParams.items() +
                                                 tangentSpaceQuenchParams.items())
-            
+        self.demand_initial_negative_vec = demand_initial_negative_vec    
         
         self.rmsnorm = 1./np.sqrt(float(len(coords))/3.)
         self.oldeigenvec = None
@@ -200,6 +203,8 @@ class FindTransitionState(object):
         #set some parameters used in finding lowest eigenvector
         #initial guess for Hermitian
         self.H0 = None 
+        
+        
 
     def run(self):
         coords = np.copy(self.coords)
@@ -238,20 +243,26 @@ class FindTransitionState(object):
                 print "stopping findTransitionState.  too many failures in eigenvector search"
                 break
 
+            if i == 0 and self.eigenval > 0.:
+                print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
+                if self.demand_initial_negative_vec:
+                    print "            aborting transition state search"
+                    break
+
         #done.  do one last eigenvector search because coords may have changed
         self.getLowestEigenVector(coords, i)
 
         #done, print some data
         print "findTransitionState done:", i, E, rms, "eigenvalue", self.eigenval
     
+        success = True
         #check if results make sense
         if self.eigenval >= 0.:
             print "warning: transition state is ending with positive eigenvalue", self.eigenval
+            success = False
         if rms > self.tol:
             print "warning: transition state search appears to have failed: rms", rms
             success = False
-        else:
-            success = True
 
         #return results
         res = Result()
@@ -275,8 +286,6 @@ class FindTransitionState(object):
         if res.eigenval > 0.:
             print "warning transition state search found positive lowest eigenvalue", res.eigenval, \
                 "step", i
-            if i == 0: 
-                print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
         if i > 0:
             overlap = np.dot(self.oldeigenvec, res.eigenvec)
             if overlap < 0.5:
