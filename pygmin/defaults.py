@@ -84,6 +84,7 @@ quenchParams = dict()
 tsSearchRoutine = dimer
 tsSearchParams = dict()
 
+#these are parameters for the minimizer
 lowestEigenvectorQuenchParams = dict()
 lowestEigenvectorQuenchParams["iprint"] = 400 
 lowestEigenvectorQuenchParams["tol"] = 1e-6 

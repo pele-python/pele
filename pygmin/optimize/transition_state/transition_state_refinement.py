@@ -3,13 +3,13 @@ import copy
 from collections import namedtuple
 from scipy.optimize import Result
 
-from lowest_eig_pot import LowestEigPot
-from orthogopt import orthogopt
+from lowest_eig_pot import LowestEigPot, findLowestEigenVector
 from pygmin.potentials.potential import potential as basepot
 from pygmin.storage.savenlowest import SaveN
 import pygmin.defaults as defaults
+from pygmin.defaults import lowestEigenvectorQuenchParams
 
-__all__ = ["findTransitionState"]
+__all__ = ["findTransitionState", "FindTransitionState"]
 
 def analyticalLowestEigenvalue(coords, pot):
     e, g, hess = pot.getEnergyGradientHessian(coords)
@@ -53,7 +53,7 @@ class TSRefinementPotential(basepot):
         will return the gradient with the component along the eigenvector removed.  This is for
         energy minimization in the space tangent to the gradient    
     """
-    def __init__(self, pot, coords, verbose=False, orthogZeroEigs = 0):
+    def __init__(self, pot, eigenvec):
         """
         Parameters
         ----------
@@ -65,76 +65,20 @@ class TSRefinementPotential(basepot):
             If None is pass then no function will be used
         """
         self.pot = pot
-        self.eigvec = np.random.rand(len(coords)) #initial random guess
-        self.verbose = verbose
-        self.H0 = None
-        self.orthogZeroEigs = orthogZeroEigs
+        self.eigenvec = eigenvec
 
     
-    def getLowestEigenvalue(self, coords, **kwargs):
-        """
-        use LowestEigPot to find the lowest eigenvector using the LBFGS minimizer
-        """
-        #combine kwargs with defaults.lowestEigenvectorQuenchParams
-        kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 
-                      kwargs.items())
-        
-        if kwargs.has_key("tol"):
-            tol = kwargs["tol"]
-        else:
-            tol = 1e-6
-            kwargs["tol"] = tol
-        
-        #set up potential for minimization        
-        eigpot = LowestEigPot(coords, self.pot, orthogZeroEigs=self.orthogZeroEigs)
-        
-        #minimize, using the last eigenvector as a starting point
-        #and starting with H0 from last minimization 
-        from pygmin.optimize.lbfgs_py import LBFGS
-        quencher = LBFGS(self.eigvec, eigpot, rel_energy=True, H0=self.H0, 
-                         **kwargs)
-        ret = quencher.run()
-        self.H0 = quencher.H0
-        #ret = quench(self.eigvec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, rel_energy=True)
-        self.eigval = ret[1]
-        self.eigvec = ret[0]
-        
-        if False and self.verbose: #debugging
-            print ""
-            print "eigenvalue is estimated to be", self.eigval
-            try:
-                trueval, truevec = analyticalLowestEigenvalue(coords, self.pot)
-                print "analytical lowest eigenvalue", trueval
-                print "overlap between estimated and analytical eigenvectors", \
-                    np.dot(truevec, self.eigvec)
-                if True:
-                    print self.eigvec
-                    print truevec
-            except:
-                pass
 
-        #check if success
-        rms = ret[2]
-        return rms <= tol 
-
-    def stepUphill(self, coords, maxstep = 0.1):
-        e, grad = self.pot.getEnergyGradient(coords)
-        F = np.dot(grad, self.eigvec) 
-        h = 2.*F/ np.abs(self.eigval) / (1. + np.sqrt(1.+4.*F**2/self.eigval**2 ))
-
-        if np.abs(h) > maxstep:
-            h *= maxstep / abs(h)
-        coords += h * self.eigvec
 
     
     def getEnergyGradient(self, coords):
         """
-        return the energy and the gradient with the component along the eigvec removed.
-        For use in energy minimization in the space perpendicular to eigvec
+        return the energy and the gradient with the component along the eigenvec removed.
+        For use in energy minimization in the space perpendicular to eigenvec
         """
         e, grad = self.pot.getEnergyGradient(coords)
-        #norm = np.sum(self.eigvec)
-        grad -= np.dot(grad, self.eigvec) * self.eigvec
+        #norm = np.sum(self.eigenvec)
+        grad -= np.dot(grad, self.eigenvec) * self.eigenvec
         return e, grad
 
 
@@ -145,8 +89,10 @@ class FindTransitionState(object):
         if the eigenvalue sign goes from positive to negative,
         go back to where it was negative and take a smaller step
     """
-    def __init__(self, coords, pot, tol = 1e-4, event=None, nsteps=1000, 
-                 tsSearchParams = None, nfail_max=5, **kwargs):
+    def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=1000, 
+                 nfail_max=5, eigenvec=None, iprint=-1, orthogZeroEigs=0,
+                 lowestEigenvectorQuenchParams=dict()
+                 ):
         """
         This class implements the routine for finding the nearest transition state
         
@@ -167,6 +113,8 @@ class FindTransitionState(object):
             algorithm ends
         kwargs : 
             additional parameters passed to the
+        eigenvec : 
+            a guess for the initial lowest eigenvector
         
             
         
@@ -210,35 +158,22 @@ class FindTransitionState(object):
         self.event = event
         self.nfail_max = nfail_max
         self.nfail = 0
+        self.eigenvec = eigenvec
+        self.orthogZeroEigs = orthogZeroEigs
+        self.iprint = iprint
+        self.lowestEigenvectorQuenchParams = lowestEigenvectorQuenchParams
         #self.tangent_space_quench_params = copy.copy(defaults.quenchParams)
-
-        if tsSearchParams is None:
-            tsSearchParams = defaults.tsSearchParams
-        self.iprint = tsSearchParams.get("iprint")
-        if self.iprint is None: iprint = -1
-        if tsSearchParams.has_key("orthogZeroEigs"):
-            has_orthogZeroEigs = True
-            orthogZeroEigs = tsSearchParams["orthogZeroEigs"]  #this could meaningfully be None
-        else:
-            has_orthogZeroEigs = False
-    
-        self.lowestEigenvectorQuenchParams = defaults.lowestEigenvectorQuenchParams
             
-                
-        if has_orthogZeroEigs:
-            self.tspot = TSRefinementPotential(pot, coords, orthogZeroEigs=orthogZeroEigs, **kwargs)
-        else:
-            self.tspot = TSRefinementPotential(pot, coords, **kwargs)
         
         self.rmsnorm = 1./np.sqrt(float(len(coords))/3.)
-        self.oldeigvec = None
+        self.oldeigenvec = None
 
     def run(self):
         coords = np.copy(self.coords)
         for i in xrange(self.nsteps):
             
             #get the lowest eigenvalue and eigenvector
-            coords = self.getLowestEigenVector(coords, i)
+            self.getLowestEigenVector(coords, i)
             
             #step uphill along the direction of the lowest eigenvector
             coords = self.stepUphill(coords)
@@ -246,20 +181,20 @@ class FindTransitionState(object):
             if False:
                 #maybe we want to update the lowest eigenvector now that we've moved?
                 #david thinks this is a bad idea
-                coords = self.getLowestEigenVector(coords, i)
+                self.getLowestEigenVector(coords, i)
 
             #minimize the coordinates in the space perpendicular to the lowest eigenvector
-            coords, rms = self.minimizeTangentSpace(coords)
+            coords, tangentrms = self.minimizeTangentSpace(coords)
 
 
             #check if we are done and print some stuff
             E, grad = self.pot.getEnergyGradient(coords)
             rms = np.linalg.norm(grad) * self.rmsnorm
-            gradpar = np.dot(grad, self.tspot.eigvec) / np.linalg.norm(self.tspot.eigvec)
+            gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
             
             if self.iprint > 0:
                 if i % self.iprint == 0:
-                    print "findTransitionState:", i, E, rms, "eigenvalue", self.tspot.eigval, "rms perpendicular", rms, "grad parallel", gradpar
+                    print "findTransitionState:", i, E, rms, "eigenvalue", self.eigenval, "rms perpendicular", tangentrms, "grad parallel", gradpar
             
             if callable(self.event):
                 self.event(E, coords, rms)
@@ -269,12 +204,15 @@ class FindTransitionState(object):
                 print "stopping findTransitionState.  too many failures in eigenvector search"
                 break
 
+        #done.  do one last eigenvector search because coords may have changed
+        self.getLowestEigenVector(coords, i)
+
         #done, print some data
-        print "findTransitionState done:", i, E, rms, "eigenvalue", self.tspot.eigval
+        print "findTransitionState done:", i, E, rms, "eigenvalue", self.eigenval
     
         #check if results make sense
-        if self.tspot.eigval >= 0.:
-            print "warning: transition state has positive eigenvalue", self.tspot.eigval
+        if self.eigenval >= 0.:
+            print "warning: transition state is ending with positive eigenvalue", self.eigenval
         if rms > self.tol:
             print "warning: transition state search appears to have failed: rms", rms
             success = False
@@ -285,8 +223,8 @@ class FindTransitionState(object):
         res = Result()
         res.coords = coords
         res.energy = E
-        res.eigenval = self.tspot.eigval
-        res.eigenvec = self.tspot.eigvec
+        res.eigenval = self.eigenval
+        res.eigenvec = self.eigenvec
         res.grad = grad
         res.rms = rms
         res.nsteps = i
@@ -296,51 +234,66 @@ class FindTransitionState(object):
 
         
     def getLowestEigenVector(self, coords, i):
-        if self.lowestEigenvectorQuenchParams.has_key("tol"):
-            tol = self.lowestEigenvectorQuenchParams["tol"]
-        else:
-            tol = 1e-6
-            self.lowestEigenvectorQuenchParams["tol"] = tol
-
-        success = self.tspot.getLowestEigenvalue(coords, **self.lowestEigenvectorQuenchParams)
-        if self.tspot.eigval > 0.:
-            print "warning transition state search found positive lowest eigenvalue", self.tspot.eigval, \
+        if not hasattr(self, "H0"):
+            self.H0 = None
+        res = findLowestEigenVector(coords, self.pot, H0=self.H0, eigenvec0=self.eigenvec, 
+                                    orthogZeroEigs=self.orthogZeroEigs,
+                                    **self.lowestEigenvectorQuenchParams)
+        
+        if res.eigenval > 0.:
+            print "warning transition state search found positive lowest eigenvalue", res.eigenval, \
                 "step", i
             if i == 0: 
                 print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
         if i > 0:
-            overlap = np.dot(self.oldeigvec, self.tspot.eigvec)
+            overlap = np.dot(self.oldeigenvec, res.eigenvec)
             if overlap < 0.5:
                 print "warning: the new eigenvector has low overlap with previous", overlap
-        self.oldeigvec = self.tspot.eigvec.copy()
-
-        if success:
+        
+        self.H0 = res.H0
+        self.eigenvec = res.eigenvec
+        self.eigenval = res.eigenval
+        self.oldeigenvec = self.eigenvec.copy()
+        
+        if res.success:
             self.nfail = 0
         else:
             self.nfail += 1
 
-        return coords
     
     def minimizeTangentSpace(self, coords):
         """
-        now minimize the energy in the space perpendicular to eigvec.
+        now minimize the energy in the space perpendicular to eigenvec.
         There's no point in spending much effort on this until 
         we've gotten close to the transition state.  So limit the number of steps
         to 10 until we get close.
         """
         tol = self.tol
         E, grad = self.pot.getEnergyGradient(coords)
-        gradpar = np.dot(grad, self.tspot.eigvec) / np.linalg.norm(self.tspot.eigvec)
+        gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
         nstepsperp = 10
         if np.abs(gradpar) <= tol*2.:
             nstepsperp = 100
 
-        ret = self.tangent_space_quencher(coords, self.tspot.getEnergyGradient, nsteps=nstepsperp, tol=tol*0.2)
+        tspot = TSRefinementPotential(self.pot, self.eigenvec)
+        ret = self.tangent_space_quencher(coords, tspot.getEnergyGradient, nsteps=nstepsperp, tol=tol*0.2)
         coords = ret[0]
-        return coords, ret[2]
+        rms = ret[2]
+        return coords, rms
 
-    def stepUphill(self, coords):
-        self.tspot.stepUphill(coords)
+    def stepUphill(self, coords, maxstep = 0.1):
+        """
+        step uphill in the direction of self.eigenvec.  self.eigenval is used
+        to determine the best stepsize
+        """
+        e, grad = self.pot.getEnergyGradient(coords)
+        F = np.dot(grad, self.eigenvec) 
+        h = 2.*F/ np.abs(self.eigenval) / (1. + np.sqrt(1.+4.*F**2/self.eigenval**2 ))
+
+        if np.abs(h) > maxstep:
+            h *= maxstep / abs(h)
+        coords += h * self.eigenvec
+
         return coords
 
 def findTransitionState(*args, **kwargs):
@@ -388,7 +341,7 @@ def guesstsATLJ():
     neb = NEB(coords1, coords2, pot)
     neb.optimize()
     neb.MakeAllMaximaClimbing()
-    neb.optimize()
+    #neb.optimize()
     for i in xrange(len(neb.energies)):
         if(neb.isclimbing[i]):
             coords = neb.coords[i,:]
@@ -409,9 +362,9 @@ def guessts(coords1, coords2, pot):
     print "energy coords2", pot.getEnergy(coords2)
     neb = NEB(coords1, coords2, pot)
     #neb.optimize(quenchParams={"iprint" : 1})
-    neb.optimize(quenchParams={"iprint": 30, "nsteps":100})
+    neb.optimize(quenchParams={"iprint": -30, "nsteps":100})
     neb.MakeAllMaximaClimbing()
-    neb.optimize(quenchParams={"iprint": 30, "nsteps":100})
+    #neb.optimize(quenchParams={"iprint": 30, "nsteps":100})
     for i in xrange(len(neb.energies)):
         if(neb.isclimbing[i]):
             coords = neb.coords[i,:]
@@ -497,7 +450,7 @@ def testpot1():
         printevent = PrintEvent(fout)
         print ""
         print "starting the transition state search"
-        ret = findTransitionState(coords, pot, event=printevent, verbose = False)
+        ret = findTransitionState(coords, pot, event=printevent, iprint=-1)
         print ret
         #coords, eval, evec, e, grad, rms = ret
         e = pot.getEnergy(ret.coords)

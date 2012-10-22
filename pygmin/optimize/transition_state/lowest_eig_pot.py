@@ -1,8 +1,11 @@
 import numpy as np
-from pygmin.potentials.potential import potential as basepot
+
+from scipy.optimize import Result
+
 from orthogopt import orthogopt
-
-
+from pygmin.potentials.potential import potential as basepot
+import pygmin.defaults as defaults
+from pygmin.utils.rotations import vec_random
 
 class LowestEigPot(basepot):
     """
@@ -11,7 +14,7 @@ class LowestEigPot(basepot):
     
     here the energy corresponds to the eigenvalue, and the coordinates to be optimized is the eigenvector
     """
-    def __init__(self, coords, pot, orthogZeroEigs = 0):
+    def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-3):
         """
         :coords: is the point in space where we want to compute the lowest eigenvector
         
@@ -21,6 +24,8 @@ class LowestEigPot(basepot):
         :orthogZeroEigs: the function which makes a vector orthogonal to the known
             eigenvectors with zero eigenvalues.  The default assumes global
             translational and rotational symmetry
+        :dx: float
+            the local curvature is approximated using 3 points separated by dx
         """
         self.coords = np.copy(coords)
         self.pot = pot
@@ -31,7 +36,7 @@ class LowestEigPot(basepot):
             self.orthogZeroEigs = orthogZeroEigs
         #print "orthogZeroEigs", self.orthogZeroEigs
         
-        self.diff = 1e-3
+        self.diff = dx
     
     
     def getEnergyGradient(self, vec_in):
@@ -72,6 +77,46 @@ class LowestEigPot(basepot):
         
         return diag2, grad
 
+def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, **kwargs):
+    """
+    find the lowest eigenvector using the LBFGS minimizer
+    """
+    #combine kwargs with defaults.lowestEigenvectorQuenchParams
+    kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 
+                  kwargs.items())
+    
+    if kwargs.has_key("tol"):
+        tol = kwargs["tol"]
+    else:
+        tol = 1e-6
+        kwargs["tol"] = tol
+    
+    if eigenvec0 is None:
+        #eigenvec0 = vec_random()
+        #this random vector should be distributed uniformly on a hypersphere.
+        #it is not
+        eigenvec0 = np.random.uniform(-1, 1, coords.shape)
+        eigenvec0 /= np.linalg.norm(eigenvec0)
+        print eigenvec0.shape
+        print eigenvec0
+    
+    #set up potential for minimization    
+    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs)
+    
+    #minimize, using the last eigenvector as a starting point
+    #and starting with H0 from last minimization 
+    from pygmin.optimize.lbfgs_py import LBFGS
+    quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
+                     **kwargs)
+    ret = quencher.run()
+
+    res = Result()
+    res.eigenval = ret[1]
+    res.eigenvec = ret[0]
+    res.H0 = quencher.H0
+    res.rms = ret[2]
+    res.success = res.rms <= tol
+    return res
         
 def testpot2():
     from pygmin.potentials.lj import LJ
