@@ -67,7 +67,7 @@ class InterpolatedPath(object):
     class Iterator(object):
         def __init__(self, path):
             self.path = path
-            self.index = 0
+            self.index = -1
             
         def __iter__(self):
             return self
