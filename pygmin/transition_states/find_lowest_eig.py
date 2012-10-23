@@ -116,12 +116,6 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 
                   kwargs.items())
     
-    if kwargs.has_key("tol"):
-        tol = kwargs["tol"]
-    else:
-        tol = 1e-6
-        kwargs["tol"] = tol
-    
     if eigenvec0 is None:
         #eigenvec0 = vec_random()
         #this random vector should be distributed uniformly on a hypersphere.
@@ -136,14 +130,16 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     #and starting with H0 from last minimization 
     quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
                      **kwargs)
-    ret = quencher.run()
+    res = quencher.run()
 
-    res = Result()
-    res.eigenval = ret[1]
-    res.eigenvec = ret[0]
+    #res = Result()
+    res.eigenval = res.energy
+    res.eigenvec = res.coords
+    delattr(res, "energy")
+    delattr(res, "coords")
     res.H0 = quencher.H0
-    res.rms = ret[2]
-    res.success = res.rms <= tol
+    #res.rms = ret[2]
+    #res.success = res.rms <= tol
     return res
 
 

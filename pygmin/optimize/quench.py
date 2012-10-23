@@ -165,10 +165,10 @@ def _lbfgs_py(coords, pot, **kwargs):
     lbfgs = LBFGS(coords, pot, **kwargs)
     
     ret = lbfgs.run()
-    coords = ret[0]
-    e = ret[1]
-    rms = ret[2]
-    funcalls = ret[3]
+    coords = ret.coords
+    e = ret.energy
+    rms = ret.rms
+    funcalls = ret.nfev
     return coords, e, rms, funcalls
 
 def lbfgs_py(coords, getEnergyGradient, **kwargs):
@@ -186,10 +186,11 @@ def _mylbfgs(coords, pot, **kwargs):
     lbfgs = LBFGS(coords, pot, **kwargs)
     
     ret = lbfgs.run()
-    coords = ret[0]
-    e = ret[1]
-    rms = ret[2]
-    funcalls = ret[3]
+    
+    coords = ret.coords
+    e = ret.energy
+    rms = ret.rms
+    funcalls = ret.nfev
     return coords, e, rms, funcalls
 
 def mylbfgs(coords, getEnergyGradient, **kwargs):

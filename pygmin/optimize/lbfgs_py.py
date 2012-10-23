@@ -1,6 +1,7 @@
 import numpy as np
 from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
+from scipy.optimize import Result
 
 class LBFGS:
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
@@ -273,6 +274,8 @@ class LBFGS:
         """
         the main loop of the algorithm
         """
+        res = Result()
+        res.message = []
         tol = self.tol
         iprint = self.iprint
         nsteps = self.nsteps
@@ -285,6 +288,7 @@ class LBFGS:
         i = 1
         self.funcalls += 1
         e, G = self.pot.getEnergyGradient(X)
+        res.success = False
         while i < nsteps:
             stp = self.getStep(X, G)
             
@@ -294,6 +298,7 @@ class LBFGS:
                 print "Warning: problem with adjustStepSize, ending quench"
                 rms = np.linalg.norm(G) / sqrtN
                 print "    on failure: quench step", i, e, rms, self.funcalls
+                res.message.append( "problem with adjustStepSize" )
                 break
             #e, G = self.pot.getEnergyGradient(X)
             
@@ -314,9 +319,16 @@ class LBFGS:
                                                           tol=self.tol)
                 
             if i_am_done:
+                res.success = True
                 break
-            
-        return X, e, rms, self.funcalls, G , i
+        
+        res.nsteps = i
+        res.nfev = self.funcalls
+        res.coords = X
+        res.energy = e
+        res.rms = rms
+        res.grad = G
+        return res
    
 
 class PrintEvent:

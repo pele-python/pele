@@ -283,7 +283,7 @@ class FindTransitionState(object):
         if rms > self.tol:
             print "warning: transition state search appears to have failed: rms", rms
             success = False
-        if i >= self.niter:
+        if i >= self.nsteps:
             res.messgage.append( "maximum iterations reached %d" % i )
             
 
