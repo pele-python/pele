@@ -6,7 +6,9 @@ Created on 2 Aug 2012
 
 import numpy as np
 
-def for_cluster(coords):
+__all__ = ["zeroEV_cluster", "gramm_schmidt"]
+
+def zeroEV_cluster(coords):
         # translational eigenvectors
         x1 = np.zeros(coords.shape)
         x2 = x1.copy()

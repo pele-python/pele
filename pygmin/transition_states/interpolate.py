@@ -1,3 +1,9 @@
+"""
+tool for creating interpolated paths as input to NEB
+"""
+
+__all__ = ["interpolate_linear", "InterpolatedPathDensity", "InterpolatedPath"]
+
 def interpolate_linear(initial, final, t):
     '''
         Linear interpolation

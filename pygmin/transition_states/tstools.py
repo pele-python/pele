@@ -2,6 +2,7 @@ import numpy as np
 from pygmin import defaults
 import pygmin.optimize.quench as quench
 
+__all__ = ["minima_from_ts"]
 
 def determinePushoff(
             getEnergyGradient, coords, vec, gdiff=100., stepmin = 1e-5, stepmax = 0.2,

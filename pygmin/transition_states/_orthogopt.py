@@ -1,5 +1,6 @@
 import numpy as np
 
+__all__ = ["orthogopt"]
 
 def subcross(vec3, redcoords, n):
     if n == 0:

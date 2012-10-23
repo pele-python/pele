@@ -1,5 +1,5 @@
-from pygmin.optimize import quench
-from pygmin.NEB import dimer
+import pygmin.optimize.quench as quench
+#import pygmin.transition_states
 
 """
 These are an easy way to change the default parameters of the various features of PyGMIN. 
@@ -81,7 +81,7 @@ The following are sections of the code which should have default settings in thi
 quenchRoutine = quench.lbfgs_py
 quenchParams = dict()
 
-tsSearchRoutine = dimer
+#tsSearchRoutine = pygmin.transition_states.findTransitionState #  was causing cyclical import problems 
 tsSearchParams = dict()
 
 #these are parameters for the minimizer
@@ -95,6 +95,6 @@ tangentSpaceQuenchParams = dict()
 
 
 NEBparams = dict()
-NEBquenchRoutine = quench.quench
+NEBquenchRoutine = quench.quench 
 NEBquenchParams = dict()
 NEBquenchParams["nsteps"] = 100

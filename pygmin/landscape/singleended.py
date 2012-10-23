@@ -4,13 +4,12 @@ Single ended searches
 @author: ruehle
 '''
 
-__all__ = ["find_escape_pathes"]
+__all__ = ["find_escape_paths"]
 
 import numpy as np
-from dimer import DimerSearch
+
+from pygmin.transition_states import DimerSearch, minima_from_ts, zeroEV_cluster
 from pygmin.optimize import quench
-import tstools
-from pygmin.utils import zeroev
 
 def _uphill_search(x0, search, push, push_minrms):
     ev = search.tau
@@ -32,15 +31,15 @@ def _uphill_search(x0, search, push, push_minrms):
     #search.findNextTS()
     return quench.fire(x1, search.getEnergyGradient, tol=1e-6)
         
-def find_escape_pathes(minimum, potential, graph, ntries=1, push=1.e-2, push_minrms=1.e-2):
+def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minrms=1.e-2):
     print "Single ended search for minimum", minimum._id, minimum.energy
     
-    search = DimerSearch(minimum.coords, potential, zeroEigenVecs=zeroev.for_cluster)
+    search = DimerSearch(minimum.coords, potential, zeroEigenVecs=zeroEV_cluster)
    
     for i in xrange(ntries):
         
         x_ts, energy_ts, rms, tmp = _uphill_search(minimum.coords, search, push, push_minrms)
-        ret1, ret2 = tstools.minima_from_ts(potential.getEnergyGradient, x_ts, displace=1e-2)
+        ret1, ret2 = minima_from_ts(potential.getEnergyGradient, x_ts, displace=1e-2)
         
         min1 = graph.addMinimum(ret1[1], ret1[0])
         min2 = graph.addMinimum(ret2[1], ret2[0])

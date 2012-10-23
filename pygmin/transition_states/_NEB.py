@@ -1,13 +1,13 @@
 import numpy as np
 import os.path
 
+import pygmin.defaults as defaults
+import pygmin.optimize.quench as quench
+
 __all__ = ["NEB"]
 
 def distance_cart(x1, x2):
     return x2 - x1
-
-import pygmin.defaults as defaults
-import pygmin.optimize.quench as quench
 
 class NEB(object):
     def __init__(self, path, potential, distance=distance_cart, 

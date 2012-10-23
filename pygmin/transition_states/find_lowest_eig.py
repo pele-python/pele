@@ -2,10 +2,10 @@ import numpy as np
 
 from scipy.optimize import Result
 
-from orthogopt import orthogopt
+from pygmin.transition_states import orthogopt
 from pygmin.potentials.potential import potential as basepot
 import pygmin.defaults as defaults
-from pygmin.utils.rotations import vec_random
+from pygmin.optimize.lbfgs_py import LBFGS
 
 __all__ = ["findLowestEigenVector"]
 
@@ -134,7 +134,6 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     
     #minimize, using the last eigenvector as a starting point
     #and starting with H0 from last minimization 
-    from pygmin.optimize.lbfgs_py import LBFGS
     quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
                      **kwargs)
     ret = quencher.run()
@@ -146,7 +145,41 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     res.rms = ret[2]
     res.success = res.rms <= tol
     return res
-        
+
+
+#
+#
+# only testing function below here
+#
+#
+
+def _analyticalLowestEigenvalue(coords, pot):
+    """for testing"""
+    e, g, hess = pot.getEnergyGradientHessian(coords)
+    #print "shape hess", np.shape(hess)
+    #print "hessian", hess
+    u, v = np.linalg.eig(hess)
+    #print "max imag value", np.max(np.abs(u.imag))
+    #print "max imag vector", np.max(np.abs(v.imag))
+    u = u.real
+    v = v.real
+    #print "eigenvalues", u
+    #for i in range(len(u)):
+    #    print "eigenvalue", u[i], "eigenvector", v[:,i]
+    #find minimum eigenvalue, vector
+    imin = 0
+    umin = 10.
+    for i in range(len(u)):
+        if np.abs(u[i]) < 1e-10: continue
+        if u[i] < umin:
+            umin = u[i]
+            imin = i
+    #print "analytical lowest eigenvalue ", umin, imin
+    #print "lowest eigenvector", v[:,imin]
+    return umin, v[:,imin]
+
+
+  
 def testpot2():
     from pygmin.potentials.lj import LJ
     import itertools
@@ -226,7 +259,7 @@ def testpot1():
     print ret[0]
 
 def testpot3():
-    from transition_state_refinement import guesstsLJ, analyticalLowestEigenvalue
+    from transition_state_refinement import guesstsLJ
     pot, coords, coords1, coords2 = guesstsLJ()
     coordsinit = np.copy(coords)
 

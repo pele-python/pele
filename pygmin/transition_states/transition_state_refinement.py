@@ -1,40 +1,13 @@
 import numpy as np
 import copy
-from collections import namedtuple
 from scipy.optimize import Result
 
-from lowest_eig_pot import LowestEigPot, findLowestEigenVector
 from pygmin.potentials.potential import potential as basepot
-from pygmin.storage.savenlowest import SaveN
 import pygmin.defaults as defaults
-from pygmin.NEB import InterpolatedPath
+from pygmin.transition_states import findLowestEigenVector
 
 
 __all__ = ["findTransitionState", "FindTransitionState"]
-
-def analyticalLowestEigenvalue(coords, pot):
-    e, g, hess = pot.getEnergyGradientHessian(coords)
-    #print "shape hess", np.shape(hess)
-    #print "hessian", hess
-    u, v = np.linalg.eig(hess)
-    #print "max imag value", np.max(np.abs(u.imag))
-    #print "max imag vector", np.max(np.abs(v.imag))
-    u = u.real
-    v = v.real
-    #print "eigenvalues", u
-    #for i in range(len(u)):
-    #    print "eigenvalue", u[i], "eigenvector", v[:,i]
-    #find minimum eigenvalue, vector
-    imin = 0
-    umin = 10.
-    for i in range(len(u)):
-        if np.abs(u[i]) < 1e-10: continue
-        if u[i] < umin:
-            umin = u[i]
-            imin = i
-    #print "analytical lowest eigenvalue ", umin, imin
-    #print "lowest eigenvector", v[:,imin]
-    return umin, v[:,imin]
 
 
 class TSRefinementPotential(basepot):
@@ -70,10 +43,6 @@ class TSRefinementPotential(basepot):
         self.pot = pot
         self.eigenvec = eigenvec
 
-    
-
-
-    
     def getEnergyGradient(self, coords):
         """
         return the energy and the gradient with the component along the
@@ -410,6 +379,7 @@ def findTransitionState(*args, **kwargs):
 #below here only stuff for testing
 ###################################################################
 
+
 def testgetcoordsLJ():
     a = 1.12 #2.**(1./6.)
     theta = 60./360*np.pi
@@ -434,11 +404,12 @@ def guesstsATLJ():
               -a, 0., 0., \
               a, 0., 0. ])
     from pygmin.optimize.quench import lbfgs_py as quench
+    from pygmin.transition_states import InterpolatedPath
     ret1 = quench(coords1, pot.getEnergyGradient)
     ret2 = quench(coords2, pot.getEnergyGradient)
     coords1 = ret1[0]
     coords2 = ret2[0]
-    from pygmin.NEB.NEB import NEB
+    from pygmin.transition_states import NEB
     neb = NEB(InterpolatedPath(coords1, coords2, 30), pot)
     neb.optimize()
     neb.MakeAllMaximaClimbing()
@@ -451,7 +422,7 @@ def guesstsATLJ():
 def guessts(coords1, coords2, pot):
     from pygmin.optimize.quench import lbfgs_py as quench
     from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
-    from pygmin.NEB.NEB import NEB
+    from pygmin.transition_states import NEB
     ret1 = quench(coords1, pot.getEnergyGradient)
     ret2 = quench(coords2, pot.getEnergyGradient)
     coords1 = ret1[0]
@@ -461,6 +432,7 @@ def guessts(coords1, coords2, pot):
     print "dist", dist
     print "energy coords1", pot.getEnergy(coords1)
     print "energy coords2", pot.getEnergy(coords2)
+    from pygmin.transition_states import InterpolatedPath
     neb = NEB(InterpolatedPath(coords1, coords2, 20), pot)
     #neb.optimize(quenchParams={"iprint" : 1})
     neb.optimize(quenchParams={"iprint": -30, "nsteps":100})

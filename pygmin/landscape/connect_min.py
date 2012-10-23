@@ -3,11 +3,7 @@ import networkx as nx
 import copy
 import itertools
 
-import tstools
-from pygmin.NEB.NEB import NEB
-from pygmin.NEB import InterpolatedPath, InterpolatedPathDensity
-from pygmin.optimize.transition_state.transition_state_refinement import findTransitionState
-from pygmin.storage.savenlowest import Minimum 
+from pygmin.transition_states import NEB, InterpolatedPathDensity, findTransitionState, minima_from_ts
 import pygmin.defaults as defaults
 
 __all__ = ["DoubleEndedConnect"]
@@ -256,7 +252,7 @@ class DoubleEndedConnect(object):
         
         #find the minima which this transition state connects
         print "falling off either side of transition state to find new minima"
-        ret1, ret2 = tstools.minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
+        ret1, ret2 = minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
             displace=1e-3, quenchParameters={"tol":1e-7})
         
         #add the new minima to the graph (they may already be in there)
@@ -438,9 +434,10 @@ def getSetOfMinLJ(natoms = 11): #for testing purposes
     from pygmin.takestep.adaptive import AdaptiveStepsize
     from pygmin.storage.database import Database
     import os
-    dbfile = "test.db"
-    os.remove(dbfile)
-    saveit = Database(db=dbfile)
+    #dbfile = "test.db"
+    #os.remove(dbfile)
+    #saveit = Database(db=dbfile)
+    saveit = Database()
     takestep1 = RandomDisplacement()
     takestep = AdaptiveStepsize(takestep1, frequency=15)
     bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)
@@ -449,7 +446,7 @@ def getSetOfMinLJ(natoms = 11): #for testing purposes
 
 
 def test():
-    from graph import Graph
+    from pygmin.landscape import Graph
     from pygmin.optimize.quench import lbfgs_py as quench
     from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
     from pygmin.storage.database import Database
