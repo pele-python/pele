@@ -1,3 +1,26 @@
+"""
+.. currentmodule:: pygmin.transition_states
+
+
+Local transition state search
++++++++++++++++++++++++
+
+.. autosummary::
+   :toctree: generated/
+
+    FindTransitionState
+    findTransitionState
+
+Lowest eigenvalue search
+++++++++++++++++++++++++
+
+.. autosummary::
+   :toctree: generated/
+
+    findLowestEigenVector
+
+
+"""
 
 from zeroev import *
 from _orthogopt import *
