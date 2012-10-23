@@ -210,6 +210,8 @@ class FindTransitionState(object):
 
     def run(self):
         coords = np.copy(self.coords)
+        res = Result() #  return object
+        res.message = []
         for i in xrange(self.nsteps):
             
             #get the lowest eigenvalue and eigenvector
@@ -223,6 +225,7 @@ class FindTransitionState(object):
                 self.nnegative += 1
                 if self.nnegative > self.nnegative_max:
                     print "warning: negative eigenvalue found too many times. ending", self.nnegative
+                    res.messgage.append( "negative eigenvalue found too many times %d" % self.nnegative )
                     break
                 print "the eigenvalue turned negative. Resetting last good values and taking smaller steps"
                 coords = self.resetState(coords)
@@ -256,12 +259,14 @@ class FindTransitionState(object):
                 break
             if self.nfail >= self.nfail_max:
                 print "stopping findTransitionState.  too many failures in eigenvector search"
+                res.messgage.append( "too many failures in eigenvector search %d" % self.nfail )
                 break
 
             if i == 0 and self.eigenval > 0.:
                 print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
                 if self.demand_initial_negative_vec:
                     print "            aborting transition state search"
+                    res.messgage.append( "initial eigenvalue is positive %f" % self.eigenvalue )
                     break
 
         #done.  do one last eigenvector search because coords may have changed
@@ -278,9 +283,11 @@ class FindTransitionState(object):
         if rms > self.tol:
             print "warning: transition state search appears to have failed: rms", rms
             success = False
+        if i >= self.niter:
+            res.messgage.append( "maximum iterations reached %d" % i )
+            
 
         #return results
-        res = Result()
         res.coords = coords
         res.energy = E
         res.eigenval = self.eigenval

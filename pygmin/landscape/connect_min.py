@@ -186,7 +186,13 @@ class DoubleEndedConnect(object):
                 else:
                     dist = 0.
                 self.Gdist.add_edge(min1, min2, {"dist":dist, "dist2":dist**2})
-                    
+    def remove_edgeGdist(self, min1, min2):
+        try:
+            self.Gdist.remove_edge(min1, min2)
+        except nx.NetworkXError:
+            pass
+        return True
+
 
     def getDist(self, min1, min2):
         """
@@ -285,7 +291,7 @@ class DoubleEndedConnect(object):
         if self.pairsNEB.has_key((minNEB1, minNEB2)) and repetition == 0:
             print "WARNING: redoing NEB for minima", minNEB1._id, minNEB2._id
             print "         aborting NEB"
-            self.Gdist.remove_edge(minNEB1, minNEB2)
+            self.remove_edgeGdist(minNEB1, minNEB2)
             return True
         self.pairsNEB[(minNEB1, minNEB2)] = True
         self.pairsNEB[(minNEB2, minNEB1)] = True
@@ -346,7 +352,7 @@ class DoubleEndedConnect(object):
         
         #if the minima are still not connected, remove this edge so we don't try this NEB again
         if not self.graph.areConnected(minNEB1, minNEB2):
-            self.Gdist.remove_edge(minNEB1, minNEB2)
+            self.remove_edgeGdist(minNEB1, minNEB2)
             
         return ts_success
             
