@@ -7,24 +7,29 @@ from pygmin.potentials.potential import potential as basepot
 import pygmin.defaults as defaults
 from pygmin.utils.rotations import vec_random
 
+__all__ = ["findLowestEigenVector"]
+
 class LowestEigPot(basepot):
     """
     this is a potential wrapper designed to use optimization to find the eigenvector
     which corresponds to the lowest eigenvalue
     
-    here the energy corresponds to the eigenvalue, and the coordinates to be optimized is the eigenvector
+    here the energy corresponds to the eigenvalue, and the coordinates to be
+    optimized is the eigenvector
     """
     def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-3):
         """
-        :coords: is the point in space where we want to compute the lowest eigenvector
+        coords : 
+            The point in space where we want to compute the lowest eigenvector
+        pot :
+            The potential of the system.  i.e. pot.getEnergyGradient(coords)
+            gives the energy and gradient
         
-        :pot: is the potential of the system.  
-            i.e. pot.getEnergyGradient(coords) gives the energy and gradient
-        
-        :orthogZeroEigs: the function which makes a vector orthogonal to the known
+        orthogZeroEigs: 
+            The function which makes a vector orthogonal to the known
             eigenvectors with zero eigenvalues.  The default assumes global
             translational and rotational symmetry
-        :dx: float
+        dx: float
             the local curvature is approximated using 3 points separated by dx
         """
         self.coords = np.copy(coords)
@@ -41,7 +46,8 @@ class LowestEigPot(basepot):
     
     def getEnergyGradient(self, vec_in):
         """
-        :vec_in: is a guess for the lowest eigenvector.  It should be normalized
+        vec_in: 
+            A guess for the lowest eigenvector.  It should be normalized
         """
         vecl = 1.
         vec_in /= np.linalg.norm(vec_in)
@@ -79,7 +85,32 @@ class LowestEigPot(basepot):
 
 def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, **kwargs):
     """
-    find the lowest eigenvector using the LBFGS minimizer
+    find the eigenvector corresponding to the lowest eigenvalue using
+    LowestEigPot and the LBFGS minimizer
+
+    ***orthogZeroEigs is system dependent, don't forget to set it***
+
+    Parameters
+    ----------
+    coords :
+        the coordinates at which to find the lowest eigenvector
+    pot :
+        potential object
+    eigenvec0 :
+        the initial guess for the lowest eigenvector (will be random if not
+        passed)
+    H0 : float
+        the initial guess for the diagonal component of the inverse Hermissian
+    orthogZeroEigs : callable
+        this function makes a vector orthogonal to the known zero
+        eigenvectors
+
+            orthogZeroEigs=0  : default behavior, assume translational and
+                                rotational symmetry
+            orthogZeroEigs=None : the vector is unchanged
+
+    kwargs : 
+        any additional keyword arguments are passed to the minimizer
     """
     #combine kwargs with defaults.lowestEigenvectorQuenchParams
     kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 

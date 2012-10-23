@@ -15,16 +15,106 @@ __all__ = ["DoubleEndedConnect"]
 class DoubleEndedConnect(object):
     """
     todo:
-    
-    if NEB + TS search fails, then retry again with more NEB steps
-    
+        
     allow user to pass database instead of graph
+    
+    use neb tangent as initial guess for eigenvector
     
     fail gracefully
     """
     def __init__(
                  self, min1, min2, pot, graph, mindist, database=None, tsSearchParams=dict(), 
-                 NEB_optimize_quenchParams = dict(), use_all_min=False, verbosity=1):
+                 NEB_optimize_quenchParams = dict(), use_all_min=False, verbosity=1,
+                 NEB_image_density = 10.):
+        """
+        Attempt to find a connected network of minima and transition states
+        between min1 and min2
+        
+        Parameters
+        ----------
+        min1, min2 : Mimumum() objects
+            the two minima to try to connect
+        pot : potential object
+            the potential
+        graph : Graph() object
+            the graph which holds the known minima and transition states
+        mindist : callable
+            the function which returns the optimized minimum distance between
+            two structures
+        database : Database() object
+            the database object, used to save distance calculations so
+            mindist() need only be called once for each minima pair. *Note* the
+            use of this and graph is a bit redundant, this should be cleaned up
+        tsSearchParams: dict
+            parameters passed to the transition state search algorithm
+        NEB_optimize_quenchParams : dict
+            parameters passed to the NEB minimization routine
+        use_all_min : bool
+            if True, then all known minima and transition states in graph will
+            be used to try to connect min1 and min2.  This requires a mindist()
+            call (or a retrieveal operation from database) for every pair which
+            can take a very long time if many minima are known.  
+        verbosity : int
+            this controls how many status messages are printed.  (not really
+            implemented yet)
+        NEB_image_density : float
+            how many NEB images per unit distance to use.
+        
+        Notes
+        -----
+        The algorithm is iterative, with each iteration composed of
+        
+        While min1 and min2 are not connected:
+            1) choose a pair of know minima to try to connect
+            
+            2a) use NEB to get a guess for the transition state between them
+            
+            2b) refine the transition state to desired accuracy
+            
+            3) fall off either side of the transition state to find the two
+            minima associated with that candidate
+            
+            4) add the transition state and associated minima to the known
+            network
+            
+        
+        Of the above, steps 1 and 2 are the most involved.  See the NEB and
+        FindTransitionState classes for detailed descriptions of those
+        routines.
+        
+        An important note is that the NEB is used only to get a *guess* for the
+        transition state.  Thus we only want to put enough time and energy into
+        the NEB routine to get the guess close enough that FindTransitionState
+        can refine it to the correct transition state.  FindTransitionState is
+        very fast if the initial guess is good, but can be very slow otherwise.
+        
+        Choose a pair
+        -------------
+        Here I will describe step 1), the algorithm to find a pair of known
+        minima to try to connect.  This choice will keep in mind that the
+        ultimate goal is to connect min1 and min2.
+        
+        In addition to the input parameter "graph", we keep a second graph
+        "Gdist" which also has minima as the vertices. Gdist has an edge
+        between (almost) every minima. The edge weight between vertices u and v
+        is
+        
+            if u and v are connected in "graph":
+                weight(u,v) = 0.
+            else:
+                weight(u,v) = mindist(u,v)
+        
+        Also, edges are removed from Gdist when an NEB is done to try to
+        connect them.  This is to ensure we don't repeat NEB runs over and over
+        again.  The minimum weight path between min1 and min2 in Gdist gives a
+        good guess for the best way to try connect min1 and min2.  So the
+        algorithm to find a pair of know minima (trial1, trial2) to try to
+        connect is 
+        
+        path = Gdist.minimum_weight_path(min1, min2)
+        trial1, trial2 = minima pair in path with lowest nonzero edge weight
+
+        """
         self.graph = graph
         self.minstart = min1
         self.minend = min2
@@ -36,9 +126,9 @@ class DoubleEndedConnect(object):
         self.tsSearchParams = tsSearchParams
         self.NEB_optimize_quenchParams = NEB_optimize_quenchParams
         self.database = database
-        self.verbosity = verbosity
+        self.verbosity = int(verbosity)
         
-        self.NEB_image_density = 10.
+        self.NEB_image_density = float(NEB_image_density)
 
         self.Gdist = nx.Graph() 
         self.initializeGdist(use_all_min)

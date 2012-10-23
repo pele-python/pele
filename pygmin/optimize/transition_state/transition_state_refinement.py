@@ -45,25 +45,27 @@ class TSRefinementPotential(basepot):
     Usage:
     
     getLowestEigenvalue():
-        will attempt to calculate the lowest eigenvalue and corresponding eigenvector.
+        will attempt to calculate the lowest eigenvalue and corresponding
+        eigenvector.
         
     stepUphill():
         will take a step uphill along the eigenvector
     
     getEnergyGradient():
-        will return the gradient with the component along the eigenvector removed.  This is for
-        energy minimization in the space tangent to the gradient    
+        will return the gradient with the component along the eigenvector
+        removed.  This is for energy minimization in the space tangent to the
+        gradient    
     """
     def __init__(self, pot, eigenvec):
         """
         Parameters
         ----------
         
-        :orthogZeroEigs: the function which makes a vector orthogonal to known zero 
-            eigenvectors
-            The default value is 0, which means use the default function orthogopt which assumes
-            rotational and translational invariance.
-            If None is pass then no function will be used
+        orthogZeroEigs : callable
+            The function which makes a vector orthogonal to known zero
+            eigenvectors.  The default value is 0, which means use the default
+            function orthogopt which assumes rotational and translational
+            invariance.  If None is pass then no function will be used
         """
         self.pot = pot
         self.eigenvec = eigenvec
@@ -74,8 +76,9 @@ class TSRefinementPotential(basepot):
     
     def getEnergyGradient(self, coords):
         """
-        return the energy and the gradient with the component along the eigenvec removed.
-        For use in energy minimization in the space perpendicular to eigenvec
+        return the energy and the gradient with the component along the
+        eigenvec removed.  For use in energy minimization in the space
+        perpendicular to eigenvec
         """
         e, grad = self.pot.getEnergyGradient(coords)
         #norm = np.sum(self.eigenvec)
@@ -96,7 +99,8 @@ class FindTransitionState(object):
                  demand_initial_negative_vec=True
                  ):
         """
-        This class implements the routine for finding the nearest transition state
+        This class implements the routine for finding the nearest transition
+        state
         
         ***orthogZeroEigs is system dependent, don't forget to set it***
         
@@ -113,23 +117,29 @@ class FindTransitionState(object):
         nsteps : 
             number of iterations
         nfail_max :
-            if the lowest eigenvector search fails this many times in a row than the
-            algorithm ends
+            if the lowest eigenvector search fails this many times in a row
+            than the algorithm ends
         eigenvec : 
             a guess for the initial lowest eigenvector
         iprint :
             the interval at which to print status messages
         orthogZeroEigs : callable
-            this function makes a vector orthogonal to the known zero eigenvectors
-                orthogZeroEigs=0  : default behavior, assume translational and rotational symmetry
+            this function makes a vector orthogonal to the known zero
+            eigenvectors
+
+                orthogZeroEigs=0  : default behavior, assume translational and
+                                    rotational symmetry
                 orthogZeroEigs=None : the vector is unchanged
+
         lowestEigenvectorQuenchParams : dict 
-            these parameters are passed to the quench routine for he lowest eigenvector search 
+            these parameters are passed to the quench routine for he lowest
+            eigenvector search 
         tangentSpaceQuenchParams : dict 
-            these parameters are passed quench routine for the minimization in the space
-            tabgent to the lowest eigenvector 
+            these parameters are passed quench routine for the minimization in
+            the space tabgent to the lowest eigenvector 
         max_uphill_step : 
-            the maximum step uphill along the direction of the lowest eigenvector
+            the maximum step uphill along the direction of the lowest
+            eigenvector
         demand_initial_negative_vec : bool
             if True, abort if the initial lowest eigenvector is positive
             
@@ -138,7 +148,8 @@ class FindTransitionState(object):
         -----
         
         It is composed of the following steps
-            1) Find eigenvector corresponding to the lowest *nonzero* eigenvector.  
+            1) Find eigenvector corresponding to the lowest *nonzero*
+            eigenvector.  
             
             2) Step uphill in the direction of the lowest eigenvector
             
