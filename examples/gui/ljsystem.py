@@ -1,7 +1,7 @@
 from PyQt4 import QtGui
 import NewLJ
 import numpy as np
-from pygmin.NEB import NEB,dimer,tstools,InterpolatedPath
+from pygmin.transition_states import NEB, dimer, tstools, InterpolatedPath
 import pygmin.potentials.lj as lj
 from pygmin import gui
                 
@@ -41,7 +41,7 @@ class LJSystem(gui.GUISystem):
         return X1, X2
     
     def createNEB(self, coords1, coords2):
-        return NEB.NEB(InterpolatedPath(coords1, coords2, 30), lj.LJ(), k = 100.)
+        return NEB(InterpolatedPath(coords1, coords2, 30), lj.LJ(), k = 100.)
     
     def zeroEigenVecs(self, coords):
         # translational eigenvectors

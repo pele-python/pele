@@ -132,7 +132,7 @@ class FindTransitionState(object):
         if the tol for tangent space search is lower than the total tol, then it will never finish
     
     """
-    def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=1000, 
+    def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
                  nfail_max=5, eigenvec=None, iprint=-1, orthogZeroEigs=0,
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
@@ -249,7 +249,7 @@ class FindTransitionState(object):
                 break
             if self.nfail >= self.nfail_max:
                 print "stopping findTransitionState.  too many failures in eigenvector search"
-                res.messagge.append( "too many failures in eigenvector search %d" % self.nfail )
+                res.message.append( "too many failures in eigenvector search %d" % self.nfail )
                 break
 
             if i == 0 and self.eigenval > 0.:

@@ -20,6 +20,13 @@ Single ended transition state search
 
     find_escape_paths
 
+Other utilities
+++++++++++++++++++++++++++++++++++++
+
+.. autosummary::
+   :toctree: generated/
+
+    smoothPath
 
 """
 
@@ -28,3 +35,4 @@ Single ended transition state search
 from _graph import *
 from connect_min import *
 from singleended import *
+from _smooth_path import *

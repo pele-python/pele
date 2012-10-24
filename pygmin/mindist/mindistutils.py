@@ -5,7 +5,28 @@ import itertools
 
 __all__ = ["alignCoM", "CoMToOrigin", "getAlignRotation", "alignRotation", 
            "findBestPermutation", "findBestPermutationRBMol", "aa2xyz",
-           "getDistxyz", "getDistaa"]
+           "getDistxyz", "getDistaa", "MinDistWrapper"]
+
+class MinDistWrapper(object):
+    """
+    wrap a mindist routine into a callable object with the form mindist(X1, X2)
+    
+    Parameters
+    ----------
+    mindist : callable
+        the mindist routine
+    args : 
+        extra arguements for mindist
+    kwargs : 
+        extra keyword arguments for mindist
+    """
+    def __init__(self, mindist, *args, **kwargs):
+        self.mindist = mindist
+        self.args = args
+        self.kwargs = kwargs
+    
+    def __call__(self, X1, X2):
+        return self.mindist(X1, X2, *self.args, **self.kwargs)
 
 def alignCoM( X1, X2):
     """

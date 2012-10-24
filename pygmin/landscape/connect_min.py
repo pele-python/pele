@@ -5,6 +5,7 @@ import itertools
 
 from pygmin.transition_states import NEB, InterpolatedPathDensity, findTransitionState, minima_from_ts
 import pygmin.defaults as defaults
+from pygmin.landscape import Graph
 
 __all__ = ["DoubleEndedConnect"]
 
@@ -18,8 +19,6 @@ class DoubleEndedConnect(object):
         the two minima to try to connect
     pot : potential object
         the potential
-    graph : Graph() object
-        the graph which holds the known minima and transition states
     mindist : callable
         the function which returns the optimized minimum distance between
         two structures
@@ -98,7 +97,7 @@ class DoubleEndedConnect(object):
 
     """    
     def __init__(
-             self, min1, min2, pot, graph, mindist, database=None, tsSearchParams=dict(), 
+             self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
              NEB_optimize_quenchParams = dict(), use_all_min=False, verbosity=1,
              NEB_image_density = 10.):
 
@@ -111,7 +110,6 @@ class DoubleEndedConnect(object):
         
         fail gracefully
     """
-        self.graph = graph
         self.minstart = min1
         self.minend = min2
         self.pot = pot
@@ -122,6 +120,7 @@ class DoubleEndedConnect(object):
         self.tsSearchParams = tsSearchParams
         self.NEB_optimize_quenchParams = NEB_optimize_quenchParams
         self.database = database
+        self.graph = Graph(self.database)
         self.verbosity = int(verbosity)
         
         self.NEB_image_density = float(NEB_image_density)
@@ -431,7 +430,30 @@ class DoubleEndedConnect(object):
                     break
         print "failed to find connection between", self.minstart._id, self.minend._id
 
-
+    def returnPath(self):
+        """return information about the path"""
+        if not self.graph.areConnected(self.minstart, self.minend):
+            return
+        minima = nx.shortest_path(self.graph.graph, self.minstart, self.minend)
+        transition_states = []
+        mints = [minima[0]]
+        for i in range(1,len(minima)):
+            m1 = minima[i-1]
+            m2 = minima[i]
+            ts = self.database.getTransitionState(m1, m2)
+            transition_states.append(ts)
+            mints.append(ts)
+            mints.append(m2)
+        
+        S = np.zeros(len(mints))
+        for i in range(1,len(mints)):
+            coords1 = mints[i-1].coords
+            coords2 = mints[i].coords
+            dist, c1, c2 = self.mindist(coords1, coords2)
+            S[i] = S[i-1] + dist
+        energies = np.array([m.energy for m in mints])
+        return mints, S, energies
+        
 
 
 def getSetOfMinLJ(natoms = 11): #for testing purposes

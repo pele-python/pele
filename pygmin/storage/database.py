@@ -17,9 +17,8 @@ verbose=False
 Base = declarative_base()
 
 class Minimum(Base):
-    '''Minimum object
-    
-    The Minimum class represents a minimum in the databae.
+    '''    
+    The Minimum class represents a minimum in the database.
     
     Parameters
     ----------

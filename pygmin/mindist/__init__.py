@@ -23,6 +23,8 @@ The center of mass of the two structures must be at the origin
 
 permutational aligment
 ----------------------
+Finding the best alignment can be mapped onto the Assignment Problem and solved
+very quickly using the Hungarian algorithm (aka munkres)
 
 .. autosummary::
    :toctree: generated/
@@ -41,6 +43,16 @@ necessarily the optimal
    :toctree: generated/
 
     minPermDistStochastic
+
+A wrapper
+---------
+This wrapper provides the simplified interface for mindist that some 
+applications require
+
+.. autosummary::
+   :toctree: generated/
+
+    MinDistWrapper
 
 
 """
