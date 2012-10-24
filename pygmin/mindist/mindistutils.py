@@ -3,7 +3,7 @@ import copy
 import pygmin.utils.rotations as rot
 import itertools
 
-__all__ = ["CoMToOrigin", "getAlignRotation", "alignRotation", 
+__all__ = ["alignCoM", "CoMToOrigin", "getAlignRotation", "alignRotation", 
            "findBestPermutation", "findBestPermutationRBMol", "aa2xyz",
            "getDistxyz", "getDistaa"]
 
@@ -30,6 +30,8 @@ def CoMToOrigin( X1):
 
 def getAlignRotation(XA, XB):
     """
+    Return the quaternion which aligns XB with XA
+    
     Return the quaternion which
     aligns structure XB to be as similar as possible to structure XA.
     To be precise, rotate XB, so as to minimize the distance |XA - XB|.
@@ -112,6 +114,8 @@ def getAlignRotation(XA, XB):
 
 def alignRotation(XA, XB):
     """
+    Align structure XB with XA
+
     Align structure XB to be as similar as possible to structure XA.
     To be precise, rotate XB, so as to minimize the distance |XA - XB|.
 
@@ -146,84 +150,6 @@ def permuteArray(Xold, perm):
 
     return Xnew
 
-#def findBestPermutationList2( X1, X2, atomlist = None, cost_function = None ):
-#    """
-#    For a given set of positions X1 and X2, find the best permutation of the
-#    atoms in X2.
-#
-#    Use an implementation of the Hungarian Algorithm in the Python package
-#    index (PyPi) called munkres (another name for the algorithm).  The
-#    hungarian algorithm time scales as O(n^3), much faster than the O(n!) from
-#    looping through all permutations.
-#
-#    http://en.wikipedia.org/wiki/Hungarian_algorithm
-#    http://pypi.python.org/pypi/munkres/1.0.5.2
-#    """
-#    try:
-#        import hungarian
-#    except:
-#        print "hungarian package not installed, skipping Hungarian algorithm"
-#        dist = np.linalg.norm( X1 - X2 )
-#        return dist, X1, X2
-#
-#    nsites = len(X1) / 3
-#
-#    if atomlist == None:
-#        atomlist = range(nsites)
-#    nperm = len(atomlist)
-#
-#    #print "atomlist", atomlist
-#
-#    #########################################
-#    # create the cost matrix
-#    #########################################
-#    cost = np.zeros( [nperm,nperm], np.float64)
-#    for i in range(nperm):
-#        atomi = atomlist[i]
-#        for j in range(nperm):
-#            atomj = atomlist[j]
-#            R2 = np.sum( (X1[atomi*3:atomi*3+3] - X2[atomj*3:atomj*3+3])**2 )
-#            cost[j,i] = R2
-#
-#
-#    #########################################
-#    # run the hungarian algorithm
-#    #########################################
-#    #import pprint
-#    #pp = pprint.PrettyPrinter()
-#    #pp.pprint(cost)
-#    #print "cost", cost
-#    newind1 = hungarian.lap(cost)
-#    #print "hungar newind1", newind1
-#    #print newind1
-#    #print "done"
-##    newind = [(i, j) for i,j in zip(newind1[0], newind1[1])]
-#    newind = [(i, j) for i,j in enumerate(newind1[0])]
-#    print "hungari newind", newind
-#
-#    #########################################
-#    # apply the permutation
-#    #########################################
-#    costnew = 0.;
-#    X2old = np.copy(X2)
-#    for (iold, inew) in newind:
-#        costnew    += cost[iold,inew]
-#        if iold != inew:
-#            atomiold = atomlist[iold]
-#            atominew = atomlist[inew]
-#            #print atomiold, "->", atominew, (iold, inew), "matrix %10.4f, %10.4f" % (matrix[iold][inew], matrix[inew][iold])
-#            #for i in [iold, inew]:
-#                #for j in [iold, inew]:
-#                    #r = np.linalg.norm( X1[i*3:i*3+3] - X2old[j*3:j*3+3] )
-#                    #print "    %4d %4d %10.4f, %10.4f" % (i, j, r, r**2 ), cost[j, i], matrix[i][j]
-#            X2[atominew*3:atominew*3+3] = X2old[atomiold*3:atomiold*3+3]
-#
-#    #costold = sum( [matrix[i][i] for i in range(nsites)] )
-#    #print "costold    ", costold, np.sqrt(costold)
-#    print "costnew    ", costnew, np.sqrt(costnew)
-#
-#    dist = np.sqrt(costnew)
-#    return dist, X1, X2
 
 
 def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
@@ -324,6 +250,17 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
 def findBestPermutation( X1, X2, permlist = [] ):
     """
     find the permutation of the atoms which minimizes the distance |X1-X2|
+    
+    Parameters
+    ----------
+    X1, X2 : 
+        the structures to align
+    permlist : a list of lists
+        A list of lists of atoms which are interchangable.
+        e.g. for a 50/50 binary mixture, 
+        
+            permlist = [range(1,natoms/2), range(natoms/2,natoms)]
+
     """
     if len(permlist) == 0:
         permlist = [range(len(X1)/3)]

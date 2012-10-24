@@ -3,9 +3,12 @@ Energy Landscape Exploration
 
 .. automodule:: pygmin.landscape
 
+Structure alignment
+-------------------
+.. automodule:: pygmin.mindist
 
-Transition State Search
------------------------
+Under the hood
+--------------
 The energy landscape searches both use 
 local transition state searches
 

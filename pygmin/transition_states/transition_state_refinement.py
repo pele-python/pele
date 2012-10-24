@@ -16,14 +16,7 @@ class TSRefinementPotential(basepot):
     is to try to locate the nearest transition state of the system.
     
     Usage:
-    
-    getLowestEigenvalue():
-        will attempt to calculate the lowest eigenvalue and corresponding
-        eigenvector.
-        
-    stepUphill():
-        will take a step uphill along the eigenvector
-    
+
     getEnergyGradient():
         will return the gradient with the component along the eigenvector
         removed.  This is for energy minimization in the space tangent to the
@@ -191,13 +184,13 @@ class FindTransitionState(object):
         self.nnegative = 0
         self.nnegative_max = max(10, self.nsteps / 5)
         
-    def saveState(self, coords):
+    def _saveState(self, coords):
         self.saved_coords = np.copy(coords)
         self.saved_eigenvec = np.copy(self.eigenvec)
         self.saved_eigenval = self.eigenval
         #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
 
-    def resetState(self, coords):
+    def _resetState(self, coords):
         coords = np.copy(self.saved_coords)
         self.eigenvec = np.copy(self.saved_eigenvec)
         self.eigenval = self.saved_eigenval
@@ -205,38 +198,39 @@ class FindTransitionState(object):
         return coords
 
     def run(self):
+        """The main loop of the algorithm"""
         coords = np.copy(self.coords)
         res = Result() #  return object
         res.message = []
         for i in xrange(self.nsteps):
             
             #get the lowest eigenvalue and eigenvector
-            self.getLowestEigenVector(coords, i)
+            self._getLowestEigenVector(coords, i)
             
             #check to make sure the eigenvector is ok
             if i == 0 or self.eigenval <= 0:
-                self.saveState(coords)
+                self._saveState(coords)
                 self.reduce_step = 0
             else:
                 self.nnegative += 1
                 if self.nnegative > self.nnegative_max:
                     print "warning: negative eigenvalue found too many times. ending", self.nnegative
-                    res.messgage.append( "negative eigenvalue found too many times %d" % self.nnegative )
+                    res.message.append( "negative eigenvalue found too many times %d" % self.nnegative )
                     break
                 print "the eigenvalue turned negative. Resetting last good values and taking smaller steps"
-                coords = self.resetState(coords)
+                coords = self._resetState(coords)
                 self.reduce_step += 1
             
             #step uphill along the direction of the lowest eigenvector
-            coords = self.stepUphill(coords)
+            coords = self._stepUphill(coords)
 
             if False:
                 #maybe we want to update the lowest eigenvector now that we've moved?
                 #david thinks this is a bad idea
-                self.getLowestEigenVector(coords, i)
+                self._getLowestEigenVector(coords, i)
 
             #minimize the coordinates in the space perpendicular to the lowest eigenvector
-            coords, tangentrms = self.minimizeTangentSpace(coords)
+            coords, tangentrms = self._minimizeTangentSpace(coords)
 
 
             #check if we are done and print some stuff
@@ -255,18 +249,18 @@ class FindTransitionState(object):
                 break
             if self.nfail >= self.nfail_max:
                 print "stopping findTransitionState.  too many failures in eigenvector search"
-                res.messgage.append( "too many failures in eigenvector search %d" % self.nfail )
+                res.messagge.append( "too many failures in eigenvector search %d" % self.nfail )
                 break
 
             if i == 0 and self.eigenval > 0.:
                 print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
                 if self.demand_initial_negative_vec:
                     print "            aborting transition state search"
-                    res.messgage.append( "initial eigenvalue is positive %f" % self.eigenvalue )
+                    res.message.append( "initial eigenvalue is positive %f" % self.eigenvalue )
                     break
 
         #done.  do one last eigenvector search because coords may have changed
-        self.getLowestEigenVector(coords, i)
+        self._getLowestEigenVector(coords, i)
 
         #done, print some data
         print "findTransitionState done:", i, E, rms, "eigenvalue", self.eigenval
@@ -280,7 +274,7 @@ class FindTransitionState(object):
             print "warning: transition state search appears to have failed: rms", rms
             success = False
         if i >= self.nsteps:
-            res.messgage.append( "maximum iterations reached %d" % i )
+            res.message.append( "maximum iterations reached %d" % i )
             
 
         #return results
@@ -296,7 +290,7 @@ class FindTransitionState(object):
 
 
         
-    def getLowestEigenVector(self, coords, i):
+    def _getLowestEigenVector(self, coords, i):
         res = findLowestEigenVector(coords, self.pot, H0=self.H0, eigenvec0=self.eigenvec, 
                                     orthogZeroEigs=self.orthogZeroEigs,
                                     **self.lowestEigenvectorQuenchParams)
@@ -320,7 +314,7 @@ class FindTransitionState(object):
             self.nfail += 1
 
     
-    def minimizeTangentSpace(self, coords):
+    def _minimizeTangentSpace(self, coords):
         """
         now minimize the energy in the space perpendicular to eigenvec.
         There's no point in spending much effort on this until 
@@ -349,7 +343,7 @@ class FindTransitionState(object):
         rms = ret[2]
         return coords, rms
 
-    def stepUphill(self, coords):
+    def _stepUphill(self, coords):
         """
         step uphill in the direction of self.eigenvec.  self.eigenval is used
         to determine the best stepsize
