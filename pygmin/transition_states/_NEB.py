@@ -10,20 +10,20 @@ def distance_cart(x1, x2):
     return x2 - x1
 
 class NEB(object):
+    """Nudged elastic band implementation
+
+    intial: iteratable 
+        iteratable object of all images
+        
+    distance  (distance_cart):
+        distance function for the elastic band
+            
+    k (100.0):
+        elastic constant for band
+        
+    """
     def __init__(self, path, potential, distance=distance_cart, 
                  k=100.0, iprint=-1):
-        """Nudged elastic band implementation
-    
-        intial: iteratable 
-            iteratable object of all images
-            
-        distance  (distance_cart):
-            distance function for the elastic band
-                
-        k (100.0):
-            elastic constant for band
-            
-        """
         self.distance = distance
         self.potential = potential
         self.k = k

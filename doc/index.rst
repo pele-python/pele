@@ -14,7 +14,7 @@ Contents:
    global_optimization
    quenching
    database
-   transitionstates
+   landscape
    utils
 
 Indices and tables

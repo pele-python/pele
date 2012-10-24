@@ -59,6 +59,85 @@ class TSRefinementPotential(basepot):
 class FindTransitionState(object):
     """
     This class implements the routine for finding the nearest transition state
+    
+    ***orthogZeroEigs is system dependent, don't forget to set it***
+    
+    Parameters
+    ----------
+    coords : 
+        the starting coordinates
+    pot : 
+        the potential class
+    tol : 
+        the tolerance for the rms gradient
+    event : callable
+        This will be called after each step
+    nsteps : 
+        number of iterations
+    nfail_max :
+        if the lowest eigenvector search fails this many times in a row
+        than the algorithm ends
+    eigenvec : 
+        a guess for the initial lowest eigenvector
+    iprint :
+        the interval at which to print status messages
+    orthogZeroEigs : callable
+        this function makes a vector orthogonal to the known zero
+        eigenvectors
+
+            orthogZeroEigs=0  : default behavior, assume translational and
+                                rotational symmetry
+            orthogZeroEigs=None : the vector is unchanged
+
+    lowestEigenvectorQuenchParams : dict 
+        these parameters are passed to the quench routine for he lowest
+        eigenvector search 
+    tangentSpaceQuenchParams : dict 
+        these parameters are passed quench routine for the minimization in
+        the space tabgent to the lowest eigenvector 
+    max_uphill_step : 
+        the maximum step uphill along the direction of the lowest
+        eigenvector
+    demand_initial_negative_vec : bool
+        if True, abort if the initial lowest eigenvalue is positive
+        
+    
+    Notes
+    -----
+    
+    It is composed of the following steps
+        1) Find eigenvector corresponding to the lowest *nonzero*
+        eigenvector.  
+        
+        2) Step uphill in the direction of the lowest eigenvector
+        
+        3) minimize in the space tangent to the lowest eigenvector
+     
+    """
+    """
+    implementation notes: this class needs to deal with
+    
+    params for stepUphill : 
+        probably only maxstep
+    
+    params for lowest eigenvector search : 
+        should be passable and loaded from defaults.
+        important params : 
+            max steps 
+            what to do if a negative eigenvector is found
+            what to do if small overlap with previous eigenvector
+    
+    params for tangent space search : 
+        should be passable and loaded from defaults.
+        
+
+    todo:
+        if the eigenvalue sign goes from positive to negative,
+        go back to where it was negative and take a smaller step
+        
+        The tolerances for the various steps of this algorithm must be correlated.
+        if the tol for tangent space search is lower than the total tol, then it will never finish
+    
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=1000, 
                  nfail_max=5, eigenvec=None, iprint=-1, orthogZeroEigs=0,
@@ -67,89 +146,6 @@ class FindTransitionState(object):
                  max_uphill_step=0.1,
                  demand_initial_negative_vec=True
                  ):
-        """
-        This class implements the routine for finding the nearest transition
-        state
-        
-        ***orthogZeroEigs is system dependent, don't forget to set it***
-        
-        Parameters
-        ----------
-        coords : 
-            the starting coordinates
-        pot : 
-            the potential class
-        tol : 
-            the tolerance for the rms gradient
-        event : callable
-            This will be called after each step
-        nsteps : 
-            number of iterations
-        nfail_max :
-            if the lowest eigenvector search fails this many times in a row
-            than the algorithm ends
-        eigenvec : 
-            a guess for the initial lowest eigenvector
-        iprint :
-            the interval at which to print status messages
-        orthogZeroEigs : callable
-            this function makes a vector orthogonal to the known zero
-            eigenvectors
-
-                orthogZeroEigs=0  : default behavior, assume translational and
-                                    rotational symmetry
-                orthogZeroEigs=None : the vector is unchanged
-
-        lowestEigenvectorQuenchParams : dict 
-            these parameters are passed to the quench routine for he lowest
-            eigenvector search 
-        tangentSpaceQuenchParams : dict 
-            these parameters are passed quench routine for the minimization in
-            the space tabgent to the lowest eigenvector 
-        max_uphill_step : 
-            the maximum step uphill along the direction of the lowest
-            eigenvector
-        demand_initial_negative_vec : bool
-            if True, abort if the initial lowest eigenvector is positive
-            
-        
-        Notes
-        -----
-        
-        It is composed of the following steps
-            1) Find eigenvector corresponding to the lowest *nonzero*
-            eigenvector.  
-            
-            2) Step uphill in the direction of the lowest eigenvector
-            
-            3) minimize in the space tangent to the lowest eigenvector
-         
-        """
-        """
-        implementation notes: this class needs to deal with
-        
-        params for stepUphill : 
-            probably only maxstep
-        
-        params for lowest eigenvector search : 
-            should be passable and loaded from defaults.
-            important params : 
-                max steps 
-                what to do if a negative eigenvector is found
-                what to do if small overlap with previous eigenvector
-        
-        params for tangent space search : 
-            should be passable and loaded from defaults.
-            
-
-        todo:
-            if the eigenvalue sign goes from positive to negative,
-            go back to where it was negative and take a smaller step
-            
-            The tolerances for the various steps of this algorithm must be correlated.
-            if the tol for tangent space search is lower than the total tol, then it will never finish
-        
-        """
         self.pot = pot
         self.coords = np.copy(coords)
         self.tol = tol
