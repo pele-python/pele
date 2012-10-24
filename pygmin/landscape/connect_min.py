@@ -95,21 +95,18 @@ class DoubleEndedConnect(object):
     path = Gdist.minimum_weight_path(min1, min2)
     trial1, trial2 = minima pair in path with lowest nonzero edge weight
 
+    todo:
+        use_all_min option is broken.  Fix up graph creation in general
+        
+        allow user to pass graph
+        
+        fail gracefully
+        
     """    
     def __init__(
              self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
              NEB_optimize_quenchParams = dict(), use_all_min=False, verbosity=1,
              NEB_image_density = 10.):
-
-        """
-        todo:
-            
-        allow user to pass database instead of graph
-        
-        use neb tangent as initial guess for eigenvector
-        
-        fail gracefully
-    """
         self.minstart = min1
         self.minend = min2
         self.pot = pot

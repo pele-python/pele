@@ -6,6 +6,7 @@ from pygmin.transition_states import orthogopt
 from pygmin.potentials.potential import potential as basepot
 import pygmin.defaults as defaults
 from pygmin.optimize.lbfgs_py import LBFGS
+import pygmin.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector"]
 
@@ -120,8 +121,9 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
         #eigenvec0 = vec_random()
         #this random vector should be distributed uniformly on a hypersphere.
         #it is not
-        eigenvec0 = np.random.uniform(-1, 1, coords.shape)
-        eigenvec0 /= np.linalg.norm(eigenvec0)
+        #eigenvec0 = np.random.uniform(-1, 1, coords.shape)
+        #eigenvec0 /= np.linalg.norm(eigenvec0)
+        eigenvec0 = rotations.vec_random_ndim(coords.shape)
     
     #set up potential for minimization    
     eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs)

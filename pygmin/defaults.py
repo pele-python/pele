@@ -95,6 +95,6 @@ tangentSpaceQuenchParams = dict()
 
 
 NEBparams = dict()
-NEBquenchRoutine = quench.quench 
+NEBquenchRoutine = quench.lbfgs_py 
 NEBquenchParams = dict()
-NEBquenchParams["nsteps"] = 100
+NEBquenchParams["nsteps"] = 300

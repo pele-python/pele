@@ -9,7 +9,6 @@ q2mx
 q2aa
 """
 import numpy as np
-import copy
 
 rot_epsilon = 1e-6
 
@@ -49,7 +48,7 @@ def q2aa( qin ):
     input Q: quaternion of length 4
     output V: angle axis vector of lenth 3
     """
-    q = copy.copy(qin)
+    q = np.copy(qin)
     if q[0] < 0.: q = -q
     if q[0] > 1.0: q /= np.sqrt(np.dot(q,q))
     theta = 2. * np.arccos(q[0])
@@ -216,6 +215,11 @@ def vec_random():
     p[2] = z
     return p
 
+def vec_random_ndim(n):
+    """n-dimensional uniform random unit vector"""
+    v = np.random.normal(size=n)
+    v /= np.linalg.norm(v)
+    return v
 
 dprand = lambda: np.random.rand()
 

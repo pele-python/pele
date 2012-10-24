@@ -17,8 +17,8 @@ pot = LJ()
 
 #import the starting and ending points, quench them, 
 #and add them to a database as Minimum objects
-coords1 = np.genfromtxt("coords1")
-coords2 = np.genfromtxt("coords2")
+coords1 = np.genfromtxt("coords.A")
+coords2 = np.genfromtxt("coords.B")
 res1 = quench.lbfgs_py(coords1.reshape(-1), pot.getEnergyGradient)
 res2 = quench.lbfgs_py(coords2.reshape(-1), pot.getEnergyGradient)
 coords1 = res1[0]
@@ -42,7 +42,7 @@ min2 = database.minima()[1]
 #we have to deal with global translational, global rotational,
 #and permutational symmetry.
 permlist = [range(natoms)]
-mindist = MinDistWrapper(minPermDistStochastic, permlist=permlist)
+mindist = MinDistWrapper(minPermDistStochastic, permlist=permlist) #, niter=1000, verbose=True)
 
 #The transition state search needs to know what the eigenvector corresponding
 #to the lowest nonzero eigenvector is.  For this we need to know what the
@@ -57,8 +57,11 @@ tsSearchParams["iprint"] = 1
 
 
 
+
+
 myconnect = DoubleEndedConnect(
         min1, min2, pot, mindist, database, tsSearchParams=tsSearchParams,
+        NEB_optimize_quenchParams={"nsteps":300, "iprint":10}
         )
 myconnect.connect()
 print ""
