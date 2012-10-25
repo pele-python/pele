@@ -20,11 +20,14 @@ class GMINPotential(potential.potential):
         Constructor
         '''
         self.GMIN = GMIN
-    
+        self.ncalls = 0
+
     def getEnergy(self, coords):
+        self.ncalls += 1
         return self.GMIN.getEnergy(coords)
         
     def getEnergyGradient(self, coords):
+        self.ncalls += 1
         grad = np.zeros(3*self.GMIN.getNAtoms()) #coords.shape)
         E = self.GMIN.getEnergyGradient(coords, grad)
         return E,grad[0:coords.size]
