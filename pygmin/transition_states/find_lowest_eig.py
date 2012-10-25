@@ -1,6 +1,6 @@
 import numpy as np
 
-from scipy.optimize import Result
+from pygmin.optimize import Result
 
 from pygmin.transition_states import orthogopt
 from pygmin.potentials.potential import potential as basepot

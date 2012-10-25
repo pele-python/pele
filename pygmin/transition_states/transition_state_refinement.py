@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-from scipy.optimize import Result
+from pygmin.optimize import Result
 
 from pygmin.potentials.potential import potential as basepot
 import pygmin.defaults as defaults

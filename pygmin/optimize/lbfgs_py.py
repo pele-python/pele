@@ -1,7 +1,7 @@
 import numpy as np
 from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
-from scipy.optimize import Result
+from pygmin.optimize import Result
 
 class LBFGS:
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
