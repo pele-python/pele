@@ -38,22 +38,27 @@ if hasboost:
 else:
     ext_modules = fortran_modules
 
-setup(name='PyGMIN', 
+setup(name='pygmin', 
       version='0.1', 
       description="Pythin implementation of GMIN, OPTIM, and PATHSAMPLE",
       url='http://github.com/js850/minGMIN.git',
-      packages=["pygmin", 
+      packages=["pygmin",
+                "pygmin.application",
                 "pygmin.potentials",
                 "pygmin.potentials.rigid_bodies",
                 "pygmin.gui",
                 "pygmin.mindist",
                 "pygmin.optimize",
                 "pygmin.transition_states",
+                "pygmin.transition_states.nebtesting",
                 "pygmin.landscape",
                 "pygmin.printing",
                 "pygmin.takestep",
                 "pygmin.utils",
-                "pygmin.wham"
+                "pygmin.wham",
+                "pygmin.storage",
+                "pygmin.potentials.fortran",
+                "pygmin.accept_tests"
                 ],
       ext_modules=ext_modules
         )
