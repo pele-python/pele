@@ -64,8 +64,9 @@ if True:
     tsSearchParams["nfail_max"] = 200
 
     
-    NEB_optimize_quenchParams={"nsteps":300, "iprint":10}
-    #NEB_optimize_quenchParams["NEB_image_density"] = 15
+    NEBquenchParams=dict()
+    #NEBquenchParams["nsteps"] = 300 
+    NEBquenchParams["iprint"] = 10
     
     NEBparams = dict()
     NEBparams["k"] = 5.
@@ -75,7 +76,7 @@ if True:
 
 myconnect = DoubleEndedConnect(
         min1, min2, pot, mindist, database, tsSearchParams=tsSearchParams,
-        NEB_optimize_quenchParams=NEB_optimize_quenchParams, 
+        NEBquenchParams=NEBquenchParams, 
         NEBparams=NEBparams, NEB_image_density=15
         )
 
