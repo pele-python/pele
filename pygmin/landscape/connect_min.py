@@ -137,6 +137,7 @@ class DoubleEndedConnect(object):
         self.reoptimize_climbing = reoptimize_climbing
 
         self.Gdist = nx.Graph() 
+        self._initializeDistances()
         self._initializeGdist(use_all_min)
         
         print "************************************************************"
@@ -180,6 +181,18 @@ class DoubleEndedConnect(object):
             for m in self.graph.graph.nodes():
                 self._addNodeGdist(m)
 
+    def _initializeDistances(self):
+        """put all distances in the database into distmatrix for faster access"""
+        for d in self.database.distances():
+            id1 = d.minimum1._id
+            id2 = d.minimum2._id
+            
+            if id2 > id1:
+                id2, id1 = id1, id2
+            self.distmatrix[(id1, id2)] = d.dist
+            #self.distmatrix[(id2, id1)] = d.dist
+
+
     def _addNodeGdist(self, min1):
         """
         add node to graph Gdist.  Add an edge to all existing nodes with weight
@@ -212,6 +225,13 @@ class DoubleEndedConnect(object):
         get distances from the database if they exist, else calculate the
         distance and save it to the database
         """
+        if True:
+            id1, id2 = min1._id, min2._id
+            if id2 > id1:
+                id2, id1 = id1, id2
+            dist = self.distmatrix.get((id1, id2))
+            if dist is not None:
+                return dist
         if self.database is None:
             return self._getDistNoDB(min1, min2)
         dist = self.database.getDistance(min1, min2)
@@ -221,8 +241,11 @@ class DoubleEndedConnect(object):
         if self.verbosity > 1:
             print "calculated distance between", min1._id, min2._id, dist
         self.database.setDistance(dist, min1, min2)
-        #self.distmatrix[(min1,min2)] = dist
-        #self.distmatrix[(min2,min1)] = dist
+        if True:
+            id1, id2 = min1._id, min2._id
+            if id2 > id1:
+                id2, id1 = id1, id2
+                self.distmatrix[(id1, id2)] = dist
         return dist
 
     

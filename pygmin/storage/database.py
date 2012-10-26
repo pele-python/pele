@@ -72,9 +72,9 @@ class TransitionState(Base):
     min2: Minimum object
         first minimum
     eigenval: float, optional
-        lowest (single negative) eigenvalue of the sadle point
+        lowest (single negative) eigenvalue of the saddle point
     eigenvec: numpy array, optional
-        eigenvector which correpsonds to the negative eigenvalue 
+        eigenvector which corresponds to the negative eigenvalue 
     
     Attributes
     ----------
@@ -188,7 +188,7 @@ class Database(object):
     Parameters
     ----------
     accuracy : float, optional
-        energy tolerance to cound minima as equal
+        energy tolerance to count minima as equal
     db : string, optional
         database to connect to
     connect_string : string, optional
@@ -202,7 +202,7 @@ class Database(object):
     
     accuracy : float
     onMinimumRemoved : list of function
-    onMinimumAdded : list of funtion
+    onMinimumAdded : list of function
     compareMinima
     
     Example
