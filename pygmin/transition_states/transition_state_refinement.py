@@ -160,6 +160,7 @@ class FindTransitionState(object):
         self.tangent_space_quench_params = dict(defaults.tangentSpaceQuenchParams.items() +
                                                 tangentSpaceQuenchParams.items())
         self.demand_initial_negative_vec = demand_initial_negative_vec    
+        self.nnegative_max = max(10, self.nsteps / 5)
         
         self.rmsnorm = 1./np.sqrt(float(len(coords))/3.)
         self.oldeigenvec = None
@@ -187,7 +188,6 @@ class FindTransitionState(object):
         self.reduce_step = 0
         self.step_factor = .1
         self.nnegative = 0
-        self.nnegative_max = max(10, self.nsteps / 5)
         
     def _saveState(self, coords):
         self.saved_coords = np.copy(coords)

@@ -4,7 +4,7 @@ def main():
     # add some program options
     parser = OptionParser(usage = "usage: %prog [options] storage")
     
-    from pygmin.storage.database import Storage
+    from pygmin.storage.database import Database
     
     parser.add_option("--write-disconnect",
                       dest="writeDPS", action="store_true",
@@ -23,7 +23,7 @@ def main():
         parser.print_help()
         exit(-1)
         
-    db = Storage(db=args[0])
+    db = Database(db=args[0])
 
     if(options.writeMinima):
         print "List of minima:"

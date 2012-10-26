@@ -116,7 +116,7 @@ class DoubleEndedConnect(object):
              self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
              NEBquenchParams = dict(), use_all_min=False, verbosity=1,
              NEB_image_density = 10., NEB_iter_density=15., NEBparams=dict(), 
-             nrefine_max=100, reoptimize_climbing=10):
+             nrefine_max=100, reoptimize_climbing=0):
         self.minstart = min1
         self.minend = min2
         self.pot = pot
@@ -253,7 +253,6 @@ class DoubleEndedConnect(object):
         return False if something goes wrong
         """
         #run ts search algorithm
-        print "refining transition state from NEB climbing image"
         kwargs = dict(defaults.tsSearchParams.items() + self.tsSearchParams.items())
         ret = findTransitionState(coords, self.pot, **kwargs)
         
@@ -365,7 +364,10 @@ class DoubleEndedConnect(object):
         success = False
         
         nrefine = min(self.nrefine_max, len(climbing_images))
+        count = 0
         for energy, i in climbing_images[:nrefine]:
+            count += 1
+            print "refining transition state from NEB climbing image:", count, "out of", nrefine
             coords = neb.coords[i,:]
             ts_success = self._refineTS(coords)
             if ts_success:
