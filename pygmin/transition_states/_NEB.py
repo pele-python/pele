@@ -22,6 +22,12 @@ class NEB(object):
         distance function for the elastic band
     k : float
         elastic constant for band
+        
+    dnep: boolean, optional
+        do double nudging, default True
+        
+    with_springenergy: boolean, optional
+        add the spring energy to the total energy of the band, default is False 
 
     Notes
     -----
@@ -29,7 +35,7 @@ class NEB(object):
     from a starting and ending point
     """
     def __init__(self, path, potential, distance=distance_cart,
-                 k=100.0):
+                 k=100.0, method="DNEB", with_springenergy=False, dneb=True):
         self.distance = distance
         self.potential = potential
         self.k = k
@@ -56,6 +62,9 @@ class NEB(object):
             self.energies[i] = potential.getEnergy(self.coords[i,:])
         # the active range of the coords, endpoints are fixed
         self.active = self.coords[1:nimages-1,:]
+        
+        self.dneb = dneb
+        self.with_springenergy = with_springenergy
 
     def optimize(self, quenchRoutine=None,
                  quenchParams = dict()):
@@ -113,21 +122,23 @@ class NEB(object):
 
         # the total energy of images, band is neglected
         E = sum(self.energies)
-
+        Eneb = 0
         # build forces for all images
         for i in xrange(1, self.nimages-1):
-            grad[i-1,:] = self.NEBForce(
+            En, grad[i-1,:] = self.NEBForce(
                     self.isclimbing[i],
                     [self.energies[i],tmp[i, :]],
                     [self.energies[i-1],tmp[i-1, :]],
                     [self.energies[i+1],tmp[i+1, :]],
                     realgrad[i,:]
                     )
+            Eneb += En
         if self.iprint > 0:
             if self.getEnergyCount % self.iprint == 0:
                 self.printState()
         self.getEnergyCount += 1
-        return E, grad.reshape(grad.size)
+        #print "ENeb = ", Eneb
+        return E+Eneb, grad.reshape(grad.size)
         #return 0., grad.reshape(grad.size)
 
     def tangent_old(self, central, left, right):
@@ -190,7 +201,10 @@ class NEB(object):
         J. Chem. Phys. 120, 2082 (2004); doi: 10.1063/1.1636455
 
         """
-        # construct tangent vector, TODO: implement newer method
+        if(isclimbing):
+            return greal - 2.*np.dot(greal, t) * t
+
+        # construct tangent vector
         p = image[1]
         pl = left[1]
         pr = right[1]
@@ -211,12 +225,19 @@ class NEB(object):
         gs_par = np.dot(gspring,t)*t
         # perpendicular part
         gs_perp = gspring - gs_par
-        # double nudging
-        gstar = gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
+                                
+        g_tot = gperp + gs_par
 
-        if(isclimbing):
-            return greal - 2.*np.dot(greal, t) * t
-        return (gperp + gs_par + gstar)
+        if(self.dneb):
+            # double nudging
+            g_tot += gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
+        
+        if(self.with_springenergy):
+            E = 0.5 / self.k * np.dot(gspring, gspring)
+        else:
+            E = 0.
+
+        return E, g_tot
 
     def MakeHighestImageClimbing(self):
         """
@@ -271,7 +292,13 @@ import nebtesting as test
 if __name__ == "__main__":
     import pylab as pl
     from interpolate import InterpolatedPath
-
+    from pygmin import defaults
+    from pygmin.optimize import quench
+    defaults.NEBquenchRoutine = quench.lbfgs_py
+    defaults.NEBquenchParams["iprint"]=1
+    defaults.NEBquenchParams["debug"]=True
+    defaults.NEBquenchParams["maxErise"]=0.1
+    
     x = np.arange(.5, 5., .05)
     y = np.arange(.5, 5., .05)
     z = np.zeros([len(x), len(y)])
@@ -311,7 +338,7 @@ if __name__ == "__main__":
     pl.colorbar()
     pl.plot(tmp[:, 0], tmp[:, 1], 'ko-')
     print "optimizing NEB"
-    neb.optimize(quenchRoutine=quench.fire)
+    neb.optimize()#quenchRoutine=quench.fire)
     print "done"
     tmp = neb.coords
     pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')
