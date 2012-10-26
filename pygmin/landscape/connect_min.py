@@ -40,6 +40,11 @@ class DoubleEndedConnect(object):
         implemented yet)
     NEB_image_density : float
         how many NEB images per unit distance to use.
+    NEBparams : dict
+        NEB setup parameters.  E.g. this is used to pass the spring constant.
+        (note: this is not for parameters related to interpolation).
+    nrefine_max : int
+        the maximum number of NEB transition state candidates to refine
     
     Notes
     -----
@@ -106,7 +111,7 @@ class DoubleEndedConnect(object):
     def __init__(
              self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
              NEB_optimize_quenchParams = dict(), use_all_min=False, verbosity=1,
-             NEB_image_density = 10.):
+             NEB_image_density = 10., NEBparams=dict(), nrefine_max=100):
         self.minstart = min1
         self.minend = min2
         self.pot = pot
@@ -119,8 +124,10 @@ class DoubleEndedConnect(object):
         self.database = database
         self.graph = Graph(self.database)
         self.verbosity = int(verbosity)
+        self.nrefine_max = nrefine_max
         
         self.NEB_image_density = float(NEB_image_density)
+        self.NEBparams = NEBparams
 
         self.Gdist = nx.Graph() 
         self._initializeGdist(use_all_min)
@@ -301,7 +308,7 @@ class DoubleEndedConnect(object):
         
         #change parameters for second repetition
         NEB_optimize_quenchParams = copy.copy(self.NEB_optimize_quenchParams)
-        NEBparams = copy.copy(defaults.NEBparams)
+        NEBparams = dict(defaults.NEBparams.items() + self.NEBparams.items())
         image_density = self.NEB_image_density
         if repetition > 0:
             print "running NEB a second time"
@@ -333,7 +340,7 @@ class DoubleEndedConnect(object):
     
         #get the transition state candidates from the NEB result
         nclimbing = np.sum( [neb.isclimbing[i] for i in range(neb.nimages) ])
-        print "from NEB search found", nclimbing, "climbing images"
+        print "from NEB search found", nclimbing, "transition state candidates"
         if nclimbing == 0:
             print "WARNING: found zero climbing images.  Are the minima really the same?"
             print "         energies:", minNEB1.energy, minNEB2.energy, "distance", dist  
@@ -343,17 +350,20 @@ class DoubleEndedConnect(object):
         climbing_images = sorted(climbing_images, reverse=True) #highest energies first
 
         #find the nearest transition state the the transition state candidate
-        #js850> only look at the highest climbing image.  the others are likely to be crap
-        climbing_images = [climbing_images[0]]
-        energy, i = climbing_images[0]
-        coords = neb.coords[i,:]
-        ts_success = self._refineTS(coords)
+        success = False
+        
+        nrefine = min(self.nrefine_max, len(climbing_images))
+        for energy, i in climbing_images[:nrefine]:
+            coords = neb.coords[i,:]
+            ts_success = self._refineTS(coords)
+            if ts_success:
+                success = True
         
         #if the minima are still not connected, remove this edge so we don't try this NEB again
         if not self.graph.areConnected(minNEB1, minNEB2):
             self._remove_edgeGdist(minNEB1, minNEB2)
             
-        return ts_success
+        return success
             
                 
     def _getNextPair(self):
@@ -390,7 +400,7 @@ class DoubleEndedConnect(object):
         print "best guess for path.  (dist=0.0 means the path is known)"
         
         #path is a list of nodes
-        distances = nx.get_edge_attributes(self.Gdist, "dist")
+        distances = nx.get_edge_attributes(self.Gdist, "dist2")
         distmin = 1e100
         minpair = (None, None)
         for i in range(1,len(path)):

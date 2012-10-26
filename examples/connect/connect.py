@@ -3,6 +3,7 @@ example for how to run a double ended connect routine
 """
 
 import numpy as np
+import os
 
 from pygmin.potentials.lj import LJ
 import pygmin.optimize.quench as quench
@@ -15,8 +16,7 @@ from pygmin.printing import printAtomsXYZ
 #set up the potential
 pot = LJ()
 
-#import the starting and ending points, quench them, 
-#and add them to a database as Minimum objects
+#import the starting and ending points and quench them, 
 coords1 = np.genfromtxt("coords.A")
 coords2 = np.genfromtxt("coords.B")
 res1 = quench.lbfgs_py(coords1.reshape(-1), pot.getEnergyGradient)
@@ -27,7 +27,7 @@ E1 = res1[1]
 E2 = res2[1]
 natoms = len(coords1)/3
 
-#add the minima to a new database
+#add the minima to a database
 dbfile = "database.sqlite"
 database = Database(dbfile)
 database.addMinimum(E1, coords1)
@@ -42,7 +42,7 @@ min2 = database.minima()[1]
 #we have to deal with global translational, global rotational,
 #and permutational symmetry.
 permlist = [range(natoms)]
-mindist = MinDistWrapper(minPermDistStochastic, permlist=permlist) #, niter=1000, verbose=True)
+mindist = MinDistWrapper(minPermDistStochastic, permlist=permlist, niter=10)#, verbose=True)
 
 #The transition state search needs to know what the eigenvector corresponding
 #to the lowest nonzero eigenvector is.  For this we need to know what the
@@ -56,17 +56,41 @@ tsSearchParams["orthogZeroEigs"] = orthogZeroEigs
 tsSearchParams["iprint"] = 1
 
 
+if True:
+    #set additional parameters to make it run faster
+    tsSearchParams["nsteps_tangent1"] = 3
+    tsSearchParams["nsteps_tangent2"] = 25
+    tsSearchParams["lowestEigenvectorQuenchParams"] = {"nsteps":50}
+    tsSearchParams["nfail_max"] = 200
+
+    
+    NEB_optimize_quenchParams={"nsteps":300, "iprint":10}
+    #NEB_optimize_quenchParams["NEB_image_density"] = 15
+    
+    NEBparams = dict()
+    NEBparams["k"] = 5.
+
 
 
 
 myconnect = DoubleEndedConnect(
         min1, min2, pot, mindist, database, tsSearchParams=tsSearchParams,
-        NEB_optimize_quenchParams={"nsteps":300, "iprint":10}
+        NEB_optimize_quenchParams=NEB_optimize_quenchParams, 
+        NEBparams=NEBparams, NEB_image_density=15
         )
+
+if (myconnect.graph.areConnected(min1, min2)):
+    print "ALERT: The minima are already connected in the database file", dbfile
+    print "       Delete it for a fresh run."
+
 myconnect.connect()
 print ""
 print "found a path!"
 
+
+
+#the path is now saved in the database.  Lets retrieve it and 
+#print it in a more visual format
 #now retrieve the path for printing
 print ""
 mints, S, energies = myconnect.returnPath()
@@ -95,11 +119,11 @@ with open(xyzfile, "w") as fout:
     for coords in smoothed:
         printAtomsXYZ(fout, coords)
 
-
-try:
-    import matplotlib.pyplot as plt
-    plt.plot(S, energies)
-    plt.show()
-except:
-    print "problem plotting with pyplot, skipping"
-    pass
+if False:
+    try:
+        import matplotlib.pyplot as plt
+        plt.plot(S, energies)
+        plt.show()
+    except:
+        print "problem plotting with pyplot, skipping"
+        pass

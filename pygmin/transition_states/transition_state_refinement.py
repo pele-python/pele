@@ -93,6 +93,9 @@ class FindTransitionState(object):
         eigenvector
     demand_initial_negative_vec : bool
         if True, abort if the initial lowest eigenvalue is positive
+    nsteps_tangent1, nsteps_tangent2 : int
+        the number of iterations for tangent space minimization before and after
+        the eigenvalue is deemed to be converged
         
     
     Notes
@@ -137,7 +140,9 @@ class FindTransitionState(object):
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.1,
-                 demand_initial_negative_vec=True
+                 demand_initial_negative_vec=True,
+                 nsteps_tangent1=10,
+                 nsteps_tangent2=100,
                  ):
         self.pot = pot
         self.coords = np.copy(coords)
@@ -166,8 +171,8 @@ class FindTransitionState(object):
             self.tol_tangent = min(self.tol_tangent, 
                                    self.tangent_space_quench_params["tol"])
             self.tangent_space_quench_params.clear("tol")
-        self.nsteps_tangent1 = 10
-        self.nsteps_tangent2 = 100
+        self.nsteps_tangent1 = nsteps_tangent1
+        self.nsteps_tangent2 = nsteps_tangent2
         if self.tangent_space_quench_params.has_key("maxstep"):
             self.maxstep_tangent = self.tangent_space_quench_params["maxstep"]
             self.tangent_space_quench_params.clear("maxstep")
@@ -205,7 +210,7 @@ class FindTransitionState(object):
         for i in xrange(self.nsteps):
             
             #get the lowest eigenvalue and eigenvector
-            self._getLowestEigenVector(coords, i)
+            overlap = self._getLowestEigenVector(coords, i)
             
             #check to make sure the eigenvector is ok
             if i == 0 or self.eigenval <= 0:
@@ -227,7 +232,7 @@ class FindTransitionState(object):
             if False:
                 #maybe we want to update the lowest eigenvector now that we've moved?
                 #david thinks this is a bad idea
-                self._getLowestEigenVector(coords, i)
+                overlap = self._getLowestEigenVector(coords, i)
 
             #minimize the coordinates in the space perpendicular to the lowest eigenvector
             coords, tangentrms = self._minimizeTangentSpace(coords)
@@ -240,15 +245,15 @@ class FindTransitionState(object):
             
             if self.iprint > 0:
                 if i % self.iprint == 0:
-                    print "findTransitionState:", i, E, rms, "eigenvalue", self.eigenval, \
-                          "rms perpendicular", tangentrms, "grad parallel", gradpar
+                    print "findTransitionState: %3d E %g rms %g eigenvalue %g rms perp %g grad par %g overlap %g" % (
+                                    i, E, rms, self.eigenval, tangentrms, gradpar, overlap)
             
             if callable(self.event):
                 self.event(E, coords, rms)
             if rms < self.tol:
                 break
             if self.nfail >= self.nfail_max:
-                print "stopping findTransitionState.  too many failures in eigenvector search"
+                print "stopping findTransitionState.  too many failures in eigenvector search", self.nfail
                 res.message.append( "too many failures in eigenvector search %d" % self.nfail )
                 break
 
@@ -256,7 +261,7 @@ class FindTransitionState(object):
                 print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
                 if self.demand_initial_negative_vec:
                     print "            aborting transition state search"
-                    res.message.append( "initial eigenvalue is positive %f" % self.eigenvalue )
+                    res.message.append( "initial eigenvalue is positive %f" % self.eigenval )
                     break
 
         #done.  do one last eigenvector search because coords may have changed
@@ -302,6 +307,8 @@ class FindTransitionState(object):
             overlap = np.dot(self.oldeigenvec, res.eigenvec)
             if overlap < 0.5:
                 print "warning: the new eigenvector has low overlap with previous", overlap
+        else:
+            overlap = 0.
         
         self.H0 = res.H0
         self.eigenvec = res.eigenvec
@@ -312,7 +319,8 @@ class FindTransitionState(object):
             self.nfail = 0
         else:
             self.nfail += 1
-
+        
+        return overlap
     
     def _minimizeTangentSpace(self, coords):
         """
