@@ -61,7 +61,7 @@ class Minimum(Base):
 class TransitionState(Base):
     '''Transition state object 
        
-    The TransitionState class represents a saddle point in the databae.     
+    The TransitionState class represents a saddle point in the database.     
     
     Parameters
     ----------
@@ -276,6 +276,14 @@ class Database(object):
             self.onMinimumAdded(new)
         return new
     
+    def getMinimum(self, id):
+        """return the minimum with a given id"""
+        candidates = self.session.query(Minimum).\
+            filter(Minimum._id == id)
+        for m in candidates:
+            return m
+        return None
+    
     def addTransitionState(self, E, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):
         m1, m2 = min1, min2    
         candidates = self.session.query(TransitionState).\
@@ -374,7 +382,7 @@ class Database(object):
 
         
     
-    def minima(self):
+    def minima(self, order_energy=True):
         '''iterate over all minima in database
         
         Returns
@@ -382,7 +390,10 @@ class Database(object):
         minima : list of Minimum objects
             query for all minima in database ordered in ascending energy
         '''
-        return self.session.query(Minimum).order_by(Minimum.energy).all()
+        if order_energy:
+            return self.session.query(Minimum).order_by(Minimum.energy).all()
+        else:
+            return self.session.query(Minimum).all()
     
     def transition_states(self):
         '''iterate over all transition states in database
@@ -421,6 +432,40 @@ class Database(object):
                         return None
                 self.db.addMinimum(E, coords)
         return minimum_adder(self, Ecut)
+    
+    def mergeMinima(self, min1, min2):
+        """
+        min2 will be deleted and everything that 
+        points to min2 will point to min1 instead.
+        
+        (actually, any Distance objects pointing to 
+        min2 will just be deleted)
+        """
+        #find all transition states that point to min2
+        candidates = self.session.query(TransitionState).\
+            filter(TransitionState.minimum1 == min2) 
+        for ts in candidates:
+            #should we check if this will duplicate an existing transition state?
+            ts.minimum1 = min1
+        candidates = self.session.query(TransitionState).\
+            filter(TransitionState.minimum2 == min2) 
+        for ts in candidates:
+            #should we check if this will duplicate an existing transition state?
+            ts.minimum2 = min1
+        
+        #delete any distance objects pointing to min2
+        candidates = self.session.query(Distance).\
+            filter(or_(Distance.minimum1 == min2, 
+                       Distance.minimum2 == min2))
+
+        #copy it into list format so the iterator doesn't get corrupted as we delete things            
+        candidates = list(candidates)
+        for d in candidates:
+            self.session.delete(d)
+        
+        self.session.delete(min2)
+        self.session.commit()
+
 
 if __name__ == "__main__":    
     db = Database()#db="test.db")
