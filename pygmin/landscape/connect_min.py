@@ -178,19 +178,15 @@ class DoubleEndedConnect(object):
             """
             add all minima in self.graph to self.Gdist
             """
+            print "adding all minima to distance graph (Gdist)."
+            print "    This might take a while."
             for m in self.graph.graph.nodes():
                 self._addNodeGdist(m)
 
     def _initializeDistances(self):
         """put all distances in the database into distmatrix for faster access"""
         for d in self.database.distances():
-            id1 = d.minimum1._id
-            id2 = d.minimum2._id
-            
-            if id2 > id1:
-                id2, id1 = id1, id2
-            self.distmatrix[(id1, id2)] = d.dist
-            #self.distmatrix[(id2, id1)] = d.dist
+            self.distmatrix[(d.minimum1, d.minimum2)] = d.dist
 
 
     def _addNodeGdist(self, min1):
@@ -200,8 +196,6 @@ class DoubleEndedConnect(object):
         weight 0.
         """
         self.Gdist.add_node(min1)
-        print "calculating distances between minimum", min1._id
-        print "    and all others.  This could take some time"
         for min2 in self.Gdist.nodes():
             if min2 != min1:
                 if not self.graph.areConnected(min1, min2):
@@ -221,31 +215,25 @@ class DoubleEndedConnect(object):
     def getDist(self, min1, min2):
         """
         get the distance between min1 and min2.
-
+        
+        Try first to get distances from the dictionary distmatrix as this is 
+        the fastest access method.  Then try to 
         get distances from the database if they exist, else calculate the
-        distance and save it to the database
+        distance and save it to the database and distmatrix
         """
         if True:
-            id1, id2 = min1._id, min2._id
-            if id2 > id1:
-                id2, id1 = id1, id2
-            dist = self.distmatrix.get((id1, id2))
-            if dist is not None:
-                return dist
-        if self.database is None:
-            return self._getDistNoDB(min1, min2)
+            dist = self.distmatrix.get((min1,min2))
+            if dist is not None: return dist
+            dist = self.distmatrix.get((min2,min1))
+            if dist is not None: return dist
         dist = self.database.getDistance(min1, min2)
-        if dist is not None:
-            return dist
+        if dist is not None: return dist
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
         if self.verbosity > 1:
             print "calculated distance between", min1._id, min2._id, dist
         self.database.setDistance(dist, min1, min2)
         if True:
-            id1, id2 = min1._id, min2._id
-            if id2 > id1:
-                id2, id1 = id1, id2
-                self.distmatrix[(id1, id2)] = dist
+            self.distmatrix[(min1, min2)] = dist
         return dist
 
     
@@ -264,7 +252,10 @@ class DoubleEndedConnect(object):
         self.graph.refresh() #this could be slow
         if not m in self.idlist and not (m == self.minstart) and not (m == self.minend):
             self.idlist.append(m)
-        self._addNodeGdist(m)
+        if not self.Gdist.has_node(m):
+            print "calculating distances between minimum", m._id
+            print "    and all others.  This could take some time"
+            self._addNodeGdist(m)
         return m    
 
     def _refineTS(self, coords):
