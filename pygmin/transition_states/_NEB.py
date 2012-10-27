@@ -67,7 +67,7 @@ class NEB(object):
         self.with_springenergy = with_springenergy
 
     def optimize(self, quenchRoutine=None,
-                 quenchParams = dict()):
+                 **kwargs):
         """
         Optimize the band
 
@@ -90,7 +90,7 @@ class NEB(object):
             quenchRoutine = defaults.NEBquenchRoutine 
         #combine default and passed params.  passed params will overwrite default 
         quenchParams = dict(defaults.NEBquenchParams.items() +
-                            quenchParams.items() )
+                            kwargs.items() )
 
         if quenchParams.has_key("iprint"):
             self.iprint = quenchParams["iprint"]
@@ -98,6 +98,7 @@ class NEB(object):
         tmp,E,rms,tmp4 = quenchRoutine(
                     self.active.reshape(self.active.size), self.getEnergyGradient,
                     **quenchParams)
+        print "neb rms", rms
         self.active[:,:] = tmp.reshape(self.active.shape)
         for i in xrange(0,self.nimages):
             self.energies[i] = self.potential.getEnergy(self.coords[i,:])

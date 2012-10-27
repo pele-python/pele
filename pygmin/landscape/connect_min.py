@@ -363,13 +363,13 @@ class DoubleEndedConnect(object):
         print "    nsteps ", niter
         neb = NEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
                   self.pot, **NEBparams)
-        neb.optimize(quenchParams=NEBquenchParams)
+        neb.optimize(**NEBquenchParams)
         neb.MakeAllMaximaClimbing()
 
         if self.reoptimize_climbing > 0:
             print "optimizing climbing images for a small number of steps"
             NEBquenchParams["nsteps"] = self.reoptimize_climbing
-            neb.optimize(quenchParams=NEBquenchParams)
+            neb.optimize(**NEBquenchParams)
 
     
         #get the transition state candidates from the NEB result
