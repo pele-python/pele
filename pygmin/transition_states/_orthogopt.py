@@ -1,6 +1,11 @@
 import numpy as np
 
 __all__ = ["orthogopt"]
+from _orthogoptf import orthogopt as orthogoptf
+
+def orthogopt(v, coords, norm=True):
+    orthogoptf(v, coords, norm)
+    return v
 
 def subcross(vec3, redcoords, n):
     if n == 0:
@@ -27,7 +32,7 @@ def subcross(vec3, redcoords, n):
     return vdot
     
 
-def orthogopt(vec, coords, otest):
+def orthogopt_slow(vec, coords, otest):
     """
     make vec orthogonal to eigenvectors of the Hessian corresponding to overall 
     translations and rotations.  
@@ -74,3 +79,13 @@ def orthogopt(vec, coords, otest):
     return vec
     
         
+if __name__ == "__main__":
+    np.random.seed(0)
+    natoms = 10
+    x = np.random.rand(3*natoms)
+    v = np.random.rand(3*natoms)
+    vold = v.copy()
+    v1 = orthogopt(v, x, True)
+    v2 = orthogopt_slow(vold, x, True)
+    print v1-v2
+    print "max difference between two methods", np.max(np.abs(v1-v2))

@@ -28,6 +28,9 @@ fortran_modules = [
             
     Extension("pygmin.utils._fortran_utils", 
               ["pygmin/utils/_fortran_utils.f90"]),
+
+    Extension("pygmin.transition_states._orthogoptf", 
+              ["pygmin/transition_states/_orthogoptf.f90"]),
                 ]
 
 cxx_modules = [ ]
