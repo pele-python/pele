@@ -1,4 +1,5 @@
 import numpy as np
+
 from pygmin.potentials.potential import potential as basepot
 import _fortran_utils
 from pygmin.potentials.ljcut import LJCut as LJ
@@ -10,18 +11,23 @@ __all__ = ["NeighborList", "NeighborListSubset", "NeighborListPotential", "Multi
 
 class NeighborList(object):
     """
-    this class will create and keep a neighbor list updated
+    Create a neighbor list and keep it updated
+    
+    Parameters
+    ----------
+    rcut : 
+        the cutoff distance for the potential
+    rskin : 
+        the skin distance.  atoms are listed as 
+        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
+        will have more interaction pairs, but will need to be updated less
+        frequently
+    boxl : 
+        if not None, then the system is in a periodic box of size boxl
+
     """
-    buildcount = 0
     def __init__(self, natoms, rcut, rskin = 0.5, boxl = None):
-        """
-        :rcut: the cutoff distance for the potential
-        
-        :rskin: the skin distance.  atoms are listed as 
-            neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
-            will have more interaction pairs, but will need to be updated less
-            frequently
-        """
+        self.buildcount = 0
         self.oldcoords = np.zeros([natoms,3])
         self.rcut = rcut
         self.rskin = rskin
@@ -65,26 +71,31 @@ class NeighborList(object):
             
 class NeighborListSubset(object):
     """
-    this class will create and keep a neighbor list updated
+    Create a neighbor list and keep it updated.
+    
+    This class is designed to deal with only a subset of all atoms
+
+    Parameters
+    ----------
+    rcut : 
+        the cutoff distance for the potential
+    rskin : 
+        the skin distance.  atoms are listed as 
+        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
+        will have more interaction pairs, but will need to be updated less
+        frequently
+    Alist : 
+        The list of atoms that are interacting
+    Blist : the list of atoms that are interacting with Alist
+        if Blist is None or Blist is Alist then the atoms in Alist will be 
+        assumed to be interacting with each other.  Duplicate interactions will
+        be avoided.
+    boxl : 
+        if not None, then the system is in a periodic box of size boxl
     """
-    buildcount = 0
-    count = 0
     def __init__(self, natoms, rcut, Alist, Blist = None, rskin = 0.5, boxl = None):
-        """
-        :rcut: the cutoff distance for the potential
-        
-        :rskin: the skin distance.  atoms are listed as 
-            neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
-            will have more interaction pairs, but will need to be updated less
-            frequently
-        
-        :Alist: the list of atoms that are interacting
-        
-        :Blist: the list of atoms that are interacting with Alist
-            if Blist is None or Blist is Alist then the atoms in Alist will be 
-            assumed to be interacting with each other.  Duplicate interactions will
-            be avoided.
-        """
+        self.buildcount = 0
+        self.count = 0
         self.rcut = rcut
         self.rskin = rskin
         self.redo_displacement = self.rskin / 2.
@@ -141,8 +152,6 @@ class NeighborListSubset(object):
                         coords, self.Alist, self.Blist, self.nlistmax*2, self.rlist2)
         self.neib_list = np.reshape(neib_list, [-1,2])
         self.nlist = nlist
-        #self.neib_list[:self.nlist,:] -= 1 #convert from fortran indices
-        #print "nlist from fortran", nlist, self.neib_list[0,:], self.neib_list[self.nlist-1,:]
       
     
     def buildListSlow(self, coords):
@@ -215,6 +224,13 @@ class NeighborListSubset(object):
 class NeighborListPotential(basepot):
     """
     a potential wrapper for a neighbor list
+    
+    Parameters
+    ----------
+    neighborList : 
+        the neighbor list object
+    pot :
+        the potential object
     """
     def __init__(self, neighborList, pot):
         self.neighborList = neighborList
@@ -231,6 +247,11 @@ class NeighborListPotential(basepot):
 class MultiComponentSystem(basepot):
     """
     a potential wrapper for multiple potentials
+    
+    Parameters
+    ----------
+    potentials :
+        a list of potential objects
     """
     def __init__(self, potentials):
         self.potentials = potentials
@@ -247,7 +268,6 @@ class MultiComponentSystem(basepot):
             Etot += E
             gradtot += grad
         return Etot, gradtot
-
 
 def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
     """
@@ -280,6 +300,8 @@ def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
                 ]
     mcpot = MultiComponentSystem(potlist)
     return mcpot
+
+
 
 def test(natoms = 40, boxl=None):
     import pygmin.potentials.ljpshiftfast as ljpshift
