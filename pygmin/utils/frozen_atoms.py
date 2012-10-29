@@ -8,7 +8,53 @@ from pygmin.potentials.potential import potential as basepot
 from pygmin.potentials.ljcut import LJCut
 from pygmin.utils.neighbor_list import NeighborListSubset, NeighborListPotential, MultiComponentSystem
 
-                 
+__all__ = ["makeBLJNeighborListPotFreeze", "FreezePot"]
+
+
+class MultiComponentSystemFreeze(basepot):
+    """
+    a potential wrapper for multiple potentials
+    
+    Parameters
+    ----------
+    potentials :
+        a list of potential objects
+    """
+    def __init__(self, potentials_mobile, potentials_frozen):
+        self.potentials = potentials_mobile
+        self.potentials_frozen = potentials_frozen
+        self.count = 0
+
+    def _setup(self, coords):
+        """
+        get the energy from the frozen-frozen interactions
+        """
+        self.Eff = 0.
+        for pot in self.potentials_frozen:
+            self.Eff += pot.getEnergy(coords)
+
+    def getEnergy(self, coords):
+        if self.count == 0:
+            self._setup(coords)
+        self.count += 1
+        E = self.Eff
+        for pot in self.potentials:
+            E += pot.getEnergy(coords)
+        return E
+
+    def getEnergyGradient(self, coords):
+        if self.count == 0:
+            self._setup(coords)
+        self.count += 1
+        Etot = self.Eff
+        gradtot = np.zeros(np.shape(coords))
+        for pot in self.potentials:
+            E, grad = pot.getEnergyGradient(coords)
+            Etot += E
+            gradtot += grad
+        return Etot, gradtot
+
+  
 def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA = None, rcut = 2.5, boxl=None):
     """
     create the potential object for the kob andersen binary lennard jones with frozeen particles
@@ -89,7 +135,7 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA = None, rcut = 2.5, 
                  ]
 
 
-    mcpot = MultiComponentSystem(potlist_frozen + potlist_mobile)
+    mcpot = MultiComponentSystemFreeze(potlist_mobile, potlist_frozen)
     frozenpot = FreezePot(mcpot, frozenlist)
     return frozenpot
 
