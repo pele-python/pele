@@ -49,6 +49,9 @@ class DoubleEndedConnect(object):
     reoptimize_climbing : int
         the number of iterations to use for re-optimizing the climbing images
         after the NEB is done.
+    merge_minima : bool
+        if True, merge minima if NEB finds no transition state candidates 
+        between them
     
     Notes
     -----
@@ -112,11 +115,10 @@ class DoubleEndedConnect(object):
         fail gracefully
         
     """    
-    def __init__(
-             self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
-             NEBquenchParams = dict(), use_all_min=False, verbosity=1,
-             NEB_image_density = 10., NEB_iter_density=15., NEBparams=dict(), 
-             nrefine_max=100, reoptimize_climbing=0):
+    def __init__(self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
+                 NEBquenchParams = dict(), use_all_min=False, verbosity=1,
+                 NEB_image_density = 10., NEB_iter_density=15., NEBparams=dict(), 
+                 nrefine_max=100, reoptimize_climbing=0, merge_minima=False):
         self.minstart = min1
         self.minend = min2
         self.pot = pot
@@ -135,6 +137,7 @@ class DoubleEndedConnect(object):
         self.NEB_iter_density = float(NEB_iter_density)
         self.NEBparams = NEBparams
         self.reoptimize_climbing = reoptimize_climbing
+        self.merge_minima = merge_minima
 
         self.Gdist = nx.Graph() 
         self._initializeDistances()
@@ -150,7 +153,9 @@ class DoubleEndedConnect(object):
     
     def _initializeGdist(self, use_all_min):
         """
-        Initialize the graph Gdist. Gdist is used to help try to find the 
+        Initialize the graph Gdist. 
+        
+        Gdist is used to help try to find the 
         optimal way to try to connect minstart and minend.
         
         Gdist has a vertex for minstart, minend and every new minima found.  (see note)
@@ -210,6 +215,26 @@ class DoubleEndedConnect(object):
         except nx.NetworkXError:
             pass
         return True
+    
+    def mergeMinima(self, min1, min2):
+        """merge two minimum objects
+        
+        This will delete min2 and make everything that
+        pointed to min2 point to min1.
+        """
+        dist = self.getDist(min1, min2)
+        print "merging minima", min1._id, min2._id, dist, "E1-E2", min1.energy - min2.energy
+        self.database.mergeMinima(min1, min2)
+        
+        #self.graph and self.Gdist need to be updated also, but I 
+        #don't know of a good way of doing it.  So just rebuild them
+        del self.graph
+        print "    rebuilding self.graph"
+        self.graph = Graph(self.database)
+        print "    rebuilding self.Gdist"
+        del self.Gdist
+        self.Gdist = nx.Graph()
+        self._initializeGdist(True)
 
 
     def getDist(self, min1, min2):
@@ -370,7 +395,9 @@ class DoubleEndedConnect(object):
         print "from NEB search found", nclimbing, "transition state candidates"
         if nclimbing == 0:
             print "WARNING: found zero climbing images.  Are the minima really the same?"
-            print "         energies:", minNEB1.energy, minNEB2.energy, "distance", dist  
+            print "         energies:", minNEB1.energy, minNEB2.energy, "distance", dist 
+            if self.merge_minima and repetition == self.NEBattempts-1:
+                self.mergeMinima(minNEB1, minNEB2) 
             return False   
         climbing_images = sorted(climbing_images, reverse=True) #highest energies first
 
@@ -454,7 +481,7 @@ class DoubleEndedConnect(object):
         """
         the main loop of the algorithm
         """
-        NEBattempts = 2;
+        self.NEBattempts = 2;
         for i in range(maxiter): 
             if self.graph.areConnected(self.minstart, self.minend):
                 return
@@ -464,7 +491,7 @@ class DoubleEndedConnect(object):
             min1, min2 = self._getNextPair()
             if min1 is None or min2 is None:
                 break
-            for i in range(NEBattempts):
+            for i in range(self.NEBattempts):
                 NEB_success = self._doNEB(min1, min2, i)
                 if NEB_success:
                     break

@@ -12,6 +12,7 @@ from pygmin.mindist import minPermDistStochastic, MinDistWrapper
 from pygmin.transition_states import orthogopt
 from pygmin.storage import Database, Minimum
 from pygmin.printing import printAtomsXYZ
+np.random.seed(0)
 
 #set up the potential
 pot = LJ()

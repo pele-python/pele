@@ -11,13 +11,12 @@ class Graph(object):
         
     >>> graph = Graph(save)
     '''
-    storage=None
-    graph=nx.Graph()
     
     def __init__(self, storage):
         '''
         :param storage: storage class to attach to        
         '''
+        self.graph=nx.Graph()
         self.storage = storage
         self.refresh()
         
