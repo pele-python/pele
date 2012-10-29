@@ -210,35 +210,43 @@ class NEB(object):
         pl = left[1]
         pr = right[1]
 
-        d1 = self.distance(image[1], left[1])
-        d2 = self.distance(right[1], image[1])
+        #d1 = self.distance(image[1], left[1])
+        #d2 = self.distance(right[1], image[1])
 
 
         t = self.tangent(image,left,right)
-
-        # project out parallel part
-        gperp = greal - np.dot(greal, t) * t
-        # calculate parallel spring force and energy
-        #gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
-        # this is the spring
-        gspring = -self.k*(pl + pr - 2.*p)
-        # the parallel part
-        gs_par = np.dot(gspring,t)*t
-        # perpendicular part
-        gs_perp = gspring - gs_par
-                                
-        g_tot = gperp + gs_par
-
-        if(self.dneb):
-            # double nudging
-            g_tot += gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
-        
-        if(self.with_springenergy):
-            E = 0.5 / self.k * np.dot(gspring, gspring)
+        if True:
+            import _NEB_utils
+            E, g_tot = _NEB_utils.neb_force(t,greal, self.k, self.dneb)
+            if self.with_springenergy:
+                return E, g_tot
+            else:
+                return 0., g_tot
         else:
-            E = 0.
-
-        return E, g_tot
+    
+            # project out parallel part
+            gperp = greal - np.dot(greal, t) * t
+            # calculate parallel spring force and energy
+            #gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
+            # this is the spring
+            gspring = -self.k*(pl + pr - 2.*p)
+            # the parallel part
+            gs_par = np.dot(gspring,t)*t
+            # perpendicular part
+            gs_perp = gspring - gs_par
+                                    
+            g_tot = gperp + gs_par
+    
+            if(self.dneb):
+                # double nudging
+                g_tot += gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
+            
+            if(self.with_springenergy):
+                E = 0.5 / self.k * np.dot(gspring, gspring)
+            else:
+                E = 0.
+    
+            return E, g_tot
 
     def MakeHighestImageClimbing(self):
         """

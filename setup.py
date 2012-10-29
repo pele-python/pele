@@ -31,6 +31,8 @@ fortran_modules = [
 
     Extension("pygmin.transition_states._orthogoptf", 
               ["pygmin/transition_states/_orthogoptf.f90"]),
+    Extension("pygmin.transition_states._NEB_utils", 
+              ["pygmin/transition_states/_NEB_utils.f90"]),
                 ]
 
 cxx_modules = [ ]
