@@ -1,5 +1,6 @@
 import numpy as np
 import os.path
+import copy
 
 import pygmin.defaults as defaults
 import pygmin.optimize.quench as quench
@@ -22,12 +23,14 @@ class NEB(object):
         distance function for the elastic band
     k : float
         elastic constant for band
-        
-    dnep: boolean, optional
+    dneb: boolean, optional
         do double nudging, default True
-        
     with_springenergy: boolean, optional
-        add the spring energy to the total energy of the band, default is False 
+        add the spring energy to the total energy of the band, default is False
+    copy_potential : bool, optional
+        if True a separate copy of the potential will be made for
+        each image.  This can be used to keep neighbor lists from being rebuilt
+        over and over again.  
 
     Notes
     -----
@@ -35,12 +38,16 @@ class NEB(object):
     from a starting and ending point
     """
     def __init__(self, path, potential, distance=distance_cart,
-                 k=100.0, method="DNEB", with_springenergy=False, dneb=True):
+                 k=100.0, method="DNEB", with_springenergy=False, dneb=True,
+                 copy_potential=False):
         self.distance = distance
         self.potential = potential
         self.k = k
         nimages = len(path)
         self.nimages = nimages
+        self.copy_potential = copy_potential
+        if self.copy_potential:
+            self.potential_list = [copy.deepcopy(self.potential) for i in range(nimages)]
 
         self.getEnergyCount = 0
         self.printStateFile = None
@@ -100,8 +107,13 @@ class NEB(object):
                     **quenchParams)
         print "neb rms", rms
         self.active[:,:] = tmp.reshape(self.active.shape)
-        for i in xrange(0,self.nimages):
-            self.energies[i] = self.potential.getEnergy(self.coords[i,:])
+        if self.copy_potential:
+            for i in xrange(0,self.nimages):
+                pot = self.potential_list[i]
+                self.energies[i] = pot.getEnergy(self.coords[i,:])
+        else:
+            for i in xrange(0,self.nimages):
+                self.energies[i] = self.potential.getEnergy(self.coords[i,:])
 
     def getEnergyGradient(self, coords1d):
         """
@@ -118,8 +130,13 @@ class NEB(object):
         # calculate real energy and gradient along the band. energy is needed for tangent
         # construction
         realgrad = np.zeros(tmp.shape)
-        for i in xrange(1, self.nimages-1):
-            self.energies[i], realgrad[i,:] = self.potential.getEnergyGradient(tmp[i,:])
+        if self.copy_potential:
+            for i in xrange(1, self.nimages-1):
+                pot = self.potential_list[i]
+                self.energies[i], realgrad[i,:] = pot.getEnergyGradient(tmp[i,:])
+        else:
+            for i in xrange(1, self.nimages-1):
+                self.energies[i], realgrad[i,:] = self.potential.getEnergyGradient(tmp[i,:])
 
         # the total energy of images, band is neglected
         E = sum(self.energies)
