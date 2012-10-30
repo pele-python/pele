@@ -50,8 +50,11 @@ class DoubleEndedConnect(object):
         the number of iterations to use for re-optimizing the climbing images
         after the NEB is done.
     merge_minima : bool
-        if True, merge minima if NEB finds no transition state candidates 
-        between them
+        if True, minima for which NEB finds no transition state candidates 
+        between them will be merged
+    max_dist_merge : float
+        merging minima will be aborted if the distance between them is greater
+        than max_dist_merge
     
     Notes
     -----
@@ -118,7 +121,8 @@ class DoubleEndedConnect(object):
     def __init__(self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
                  NEBquenchParams = dict(), use_all_min=False, verbosity=1,
                  NEB_image_density = 10., NEB_iter_density=15., NEBparams=dict(), 
-                 nrefine_max=100, reoptimize_climbing=0, merge_minima=False):
+                 nrefine_max=100, reoptimize_climbing=0, merge_minima=False, 
+                 max_dist_merge=0.1):
         self.minstart = min1
         self.minend = min2
         self.pot = pot
@@ -138,6 +142,7 @@ class DoubleEndedConnect(object):
         self.NEBparams = NEBparams
         self.reoptimize_climbing = reoptimize_climbing
         self.merge_minima = merge_minima
+        self.max_dist_merge = float(max_dist_merge)
 
         self.Gdist = nx.Graph() 
         self._initializeDistances()
@@ -222,20 +227,57 @@ class DoubleEndedConnect(object):
         This will delete min2 and make everything that
         pointed to min2 point to min1.
         """
+        #prefer to delete the minima with the large id.  this potentially will be easier
+        if min2._id < min1._id:
+            min1, min2 = min2, min1
+        
+        debug = False
         dist = self.getDist(min1, min2)
         print "merging minima", min1._id, min2._id, dist, "E1-E2", min1.energy - min2.energy
+
+        #deal with the case where min1 and/or min2 are the same as minstart and/or minend
+        #make sure the one that is deleted (min2) is not minstart or minend
+        if ((min1 == self.minstart and min2 == self.minend) or 
+            (min2 == self.minstart and min1 == self.minend)):
+            print "ERROR: trying to merge the start and end minima.  aborting"
+            return
+        if min2 == self.minstart or min2 == self.minend:
+            min1, min2 = min2, min1
+        
+        #print "min1 min2", min1, min2
+
+        if dist > self.max_dist_merge:
+            print "    minima merge aborted.  distance is too large", dist
+            return
         self.database.mergeMinima(min1, min2)
+        #print "min1 min2", min1, min2
+        
+        if debug:
+            #testing
+            if min2 in self.database.minima():
+                print "error, min2 is still in database"
+            for ts in self.database.transition_states():
+                if min2 == ts.minimum1 or min2 == ts.minimum2:
+                    print "error, a transition state attached to min2 is still in database", ts.minimum1._id, ts.minimum2._id
         
         #self.graph and self.Gdist need to be updated also, but I 
         #don't know of a good way of doing it.  So just rebuild them
+        del self.graph.graph
         del self.graph
         print "    rebuilding self.graph"
         self.graph = Graph(self.database)
+        if debug:
+            #testing
+            if min2 in self.graph.graph.nodes():
+                print "error, min2 is still in self.graph.graph"
+            print "self.graph.graph. nnodes", self.graph.graph.number_of_nodes()
         print "    rebuilding self.Gdist"
         del self.Gdist
         self.Gdist = nx.Graph()
+        if debug:
+            #testing
+            print "Gdist in mergeMinima", self.Gdist.number_of_nodes()
         self._initializeGdist(True)
-
 
     def getDist(self, min1, min2):
         """
@@ -334,9 +376,7 @@ class DoubleEndedConnect(object):
         """
         do NEB between minNEB1 and minNEB2.  refine any transition state candidates and
         minimize from either side of the transition state to find two new minima.
-        """
-        graph = self.graph
-        
+        """       
         #Make sure we haven't already tried this NEB pair and
         #record some data so we don't try it again in the future
         if self.pairsNEB.has_key((minNEB1, minNEB2)) and repetition == 0:
