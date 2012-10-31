@@ -128,6 +128,13 @@ class NeighborListSubset(object):
         
         self.oldcoords = np.zeros([natoms,3])            
         #self.buildList(coords)
+        
+        if self.onelist:
+            self.atomlist = list(self.Alist)
+        else:
+            self.atomlist = list(self.Alist) + list(self.Blist)
+        self.atomlist = sorted(self.atomlist)
+        self.atomlist = np.array(self.atomlist)
     
     def buildList(self, coords):
         #neib_list = np.reshape(self.neib_list, -1)
@@ -202,6 +209,27 @@ class NeighborListSubset(object):
 
     
     def needNewList(self, coords):
+        """
+        check if any atom has moved far enough that we need to redo the neighbor list
+        """
+        oldcoords = self.oldcoords.reshape(-1)
+        boxl = self.boxl
+        if boxl is None:
+            boxl = 1.
+        rebuild = _fortran_utils.check_neighbor_lists(oldcoords, coords, self.atomlist,
+                                                      self.redo_displacement, self.periodic, 
+                                                      boxl)
+        rebuild = bool(rebuild)
+        if False:
+            #testing
+            rebuild_alt = self.needNewListSlow(coords)
+            if rebuild != rebuild_alt:
+                print "rebuild is incorrect", rebuild, rebuild_alt, self.periodic, self.onelist
+                print "    ", self.atomlist[-3:]
+                
+        return rebuild
+    
+    def needNewListSlow(self, coords):
         """
         check if any atom has moved far enough that we need to redo the neighbor list
         """

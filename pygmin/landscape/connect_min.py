@@ -374,19 +374,8 @@ class DoubleEndedConnect(object):
    
     def _doNEB(self, minNEB1, minNEB2, repetition = 0):
         """
-        do NEB between minNEB1 and minNEB2.  refine any transition state candidates and
-        minimize from either side of the transition state to find two new minima.
-        """       
-        #Make sure we haven't already tried this NEB pair and
-        #record some data so we don't try it again in the future
-        if self.pairsNEB.has_key((minNEB1, minNEB2)) and repetition == 0:
-            print "WARNING: redoing NEB for minima", minNEB1._id, minNEB2._id
-            print "         aborting NEB"
-            self._remove_edgeGdist(minNEB1, minNEB2)
-            return True
-        self.pairsNEB[(minNEB1, minNEB2)] = True
-        self.pairsNEB[(minNEB2, minNEB1)] = True
-
+        do NEB between minNEB1 and minNEB2.
+        """
         #arrange the coordinates to minimize the distance between them        
         dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords)
         print ""
@@ -431,19 +420,48 @@ class DoubleEndedConnect(object):
         #get the transition state candidates from the NEB result
         climbing_images = [ (neb.energies[i], i) for i in range(neb.nimages) 
                            if neb.isclimbing[i] ]
+        return climbing_images, neb
+    
+    def _localConnect(self, min1, min2, repetition=0):
+        """
+        1) NEB to find transition state candidates.  
+        
+        for each transition state candidate:
+        
+            2) refine the transition state candidates
+        
+            3) if successful, fall off either side of the transition state
+            to find the minima the transition state connects. Add the new 
+            transition state and minima to the graph 
+        """
+        #Make sure we haven't already tried this pair and
+        #record some data so we don't try it again in the future
+        if self.pairsNEB.has_key((min1, min2)) and repetition == 0:
+            print "WARNING: redoing NEB for minima", min1._id, min2._id
+            print "         aborting NEB"
+            self._remove_edgeGdist(min1, min2)
+            return True
+        self.pairsNEB[(min1, min2)] = True
+        self.pairsNEB[(min2, min1)] = True
+        
+        #do NEB run
+        climbing_images, neb = self._doNEB(min1, min2, repetition)
+        
+        #check results
         nclimbing = len(climbing_images)
         print "from NEB search found", nclimbing, "transition state candidates"
         if nclimbing == 0:
+            dist = self.getDist(min1, min2)
             print "WARNING: found zero climbing images.  Are the minima really the same?"
-            print "         energies:", minNEB1.energy, minNEB2.energy, "distance", dist 
+            print "         energies:", min1.energy, min2.energy, "distance", dist 
             if self.merge_minima and repetition == self.NEBattempts-1:
-                self.mergeMinima(minNEB1, minNEB2) 
+                self.mergeMinima(min1, min2) 
             return False   
         climbing_images = sorted(climbing_images, reverse=True) #highest energies first
 
-        #find the nearest transition state the the transition state candidate
         success = False
         
+        #find the nearest transition state to the transition state candidates
         nrefine = min(self.nrefine_max, len(climbing_images))
         count = 0
         for energy, i in climbing_images[:nrefine]:
@@ -454,11 +472,11 @@ class DoubleEndedConnect(object):
             if ts_success:
                 success = True
         
-        #if the minima are still not connected, remove this edge so we don't try this NEB again
-        if not self.graph.areConnected(minNEB1, minNEB2):
-            self._remove_edgeGdist(minNEB1, minNEB2)
+        #remove this edge from Gdist so we don't try this pair again again
+        self._remove_edgeGdist(min1, min2)
             
         return success
+
             
                 
     def _getNextPair(self):
@@ -532,8 +550,8 @@ class DoubleEndedConnect(object):
             if min1 is None or min2 is None:
                 break
             for i in range(self.NEBattempts):
-                NEB_success = self._doNEB(min1, min2, i)
-                if NEB_success:
+                local_success = self._localConnect(min1, min2, i)
+                if local_success:
                     break
         print "failed to find connection between", self.minstart._id, self.minend._id
 
