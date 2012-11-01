@@ -44,8 +44,11 @@ class DistanceGraph(object):
         self.Gdist = nx.Graph()
         self.distance_map = dict()
         nx.set_edge_attributes(self.Gdist, "weight", dict())
+        self.debug = True
+        
 
-    
+    def distToWeight(self, dist):
+        return dist**2
         
     
     def _setDist(self, min1, min2, dist):
@@ -80,7 +83,7 @@ class DistanceGraph(object):
     def _addEdge(self, min1, min2):
         if min1 == min2: return
         dist = self.getDist(min1, min2)
-        weight = dist**2
+        weight = self.distToWeight(dist)
         self.Gdist.add_edge(min1, min2, {"weight":weight})
         if self.graph.areConnected(min1, min2):
             self.setTransitionStateConnection(min1, min2)
@@ -132,6 +135,9 @@ class DistanceGraph(object):
         """
         weight = 0.
         self.Gdist.add_edge(min1, min2, {"weight":weight})
+        #TODO: this will affect other edges.  need to check rest of graph
+        #if self.debug:
+        #    self.checkGraph()
 
     def shortestPath(self, min1, min2):
         if True:
@@ -140,7 +146,6 @@ class DistanceGraph(object):
             path = nx.shortest_path(
                     self.Gdist, min1, min2, weight="weight")
         except nx.NetworkXNoPath:
-            print "Can't find any way to try to connect the minima"
             return None, None
         weights = nx.get_edge_attributes(self.Gdist, "weight")
         return path, weights
@@ -180,9 +185,38 @@ class DistanceGraph(object):
         
         #done, replace Gdist with newgraph
         self.Gdist = newgraph
+        if self.debug:
+            self.checkGraph()
 
-            
+    def checkGraph(self):
+        """
+        make sure graph is up to date.
+        and make any corrections
+        """
+        print "checking Gdist"
+        #check that all edges that are connected in self.graph
+        #have zero edge weight
+        #note: this could be done a lot more efficiently
+        weights = nx.get_edge_attributes(self.Gdist, "weight")
+        count = 0
+        for e in self.Gdist.edges():
+            are_connected = self.graph.areConnected(e[0], e[1])
+            zero_weight = weights[e] < 1e-10
+            #if they are connected they should have zero_weight
+            if are_connected and not zero_weight:
+                #dist = self.getDist(e[0], e[1])
+                #print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist
+                self.setTransitionStateConnection(e[0], e[1])
+                count += 1
+            if not are_connected and zero_weight:
+                dist = self.getDist(e[0], e[1])
+                print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist
+                w = self.distToWeight(dist)
+                self.Gdist.add_edge(e[0], e[1], {"weight":w})
+        if count > 0:
+            print "    found", count, "inconsistencies in Gdist"
         
+                        
 
 
 class DoubleEndedConnect(object):
@@ -303,7 +337,7 @@ class DoubleEndedConnect(object):
         self.minend = min2
         self.pot = pot
         self.mindist = mindist
-        self.distmatrix = dict()
+        #self.distmatrix = dict()
         self.pairsNEB = dict()
         #self.idlist = []
         self.tsSearchParams = tsSearchParams
@@ -562,6 +596,9 @@ class DoubleEndedConnect(object):
         """
         #self.Gdist.add_edge(min1, min2, {"dist":0., "dist2":0.})
         self.dist_graph.setTransitionStateConnection(min1, min2)
+        if True:
+            #debugging
+            self.dist_graph.checkGraph()
         return True
         
    
@@ -640,8 +677,9 @@ class DoubleEndedConnect(object):
         
         #Make sure they're not already connected.  sanity test
         if self.graph.areConnected(min1, min2):
-            print "running local connect, but minima are already connected", min1._id, min2._id, self.getDist(min1, min2)
+            print "in _local_connect, but minima are already connected. aborting", min1._id, min2._id, self.getDist(min1, min2)
             self.dist_graph.setTransitionStateConnection(min1, min2)
+            self.dist_graph.checkGraph()
             return True
         
         #do NEB run
@@ -707,6 +745,7 @@ class DoubleEndedConnect(object):
         print "finding a good pair to try to connect"
         path, weights = self.dist_graph.shortestPath(self.minstart, self.minend)
         if path is None:
+            print "Can't find any way to try to connect the minima"
             return None, None
         
 #        #weight the edge by the square of the distance
@@ -744,7 +783,7 @@ class DoubleEndedConnect(object):
         return minpair
                 
     
-    def connect(self, maxiter=100):
+    def connect(self, maxiter=200):
         """
         the main loop of the algorithm
         """
