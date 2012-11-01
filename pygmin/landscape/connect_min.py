@@ -71,7 +71,9 @@ class DistanceGraph(object):
 
         #if that fails, try to get it from the database
         dist = self.database.getDistance(min1, min2)
-        if dist is not None: return dist
+        if dist is not None: 
+            print "distance in database but not in distance_map"
+            return dist
         
         #if it's not in the database we must calculate it
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
@@ -794,7 +796,7 @@ class DoubleEndedConnect(object):
                 return
             
             print ""
-            print "starting connect cycle", i
+            print "======== starting connect cycle", i, "========"
             min1, min2 = self._getNextPair()
             if min1 is None or min2 is None:
                 break
