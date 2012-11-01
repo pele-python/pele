@@ -553,7 +553,7 @@ class DoubleEndedConnect(object):
 #            self._addNodeGdist(m)
         return m    
 
-    def _refineTS(self, coords):
+    def _refineTS(self, coords, eigenvec0=None):
         """
         find nearest transition state to NEB climbing image
         
@@ -563,7 +563,7 @@ class DoubleEndedConnect(object):
         """
         #run ts search algorithm
         kwargs = dict(defaults.tsSearchParams.items() + self.tsSearchParams.items())
-        ret = findTransitionState(coords, self.pot, **kwargs)
+        ret = findTransitionState(coords, self.pot, eigenvec0=eigenvec0, **kwargs)
         
         #check to make sure it is a valid transition state 
         coords = ret.coords
@@ -709,7 +709,14 @@ class DoubleEndedConnect(object):
             print ""
             print "refining transition state from NEB climbing image:", count, "out of", nrefine
             coords = neb.coords[i,:]
-            ts_success = self._refineTS(coords)
+            #get guess for initial eigenvector from NEB tangent
+            if True:
+                eigenvec0 = neb.tangent( [neb.energies[i-1], neb.coords[i-1,:]],
+                                         [neb.energies[i], neb.coords[i,:]],
+                                         [neb.energies[i+1], neb.coords[i+1,:]]
+                                        )
+            
+            ts_success = self._refineTS(coords, eigenvec0=eigenvec0)
             if ts_success:
                 success = True
         

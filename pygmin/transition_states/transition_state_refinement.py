@@ -70,7 +70,7 @@ class FindTransitionState(object):
     nfail_max :
         if the lowest eigenvector search fails this many times in a row
         than the algorithm ends
-    eigenvec : 
+    eigenvec0 : 
         a guess for the initial lowest eigenvector
     iprint :
         the interval at which to print status messages
@@ -136,7 +136,7 @@ class FindTransitionState(object):
     
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
-                 nfail_max=5, eigenvec=None, iprint=-1, orthogZeroEigs=0,
+                 nfail_max=5, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.1,
@@ -151,7 +151,7 @@ class FindTransitionState(object):
         self.event = event
         self.nfail_max = nfail_max
         self.nfail = 0
-        self.eigenvec = eigenvec
+        self.eigenvec = eigenvec0
         self.orthogZeroEigs = orthogZeroEigs
         self.iprint = iprint
         self.lowestEigenvectorQuenchParams = lowestEigenvectorQuenchParams
@@ -193,6 +193,7 @@ class FindTransitionState(object):
         self.saved_coords = np.copy(coords)
         self.saved_eigenvec = np.copy(self.eigenvec)
         self.saved_eigenval = self.eigenval
+        self.saved_overlap = self.overlap
         #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
 
     def _resetState(self, coords):
@@ -200,6 +201,7 @@ class FindTransitionState(object):
         self.eigenvec = np.copy(self.saved_eigenvec)
         self.eigenval = self.saved_eigenval
         self.oldeigenvec = np.copy(self.eigenvec)
+        self.overlap = self.saved_overlap
         return coords
 
     def run(self):
@@ -210,7 +212,8 @@ class FindTransitionState(object):
         for i in xrange(self.nsteps):
             
             #get the lowest eigenvalue and eigenvector
-            overlap = self._getLowestEigenVector(coords, i)
+            self.overlap = self._getLowestEigenVector(coords, i)
+            overlap = self.overlap
             
             #check to make sure the eigenvector is ok
             if i == 0 or self.eigenval <= 0:
@@ -330,10 +333,14 @@ class FindTransitionState(object):
         to 10 until we get close.
         """
         #determine the number of steps
+        #i.e. if the eigenvector is deemed to have converged
+        #eigenvec_converged = np.abs(gradpar) <= self.tol*2.
+        eigenvec_converged = self.overlap > .999 
+        
         E, grad = self.pot.getEnergyGradient(coords)
         gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
         nstepsperp = self.nsteps_tangent1
-        if np.abs(gradpar) <= self.tol*2.:
+        if eigenvec_converged:
             nstepsperp = self.nsteps_tangent2
 
         maxstep = self.maxstep_tangent
