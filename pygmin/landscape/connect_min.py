@@ -69,11 +69,14 @@ class DistanceGraph(object):
         dist = self.distance_map.get((min2,min1))
         if dist is not None: return dist
 
-        #if that fails, try to get it from the database
-        dist = self.database.getDistance(min1, min2)
-        if dist is not None: 
-            print "distance in database but not in distance_map"
-            return dist
+        if False:
+            #this is extremely slow for large databases (50% of time spent here)
+            #also, it's not necessary if we load all the distances in initialize()
+            #if that fails, try to get it from the database
+            dist = self.database.getDistance(min1, min2)
+            if dist is not None: 
+                print "distance in database but not in distance_map"
+                return dist
         
         #if it's not in the database we must calculate it
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
@@ -115,7 +118,7 @@ class DistanceGraph(object):
         self.graph = graph
 
     def initialize(self, minstart, minend, use_all_min):
-        print "initializing", use_all_min
+        print "loading distances from database"
         self._initializeDistances()
         dist = self.getDist(minstart, minend)
         self.addMinimum(minstart)
@@ -580,7 +583,7 @@ class DoubleEndedConnect(object):
         #find the minima which this transition state connects
         print "falling off either side of transition state to find new minima"
         ret1, ret2 = minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
-            displace=1e-3, quenchParameters={"tol":1e-7})
+            displace=1e-3, quenchParameters={"tol":1e-7, "iprint":-1})
         
         #add the new minima to the graph (they may already be in there)
         min1 = self._addMinimum(ret1[1], ret1[0])
