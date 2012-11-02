@@ -34,17 +34,20 @@ def determinePushoff(
     return coords1
 
 def minima_from_ts(getEnergyGradient, xt, n=None, displace=1e-3,
-                   quenchRoutine=None, quenchParameters=None):
+                   quenchRoutine=None, quenchParameters=dict()):
     # if no direction is given, choose random direction
     if n==None:
         # TODO: replace by better algorithm with uniform sampling
         n = np.random.random(xt.shape)-0.5
     
+    quenchParameters = dict(defaults.quenchParams.items() + 
+                            quenchParameters.items())
     if quenchRoutine==None:
-        quenchRoutine = quench.fire
+        quenchRoutine = quench.mylbfgs
         #quenchRoutine = defaults.quenchRoutine
-    if quenchParameters==None:
-        quenchParameters = defaults.quenchParams
+        #js850> this should be done more carefully
+        quenchParameters = dict(quenchParameters.items() +
+                                [("M",1)])
         
     
     #x1 = xt - displace*n
