@@ -12,8 +12,33 @@ from pygmin.potentials.coldfusioncheck import addColdFusionCheck
 from pygmin.potentials.gminpotential import GMINPotential 
 
 __all__ = ["compareMinima", "GenRandomCrystal", "quenchCrystal",
-           "TakestepDMAGMIN", "AppDMAGMINBH"]
+           "TakestepDMAGMIN", "AppDMAGMINBH", "DMACRYSPotential"]
 
+class DMACRYSPotential(GMINPotential):
+    ''' wrapper for dmacrys potential
+    
+        This is a wrapper for the DMACRYS potential in GMIN. It has some
+        additional features like selecting energy units or freezing
+        the lattice        
+    '''  
+    
+    ENERGY_IN_EV = 1.0
+    ENERGY_IN_KJMOL = 96.4853365
+        
+    def __init__(self):
+        GMINPotential.__init__(self, GMIN)
+        self.energy_unit = self.ENERGY_IN_KJMOL
+        self.freeze_lattice = False
+    
+    def getEnergy(self, coords):
+        return self.energy_unit * GMINPotential.getEnergy(self, coords)
+
+    def getEnergyGradient(self, coords):        
+        E, g = GMINPotential.getEnergyGradient(self, coords)
+        if self.freeze_lattice:
+            g[-6:]=0.
+        return self.energy_unit * E, self.energy_unit*g
+        
 # compare 2 minima
 def compareMinima(min1, min2):
     from pygmin.utils import rbtools
