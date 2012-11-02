@@ -6,10 +6,12 @@ from pygmin import defaults
 
 class AppBasinHopping(Application):
     accuracy = 1e-3
-    quenchParameters=defaults.quenchParams
-    quenchRoutine=defaults.quenchRoutine
     default_temperature = 1.0
     
+    def __init__(self):
+        self.quenchParameters=defaults.quenchParams
+        self.quenchRoutine=defaults.quenchRoutine
+        
     def create_takestep(self):
         return takestep.RandomDisplacement()
     
@@ -24,7 +26,13 @@ class AppBasinHopping(Application):
         opts = self.options
         
         print "Initial energy ", pot.getEnergy(coords)
-
+        print "Creating basin hopping with quencher"
+        print "------------------------------------"
+        print self.quenchRoutine
+        for key, value in self.quenchParameters.iteritems():
+            print key, "=", value         
+        print "------------------------------------"
+        
         if(add_minimum is None):
             add_minimum = self.database.minimum_adder()
         return BasinHopping(coords, pot, takeStep=step, 
