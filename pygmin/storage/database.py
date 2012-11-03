@@ -56,6 +56,10 @@ class Minimum(Base):
     def left_neighbors(self):
         return [x.lower_node for x in self.right_edges]
    
+    def __hash__(self):
+        assert self._id is not None
+        return self._id
+         
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
 class TransitionState(Base):
@@ -97,25 +101,25 @@ class TransitionState(Base):
     energy = Column(Float)
     '''energy of transition state'''
     
-    coords = Column(PickleType)
+    coords = deferred(Column(PickleType))
     '''coordinates of transition state'''
     
     _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum1 = relationship("Minimum",
-                            primaryjoin="Minimum._id==TransitionState._minimum1_id",
-                            backref='left_edges')
+                            primaryjoin="Minimum._id==TransitionState._minimum1_id") #,
+                            #backref='left_edges')
     '''first minimum which connects to transition state'''
     
     _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum2 = relationship("Minimum",
-                            primaryjoin="Minimum._id==TransitionState._minimum2_id",
-                            backref='right_edges')
+                            primaryjoin="Minimum._id==TransitionState._minimum2_id")#,
+                            #backref='right_edges')
     '''second minimum which connects to transition state'''
     
     eigenval = Column(Float)
     '''coordinates of transition state'''
 
-    eigenvec = Column(PickleType)
+    eigenvec = deferred(Column(PickleType))
     '''coordinates of transition state'''
     
     
@@ -278,12 +282,8 @@ class Database(object):
     
     def getMinimum(self, id):
         """return the minimum with a given id"""
-        candidates = self.session.query(Minimum).\
-            filter(Minimum._id == id)
-        for m in candidates:
-            return m
-        return None
-    
+        return self.session.query(Minimum).get(id)
+        
     def addTransitionState(self, E, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):
         m1, m2 = min1, min2    
         candidates = self.session.query(TransitionState).\
