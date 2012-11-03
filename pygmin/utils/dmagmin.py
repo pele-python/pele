@@ -12,8 +12,34 @@ from pygmin.potentials.coldfusioncheck import addColdFusionCheck
 from pygmin.potentials.gminpotential import GMINPotential 
 
 __all__ = ["compareMinima", "GenRandomCrystal", "quenchCrystal",
-           "TakestepDMAGMIN", "AppDMAGMINBH"]
+           "TakestepDMAGMIN", "AppDMAGMINBH", "DMACRYSPotential"]
 
+class DMACRYSPotential(GMINPotential):
+    ''' wrapper for dmacrys potential
+    
+        This is a wrapper for the DMACRYS potential in GMIN. It has some
+        additional features like selecting energy units or freezing
+        the lattice        
+    '''  
+    
+    ENERGY_IN_EV = 1.0
+    ENERGY_IN_KJMOL = 96.4853365
+        
+    def __init__(self):
+        GMINPotential.__init__(self, GMIN)
+        self.energy_unit = self.ENERGY_IN_KJMOL
+        self.freeze_lattice = False
+    
+    def getEnergy(self, coords):
+        return self.energy_unit * GMINPotential.getEnergy(self, coords)
+
+    def getEnergyGradient(self, coords):        
+        E, g = GMINPotential.getEnergyGradient(self, coords)
+        if self.freeze_lattice:
+            g[-6:]=0.
+        g*=self.energy_unit
+        return self.energy_unit * E, g
+        
 # compare 2 minima
 def compareMinima(min1, min2):
     from pygmin.utils import rbtools
@@ -148,7 +174,6 @@ class TakestepDMAGMIN(takestep.TakestepInterface):
 
 class AppDMAGMINBH(AppClusterBH):
     overlap_cutoff = None
-    displace_nmols = None
     genrandom_volume = None
     random_start = False
     
@@ -163,6 +188,9 @@ class AppDMAGMINBH(AppClusterBH):
         quenchParameters["M"]=100
         
         self.quenchRoutine=quenchCrystal
+        
+    def set_random_start(self, random_start):
+        self.random_start = random_start
     
     def initial_coords(self):
         coords = self.create_potential().getCoords()
@@ -173,15 +201,22 @@ class AppDMAGMINBH(AppClusterBH):
         return coords
         
     def create_potential(self):
-        return GMINPotential(GMIN)
+        return DMACRYSPotential()
     
     def create_takestep_step(self):
-        return TakestepDMAGMIN(overlap_cutoff = self.overlap_cutoff, nmols=self.displace_nmols)
+        return TakestepDMAGMIN(overlap_cutoff = self.overlap_cutoff, nmols=self.options.displace_nmols)
 
     def create_takestep_reseed(self):
         return GenRandomCrystal(CoordsAdapter(nrigid=GMIN.getNRigidBody(), nlattice=6, coords=None),
                                 volume=self.genrandom_volume,
                                 overlap = self.overlap_cutoff)
+        
+    def create_takestep(self):
+        step = self.create_takestep_step()
+        if(not self.options.reseed is None):
+            reseed = self.create_takestep_reseed()
+            return takestep.Reseeding(step, reseed, self.options.reseed)
+        return step
     
     def create_basinhopping(self):
         GMIN.initialize()    
@@ -192,4 +227,17 @@ class AppDMAGMINBH(AppClusterBH):
         return opt
     
     def add_options(self):
-        AppClusterBH.add_options(self)
+        AppBasinHopping.add_options(self)
+        self.add_option("-r","--rotate",type="float",
+                           dest="rotate", default=3.1415,
+                           help="size of rotational displacement",
+                           group="Takestep")
+        self.add_option("-d","--displace",type="float",
+                           dest="displace", default=3.1415,
+                           help="carthesian displacement for molecules",
+                           group="Takestep")
+        self.add_option("--nmols",type="float", dest="displace_nmols", group="Takestep", 
+                           help="numper of molecules to displace in each step, default is all")
+        self.add_option("--reseed", type="int",dest="reseed",
+                           help="give number of maxnoimporve steps to enable reseeding",
+                          group="Takestep")
