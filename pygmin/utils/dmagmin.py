@@ -112,11 +112,11 @@ class GenRandomCrystal(takestep.TakestepInterface):
 # special quencher for crystals
 def quenchCrystal(coords, pot, **kwargs):
     ''' Special quench routine for crystals which makes sure that the final structure is a reduced cell '''
-    coords, E, rms, calls = quench.lbfgs_py(coords, pot, **kwargs)
+    coords, E, rms, calls = quench.mylbfgs(coords, pot, **kwargs)
     #while(GMIN.reduceCell(coords)):
     if(GMIN.reduceCell(coords)):
         #print "Reduced cell, redo minimization"
-        coords, E, rms, callsn = quench.lbfgs_py(coords, pot, **kwargs)
+        coords, E, rms, callsn = quench.mylbfgs(coords, pot, **kwargs)
         calls+=callsn
     return coords, E, rms, calls
 
@@ -176,6 +176,7 @@ class AppDMAGMINBH(AppClusterBH):
     overlap_cutoff = None
     genrandom_volume = None
     random_start = False
+    accuracy = 1e-2
     
     def __init__(self):       
         AppClusterBH.__init__(self)
@@ -204,7 +205,10 @@ class AppDMAGMINBH(AppClusterBH):
         return DMACRYSPotential()
     
     def create_takestep_step(self):
-        return TakestepDMAGMIN(overlap_cutoff = self.overlap_cutoff, nmols=self.options.displace_nmols)
+        return TakestepDMAGMIN(overlap_cutoff = self.overlap_cutoff, \
+                               nmols=self.options.displace_nmols, \
+                               expand = self.options.expand, \
+                               translate = self.options.displace)
 
     def create_takestep_reseed(self):
         return GenRandomCrystal(CoordsAdapter(nrigid=GMIN.getNRigidBody(), nlattice=6, coords=None),
@@ -221,7 +225,7 @@ class AppDMAGMINBH(AppClusterBH):
     def create_basinhopping(self):
         GMIN.initialize()    
         opt = AppClusterBH.create_basinhopping(self)
-        self.database.compareMinima = compareMinima
+        #self.database.compareMinima = compareMinima
         opt.insert_rejected = True
         addColdFusionCheck(opt)
         return opt
@@ -233,10 +237,14 @@ class AppDMAGMINBH(AppClusterBH):
                            help="size of rotational displacement",
                            group="Takestep")
         self.add_option("-d","--displace",type="float",
-                           dest="displace", default=3.1415,
+                           dest="displace", default=0.,
                            help="carthesian displacement for molecules",
                            group="Takestep")
-        self.add_option("--nmols",type="float", dest="displace_nmols", group="Takestep", 
+        self.add_option("-e","--expand",type="float",
+                           dest="expand", default=1.0,
+                           help="expand the cell each step, default is 1.0",
+                           group="Takestep")
+        self.add_option("--nmols",type="int", dest="displace_nmols", group="Takestep", 
                            help="numper of molecules to displace in each step, default is all")
         self.add_option("--reseed", type="int",dest="reseed",
                            help="give number of maxnoimporve steps to enable reseeding",
