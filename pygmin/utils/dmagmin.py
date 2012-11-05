@@ -222,9 +222,9 @@ class AppDMAGMINBH(AppClusterBH):
             return takestep.Reseeding(step, reseed, self.options.reseed)
         return step
     
-    def create_basinhopping(self):
+    def create_basinhopping(self, **kwargs):
         GMIN.initialize()    
-        opt = AppClusterBH.create_basinhopping(self)
+        opt = AppClusterBH.create_basinhopping(self, **kwargs)
         #self.database.compareMinima = compareMinima
         opt.insert_rejected = True
         addColdFusionCheck(opt)
