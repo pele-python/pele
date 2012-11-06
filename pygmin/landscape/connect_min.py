@@ -377,89 +377,13 @@ class DoubleEndedConnect(object):
         #self._initializeGdist(use_all_min)
         
         print "************************************************************"
-        print "staring a double ended connect run between"
+        print "starting a double ended connect run between"
         print "        minimum 1: id %d energy %f" % (self.minstart._id, self.minstart.energy)
         print "        minimum 2: id %d energy %f" % (self.minend._id, self.minend.energy)
         print "        dist %f" % self.getDist(self.minstart, self.minend)
         print "************************************************************"
         
     
-#    def _initializeGdist(self, use_all_min):
-#        """
-#        Initialize the graph Gdist. 
-#        
-#        Gdist is used to help try to find the 
-#        optimal way to try to connect minstart and minend.
-#        
-#        Gdist has a vertex for minstart, minend and every new minima found.  (see note)
-#        
-#        Gdist has an edge between (almost) every minima.
-#        
-#        the edge weight is:
-#            if self.graph.areConnected(u,v):
-#                weight(u,v) = 0.
-#            else:
-#                weight(u,v) = self.getDist(u,v)
-#        
-#        edges are removed from the graph when an NEB is done to try to connect them.
-#        
-#        note: currently we initialize Gdist only with minstart and minend.  If we use
-#        all the other minima in self.graph we might be able to find a better path or
-#        find it more quickly.  But if the database of minima is large calculating the
-#        distances between every minima can take a long time
-#        """
-#        nx.set_edge_attributes(self.Gdist, "dist", dict())
-#        nx.set_edge_attributes(self.Gdist, "dist2", dict())
-#        dist = self.getDist(self.minstart, self.minend)
-#        self.Gdist.add_edge(self.minstart, self.minend, {"dist":dist, "dist2":dist**2})
-#        if use_all_min:
-#            """
-#            add all minima in self.graph to self.Gdist
-#            """
-#            print "adding all minima to distance graph (Gdist)."
-#            print "    This might take a while."
-#            for m in self.graph.graph.nodes():
-#                self._addNodeGdist(m)
-
-#    def _initializeDistances(self):
-#        """put all distances in the database into distmatrix for faster access"""
-#        for d in self.database.distances():
-#            self.distmatrix[(d.minimum1, d.minimum2)] = d.dist
-
-
-#    def _addNodeGdist(self, min1):
-#        """
-#        add node to graph Gdist.  Add an edge to all existing nodes with weight
-#        given by the distance.  If the minima are connected in self.graph make the 
-#        weight 0.
-#        """
-#        self.Gdist.add_node(min1)
-#        for min2 in self.Gdist.nodes():
-#            if min2 != min1:
-#                if not self.graph.areConnected(min1, min2):
-#                    dist = self.getDist(min1, min2)
-#                else:
-#                    dist = 0.
-#                self.Gdist.add_edge(min1, min2, {"dist":dist, "dist2":dist**2})
-
-#    def _remove_edgeGdist(self, min1, min2):
-#        try:
-#            self.Gdist.remove_edge(min1, min2)
-#        except nx.NetworkXError:
-#            pass
-#        return True
-    
-#    def _mergeMinimaGdist(self, min1, min2):
-#        if True:
-#            print "    rebuilding self.Gdist"
-#            del self.Gdist
-#            self.Gdist = nx.Graph()
-#            self._initializeGdist(True)
-#        else:
-#            #this doesn't work
-#            print "Gdist nnodes before", self.Gdist.number_of_nodes()
-#            nx.relabel_nodes(self.Gdist, {min2:min1})
-#            print "Gdist nnodes after ", self.Gdist.number_of_nodes()
 
     
     def mergeMinima(self, min1, min2):
@@ -529,43 +453,6 @@ class DoubleEndedConnect(object):
         distance and save it to the database and distmatrix
         """
         return self.dist_graph.getDist(min1, min2)
-#        if True:
-#            dist = self.distmatrix.get((min1,min2))
-#            if dist is not None: return dist
-#            dist = self.distmatrix.get((min2,min1))
-#            if dist is not None: return dist
-#        dist = self.database.getDistance(min1, min2)
-#        if dist is not None: return dist
-#        dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
-#        if self.verbosity > 1:
-#            print "calculated distance between", min1._id, min2._id, dist
-#        self.database.setDistance(dist, min1, min2)
-#        if True:
-#            self.distmatrix[(min1, min2)] = dist
-#        return dist
-
-    
-#    def _getDistNoDB(self, min1, min2):
-#        dist = self.distmatrix.get((min1, min2))
-#        if dist is not None:
-#            return dist
-#        print "calculating distance between", min1._id, min2._id
-#        dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
-#        self.distmatrix[(min1,min2)] = dist
-#        self.distmatrix[(min2,min1)] = dist
-#        return dist
-
-    def _addMinimum(self, *args):
-        m = self.graph.addMinimum(*args)
-        self.graph.refresh() #this could be slow
-#        if not m in self.idlist and not (m == self.minstart) and not (m == self.minend):
-#            self.idlist.append(m)
-        self.dist_graph.addMinimum(m)
-#        if not self.Gdist.has_node(m):
-#            print "calculating distances between minimum", m._id
-#            print "    and all others.  This could take some time"
-#            self._addNodeGdist(m)
-        return m    
 
     def _refineTS(self, coords, eigenvec0=None):
         """
@@ -773,25 +660,17 @@ class DoubleEndedConnect(object):
         the NEB between minima that are very far away.  (Does this too much favor long paths?)
         """
         print "finding a good pair to try to connect"
+        #get the shortest path on dist_graph between minstart and minend
         path, weights = self.dist_graph.shortestPath(self.minstart, self.minend)
         if path is None:
             print "Can't find any way to try to connect the minima"
             return None, None
         
-#        #weight the edge by the square of the distance
-#        #could also be "dist"
-#        pathweight = "dist2" 
-#        try:
-#            path = nx.shortest_path(
-#                    self.Gdist, self.minstart, self.minend, weight=pathweight)
-#        except nx.NetworkXNoPath:
-#            print "Can't find any way to try to connect the minima"
-#            return None, None
-        
         print "best guess for path.  (dist=0.0 means the path is known)"
         
-        #path is a list of nodes
-#        distances = nx.get_edge_attributes(self.Gdist, pathweight)
+        #find the shortest single edge in that path and use that
+        #also, print the path
+        #as the minima pair to try to connect.
         weightmin = 1e100
         minpair = (None, None)
         for i in range(1,len(path)):
@@ -800,12 +679,11 @@ class DoubleEndedConnect(object):
             w = weights.get((min1,min2))
             if w is None:
                 w = weights.get((min2,min1))
+            #get the distance between min1 and min2. leave as 0. if they are
+            #already connected by transition states
             dist = w
             if w > 1e-6:
                 dist = self.getDist(min1, min2)
-            #print "dist", dist
-#            if pathweight == "dist2":
-#                w = np.sqrt(dist)
             print "    path guess", min1._id, min2._id, dist
             if w > 1e-10 and w < weightmin:
                 weightmin = w
