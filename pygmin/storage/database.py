@@ -358,7 +358,7 @@ class Database(object):
                    and_(Distance.__table__.c._minimum1_id==min2._id, 
                         Distance.__table__.c._minimum2_id==min1._id),
                ), use_labels=False).limit(1)
-        print sql
+        #print sql
         result = self.connection.execute(sql)
         dist = result.fetchone()
         result.close()
@@ -373,7 +373,9 @@ class Database(object):
         -------
         distance : list of Distance objects
         '''
-        return self.session.query(Distance).all()
+        #return self.session.query(Distance).all()
+        return self.session.query(Distance).yield_per(100)
+        #return self.session.query(Distance)
 
         
     

@@ -5,19 +5,21 @@ __all__ = ["Graph"]
 
 class Graph(object):
     '''
-    Wrapper to represent a storage class as a graph
+    Wrapper to represent a database object as a graph
     
-    :example:
-        
-    >>> graph = Graph(save)
+    Parameter
+    ---------
+    database :
+        the database object to represent
+    
+    Examples
+    --------
+    >>> graph = Graph(mydatabase)
     '''
     
-    def __init__(self, storage):
-        '''
-        :param storage: storage class to attach to        
-        '''
+    def __init__(self, database):
         self.graph=nx.Graph()
-        self.storage = storage
+        self.storage = database
         self.refresh()
         
     def refresh(self):
@@ -25,7 +27,7 @@ class Graph(object):
             self.graph.add_node(m)
         for ts in self.storage.transition_states():
             self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
-            
+
     def addMinimum(self, *args):
         return self.storage.addMinimum(*args)
     
@@ -47,6 +49,3 @@ class Graph(object):
             return nx.bidirectional_dijkstra(self.graph, min1, min2)
         except nx.NetworkXNoPath:
             return None
-        
-        
-    
