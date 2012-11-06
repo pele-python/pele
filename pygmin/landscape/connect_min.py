@@ -111,6 +111,14 @@ class DistanceGraph(object):
 
     def _initializeDistances(self):
         """put all distances in the database into distmatrix for faster access"""
+#        from pygmin.storage.database import Distance
+#        from sqlalchemy.sql import select
+#        conn = self.database.engine.connect()
+#        sql = select([Distance.__table__])
+#        for tmp, dist, id1, id2 in conn.execute(sql):
+#            #m1 = self.database.getMinimum(id1)
+#            #m2 = self.database.getMinimum(id2)
+#            self.distance_map[id1, id2] = dist
         for d in self.database.distances():
             self.distance_map[(d.minimum1, d.minimum2)] = d.dist
 
@@ -270,6 +278,8 @@ class DoubleEndedConnect(object):
     max_dist_merge : float
         merging minima will be aborted if the distance between them is greater
         than max_dist_merge
+    NEB_max_images :
+        the maximum number of NEB images
     
     Notes
     -----
@@ -337,7 +347,7 @@ class DoubleEndedConnect(object):
                  NEBquenchParams = dict(), use_all_min=False, verbosity=1,
                  NEB_image_density = 10., NEB_iter_density=15., NEBparams=dict(), 
                  nrefine_max=100, reoptimize_climbing=0, merge_minima=False, 
-                 max_dist_merge=0.1):
+                 max_dist_merge=0.1, NEB_max_images=40):
         self.minstart = min1
         self.minend = min2
         self.pot = pot
@@ -358,6 +368,7 @@ class DoubleEndedConnect(object):
         self.reoptimize_climbing = reoptimize_climbing
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
+        self.NEB_max_images =int(NEB_max_images)
 
         self.dist_graph = DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
         self.dist_graph.initialize(self.minstart, self.minend, use_all_min)
@@ -626,6 +637,8 @@ class DoubleEndedConnect(object):
         
         #determine the number of images
         nimages = int(max(1., dist) * self.NEB_image_density * factor)
+        if nimages > self.NEB_max_images:
+            nimages = self.NEB_max_images
         
         #determine the number of iterations
         NEBquenchParams = copy.copy(self.NEBquenchParams)
@@ -634,7 +647,12 @@ class DoubleEndedConnect(object):
         else:
             niter = int(self.NEB_iter_density * nimages)
             NEBquenchParams["nsteps"] = niter
-        
+
+        #if nimages is already self.NEB_max_images then doubling the number
+        #of images will have no effect.  so double the number of steps instead
+        if repetition > 0 and nimages == self.NEB_max_images:
+            niter *= factor
+            NEBquenchParams["nsteps"] = niter
         
         #run NEB 
         NEBparams = dict(defaults.NEBparams.items() + self.NEBparams.items())
