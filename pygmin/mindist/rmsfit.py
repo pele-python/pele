@@ -1,6 +1,6 @@
 import numpy as np
 
-def findrotation_kabsch(coords1, coords2):
+def findrotation_kabsch(coords1, coords2, align_com=True):
     '''
     Kabsch, Wolfgang, (1976) "A solution of the best rotation to relate two sets of vectors", Acta Crystallographica 32:922
     '''
@@ -17,10 +17,11 @@ def findrotation_kabsch(coords1, coords2):
     natoms = x1.shape[0]
     
     # set both com to zero
-    com1 = np.sum(x1,axis=0) / float(natoms)
-    com2 = np.sum(x2,axis=0) / float(natoms)
-    x1 -= com1
-    x2 -= com2
+    if(align_com):
+        com1 = np.sum(x1,axis=0) / float(natoms)
+        com2 = np.sum(x2,axis=0) / float(natoms)
+        x1 -= com1
+        x2 -= com2
   
     # calculate covariance matrix
     A = np.dot( x2.transpose(), x1)
