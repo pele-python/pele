@@ -62,7 +62,7 @@ class DistanceGraph(object):
         #    if not self.edge_weight.has_key((min2, min1)):
         #        self.edge_weight[(min1, min2)] = weight
     
-    def getDist(self, min1, min2):
+    def _getDistNoCalc(self, min1, min2):
         #first try to get the distance from the dictionary 
         dist = self.distance_map.get((min1,min2))
         if dist is not None: return dist
@@ -77,6 +77,11 @@ class DistanceGraph(object):
             if dist is not None: 
                 print "distance in database but not in distance_map"
                 return dist
+        return None
+
+    def getDist(self, min1, min2):
+        dist = self._getDistNoCalc(min1, min2)
+        if dist is not None: return dist
         
         #if it's not in the database we must calculate it
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
@@ -125,9 +130,32 @@ class DistanceGraph(object):
     def replaceTransitionStateGraph(self, graph):
         self.graph = graph
 
-    def initialize(self, minstart, minend, use_all_min):
+    def _addRelevantMinima(self, minstart, minend):
+        start_end_distance = self.getDist(minstart, minend)
+        count = 0
+        naccept = 0
+        for m in self.database.minima():
+            count += 1
+            d1 = self._getDistNoCalc(m, minstart)
+            if d1 is None: continue
+            if d1 > start_end_distance: continue
+            
+            d2 = self._getDistNoCalc(m, minend)
+            if d2 is None: continue
+            if d2 > start_end_distance: continue
+            
+            print "    accepting minimum", d1, d2, start_end_distance
+            
+            naccept += 1
+            self.addMinimum(m)
+        print "    found", naccept, "relevant minima out of", count
+
+
+    def initialize(self, minstart, minend, use_all_min=False, use_limited_min=True):
+        #raw_input("Press Enter to continue:")
         print "loading distances from database"
         self._initializeDistances()
+        #raw_input("Press Enter to continue:")
         dist = self.getDist(minstart, minend)
         self.addMinimum(minstart)
         self.addMinimum(minend)
@@ -139,6 +167,14 @@ class DistanceGraph(object):
             print "    This might take a while."
             for m in self.database.minima():
                 self.addMinimum(m)
+        elif use_limited_min:
+            print "adding relevant minima to distance graph (Gdist)."
+            print "    This might take a while."
+            self._addRelevantMinima(minstart, minend)
+        #raw_input("Press Enter to continue:")
+
+            
+            
 
     def setTransitionStateConnection(self, min1, min2):
         """use this function to tell DistanceGraph that
@@ -228,9 +264,50 @@ class DistanceGraph(object):
                 self.Gdist.add_edge(e[0], e[1], {"weight":w})
         if count > 0:
             print "    found", count, "inconsistencies in Gdist"
-        
-                        
 
+
+class DistanceGraphLimited(DistanceGraph):
+    """
+    Build a distance graph, but include only those minima
+    that are important for the connection between two minima.
+    """
+    def __init__(self, database, minstart, minend):
+        self.database = database
+        self.minstart = minstart
+        self.minend = minend
+        
+        self.start_end_distance = self.getDist(minstart, minend)
+        if self.start_end_distance is None:
+            raise Exception("distance between minstart and minend returns None")
+        
+        self.graph = nx.Graph()
+        self._buildGraph()
+    
+    def getDist(self, m1, m2):
+        d = self.database.getDistance(m1, m2)
+        if d is not None:
+            return d.dist
+        return None
+    
+    def _buildGraph(self):
+        """
+        include only minima m1 for which dist(m1, minstart) and
+        dist(m1, minend) are less than dist(minstart, minend)
+
+        don't calculate any distances, only include the minima if the relevant
+        distances exist.
+        """
+        for m in self.database.minima():
+            d1 = self.getDist(m, self.minstart)
+            if d1 is None: continue
+            if d1 > self.start_end_distance: continue
+            
+            d2 = self.getDist(m, self.minend)
+            if d2 is None: continue
+            if d2 > self.start_end_distance: continue
+            
+            self.graph.add_node(m)
+                     
 
 class DoubleEndedConnect(object):
     """
@@ -454,6 +531,13 @@ class DoubleEndedConnect(object):
         """
         return self.dist_graph.getDist(min1, min2)
 
+    def _addMinimum(self, *args):
+        m = self.graph.addMinimum(*args)
+        self.graph.refresh() #this could be slow
+        self.dist_graph.addMinimum(m)
+        return m    
+
+
     def _refineTS(self, coords, eigenvec0=None):
         """
         find nearest transition state to NEB climbing image
@@ -546,6 +630,7 @@ class DoubleEndedConnect(object):
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
         print "    nimages", nimages
         print "    nsteps ", niter
+        #raw_input("Press Enter to continue:")
         neb = NEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
                   self.pot, **NEBparams)
         neb.optimize(**NEBquenchParams)
@@ -704,6 +789,7 @@ class DoubleEndedConnect(object):
             print ""
             print "======== starting connect cycle", i, "========"
             min1, min2 = self._getNextPair()
+            #raw_input("Press Enter to continue:")
             if min1 is None or min2 is None:
                 break
             for i in range(self.NEBattempts):
