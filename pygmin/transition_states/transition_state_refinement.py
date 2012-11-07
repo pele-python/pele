@@ -248,8 +248,12 @@ class FindTransitionState(object):
             
             if self.iprint > 0:
                 if i % self.iprint == 0:
-                    print "findTransitionState: %3d E %g rms %g eigenvalue %g rms perp %g grad par %g overlap %g" % (
+                    ostring = "findTransitionState: %3d E %g rms %g eigenvalue %g rms perp %g grad par %g overlap %g" % (
                                     i, E, rms, self.eigenval, tangentrms, gradpar, overlap)
+                    extra = " Evec search: %d rms %g" % (self.leig_result.nfev, self.leig_result.rms)
+                    extra += " Tverse search: %d rms %g" % (self.tangent_result[3], self.tangent_result[2])
+                    extra += " Uphill step: %g" % (self.uphill_step_size,)
+                    print ostring, extra
             
             if callable(self.event):
                 self.event(E, coords, rms)
@@ -302,6 +306,7 @@ class FindTransitionState(object):
         res = findLowestEigenVector(coords, self.pot, H0=self.H0, eigenvec0=self.eigenvec, 
                                     orthogZeroEigs=self.orthogZeroEigs,
                                     **self.lowestEigenvectorQuenchParams)
+        self.leig_result = res
         
 #        if res.eigenval > 0.:
 #            print "warning transition state search found positive lowest eigenvalue", res.eigenval, \
@@ -356,6 +361,7 @@ class FindTransitionState(object):
                                           **self.tangent_space_quench_params)
         coords = ret[0]
         rms = ret[2]
+        self.tangent_result = ret 
         return coords, rms
 
     def _stepUphill(self, coords):
@@ -374,6 +380,7 @@ class FindTransitionState(object):
 
         if np.abs(h) > maxstep:
             h *= maxstep / abs(h)
+        self.uphill_step_size = h
         coords += h * self.eigenvec
 
         return coords
@@ -447,7 +454,7 @@ def guessts(coords1, coords2, pot):
     from pygmin.transition_states import InterpolatedPath
     neb = NEB(InterpolatedPath(coords1, coords2, 20), pot)
     #neb.optimize(quenchParams={"iprint" : 1})
-    neb.optimize(quenchParams={"iprint": -30, "nsteps":100})
+    neb.optimize(iprint=-30, nsteps=100)
     neb.MakeAllMaximaClimbing()
     #neb.optimize(quenchParams={"iprint": 30, "nsteps":100})
     for i in xrange(len(neb.energies)):

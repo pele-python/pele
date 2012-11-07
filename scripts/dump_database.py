@@ -47,7 +47,7 @@ def main():
         print "--------------------------"
         for d in db.distances():
             print "%d\t<->\t%d\tid %d\tdistance %f"%\
-                (d.minimum1._id, d.minimum2._id, d._id, d.dist)
+                (d._minimum1_id, d._minimum2_id, d._id, d.dist)
         print "END\n"
 
     if(options.writeDPS):

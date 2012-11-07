@@ -260,7 +260,7 @@ class LBFGS:
             print stp
             print G
             
-        
+        self.stepsize = f*stepsize
         return X, E, G
     
     def reset(self):
@@ -304,11 +304,10 @@ class LBFGS:
             
             rms = np.linalg.norm(G) / sqrtN
 
-            i += 1
             
             if iprint > 0:
                 if i % iprint == 0:
-                    print "lbfgs:", i, e, rms, self.funcalls
+                    print "lbfgs:", i, e, rms, self.funcalls, self.stepsize
             for event in self.events:
                 event(coords=X, energy=e, rms=rms)
       
@@ -321,6 +320,7 @@ class LBFGS:
             if i_am_done:
                 res.success = True
                 break
+            i += 1
         
         res.nsteps = i
         res.nfev = self.funcalls
