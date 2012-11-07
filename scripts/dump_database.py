@@ -15,6 +15,9 @@ def main():
     parser.add_option("-t",
                       dest="writeTS", action="store_true",
                       help="dump transition states to screen")
+    parser.add_option("-d",
+                      dest="write_distances", action="store_true",
+                      help="dump distances to screen")
     
     (options, args) = parser.parse_args()
     
@@ -39,7 +42,14 @@ def main():
             print "%d\t<->\t%d\tid %d\tenergies %f %f %f"%\
                 (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
         print "END\n"
-        
+    if(options.write_distances):
+        print "List of distances:"
+        print "--------------------------"
+        for d in db.distances():
+            print "%d\t<->\t%d\tid %d\tdistance %f"%\
+                (d.minimum1._id, d.minimum2._id, d._id, d.dist)
+        print "END\n"
+
     if(options.writeDPS):
         writeDPS(db)
         

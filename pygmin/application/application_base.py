@@ -1,5 +1,6 @@
 from optparse import OptionParser
 from pygmin.storage.database import Database
+import sys
 
 class Application(object):   
     options = None
@@ -22,20 +23,25 @@ class Application(object):
         if kwargs.has_key("group"):
             del kwargs["group"]
         grp = self.parser
-        print args, kwargs
         if not group is None:
             if not self.option_groups.has_key(group):
                 grp = self.parser.add_option_group(group)
                 self.option_groups[group] = grp
-        print args, kwargs
         grp.add_option(*args, **kwargs)
     
     def run(self):
         raise Exception("run not implemented for application")
     
     def execute(self):
-        self.add_options()                    
+        print "The program was started with the following command line argument"
+        print " ".join(sys.argv)
+        self.add_options()        
         (self.options, self.args) = self.parser.parse_args()
+        print "Starting the run with the following options"
+        print "-------------------------------------------"
+        for key, value in self.options.__dict__.iteritems():
+            print str(key) + " = " + str(value)
+        print "-------------------------------------------"
         self.database = Database(db=self.options.database, accuracy=self.accuracy, compareMinima=self.compareStructures)
         self.run()
 

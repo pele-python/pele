@@ -6,19 +6,24 @@ import numpy as np
 import pygmin.potentials.ljpshift as ljpshift
 from pygmin.potentials.potential import potential as basepot
 from pygmin.potentials.ljcut import LJCut
-from pygmin.utils.neighbor_list import NeighborListSubset, NeighborListPotential, MultiComponentSystem
-
+from pygmin.utils.neighbor_list import NeighborListSubset, NeighborListPotential, MultiComponentSystem, NeighborListSubsetBuild, NeighborListPotentialBuild
+from pygmin.utils.neighbor_list import NeighborListPotentialMulti
 __all__ = ["makeBLJNeighborListPotFreeze", "FreezePot"]
 
 
 class MultiComponentSystemFreeze(basepot):
     """
-    a potential wrapper for multiple potentials
+    a potential wrapper for multiple potentials with frozen particles
+    
+    The primary reason to use this class is that frozen-frozen 
+    interactions need only be calculated once
     
     Parameters
     ----------
-    potentials :
-        a list of potential objects
+    potentials_mobile :
+        a list of potential objects that include mobile atoms
+    potentials_frozen :
+        a list of potentials including only frozen atoms
     """
     def __init__(self, potentials_mobile, potentials_frozen):
         self.potentials = potentials_mobile
@@ -31,6 +36,8 @@ class MultiComponentSystemFreeze(basepot):
         """
         self.Eff = 0.
         for pot in self.potentials_frozen:
+            if hasattr(pot, "buildList"):
+                pot.buildList(coords)
             self.Eff += pot.getEnergy(coords)
 
     def getEnergy(self, coords):
@@ -54,7 +61,8 @@ class MultiComponentSystemFreeze(basepot):
             gradtot += grad
         return Etot, gradtot
 
-  
+
+
 def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA = None, rcut = 2.5, boxl=None):
     """
     create the potential object for the kob andersen binary lennard jones with frozeen particles
@@ -106,36 +114,42 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA = None, rcut = 2.5, 
     #nlAB_mf
     #nlAB_fm
     
-    nlAA_ff = NeighborListSubset(natoms, rcut, frozenA, boxl=boxl )
-    nlAA_mm = NeighborListSubset(natoms, rcut, mobileA, boxl=boxl )
-    nlAA_mf = NeighborListSubset(natoms, rcut, mobileA, Blist=frozenA, boxl=boxl )
+    nlAA_ff = NeighborListSubsetBuild(natoms, rcut, frozenA, boxl=boxl )
+    nlAA_mm = NeighborListSubsetBuild(natoms, rcut, mobileA, boxl=boxl )
+    nlAA_mf = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=frozenA, boxl=boxl )
     
-    nlBB_ff = NeighborListSubset(natoms, rcut, frozenB, boxl=boxl )
-    nlBB_mm = NeighborListSubset(natoms, rcut, mobileB, boxl=boxl )
-    nlBB_mf = NeighborListSubset(natoms, rcut, mobileB, Blist=frozenB, boxl=boxl )
+    nlBB_ff = NeighborListSubsetBuild(natoms, rcut, frozenB, boxl=boxl )
+    nlBB_mm = NeighborListSubsetBuild(natoms, rcut, mobileB, boxl=boxl )
+    nlBB_mf = NeighborListSubsetBuild(natoms, rcut, mobileB, Blist=frozenB, boxl=boxl )
     
-    nlAB_ff = NeighborListSubset(natoms, rcut, frozenA, Blist=frozenB, boxl=boxl )
-    nlAB_mm = NeighborListSubset(natoms, rcut, mobileA, Blist=mobileB, boxl=boxl )
-    nlAB_mf = NeighborListSubset(natoms, rcut, mobileA, Blist=frozenB, boxl=boxl )
-    nlAB_fm = NeighborListSubset(natoms, rcut, mobileB, Blist=frozenA, boxl=boxl )
+    nlAB_ff = NeighborListSubsetBuild(natoms, rcut, frozenA, Blist=frozenB, boxl=boxl )
+    nlAB_mm = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=mobileB, boxl=boxl )
+    nlAB_mf = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=frozenB, boxl=boxl )
+    nlAB_fm = NeighborListSubsetBuild(natoms, rcut, mobileB, Blist=frozenA, boxl=boxl )
     
     potlist_frozen = [
-                 NeighborListPotential(nlAA_ff, ljAA),
-                 NeighborListPotential(nlBB_ff, ljBB),
-                 NeighborListPotential(nlAB_ff, ljAB)
+                 NeighborListPotentialBuild(nlAA_ff, ljAA),
+                 NeighborListPotentialBuild(nlBB_ff, ljBB),
+                 NeighborListPotentialBuild(nlAB_ff, ljAB)
                 ]
     potlist_mobile = [
-                 NeighborListPotential(nlAA_mm, ljAA),
-                 NeighborListPotential(nlAA_mf, ljAA),
-                 NeighborListPotential(nlBB_mm, ljBB),
-                 NeighborListPotential(nlBB_mf, ljBB),
-                 NeighborListPotential(nlAB_mm, ljAB),
-                 NeighborListPotential(nlAB_mf, ljAB),
-                 NeighborListPotential(nlAB_fm, ljAB),
+                 NeighborListPotentialBuild(nlAA_mm, ljAA),
+                 NeighborListPotentialBuild(nlAA_mf, ljAA),
+                 NeighborListPotentialBuild(nlBB_mm, ljBB),
+                 NeighborListPotentialBuild(nlBB_mf, ljBB),
+                 NeighborListPotentialBuild(nlAB_mm, ljAB),
+                 NeighborListPotentialBuild(nlAB_mf, ljAB),
+                 NeighborListPotentialBuild(nlAB_fm, ljAB),
                  ]
+    
+    #wrap the mobile potentials so the check for whether coords needs to be updated
+    #can be done all at once
+    mobile_pot = NeighborListPotentialMulti(potlist_mobile, natoms, rcut, boxl=boxl)
 
-
-    mcpot = MultiComponentSystemFreeze(potlist_mobile, potlist_frozen)
+    #wrap the mobile and frozen potentials together
+    mcpot = MultiComponentSystemFreeze([mobile_pot], potlist_frozen)
+    
+    #finally, wrap it once more in a class that will zero the gradients of the frozen atoms
     frozenpot = FreezePot(mcpot, frozenlist)
     return frozenpot
 
@@ -230,10 +244,10 @@ def test(natoms = 40, boxl=4.):
     print "largest gradient difference", np.max(np.abs(g2-g1))
     print "rms gradients", np.linalg.norm(g1)/np.sqrt(len(g1)), np.linalg.norm(g2)/np.sqrt(len(g1))
 
-    
-    for subpot in pot.pot.potentials:
-        nl = subpot.neighborList
-        print "number of times neighbor list was remade", nl.buildcount, "out of", nl.count
+    if True:
+        for subpot in pot.pot.potentials:
+            nl = subpot
+            print "number of times neighbor list was remade:", nl.buildcount, "out of", nl.count
     
     if False:
         try: 
