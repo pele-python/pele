@@ -268,7 +268,7 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
     dist = np.sqrt(costnew)
     return dist, X1, X2
 
-def findBestPermutation( X1, X2, permlist = [] ):
+def findBestPermutation( X1, X2, permlist = None ):
     """
     find the permutation of the atoms which minimizes the distance |X1-X2|
     
@@ -283,7 +283,7 @@ def findBestPermutation( X1, X2, permlist = [] ):
             permlist = [range(1,natoms/2), range(natoms/2,natoms)]
 
     """
-    if len(permlist) == 0:
+    if permlist is None:
         permlist = [range(len(X1)/3)]
     for atomlist in permlist:
         dist, X1, X2 = findBestPermutationList( X1, X2, atomlist )
@@ -402,7 +402,7 @@ def findBestPermutationRBMol(coords1, coords2, mysys, permlist):
     then, for each molecule, apply the symmetry operation which minimized the distance
     """
     nmol = len(coords1) / 3 / 2
-    if len(permlist) == 0:
+    if permlist is None:
         permlist = [range(nmol)]
     for mollist in permlist:
         mol = mysys.molecule_list[ mollist[0] ] #a molecule object corresponding to this permuation

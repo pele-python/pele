@@ -8,7 +8,7 @@ from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
 
 __all__ = ["minPermDistStochastic"]
 
-def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
+def minPermDistStochastic(X1, X2, niter = 100, permlist = None, verbose = False):
     """
     Minimize the distance between two clusters.  
     
@@ -53,7 +53,7 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
     
     """
     nsites = len(X1)/3
-    if len(permlist) == 0:
+    if permlist is None:
         permlist = [range(nsites)]
 
     ###############################################
