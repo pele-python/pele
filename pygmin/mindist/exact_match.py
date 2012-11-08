@@ -63,26 +63,24 @@ class ExactMatchCluster(object):
         
         # calculate distance of all atoms
         R1 = np.sqrt(np.sum(x1*x1, axis=1))
-        R2 = np.sqrt(np.sum(x1*x1, axis=1))
+        R2 = np.sqrt(np.sum(x2*x2, axis=1))
         
         # at least 2 atoms are needed
         # get atom most outer atom
         
         # get 1. reference atom in configuration 1
         # use the atom with biggest distance to com
-        idx1_1 = R1.argmax()
+        idx_sorted = R1.argsort()
+        idx1_1 = idx_sorted[-1]
         
         # find second atom which is not in a line
-        Ri = R1[idx1_1]
-        while True:
-            idx1_2 = R1[R1<Ri].argmax()
-            Ri = R1[idx1_2]
+        for idx1_2 in reversed(idx_sorted[0:-1]):
             # stop if angle is larger than threshold
-            cos_theta1 = np.dot(x1[idx1_1], x2[idx1_2]) / \
+            cos_theta1 = np.dot(x1[idx1_1], x1[idx1_2]) / \
                 (np.linalg.norm(x1[idx1_1])*np.linalg.norm(x1[idx1_2])) 
             if cos_theta1 < 0.9:
                 break
-        
+            
         # do a very quick check if most distant atom from
         # center are within accuracy
         if np.abs(R1[idx1_1] - R2.max()) > self.accuracy:
@@ -101,9 +99,9 @@ class ExactMatchCluster(object):
                     continue
                 
                 # we can immediately trash the match if angle does not match
-                cos_theta2 = np.dot(x1[idx2_1], x2[idx2_2]) / \
+                cos_theta2 = np.dot(x2[idx2_1], x2[idx2_2]) / \
                     (np.linalg.norm(x2[idx2_1])*np.linalg.norm(x2[idx2_2]))
-                if(np.abs(cos_theta2 - cos_theta2) > 0.1):
+                if(np.abs(cos_theta2 - cos_theta2) > 0.5):
                     continue
 
                 # get rotation for current atom match candidates
@@ -137,8 +135,12 @@ class ExactMatchCluster(object):
         # make a copy since findBestPermutation will mess up order
         x2_trial = x2.copy()
         # get the best permutation
-        dist, x1n, x2n = findBestPermutation(x1_trial, x2_trial)
+        dist, x1n, x2n = findBestPermutation(x1_trial.flatten(), x2_trial.flatten())
+        x1n = x1n.reshape([-1,3])
+        x2n = x2n.reshape([-1,3])
         
+        #x1n = x1_trial
+        #x2n = x2_trial
         # now find best rotational alignment, this is more reliable than just
         # aligning the 2 reference atoms
         rot2 = rmsfit.findrotation_kabsch(x1n, x2n)
@@ -153,7 +155,7 @@ class ExactMatchCluster(object):
                         
     
 if __name__ == '__main__':
-    natoms = 100
+    natoms = 35
     from pygmin.utils import rotations
     
     for i in xrange(100):
@@ -162,6 +164,11 @@ if __name__ == '__main__':
         mx = rotations.q2mx(rotations.random_q())
         xx2 = np.dot(mx, xx1.transpose()).transpose()
         xx2 +=2.*(np.random.random(xx2.shape)-0.5)*0.003
-
+        #xx2 = xx1.copy()
+        tmp = xx2[1].copy()
+        xx2[1] = xx2[4]
+        xx2[4] = tmp
+        #dist, x1n, x2n = findBestPermutation(xx1.flatten(), xx2.flatten())
+        #print dist
         print i,ExactMatchCluster()(xx1, xx2)
     
