@@ -4,6 +4,13 @@ import numpy as np
 from pygmin.transition_states import NEB, dimer, tstools, InterpolatedPath
 import pygmin.potentials.lj as lj
 from pygmin import gui
+from pygmin.mindist import ExactMatchCluster
+
+def compare(x1, x2):
+    ret =  ExactMatchCluster(accuracy = 1e-2)(x1.coords, x2.coords)
+    if( not ret):
+        print "2 minima within enery accuracy have different coordinates", x1.energy, x2.energy
+    return ret
                 
 class LJSystem(gui.GUISystem):
     def __init__(self):
@@ -12,6 +19,10 @@ class LJSystem(gui.GUISystem):
         self.natoms = dlg.natoms()
         if dlg.result() == QtGui.QDialog.Rejected:
             raise BaseException("Aborted parameter dialog")
+        
+    def set_database(self, database):
+        database.compareMinima = compare
+        gui.GUISystem.set_database(self, database)
         
     def create_basinhopping(self):
         import pygmin.basinhopping as bh

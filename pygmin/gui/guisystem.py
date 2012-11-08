@@ -11,3 +11,5 @@ class GUISystem(object):
     def draw(self, coordslinear, index):
         raise BaseException("not implemented")
     
+    def set_database(self, database):
+        self.database = database

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Sat Oct 20 00:38:11 2012
+# Created: Thu Nov  8 03:39:51 2012
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -102,16 +102,6 @@ class Ui_MainWindow(object):
         self.gridLayout_2 = QtGui.QGridLayout()
         self.gridLayout_2.setContentsMargins(20, 0, 20, -1)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
-        self.btnConnect = QtGui.QPushButton(self.NEBTab)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btnConnect.sizePolicy().hasHeightForWidth())
-        self.btnConnect.setSizePolicy(sizePolicy)
-        self.btnConnect.setMaximumSize(QtCore.QSize(100, 16777215))
-        self.btnConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnConnect.setObjectName(_fromUtf8("btnConnect"))
-        self.gridLayout_2.addWidget(self.btnConnect, 0, 1, 1, 1)
         self.btnAlign = QtGui.QPushButton(self.NEBTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -121,11 +111,25 @@ class Ui_MainWindow(object):
         self.btnAlign.setMaximumSize(QtCore.QSize(100, 100))
         self.btnAlign.setText(QtGui.QApplication.translate("MainWindow", "Align", None, QtGui.QApplication.UnicodeUTF8))
         self.btnAlign.setObjectName(_fromUtf8("btnAlign"))
-        self.gridLayout_2.addWidget(self.btnAlign, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.btnAlign, 1, 0, 1, 1)
         self.btnEnergies = QtGui.QPushButton(self.NEBTab)
         self.btnEnergies.setText(QtGui.QApplication.translate("MainWindow", "Energies", None, QtGui.QApplication.UnicodeUTF8))
         self.btnEnergies.setObjectName(_fromUtf8("btnEnergies"))
-        self.gridLayout_2.addWidget(self.btnEnergies, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.btnEnergies, 2, 0, 1, 1)
+        self.btnConnect = QtGui.QPushButton(self.NEBTab)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btnConnect.sizePolicy().hasHeightForWidth())
+        self.btnConnect.setSizePolicy(sizePolicy)
+        self.btnConnect.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.btnConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnConnect.setObjectName(_fromUtf8("btnConnect"))
+        self.gridLayout_2.addWidget(self.btnConnect, 2, 1, 1, 1)
+        self.btnInvert = QtGui.QPushButton(self.NEBTab)
+        self.btnInvert.setText(QtGui.QApplication.translate("MainWindow", "Invert", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnInvert.setObjectName(_fromUtf8("btnInvert"))
+        self.gridLayout_2.addWidget(self.btnInvert, 1, 1, 1, 1)
         self.gridLayout_4.addLayout(self.gridLayout_2, 1, 3, 1, 1)
         self.sliderFrame = QtGui.QSlider(self.NEBTab)
         self.sliderFrame.setOrientation(QtCore.Qt.Horizontal)
@@ -236,6 +240,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.btnTSSearch, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.tsSearch)
         QtCore.QObject.connect(self.listTo, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.selectTransition)
         QtCore.QObject.connect(self.sliderTS, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), MainWindow.showFrameTS)
+        QtCore.QObject.connect(self.btnInvert, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.Invert)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

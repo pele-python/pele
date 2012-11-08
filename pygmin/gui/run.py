@@ -28,7 +28,7 @@ class MyForm(QtGui.QMainWindow):
         
     def NewSystem(self):
         self.system = self.systemtype()
-        self.system.database = Database()
+        self.system.set_database(Database())
         self.system.database.onMinimumAdded=self.NewMinimum
         self.system.database.onMinimumRemoved=self.RemoveMinimum
         for l in self.listMinima:
@@ -41,9 +41,8 @@ class MyForm(QtGui.QMainWindow):
     #    pickle.dump(self.system.storage, output)
        
     def connect(self):
-        import pickle
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Open File', '.')
-        self.system.database = Database(db=filename)
+        self.system.set_database(Database(db=filename))
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum)
         self.system.database.onMinimumAdded=self.NewMinimum
@@ -65,6 +64,11 @@ class MyForm(QtGui.QMainWindow):
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(item.coords, index=2)
         self.neb = None
+    
+    
+    def Invert(self):
+        coords2 = self.ui.oglPath.coords[2]
+        self.ui.oglPath.setCoords(-coords2, 2)
     
     def AlignMinima(self):
         coords1 = self.ui.oglPath.coords[1]
