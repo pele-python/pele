@@ -198,7 +198,7 @@ class Distance(Base):
         self.minimum1 = min1
         self.minimum2 = min2
 
-Index('idx_transition_states', TransitionState.__table__.c._minimum1_id, TransitionState.__table__.c._minimum2_id, unique=True)
+Index('idx_transition_states', TransitionState.__table__.c._minimum1_id, TransitionState.__table__.c._minimum2_id)
 Index('idx_distances', Distance.__table__.c._minimum1_id, Distance.__table__.c._minimum2_id, unique=True)
 
 
