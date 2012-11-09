@@ -115,11 +115,18 @@ class DistanceGraph(object):
             self.setTransitionStateConnection(min1, min2)
     
     def addMinimum(self, m):
-        if not self.Gdist.has_node(m):
-            self.Gdist.add_node(m)
-            #add an edge to all other minima
-            for m2 in self.Gdist.nodes():
-                self._addEdge(m, m2)               
+        trans = self.database.connection.begin()
+        try:
+            if not self.Gdist.has_node(m):
+                self.Gdist.add_node(m)
+                #add an edge to all other minima
+                for m2 in self.Gdist.nodes():
+                    self._addEdge(m, m2)
+        except:
+            trans.rollback()
+            raise
+        trans.commit()
+                               
 
     def removeEdge(self, min1, min2):
         try:
