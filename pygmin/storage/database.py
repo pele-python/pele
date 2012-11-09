@@ -10,7 +10,8 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref, deferred
 import sqlalchemy.orm
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql import select, bindparam
+from sqlalchemy.sql import select, bindparam, case, insert
+from sqlalchemy.schema import Index
 
 __all__ = ["Minimum", "TransitionState", "Database"]
 
@@ -133,6 +134,9 @@ class TransitionState(Base):
     
     
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
+        assert min1._id is not None
+        assert min2._id is not None
+        
         self.energy = energy
         self.coords = np.copy(coords)
         if(min1._id < min2._id):
@@ -182,9 +186,21 @@ class Distance(Base):
     
     
     def __init__(self, dist, min1, min2):
+        assert min1._id is not None
+        assert min2._id is not None
+        
+        if(min1._id < min2._id):
+            m1, m2 = min1, min2
+        else:
+            m1, m2 = min2, min1
+            
         self.dist = dist
         self.minimum1 = min1
         self.minimum2 = min2
+
+Index('idx_transition_states', TransitionState.__table__.c._minimum1_id, TransitionState.__table__.c._minimum2_id, unique=True)
+Index('idx_distances', Distance.__table__.c._minimum1_id, Distance.__table__.c._minimum2_id, unique=True)
+
 
 class Database(object):
     '''Database storage class
@@ -255,13 +271,25 @@ class Database(object):
         self._initialize_queries()
         
     def _initialize_queries(self):
-        self._sql_get_dist = select([Distance.__table__.c.dist],
-               or_(and_(Distance.__table__.c._minimum1_id==bindparam("id1"), 
-                        Distance.__table__.c._minimum2_id==bindparam("id2")),
-                   and_(Distance.__table__.c._minimum1_id==bindparam("id2"), 
-                        Distance.__table__.c._minimum2_id==bindparam("id1")),
-               ), use_labels=False).limit(1)
+        #        self._sql_get_dist = select([Distance.__table__.c.dist],
+        #               or_(and_(Distance.__table__.c._minimum1_id==bindparam("id1"), 
+        #                        Distance.__table__.c._minimum2_id==bindparam("id2")),
+        #                   and_(Distance.__table__.c._minimum1_id==bindparam("id2"), 
+        #                        Distance.__table__.c._minimum2_id==bindparam("id1")),
+        #               ), use_labels=False).limit(1)
+        tbl =  Distance.__table__.c
+        self._sql_get_dist = select([tbl.dist],and_(
+                                 tbl._minimum1_id==bindparam("id1"), 
+                                 tbl._minimum2_id==bindparam("id2")
+                                 ), use_labels=False).limit(1)
+                                 
+        #self._sql_set_dist = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
+        self._sql_set_dist = "INSERT OR REPLACE INTO tbl_distances (dist, _minimum1_id, _minimum2_id) VALUES (:dist, :id1, :id2)"
         
+        #self._sql_set_dist_upd = Distance.__table__.update().where(and_(tbl._minimum1_id==bindparam("id1"),tbl._minimum2_id==bindparam("id2"))).values(dist=bindparam("dist"))
+        #self._sql_set_dist_ins = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
+        
+    
     def addMinimum(self, E, coords, commit=True):
         """add a new minimum to database
         
@@ -350,23 +378,23 @@ class Database(object):
             return m
         return None
     
-    def setDistance(self, dist, min1, min2, commit=True):
-        candidates = self.session.query(Distance).\
-            filter(or_(
-                       and_(Distance.minimum1==min1, 
-                            Distance.minimum2==min2),
-                       and_(Distance.minimum1==min2, 
-                            Distance.minimum2==min1),
-                       ))
+    def setDistance(self, dist, min1, min2):
+        id1 = max(min1._id, min2._id)
+        id2 = min(min1._id, min2._id)
         
-        try:
-            candidates.one().dist = dist        
-        except sqlalchemy.orm.exc.NoResultFound:
-            self.session.add(Distance(dist, min1, min2))
-            
-        if(commit):
-            self.session.commit()
-
+        self.connection.execute(self._sql_set_dist, [{'id1':id1, 'id2':id2, 'dist':dist}])
+        
+        #res = self.connection.execute(self._sql_set_dist_upd, [{'id1':min1._id, 'id2':min2._id, 'dist':dist}])
+        #if(res.rowcount == 0):
+        #    self.connection.execute(self._sql_set_dist_ins, [{'id1':min1._id, 'id2':min2._id, 'dist':dist}])
+        
+        
+    def setDistanceBulk(self, values):
+        submit = []
+        for min1, min2, dist in values:
+            submit.append({'id1':min(min1._id, min2._id), 'id2':max(min1._id, min2._id), 'dist':dist})
+        self.connection.execute(self._sql_set_dist, submit)
+    
     def setDistanceMultiple(self, newdistances, commit=True):
         """set multiple distances at once
         
@@ -406,28 +434,13 @@ class Database(object):
         if(commit):
             self.session.commit()        
             
-#    def setDistanceTest(self, min1, min2, dist):
-#        sql = "UPDATE " + Distance.__tablename__ + " SET dist=:dist " \
-#            "WHERE (_minimum1_id = :id1 " \
-#            "AND _minimum2_id = :id2 ) " \
-#            "OR (_minimum1_id = :id2 " \
-#            "AND _minimum2_id = :id1 ) " \
-#            "IF @@ROWCOUNT=0 " \
-#            "INSERT INTO " + Distance.__tablename__ + " (_minimum1_id, _minimum2_id, dist) VALUES (:id1 , :id2 , :dist )"
-#        print sql
-#
-#        print sql, min1._id, min2._id, dist
-#        db.connection.execute(sql, id1=min1._id, id2=min2._id, dist=dist)
- 
-            
     def getDistanceORM(self, min1, min2):
+        if(min1._id > min2._id):
+            min1, min2 = min2, min1
+            
         candidates = self.session.query(Distance).\
-            filter(or_(
-                       and_(Distance.minimum1==min1, 
-                            Distance.minimum2==min2),
-                       and_(Distance.minimum1==min2, 
-                            Distance.minimum2==min1),
-                       ))
+            filter(and_(Distance.minimum1==min1, 
+                            Distance.minimum2==min2))
         try:
             return candidates.one().dist        
         except sqlalchemy.orm.exc.NoResultFound:
@@ -540,7 +553,7 @@ class Database(object):
 
 
 if __name__ == "__main__":    
-    db = Database()#db="test.db")
+    db = Database()
     m1 = db.addMinimum(1., np.random.random(10))
     m2 = db.addMinimum(3., np.random.random(10))
     db.addMinimum(2., np.random.random(10))
@@ -549,19 +562,19 @@ if __name__ == "__main__":
     ts = db.addTransitionState(10., None, m1, m2)
     ts.eigenval=11.
     
-    #db.setDistance(12., m1, m2)
-    #db.setDistance(21., m2, m1)
+    db.setDistance(21., m2, m1)
+    db.setDistance(12., m1, m2)
+    db.setDistance(211., m2, m1)
     db.setDistance(11., m1, m1)
     db.setDistance(22., m2, m2)
-    
-#    db.setDistanceTest(m1, m2, 12.)
     #db.setDistance(11., m1, m2)
-    #print db.getDistance(m1, m2)
+    print db.getDistance(m1, m2)
     print "List of all distances"
     for d in db.distances():
-        print d.minimum1._id, d.minimum2._id, d.dist
+        print d.minimum1._id, d.minimum2._id, d.dist        
+
     print    
     for m in db.minima():
         print m._id, m.energy
-    for i in db.transition_states():
-        print i, i.energy, i.eigenval, i.eigenvec
+    #for i in db.transition_states():
+    #    print i, i.energy, i.eigenval, i.eigenvec
