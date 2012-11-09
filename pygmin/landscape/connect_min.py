@@ -62,7 +62,7 @@ class DistanceGraph(object):
             if nnewdist < self.db_update_min:
                 return
         print "updating database with", nnewdist, "new distances"
-        self.database.setDistanceMultiple(self.new_distances)
+        self.database.setDistanceBulk(self.new_distances.iteritems())
         self.new_distances = dict()
 
     def _setDist(self, min1, min2, dist):

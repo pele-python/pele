@@ -391,48 +391,48 @@ class Database(object):
         
     def setDistanceBulk(self, values):
         submit = []
-        for min1, min2, dist in values:
-            submit.append({'id1':min(min1._id, min2._id), 'id2':max(min1._id, min2._id), 'dist':dist})
+        for mins, dist in values:
+            submit.append({'id1':min(mins[0]._id, mins[1]._id), 'id2':max(mins[0]._id, mins[1]._id), 'dist':dist})
         self.connection.execute(self._sql_set_dist, submit)
-    
-    def setDistanceMultiple(self, newdistances, commit=True):
-        """set multiple distances at once
         
-        this should be much faster than calling setDistance
-        multiple times.  Especially for databases with many 
-        distances
-        
-        Parameters
-        ----------
-        distances :
-            a dictionary of distances with the key a tuple of minima
-        """
-        #copy distances so it can be safely modified
-        newdistances = newdistances.copy()
-        
-        #update distances that are already in the database and remove
-        #them from newdistances
-        for d in self.distances():
-            m1id, m2id = d._minimum1_id, d._minimum2_id
-            
-            dnew = newdistances.get((m1id, m2id))
-            if dnew is not None:
-                d.dist = dnew
-                newdistances.pop((m1id, m2id))
-
-            #check alternate ordering as well
-            dnew = newdistances.get((m2id, m1id))
-            if dnew is not None:
-                d.dist = dnew
-                newdistances.pop((m2id, m1id))
-        
-        #all the rest of the distances in newdistances are not in the database.
-        #Add them all.
-        for d in newdistances.items():
-            self.session.add(Distance(d[1], d[0][0], d[0][1]))
-        
-        if(commit):
-            self.session.commit()        
+#    def setDistanceMultiple(self, newdistances, commit=True):
+#        """set multiple distances at once
+#        
+#        this should be much faster than calling setDistance
+#        multiple times.  Especially for databases with many 
+#        distances
+#        
+#        Parameters
+#        ----------
+#        distances :
+#            a dictionary of distances with the key a tuple of minima
+#        """
+#        #copy distances so it can be safely modified
+#        newdistances = newdistances.copy()
+#        
+#        #update distances that are already in the database and remove
+#        #them from newdistances
+#        for d in self.distances():
+#            m1id, m2id = d._minimum1_id, d._minimum2_id
+#            
+#            dnew = newdistances.get((m1id, m2id))
+#            if dnew is not None:
+#                d.dist = dnew
+#                newdistances.pop((m1id, m2id))
+#
+#            #check alternate ordering as well
+#            dnew = newdistances.get((m2id, m1id))
+#            if dnew is not None:
+#                d.dist = dnew
+#                newdistances.pop((m2id, m1id))
+#        
+#        #all the rest of the distances in newdistances are not in the database.
+#        #Add them all.
+#        for d in newdistances.items():
+#            self.session.add(Distance(d[1], d[0][0], d[0][1]))
+#        
+#        if(commit):
+#            self.session.commit()        
             
     def getDistanceORM(self, min1, min2):
         if(min1._id > min2._id):
