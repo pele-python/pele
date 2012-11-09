@@ -61,8 +61,10 @@ class Minimum(Base):
    
     def __eq__(self, m):
         """m can be integer or Minima object"""
+        assert self._id is not None
         if isinstance(m, Minimum):
-            return id(self) == id(m)
+            assert m._id is not None
+            return self._id == m._id
         else:
             return self._id == m
         
@@ -333,7 +335,9 @@ class Database(object):
         return self.session.query(Minimum).get(id)
         
     def addTransitionState(self, E, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):
-        m1, m2 = min1, min2    
+        m1, m2 = min1, min2
+        if m1._id > m2._id:
+            m1, m2 = m2, m1
         candidates = self.session.query(TransitionState).\
             filter(or_(
                        and_(TransitionState.minimum1==m1, 
@@ -351,8 +355,8 @@ class Database(object):
             #self.lock.release()
             return m
 
-        if(m2.energy < m1.energy):
-            m1,m2 = m2,m1
+        #if(m2.energy < m1.energy):
+        #    m1,m2 = m2,m1
         new = TransitionState(E, coords, m1, m2, eigenval=eigenval, eigenvec=eigenvec)
             
         self.session.add(new)
@@ -526,17 +530,24 @@ class Database(object):
         (actually, any Distance objects pointing to 
         min2 will just be deleted)
         """
-        #find all transition states that point to min2
+        #find all transition states for which ts.minimum1 is min2
         candidates = self.session.query(TransitionState).\
             filter(TransitionState.minimum1 == min2) 
         for ts in candidates:
             #should we check if this will duplicate an existing transition state?
             ts.minimum1 = min1
+            if ts.minimum1._id > ts.minimum2._id:
+                ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
+        
+        #find all transition states for which ts.minimum2 is min2
         candidates = self.session.query(TransitionState).\
             filter(TransitionState.minimum2 == min2) 
         for ts in candidates:
             #should we check if this will duplicate an existing transition state?
             ts.minimum2 = min1
+            if ts.minimum1._id > ts.minimum2._id:
+                ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
+              
         
         #delete any distance objects pointing to min2
         candidates = self.session.query(Distance).\
