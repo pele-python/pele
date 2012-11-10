@@ -9,10 +9,22 @@ from pygmin.landscape import Graph
 
 __all__ = ["DoubleEndedConnect"]
 
-class DistanceGraph(object):
+class _DistanceGraph(object):
     """
     This graph is used to guess a good method for connecting two minima
     
+    Parameters
+    ----------
+    database : 
+        the database in which to store newly found minima and transition states.
+        If database contains contains previously found minima and transition states,
+        those will be used to help with the connection.
+    graph :
+        the graph build from the database which contains the minima and transition states
+    mindist : callable
+        the routine which calculates the optimized distance between two structures
+    verbosity :
+        how much info to print (not very thoroughly implemented)
     
     This graph has a vertex for every minimum and an edge
     between (almost) every minima pairs. The edge weight between vertices u and v
@@ -51,6 +63,16 @@ class DistanceGraph(object):
         self.db_update_min = 300
 
     def distToWeight(self, dist):
+        """
+        this function defines how the edge weight is calculated.
+        
+        good options might be:
+        
+        weight = dist
+        
+        weight = dist**2
+            this favors long paths with many short connections
+        """
         return dist**2
 
     def updateDatabase(self, force=False):
@@ -66,6 +88,10 @@ class DistanceGraph(object):
         self.new_distances = dict()
 
     def _setDist(self, min1, min2, dist):
+        """
+        this function saves newly calculated distances both to the local
+        distance map and ultimately to the database
+        """
         #add the distance to the database and the distance map
         if self.defer_database_update:
             self.new_distances[(min1, min2)] = dist
@@ -79,6 +105,9 @@ class DistanceGraph(object):
         #        self.edge_weight[(min1, min2)] = weight
     
     def _getDistNoCalc(self, min1, min2):
+        """
+        get distance from local memory.  don't calculate it.
+        """
         #first try to get the distance from the dictionary 
         dist = self.distance_map.get((min1,min2))
         if dist is not None: return dist
@@ -96,6 +125,10 @@ class DistanceGraph(object):
         return None
 
     def getDist(self, min1, min2):
+        """
+        return the distance between two minima.  Calculate it and store it if
+        not already known
+        """
         dist = self._getDistNoCalc(min1, min2)
         if dist is not None: return dist
         
@@ -107,6 +140,10 @@ class DistanceGraph(object):
         return dist
     
     def _addEdge(self, min1, min2):
+        """
+        add a new edge to the graph.  Calculate the distance
+        beteen the minima and set the edge weight
+        """
         if min1 == min2: return
         dist = self.getDist(min1, min2)
         weight = self.distToWeight(dist)
@@ -115,6 +152,13 @@ class DistanceGraph(object):
             self.setTransitionStateConnection(min1, min2)
     
     def addMinimum(self, m):
+        """
+        add a new minima to the graph and add an edge to all the other
+        minima in the graph.  
+        
+        Note: this can take a very long time if there are lots of minima
+        in the graph.  mindist need to be run many many times.
+        """
         trans = self.database.connection.begin()
         try:
             if not self.Gdist.has_node(m):
@@ -129,6 +173,11 @@ class DistanceGraph(object):
                                
 
     def removeEdge(self, min1, min2):
+        """remove an edge from the graph
+        
+        used to indicate that the routine should not try to connect
+        these minima again.
+        """
         try:
             self.Gdist.remove_edge(min1, min2)
         except nx.NetworkXError:
@@ -136,7 +185,7 @@ class DistanceGraph(object):
         return True
 
     def _initializeDistances(self):
-        """put all distances in the database into distmatrix for faster access"""
+        """put all distances in the database into distance_map for faster access"""
 #        from pygmin.storage.database import Distance
 #        from sqlalchemy.sql import select
 #        conn = self.database.engine.connect()
@@ -156,10 +205,19 @@ class DistanceGraph(object):
         self.graph = graph
 
     def _addRelevantMinima(self, minstart, minend):
+        """
+        add all the relevant minima from the database to the distance graph
+        
+        a minima is considered relevant if distance(min1, minstart) and
+        distance(min1, minend) are both less than distance(minstart, minend)
+        
+        also, don't calculate any new distances, only add a minima if all distances
+        are already known. 
+        """
         start_end_distance = self.getDist(minstart, minend)
         count = 0
         naccept = 0
-        for m in self.database.minima():
+        for m in self.graph.graph.nodes():
             count += 1
             d1 = self._getDistNoCalc(m, minstart)
             if d1 is None: continue
@@ -177,6 +235,12 @@ class DistanceGraph(object):
 
 
     def initialize(self, minstart, minend, use_all_min=False, use_limited_min=True):
+        """
+        set up the distance graph
+        
+        initialize distance_map, add the start and end minima and load any other
+        minima that should be used in the connect routine.
+        """
         #raw_input("Press Enter to continue:")
         print "loading distances from database"
         self._initializeDistances()
@@ -199,7 +263,7 @@ class DistanceGraph(object):
         #raw_input("Press Enter to continue:")
 
     def setTransitionStateConnection(self, min1, min2):
-        """use this function to tell DistanceGraph that
+        """use this function to tell _DistanceGraph that
         there exists a known transition state connection between min1 and min2
         
         The edge weight will be set to zero
@@ -211,6 +275,7 @@ class DistanceGraph(object):
         #    self.checkGraph()
 
     def shortestPath(self, min1, min2):
+        """return the minimum weight path path between min1 and min2""" 
         if True:
             print "Gdist has", self.Gdist.number_of_nodes(), "nodes and", self.Gdist.number_of_edges(), "edges"
         try:
@@ -342,21 +407,21 @@ class DoubleEndedConnect(object):
     The algorithm is iterative, with each iteration composed of
     
     While min1 and min2 are not connected:
-        1) choose a pair of know minima to try to connect
+        1) choose a pair of known minima to try to connect
         
-        2a) use NEB to get a guess for the transition state between them
+        2) use NEB to get a guess for the transition states between them
         
-        2b) refine the transition state to desired accuracy
+        3) refine the transition states to desired accuracy
         
-        3) fall off either side of the transition state to find the two
+        4) fall off either side of the transition states to find the two
         minima associated with that candidate
         
-        4) add the transition state and associated minima to the known
+        5) add the transition state and associated minima to the known
         network
         
     
-    Of the above, steps 1 and 2 are the most involved.  See the NEB and
-    FindTransitionState classes for detailed descriptions of those
+    Of the above, steps 1 and 2 and 3 are the most involved.  See the NEB and
+    FindTransitionState classes for detailed descriptions of steps 2 and 3
     routines.
     
     An important note is that the NEB is used only to get a *guess* for the
@@ -392,11 +457,7 @@ class DoubleEndedConnect(object):
     trial1, trial2 = minima pair in path with lowest nonzero edge weight
 
     todo:
-        use_all_min option is broken.  Fix up graph creation in general
-        
         allow user to pass graph
-        
-        fail gracefully
         
     """    
     def __init__(self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
@@ -428,7 +489,7 @@ class DoubleEndedConnect(object):
         self.NEB_max_images =int(NEB_max_images)
 
 
-        self.dist_graph = DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
+        self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
         self.dist_graph.initialize(self.minstart, self.minend, use_all_min)
         #self.Gdist = nx.Graph() 
         #self._initializeDistances()
