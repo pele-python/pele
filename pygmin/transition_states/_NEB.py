@@ -102,9 +102,10 @@ class NEB(object):
         if quenchParams.has_key("iprint"):
             self.iprint = quenchParams["iprint"]
 
-        tmp,E,rms,tmp4 = quenchRoutine(
+        qres = quenchRoutine(
                     self.active.reshape(self.active.size), self.getEnergyGradient,
                     **quenchParams)
+        tmp,E,rms,tmp4 = qres[:4]
         print "neb rms", rms
         self.active[:,:] = tmp.reshape(self.active.shape)
         if self.copy_potential:

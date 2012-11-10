@@ -169,7 +169,7 @@ def _lbfgs_py(coords, pot, **kwargs):
     e = ret.energy
     rms = ret.rms
     funcalls = ret.nfev
-    return coords, e, rms, funcalls
+    return coords, e, rms, funcalls, ret
 
 def lbfgs_py(coords, getEnergyGradient, **kwargs):
     """
@@ -191,7 +191,7 @@ def _mylbfgs(coords, pot, **kwargs):
     e = ret.energy
     rms = ret.rms
     funcalls = ret.nfev
-    return coords, e, rms, funcalls
+    return coords, e, rms, funcalls, ret
 
 def mylbfgs(coords, getEnergyGradient, **kwargs):
     """
@@ -203,19 +203,19 @@ def mylbfgs(coords, getEnergyGradient, **kwargs):
     ret = _mylbfgs(coords, pot, **kwargs)
     return ret
 
-def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
-    """
-    js850> I think this might not be working but I can't remember
-    """
-    from mylbfgs_callback import LBFGS
-    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
-    
-    ret = lbfgs.run(nsteps, tol, iprint)
-    coords = ret[0]
-    e = ret[1]
-    rms = ret[2]
-    funcalls = ret[3]
-    return coords, e, rms, funcalls
+#def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
+#    """
+#    js850> I think this might not be working but I can't remember
+#    """
+#    from mylbfgs_callback import LBFGS
+#    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
+#    
+#    ret = lbfgs.run(nsteps, tol, iprint)
+#    coords = ret[0]
+#    e = ret[1]
+#    rms = ret[2]
+#    funcalls = ret[3]
+#    return coords, e, rms, funcalls
 
 #def mylbfgs_callback(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1):
 #    pot = getEnergyGradientWrapper(getEnergyGradient)

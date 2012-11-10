@@ -5,7 +5,8 @@ from pygmin.optimize import Result
 from pygmin.transition_states import orthogopt
 from pygmin.potentials.potential import potential as basepot
 import pygmin.defaults as defaults
-from pygmin.optimize.lbfgs_py import LBFGS
+#from pygmin.optimize.lbfgs_py import LBFGS
+from pygmin.optimize.mylbfgs import LBFGS
 import pygmin.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector"]
