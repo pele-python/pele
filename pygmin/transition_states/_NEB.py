@@ -235,7 +235,7 @@ class NEB(object):
         t = self.tangent(image,left,right)
         if True:
             import _NEB_utils
-            E, g_tot = _NEB_utils.neb_force(t,greal, self.k, self.dneb)
+            E, g_tot = _NEB_utils.neb_force(t,greal, self.k, self.dneb, p, pl, pr)
             if self.with_springenergy:
                 return E, g_tot
             else:

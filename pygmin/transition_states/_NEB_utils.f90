@@ -1,4 +1,5 @@
 function dot(x1, x2, N) result(d)
+   implicit none
    integer, intent(in) :: N
    double precision, intent(IN) :: x1(N)
    double precision, intent(IN) :: x2(N)
@@ -12,11 +13,15 @@ end function dot
 
 
 
-SUBROUTINE NEB_FORCE(t, greal, k, N, dneb, E, g_tot)
+SUBROUTINE NEB_FORCE(t, greal, k, N, dneb, E, g_tot, p, pl, pr)
+   implicit none
    integer, intent(in) :: N
    double precision, intent(IN) :: t(N)
    double precision, intent(IN) :: greal(N)
    double precision, intent(IN) :: k
+   double precision, intent(IN) :: p(N)
+   double precision, intent(IN) :: pl(N)
+   double precision, intent(IN) :: pr(N)
    logical, intent(IN) :: dneb
    double precision, intent(OUT) :: g_tot(N), E
    double precision gperp(N)
