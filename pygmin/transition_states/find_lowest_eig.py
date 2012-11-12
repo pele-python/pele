@@ -1,26 +1,38 @@
 import numpy as np
+
+from pygmin.optimize import Result
+
+from pygmin.transition_states import orthogopt
 from pygmin.potentials.potential import potential as basepot
-from orthogopt import orthogopt
+import pygmin.defaults as defaults
+#from pygmin.optimize.lbfgs_py import LBFGS
+from pygmin.optimize.mylbfgs import LBFGS
+import pygmin.utils.rotations as rotations
 
-
+__all__ = ["findLowestEigenVector"]
 
 class LowestEigPot(basepot):
     """
     this is a potential wrapper designed to use optimization to find the eigenvector
     which corresponds to the lowest eigenvalue
     
-    here the energy corresponds to the eigenvalue, and the coordinates to be optimized is the eigenvector
+    here the energy corresponds to the eigenvalue, and the coordinates to be
+    optimized is the eigenvector
     """
-    def __init__(self, coords, pot, orthogZeroEigs = 0):
+    def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-3):
         """
-        :coords: is the point in space where we want to compute the lowest eigenvector
+        coords : 
+            The point in space where we want to compute the lowest eigenvector
+        pot :
+            The potential of the system.  i.e. pot.getEnergyGradient(coords)
+            gives the energy and gradient
         
-        :pot: is the potential of the system.  
-            i.e. pot.getEnergyGradient(coords) gives the energy and gradient
-        
-        :orthogZeroEigs: the function which makes a vector orthogonal to the known
+        orthogZeroEigs: 
+            The function which makes a vector orthogonal to the known
             eigenvectors with zero eigenvalues.  The default assumes global
             translational and rotational symmetry
+        dx: float
+            the local curvature is approximated using 3 points separated by dx
         """
         self.coords = np.copy(coords)
         self.pot = pot
@@ -30,13 +42,14 @@ class LowestEigPot(basepot):
         else:
             self.orthogZeroEigs = orthogZeroEigs
         #print "orthogZeroEigs", self.orthogZeroEigs
-        
-        self.diff = 1e-3
+                
+        self.diff = dx
     
     
     def getEnergyGradient(self, vec_in):
         """
-        :vec_in: is a guess for the lowest eigenvector.  It should be normalized
+        vec_in: 
+            A guess for the lowest eigenvector.  It should be normalized
         """
         vecl = 1.
         vec_in /= np.linalg.norm(vec_in)
@@ -72,7 +85,100 @@ class LowestEigPot(basepot):
         
         return diag2, grad
 
-        
+def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, **kwargs):
+    """
+    find the eigenvector corresponding to the lowest eigenvalue using
+    LowestEigPot and the LBFGS minimizer
+
+    ***orthogZeroEigs is system dependent, don't forget to set it***
+
+    Parameters
+    ----------
+    coords :
+        the coordinates at which to find the lowest eigenvector
+    pot :
+        potential object
+    eigenvec0 :
+        the initial guess for the lowest eigenvector (will be random if not
+        passed)
+    H0 : float
+        the initial guess for the diagonal component of the inverse Hermissian
+    orthogZeroEigs : callable
+        this function makes a vector orthogonal to the known zero
+        eigenvectors
+
+            orthogZeroEigs=0  : default behavior, assume translational and
+                                rotational symmetry
+            orthogZeroEigs=None : the vector is unchanged
+
+    kwargs : 
+        any additional keyword arguments are passed to the minimizer
+    """
+    #combine kwargs with defaults.lowestEigenvectorQuenchParams
+    kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 
+                  kwargs.items())
+    
+    if eigenvec0 is None:
+        #eigenvec0 = vec_random()
+        #this random vector should be distributed uniformly on a hypersphere.
+        #it is not
+        #eigenvec0 = np.random.uniform(-1, 1, coords.shape)
+        #eigenvec0 /= np.linalg.norm(eigenvec0)
+        eigenvec0 = rotations.vec_random_ndim(coords.shape)
+    
+    #set up potential for minimization    
+    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs)
+    
+    #minimize, using the last eigenvector as a starting point
+    #and starting with H0 from last minimization 
+    quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
+                     **kwargs)
+    res = quencher.run()
+
+    #res = Result()
+    res.eigenval = res.energy
+    res.eigenvec = res.coords
+    delattr(res, "energy")
+    delattr(res, "coords")
+    res.H0 = quencher.H0
+    #res.rms = ret[2]
+    #res.success = res.rms <= tol
+    return res
+
+
+#
+#
+# only testing function below here
+#
+#
+
+def _analyticalLowestEigenvalue(coords, pot):
+    """for testing"""
+    e, g, hess = pot.getEnergyGradientHessian(coords)
+    #print "shape hess", np.shape(hess)
+    #print "hessian", hess
+    u, v = np.linalg.eig(hess)
+    #print "max imag value", np.max(np.abs(u.imag))
+    #print "max imag vector", np.max(np.abs(v.imag))
+    u = u.real
+    v = v.real
+    #print "eigenvalues", u
+    #for i in range(len(u)):
+    #    print "eigenvalue", u[i], "eigenvector", v[:,i]
+    #find minimum eigenvalue, vector
+    imin = 0
+    umin = 10.
+    for i in range(len(u)):
+        if np.abs(u[i]) < 1e-10: continue
+        if u[i] < umin:
+            umin = u[i]
+            imin = i
+    #print "analytical lowest eigenvalue ", umin, imin
+    #print "lowest eigenvector", v[:,imin]
+    return umin, v[:,imin]
+
+
+  
 def testpot2():
     from pygmin.potentials.lj import LJ
     import itertools
@@ -152,7 +258,7 @@ def testpot1():
     print ret[0]
 
 def testpot3():
-    from transition_state_refinement import guesstsLJ, analyticalLowestEigenvalue
+    from transition_state_refinement import guesstsLJ
     pot, coords, coords1, coords2 = guesstsLJ()
     coordsinit = np.copy(coords)
 

@@ -3,6 +3,7 @@ import MainWindow
 import sys
 import bhrunner
 import copy
+from pygmin.storage import Database
 
 class QMinimumInList(QtGui.QListWidgetItem):
     def setCoords(self, coords):
@@ -27,26 +28,25 @@ class MyForm(QtGui.QMainWindow):
         
     def NewSystem(self):
         self.system = self.systemtype()
-        self.system.storage.onMinimumAdded=self.NewMinimum
-        self.system.storage.onMinimumRemoved=self.RemoveMinimum
+        self.system.set_database(Database())
+        self.system.database.onMinimumAdded=self.NewMinimum
+        self.system.database.onMinimumRemoved=self.RemoveMinimum
         for l in self.listMinima:
             l.clear()
         
-    def save(self):
-        import pickle
-        filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '.')
-        output = open(filename, "w")
-        pickle.dump(self.system.storage, output)
+    #def save(self):
+    #    import pickle
+    #    filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '.')
+    #    output = open(filename, "w")
+    #    pickle.dump(self.system.storage, output)
        
-    def load(self):
-        import pickle
-        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open File', '.')
-        infile = open(filename, "r")
-        self.system.storage = pickle.load(infile)
-        for minimum in self.system.storage.data:
+    def connect(self):
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Open File', '.')
+        self.system.set_database(Database(db=filename))
+        for minimum in self.system.database.minima():
             self.NewMinimum(minimum)
-        self.system.storage.onMinimumAdded=self.NewMinimum
-        self.system.storage.onMinimumRemoved=self.RemoveMinimum
+        self.system.database.onMinimumAdded=self.NewMinimum
+        self.system.database.onMinimumRemoved=self.RemoveMinimum
         
     def SelectMinimum(self, item):
         self.ui.widget.setSystem(self.system)
@@ -64,6 +64,11 @@ class MyForm(QtGui.QMainWindow):
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(item.coords, index=2)
         self.neb = None
+    
+    
+    def Invert(self):
+        coords2 = self.ui.oglPath.coords[2]
+        self.ui.oglPath.setCoords(-coords2, 2)
     
     def AlignMinima(self):
         coords1 = self.ui.oglPath.coords[1]

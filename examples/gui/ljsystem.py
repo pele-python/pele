@@ -1,21 +1,30 @@
 from PyQt4 import QtGui
 import NewLJ
 import numpy as np
-from pygmin.storage import savenlowest
-from pygmin.NEB import NEB,dimer,tstools
+from pygmin.transition_states import NEB, dimer, tstools, InterpolatedPath
 import pygmin.potentials.lj as lj
+from pygmin import gui
+from pygmin.mindist import ExactMatchCluster
+
+def compare(x1, x2):
+    ret =  ExactMatchCluster(accuracy = 1e-2)(x1.coords, x2.coords)
+    if( not ret):
+        print "2 minima within enery accuracy have different coordinates", x1.energy, x2.energy
+    return ret
                 
-class LJSystem:
+class LJSystem(gui.GUISystem):
     def __init__(self):
         dlg = NewLJDialog()
         dlg.exec_()
         self.natoms = dlg.natoms()
-        self.nsave = dlg.nsave()
         if dlg.result() == QtGui.QDialog.Rejected:
             raise BaseException("Aborted parameter dialog")
-        self.storage = savenlowest.SaveN(self.nsave)
         
-    def createBasinHopping(self):
+    def set_database(self, database):
+        database.compareMinima = compare
+        gui.GUISystem.set_database(self, database)
+        
+    def create_basinhopping(self):
         import pygmin.basinhopping as bh
         from pygmin.takestep import displace
         coords = np.random.random(3 * self.natoms)
@@ -43,7 +52,7 @@ class LJSystem:
         return X1, X2
     
     def createNEB(self, coords1, coords2):
-        return NEB.NEB(coords1, coords2, lj.LJ(), k = 100. ,nimages=20)
+        return NEB(InterpolatedPath(coords1, coords2, 30), lj.LJ(), k = 100.)
     
     def zeroEigenVecs(self, coords):
         # translational eigenvectors

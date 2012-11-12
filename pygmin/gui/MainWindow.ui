@@ -146,26 +146,7 @@
           <property name="rightMargin">
            <number>20</number>
           </property>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="btnConnect">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Connect</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
+          <item row="1" column="0">
            <widget class="QPushButton" name="btnAlign">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -184,10 +165,36 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="QPushButton" name="btnEnergies">
             <property name="text">
              <string>Energies</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="btnConnect">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Connect</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="btnInvert">
+            <property name="text">
+             <string>Invert</string>
             </property>
            </widget>
           </item>
@@ -319,11 +326,9 @@
    </property>
    <widget class="QMenu" name="menuSimulation">
     <property name="title">
-     <string>Simulation</string>
+     <string>Database</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionLoad"/>
+    <addaction name="actionConnect"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -340,14 +345,14 @@
     <string>New</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="actionClear">
    <property name="text">
-    <string>Save</string>
+    <string>Clear Database</string>
    </property>
   </action>
-  <action name="actionLoad">
+  <action name="actionConnect">
    <property name="text">
-    <string>Load</string>
+    <string>Connect to Database</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -399,22 +404,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionNew</sender>
-   <signal>activated()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>NewSystem()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>282</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btnAlign</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
@@ -438,7 +427,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>651</x>
-     <y>479</y>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -511,26 +500,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionSave</sender>
+   <sender>actionConnect</sender>
    <signal>activated()</signal>
    <receiver>MainWindow</receiver>
-   <slot>save()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>282</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionLoad</sender>
-   <signal>activated()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>load()</slot>
+   <slot>connect()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -549,8 +522,8 @@
    <slot>SelectMinimum()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>587</x>
-     <y>138</y>
+     <x>100</x>
+     <y>64</y>
     </hint>
     <hint type="destinationlabel">
      <x>553</x>
@@ -565,8 +538,8 @@
    <slot>tsSearch()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>612</x>
-     <y>499</y>
+     <x>74</x>
+     <y>74</y>
     </hint>
     <hint type="destinationlabel">
      <x>627</x>
@@ -581,8 +554,8 @@
    <slot>selectTransition()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>533</x>
-     <y>353</y>
+     <x>100</x>
+     <y>69</y>
     </hint>
     <hint type="destinationlabel">
      <x>342</x>
@@ -597,12 +570,28 @@
    <slot>showFrameTS()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>150</x>
-     <y>502</y>
+     <x>46</x>
+     <y>75</y>
     </hint>
     <hint type="destinationlabel">
      <x>172</x>
      <y>526</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnInvert</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>Invert()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>631</x>
+     <y>471</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>687</x>
+     <y>33</y>
     </hint>
    </hints>
   </connection>
@@ -622,5 +611,7 @@
   <slot>tsSearch()</slot>
   <slot>selectTransition()</slot>
   <slot>showFrameTS()</slot>
+  <slot>connect()</slot>
+  <slot>Invert()</slot>
  </slots>
 </ui>

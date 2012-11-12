@@ -4,7 +4,7 @@ def main():
     # add some program options
     parser = OptionParser(usage = "usage: %prog [options] storage")
     
-    from pygmin.storage.database import Storage
+    from pygmin.storage.database import Database
     
     parser.add_option("--write-disconnect",
                       dest="writeDPS", action="store_true",
@@ -15,6 +15,9 @@ def main():
     parser.add_option("-t",
                       dest="writeTS", action="store_true",
                       help="dump transition states to screen")
+    parser.add_option("-d",
+                      dest="write_distances", action="store_true",
+                      help="dump distances to screen")
     
     (options, args) = parser.parse_args()
     
@@ -23,7 +26,7 @@ def main():
         parser.print_help()
         exit(-1)
         
-    db = Storage(db=args[0])
+    db = Database(db=args[0])
 
     if(options.writeMinima):
         print "List of minima:"
@@ -39,7 +42,14 @@ def main():
             print "%d\t<->\t%d\tid %d\tenergies %f %f %f"%\
                 (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
         print "END\n"
-        
+    if(options.write_distances):
+        print "List of distances:"
+        print "--------------------------"
+        for d in db.distances():
+            print "%d\t<->\t%d\tid %d\tdistance %f"%\
+                (d._minimum1_id, d._minimum2_id, d._id, d.dist)
+        print "END\n"
+
     if(options.writeDPS):
         writeDPS(db)
         

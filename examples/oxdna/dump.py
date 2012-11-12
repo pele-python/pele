@@ -2,8 +2,22 @@ import os
 from optparse import OptionParser
 import oxdnagmin_ as GMIN
 from pygmin.storage.database import Database
-
+import numpy as np
+from pygmin.utils import rotations
+from pygmin.utils.rbtools import CoordsAdapter
+    
 TO_PDB="python /home/vr274/opt/oxDNA/UTILS/traj2vis.py  pdb %s gmindnatop"
+
+def export_xyz(fl, coords):
+    ca = CoordsAdapter(nrigid=coords.size/6, coords = coords)
+    fl.write("%d\n\n"%(2*ca.nrigid))
+    for i in xrange(ca.nrigid):
+        a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([1., 0., 0.]))
+        x_back = ca.posRigid[i] - 0.4*a # backbone bead
+        x_stack = ca.posRigid[i] + 0.4*a
+        
+        fl.write("C %f %f %f\n"%(x_back[0], x_back[1], x_back[2]))
+        fl.write("H %f %f %f\n"%(x_stack[0], x_stack[1], x_stack[2]))
 
 def main():
     # add some program options
@@ -21,6 +35,9 @@ def main():
     parser.add_option("--coords",
                   dest="writeCoords", action="store_true",
                   help="export coordinates files")
+    parser.add_option("--xyz",
+                  dest="writeXYZ", action="store_true",
+                  help="export xyz files")
 
     (options, args) = parser.parse_args()
     
@@ -48,7 +65,6 @@ def main():
         
     if(options.writeDPS):
         writeDPS(db)
-        
     if(options.writeCoords):
         GMIN.initialize()
         i=0
@@ -59,6 +75,20 @@ def main():
             GMIN.userpot_dump(filename, m.coords)            
             if(not TO_PDB is None):
                 os.system(TO_PDB%filename)
+            np.savetxt("lowest/coords_%03d.txt"%(i), m.coords)
+            
+    if(options.writeXYZ):
+        traj=open("lowest/traj.xyz", "w")
+        i=0
+        for m in db.minima():
+            i+=1
+            filename = "lowest/lowest%03d.xyz"%(i)
+            print "minimum",i, "energy",m.energy,"to",filename
+            export_xyz(open(filename, "w"), m.coords)
+            export_xyz(traj, m.coords)
+
+        traj.close()
+
 
 def writeDPS(db):
     minindex={}

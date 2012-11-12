@@ -75,9 +75,9 @@ class BasinHopping(MonteCarlo):
         #do initial quench
         #########################################################################
         self.markovE_old = self.markovE
-        newcoords, Equench, self.rms, self.funcalls = \
+        res = \
             self.quenchRoutine(self.coords, self.potential.getEnergyGradient, **self.quenchParameters)
-
+        newcoords, Equench, self.rms, self.funcalls = res[:4]
         self.coords = newcoords
         self.markovE = Equench
 

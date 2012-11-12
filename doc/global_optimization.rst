@@ -28,7 +28,7 @@ the behaviour of the basin hopping procedure.
   opt.run(100)
 
 Step Taking
-===========
+-----------
 
 .. automodule:: pygmin.takestep
 

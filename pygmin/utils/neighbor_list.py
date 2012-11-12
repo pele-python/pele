@@ -1,4 +1,5 @@
 import numpy as np
+
 from pygmin.potentials.potential import potential as basepot
 import _fortran_utils
 from pygmin.potentials.ljcut import LJCut as LJ
@@ -6,22 +7,28 @@ import pygmin.potentials.ljpshift as ljpshift
 
 
 __all__ = ["NeighborList", "NeighborListSubset", "NeighborListPotential", "MultiComponentSystem", 
-           "makeBLJNeighborListPot"]
+           "makeBLJNeighborListPot", "NeighborListSubsetBuild", "NeighborListPotentialBuild", 
+           "NeighborListPotentialMulti"]
 
 class NeighborList(object):
     """
-    this class will create and keep a neighbor list updated
+    Create a neighbor list and keep it updated
+    
+    Parameters
+    ----------
+    rcut : 
+        the cutoff distance for the potential
+    rskin : 
+        the skin distance.  atoms are listed as 
+        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
+        will have more interaction pairs, but will need to be updated less
+        frequently
+    boxl : 
+        if not None, then the system is in a periodic box of size boxl
+
     """
-    buildcount = 0
     def __init__(self, natoms, rcut, rskin = 0.5, boxl = None):
-        """
-        :rcut: the cutoff distance for the potential
-        
-        :rskin: the skin distance.  atoms are listed as 
-            neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
-            will have more interaction pairs, but will need to be updated less
-            frequently
-        """
+        self.buildcount = 0
         self.oldcoords = np.zeros([natoms,3])
         self.rcut = rcut
         self.rskin = rskin
@@ -65,26 +72,33 @@ class NeighborList(object):
             
 class NeighborListSubset(object):
     """
-    this class will create and keep a neighbor list updated
+    Create a neighbor list and keep it updated.
+    
+    This class is designed to deal with only a subset of all atoms
+
+    Parameters
+    ----------
+    natoms :
+        number of atoms
+    rcut : 
+        the cutoff distance for the potential
+    rskin : 
+        the skin distance.  atoms are listed as 
+        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
+        will have more interaction pairs, but will need to be updated less
+        frequently
+    Alist : 
+        The list of atoms that are interacting
+    Blist : the list of atoms that are interacting with Alist
+        if Blist is None or Blist is Alist then the atoms in Alist will be 
+        assumed to be interacting with each other.  Duplicate interactions will
+        be avoided.
+    boxl : 
+        if not None, then the system is in a periodic box of size boxl
     """
-    buildcount = 0
-    count = 0
     def __init__(self, natoms, rcut, Alist, Blist = None, rskin = 0.5, boxl = None):
-        """
-        :rcut: the cutoff distance for the potential
-        
-        :rskin: the skin distance.  atoms are listed as 
-            neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
-            will have more interaction pairs, but will need to be updated less
-            frequently
-        
-        :Alist: the list of atoms that are interacting
-        
-        :Blist: the list of atoms that are interacting with Alist
-            if Blist is None or Blist is Alist then the atoms in Alist will be 
-            assumed to be interacting with each other.  Duplicate interactions will
-            be avoided.
-        """
+        self.buildcount = 0
+        self.count = 0
         self.rcut = rcut
         self.rskin = rskin
         self.redo_displacement = self.rskin / 2.
@@ -117,6 +131,13 @@ class NeighborListSubset(object):
         
         self.oldcoords = np.zeros([natoms,3])            
         #self.buildList(coords)
+        
+        if self.onelist:
+            self.atomlist = list(self.Alist)
+        else:
+            self.atomlist = list(self.Alist) + list(self.Blist)
+        self.atomlist = sorted(self.atomlist)
+        self.atomlist = np.array(self.atomlist)
     
     def buildList(self, coords):
         #neib_list = np.reshape(self.neib_list, -1)
@@ -141,8 +162,6 @@ class NeighborListSubset(object):
                         coords, self.Alist, self.Blist, self.nlistmax*2, self.rlist2)
         self.neib_list = np.reshape(neib_list, [-1,2])
         self.nlist = nlist
-        #self.neib_list[:self.nlist,:] -= 1 #convert from fortran indices
-        #print "nlist from fortran", nlist, self.neib_list[0,:], self.neib_list[self.nlist-1,:]
       
     
     def buildListSlow(self, coords):
@@ -196,6 +215,27 @@ class NeighborListSubset(object):
         """
         check if any atom has moved far enough that we need to redo the neighbor list
         """
+        oldcoords = self.oldcoords.reshape(-1)
+        boxl = self.boxl
+        if boxl is None:
+            boxl = 1.
+        rebuild = _fortran_utils.check_neighbor_lists(oldcoords, coords, self.atomlist,
+                                                      self.redo_displacement, self.periodic, 
+                                                      boxl)
+        rebuild = bool(rebuild)
+        if False:
+            #testing
+            rebuild_alt = self.needNewListSlow(coords)
+            if rebuild != rebuild_alt:
+                print "rebuild is incorrect", rebuild, rebuild_alt, self.periodic, self.onelist
+                print "    ", self.atomlist[-3:]
+                
+        return rebuild
+    
+    def needNewListSlow(self, coords):
+        """
+        check if any atom has moved far enough that we need to redo the neighbor list
+        """
         coords = np.reshape(coords, [-1,3])
         maxR2 = np.max( ((coords[self.Alist,:] 
                           - self.oldcoords[self.Alist,:])**2).sum(1) )
@@ -212,9 +252,17 @@ class NeighborListSubset(object):
             self.buildList(coords)
         return self.neib_list[:self.nlist,:]
 
+
 class NeighborListPotential(basepot):
     """
     a potential wrapper for a neighbor list
+    
+    Parameters
+    ----------
+    neighborList : 
+        the neighbor list object
+    pot :
+        the potential object
     """
     def __init__(self, neighborList, pot):
         self.neighborList = neighborList
@@ -228,9 +276,220 @@ class NeighborListPotential(basepot):
         return self.pot.getEnergyGradientList(coords, list)
 
 
+class NeighborListSubsetBuild(basepot):
+    """
+    The same as NeighborListSubset except only do the building.
+    
+    This class will build the neighbor lists, but can't
+    check whether they need to be rebuilt.  This is meant to be used
+    in situations where multiple neighbor lists are being maintained and
+    we don't want to do repetative checks for whether the lists should be rebuilt
+    
+    It has the added benefit that no copy of coords is saved, so it takes up less memory. 
+
+    Parameters
+    ----------
+    natoms :
+        number of atoms
+    rcut : 
+        the cutoff distance for the potential
+    rskin : 
+        the skin distance.  atoms are listed as 
+        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
+        will have more interaction pairs, but will need to be updated less
+        frequently
+    Alist : 
+        The list of atoms that are interacting
+    Blist : the list of atoms that are interacting with Alist
+        if Blist is None or Blist is Alist then the atoms in Alist will be 
+        assumed to be interacting with each other.  Duplicate interactions will
+        be avoided.
+    boxl : 
+        if not None, then the system is in a periodic box of size boxl
+    """
+    def __init__(self, natoms, rcut, Alist, Blist = None, rskin = 0.5, boxl = None):
+        self.natoms = natoms
+        self.buildcount = 0
+        self.count = 0
+        self.rcut = rcut
+        self.rskin = rskin
+        self.redo_displacement = self.rskin / 2.
+        self.rlist = self.rcut + self.rskin
+        self.rlist2 = self.rlist**2
+        
+        if boxl is None:
+            self.periodic = False
+        else:
+            self.periodic = True
+        self.boxl = boxl
+        
+        self.Alist = np.array(np.copy(Alist))
+        if Blist is None or Blist is Alist:
+            self.onelist = True
+            self.Blist = None
+        else:
+            self.onelist = False
+            self.Blist = np.array(np.copy(Blist))
+
+        if self.onelist:
+            listmaxlen = len(self.Alist)*(len(self.Alist)-1)/2
+        else:
+            listmaxlen = len(self.Alist)*len(self.Blist)
+        #self.neib_list = np.zeros([listmaxlen, 2], np.integer)
+        self.nlistmax = listmaxlen
+        #self.nlist = 0
+        #print "shape neib_list", np.shape(self.neib_list)
+
+    def buildList(self, coords):
+        #neib_list = np.reshape(self.neib_list, -1)
+        self.buildcount += 1
+        if self.onelist:
+            #nlist = _fortran_utils.build_neighbor_list1(
+            #        coords, self.Alist, neib_list, self.rlist2)
+            if self.periodic:
+                neib_list, nlist = _fortran_utils.build_neighbor_list1_periodic(
+                        coords, self.Alist, self.nlistmax*2, self.rlist2, self.boxl)
+            else:
+                neib_list, nlist = _fortran_utils.build_neighbor_list1(
+                        coords, self.Alist, self.nlistmax*2, self.rlist2)
+        else:
+            if self.periodic:
+                neib_list, nlist = _fortran_utils.build_neighbor_list2_periodic(
+                        coords, self.Alist, self.Blist, self.nlistmax*2, 
+                        self.rlist2, self.boxl)
+            else:
+                neib_list, nlist = _fortran_utils.build_neighbor_list2(
+                        coords, self.Alist, self.Blist, self.nlistmax*2, self.rlist2)
+        neib_list = np.reshape(neib_list, [-1,2])
+        return neib_list[:nlist,:]
+
+
+class NeighborListPotentialBuild(basepot):
+    """
+    a potential wrapper for a neighbor list, but only rebuild when told to
+    
+    Parameters
+    ----------
+    neighborList : 
+        the neighbor list object
+    pot :
+        the potential object
+    """
+    def __init__(self, neighborList, pot):
+        self.neighborList = neighborList
+        self.pot = pot
+    
+    def buildList(self, coords):
+        """
+        instruct the neighbor list object to rebuild it's list
+        """
+        self.list = self.neighborList.buildList(coords)
+
+    def getEnergy(self, coords):
+        return self.pot.getEnergyList(coords, self.list)
+
+    def getEnergyGradient(self, coords):
+        return self.pot.getEnergyGradientList(coords, self.list)
+
+
+class NeighborListPotentialMulti(basepot):
+    """
+    A wrapper for multiple NeighborListPotentialBuild
+    
+    This will wrap multiple instances of NeighborListPotentialBuild.  This class
+    will the check the coords and control when the neighbor lists are rebuilt.
+    
+    Parameters:
+    -----------
+    potentials :
+        a list of neighbor list potential objects.  Each potential must have attribute
+        
+            potential.buildList(coords)
+    natoms : 
+        number of atoms
+    rcut : 
+        the cutoff distance for the potential
+    rskin : 
+        the skin distance.  atoms are listed as 
+        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin
+        will have more interaction pairs, but will need to be updated less
+        frequently
+    boxl : 
+        if not None, then the system is in a periodic box of size boxl
+        
+    """
+    def __init__(self, potentials, natoms, rcut, rskin = 0.5, boxl = None):
+        self.potentials = potentials
+        self.oldcoords = np.zeros([natoms,3])
+        self.rcut = rcut
+        self.rskin = rskin
+        self.redo_displacement = self.rskin / 2.
+        self.rlist = self.rcut + self.rskin
+        self.rlist2 = self.rlist**2
+        
+        if boxl is None:
+            self.periodic = False
+            self.boxl = 1.
+        else:
+            self.periodic = True
+            self.boxl = boxl
+
+        self.buildcount = 0
+        self.count = 0
+
+    
+    def needNewList(self, coords):
+        coords = np.reshape(coords, [-1,3])
+        if self.periodic:
+            #only check periodic boundary conditions for the atoms that fail the normal test
+            indices = np.where( ((coords - self.oldcoords)**2).sum(1) > self.redo_displacement**2 )[0]
+            if len(indices) == 0:
+                return False
+            dr = coords[indices,:] - self.oldcoords[indices,:]
+            dr -= self.boxl * np.round(dr / self.boxl)
+            return np.any( dr.sum(1) > self.redo_displacement**2 ) 
+        else:
+            return np.any( ((coords - self.oldcoords)**2).sum(1) > self.redo_displacement**2 )
+
+    
+    def update(self, coords):
+        self.count += 1
+        if self.needNewList(coords):
+            self.buildcount += 1
+            self.oldcoords = np.copy(coords).reshape([-1,3])
+            for pot in self.potentials:
+                pot.buildList(coords)
+    
+    def getEnergy(self, coords):
+        self.update(coords)
+        E = 0.
+        for pot in self.potentials:
+            E += pot.getEnergy(coords)
+        return E
+
+    def getEnergyGradient(self, coords):
+        self.update(coords)
+        Etot = 0.
+        gradtot = np.zeros(np.shape(coords))
+        for pot in self.potentials:
+            E, grad = pot.getEnergyGradient(coords)
+            Etot += E
+            gradtot += grad
+        return Etot, gradtot
+
+    
+
+
+
+
 class MultiComponentSystem(basepot):
     """
     a potential wrapper for multiple potentials
+    
+    Parameters
+    ----------
+    potentials :
+        a list of potential objects
     """
     def __init__(self, potentials):
         self.potentials = potentials
@@ -247,7 +506,6 @@ class MultiComponentSystem(basepot):
             Etot += E
             gradtot += grad
         return Etot, gradtot
-
 
 def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
     """
@@ -280,6 +538,8 @@ def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
                 ]
     mcpot = MultiComponentSystem(potlist)
     return mcpot
+
+
 
 def test(natoms = 40, boxl=None):
     import pygmin.potentials.ljpshiftfast as ljpshift

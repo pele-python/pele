@@ -9,12 +9,12 @@ Welcome to pygmin's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    global_optimization
    quenching
    database
-   transitionstates
+   landscape
    utils
 
 Indices and tables

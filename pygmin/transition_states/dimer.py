@@ -1,14 +1,14 @@
 import numpy as np
 from pygmin.optimize import quench
-from pygmin.utils.zeroev import gramm_schmidt
+from pygmin.transition_states import gramm_schmidt
 
-__all__ = ["findTransitionState"]
+__all__ = ["findTransitionState_dimer", "DimerSearch"]
 
 xt=[]
 tt=[]
 
 # add event callback
-def findTransitionState(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, iprint=-1, **kwargs):
+def findTransitionState_dimer(x0, potential, direction=None, tol=1.0e-6, maxstep=0.1, iprint=-1, **kwargs):
     '''
     Wrapper for DimerSearch to find transition states
     '''    
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     tau=np.array([0.5,-1.])#np.random.random(2)-0.5
     x1 = x0 + 0.1*tau
     pl.plot([x0[0], x1[0]], [x0[1], x1[1]])
-    ret = findTransitionState(x0, potential, tau)
+    ret = findTransitionState_dimer(x0, potential, tau)
     x0 = ret.coords
     tau=ret.eigenvec
     E = ret.energy

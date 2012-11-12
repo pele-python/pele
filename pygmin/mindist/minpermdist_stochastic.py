@@ -8,16 +8,41 @@ from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
 
 __all__ = ["minPermDistStochastic"]
 
-def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
+def minPermDistStochastic(X1, X2, niter = 100, permlist = None, verbose = False):
     """
-    Minimize the distance between two clusters.  The following symmetries will be accounted for
+    Minimize the distance between two clusters.  
     
-    Translational symmetry
+    Parameters
+    ----------
+    X1, X2 : 
+        the structures to align.  X2 will be aligned with X1, both
+        the center of masses will be shifted to the origin
+    niter : int
+        the number of basinhopping iterations to perform
+    permlist : a list of lists of atoms 
+        A list of lists of atoms which are interchangable.
+        e.g. if all the atoms are interchangable
+        
+            permlist = [range(natoms)]
+        
+        For a 50/50 binary mixture, 
+        
+            permlist = [range(1,natoms/2), range(natoms/2,natoms)]
+    verbose : 
+        whether to print status information
 
-    Global rotational symmetry
+    Notes
+    -----
 
-    Permutational symmetry
+    The following symmetries will be accounted for
+    
+        Translational symmetry
 
+        Global rotational symmetry
+
+        Permutational symmetry
+
+    
     
     This method uses basin hopping to find the rotation of X2 which best
     optimizes the overlap (an effective energy) between X1 and X2.  The overlap
@@ -26,14 +51,9 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = [], verbose = False):
     Once the rotation is optimized, the correct permutation can be determined
     deterministically using the Hungarian algorithm.
     
-    input:
-    
-    :permlist:  ([range(natoms)]) 
-        A list of lists of atoms which are interchangable.
-        e.g. for a 50/50 binary mixture, permlist = [ range(1,natoms/2), range(natoms/2,natoms) ]
     """
     nsites = len(X1)/3
-    if len(permlist) == 0:
+    if permlist is None:
         permlist = [range(nsites)]
 
     ###############################################

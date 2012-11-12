@@ -99,3 +99,33 @@ do k1=1,nAlist
     enddo
 enddo
 end subroutine build_neighbor_list2_periodic
+
+subroutine check_neighbor_lists(coordsold, coords, natoms, atomlist, natomlist, drmax, rebuild, periodic, boxl)
+   integer, intent(in) :: natoms, natomlist, atomlist(natomlist)
+   double precision, intent(in) :: coordsold(3*natoms), coords(3*natoms), drmax, boxl
+   logical, intent(in) :: periodic
+   logical, intent(out) :: rebuild
+   double precision dr2max, dr2, dr(3)
+   integer j1, j2, i1
+   rebuild = .False.
+   dr2max = drmax*drmax
+   do j1=1,natomlist
+      j2 = atomlist(j1) + 1 !+1 for fortran indices vs python indices
+      i1 = 3*(j2-1) + 1
+      dr2 = sum((coordsold(i1:i1+2) - coords(i1:i1+2))**2)
+      if (dr2 .gt. dr2max) then
+         if (periodic) then
+            !try recalculating dr2 with periodic boundary conditions
+            dr(:) = (coordsold(i1:i1+2) - coords(i1:i1+2))
+            dr(:) = dr(:) - boxl*nint(dr(:) / boxl)
+            dr2 = sum(dr**2)
+            if (dr2 .le. dr2max) then
+               !write(*,*) "    periodic. ok"
+               cycle
+            endif
+         endif
+         rebuild = .True.
+         exit !exit do loop
+      endif
+   enddo
+end subroutine check_neighbor_lists

@@ -24,7 +24,7 @@ class getEnergyGradientWrapper:
         return ret[1]
 
 
-def quench(coords, getEnergyGradient, iprint = -1, tol = 1e-3, nsteps=15000):
+def quench(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
     """
     a wrapper function for lbfgs routine in scipy
     """
@@ -160,61 +160,62 @@ def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     return x, E, rms, funcalls
 
 
-def _lbfgs_py(coords, pot, nsteps = 10000, iprint = -1, tol = 1e-3, **kwargs):
+def _lbfgs_py(coords, pot, **kwargs):
     from lbfgs_py import LBFGS
     lbfgs = LBFGS(coords, pot, **kwargs)
     
-    ret = lbfgs.run(nsteps, tol, iprint)
-    coords = ret[0]
-    e = ret[1]
-    rms = ret[2]
-    funcalls = ret[3]
-    return coords, e, rms, funcalls
+    ret = lbfgs.run()
+    coords = ret.coords
+    e = ret.energy
+    rms = ret.rms
+    funcalls = ret.nfev
+    return coords, e, rms, funcalls, ret
 
-def lbfgs_py(coords, getEnergyGradient, iprint = -1, tol = 1e-3, nsteps = 10000, **kwargs):
+def lbfgs_py(coords, getEnergyGradient, **kwargs):
     """
     A wrapper function for the python implementation of LBFGS without linesearch.
     
     This is designed to be as similar as possible to GMIN's LBFGS algorithm
     """
     pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = _lbfgs_py(coords, pot, iprint = iprint, tol = tol, nsteps = nsteps, **kwargs)
+    ret = _lbfgs_py(coords, pot, **kwargs)
     return ret
 
-def _mylbfgs(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, **kwargs):
+def _mylbfgs(coords, pot, **kwargs):
     from mylbfgs import LBFGS
     lbfgs = LBFGS(coords, pot, **kwargs)
     
-    ret = lbfgs.run(nsteps, tol, iprint)
-    coords = ret[0]
-    e = ret[1]
-    rms = ret[2]
-    funcalls = ret[3]
-    return coords, e, rms, funcalls
+    ret = lbfgs.run()
+    
+    coords = ret.coords
+    e = ret.energy
+    rms = ret.rms
+    funcalls = ret.nfev
+    return coords, e, rms, funcalls, ret
 
-def mylbfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1, **kwargs):
+def mylbfgs(coords, getEnergyGradient, **kwargs):
     """
     A wrapper function for another LBFGS implementation.  This version uses 
     the GMIN fortran code to update the Hessian approximation and generate 
     a trial step.   The actual step taking algorithm is the same as lbfgs_py.  
     """
     pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = _mylbfgs(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep, **kwargs)
+    ret = _mylbfgs(coords, pot, **kwargs)
     return ret
 
-def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
-    """
-    js850> I think this might not be working but I can't remember
-    """
-    from mylbfgs_callback import LBFGS
-    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
-    
-    ret = lbfgs.run(nsteps, tol, iprint)
-    coords = ret[0]
-    e = ret[1]
-    rms = ret[2]
-    funcalls = ret[3]
-    return coords, e, rms, funcalls
+#def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
+#    """
+#    js850> I think this might not be working but I can't remember
+#    """
+#    from mylbfgs_callback import LBFGS
+#    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
+#    
+#    ret = lbfgs.run(nsteps, tol, iprint)
+#    coords = ret[0]
+#    e = ret[1]
+#    rms = ret[2]
+#    funcalls = ret[3]
+#    return coords, e, rms, funcalls
 
 #def mylbfgs_callback(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1):
 #    pot = getEnergyGradientWrapper(getEnergyGradient)

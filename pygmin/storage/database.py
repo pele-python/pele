@@ -8,7 +8,10 @@ import numpy as np
 from sqlalchemy import Column, Integer, Float, PickleType
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref, deferred
+import sqlalchemy.orm
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import select, bindparam, case, insert
+from sqlalchemy.schema import Index
 
 __all__ = ["Minimum", "TransitionState", "Database"]
 
@@ -17,9 +20,8 @@ verbose=False
 Base = declarative_base()
 
 class Minimum(Base):
-    '''Minimum object
-    
-    The Minimum class represents a minimum in the databae.
+    '''    
+    The Minimum class represents a minimum in the database.
     
     Parameters
     ----------
@@ -57,12 +59,25 @@ class Minimum(Base):
     def left_neighbors(self):
         return [x.lower_node for x in self.right_edges]
    
+    def __eq__(self, m):
+        """m can be integer or Minima object"""
+        assert self._id is not None
+        if isinstance(m, Minimum):
+            assert m._id is not None
+            return self._id == m._id
+        else:
+            return self._id == m
+        
+    def __hash__(self):
+        assert self._id is not None
+        return self._id
+         
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
 class TransitionState(Base):
     '''Transition state object 
        
-    The TransitionState class represents a saddle point in the databae.     
+    The TransitionState class represents a saddle point in the database.     
     
     Parameters
     ----------
@@ -73,9 +88,9 @@ class TransitionState(Base):
     min2: Minimum object
         first minimum
     eigenval: float, optional
-        lowest (single negative) eigenvalue of the sadle point
+        lowest (single negative) eigenvalue of the saddle point
     eigenvec: numpy array, optional
-        eigenvector which correpsonds to the negative eigenvalue 
+        eigenvector which corresponds to the negative eigenvalue 
     
     Attributes
     ----------
@@ -98,29 +113,32 @@ class TransitionState(Base):
     energy = Column(Float)
     '''energy of transition state'''
     
-    coords = Column(PickleType)
+    coords = deferred(Column(PickleType))
     '''coordinates of transition state'''
     
     _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum1 = relationship("Minimum",
-                            primaryjoin="Minimum._id==TransitionState._minimum1_id",
-                            backref='left_edges')
+                            primaryjoin="Minimum._id==TransitionState._minimum1_id") #,
+                            #backref='left_edges')
     '''first minimum which connects to transition state'''
     
     _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum2 = relationship("Minimum",
-                            primaryjoin="Minimum._id==TransitionState._minimum2_id",
-                            backref='right_edges')
+                            primaryjoin="Minimum._id==TransitionState._minimum2_id")#,
+                            #backref='right_edges')
     '''second minimum which connects to transition state'''
     
     eigenval = Column(Float)
     '''coordinates of transition state'''
 
-    eigenvec = Column(PickleType)
+    eigenvec = deferred(Column(PickleType))
     '''coordinates of transition state'''
     
     
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
+        assert min1._id is not None
+        assert min2._id is not None
+        
         self.energy = energy
         self.coords = np.copy(coords)
         if(min1._id < min2._id):
@@ -170,9 +188,21 @@ class Distance(Base):
     
     
     def __init__(self, dist, min1, min2):
+        assert min1._id is not None
+        assert min2._id is not None
+        
+        if(min1._id < min2._id):
+            m1, m2 = min1, min2
+        else:
+            m1, m2 = min2, min1
+            
         self.dist = dist
         self.minimum1 = min1
         self.minimum2 = min2
+
+Index('idx_transition_states', TransitionState.__table__.c._minimum1_id, TransitionState.__table__.c._minimum2_id)
+Index('idx_distances', Distance.__table__.c._minimum1_id, Distance.__table__.c._minimum2_id, unique=True)
+
 
 class Database(object):
     '''Database storage class
@@ -189,7 +219,7 @@ class Database(object):
     Parameters
     ----------
     accuracy : float, optional
-        energy tolerance to cound minima as equal
+        energy tolerance to count minima as equal
     db : string, optional
         database to connect to
     connect_string : string, optional
@@ -203,7 +233,7 @@ class Database(object):
     
     accuracy : float
     onMinimumRemoved : list of function
-    onMinimumAdded : list of funtion
+    onMinimumAdded : list of function
     compareMinima
     
     Example
@@ -221,6 +251,7 @@ class Database(object):
     engine = None
     Session = None
     session = None
+    connection = None
     accuracy = 1e-3
     onMinimumRemoved=[]
     onMinimumAdded=[]
@@ -237,8 +268,30 @@ class Database(object):
         self.onMinimumRemoved=onMinimumRemoved
         self.compareMinima=compareMinima
         self.lock = threading.Lock()
+        self.connection = self.engine.connect()
         
+        self._initialize_queries()
         
+    def _initialize_queries(self):
+        #        self._sql_get_dist = select([Distance.__table__.c.dist],
+        #               or_(and_(Distance.__table__.c._minimum1_id==bindparam("id1"), 
+        #                        Distance.__table__.c._minimum2_id==bindparam("id2")),
+        #                   and_(Distance.__table__.c._minimum1_id==bindparam("id2"), 
+        #                        Distance.__table__.c._minimum2_id==bindparam("id1")),
+        #               ), use_labels=False).limit(1)
+        tbl =  Distance.__table__.c
+        self._sql_get_dist = select([tbl.dist],and_(
+                                 tbl._minimum1_id==bindparam("id1"), 
+                                 tbl._minimum2_id==bindparam("id2")
+                                 ), use_labels=False).limit(1)
+                                 
+        #self._sql_set_dist = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
+        self._sql_set_dist = "INSERT OR REPLACE INTO tbl_distances (dist, _minimum1_id, _minimum2_id) VALUES (:dist, :id1, :id2)"
+        
+        #self._sql_set_dist_upd = Distance.__table__.update().where(and_(tbl._minimum1_id==bindparam("id1"),tbl._minimum2_id==bindparam("id2"))).values(dist=bindparam("dist"))
+        #self._sql_set_dist_ins = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
+        
+    
     def addMinimum(self, E, coords, commit=True):
         """add a new minimum to database
         
@@ -277,8 +330,14 @@ class Database(object):
             self.onMinimumAdded(new)
         return new
     
+    def getMinimum(self, id):
+        """return the minimum with a given id"""
+        return self.session.query(Minimum).get(id)
+        
     def addTransitionState(self, E, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):
-        m1, m2 = min1, min2    
+        m1, m2 = min1, min2
+        if m1._id > m2._id:
+            m1, m2 = m2, m1
         candidates = self.session.query(TransitionState).\
             filter(or_(
                        and_(TransitionState.minimum1==m1, 
@@ -296,8 +355,8 @@ class Database(object):
             #self.lock.release()
             return m
 
-        if(m2.energy < m1.energy):
-            m1,m2 = m2,m1
+        #if(m2.energy < m1.energy):
+        #    m1,m2 = m2,m1
         new = TransitionState(E, coords, m1, m2, eigenval=eigenval, eigenvec=eigenvec)
             
         self.session.add(new)
@@ -323,46 +382,81 @@ class Database(object):
             return m
         return None
     
-    def setDistance(self, dist, min1, min2, commit=True):
-        m1, m2 = min1, min2
-        candidates = self.session.query(Distance).\
-            filter(or_(
-                       and_(Distance.minimum1==m1, 
-                            Distance.minimum2==m2),
-                       and_(Distance.minimum1==m2, 
-                            Distance.minimum2==m1),
-                       ))
+    def setDistance(self, dist, min1, min2):
+        id1 = max(min1._id, min2._id)
+        id2 = min(min1._id, min2._id)
         
-        for m in candidates:
-            #if(self.compareMinima):
-            #    if(self.compareMinima(new, m) == False):
-            #        continue
-            #self.lock.release()
-            return m
+        self.connection.execute(self._sql_set_dist, [{'id1':id1, 'id2':id2, 'dist':dist}])
         
-        new = Distance(dist, m1, m2)
+        #res = self.connection.execute(self._sql_set_dist_upd, [{'id1':min1._id, 'id2':min2._id, 'dist':dist}])
+        #if(res.rowcount == 0):
+        #    self.connection.execute(self._sql_set_dist_ins, [{'id1':min1._id, 'id2':min2._id, 'dist':dist}])
+        
+        
+    def setDistanceBulk(self, values):
+        submit = []
+        for mins, dist in values:
+            submit.append({'id1':min(mins[0]._id, mins[1]._id), 'id2':max(mins[0]._id, mins[1]._id), 'dist':dist})
+        self.connection.execute(self._sql_set_dist, submit)
+        
+#    def setDistanceMultiple(self, newdistances, commit=True):
+#        """set multiple distances at once
+#        
+#        this should be much faster than calling setDistance
+#        multiple times.  Especially for databases with many 
+#        distances
+#        
+#        Parameters
+#        ----------
+#        distances :
+#            a dictionary of distances with the key a tuple of minima
+#        """
+#        #copy distances so it can be safely modified
+#        newdistances = newdistances.copy()
+#        
+#        #update distances that are already in the database and remove
+#        #them from newdistances
+#        for d in self.distances():
+#            m1id, m2id = d._minimum1_id, d._minimum2_id
+#            
+#            dnew = newdistances.get((m1id, m2id))
+#            if dnew is not None:
+#                d.dist = dnew
+#                newdistances.pop((m1id, m2id))
+#
+#            #check alternate ordering as well
+#            dnew = newdistances.get((m2id, m1id))
+#            if dnew is not None:
+#                d.dist = dnew
+#                newdistances.pop((m2id, m1id))
+#        
+#        #all the rest of the distances in newdistances are not in the database.
+#        #Add them all.
+#        for d in newdistances.items():
+#            self.session.add(Distance(d[1], d[0][0], d[0][1]))
+#        
+#        if(commit):
+#            self.session.commit()        
             
-        self.session.add(new)
-        if(commit):
-            self.session.commit()
-        return new
-    def getDistance(self, min1, min2, commit=True):
-        m1, m2 = min1, min2
+    def getDistanceORM(self, min1, min2):
+        if(min1._id > min2._id):
+            min1, min2 = min2, min1
+            
         candidates = self.session.query(Distance).\
-            filter(or_(
-                       and_(Distance.minimum1==m1, 
-                            Distance.minimum2==m2),
-                       and_(Distance.minimum1==m2, 
-                            Distance.minimum2==m1),
-                       ))
-
-        for m in candidates:
-            #if(self.compareMinima):
-            #    if(self.compareMinima(new, m) == False):
-            #        continue
-            #self.lock.release()
-            return m.dist
-        return None
+            filter(and_(Distance.minimum1==min1, 
+                            Distance.minimum2==min2))
+        try:
+            return candidates.one().dist        
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
+    
+    def getDistance(self, min1, min2, commit=True):        
+        result = self.connection.execute(self._sql_get_dist, id1=min1._id, id2=min2._id)
+        dist = result.fetchone()
+        result.close()
+        if dist is None:
+            return None
+        return dist[0]
         
     def distances(self):
         '''iterate over all distances in database
@@ -371,11 +465,13 @@ class Database(object):
         -------
         distance : list of Distance objects
         '''
-        return self.session.query(Distance).all()
+        #return self.session.query(Distance).all()
+        return self.session.query(Distance).yield_per(100)
+        #return self.session.query(Distance)
 
         
     
-    def minima(self):
+    def minima(self, order_energy=True):
         '''iterate over all minima in database
         
         Returns
@@ -383,7 +479,10 @@ class Database(object):
         minima : list of Minimum objects
             query for all minima in database ordered in ascending energy
         '''
-        return self.session.query(Minimum).order_by(Minimum.energy).all()
+        if order_energy:
+            return self.session.query(Minimum).order_by(Minimum.energy).all()
+        else:
+            return self.session.query(Minimum).all()
     
     def transition_states(self):
         '''iterate over all transition states in database
@@ -422,9 +521,50 @@ class Database(object):
                         return None
                 self.db.addMinimum(E, coords)
         return minimum_adder(self, Ecut)
+    
+    def mergeMinima(self, min1, min2):
+        """
+        min2 will be deleted and everything that 
+        points to min2 will point to min1 instead.
+        
+        (actually, any Distance objects pointing to 
+        min2 will just be deleted)
+        """
+        #find all transition states for which ts.minimum1 is min2
+        candidates = self.session.query(TransitionState).\
+            filter(TransitionState.minimum1 == min2) 
+        for ts in candidates:
+            #should we check if this will duplicate an existing transition state?
+            ts.minimum1 = min1
+            if ts.minimum1._id > ts.minimum2._id:
+                ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
+        
+        #find all transition states for which ts.minimum2 is min2
+        candidates = self.session.query(TransitionState).\
+            filter(TransitionState.minimum2 == min2) 
+        for ts in candidates:
+            #should we check if this will duplicate an existing transition state?
+            ts.minimum2 = min1
+            if ts.minimum1._id > ts.minimum2._id:
+                ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
+              
+        
+        #delete any distance objects pointing to min2
+        candidates = self.session.query(Distance).\
+            filter(or_(Distance.minimum1 == min2, 
+                       Distance.minimum2 == min2))
+
+        #copy it into list format so the iterator doesn't get corrupted as we delete things            
+        candidates = list(candidates)
+        for d in candidates:
+            self.session.delete(d)
+        
+        self.session.delete(min2)
+        self.session.commit()
+
 
 if __name__ == "__main__":    
-    db = Database()#db="test.db")
+    db = Database()
     m1 = db.addMinimum(1., np.random.random(10))
     m2 = db.addMinimum(3., np.random.random(10))
     db.addMinimum(2., np.random.random(10))
@@ -433,8 +573,19 @@ if __name__ == "__main__":
     ts = db.addTransitionState(10., None, m1, m2)
     ts.eigenval=11.
     
-    
+    db.setDistance(21., m2, m1)
+    db.setDistance(12., m1, m2)
+    db.setDistance(211., m2, m1)
+    db.setDistance(11., m1, m1)
+    db.setDistance(22., m2, m2)
+    #db.setDistance(11., m1, m2)
+    print db.getDistance(m1, m2)
+    print "List of all distances"
+    for d in db.distances():
+        print d.minimum1._id, d.minimum2._id, d.dist        
+
+    print    
     for m in db.minima():
         print m._id, m.energy
-    for i in db.transition_states():
-        print i, i.energy, i.eigenval, i.eigenvec
+    #for i in db.transition_states():
+    #    print i, i.energy, i.eigenval, i.eigenvec
