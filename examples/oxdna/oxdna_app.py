@@ -8,51 +8,10 @@ from pygmin import takestep
 from math import pi
 from pygmin.utils.rbtools import CoordsAdapter
 from pygmin.utils import rotations
+from pygmin.systems.oxdna import *
 
 EDIFF=0.01
 t0=time.clock()
-
-# This is the takestep routine for OXDNA. It is a standard rigid body takestep
-# routine, but I put it here to be able to start modifying it
-class OXDNATakestep(takestep.TakestepInterface):
-    def __init__(self, displace=1.0, rotate=0.5*pi):
-        self.displace = displace
-        self.rotate = rotate
-        
-    def takeStep(self, coords, **kwargs):
-        # easy access to coordinates
-        ca = CoordsAdapter(nrigid=coords.size/6, coords = coords)
-        
-        # random displacement for positions
-        ca.posRigid[:] += 2.*self.displace*(np.random.random(ca.posRigid.shape)-0.5)
-        
-        # random rotation for angle-axis vectors
-        takestep.rotate(self.rotate, ca.rotRigid)
-        
-    # this is necessary for adaptive step taking
-    def scale(self, factor):
-        self.rotate *= factor
-        self.displace *= factor
-
-    @property
-    def stepsize(self):
-        return [self.rotate, self.displace]
-
-# this class should generate a fully random configuration
-class OXDNAReseed(takestep.TakestepInterface):
-    def __init__(self, radius=3.0):
-        self.radius = radius
-    
-    def takeStep(self, coords, **kwargs):
-        # easy access to coordinates
-        ca = CoordsAdapter(nrigid=coords.size/6, coords = coords)
-        
-        # random displacement for positions
-        ca.posRigid[:] = 2.*self.radius*(np.random.random(ca.posRigid.shape)-0.5)
-        
-        # random rotation for angle-axis vectors
-        for rot in ca.rotRigid:
-            rot[:] = rotations.random_aa()
 
 # this is the base application which controls the program flow
 class AppOXDNA(AppBasinHopping):
@@ -77,7 +36,9 @@ class AppOXDNA(AppBasinHopping):
 
         step1 = takestep.AdaptiveStepsize(OXDNATakestep(displace=self.options.displace, rotate=0.), frequency=50)
         step2 = takestep.AdaptiveStepsize(OXDNATakestep(displace=0., rotate=self.options.rotate), frequency=50)
-        group.addBlock(100, step1)
+        
+        step1 = takestep.AdaptiveStepsize(OXDNAScrewStep(rotate_backbone=0.5, rotate_base=3.))
+        group.addBlock(self.options.block1, step1)
         group.addBlock(100, step2)
 
         # with a generate random configuration
@@ -111,13 +72,17 @@ class AppOXDNA(AppBasinHopping):
                   dest="reseed", default=1000,
                   help="maximum number of steps with no improvement",
                   group="Basinhopping")
+        self.add_option("--block1",type="int",
+                  dest="block1", default=100,
+                  help="maximum number of steps with no improvement",
+                  group="Basinhopping")
         
-    def create_basinhopping(self, add_minimum=None):
+    def create_basinhopping(self, add_minimum=None, potential=None):
         if(self.target != None):
             add_minimum = self.check_converged
 
-        self.opt = AppBasinHopping.create_basinhopping(self, add_minimum=self.check_converged)
-	return self.opt
+        self.opt = AppBasinHopping.create_basinhopping(self, add_minimum=add_minimum)
+        return self.opt
  
     def check_converged(self, E, coords):
         if(E<(self.target+EDIFF)):
