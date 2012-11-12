@@ -7,6 +7,38 @@ __all__ = ["alignCoM", "CoMToOrigin", "getAlignRotation", "alignRotation",
            "findBestPermutation", "findBestPermutationRBMol", "aa2xyz",
            "getDistxyz", "getDistaa", "MinDistWrapper"]
 
+_hungarian = None
+
+if _hungarian is None:
+    try:
+        #use the hungarian package which is compiled
+        import hungarian
+        def _hungarian(cost):
+            newind1 = hungarian.lap(cost)
+            return [(i, j) for i,j in enumerate(newind1[0])]
+        #print "hungari newind", newind
+    except ImportError:
+        pass
+
+# if we didn't find hungarian algorithm before, try munkres
+if _hungarian is None:
+    try:
+        #use the munkres package
+        #convert cost matrix to a form used by munkres
+        from munkres import Munkres
+        
+        def _hungarian(cost):
+            matrix = cost.tolist()
+            m = Munkres()
+            return m.compute(matrix)
+        #print "munkres newind", newind
+    except ImportError:
+        pass
+    
+if _hungarian is None:
+    raise BaseException("No Hungarian algorithm implementation found!"
+                    "Please install the hungarian or the munkres package")
+
 class MinDistWrapper(object):
     """
     wrap a mindist routine into a callable object with the form mindist(X1, X2)
@@ -221,29 +253,9 @@ def findBestPermutationList( X1, X2, atomlist = None, cost_function = None ):
     #########################################
     # run the hungarian algorithm
     #########################################
-    try:
-        #use the hungarian package which is compiled
-        import hungarian
-        newind1 = hungarian.lap(cost)
-        newind = [(i, j) for i,j in enumerate(newind1[0])]
-        #print "hungari newind", newind
-    except ImportError:
-        try:
-            #use the munkres package
-            #convert cost matrix to a form used by munkres
-            from munkres import Munkres
-            matrix = cost.tolist()
-            m = Munkres()
-            newind = m.compute(matrix)
-            #print "munkres newind", newind
-        except ImportError:
-            print "ERROR: findBestPermutation> You must install either the hungarian or the munkres package to use the Hungarian algorithm"
-            dist = np.linalg.norm( X1 - X2 )
-            return dist, X1, X2
-
-            
-
-
+    
+    newind = _hungarian(cost)
+    
     #########################################
     # apply the permutation
     #########################################
