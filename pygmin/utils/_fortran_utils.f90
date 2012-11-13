@@ -1,3 +1,12 @@
+
+!
+!note: it happens quite often that integers are defined differently in python
+!and fortran.  (e.g. 32 bit in fortran and 64 bit in python).  This can be a
+!problem because if a large array of integers needs to be passed, it must be
+!coppied first.  The solution I've found is to define integers to be kind=8,
+!then make sure they're defined in python with np.array( ... , np.int64)
+!
+
 subroutine build_neighbor_list1(coords, natoms, atomlist, natomlist, list, nlistmax, nlist, rlist2)
 implicit none
 integer(kind=8), intent(in) :: natoms, natomlist, atomlist(natomlist), nlistmax
@@ -7,6 +16,7 @@ integer(kind=8), intent(out) :: nlist
 integer(kind=8) k1, k2, j1, j2
 double precision r2
 !note that atomlist is indexed as in python, e.g. 0,1,2,
+!write(*,*) "in build_neighbor_list1"
 nlist = 0
 do k1=1,natomlist
     j1 = atomlist(k1) 
@@ -31,6 +41,7 @@ integer(kind=8), intent(out) :: nlist
 integer(kind=8) k1, k2, j1, j2
 double precision r2
 !note that Alist is indexed as in python, e.g. 0,1,2,
+!write(*,*) "in build_neighbor_list2"
 nlist = 0
 do k1=1,nAlist
    j1 = Alist(k1) 
@@ -54,6 +65,7 @@ integer(kind=8), intent(out) :: list(nlistmax)
 integer(kind=8), intent(out) :: nlist
 integer(kind=8) k1, k2, j1, j2
 double precision r2, dr(3), iboxl
+!write(*,*) "in build_neighbor_list1_periodic"
 iboxl = 1.d0/boxl
 !note that atomlist is indexed as in python, e.g. 0,1,2,
 nlist = 0
@@ -81,6 +93,7 @@ integer(kind=8), intent(out) :: list(nlistmax)
 integer(kind=8), intent(out) :: nlist
 integer(kind=8) k1, k2, j1, j2
 double precision r2, dr(3), iboxl
+!write(*,*) "in build_neighbor_list2_periodic"
 iboxl = 1.d0/boxl
 !note that Alist is indexed as in python, e.g. 0,1,2,
 nlist = 0

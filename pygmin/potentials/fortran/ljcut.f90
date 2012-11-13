@@ -2,6 +2,14 @@
 ! lj with a cutoff that is continuous and smooth
 !!!
 
+!
+!note: it happens quite often that integers are defined differently in python
+!and fortran.  (e.g. 32 bit in fortran and 64 bit in python).  This can be a
+!problem because if a large array of integers needs to be passed, it must be
+!coppied first.  The solution I've found is to define integers to be kind=8,
+!then make sure they're defined in python with np.array( ... , np.int64)
+!
+
 subroutine ljenergy( coords, natoms, e, eps, sig, periodic, boxl, rcut )
 implicit none
 integer, intent(in) :: natoms
@@ -82,12 +90,12 @@ end subroutine ljenergy_gradient
 
 subroutine energy_ilist( coords, natoms, e, eps, sig, ilist, nlist, periodic, boxl, rcut )
 implicit none
-integer, intent(in) :: natoms, nlist, ilist(nlist* 2)
+integer(kind=8), intent(in) :: natoms, nlist, ilist(nlist* 2)
 double precision, intent(in) :: coords(3*natoms), sig, eps, boxl, rcut
 double precision, intent(out) :: e
 logical, intent(in) :: periodic
 double precision dr(3), sig6, sig12, r2, ir2, ir6, ir12, iboxl
-integer j1, j2, i1, i2, n
+integer(kind=8) j1, j2, i1, i2, n
 double precision rcut2, rcut6, A1, B1
 
 if (periodic) iboxl = 1.d0 / boxl
@@ -123,12 +131,12 @@ end subroutine energy_ilist
 
 subroutine energy_gradient_ilist( coords, natoms, e, grad, eps, sig, ilist, nlist, periodic, boxl, rcut )
 implicit none
-integer, intent(in) :: natoms, nlist, ilist(nlist* 2)
+integer(kind=8), intent(in) :: natoms, nlist, ilist(nlist* 2)
 double precision, intent(in) :: coords(3*natoms), sig, eps, boxl, rcut
 double precision, intent(out) :: e, grad(3*natoms)
 logical, intent(in) :: periodic
 double precision dr(3), sig6, sig12, r2, ir2, ir6, ir12, g, iboxl
-integer j1, j2, i1, i2, n
+integer(kind=8) j1, j2, i1, i2, n
 double precision rcut2, rcut6, A1, B1
 
 if (periodic) iboxl = 1.d0 / boxl

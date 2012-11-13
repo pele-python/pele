@@ -111,7 +111,7 @@ class NeighborListSubset(object):
             self.periodic = True
         self.boxl = boxl
         
-        self.Alist = np.array(np.copy(Alist))
+        self.Alist = np.array(np.copy(Alist), np.int64)
         if Blist is None or Blist is Alist:
             self.onelist = True
             self.Blist = None
@@ -137,12 +137,19 @@ class NeighborListSubset(object):
         else:
             self.atomlist = list(self.Alist) + list(self.Blist)
         self.atomlist = sorted(self.atomlist)
-        self.atomlist = np.array(self.atomlist)
+        
+        #we must specify the type of integer so that we can
+        #pass it to fortran without copying
+        self.atomlist = np.array(self.atomlist, np.int64)
+        self.Alist = np.array(self.Alist, np.int64)
+        if not self.onelist:
+            self.Blist = np.array(self.Blist, np.int64)
     
     def buildList(self, coords):
         #neib_list = np.reshape(self.neib_list, -1)
         self.buildcount += 1
         self.oldcoords = np.copy(np.reshape(coords,[-1,3]))
+#        raw_input("press enter to continue: onelist %d, len(alist)=%d, len(coords)=%d" % (self.onelist, len(self.Alist), len(coords)))
         if self.onelist:
             #nlist = _fortran_utils.build_neighbor_list1(
             #        coords, self.Alist, neib_list, self.rlist2)
@@ -219,6 +226,7 @@ class NeighborListSubset(object):
         boxl = self.boxl
         if boxl is None:
             boxl = 1.
+#        raw_input("press enter to continue: onelist %d, len(atomlist)=%d, len(coords)=%d" % (self.onelist, len(self.atomlist), len(coords)))
         rebuild = _fortran_utils.check_neighbor_lists(oldcoords, coords, self.atomlist,
                                                       self.redo_displacement, self.periodic, 
                                                       boxl)
@@ -339,6 +347,13 @@ class NeighborListSubsetBuild(basepot):
         self.nlistmax = listmaxlen
         #self.nlist = 0
         #print "shape neib_list", np.shape(self.neib_list)
+
+        #we must specify the type of integer so that we can
+        #pass it to fortran without copying
+        self.Alist = np.array(self.Alist, np.int64)
+        if not self.onelist:
+            self.Blist = np.array(self.Blist, np.int64)
+
 
     def buildList(self, coords):
         #neib_list = np.reshape(self.neib_list, -1)
