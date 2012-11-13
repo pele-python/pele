@@ -12,12 +12,12 @@ class ModuleList:
         modname, ext = os.path.splitext(modname)
         self.module_list.append(Extension(modname, [filename], **self.kwargs))
 
-f2py_options=[]
+extra_compile_args=[]
 if False:
     #for bug testing
-    f2py_options=["-DF2PY_REPORT_ON_ARRAY_COPY"]
+    extra_compile_args=["-DF2PY_REPORT_ON_ARRAY_COPY=1"]
 
-fmodules = ModuleList(f2py_options=f2py_options)
+fmodules = ModuleList(extra_compile_args=extra_compile_args)
 fmodules.add_module("pygmin/mindist/overlap.f90")
 fmodules.add_module("pygmin/optimize/mylbfgs_fort.f90")
 fmodules.add_module("pygmin/optimize/mylbfgs_updatestep.f90")

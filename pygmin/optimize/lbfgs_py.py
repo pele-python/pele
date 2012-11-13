@@ -328,6 +328,7 @@ class LBFGS:
         res.energy = e
         res.rms = rms
         res.grad = G
+        res.H0 = self.H0
         return res
    
 
