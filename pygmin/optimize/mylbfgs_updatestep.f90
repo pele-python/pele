@@ -65,7 +65,7 @@
 
          !set the inverse hessian
          IF (DIAGCO .OR. DIAGCO_STEP0) THEN
-            WRITE(*,*) 'using estimate of the inverse diagonal elements', diag(1)
+            !WRITE(*,*) 'using estimate of the inverse diagonal elements', diag(1)
             DO J1=1,N
                IF (DIAG(J1).LE.0.0D0) THEN
                   WRITE(*,235) J1

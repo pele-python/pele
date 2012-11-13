@@ -1,10 +1,10 @@
 subroutine build_neighbor_list1(coords, natoms, atomlist, natomlist, list, nlistmax, nlist, rlist2)
 implicit none
-integer, intent(in) :: natoms, natomlist, atomlist(natomlist), nlistmax
+integer(kind=8), intent(in) :: natoms, natomlist, atomlist(natomlist), nlistmax
 double precision, intent(in) :: coords(3*natoms), rlist2
-integer, intent(out) :: list(nlistmax)
-integer, intent(out) :: nlist
-integer k1, k2, j1, j2
+integer(kind=8), intent(out) :: list(nlistmax)
+integer(kind=8), intent(out) :: nlist
+integer(kind=8) k1, k2, j1, j2
 double precision r2
 !note that atomlist is indexed as in python, e.g. 0,1,2,
 nlist = 0
@@ -24,11 +24,11 @@ end subroutine build_neighbor_list1
 
 subroutine build_neighbor_list2(coords, natoms, Alist, nAlist, Blist, nBlist, list, nlistmax, nlist, rlist2)
 implicit none
-integer, intent(in) :: natoms, nAlist, Alist(nAlist), nBlist, Blist(nBlist), nlistmax
+integer(kind=8), intent(in) :: natoms, nAlist, Alist(nAlist), nBlist, Blist(nBlist), nlistmax
 double precision, intent(in) :: coords(3*natoms), rlist2
-integer, intent(out) :: list(nlistmax)
-integer, intent(out) :: nlist
-integer k1, k2, j1, j2
+integer(kind=8), intent(out) :: list(nlistmax)
+integer(kind=8), intent(out) :: nlist
+integer(kind=8) k1, k2, j1, j2
 double precision r2
 !note that Alist is indexed as in python, e.g. 0,1,2,
 nlist = 0
@@ -48,11 +48,11 @@ end subroutine build_neighbor_list2
 
 subroutine build_neighbor_list1_periodic(coords, natoms, atomlist, natomlist, list, nlistmax, nlist, rlist2, boxl)
 implicit none
-integer, intent(in) :: natoms, natomlist, atomlist(natomlist), nlistmax
+integer(kind=8), intent(in) :: natoms, natomlist, atomlist(natomlist), nlistmax
 double precision, intent(in) :: coords(3*natoms), rlist2, boxl
-integer, intent(out) :: list(nlistmax)
-integer, intent(out) :: nlist
-integer k1, k2, j1, j2
+integer(kind=8), intent(out) :: list(nlistmax)
+integer(kind=8), intent(out) :: nlist
+integer(kind=8) k1, k2, j1, j2
 double precision r2, dr(3), iboxl
 iboxl = 1.d0/boxl
 !note that atomlist is indexed as in python, e.g. 0,1,2,
@@ -75,11 +75,11 @@ end subroutine build_neighbor_list1_periodic
 
 subroutine build_neighbor_list2_periodic(coords, natoms, Alist, nAlist, Blist, nBlist, list, nlistmax, nlist, rlist2, boxl)
 implicit none
-integer, intent(in) :: natoms, nAlist, Alist(nAlist), nBlist, Blist(nBlist), nlistmax
+integer(kind=8), intent(in) :: natoms, nAlist, Alist(nAlist), nBlist, Blist(nBlist), nlistmax
 double precision, intent(in) :: coords(3*natoms), rlist2, boxl
-integer, intent(out) :: list(nlistmax)
-integer, intent(out) :: nlist
-integer k1, k2, j1, j2
+integer(kind=8), intent(out) :: list(nlistmax)
+integer(kind=8), intent(out) :: nlist
+integer(kind=8) k1, k2, j1, j2
 double precision r2, dr(3), iboxl
 iboxl = 1.d0/boxl
 !note that Alist is indexed as in python, e.g. 0,1,2,
@@ -101,12 +101,12 @@ enddo
 end subroutine build_neighbor_list2_periodic
 
 subroutine check_neighbor_lists(coordsold, coords, natoms, atomlist, natomlist, drmax, rebuild, periodic, boxl)
-   integer, intent(in) :: natoms, natomlist, atomlist(natomlist)
+   integer(kind=8), intent(in) :: natoms, natomlist, atomlist(natomlist)
    double precision, intent(in) :: coordsold(3*natoms), coords(3*natoms), drmax, boxl
    logical, intent(in) :: periodic
    logical, intent(out) :: rebuild
    double precision dr2max, dr2, dr(3)
-   integer j1, j2, i1
+   integer(kind=8) j1, j2, i1
    rebuild = .False.
    dr2max = drmax*drmax
    do j1=1,natomlist

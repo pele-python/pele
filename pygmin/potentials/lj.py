@@ -148,24 +148,24 @@ class LJ(potential.potential):
     
     def getEnergyListFortran(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
-        ilist += 1 #fortran indexing
+        #ilist += 1 #fortran indexing
         nlist = len(ilist)
         natoms = len(coords) / 3
         E = self.ljf.energy_ilist(
-                coords, self.eps, self.sig, ilist, self.periodic, 
+                coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
                 self.boxl, [natoms, nlist])
-        ilist -= 1
+        #ilist -= 1
         return E
     
     def getEnergyGradientListFortran(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
-        ilist += 1 #fortran indexing
+        #ilist += 1 #fortran indexing
         nlist = len(ilist)
         natoms = len(coords) / 3
         E, grad = self.ljf.energy_gradient_ilist(
-                coords, self.eps, self.sig, ilist, self.periodic, 
+                coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
                 self.boxl, [natoms, nlist])
-        ilist -= 1
+        #ilist -= 1
         return E, grad 
     
     def getEnergyGradientHessian(self, coords):
@@ -193,7 +193,38 @@ def main():
     from pygmin.optimize.quench import quench
     quench( coords, lj.getEnergyGradient, iprint=1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
+
+import unittest
+class LJTest(unittest.TestCase):
+    def setUp(self):
+        self.natoms = 10
+        self.coords = np.random.uniform(-1,1.,3*self.natoms) * self.natoms**(-1./3)
+        self.pot = LJ()
+        self.E = self.pot.getEnergy(self.coords)
+        self.Egrad, self.grad = self.pot.getEnergyGradient(self.coords)
+        
+        import itertools
+        self.ilist = [] #np.zeros([self.natoms*(self.natoms-1)/2, 2])
+        k = 0
+        for i in range(self.natoms):
+            for j in range(i):
+                k += 1
+                self.ilist.append( [i,j] )
+        self.ilist = np.array(self.ilist) 
+        #print self.ilist
     
+    def test_grad_e(self):
+        self.assertAlmostEqual(self.E, self.Egrad, 7)
+    def test_lists_e(self):
+        e = self.pot.getEnergyList(self.coords, self.ilist)
+        self.assertAlmostEqual(self.E, e, 7)
+    def test_lists_eg(self):
+        e, g = self.pot.getEnergyGradientList(self.coords, self.ilist)
+        self.assertAlmostEqual(self.E, e, 7)
+        gdiffmax = np.max(np.abs( g-self.grad )) / np.max(np.abs(self.grad))
+        self.assertLess(gdiffmax, 1e-7)
+ 
 
 if __name__ == "__main__":
+    unittest.main()
     main()

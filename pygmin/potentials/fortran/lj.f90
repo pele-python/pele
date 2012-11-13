@@ -64,11 +64,11 @@ end subroutine ljenergy_gradient
 
 subroutine energy_ilist( coords, natoms, e, eps, sig, ilist, nlist, periodic, boxl )
 implicit none
-integer, intent(in) :: natoms, nlist, ilist(nlist, 2)
+integer, intent(in) :: natoms, nlist, ilist(nlist* 2)
 double precision, intent(in) :: coords(3*natoms), sig, eps, boxl
 double precision, intent(out) :: e
 logical, intent(in) :: periodic
-double precision dr(3), sig6, sig12, r2, ir2, ir6, ir12, g, iboxl
+double precision dr(3), sig6, sig12, r2, ir2, ir6, ir12, iboxl
 integer j1, j2, i1, i2, n
 
 if (periodic) iboxl = 1.d0 / boxl
@@ -79,8 +79,8 @@ sig12 = sig6*sig6
 e = 0.d0
 
 do n = 1,nlist
-   j1 = ilist(n,1)
-   j2 = ilist(n,2)
+   j1 = ilist(2*(n-1)+1) + 1 !convert to fortran indexing
+   j2 = ilist(2*(n-1)+2) + 1 !convert to fortran indexing
 
    i1 = 3*(j1-1)
    i2 = 3*(j2-1)
@@ -98,7 +98,7 @@ end subroutine energy_ilist
 
 subroutine energy_gradient_ilist( coords, natoms, e, grad, eps, sig, ilist, nlist, periodic, boxl )
 implicit none
-integer, intent(in) :: natoms, nlist, ilist(nlist, 2)
+integer, intent(in) :: natoms, nlist, ilist(nlist* 2)
 double precision, intent(in) :: coords(3*natoms), sig, eps, boxl
 double precision, intent(out) :: e, grad(3*natoms)
 logical, intent(in) :: periodic
@@ -114,8 +114,8 @@ e = 0.d0
 grad(:) = 0.d0
 
 do n = 1,nlist
-   j1 = ilist(n,1)
-   j2 = ilist(n,2)
+   j1 = ilist(2*(n-1)+1) + 1 !convert to fortran indexing
+   j2 = ilist(2*(n-1)+2) + 1 !convert to fortran indexing
 
    i1 = 3*(j1-1)
    i2 = 3*(j2-1)

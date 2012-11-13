@@ -660,7 +660,7 @@ def test2():
 
     
 if __name__ == "__main__":
-    test2()
+    #test2()
     test(natoms=100, boxl=None)
     
        
