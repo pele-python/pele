@@ -183,7 +183,9 @@ class FindTransitionState(object):
 
         #set some parameters used in finding lowest eigenvector
         #initial guess for Hermitian
-        self.H0 = None 
+        self.H0_leig = None 
+        
+        self.H0_transverse = None
         
         self.reduce_step = 0
         self.step_factor = .1
@@ -251,7 +253,7 @@ class FindTransitionState(object):
                     ostring = "findTransitionState: %3d E %g rms %g eigenvalue %g rms perp %g grad par %g overlap %g" % (
                                     i, E, rms, self.eigenval, tangentrms, gradpar, overlap)
                     extra = " Evec search: %d rms %g" % (self.leig_result.nfev, self.leig_result.rms)
-                    extra += " Tverse search: %d rms %g" % (self.tangent_result[3], self.tangent_result[2])
+                    extra += " Tverse search: %d rms %g" % (self.tangent_result.nfev, self.tangent_result.rms)
                     extra += " Uphill step: %g" % (self.uphill_step_size,)
                     print ostring, extra
             
@@ -303,7 +305,7 @@ class FindTransitionState(object):
 
         
     def _getLowestEigenVector(self, coords, i):
-        res = findLowestEigenVector(coords, self.pot, H0=self.H0, eigenvec0=self.eigenvec, 
+        res = findLowestEigenVector(coords, self.pot, H0=self.H0_leig, eigenvec0=self.eigenvec, 
                                     orthogZeroEigs=self.orthogZeroEigs,
                                     **self.lowestEigenvectorQuenchParams)
         self.leig_result = res
@@ -318,7 +320,7 @@ class FindTransitionState(object):
         else:
             overlap = 0.
         
-        self.H0 = res.H0
+        self.H0_leig = res.H0
         self.eigenvec = res.eigenvec
         self.eigenval = res.eigenval
         self.oldeigenvec = self.eigenvec.copy()
@@ -358,10 +360,12 @@ class FindTransitionState(object):
         ret = self.tangent_space_quencher(coords, tspot.getEnergyGradient, 
                                           nsteps=nstepsperp, tol=self.tol_tangent,
                                           maxstep=maxstep,
+                                          H0 = self.H0_transverse,
                                           **self.tangent_space_quench_params)
         coords = ret[0]
         rms = ret[2]
-        self.tangent_result = ret 
+        self.tangent_result = ret[4]
+        self.H0_transverse = self.tangent_result.H0
         return coords, rms
 
     def _stepUphill(self, coords):
