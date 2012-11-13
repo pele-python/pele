@@ -7,7 +7,7 @@ from pygmin import takestep
 from pygmin.utils import rotations
 from pygmin.potentials import GMINPotential
 import pygmin.basinhopping as bh
-from pygmin.NEB import NEB, InterpolatedPath
+from pygmin.transition_states import NEB, InterpolatedPath
         
 # This is the takestep routine for OXDNA. It is a standard rigid body takestep
 # routine, but I put it here to be able to start modifying it
@@ -120,7 +120,7 @@ class OXDNASystem(gui.GUISystem):
         return coords1, coords2
     
     def createNEB(self, coords1, coords2):
-        return NEB.NEB(InterpolatedPath(coords1, coords2, 40), GMINPotential(GMIN), k = 100.)
+        return NEB(InterpolatedPath(coords1, coords2, 40), GMINPotential(GMIN), k = 100.)
     
         
 if __name__ == "__main__":
