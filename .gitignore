@@ -15,3 +15,6 @@ lowest
 *.bundle
 build
 .settings
+fort.8
+GMIN_out
+*.sqlite
