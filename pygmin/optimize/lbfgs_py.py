@@ -89,6 +89,9 @@ class LBFGS:
             self.H0 = 1.
         else:
             self.H0 = H0
+        if self.H0 < 1e-10:
+            print "warning: initial guess for inverse Hessian diagonal is negative or too small", self.H0, "resetting it to 1."
+            self.H0 = 1.
         self.rho = np.zeros(M)
         self.k = 0
         

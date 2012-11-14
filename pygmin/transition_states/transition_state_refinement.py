@@ -196,6 +196,8 @@ class FindTransitionState(object):
         self.saved_eigenvec = np.copy(self.eigenvec)
         self.saved_eigenval = self.eigenval
         self.saved_overlap = self.overlap
+        self.saved_H0_leig = self.H0_leig
+        self.saved_H0_transverse = self.H0_transverse
         #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
 
     def _resetState(self, coords):
@@ -204,6 +206,8 @@ class FindTransitionState(object):
         self.eigenval = self.saved_eigenval
         self.oldeigenvec = np.copy(self.eigenvec)
         self.overlap = self.saved_overlap
+        self.H0_leig = self.saved_H0_leig
+        self.H0_transverse = self.saved_H0_transverse
         return coords
 
     def run(self):
@@ -252,9 +256,10 @@ class FindTransitionState(object):
                 if i % self.iprint == 0:
                     ostring = "findTransitionState: %3d E %g rms %g eigenvalue %g rms perp %g grad par %g overlap %g" % (
                                     i, E, rms, self.eigenval, tangentrms, gradpar, overlap)
-                    extra = " Evec search: %d rms %g" % (self.leig_result.nfev, self.leig_result.rms)
-                    extra += " Tverse search: %d rms %g" % (self.tangent_result.nfev, self.tangent_result.rms)
-                    extra += " Uphill step: %g" % (self.uphill_step_size,)
+                    extra = "  Evec search: %d rms %g" % (self.leig_result.nfev, self.leig_result.rms)
+                    extra += "  Tverse search: %d step %g" % (self.tangent_result.nfev, 
+                                                                    self.tangent_move_step)
+                    extra += "  Uphill step:%g" % (self.uphill_step_size,)
                     print ostring, extra
             
             if callable(self.event):
@@ -341,11 +346,14 @@ class FindTransitionState(object):
         """
         #determine the number of steps
         #i.e. if the eigenvector is deemed to have converged
-        #eigenvec_converged = np.abs(gradpar) <= self.tol*2.
-        eigenvec_converged = self.overlap > .999 
+        use_gradpar = False
+        if use_gradpar:
+            E, grad = self.pot.getEnergyGradient(coords)
+            gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
+            eigenvec_converged = np.abs(gradpar) <= self.tol*2.
+        else:
+            eigenvec_converged = self.overlap > .999 
         
-        E, grad = self.pot.getEnergyGradient(coords)
-        gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
         nstepsperp = self.nsteps_tangent1
         if eigenvec_converged:
             nstepsperp = self.nsteps_tangent2
@@ -357,12 +365,14 @@ class FindTransitionState(object):
 
 
         tspot = TSRefinementPotential(self.pot, self.eigenvec)
+        coords1 = np.copy(coords)
         ret = self.tangent_space_quencher(coords, tspot.getEnergyGradient, 
                                           nsteps=nstepsperp, tol=self.tol_tangent,
                                           maxstep=maxstep,
                                           H0 = self.H0_transverse,
                                           **self.tangent_space_quench_params)
         coords = ret[0]
+        self.tangent_move_step = np.linalg.norm(coords - coords1)
         rms = ret[2]
         self.tangent_result = ret[4]
         self.H0_transverse = self.tangent_result.H0
