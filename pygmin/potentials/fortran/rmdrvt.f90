@@ -1,3 +1,9 @@
+!
+!js850> WARNING: f2py by default copies every multidimentional array passed to
+!fortran.  This is becuase array indexing is different in fortran and python.
+!This is a huge waste of resources
+!
+
 !     --------------------------------------------------------------------------
 
 !     RMDVDT = rotation matrix derivative

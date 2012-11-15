@@ -7,7 +7,7 @@ class LBFGS(lbfgs_py.LBFGS):
     def __init__(self, X, pot, **lbfgs_py_kwargs):
         """
         this class inherits everything from the pythonic LBFGS
-        except the implementation of the LBFGS (determining an appropriate
+        except the implementation of the LBFGS algorithm (determining an appropriate
         step size and direction). This is reimplemented 
         using the Fortran code from GMIN.
         """
@@ -18,7 +18,6 @@ class LBFGS(lbfgs_py.LBFGS):
         M = self.M
         
         #in fortran mylbfgs H0 is a vector of length N with all the elements the same
-        #specifying initial H0 is not implemented here
         self.H0vec = np.ones(N) * self.H0 #initial guess for the hessian
 
         self.W = np.zeros(N*(2*M+1)+2*M) #mylbfgs working space
@@ -46,8 +45,8 @@ class LBFGS(lbfgs_py.LBFGS):
             IYPT= ISPT + N*M  # index for storage of gradient differences
 
             NPT = N*((self.point + M - 1) % M)  
-            s = X - self.Xold
-            y = G - self.Gold
+            #s = X - self.Xold
+            #y = G - self.Gold
             #print "YS YY py", np.dot( y, s ), np.dot( y,y ), ISPT+NPT
             self.W[ISPT+NPT : ISPT+NPT +N] = X - self.Xold
             self.W[IYPT+NPT : IYPT+NPT +N] = G - self.Gold    
@@ -62,6 +61,7 @@ class LBFGS(lbfgs_py.LBFGS):
         #print "G", self.G
         #print "overlap", np.dot(self.stp, self.G)
         #print "H0", self.H0
+        self.H0 = self.H0vec[0]
         self.iter += 1
         self.point = self.iter % self.M
         
@@ -90,18 +90,19 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     print "energy", e
     
     lbfgs = LBFGS(X, pot, maxstep = 0.1, nsteps=10000, tol=tol,
-                  iprint=iprint)
+                  iprint=iprint, H0=2.)
     printevent = PrintEvent( "debugout.xyz")
     lbfgs.attachEvent(printevent)
     
     ret = lbfgs.run()
-    print "done", ret[1], ret[2], ret[3], ret[5]
+    print ret
     
     print ""
     print "now do the same with scipy lbfgs"
     from pygmin.optimize.quench import quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
-    print ret[1], ret[2], ret[3]    
+    print ret
+    #print ret[1], ret[2], ret[3]    
     
     if False:
         print "now do the same with scipy bfgs"

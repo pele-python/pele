@@ -23,6 +23,7 @@
       DOUBLE PRECISION YR, YS, YY
 
       LOGICAL DIAGCO !this could be passed. It would be used to specify what the diagonal components are
+      LOGICAL DIAGCO_STEP0 !use DIAG input only on initial step
       DOUBLE PRECISION DDOT ! A FUNCTION
 !
 !     THE WORK VECTOR W IS DIVIDED AS FOLLOWS:
@@ -46,6 +47,7 @@
 
       DGUESS=1.0d0
       DIAGCO = .FALSE.
+      DIAGCO_STEP0 = .TRUE.
 
  240        FORMAT(' IMPROPER INPUT PARAMETERS (N OR M ARE NOT POSITIVE)')
  235              FORMAT(' THE',I5,'-TH DIAGONAL ELEMENT OF THE',/, &
@@ -62,8 +64,8 @@
          POINT=0
 
          !set the inverse hessian
-         IF (DIAGCO) THEN
-            WRITE(*,'(A)') 'using estimate of the inverse diagonal elements'
+         IF (DIAGCO .OR. DIAGCO_STEP0) THEN
+            !WRITE(*,*) 'using estimate of the inverse diagonal elements', diag(1)
             DO J1=1,N
                IF (DIAG(J1).LE.0.0D0) THEN
                   WRITE(*,235) J1
