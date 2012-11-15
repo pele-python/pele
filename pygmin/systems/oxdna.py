@@ -34,7 +34,7 @@ class OXDNAScrewStep(takestep.TakestepInterface):
     def __init__(self, rotate_backbone=0.5*pi, rotate_base=0., ntorsionmoves=1):
         self.rotate_backbone = rotate_backbone
         self.rotate_base = rotate_base
-        self.ntorsionmoves=1
+        self.ntorsionmoves=ntorsionmoves
 
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
