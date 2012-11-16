@@ -1,3 +1,4 @@
+
 from pygmin.storage.database import Database
 import numpy as np
 from pygmin.potentials import GMINPotential
@@ -8,6 +9,9 @@ from pygmin.utils.rbtools import CoordsAdapter
 from pygmin.utils import rotations
 from pygmin.basinhopping import BasinHopping
 import parameters
+import time
+
+t0 = time.clock()
 
 # This is the takestep routine for OXDNA. It is a standard rigid body takestep
 # routine, but I put it here to be able to start modifying it
@@ -49,8 +53,19 @@ class OXDNAReseed(takestep.TakestepInterface):
         # random rotation for angle-axis vectors
         for rot in ca.rotRigid:
             rot[:] = rotations.random_aa()
-            
 
+    def check_converged(E, coords):
+        if(E<(parameters.TARGET+parameters.EDIFF)):
+                  fl = open("stat.dat", "a")
+                  print "#found minimum"
+                  t1= time.clock()
+                  timespent= t1 - t0
+                  fl.write("#quenches, functioncalls, time\n")
+                  fl.write("%d %d %f\n"%(opt.stepnum   , potential.ncalls   , timespent))
+                  fl.close()
+                  exit()
+
+           
 # initialize GMIN
 GMIN.initialize()
 # create a potential which calls GMIN
