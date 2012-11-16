@@ -573,12 +573,6 @@ class DoubleEndedConnect(object):
         """
         return self.dist_graph.getDist(min1, min2)
 
-#    def _addMinimum(self, *args):
-#        m = self.graph.addMinimum(*args)
-#        self.graph.refresh() #this could be slow
-#        self.dist_graph.addMinimum(m)
-#        return m
-
     def _addTransitionState(self, E, coords, min_ret1, min_ret2, eigenvec, eigenval):
         #add the new minima to the graph (they may already be in there)
         
@@ -589,9 +583,7 @@ class DoubleEndedConnect(object):
         if min1 == min2:
             print "warning: stepping off the transition state resulted in twice the same minima", min1._id
             return False
-        
 
-        
         print "adding transition state", min1._id, min2._id
         #update the transition state graph
         ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=eigenvec, eigenval=eigenval)
@@ -623,7 +615,6 @@ class DoubleEndedConnect(object):
         
         #check to make sure it is a valid transition state 
         coords = ret.coords
-        E = ret.energy
         if not ret.success:
             print "transition state search failed"
             return False
@@ -638,9 +629,7 @@ class DoubleEndedConnect(object):
         ret1, ret2 = minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
             displace=1e-3, quenchParameters={"tol":1e-7, "iprint":-1})
         
-        #the transition state is good, add it to the graph
-        goodts = self._addTransitionState(E, coords, ret1, ret2, ret.eigenvec, ret.eigenval)
-        return goodts
+        return True, ret, ret1, ret2
         
    
     def _doNEB(self, minNEB1, minNEB2, repetition = 0):
@@ -763,9 +752,14 @@ class DoubleEndedConnect(object):
                                          [neb.energies[i+1], neb.coords[i+1,:]]
                                         )
             
-            ts_success = self._refineTS(coords, eigenvec0=eigenvec0)
+            ret = self._refineTS(coords, eigenvec0=eigenvec0)
+            ts_success = ret[0]
             if ts_success:
-                success = True
+                #the transition state is good, add it to the graph
+                tsret, m1ret, m2ret = ret[1:4]
+                goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
+                if goodts:
+                    success = True
         
         #remove this edge from Gdist so we don't try this pair again again
         #self._remove_edgeGdist(min1, min2)
