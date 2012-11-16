@@ -353,6 +353,37 @@ class _DistanceGraph(object):
             print "    found", count, "inconsistencies in Gdist"
                      
 
+def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None):
+    """
+    find nearest transition state to NEB climbing image.  Then fall
+    off the transition state to find the associated minima.
+    
+    This would naturally be a part of DoubleEndedConnect.  I separated it
+    to make it more easily parallelizable.      
+    """
+    #run ts search algorithm
+    kwargs = dict(defaults.tsSearchParams.items() + tsSearchParams.items())
+    ret = findTransitionState(coords, pot, eigenvec0=eigenvec0, **kwargs)
+    
+    #check to make sure it is a valid transition state 
+    coords = ret.coords
+    if not ret.success:
+        print "transition state search failed"
+        return False, None
+        
+    if ret.eigenval >= 0.:
+        print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
+        print "         not adding transition state"
+        return False, None
+    
+    #find the minima which this transition state connects
+    print "falling off either side of transition state to find new minima"
+    ret1, ret2 = minima_from_ts(pot.getEnergyGradient, coords, n = ret.eigenvec, \
+        displace=1e-3, quenchParameters={"tol":1e-7, "iprint":-1})
+    
+    return True, ret, ret1, ret2
+
+
 class DoubleEndedConnect(object):
     """
     Find a connected network of minima and transition states between min1 and min2
@@ -601,36 +632,34 @@ class DoubleEndedConnect(object):
 
 
 
-    def _refineTS(self, coords, eigenvec0=None):
-        """
-        find nearest transition state to NEB climbing image
-        
-        return True if we find a valid transition state
-        
-        return False if something goes wrong
-        """
-        #run ts search algorithm
-        kwargs = dict(defaults.tsSearchParams.items() + self.tsSearchParams.items())
-        ret = findTransitionState(coords, self.pot, eigenvec0=eigenvec0, **kwargs)
-        
-        #check to make sure it is a valid transition state 
-        coords = ret.coords
-        if not ret.success:
-            print "transition state search failed"
-            return False
+    
+    def _refineTransiitonStates(self, neb, climbing_images):
+        #find the nearest transition state to the transition state candidates
+        nrefine = min(self.nrefine_max, len(climbing_images))
+        count = 0
+        success = False
+        for energy, i in climbing_images[:nrefine]:
+            count += 1
+            print ""
+            print "refining transition state from NEB climbing image:", count, "out of", nrefine
+            coords = neb.coords[i,:]
+            #get guess for initial eigenvector from NEB tangent
+            if True:
+                eigenvec0 = neb.tangent( [neb.energies[i-1], neb.coords[i-1,:]],
+                                         [neb.energies[i], neb.coords[i,:]],
+                                         [neb.energies[i+1], neb.coords[i+1,:]]
+                                        )
             
-        if ret.eigenval >= 0.:
-            print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
-            print "         not adding transition state"
-            return False
-        
-        #find the minima which this transition state connects
-        print "falling off either side of transition state to find new minima"
-        ret1, ret2 = minima_from_ts(self.pot.getEnergyGradient, coords, n = ret.eigenvec, \
-            displace=1e-3, quenchParameters={"tol":1e-7, "iprint":-1})
-        
-        return True, ret, ret1, ret2
-        
+            ret = _refineTS(self.pot, coords, tsSearchParams=self.tsSearchParams, 
+                                 eigenvec0=eigenvec0)
+            ts_success = ret[0]
+            if ts_success:
+                #the transition state is good, add it to the graph
+                tsret, m1ret, m2ret = ret[1:4]
+                goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
+                if goodts:
+                    success = True
+        return success
    
     def _doNEB(self, minNEB1, minNEB2, repetition = 0):
         """
@@ -735,31 +764,8 @@ class DoubleEndedConnect(object):
             return False   
         climbing_images = sorted(climbing_images, reverse=True) #highest energies first
 
-        success = False
-        
-        #find the nearest transition state to the transition state candidates
-        nrefine = min(self.nrefine_max, len(climbing_images))
-        count = 0
-        for energy, i in climbing_images[:nrefine]:
-            count += 1
-            print ""
-            print "refining transition state from NEB climbing image:", count, "out of", nrefine
-            coords = neb.coords[i,:]
-            #get guess for initial eigenvector from NEB tangent
-            if True:
-                eigenvec0 = neb.tangent( [neb.energies[i-1], neb.coords[i-1,:]],
-                                         [neb.energies[i], neb.coords[i,:]],
-                                         [neb.energies[i+1], neb.coords[i+1,:]]
-                                        )
-            
-            ret = self._refineTS(coords, eigenvec0=eigenvec0)
-            ts_success = ret[0]
-            if ts_success:
-                #the transition state is good, add it to the graph
-                tsret, m1ret, m2ret = ret[1:4]
-                goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
-                if goodts:
-                    success = True
+        #refine transition state candidates
+        success = self._refineTransiitonStates(neb, climbing_images)
         
         #remove this edge from Gdist so we don't try this pair again again
         #self._remove_edgeGdist(min1, min2)
@@ -898,7 +904,7 @@ def getSetOfMinLJ(natoms = 32): #for testing purposes
     return pot, saveit
 
 
-def test():
+def test(Connect=DoubleEndedConnect):
     from pygmin.landscape import Graph
     from pygmin.optimize.quench import lbfgs_py as quench
     from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
@@ -922,7 +928,7 @@ def test():
         print "at start are minima connected?", connected
         return
  
-    connect = DoubleEndedConnect(min1, min2, pot, mindist, database)
+    connect = Connect(min1, min2, pot, mindist, database)
     connect.connect()
     
     graph = connect.graph
