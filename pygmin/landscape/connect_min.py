@@ -132,7 +132,7 @@ class _DistanceGraph(object):
         dist = self._getDistNoCalc(min1, min2)
         if dist is not None: return dist
         
-        #if it's not in the database we must calculate it
+        #if it's not already known we must calculate it
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
         if self.verbosity > 1:
             print "calculated distance between", min1._id, min2._id, dist
@@ -605,8 +605,6 @@ class DoubleEndedConnect(object):
         return self.dist_graph.getDist(min1, min2)
 
     def _addTransitionState(self, E, coords, min_ret1, min_ret2, eigenvec, eigenval):
-        #add the new minima to the graph (they may already be in there)
-        
         #add the minima to the transition state graph.  This step is important
         #to do first because it returns a Database Minimum object.
         min1 = self.graph.addMinimum(min_ret1[1], min_ret1[0])
@@ -619,7 +617,7 @@ class DoubleEndedConnect(object):
         #update the transition state graph
         ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=eigenvec, eigenval=eigenval)
         self.graph.refresh()
-        
+
         #update the distance graph
         self.dist_graph.addMinimum(min1)
         self.dist_graph.addMinimum(min2)

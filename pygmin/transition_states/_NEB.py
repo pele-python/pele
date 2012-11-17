@@ -116,6 +116,19 @@ class NEB(object):
             for i in xrange(0,self.nimages):
                 self.energies[i] = self.potential.getEnergy(self.coords[i,:])
 
+    def _getRealEnergyGradient(self, coordsall):
+        # calculate real energy and gradient along the band. energy is needed for tangent
+        # construction
+        realgrad = np.zeros(coordsall.shape)
+        if self.copy_potential:
+            for i in xrange(1, self.nimages-1):
+                pot = self.potential_list[i]
+                self.energies[i], realgrad[i,:] = pot.getEnergyGradient(coordsall[i,:])
+        else:
+            for i in xrange(1, self.nimages-1):
+                self.energies[i], realgrad[i,:] = self.potential.getEnergyGradient(coordsall[i,:])
+        return realgrad
+
     def getEnergyGradient(self, coords1d):
         """
         Calculates the gradient for the whole NEB. only use force based minimizer!
@@ -130,14 +143,7 @@ class NEB(object):
 
         # calculate real energy and gradient along the band. energy is needed for tangent
         # construction
-        realgrad = np.zeros(tmp.shape)
-        if self.copy_potential:
-            for i in xrange(1, self.nimages-1):
-                pot = self.potential_list[i]
-                self.energies[i], realgrad[i,:] = pot.getEnergyGradient(tmp[i,:])
-        else:
-            for i in xrange(1, self.nimages-1):
-                self.energies[i], realgrad[i,:] = self.potential.getEnergyGradient(tmp[i,:])
+        realgrad = self._getRealEnergyGradient(tmp)
 
         # the total energy of images, band is neglected
         E = sum(self.energies)
@@ -316,7 +322,7 @@ class NEB(object):
 
 import nebtesting as test
 
-if __name__ == "__main__":
+def nebtest(MyNEB=NEB, nimages=22):
     import pylab as pl
     from interpolate import InterpolatedPath
     from pygmin import defaults
@@ -352,7 +358,7 @@ if __name__ == "__main__":
     #print "Final: ", final
     #pl.imshow(z)
 
-    neb = NEB(InterpolatedPath(initial, final, 20) ,potential, k=1000)
+    neb = MyNEB(InterpolatedPath(initial, final, nimages) ,potential, k=1000)
     tmp = neb.coords
     energies_interpolate = neb.energies.copy()
     pl.figure()
@@ -381,3 +387,6 @@ if __name__ == "__main__":
     pl.ylabel("energy")
     pl.legend(loc='best')
     pl.show()
+
+if __name__ == "__main__":
+    nebtest()
