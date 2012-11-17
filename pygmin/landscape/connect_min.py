@@ -659,6 +659,13 @@ class DoubleEndedConnect(object):
                     success = True
         return success
    
+    def _getNEB(self, *args, **kwargs):
+        """
+        wrap the actual call to NEB so it can be overloaded
+        """
+        return NEB(*args, **kwargs)
+        
+   
     def _doNEB(self, minNEB1, minNEB2, repetition = 0):
         """
         do NEB between minNEB1 and minNEB2.
@@ -701,8 +708,10 @@ class DoubleEndedConnect(object):
         print "    nimages", nimages
         print "    nsteps ", niter
         #raw_input("Press Enter to continue:")
-        neb = NEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
-                  self.pot, **NEBparams)
+        #neb = NEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
+        #          self.pot, **NEBparams)
+        neb = self._getNEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
+                           self.pot, **NEBparams)
         neb.optimize(**NEBquenchParams)
         neb.MakeAllMaximaClimbing()
 

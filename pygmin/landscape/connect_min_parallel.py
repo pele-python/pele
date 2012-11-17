@@ -3,6 +3,7 @@ import multiprocessing as mp
 
 from pygmin.landscape import DoubleEndedConnect
 from pygmin.landscape.connect_min import _refineTS
+from pygmin.transition_states import NEBPar
 
 __all__ = ["DoubleEndedConnectPar"]
 
@@ -48,7 +49,18 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
 
         print "refining transition states in parallel on", self.ncores, "cores"
         mypool = mp.Pool(self.ncores)
-        returnlist = mypool.map( _refineTSWrapper, input_args )
+        try:
+            returnlist = mypool.map( _refineTSWrapper, input_args )
+        except:
+            #It's important to make sure the child processes are closed even
+            #if when an exception is raised.  
+            #Note: I'm not sure this is the right way to do it.
+            print "exception raised while running multiprocessing.Pool.map"
+            print "  closing pool"
+            mypool.close()
+            print "  joining pool"
+            mypool.join()
+            raise
         mypool.close()
         mypool.join()
         ngood_ts = 0
@@ -62,6 +74,13 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
                     ngood_ts += 1
         print "found", ngood_ts, "good transition states from", nrefine, "candidates"
         return ngood_ts > 0
+    
+    def _getNEB(self, *args, **kwargs):
+        """
+        wrap the actual call to NEB so it can be overloaded
+        """
+        return NEBPar(*args, ncores=self.ncores, **kwargs)
+
 
 
 if __name__ == "__main__":

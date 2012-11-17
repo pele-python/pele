@@ -80,7 +80,7 @@ class _PotentialProcess(mp.Process):
             message = self.conn.recv()
             #print "message", message
             if message[0] == "kill":
-                print "terminating", self.name
+                #print "terminating", self.name
                 return
             elif message[0] == "calculate energy gradient":
                 #self.conn.send((self.mcsys.markovE, self.mcsys.coords))
@@ -135,7 +135,7 @@ class NEBPar(NEB):
             else:
                 self.par_images.append( np.array(range(count,count+nall)))
                 count += nall
-        print self.par_images        
+        #print self.par_images        
         
         #initialize the parallel workers with the potential
         self.workerlist = []
@@ -194,6 +194,7 @@ class NEBPar(NEB):
         try:
             for worker in self.workerlist:
                 worker.start()
+            print "running NEB in parallel with", self.ncores, "cores"
             ret = super(NEBPar, self).optimize(*args, **kwargs)
             self._killWorkers()
             return ret
