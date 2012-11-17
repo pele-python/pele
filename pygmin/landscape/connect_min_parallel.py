@@ -9,12 +9,31 @@ __all__ = ["DoubleEndedConnectPar"]
 
 def _refineTSWrapper(inputs):
     """
-    a stupid wrapper to allow _refineTS to be used with map which only allows one argument
+    a stupid wrapper to allow _refineTS to be used with Pool.map which only supports one argument
     """
     return _refineTS(inputs[0], inputs[1], **inputs[2])
 
 
 class DoubleEndedConnectPar(DoubleEndedConnect):
+    """
+    Overload some of the routines from DoubleEndedConnect so they can
+    be parallelized
+    
+    Extra Parameters
+    ----------------
+    ncores :
+        the number of cores to use in parallel runs
+        
+    Notes
+    -----
+    The routines that are done in parallel are:
+    
+    NEB : the potentials are calculated in parallel
+    
+    findTransitionStates : each transition state candidate from the NEB
+        run is refined in parallel. 
+    
+    """
     def __init__(self, *args, **kwargs):
         #self.ncores = ncores
         try:
@@ -25,14 +44,14 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
 
     def _refineTransiitonStates(self, neb, climbing_images):
         """
-        start each transition state search in a separate process, up to a max of
-        NPAR.
+        Use a pool of parallel workers to calculate the transition states.
         """
         #find the nearest transition state to the transition state candidates
         nrefine = min(self.nrefine_max, len(climbing_images))
         if nrefine == 0:
             return False
         count = 0
+        #prepare the input arguments for all the transition state searches
         input_args = []
         for energy, i in climbing_images[:nrefine]:
             count += 1
@@ -47,6 +66,7 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
                                         )
             input_args.append((self.pot, coords, {"tsSearchParams":self.tsSearchParams, "eigenvec0":eigenvec0}))
 
+        #do all the transition state searches in parallel using a pool of workers
         print "refining transition states in parallel on", self.ncores, "cores"
         mypool = mp.Pool(self.ncores)
         try:
@@ -64,6 +84,9 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
         mypool.close()
         mypool.join()
         ngood_ts = 0
+        
+        #analyze the return values and 
+        #find the minimum on either side of each good transition state
         for ret in returnlist:        
             ts_success = ret[0]
             if ts_success:
@@ -76,9 +99,6 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
         return ngood_ts > 0
     
     def _getNEB(self, *args, **kwargs):
-        """
-        wrap the actual call to NEB so it can be overloaded
-        """
         return NEBPar(*args, ncores=self.ncores, **kwargs)
 
 

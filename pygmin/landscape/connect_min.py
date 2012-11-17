@@ -661,7 +661,7 @@ class DoubleEndedConnect(object):
    
     def _getNEB(self, *args, **kwargs):
         """
-        wrap the actual call to NEB so it can be overloaded
+        wrap the actual call to initializing the NEB object so it can be overloaded
         """
         return NEB(*args, **kwargs)
         

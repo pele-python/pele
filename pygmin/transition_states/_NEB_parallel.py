@@ -75,7 +75,6 @@ class _PotentialProcess(mp.Process):
 
     def run(self):
         #this redefines mp.Process.run
-        #self.mcsys.run(50000)
         while 1:
             message = self.conn.recv()
             #print "message", message
@@ -83,14 +82,12 @@ class _PotentialProcess(mp.Process):
                 #print "terminating", self.name
                 return
             elif message[0] == "calculate energy gradient":
-                #self.conn.send((self.mcsys.markovE, self.mcsys.coords))
-                #print self.name, message[0], self.mcsys.markovE, message[1]
                 #print "received message: calculating gradient"
                 coordslist = message[1]
                 eglist = self.getEnergyGradientMultiple(coordslist)
                 self.conn.send(eglist)
             else:
-                print "unknown message:"
+                print "unknown message:", self.name
                 print message
                 
                 
@@ -125,14 +122,16 @@ class NEBPar(NEB):
         #core2 will have images 3,4 
         #core3 will have image  5 
         self.par_images = [] #a list of lists of which images are on which cores
-        nall = int(self.nimages / self.ncores)
+        nall = int(self.nimages / self.ncores) #all cores have at least this many images
         nextra = self.nimages - nall * self.ncores
         count = 0
         for i in range(self.ncores):
             if i < nextra:
+                #this core has nall+1 images
                 self.par_images.append( np.array(range(count,count+nall+1)))
                 count += nall + 1
             else:
+                #this core has nall images
                 self.par_images.append( np.array(range(count,count+nall)))
                 count += nall
         #print self.par_images        

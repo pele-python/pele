@@ -253,7 +253,7 @@ class FindTransitionState(object):
             gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
             
             if self.iprint > 0:
-                if i % self.iprint == 0:
+                if (i+1) % self.iprint == 0:
                     ostring = "findTransitionState: %3d E %g rms %g eigenvalue %g rms perp %g grad par %g overlap %g" % (
                                     i, E, rms, self.eigenval, tangentrms, gradpar, overlap)
                     extra = "  Evec search: %d rms %g" % (self.leig_result.nfev, self.leig_result.rms)
