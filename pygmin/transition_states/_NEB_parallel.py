@@ -198,7 +198,10 @@ class NEBPar(NEB):
             self._killWorkers()
             return ret
         except:
-            self._killWorkers()
+            print "exception raised while doing NEB in parallel, terminating child processes"
+            for worker in self.workerlist:
+                worker.terminate()
+            #self._killWorkers()
             raise
     
 if __name__ == "__main__":

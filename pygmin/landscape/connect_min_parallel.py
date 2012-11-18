@@ -70,16 +70,16 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
         print "refining transition states in parallel on", self.ncores, "cores"
         mypool = mp.Pool(self.ncores)
         try:
-            returnlist = mypool.map( _refineTSWrapper, input_args )
+            #there is a bug in Python so that excpetions in multiprocessing.Pool aren't
+            #handeled correctly.  A fix is to add a timeout (.get(timeout))
+            returnlist = mypool.map_async( _refineTSWrapper, input_args ).get(9999999)
         except:
             #It's important to make sure the child processes are closed even
             #if when an exception is raised.  
             #Note: I'm not sure this is the right way to do it.
             print "exception raised while running multiprocessing.Pool.map"
-            print "  closing pool"
-            mypool.close()
-            print "  joining pool"
-            mypool.join()
+            print "  terminating pool"
+            mypool.terminate()
             raise
         mypool.close()
         mypool.join()
