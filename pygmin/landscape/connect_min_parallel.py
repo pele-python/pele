@@ -1,6 +1,8 @@
 import numpy as np
 import multiprocessing as mp
 
+import pygmin.utils.fix_multiprocessing
+
 from pygmin.landscape import DoubleEndedConnect
 from pygmin.landscape.connect_min import _refineTS
 from pygmin.transition_states import NEBPar
@@ -72,7 +74,19 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
         try:
             #there is a bug in Python so that excpetions in multiprocessing.Pool aren't
             #handeled correctly.  A fix is to add a timeout (.get(timeout))
-            returnlist = mypool.map_async( _refineTSWrapper, input_args ).get(9999999)
+            returnlist = mypool.imap_unordered( _refineTSWrapper, input_args )#.get(9999999)
+            
+            ngood_ts = 0
+            #analyze the return values and 
+            #find the minimum on either side of each good transition state
+            for ret in returnlist:#.get(99999999):        
+                ts_success = ret[0]
+                if ts_success:
+                    #the transition state is good, add it to the graph
+                    tsret, m1ret, m2ret = ret[1:4]
+                    goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
+                    if goodts:
+                        ngood_ts += 1
         except:
             #It's important to make sure the child processes are closed even
             #if when an exception is raised.  
@@ -83,18 +97,7 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
             raise
         mypool.close()
         mypool.join()
-        ngood_ts = 0
         
-        #analyze the return values and 
-        #find the minimum on either side of each good transition state
-        for ret in returnlist:        
-            ts_success = ret[0]
-            if ts_success:
-                #the transition state is good, add it to the graph
-                tsret, m1ret, m2ret = ret[1:4]
-                goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
-                if goodts:
-                    ngood_ts += 1
         print "found", ngood_ts, "good transition states from", nrefine, "candidates"
         return ngood_ts > 0
     
