@@ -94,6 +94,7 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
             print "exception raised while running multiprocessing.Pool.map"
             print "  terminating pool"
             mypool.terminate()
+            mypool.join()
             raise
         mypool.close()
         mypool.join()

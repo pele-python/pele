@@ -182,6 +182,7 @@ class NEBPar(NEB):
             worker.join()
             #kill the worker process
             worker.terminate()
+            worker.join()
             #print "is alive?", worker.is_alive()
 
 
@@ -201,6 +202,7 @@ class NEBPar(NEB):
             print "exception raised while doing NEB in parallel, terminating child processes"
             for worker in self.workerlist:
                 worker.terminate()
+                worker.join()
             #self._killWorkers()
             raise
     
