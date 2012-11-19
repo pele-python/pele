@@ -4,6 +4,20 @@ from math import pi
 from pygmin.utils.rbtools import CoordsAdapter
 from pygmin.utils import rotations
 
+# choose bond to displace with linear distribution from the sides of the chain.
+# The end bonds are always accepted, the middle one is accepted
+# with probability P_mid. In between it's linearly interpolated.
+# This leads to that middle bonds are displaced less often.
+# N is the number of bonds 
+def choose_bond(N, P_mid=0.):
+    mid = 0.5*float(N)-0.5
+    
+    while(True):
+        i = np.random.randint(N)
+        dist = float(min(i, N-i-1))
+        if((1.-P_mid)*dist/mid < np.random.random()):
+            return i
+
 # This is the takestep routine for OXDNA. It is a standard rigid body takestep
 # routine, but I put it here to be able to start modifying it
 class OXDNATakestep(takestep.TakestepInterface):
@@ -31,10 +45,11 @@ class OXDNATakestep(takestep.TakestepInterface):
         return [self.rotate, self.displace]
             
 class OXDNAScrewStep(takestep.TakestepInterface):
-    def __init__(self, rotate_backbone=0.5*pi, rotate_base=0., ntorsionmoves=1):
+    def __init__(self, rotate_backbone=0.5*pi, rotate_base=0., ntorsionmoves=1, P_mid=1.):
         self.rotate_backbone = rotate_backbone
         self.rotate_base = rotate_base
         self.ntorsionmoves=ntorsionmoves
+        self.P_mid = P_mid
 
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
@@ -49,7 +64,7 @@ class OXDNAScrewStep(takestep.TakestepInterface):
         if self.rotate_backbone != 0.:
             for j in xrange(self.ntorsionmoves):
                 # choose bond to rotate around, index is first bead that changes
-                index = np.random.randint(1, ca.nrigid)
+                index = choose_bond(ca.nrigid-1, self.P_mid) + 1
                 
                 # determine backbone beads
                 a1 = np.dot(rotations.aa2mx(ca.rotRigid[index-1]), np.array([1., 0., 0.]))
