@@ -12,9 +12,38 @@ def applyRotation(mx, X1d):
     X = np.dot(mx, X.transpose()).transpose()
     return X.reshape(-1)
 
+def _optimizePermRot(X1, X2, niter, permlist, verbose=False):
+    distbest = getDistxyz(X1, X2)
+    mxbest = np.identity(3)
+    X20 = X2.copy()
+    for i in range(niter):
+        #get and apply a random rotation
+        aa = random_aa()
+        mx = aa2mx(aa)
+        X2 = applyRotation(mx, X20)
+        #print "X2.shape", X2.shape
+        
+        #optimize the permutations
+        dist, X1, X2 = findBestPermutation(X1, X2, permlist)
+        if verbose:
+            print "dist", dist, "distbest", distbest
+        #print "X2.shape", X2.shape
+        
+        #optimize the rotation
+        dist, Q2 = getAlignRotation(X1, X2)
+#        print "dist", dist, "Q2", Q2
+        mx2 = q2mx(Q2)
+        mxtot = np.dot(mx2, mx)
+        
+        if dist < distbest:
+            distbest = dist
+            mxbest = mxtot
+    return distbest, mxbest
+    
+    
 
-
-def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, accuracy=0.01):
+def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, accuracy=0.01,
+                      check_inversion=True):
     """
     Minimize the distance between two clusters.  
     
@@ -36,6 +65,10 @@ def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, acc
             permlist = [range(1,natoms/2), range(natoms/2,natoms)]
     verbose : 
         whether to print status information
+    accuracy : 
+        accuracy for determining if the structures are identical
+    check_inversion :
+        if true, account for point inversion symmetry
 
     Notes
     -----
@@ -47,6 +80,8 @@ def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, acc
         Global rotational symmetry
 
         Permutational symmetry
+        
+        Point inversion symmetry
 
     
     This method should have the same outcome as minPermDistStochastic, but 
@@ -80,36 +115,28 @@ def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, acc
     X2 = CoMToOrigin(X2)
     #print "X2.shape", X2.shape
     
-    distbest = getDistxyz(X1, X2)
-    mxbest = np.identity(3)
-    X20 = np.copy(X2)
-    for i in range(niter):
-        #get and apply a random rotation
-        aa = random_aa()
-        mx = aa2mx(aa)
-        X2 = applyRotation(mx, X20)
-        #print "X2.shape", X2.shape
-        
-        #optimize the permutations
-        dist, X1, X2 = findBestPermutation(X1, X2, permlist)
-        if verbose:
-            print "dist", dist, "distbest", distbest
-        #print "X2.shape", X2.shape
-        
-        #optimize the rotation
-        dist, Q2 = getAlignRotation(X1, X2)
-#        print "dist", dist, "Q2", Q2
-        mx2 = q2mx(Q2)
-        mxtot = np.dot(mx2, mx)
-        
-        if dist < distbest:
-            distbest = dist
-            mxbest = mxtot
-    
-    
+    #find the best rotation stochastically
+    X20 = X2.copy()
+    distbest, mxbest = _optimizePermRot(X1, X2, niter, permlist, verbose=verbose)
+    use_inversion = False
+    if check_inversion:
+        X20i = -X20.copy()
+        X2 = X20i.copy()
+        distbest1, mxbest1 = _optimizePermRot(X1, X2, niter, permlist, verbose=verbose)
+        if distbest1 < distbest:
+            if verbose:
+                print "using inversion in minpermdist"
+            use_inversion = True
+            distbest = distbest1
+            mxbest = mxbest1
+
     #now we know the best rotation
+    if use_inversion: X20 = X20i
     X2 = applyRotation(mxbest, X20)
     dist, X1, X2 = findBestPermutation(X1, X2, permlist)
+    dist, X2 = alignRotation(X1, X2)
+    if dist > distbest+0.001:
+        print "ERROR: minPermDistRanRot: dist is different from distbest %f %f" % (dist, distbest)
     if verbose:
         print "finaldist", dist, "distmin", distbest
     
