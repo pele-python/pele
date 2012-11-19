@@ -5,10 +5,11 @@ from pygmin.optimize.quench import quench
 from  pygmin import basinhopping
 import pygmin.storage.savenlowest as storage
 from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
+from pygmin.mindist.exact_match import ExactMatchCluster
 
 __all__ = ["minPermDistStochastic"]
 
-def minPermDistStochastic(X1, X2, niter = 100, permlist = None, verbose = False):
+def minPermDistStochastic(X1, X2, niter = 100, permlist = None, verbose = False, accuracy=0.01):
     """
     Minimize the distance between two clusters.  
     
@@ -55,6 +56,13 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = None, verbose = False)
     nsites = len(X1)/3
     if permlist is None:
         permlist = [range(nsites)]
+    
+    #first check for exact match
+    exactmatch = ExactMatchCluster(accuracy=accuracy, permlist=permlist)
+    if exactmatch(X1, X2):
+        #this is kind of cheating, I would prefer to return
+        #X2 in best alignment and the actual (small) distance
+        return 0.0, X1, X1.copy() 
 
     ###############################################
     # move the centers of mass to the origin
@@ -194,7 +202,8 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         self.assertTrue( abs(distreturned) < 1e-14, "didn't find isomer: dist = %g" % (distreturned) )
 
 
-def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz"):
+def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz",
+         minPermDist=minPermDistStochastic):
     import copy
     natoms = len(X1) / 3
     if permlist == None:
@@ -211,7 +220,7 @@ def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz"):
     distinit = np.linalg.norm(X1-X2)
     print "distinit", distinit
 
-    (dist, X1, X2) = minPermDistStochastic(X1,X2, permlist=permlist)
+    (dist, X1, X2) = minPermDist(X1,X2, permlist=permlist)
     distfinal = np.linalg.norm(X1-X2)
     print "dist returned    ", dist
     print "dist from coords ", distfinal
@@ -229,7 +238,7 @@ def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz"):
 
     
 
-def test_binary_LJ(natoms = 12):
+def test_binary_LJ(natoms = 12, **kwargs):
     printlist = []
     
     ntypea = int(natoms*.8)
@@ -278,7 +287,7 @@ def test_binary_LJ(natoms = 12):
     print "******************************"
     print "testing binary LJ  ISOMER"
     print "******************************"
-    test(X1, X2, lj, atomtypes=atomtypes, permlist = permlist)
+    test(X1, X2, lj, atomtypes=atomtypes, permlist = permlist, **kwargs)
     
     print "******************************"
     print "testing binary LJ  non isomer"
@@ -286,12 +295,12 @@ def test_binary_LJ(natoms = 12):
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     ret = quench( X2, lj.getEnergyGradient)
     X2 = ret[0]
-    test(X1, X2, lj, atomtypes=atomtypes, permlist=permlist)
+    test(X1, X2, lj, atomtypes=atomtypes, permlist=permlist, **kwargs)
 
     
         
         
-def test_LJ(natoms = 12):
+def test_LJ(natoms = 12, **kwargs):
     from pygmin.potentials.lj import LJ
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
@@ -321,7 +330,7 @@ def test_LJ(natoms = 12):
     print "******************************"
     print "testing normal LJ  ISOMER"
     print "******************************"
-    test(X1, X2, lj)
+    test(X1, X2, lj, **kwargs)
     
     print "******************************"
     print "testing normal LJ  non isomer"
@@ -329,7 +338,7 @@ def test_LJ(natoms = 12):
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     ret = quench( X2, lj.getEnergyGradient)
     X2 = ret[0]
-    test(X1, X2, lj)
+    test(X1, X2, lj, **kwargs)
     
 
     distinit = np.linalg.norm(X1-X2)

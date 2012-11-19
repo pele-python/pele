@@ -47,7 +47,7 @@ class ExactMatchCluster(object):
           
     '''
     
-    def __init__(self, accuracy=0.01, check_inversion=True, permlist=None, align_com = True):
+    def __init__(self, accuracy=0.01, check_inversion=True, permlist=None, align_com=True):
         self.accuracy = accuracy
         self.align_com = align_com
         self.permlist = permlist
@@ -89,7 +89,7 @@ class ExactMatchCluster(object):
         candidates2 = np.arange(len(R2))[ \
              (R2 > R1[idx1_2] - self.accuracy)*(R2 < R1[idx1_2] + self.accuracy)] 
         
-        # now loop over all cobinations
+        # now loop over all combinations
         for idx2_1 in candidates1:
             for idx2_2 in candidates2:
                 if idx2_1 == idx2_2:
