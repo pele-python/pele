@@ -4,6 +4,8 @@ from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
 from pygmin.utils.rotations import random_aa, aa2mx, q2mx
 from pygmin.mindist.mindistutils import getAlignRotation
 from pygmin.mindist import ExactMatchCluster
+from pygmin.mindist.distpot import MinPermDistPotential
+import pygmin.defaults as defaults
 
 __all__ = ["minPermDistRanRot"]
 
@@ -12,16 +14,27 @@ def applyRotation(mx, X1d):
     X = np.dot(mx, X.transpose()).transpose()
     return X.reshape(-1)
 
-def _optimizePermRot(X1, X2, niter, permlist, verbose=False):
+def _optimizePermRot(X1, X2, niter, permlist, verbose=False, use_quench=True):
+    if use_quench:
+        pot = MinPermDistPotential(X1, X2.copy(), permlist=permlist)
+
     distbest = getDistxyz(X1, X2)
     mxbest = np.identity(3)
     X20 = X2.copy()
     for i in range(niter):
         #get and apply a random rotation
         aa = random_aa()
-        mx = aa2mx(aa)
-        X2 = applyRotation(mx, X20)
-        #print "X2.shape", X2.shape
+        if not use_quench:
+            mx = aa2mx(aa)
+            mxtot = mx
+            #print "X2.shape", X2.shape
+        else:
+            #optimize the rotation using a permutationally invariand distance metric
+            ret = defaults.quenchRoutine(aa, pot.getEnergyGradient, tol=0.01)
+            aa1 = ret[0]
+            mx1 = aa2mx(aa1)
+            mxtot = mx1
+        X2 = applyRotation(mxtot, X20)
         
         #optimize the permutations
         dist, X1, X2 = findBestPermutation(X1, X2, permlist)
@@ -33,7 +46,7 @@ def _optimizePermRot(X1, X2, niter, permlist, verbose=False):
         dist, Q2 = getAlignRotation(X1, X2)
 #        print "dist", dist, "Q2", Q2
         mx2 = q2mx(Q2)
-        mxtot = np.dot(mx2, mx)
+        mxtot = np.dot(mx2, mxtot)
         
         if dist < distbest:
             distbest = dist
@@ -43,7 +56,7 @@ def _optimizePermRot(X1, X2, niter, permlist, verbose=False):
     
 
 def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, accuracy=0.01,
-                      check_inversion=True):
+                      check_inversion=True, use_quench=False):
     """
     Minimize the distance between two clusters.  
     
@@ -69,6 +82,10 @@ def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, acc
         accuracy for determining if the structures are identical
     check_inversion :
         if true, account for point inversion symmetry
+    use_quench : 
+        for each step of the iteration, minimize a permutationally invariant
+        distance metric.  This slows the algorithm, but can potentially make
+        it more accurate.
 
     Notes
     -----
@@ -117,12 +134,12 @@ def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, acc
     
     #find the best rotation stochastically
     X20 = X2.copy()
-    distbest, mxbest = _optimizePermRot(X1, X2, niter, permlist, verbose=verbose)
+    distbest, mxbest = _optimizePermRot(X1, X2, niter, permlist, verbose=verbose, use_quench=use_quench)
     use_inversion = False
     if check_inversion:
         X20i = -X20.copy()
         X2 = X20i.copy()
-        distbest1, mxbest1 = _optimizePermRot(X1, X2, niter, permlist, verbose=verbose)
+        distbest1, mxbest1 = _optimizePermRot(X1, X2, niter, permlist, verbose=verbose, use_quench=use_quench)
         if distbest1 < distbest:
             if verbose:
                 print "using inversion in minpermdist"
