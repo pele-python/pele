@@ -171,12 +171,12 @@ class FindTransitionState(object):
         if self.tangent_space_quench_params.has_key("tol"):
             self.tol_tangent = min(self.tol_tangent, 
                                    self.tangent_space_quench_params["tol"])
-            self.tangent_space_quench_params.clear("tol")
+            del self.tangent_space_quench_params["tol"]
         self.nsteps_tangent1 = nsteps_tangent1
         self.nsteps_tangent2 = nsteps_tangent2
         if self.tangent_space_quench_params.has_key("maxstep"):
             self.maxstep_tangent = self.tangent_space_quench_params["maxstep"]
-            self.tangent_space_quench_params.clear("maxstep")
+            del self.tangent_space_quench_params["maxstep"]
         else:            
             self.maxstep_tangent = 0.1 #this should be determined in a better way
 
