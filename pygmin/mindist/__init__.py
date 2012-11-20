@@ -57,9 +57,11 @@ applications require
 
 """
 
-from minpermdist import *
+from mindistutils import *
+#from minpermdist import *
 from minpermdist_stochastic import *
 from minpermdist_rbmol import *
-from mindistutils import *
+from mindist import *
 from rmsfit import *
 from exact_match import *
+

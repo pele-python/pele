@@ -1,11 +1,11 @@
 import numpy as np
 import itertools
-import mindist
+from pygmin.mindist import minDist
 import math
-from mindistutils import permuteArray, findBestPermutation, CoMToOrigin
+from pygmin.mindist import findBestPermutation, CoMToOrigin
+from pygmin.mindist.mindistutils import permuteArray
 
-
-
+__all__ = ["minPermDistLong"]
 
 def minPermDistLong(X1, X2, max_permutations = 10000):
     """
@@ -35,7 +35,7 @@ def minPermDistLong(X1, X2, max_permutations = 10000):
         #print perm
         X2 = permuteArray( X2in, perm)
 
-        dist, X1, X2 = mindist.minDist(X1, X2)
+        dist, X1, X2 = minDist(X1, X2)
 
         if dist < dmin:
             dmin = dist
