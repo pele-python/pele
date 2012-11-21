@@ -39,7 +39,7 @@ class CoordsAdapter():
     lattice=None
     ''' array view for lattice coordinates of dimenstion [nlattice] '''
     
-    def __init__(self, nrigid=0, natoms=0, nlattice=0, coords=None):
+    def __init__(self, nrigid=None, natoms=None, nlattice=0, coords=None):
         ''' initialize the coorinate wrapper
         
         Initializes the coordinate wrapper. The coorinates array can be
@@ -55,6 +55,11 @@ class CoordsAdapter():
         :param coords: the coordinate array
         :type coords: numpy.array
         '''
+        
+        if nrigid is None and natoms is None:
+            nrigid = coords.size/6
+            natoms = 0
+            
         self.nrigid = nrigid
         self.natoms = natoms
         self.nlattice = nlattice
