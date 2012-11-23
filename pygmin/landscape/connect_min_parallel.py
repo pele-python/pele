@@ -72,8 +72,8 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
         print "refining transition states in parallel on", self.ncores, "cores"
         mypool = mp.Pool(self.ncores)
         try:
-            #there is a bug in Python so that excpetions in multiprocessing.Pool aren't
-            #handeled correctly.  A fix is to add a timeout (.get(timeout))
+            #there is a bug in Python so that exceptions in multiprocessing.Pool aren't
+            #handled correctly.  A fix is to add a timeout (.get(timeout))
             returnlist = mypool.imap_unordered( _refineTSWrapper, input_args )#.get(9999999)
             
             ngood_ts = 0

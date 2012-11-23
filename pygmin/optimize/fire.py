@@ -60,8 +60,10 @@ class Fire(object):
 
         self.v += self.dt * f
         dr = self.dt * self.v
-        normdr = np.sqrt(np.vdot(dr, dr))
-        normdr = max(dr)
+        if False: #how do we determine maxmove?
+            normdr = np.sqrt(np.vdot(dr, dr))
+        else:
+            normdr = max(np.abs(dr))
         #print "aa",normdr
         if normdr > self.maxmove:
             dr = self.maxmove * dr / normdr

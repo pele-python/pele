@@ -5,7 +5,7 @@ import itertools
 
 from pygmin.transition_states import NEB, InterpolatedPath, findTransitionState, minima_from_ts
 import pygmin.defaults as defaults
-from pygmin.landscape import Graph
+from pygmin.landscape import Graph, LocalConnect
 
 __all__ = ["DoubleEndedConnect"]
 
@@ -628,105 +628,7 @@ class DoubleEndedConnect(object):
         
         return True
 
-
-
-    
-    def _refineTransiitonStates(self, neb, climbing_images):
-        #find the nearest transition state to the transition state candidates
-        nrefine = min(self.nrefine_max, len(climbing_images))
-        count = 0
-        success = False
-        for energy, i in climbing_images[:nrefine]:
-            count += 1
-            print ""
-            print "refining transition state from NEB climbing image:", count, "out of", nrefine
-            coords = neb.coords[i,:]
-            #get guess for initial eigenvector from NEB tangent
-            if True:
-                eigenvec0 = neb.tangent( [neb.energies[i-1], neb.coords[i-1,:]],
-                                         [neb.energies[i], neb.coords[i,:]],
-                                         [neb.energies[i+1], neb.coords[i+1,:]]
-                                        )
-            
-            ret = _refineTS(self.pot, coords, tsSearchParams=self.tsSearchParams, 
-                                 eigenvec0=eigenvec0)
-            ts_success = ret[0]
-            if ts_success:
-                #the transition state is good, add it to the graph
-                tsret, m1ret, m2ret = ret[1:4]
-                goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
-                if goodts:
-                    success = True
-        return success
-   
-    def _getNEB(self, *args, **kwargs):
-        """
-        wrap the actual call to initializing the NEB object so it can be overloaded
-        """
-        return NEB(*args, **kwargs)
-        
-   
-    def _doNEB(self, minNEB1, minNEB2, repetition = 0):
-        """
-        do NEB between minNEB1 and minNEB2.
-        """
-        #arrange the coordinates to minimize the distance between them        
-        dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords)
-        print ""
-        
-        if repetition == 0: 
-            factor = 1.
-        else: 
-            #change parameters for second repetition
-            print "running NEB a second time"
-            print "    doubling the number of images"
-            print "    doubling the number of steps"
-            factor = float(repetition + 1)
-        
-        #determine the number of images
-        nimages = int(max(1., dist) * self.NEB_image_density * factor)
-        if nimages > self.NEB_max_images:
-            nimages = self.NEB_max_images
-        
-        #determine the number of iterations
-        NEBquenchParams = copy.copy(self.NEBquenchParams)
-        if NEBquenchParams.has_key("nsteps"):
-            niter = NEBquenchParams["nsteps"]
-        else:
-            niter = int(self.NEB_iter_density * nimages)
-            NEBquenchParams["nsteps"] = niter
-
-        #if nimages is already self.NEB_max_images then doubling the number
-        #of images will have no effect.  so double the number of steps instead
-        if repetition > 0 and nimages == self.NEB_max_images:
-            niter *= factor
-            NEBquenchParams["nsteps"] = niter
-        
-        #run NEB 
-        NEBparams = dict(defaults.NEBparams.items() + self.NEBparams.items())
-        print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
-        print "    nimages", nimages
-        print "    nsteps ", niter
-        #raw_input("Press Enter to continue:")
-        #neb = NEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
-        #          self.pot, **NEBparams)
-        neb = self._getNEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
-                           self.pot, **NEBparams)
-        neb.optimize(**NEBquenchParams)
-        neb.MakeAllMaximaClimbing()
-
-        if self.reoptimize_climbing > 0:
-            print "optimizing climbing images for a small number of steps"
-            NEBquenchParams["nsteps"] = self.reoptimize_climbing
-            neb.optimize(**NEBquenchParams)
-
-    
-        #get the transition state candidates from the NEB result
-        climbing_images = [ (neb.energies[i], i) for i in range(neb.nimages) 
-                           if neb.isclimbing[i] ]
-        return climbing_images, neb
-    
-    def _localConnect(self, min1, min2, repetition=0):
+    def _localConnect(self, min1, min2):
         """
         1) NEB to find transition state candidates.  
         
@@ -740,7 +642,7 @@ class DoubleEndedConnect(object):
         """
         #Make sure we haven't already tried this pair and
         #record some data so we don't try it again in the future
-        if self.pairsNEB.has_key((min1, min2)) and repetition == 0:
+        if self.pairsNEB.has_key((min1, min2)):
             print "WARNING: redoing NEB for minima", min1._id, min2._id
             print "         aborting NEB"
             #self._remove_edgeGdist(min1, min2)
@@ -756,31 +658,45 @@ class DoubleEndedConnect(object):
             self.dist_graph.checkGraph()
             return True
         
-        #do NEB run
-        climbing_images, neb = self._doNEB(min1, min2, repetition)
-        
+        #do local connect run
+        local_connect = LocalConnect(self.pot, self.mindist, tsSearchParams=self.tsSearchParams, 
+                                     NEBquenchParams=self.NEBquenchParams, 
+                                     verbosity=self.verbosity, 
+                                     NEB_image_density=self.NEB_image_density, 
+                                     NEB_iter_density=self.NEB_iter_density, 
+                                     NEBparams=self.NEBparams, 
+                                     nrefine_max=self.nrefine_max, 
+                                     reoptimize_climbing=self.reoptimize_climbing, 
+                                     NEB_max_images=self.NEB_max_images)
+        res = local_connect.connect(min1, min2)
+                
         #check results
-        nclimbing = len(climbing_images)
-        print "from NEB search found", nclimbing, "transition state candidates"
-        if nclimbing == 0:
+        #nclimbing = len(climbing_images)
+        #print "from NEB search found", nclimbing, "transition state candidates"
+        if res.nclimbing == 0:
             dist = self.getDist(min1, min2)
             print "WARNING: found zero climbing images.  Are the minima really the same?"
             print "         energies:", min1.energy, min2.energy, "distance", dist 
-            if self.merge_minima and repetition == self.NEBattempts-1:
-                self.mergeMinima(min1, min2) 
+            if self.merge_minima:
+                self.mergeMinima(min1, min2)
+            else:
+                print "         set merge_minima=True to merge the minima" 
             return False   
-        climbing_images = sorted(climbing_images, reverse=True) #highest energies first
 
-        #refine transition state candidates
-        success = self._refineTransiitonStates(neb, climbing_images)
+        #now add each new transition state to the graph and database.
+        nsuccess = 0
+        for tsret, m1ret, m2ret in res.new_transition_states:
+            goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
+            if goodts:
+                nsuccess += 1
+ 
         
         #remove this edge from Gdist so we don't try this pair again again
         #self._remove_edgeGdist(min1, min2)
         self.dist_graph.removeEdge(min1, min2)
-            
-        return success
 
-            
+        return nsuccess > 0            
+    
                 
     def _getNextPair(self):
         """
@@ -855,10 +771,7 @@ class DoubleEndedConnect(object):
             #raw_input("Press Enter to continue:")
             if min1 is None or min2 is None:
                 break
-            for i in range(self.NEBattempts):
-                local_success = self._localConnect(min1, min2, i)
-                if local_success:
-                    break
+            local_success = self._localConnect(min1, min2)
         print "failed to find connection between", self.minstart._id, self.minend._id
 
     def returnPath(self):
@@ -911,14 +824,13 @@ def getSetOfMinLJ(natoms = 32): #for testing purposes
     return pot, saveit
 
 
-def test(Connect=DoubleEndedConnect):
+def test(Connect=DoubleEndedConnect, natoms=11):
     from pygmin.landscape import Graph
     from pygmin.optimize.quench import lbfgs_py as quench
     from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
     from pygmin.storage.database import Database
     import pygmin.defaults as defaults
     defaults.quenchParams = {"iprint": 1}
-    natoms = 11
     #get min1
     pot, database = getSetOfMinLJ(natoms)
 #    from pygmin.potentials.lj import LJ
@@ -967,7 +879,7 @@ def test(Connect=DoubleEndedConnect):
 
 
 if __name__ == "__main__":
-    test()
+    test(natoms=28)
 
 
     
