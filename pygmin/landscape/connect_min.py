@@ -353,36 +353,6 @@ class _DistanceGraph(object):
             print "    found", count, "inconsistencies in Gdist"
                      
 
-def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None):
-    """
-    find nearest transition state to NEB climbing image.  Then fall
-    off the transition state to find the associated minima.
-    
-    This would naturally be a part of DoubleEndedConnect.  I separated it
-    to make it more easily parallelizable.      
-    """
-    #run ts search algorithm
-    kwargs = dict(defaults.tsSearchParams.items() + tsSearchParams.items())
-    ret = findTransitionState(coords, pot, eigenvec0=eigenvec0, **kwargs)
-    
-    #check to make sure it is a valid transition state 
-    coords = ret.coords
-    if not ret.success:
-        print "transition state search failed"
-        return False, None
-        
-    if ret.eigenval >= 0.:
-        print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
-        print "         not adding transition state"
-        return False, None
-    
-    #find the minima which this transition state connects
-    print "falling off either side of transition state to find new minima"
-    ret1, ret2 = minima_from_ts(pot.getEnergyGradient, coords, n = ret.eigenvec, \
-        displace=1e-3, quenchParameters={"tol":1e-7, "iprint":-1})
-    
-    return True, ret, ret1, ret2
-
 
 class DoubleEndedConnect(object):
     """
@@ -628,6 +598,17 @@ class DoubleEndedConnect(object):
         
         return True
 
+    def _getLocalConnectObject(self):
+        return LocalConnect(self.pot, self.mindist, tsSearchParams=self.tsSearchParams, 
+                                     NEBquenchParams=self.NEBquenchParams, 
+                                     verbosity=self.verbosity, 
+                                     NEB_image_density=self.NEB_image_density, 
+                                     NEB_iter_density=self.NEB_iter_density, 
+                                     NEBparams=self.NEBparams, 
+                                     nrefine_max=self.nrefine_max, 
+                                     reoptimize_climbing=self.reoptimize_climbing, 
+                                     NEB_max_images=self.NEB_max_images)
+
     def _localConnect(self, min1, min2):
         """
         1) NEB to find transition state candidates.  
@@ -659,15 +640,7 @@ class DoubleEndedConnect(object):
             return True
         
         #do local connect run
-        local_connect = LocalConnect(self.pot, self.mindist, tsSearchParams=self.tsSearchParams, 
-                                     NEBquenchParams=self.NEBquenchParams, 
-                                     verbosity=self.verbosity, 
-                                     NEB_image_density=self.NEB_image_density, 
-                                     NEB_iter_density=self.NEB_iter_density, 
-                                     NEBparams=self.NEBparams, 
-                                     nrefine_max=self.nrefine_max, 
-                                     reoptimize_climbing=self.reoptimize_climbing, 
-                                     NEB_max_images=self.NEB_max_images)
+        local_connect = self._getLocalConnectObject()        
         res = local_connect.connect(min1, min2)
                 
         #check results

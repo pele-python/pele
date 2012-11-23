@@ -61,7 +61,7 @@ class LocalConnect(object):
         self.res = Result()
         self.res.new_transition_states = []
     
-    def _refineTransiitonStates(self, neb, climbing_images):
+    def _refineTransitionStates(self, neb, climbing_images):
         """
         refine the transition state candidates.  If at least one is successful
         then return True
@@ -183,7 +183,7 @@ class LocalConnect(object):
             if nclimbing > 0:
                 climbing_images = sorted(climbing_images, reverse=True) #highest energies first
                 #refine transition state candidates
-                self.res.success = self._refineTransiitonStates(neb, climbing_images)
+                self.res.success = self._refineTransitionStates(neb, climbing_images)
             else :
                 self.res.success = False
             if self.res.success:

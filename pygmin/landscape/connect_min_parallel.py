@@ -3,8 +3,8 @@ import multiprocessing as mp
 
 import pygmin.utils.fix_multiprocessing
 
-from pygmin.landscape import DoubleEndedConnect
-from pygmin.landscape.connect_min import _refineTS
+from pygmin.landscape import DoubleEndedConnect, LocalConnect
+from pygmin.landscape.local_connect import _refineTS
 from pygmin.transition_states import NEBPar
 
 __all__ = ["DoubleEndedConnectPar"]
@@ -44,7 +44,29 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
             self.ncores = 4
         return super(DoubleEndedConnectPar, self).__init__(*args, **kwargs)
 
-    def _refineTransiitonStates(self, neb, climbing_images):
+    def _getLocalConnectObject(self):
+        return LocalConnectPar(self.pot, self.mindist, tsSearchParams=self.tsSearchParams, 
+                             NEBquenchParams=self.NEBquenchParams, 
+                             verbosity=self.verbosity, 
+                             NEB_image_density=self.NEB_image_density, 
+                             NEB_iter_density=self.NEB_iter_density, 
+                             NEBparams=self.NEBparams, 
+                             nrefine_max=self.nrefine_max, 
+                             reoptimize_climbing=self.reoptimize_climbing, 
+                             NEB_max_images=self.NEB_max_images,
+                             ncores=self.ncores)
+
+
+class LocalConnectPar(LocalConnect):
+    def __init__(self, *args, **kwargs):
+        #self.ncores = ncores
+        try:
+            self.ncores = kwargs.pop("ncores")
+        except KeyError:
+            self.ncores = 4
+        return super(LocalConnectPar, self).__init__(*args, **kwargs)
+
+    def _refineTransitionStates(self, neb, climbing_images):
         """
         Use a pool of parallel workers to calculate the transition states.
         """
@@ -84,9 +106,8 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
                 if ts_success:
                     #the transition state is good, add it to the graph
                     tsret, m1ret, m2ret = ret[1:4]
-                    goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
-                    if goodts:
-                        ngood_ts += 1
+                    self.res.new_transition_states.append( (tsret, m1ret, m2ret) )
+                    ngood_ts += 1
         except:
             #It's important to make sure the child processes are closed even
             #if when an exception is raised.  
@@ -109,4 +130,4 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
 
 if __name__ == "__main__":
     from pygmin.landscape.connect_min import test
-    test(DoubleEndedConnectPar)
+    test(DoubleEndedConnectPar, natoms=28)
