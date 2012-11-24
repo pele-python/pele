@@ -1,6 +1,7 @@
 import numpy as np
 import multiprocessing as mp
 
+#this import fixes some bugs in how multiprocessing deals with exceptions
 import pygmin.utils.fix_multiprocessing
 
 from pygmin.landscape import DoubleEndedConnect, LocalConnect
@@ -46,18 +47,37 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
 
     def _getLocalConnectObject(self):
         return LocalConnectPar(self.pot, self.mindist, tsSearchParams=self.tsSearchParams, 
-                             NEBquenchParams=self.NEBquenchParams, 
-                             verbosity=self.verbosity, 
-                             NEB_image_density=self.NEB_image_density, 
-                             NEB_iter_density=self.NEB_iter_density, 
-                             NEBparams=self.NEBparams, 
-                             nrefine_max=self.nrefine_max, 
-                             reoptimize_climbing=self.reoptimize_climbing, 
-                             NEB_max_images=self.NEB_max_images,
-                             ncores=self.ncores)
+                               NEBquenchParams=self.NEBquenchParams, 
+                               verbosity=self.verbosity, 
+                               NEB_image_density=self.NEB_image_density, 
+                               NEB_iter_density=self.NEB_iter_density, 
+                               NEBparams=self.NEBparams, 
+                               nrefine_max=self.nrefine_max, 
+                               reoptimize_climbing=self.reoptimize_climbing, 
+                               NEB_max_images=self.NEB_max_images,
+                               ncores=self.ncores)
 
 
 class LocalConnectPar(LocalConnect):
+    """
+    Overload some of the routines from LocalConnect so they can
+    be parallelized
+    
+    Extra Parameters
+    ----------------
+    ncores :
+        the number of cores to use in parallel runs
+        
+    Notes
+    -----
+    The routines that are done in parallel are:
+    
+    NEB : the potentials are calculated in parallel
+    
+    findTransitionStates : each transition state candidate from the NEB
+        run is refined in parallel. 
+    
+    """
     def __init__(self, *args, **kwargs):
         #self.ncores = ncores
         try:
@@ -124,6 +144,7 @@ class LocalConnectPar(LocalConnect):
         return ngood_ts > 0
     
     def _getNEB(self, *args, **kwargs):
+        #this is all that need be changed to get the NEB to run in parallel.
         return NEBPar(*args, ncores=self.ncores, **kwargs)
 
 

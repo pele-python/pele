@@ -39,6 +39,46 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None):
 class LocalConnect(object):
     """
     a class to do a single local connect run, i.e. neb + transition state search
+
+    Parameters
+    ----------
+    pot : potential object
+        the potential
+    mindist : callable
+        the function which returns the optimized minimum distance between
+        two structures
+    tsSearchParams: dict
+        parameters passed to the transition state search algorithm
+    NEBquenchParams : dict
+        parameters passed to the NEB minimization routine
+    NEBparams : dict
+        NEB setup parameters.  E.g. this is used to pass the spring constant.
+        (note: this is not for parameters related to interpolation).  Use
+        NEBquenchParams for parameters related to the optimization of the band.
+    NEB_image_density : float
+        how many NEB images per unit distance to use.
+    NEB_iter_density : float
+    NEB_max_images :
+        the maximum number of NEB images
+    nrefine_max : int
+        the maximum number of NEB transition state candidates to refine
+    reoptimize_climbing : int
+        the number of iterations to use for re-optimizing the climbing images
+        after the NEB is done.
+    verbosity : int
+        this controls how many status messages are printed.  (not really
+        implemented yet)
+    
+    
+    Notes
+    -----
+    this class takes two minima as input, does an NEB run to find transition state
+    candidates, then refines those candidates into transition states.
+    
+    This is the core routine of DoubleEndedConnect.  It is separated out in order
+    to make parallelization easier.  This class intentionally has no knowledge of the
+    global landscape (database, graph, etc.).
+    
     """
     def __init__(self, pot, mindist, tsSearchParams=dict(), 
                  NEBquenchParams = dict(), verbosity=1,
