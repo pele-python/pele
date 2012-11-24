@@ -46,16 +46,7 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
         return super(DoubleEndedConnectPar, self).__init__(*args, **kwargs)
 
     def _getLocalConnectObject(self):
-        return LocalConnectPar(self.pot, self.mindist, tsSearchParams=self.tsSearchParams, 
-                               NEBquenchParams=self.NEBquenchParams, 
-                               verbosity=self.verbosity, 
-                               NEB_image_density=self.NEB_image_density, 
-                               NEB_iter_density=self.NEB_iter_density, 
-                               NEBparams=self.NEBparams, 
-                               nrefine_max=self.nrefine_max, 
-                               reoptimize_climbing=self.reoptimize_climbing, 
-                               NEB_max_images=self.NEB_max_images,
-                               ncores=self.ncores)
+        return LocalConnectPar(self.pot, self.mindist, ncores=self.ncores, **self.local_connect_params)
 
 
 class LocalConnectPar(LocalConnect):

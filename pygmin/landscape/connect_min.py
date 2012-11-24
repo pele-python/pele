@@ -25,6 +25,11 @@ class _DistanceGraph(object):
         the routine which calculates the optimized distance between two structures
     verbosity :
         how much info to print (not very thoroughly implemented)
+    defer_database_update : bool
+        if true, save new distances and only update the database when enough new
+        distances have been accumulated
+    db_update_min : int
+        only update the database when at least this many new distances have been found.
     
     This graph has a vertex for every minimum and an edge
     between (almost) every minima pairs. The edge weight between vertices u and v
@@ -47,20 +52,22 @@ class _DistanceGraph(object):
     trial1, trial2 = minima pair in path with lowest nonzero edge weight
 
     """
-    def __init__(self, database, graph, mindist, verbosity=0):
+    def __init__(self, database, graph, mindist, verbosity=0,
+                 defer_database_update=True, db_update_min=300):
         self.database = database
         self.graph = graph
         self.mindist = mindist
         self.verbosity = verbosity
         
         self.Gdist = nx.Graph()
-        self.distance_map = dict()
+        self.distance_map = dict() #place to store distances locally for faster lookup
         nx.set_edge_attributes(self.Gdist, "weight", dict())
         self.debug = True
         
-        self.defer_database_update = True
-        self.new_distances = dict()
-        self.db_update_min = 300
+        self.defer_database_update = defer_database_update
+        
+        self.new_distances = dict() #keep track of newly calculated distances
+        self.db_update_min = db_update_min
 
     def distToWeight(self, dist):
         """
@@ -71,7 +78,8 @@ class _DistanceGraph(object):
         weight = dist
         
         weight = dist**2
-            this favors long paths with many short connections
+            this favors paths with many short edges over
+            paths with fewer but longer edges.
         """
         return dist**2
 
@@ -115,7 +123,7 @@ class _DistanceGraph(object):
         if dist is not None: return dist
 
         if False:
-            #this is extremely slow for large databases (50% of time spent here)
+            #this is extremely slow for large databases (> 50% of time spent here)
             #also, it's not necessary if we load all the distances in initialize()
             #if that fails, try to get it from the database
             dist = self.database.getDistance(min1, min2)
@@ -371,10 +379,6 @@ class DoubleEndedConnect(object):
         the database object, used to save distance calculations so
         mindist() need only be called once for each minima pair. *Note* the
         use of this and graph is a bit redundant, this should be cleaned up
-    tsSearchParams: dict
-        parameters passed to the transition state search algorithm
-    NEBquenchParams : dict
-        parameters passed to the NEB minimization routine
     use_all_min : bool
         if True, then all known minima and transition states in graph will
         be used to try to connect min1 and min2.  This requires a mindist()
@@ -383,25 +387,17 @@ class DoubleEndedConnect(object):
     verbosity : int
         this controls how many status messages are printed.  (not really
         implemented yet)
-    NEB_image_density : float
-        how many NEB images per unit distance to use.
-    NEB_iter_density : float
-    NEBparams : dict
-        NEB setup parameters.  E.g. this is used to pass the spring constant.
-        (note: this is not for parameters related to interpolation).
-    nrefine_max : int
-        the maximum number of NEB transition state candidates to refine
-    reoptimize_climbing : int
-        the number of iterations to use for re-optimizing the climbing images
-        after the NEB is done.
     merge_minima : bool
         if True, minima for which NEB finds no transition state candidates 
         between them will be merged
     max_dist_merge : float
         merging minima will be aborted if the distance between them is greater
         than max_dist_merge
-    NEB_max_images :
-        the maximum number of NEB images
+    local_connect_params : dict
+        parameters passed to the local connect algorithm.  This includes all
+        NEB and all transition state search parameters, along with, e.g. 
+        now many times to retry a local connect run.  See documentation for
+        LocalConnect for details.
     
     Notes
     -----
@@ -422,8 +418,7 @@ class DoubleEndedConnect(object):
         
     
     Of the above, steps 1 and 2 and 3 are the most involved.  See the NEB and
-    FindTransitionState classes for detailed descriptions of steps 2 and 3
-    routines.
+    FindTransitionState classes for detailed descriptions of steps 2 and 3.
     
     An important note is that the NEB is used only to get a *guess* for the
     transition state.  Thus we only want to put enough time and energy into
@@ -438,7 +433,7 @@ class DoubleEndedConnect(object):
     ultimate goal is to connect min1 and min2.
     
     In addition to the input parameter "graph", we keep a second graph
-    "Gdist" which also has minima as the vertices. Gdist has an edge
+    "Gdist" (now called "dist_graph") which also has minima as the vertices. Gdist has an edge
     between (almost) every minima. The edge weight between vertices u and v
     is
     
@@ -461,11 +456,10 @@ class DoubleEndedConnect(object):
         allow user to pass graph
         
     """    
-    def __init__(self, min1, min2, pot, mindist, database, tsSearchParams=dict(), 
-                 NEBquenchParams = dict(), use_all_min=False, verbosity=1,
-                 NEB_image_density = 10., NEB_iter_density=15., NEBparams=dict(), 
-                 nrefine_max=100, reoptimize_climbing=0, merge_minima=False, 
-                 max_dist_merge=0.1, NEB_max_images=40):
+    def __init__(self, min1, min2, pot, mindist, database, 
+                 use_all_min=False, verbosity=1,
+                 merge_minima=False, 
+                 max_dist_merge=0.1, local_connect_params=dict()):
         self.minstart = min1
         assert min1._id == min1, "minima must compare equal with their id %d %s %s" % (min1._id, str(min1), str(min1.__hash__()))
         self.minend = min2
@@ -474,20 +468,22 @@ class DoubleEndedConnect(object):
         #self.distmatrix = dict()
         self.pairsNEB = dict()
         #self.idlist = []
-        self.tsSearchParams = tsSearchParams
-        self.NEBquenchParams = NEBquenchParams
+        
+        self.verbosity = int(verbosity)
+        self.local_connect_params = dict([("verbosity",verbosity)] + local_connect_params.items())
+#        self.tsSearchParams = tsSearchParams
+#        self.NEBquenchParams = NEBquenchParams
         self.database = database
         self.graph = Graph(self.database)
-        self.verbosity = int(verbosity)
-        self.nrefine_max = nrefine_max
+#        self.nrefine_max = nrefine_max
         
-        self.NEB_image_density = float(NEB_image_density)
-        self.NEB_iter_density = float(NEB_iter_density)
-        self.NEBparams = NEBparams
-        self.reoptimize_climbing = reoptimize_climbing
+#        self.NEB_image_density = float(NEB_image_density)
+#        self.NEB_iter_density = float(NEB_iter_density)
+#        self.NEBparams = NEBparams
+#        self.reoptimize_climbing = reoptimize_climbing
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
-        self.NEB_max_images =int(NEB_max_images)
+#        self.NEB_max_images =int(NEB_max_images)
 
 
         self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
@@ -599,15 +595,16 @@ class DoubleEndedConnect(object):
         return True
 
     def _getLocalConnectObject(self):
-        return LocalConnect(self.pot, self.mindist, tsSearchParams=self.tsSearchParams, 
-                                     NEBquenchParams=self.NEBquenchParams, 
-                                     verbosity=self.verbosity, 
-                                     NEB_image_density=self.NEB_image_density, 
-                                     NEB_iter_density=self.NEB_iter_density, 
-                                     NEBparams=self.NEBparams, 
-                                     nrefine_max=self.nrefine_max, 
-                                     reoptimize_climbing=self.reoptimize_climbing, 
-                                     NEB_max_images=self.NEB_max_images)
+        return LocalConnect(self.pot, self.mindist, **self.local_connect_params)
+#        return LocalConnect(self.pot, self.mindist, tsSearchParams=self.tsSearchParams, 
+#                                     NEBquenchParams=self.NEBquenchParams, 
+#                                     verbosity=self.verbosity, 
+#                                     NEB_image_density=self.NEB_image_density, 
+#                                     NEB_iter_density=self.NEB_iter_density, 
+#                                     NEBparams=self.NEBparams, 
+#                                     nrefine_max=self.nrefine_max, 
+#                                     reoptimize_climbing=self.reoptimize_climbing, 
+#                                     NEB_max_images=self.NEB_max_images)
 
     def _localConnect(self, min1, min2):
         """

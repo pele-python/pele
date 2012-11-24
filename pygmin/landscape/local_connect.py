@@ -38,7 +38,7 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None):
 
 class LocalConnect(object):
     """
-    a class to do a single local connect run, i.e. neb + transition state search
+    a class to do a single local connect run, i.e. NEB + transition state search
 
     Parameters
     ----------
