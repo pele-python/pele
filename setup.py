@@ -36,11 +36,7 @@ fmodules.add_module("pygmin/transition_states/_NEB_utils.f90")
 cxx_modules = [ ]
 
 fortran_modules = fmodules.module_list
-hasboost = True
-if hasboost:
-    ext_modules = fortran_modules + cxx_modules
-else:
-    ext_modules = fortran_modules
+ext_modules = fortran_modules + cxx_modules
 
 setup(name='pygmin', 
       version='0.1', 
@@ -66,4 +62,24 @@ setup(name='pygmin',
                 ],
       ext_modules=ext_modules
         )
+
+
+#now build the cython modules
+#we have to do this separately because cython isn't supported by numpy.distutils
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Distutils import build_ext
+import numpy as np
+
+cython_modules = [
+                  Extension("pygmin.potentials.rigid_bodies._rbutils_cython",
+                            ["pygmin/potentials/rigid_bodies/_rbutils_cython.pyx"])
+                  ]
+
+setup(
+  ext_modules = cython_modules,
+  cmdclass = {'build_ext': build_ext},
+  include_dirs = [np.get_include()],
+#  script_args = ['build_ext', '--inplace'],
+)
 
