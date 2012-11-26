@@ -33,6 +33,7 @@ Other utilities
 
 
 from _graph import *
+from local_connect import *
 from connect_min import *
 from connect_min_parallel import *
 from singleended import *

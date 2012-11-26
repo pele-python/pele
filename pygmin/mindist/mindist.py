@@ -1,5 +1,5 @@
 import numpy as np
-from mindistutils import CoMToOrigin, alignRotation
+from pygmin.mindist import CoMToOrigin, alignRotation
 
 __all__ = ["minDist"]
 
