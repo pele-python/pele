@@ -1,10 +1,11 @@
 import numpy as np
 import multiprocessing as mp
 
+#this import fixes some bugs in how multiprocessing deals with exceptions
 import pygmin.utils.fix_multiprocessing
 
-from pygmin.landscape import DoubleEndedConnect
-from pygmin.landscape.connect_min import _refineTS
+from pygmin.landscape import DoubleEndedConnect, LocalConnect
+from pygmin.landscape.local_connect import _refineTS
 from pygmin.transition_states import NEBPar
 
 __all__ = ["DoubleEndedConnectPar"]
@@ -44,7 +45,39 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
             self.ncores = 4
         return super(DoubleEndedConnectPar, self).__init__(*args, **kwargs)
 
-    def _refineTransiitonStates(self, neb, climbing_images):
+    def _getLocalConnectObject(self):
+        return LocalConnectPar(self.pot, self.mindist, ncores=self.ncores, **self.local_connect_params)
+
+
+class LocalConnectPar(LocalConnect):
+    """
+    Overload some of the routines from LocalConnect so they can
+    be parallelized
+    
+    Extra Parameters
+    ----------------
+    ncores :
+        the number of cores to use in parallel runs
+        
+    Notes
+    -----
+    The routines that are done in parallel are:
+    
+    NEB : the potentials are calculated in parallel
+    
+    findTransitionStates : each transition state candidate from the NEB
+        run is refined in parallel. 
+    
+    """
+    def __init__(self, *args, **kwargs):
+        #self.ncores = ncores
+        try:
+            self.ncores = kwargs.pop("ncores")
+        except KeyError:
+            self.ncores = 4
+        return super(LocalConnectPar, self).__init__(*args, **kwargs)
+
+    def _refineTransitionStates(self, neb, climbing_images):
         """
         Use a pool of parallel workers to calculate the transition states.
         """
@@ -72,8 +105,8 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
         print "refining transition states in parallel on", self.ncores, "cores"
         mypool = mp.Pool(self.ncores)
         try:
-            #there is a bug in Python so that excpetions in multiprocessing.Pool aren't
-            #handeled correctly.  A fix is to add a timeout (.get(timeout))
+            #there is a bug in Python so that exceptions in multiprocessing.Pool aren't
+            #handled correctly.  A fix is to add a timeout (.get(timeout))
             returnlist = mypool.imap_unordered( _refineTSWrapper, input_args )#.get(9999999)
             
             ngood_ts = 0
@@ -84,9 +117,8 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
                 if ts_success:
                     #the transition state is good, add it to the graph
                     tsret, m1ret, m2ret = ret[1:4]
-                    goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
-                    if goodts:
-                        ngood_ts += 1
+                    self.res.new_transition_states.append( (tsret, m1ret, m2ret) )
+                    ngood_ts += 1
         except:
             #It's important to make sure the child processes are closed even
             #if when an exception is raised.  
@@ -103,10 +135,11 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
         return ngood_ts > 0
     
     def _getNEB(self, *args, **kwargs):
+        #this is all that need be changed to get the NEB to run in parallel.
         return NEBPar(*args, ncores=self.ncores, **kwargs)
 
 
 
 if __name__ == "__main__":
     from pygmin.landscape.connect_min import test
-    test(DoubleEndedConnectPar)
+    test(DoubleEndedConnectPar, natoms=28)

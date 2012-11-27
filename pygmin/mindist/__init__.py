@@ -35,14 +35,14 @@ very quickly using the Hungarian algorithm (aka munkres)
 rotational + permutational alignment
 ------------------------------------
 This cannot be solved exactly in a reasonable amount of time (The time scales as
-natoms factorial).  Instead it's treated as a global optimization problem and solved
-stochastically using basinhoping.  This generally produces a good alignment, but not
+natoms factorial).  Instead it's solved iteratively by iterating random rotation -> 
+permutational alignment -> rotational alignment.  This generally produces a good alignment, but not
 necessarily the optimal
 
 .. autosummary::
    :toctree: generated/
 
-    minPermDistStochastic
+    minPermDistRanRot
 
 A wrapper
 ---------
@@ -57,9 +57,12 @@ applications require
 
 """
 
-from minpermdist import *
+from mindistutils import *
+#from minpermdist import *
+from exact_match import *
+from minpermdist_ranrot import *
 from minpermdist_stochastic import *
 from minpermdist_rbmol import *
-from mindistutils import *
+from mindist import *
 from rmsfit import *
-from exact_match import *
+

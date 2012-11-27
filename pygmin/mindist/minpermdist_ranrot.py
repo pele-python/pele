@@ -55,7 +55,7 @@ def _optimizePermRot(X1, X2, niter, permlist, verbose=False, use_quench=True):
     
     
 
-def minPermDistRanRot(X1, X2, niter = 100, permlist = None, verbose = False, accuracy=0.01,
+def minPermDistRanRot(X1, X2, niter=100, permlist=None, verbose=False, accuracy=0.01,
                       check_inversion=True, use_quench=False):
     """
     Minimize the distance between two clusters.  

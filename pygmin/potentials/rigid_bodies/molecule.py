@@ -4,6 +4,13 @@ from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
 from scipy import weave
 from scipy.weave import converters
 
+global _use_cython
+try:
+    import _rbutils_cython
+    _use_cython = True
+except:
+    _use_cython = False
+
 
 def vec2aa( v2, v1 = np.array( [0.,0.,1.]) ):
     """
@@ -138,12 +145,26 @@ class Molecule:
         self.aagrad = aagrad
         return self.comgrad, self.aagrad
 
-
-    def getGradients(self, aa, sitegrad_in, recalculate_rot_mat = True):
+    def getGradientsCython(self, aa, sitegrad, recalculate_rot_mat = True):
         """
         convert site gradients to com and aa gradients
         """
-        return self.getGradientsWeave(aa, sitegrad_in, recalculate_rot_mat)
+        sitegrad = np.reshape(sitegrad, [self.nsites,3] )
+        #calculate rotation matrix and derivatives
+        if recalculate_rot_mat:
+            self.update_rot_mat(aa, True)
+        if True:  #type check
+            if ((self.drmat.dtype != np.float64) |
+                (self.sitexyz_molframe.dtype != np.float64) |
+                (sitegrad.dtype != np.float64)
+                ):
+                print "WARNING: using cython, but types don't agree.  lots of copying will ensue"
+        self.aagrad = _rbutils_cython._moleculeGetGradients(self.drmat, self.sitexyz_molframe, sitegrad, self.nsites)
+
+        self.comgrad = np.sum( sitegrad, axis=0 ) 
+        return self.comgrad, self.aagrad
+
+    def getGradientsSlow(self, aa, sitegrad_in, recalculate_rot_mat = True):
         sitegrad = np.reshape(sitegrad_in, [self.nsites,3] )
         #calculate rotation matrix and derivatives
         if recalculate_rot_mat:
@@ -167,6 +188,22 @@ class Molecule:
         """
         self.comgrad = np.sum( sitegrad, axis=0 ) 
         return self.comgrad, self.aagrad
+
+    def getGradients(self, aa, sitegrad_in, recalculate_rot_mat = True):
+        """
+        convert site gradients to com and aa gradients
+        """
+        if False: #for testing only
+            ret1 = self.getGradientsCython(aa, sitegrad_in, recalculate_rot_mat)
+            ret2 = self.getGradientsSlow(aa, sitegrad_in, recalculate_rot_mat)
+            assert np.max(np.abs(ret1[0] - ret2[0])) < 1e-7, "%g" % (np.max(np.abs(ret1[0] - ret2[0])),)
+            assert np.max(np.abs(ret1[1] - ret2[1])) < 1e-7, "%g" % (np.max(np.abs(ret1[1] - ret2[1])),)
+
+        if _use_cython:
+            return self.getGradientsCython(aa, sitegrad_in, recalculate_rot_mat)
+        else:
+            return self.getGradientsSlow(aa, sitegrad_in, recalculate_rot_mat)
+#            return self.getGradientsWeave(aa, sitegrad_in, recalculate_rot_mat)
 
     def addSymmetryRotation(self, aa): #add rotational symmetry
         self.symmetrylist_rot.append( aa )

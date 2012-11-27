@@ -4,7 +4,7 @@ import pygmin.utils.rotations as rot
 from pygmin.optimize.quench import quench
 from  pygmin import basinhopping
 import pygmin.storage.savenlowest as storage
-from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
+from pygmin.mindist import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
 from pygmin.mindist.exact_match import ExactMatchCluster
 
 __all__ = ["minPermDistStochastic"]
