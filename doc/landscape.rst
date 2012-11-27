@@ -42,4 +42,6 @@ As we find new tran
 The main algorithm 
 
 
-.. autoclass:: pygmin.landscape.DoubleEndedConnect
+.. currentmodule:: pygmin.landscape
+
+.. autoclass:: DoubleEndedConnect

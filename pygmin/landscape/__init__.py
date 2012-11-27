@@ -8,15 +8,7 @@ Double ended transition state search
 ++++++++++++++++++++++++++++++++++++
 Double ended transition state searches are the main technique we use
 for exploring the energy landscape.  We attempt to try to find a connected
-series of transition states between two minima.  The end result might look like::
-
-                             TS2
-                TS1        /    \
-              /    \      /      \
-             /       Min1         \
-    MinStart                       \
-                                    MinEnd
-
+series of transition states between two minima.  
 
 .. autosummary::
    :toctree: generated/
