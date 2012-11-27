@@ -8,7 +8,7 @@ import pygmin.optimize.quench as quench
 __all__ = ["NEB"]
 
 def distance_cart(x1, x2):
-    return x2 - x1
+    return np.sum((x2-x1)**2), -(x2-x1)
 
 class NEB(object):
     """Doubly nudged elastic band implementation
@@ -38,7 +38,7 @@ class NEB(object):
     from a starting and ending point
     """
     def __init__(self, path, potential, distance=distance_cart,
-                 k=100.0, method="DNEB", with_springenergy=False, dneb=True,
+                 k=100.0, with_springenergy=False, dneb=True,
                  copy_potential=False):
         self.distance = distance
         self.potential = potential
@@ -174,11 +174,11 @@ class NEB(object):
             coordinates of the whole neb active images (no end points)
         """
         d1 = self.distance(central[1], left[1])
-        d2 = self.distance(right[1], central[1])
-        t = d1 / np.linalg.norm(d1) + d2 / np.linalg.norm(d2)
+        d2 = self.distance(central[1], right[1])
+        t = d1 / np.linalg.norm(d1) - d2 / np.linalg.norm(d2)
         return t / np.linalg.norm(t)
 
-    def tangent(self, central, left, right):
+    def tangent(self, central, left, right, gleft, gright):
         """
         New uphill tangent formulation
 
@@ -195,19 +195,21 @@ class NEB(object):
         right:
             right image energy and coordinates [E, coords]
         """
-        tleft = self.distance(central[1], left[1])
-        tright = self.distance(right[1],  central[1])
-        vmax = max(abs(central[0] - left[0]), abs(central[0] - right[0]))
-        vmin = max(abs(central[0] - left[0]), abs(central[0] - right[0]))
+        
+        vmax = max(abs(central - left), abs(central - right))
+        vmin = max(abs(central - left), abs(central- right))
+
+        tleft = -gleft/np.linalg.norm(gleft)
+        tright = gright/np.linalg.norm(gright)
 
         # special interpolation treatment for maxima/minima
-        if (central[0] >= left[0] and central[0] >= right[0]) or (central[0] <= left[0] and central[0] <= right[0]):
-            if(left[0] > right[0]):
+        if (central >= left and central >= right) or (central <= left and central <= right):
+            if(left > right):
                 t = vmax * tleft + vmin*tright
             else:
                 t = vmin * tleft + vmax*tright
         # left is higher, take this one
-        elif (left[0] > right[0]):
+        elif (left > right):
             t = tleft
         # otherwise take right
         else:
@@ -226,22 +228,21 @@ class NEB(object):
         J. Chem. Phys. 120, 2082 (2004); doi: 10.1063/1.1636455
 
         """
+
+        # construct tangent vector
+        d_left, g_left = self.distance(image[1], left[1])
+        d_right, g_right = self.distance(image[1], right[1])
+        #print g_left, g_right
+        
+        t = self.tangent(image[0],left[0],right[0], g_left, g_right)
         if(isclimbing):
             return greal - 2.*np.dot(greal, t) * t
 
-        # construct tangent vector
-        p = image[1]
-        pl = left[1]
-        pr = right[1]
-
-        #d1 = self.distance(image[1], left[1])
-        #d2 = self.distance(right[1], image[1])
-
-
-        t = self.tangent(image,left,right)
-        if True:
+        g_spring = self.k*(g_left + g_right)
+        
+        if False:
             import _NEB_utils
-            E, g_tot = _NEB_utils.neb_force(t,greal, self.k, self.dneb, p, pl, pr)
+            E, g_tot = _NEB_utils.neb_force(t,greal, self.k, self.dneb, g_spring)
             if self.with_springenergy:
                 return E, g_tot
             else:
@@ -253,11 +254,10 @@ class NEB(object):
             # calculate parallel spring force and energy
             #gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
             # this is the spring
-            gspring = -self.k*(pl + pr - 2.*p)
             # the parallel part
-            gs_par = np.dot(gspring,t)*t
+            gs_par = np.dot(g_spring,t)*t
             # perpendicular part
-            gs_perp = gspring - gs_par
+            gs_perp = g_spring - gs_par
                                     
             g_tot = gperp + gs_par
     
@@ -266,10 +266,10 @@ class NEB(object):
                 g_tot += gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
             
             if(self.with_springenergy):
-                E = 0.5 / self.k * np.dot(gspring, gspring)
+                E = 0.5 / self.k * (d_left **2 + d_right**2)
             else:
                 E = 0.
-    
+            E=0.
             return E, g_tot
 
     def MakeHighestImageClimbing(self):
@@ -310,8 +310,7 @@ class NEB(object):
                 if i == 0:
                     dist = 0.
                 else:
-                    dist = self.distance( self.coords[i,:], self.coords[i-1,:] )
-                    dist = np.linalg.norm(dist)
+                    dist, t = self.distance( self.coords[i,:], self.coords[i-1,:] )
                 S += dist
                 #print "S",S, "E",self.energies[i], "dist", dist
                 fout.write("%f %g\n" % (S, self.energies[i]))
