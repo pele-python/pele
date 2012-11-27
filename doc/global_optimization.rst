@@ -6,7 +6,7 @@ basin hopping run is a BasinHopping object. The step taking and various other cu
 routines (e.g. storage, acceptance criterion, ...) can be attached to this object to customize
 the behaviour of the basin hopping procedure.
 
-.. autosummary:
+.. autosummary::
     pygmin.basinhopping.BasinHopping
 
 ::

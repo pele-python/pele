@@ -12,9 +12,9 @@ Contents:
    :maxdepth: 3
 
    global_optimization
+   landscape
    quenching
    database
-   landscape
    utils
 
 Indices and tables
