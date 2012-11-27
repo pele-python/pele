@@ -21,9 +21,10 @@ def choose_bond(N, P_mid=0.):
 # This is the takestep routine for OXDNA. It is a standard rigid body takestep
 # routine, but I put it here to be able to start modifying it
 class OXDNATakestep(takestep.TakestepInterface):
-    def __init__(self, displace=1.0, rotate=0.5*pi):
+    def __init__(self, displace=1.0, rotate=0.5*pi, rotate_around_backbone=False):
         self.displace = displace
         self.rotate = rotate
+        self.rotate_around_backbone = rotate_around_backbone
         
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
@@ -31,7 +32,16 @@ class OXDNATakestep(takestep.TakestepInterface):
         
         # random displacement for positions
         ca.posRigid[:] += 2.*self.displace*(np.random.random(ca.posRigid.shape)-0.5)
-        
+       
+        # determine backbone beads
+        if(self.rotate_around_backbone):
+            for com, p in zip(ca.posRigid, ca.rotRigid):
+                a1 = np.dot(rotations.aa2mx(p), np.array([1., 0., 0.]))
+                x1 = com - 0.4*a1
+                mx = rotations.aa2mx(p) 
+                com[:] = np.dot(mx, com - x1) + x1        
+            
+
         # random rotation for angle-axis vectors
         takestep.rotate(self.rotate, ca.rotRigid)
         
