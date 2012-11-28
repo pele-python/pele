@@ -34,16 +34,17 @@ class OXDNATakestep(takestep.TakestepInterface):
         ca.posRigid[:] += 2.*self.displace*(np.random.random(ca.posRigid.shape)-0.5)
        
         # determine backbone beads
-        if(self.rotate_around_backbone):
-            for com, p in zip(ca.posRigid, ca.rotRigid):
+        for com, p in zip(ca.posRigid, ca.rotRigid):
+            p_rnd = rotations.small_random_aa(self.rotate)
+            # adjust center of mass
+            if(self.rotate_around_backbone):            
                 a1 = np.dot(rotations.aa2mx(p), np.array([1., 0., 0.]))
                 x1 = com - 0.4*a1
-                mx = rotations.aa2mx(p) 
-                com[:] = np.dot(mx, com - x1) + x1        
-            
-
-        # random rotation for angle-axis vectors
-        takestep.rotate(self.rotate, ca.rotRigid)
+                mx = rotations.aa2mx(p_rnd) 
+                com[:] = np.dot(mx, com - x1) + x1
+                            # random rotation for angle-axis vectors
+            p[:] = rotations.rotate_aa(p, p_rnd)
+                    
         
     # this is necessary for adaptive step taking
     def scale(self, factor):
