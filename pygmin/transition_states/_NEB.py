@@ -240,9 +240,9 @@ class NEB(object):
 
         g_spring = self.k*(g_left + g_right)
         
-        if False:
+        if True:
             import _NEB_utils
-            E, g_tot = _NEB_utils.neb_force(t,greal, self.k, self.dneb, g_spring)
+            E, g_tot = _NEB_utils.neb_force(t,greal, g_spring, self.k, self.dneb)
             if self.with_springenergy:
                 return E, g_tot
             else:
@@ -269,7 +269,6 @@ class NEB(object):
                 E = 0.5 / self.k * (d_left **2 + d_right**2)
             else:
                 E = 0.
-            E=0.
             return E, g_tot
 
     def MakeHighestImageClimbing(self):
