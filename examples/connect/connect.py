@@ -71,14 +71,19 @@ if True:
     
     NEBparams = dict()
     NEBparams["k"] = 5.
+    
+    local_connect_params = dict()
+    local_connect_params["tsSearchParams"] = tsSearchParams
+    local_connect_params["NEBquenchParams"] = NEBquenchParams
+    local_connect_params["NEBparams"] = NEBparams
+    local_connect_params["NEB_image_density"] = 15
 
 
 
 
 myconnect = DoubleEndedConnect(
-        min1, min2, pot, mindist, database, tsSearchParams=tsSearchParams,
-        NEBquenchParams=NEBquenchParams, 
-        NEBparams=NEBparams, NEB_image_density=15
+        min1, min2, pot, mindist, database,
+        local_connect_params=local_connect_params,
         )
 
 if (myconnect.graph.areConnected(min1, min2)):
