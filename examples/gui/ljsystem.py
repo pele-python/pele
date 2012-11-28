@@ -7,6 +7,8 @@ from pygmin import gui
 from pygmin.mindist import ExactMatchCluster, MinDistWrapper
 from pygmin.mindist import minPermDistRanRot as minpermdist
 from pygmin.landscape import LocalConnect, smoothPath, DoubleEndedConnect
+import pygmin.basinhopping as bh
+from pygmin.takestep import displace
 
 
 def compare(x1, x2):
@@ -31,12 +33,10 @@ class LJSystem(gui.GUISystem):
         return lj.LJ()
     
     def create_basinhopping(self):
-        import pygmin.basinhopping as bh
-        from pygmin.takestep import displace
         coords = np.random.random(3 * self.natoms)
-        potential = lj.LJ()
+        potential = self.create_potential()
         step = displace.RandomDisplacement(stepsize=0.5)
-        opt = bh.BasinHopping(coords,potential,
+        opt = bh.BasinHopping(coords, potential,
                           temperature=1., takeStep=step,
                           outstream = None)
         return opt
@@ -61,7 +61,8 @@ class LJSystem(gui.GUISystem):
         return X1, X2
     
     def createNEB(self, coords1, coords2):
-        return NEB(InterpolatedPath(coords1, coords2, 30), lj.LJ(), k = 100.)
+        pot = self.create_potential()
+        return NEB(InterpolatedPath(coords1, coords2, 30), pot, k = 100.)
     
     def zeroEigenVecs(self, coords):
         # translational eigenvectors

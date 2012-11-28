@@ -2,32 +2,34 @@ from PyQt4 import QtGui
 import NewLJ
 import sys
 import numpy as np
-from storage import savenlowest
+#from storage import savenlowest
 import time
-from NEB import NEB
+#from NEB import NEB
+
+import pygmin.basinhopping as bh
+import pygmin.potentials.ljpshiftfast as lj
+from pygmin.takestep import displace
+from pygmin.mindist import ExactMatchCluster, MinDistWrapper
+from pygmin.mindist import minPermDistRanRot as minpermdist
+from ljsystem import LJSystem
         
-class BLJSystem:
+class BLJSystem(LJSystem):
     def __init__(self):
-        dlg = NewLJDialog()
-        dlg.exec_()
-        self.natoms = dlg.natoms()
-        self.ntypeA = int(0.8*self.natoms)
-        self.nsave = dlg.nsave()
-        if dlg.result() == QtGui.QDialog.Rejected:
-            raise BaseException("Aborted parameter dialog")
-        self.storage = savenlowest.SaveN(self.nsave)
+#        dlg = NewLJDialog()
+#        dlg.exec_()
+#        self.natoms = dlg.natoms()
+#        self.nsave = dlg.nsave()
+#        if dlg.result() == QtGui.QDialog.Rejected:
+#            raise BaseException("Aborted parameter dialog")
         
-    def createBasinHopping(self):
-        import basinhopping as bh
-        import potentials.ljpshiftfast as lj
-        from take_step import random_displacement
-        coords = np.random.random(3 * self.natoms)
+        super(BLJSystem, self).__init__()
+        print self.natoms
+        self.ntypeA = int(0.8*self.natoms)
+
+    def create_potential(self):
         potential = lj.LJpshift(self.natoms, self.ntypeA)
         self.sigBB = potential.BB.sig
-        step = random_displacement.takeStep(stepsize=0.5)
-        opt = bh.BasinHopping(coords,potential,
-                          temperature=1., takeStep=step)
-        return opt
+        return potential
     
     def draw(self, coordslinear, index):
         # index = 1 or 2
@@ -53,28 +55,22 @@ class BLJSystem:
             GL.glTranslate(x[0],x[1],x[2])
             GLUT.glutSolidSphere(size,30,30)
             GL.glPopMatrix()
-    
-    def Align(self, coords1, coords2):
-        from mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
+
+    def create_mindist_object(self): 
         self.permlist = [range(self.ntypeA), range(self.ntypeA, self.natoms)] #permutable atoms
-        dist, X1, X2 = minpermdist( coords1, coords2, niter = 100, permlist = self.permlist )
-        return X1, X2
-    
-    def createNEB(self, coords1, coords2):
-        import potentials.ljpshiftfast as lj
-        return NEB.NEB(coords1, coords2, lj.LJpshift(self.natoms, self.ntypeA), k = 100. ,nimages=20)
+        return MinDistWrapper(minpermdist, permlist=self.permlist)
 
        
-
-class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
-    def __init__(self):
-        QtGui.QDialog.__init__(self)
-        self.setupUi(self)
-    def natoms(self):
-        return int(self.lineNatoms.text())
-    def nsave(self):
-        return int(self.lineNsave.text())
+from ljsystem import NewLJDialog
+#class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
+#    def __init__(self):
+#        QtGui.QDialog.__init__(self)
+#        self.setupUi(self)
+#    def natoms(self):
+#        return int(self.lineNatoms.text())
+#    def nsave(self):
+#        return int(self.lineNsave.text())
         
 if __name__ == "__main__":
-    import gui.run
-    gui.run.run_gui(BLJSystem)
+    import pygmin.gui.run as gr
+    gr.run_gui(BLJSystem)
