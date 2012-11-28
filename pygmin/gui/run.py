@@ -85,6 +85,7 @@ class MyForm(QtGui.QMainWindow):
         self.neb = self.system.createNEB(self.ui.oglPath.coords[1], self.ui.oglPath.coords[2])
         self.neb.optimize()
         self.nebcoords = self.neb.coords
+        self.nebenergies = self.neb.energies
         self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
         self.ui.oglPath.setCoords(None, 2)
         self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
@@ -95,18 +96,19 @@ class MyForm(QtGui.QMainWindow):
     
     def showEnergies(self):
         import pylab as pl
-        neb = self.neb
         pl.ion()
-        pl.plot(neb.energies, "o-", label="neb energies")
-        cl=[]
-        en=[]
-        for i in xrange(len(neb.energies)):
-            if(neb.isclimbing[i]):
-                print "climbing image :", i, neb.energies[i]
-                cl.append(i)
-                en.append(neb.energies[i])
-                
-        pl.plot(cl, en, "s", label="climbing images", markersize=10, markerfacecolor="none", markeredgewidth=2)
+        pl.plot(self.nebenergies, "o-", label="energies")
+        if False: #show climbing images
+            neb = self.neb
+            cl=[]
+            en=[]
+            for i in xrange(len(neb.energies)):
+                if(neb.isclimbing[i]):
+                    print "climbing image :", i, neb.energies[i]
+                    cl.append(i)
+                    en.append(neb.energies[i])
+                    
+            pl.plot(cl, en, "s", label="climbing images", markersize=10, markerfacecolor="none", markeredgewidth=2)
         pl.legend(loc='best')
         pl.show()
      
@@ -183,6 +185,7 @@ class MyForm(QtGui.QMainWindow):
         
         coords = np.array(smoothpath)
         self.nebcoords = coords
+        self.nebenergies = np.array(energies)
         self.ui.oglPath.setCoords(coords[0,:], 1)
         self.ui.oglPath.setCoords(None, 2)
         self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
