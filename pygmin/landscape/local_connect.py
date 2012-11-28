@@ -117,9 +117,9 @@ class LocalConnect(object):
             coords = neb.coords[i,:]
             #get guess for initial eigenvector from NEB tangent
             if True:
-                eigenvec0 = neb.tangent( [neb.energies[i-1], neb.coords[i-1,:]],
-                                         [neb.energies[i], neb.coords[i,:]],
-                                         [neb.energies[i+1], neb.coords[i+1,:]]
+                eigenvec0 = neb.tangent( neb.energies[i], neb.energies[i-1], neb.energies[i+1],
+                                         neb.distance(neb.coords[i,:], neb.coords[i-1,:])[1],
+                                         neb.distance(neb.coords[i,:], neb.coords[i+1,:])[1],
                                         )
             
             ret = _refineTS(self.pot, coords, tsSearchParams=self.tsSearchParams, 
