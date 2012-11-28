@@ -58,7 +58,8 @@ setup(name='pygmin',
                 "pygmin.wham",
                 "pygmin.storage",
                 "pygmin.potentials.fortran",
-                "pygmin.accept_tests"
+                "pygmin.accept_tests",
+                "pygmin.systems"
                 ],
       ext_modules=ext_modules
         )
