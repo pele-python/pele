@@ -4,7 +4,10 @@ import numpy as np
 from pygmin.transition_states import NEB, dimer, tstools, InterpolatedPath
 import pygmin.potentials.lj as lj
 from pygmin import gui
-from pygmin.mindist import ExactMatchCluster
+from pygmin.mindist import ExactMatchCluster, MinDistWrapper
+from pygmin.mindist import minPermDistRanRot as minpermdist
+from pygmin.landscape import LocalConnect, smoothPath, DoubleEndedConnect
+
 
 def compare(x1, x2):
     ret =  ExactMatchCluster(accuracy = 1e-2)(x1.coords, x2.coords)
@@ -23,7 +26,10 @@ class LJSystem(gui.GUISystem):
     def set_database(self, database):
         database.compareMinima = compare
         gui.GUISystem.set_database(self, database)
-        
+    
+    def create_potential(self):
+        return lj.LJ()
+    
     def create_basinhopping(self):
         import pygmin.basinhopping as bh
         from pygmin.takestep import displace
@@ -46,9 +52,12 @@ class LJSystem(gui.GUISystem):
             GLUT.glutSolidSphere(0.5,30,30)
             GL.glPopMatrix()
     
+    def create_mindist_object(self):
+        return MinDistWrapper(minpermdist, permlist=[range(self.natoms)])
+    
     def Align(self, coords1, coords2):
-        from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
-        dist, X1, X2 = minpermdist( coords1, coords2, niter = 100 )
+        mindist = self.create_mindist_object()
+        dist, X1, X2 = mindist(coords1, coords2)
         return X1, X2
     
     def createNEB(self, coords1, coords2):
@@ -87,8 +96,24 @@ class LJSystem(gui.GUISystem):
         print "Energies: ", m1[1],ret.energy,m2[1]
         return [ret.coords,ret.energy],m1,m2
     
+    def create_local_connect(self):
+        mindist = self.create_mindist_object()
+        pot = self.create_potential()
         
-       
+        local_connect = LocalConnect(pot, mindist)
+        return local_connect
+    
+    def smooth_path(self, path, **kwargs):
+        mindist = self.create_mindist_object()
+        return smoothPath(path, mindist, **kwargs)
+    
+    def create_double_ended_connect(self, min1, min2, database):
+        mindist = self.create_mindist_object()
+        pot = self.create_potential()
+        return DoubleEndedConnect(min1, min2, pot, mindist, database)
+
+
+        
 
 class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
     def __init__(self):

@@ -3,13 +3,16 @@ import MainWindow
 import sys
 import bhrunner
 import copy
+import numpy as np
+
 from pygmin.storage import Database
 
 class QMinimumInList(QtGui.QListWidgetItem):
     def setCoords(self, coords):
         self.coords = coords
-    def setMinimumId(self, minid):
-        self.minid = minid
+    def setMinimum(self, minimum):
+        self.minid = id(minimum)
+        self.minimum = minimum
 
 class MyForm(QtGui.QMainWindow):
     def __init__(self, systemtype, parent=None):
@@ -81,13 +84,14 @@ class MyForm(QtGui.QMainWindow):
     def ConnectMinima(self):
         self.neb = self.system.createNEB(self.ui.oglPath.coords[1], self.ui.oglPath.coords[2])
         self.neb.optimize()
+        self.nebcoords = self.neb.coords
         self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
         self.ui.oglPath.setCoords(None, 2)
         self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
 
     def showFrame(self, i):
-        if(self.neb):
-            self.ui.oglPath.setCoords(self.neb.coords[i,:])
+        if hasattr(self, "nebcoords"):
+            self.ui.oglPath.setCoords(self.nebcoords[i,:])
     
     def showEnergies(self):
         import pylab as pl
@@ -113,7 +117,7 @@ class MyForm(QtGui.QMainWindow):
         for obj in self.listMinima:
             item = QMinimumInList('%.4f'%E)
             item.setCoords(coords)
-            item.setMinimumId(minid)
+            item.setMinimum(minimum)
             obj.addItem(item)    
             obj.sortItems(1)
                 
@@ -140,6 +144,55 @@ class MyForm(QtGui.QMainWindow):
 
     def selectTransition(self):
         pass
+
+#this is currently not used.  it may be used later though
+#    def LocalConnect(self):
+#        self.local_connect = self.system.create_local_connect()
+#        
+#        min1 = self.ui.listMinima1.selectedItems()[0].minimum
+#        min2 = self.ui.listMinima2.selectedItems()[0].minimum
+#        res = self.local_connect.connect(min1, min2)
+#        ntriplets = len(res.new_transition_states)
+#        
+#        path = []
+#        for i in range(ntriplets):
+#            tsret, m1ret, m2ret = res.new_transition_states[i]
+#            local_path = []
+#            local_path.append(m1ret[0])
+#            local_path.append(tsret.coords)
+#            local_path.append(m2ret[0])
+#            smoothpath = self.system.smooth_path(local_path)
+#            path += list(smoothpath)
+#        
+#        coords = np.array(path)
+#        self.nebcoords = coords
+#        self.ui.oglPath.setCoords(coords[0,:], 1)
+#        self.ui.oglPath.setCoords(None, 2)
+#        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
+    
+    def doubleEndedConnect(self):
+        min1 = self.ui.listMinima1.selectedItems()[0].minimum
+        min2 = self.ui.listMinima2.selectedItems()[0].minimum
+        database = self.system.database
+        double_ended_connect = self.system.create_double_ended_connect(min1, min2, database)
+        double_ended_connect.connect()
+        mints, S, energies = double_ended_connect.returnPath()
+        clist = [m.coords for m in mints]
+        print "done finding path, now just smoothing path.  This can take a while"
+        smoothpath = self.system.smooth_path(clist)
+        
+        coords = np.array(smoothpath)
+        self.nebcoords = coords
+        self.ui.oglPath.setCoords(coords[0,:], 1)
+        self.ui.oglPath.setCoords(None, 2)
+        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
+        
+
+        
+        
+
+        
+
     
 def run_gui(systemtype):
     app = QtGui.QApplication(sys.argv)

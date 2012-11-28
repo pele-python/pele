@@ -24,7 +24,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="BHTab">
        <attribute name="title">
@@ -173,7 +173,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QPushButton" name="btnConnect">
+           <widget class="QPushButton" name="btnNEB">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -187,7 +187,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Connect</string>
+             <string>NEB</string>
             </property>
            </widget>
           </item>
@@ -195,6 +195,13 @@
            <widget class="QPushButton" name="btnInvert">
             <property name="text">
              <string>Invert</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="btnConnect">
+            <property name="text">
+             <string>Connect</string>
             </property>
            </widget>
           </item>
@@ -321,7 +328,7 @@
      <x>0</x>
      <y>0</y>
      <width>692</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSimulation">
@@ -395,7 +402,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>669</x>
-     <y>478</y>
+     <y>477</y>
     </hint>
     <hint type="destinationlabel">
      <x>432</x>
@@ -410,8 +417,8 @@
    <slot>AlignMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>479</y>
+     <x>560</x>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -420,14 +427,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>btnConnect</sender>
+   <sender>btnNEB</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>ConnectMinima()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>651</x>
-     <y>511</y>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -490,8 +497,8 @@
    <slot>showEnergies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>511</y>
+     <x>560</x>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -522,8 +529,8 @@
    <slot>SelectMinimum()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>100</x>
-     <y>64</y>
+     <x>528</x>
+     <y>130</y>
     </hint>
     <hint type="destinationlabel">
      <x>553</x>
@@ -535,11 +542,11 @@
    <sender>btnTSSearch</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>tsSearch()</slot>
+   <slot>doubleEndedConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>74</x>
-     <y>74</y>
+     <x>521</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>627</x>
@@ -554,8 +561,8 @@
    <slot>selectTransition()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>100</x>
-     <y>69</y>
+     <x>528</x>
+     <y>339</y>
     </hint>
     <hint type="destinationlabel">
      <x>342</x>
@@ -570,8 +577,8 @@
    <slot>showFrameTS()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>46</x>
-     <y>75</y>
+     <x>57</x>
+     <y>512</y>
     </hint>
     <hint type="destinationlabel">
      <x>172</x>
@@ -586,12 +593,28 @@
    <slot>Invert()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>631</x>
-     <y>471</y>
+     <x>651</x>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
      <y>33</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnConnect</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>doubleEndedConnect()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>510</x>
+     <y>489</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>685</x>
+     <y>507</y>
     </hint>
    </hints>
   </connection>
@@ -613,5 +636,7 @@
   <slot>showFrameTS()</slot>
   <slot>connect()</slot>
   <slot>Invert()</slot>
+  <slot>LocalConnect()</slot>
+  <slot>doubleEndedConnect()</slot>
  </slots>
 </ui>
