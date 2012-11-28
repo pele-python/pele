@@ -13,26 +13,21 @@ end function dot
 
 
 
-SUBROUTINE NEB_FORCE(t, greal, k, N, dneb, E, g_tot, p, pl, pr)
+SUBROUTINE NEB_FORCE(t, greal,  gspring, k, N, dneb, E, g_tot)
    implicit none
    integer, intent(in) :: N
    double precision, intent(IN) :: t(N)
    double precision, intent(IN) :: greal(N)
+   double precision, intent(IN) :: gspring(N)
    double precision, intent(IN) :: k
-   double precision, intent(IN) :: p(N)
-   double precision, intent(IN) :: pl(N)
-   double precision, intent(IN) :: pr(N)
    logical, intent(IN) :: dneb
    double precision, intent(OUT) :: g_tot(N), E
    double precision gperp(N)
-   double precision gspring(N)
    double precision gs_par(N)
    double precision gs_perp(N)
    double precision dot
         ! project out parallel part
         gperp = greal - dot(greal, t, N) * t
-        ! this is the spring
-        gspring = -k * (pl + pr - 2.*p)
         ! the parallel part
         gs_par = dot(gspring, t, N) * t
         ! perpendicular part
