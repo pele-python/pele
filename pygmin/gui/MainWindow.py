@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Wed Nov 28 16:25:25 2012
+# Created: Wed Nov 28 17:25:15 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -96,6 +96,10 @@ class Ui_MainWindow(object):
         self.listMinima2.setObjectName(_fromUtf8("listMinima2"))
         self.verticalLayout_5.addWidget(self.listMinima2)
         self.gridLayout_4.addLayout(self.verticalLayout_5, 0, 3, 1, 1)
+        self.sliderFrame = QtGui.QSlider(self.NEBTab)
+        self.sliderFrame.setOrientation(QtCore.Qt.Horizontal)
+        self.sliderFrame.setObjectName(_fromUtf8("sliderFrame"))
+        self.gridLayout_4.addWidget(self.sliderFrame, 1, 0, 1, 1)
         self.gridLayout_2 = QtGui.QGridLayout()
         self.gridLayout_2.setContentsMargins(20, 0, 20, -1)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
@@ -126,11 +130,10 @@ class Ui_MainWindow(object):
         self.btnConnect = QtGui.QPushButton(self.NEBTab)
         self.btnConnect.setObjectName(_fromUtf8("btnConnect"))
         self.gridLayout_2.addWidget(self.btnConnect, 3, 0, 1, 1)
+        self.btnShowGraph = QtGui.QPushButton(self.NEBTab)
+        self.btnShowGraph.setObjectName(_fromUtf8("btnShowGraph"))
+        self.gridLayout_2.addWidget(self.btnShowGraph, 3, 1, 1, 1)
         self.gridLayout_4.addLayout(self.gridLayout_2, 1, 3, 1, 1)
-        self.sliderFrame = QtGui.QSlider(self.NEBTab)
-        self.sliderFrame.setOrientation(QtCore.Qt.Horizontal)
-        self.sliderFrame.setObjectName(_fromUtf8("sliderFrame"))
-        self.gridLayout_4.addWidget(self.sliderFrame, 1, 0, 1, 1)
         self.tabWidget.addTab(self.NEBTab, _fromUtf8(""))
         self.tab = QtGui.QWidget()
         self.tab.setObjectName(_fromUtf8("tab"))
@@ -230,6 +233,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.sliderTS, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), MainWindow.showFrameTS)
         QtCore.QObject.connect(self.btnInvert, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.Invert)
         QtCore.QObject.connect(self.btnConnect, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.doubleEndedConnect)
+        QtCore.QObject.connect(self.btnShowGraph, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.show_graph)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -243,6 +247,7 @@ class Ui_MainWindow(object):
         self.btnNEB.setText(QtGui.QApplication.translate("MainWindow", "NEB", None, QtGui.QApplication.UnicodeUTF8))
         self.btnInvert.setText(QtGui.QApplication.translate("MainWindow", "Invert", None, QtGui.QApplication.UnicodeUTF8))
         self.btnConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "show graph", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), QtGui.QApplication.translate("MainWindow", "NEB", None, QtGui.QApplication.UnicodeUTF8))
         self.btnTSSearch.setText(QtGui.QApplication.translate("MainWindow", "Find TS", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Path", None, QtGui.QApplication.UnicodeUTF8))

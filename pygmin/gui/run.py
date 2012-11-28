@@ -6,6 +6,7 @@ import copy
 import numpy as np
 
 from pygmin.storage import Database
+from pygmin.landscape import Graph
 
 class QMinimumInList(QtGui.QListWidgetItem):
     def setCoords(self, coords):
@@ -93,6 +94,22 @@ class MyForm(QtGui.QMainWindow):
     def showFrame(self, i):
         if hasattr(self, "nebcoords"):
             self.ui.oglPath.setCoords(self.nebcoords[i,:])
+    
+    def show_graph(self):
+        import pylab as pl
+        import networkx as nx
+        pl.ion()
+        
+        graphwrapper = Graph(self.system.database)
+        graph = graphwrapper.graph
+        degree = graph.degree()
+        nodes = [n for n, nedges in degree.items() if nedges > 0]
+        ids = dict([(n, n._id) for n in nodes])
+#        subgraph = graph.subgraph(nodes)
+        pl.clf()
+        nx.draw(graph, labels=ids, nodelist=nodes)
+        pl.show()
+        
     
     def showEnergies(self):
         import pylab as pl

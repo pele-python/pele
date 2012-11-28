@@ -135,6 +135,13 @@
           </item>
          </layout>
         </item>
+        <item row="1" column="0">
+         <widget class="QSlider" name="sliderFrame">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="3">
          <layout class="QGridLayout" name="gridLayout_2">
           <property name="leftMargin">
@@ -205,14 +212,14 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="btnShowGraph">
+            <property name="text">
+             <string>show graph</string>
+            </property>
+           </widget>
+          </item>
          </layout>
-        </item>
-        <item row="1" column="0">
-         <widget class="QSlider" name="sliderFrame">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>
@@ -417,7 +424,7 @@
    <slot>AlignMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>560</x>
+     <x>548</x>
      <y>445</y>
     </hint>
     <hint type="destinationlabel">
@@ -497,7 +504,7 @@
    <slot>showEnergies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>560</x>
+     <x>548</x>
      <y>478</y>
     </hint>
     <hint type="destinationlabel">
@@ -618,6 +625,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnShowGraph</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>show_graph()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>611</x>
+     <y>498</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>691</x>
+     <y>476</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectMinimum()</slot>
@@ -638,5 +661,6 @@
   <slot>Invert()</slot>
   <slot>LocalConnect()</slot>
   <slot>doubleEndedConnect()</slot>
+  <slot>show_graph()</slot>
  </slots>
 </ui>
