@@ -148,7 +148,6 @@ class AASystem(object):
             coords array to wrap
             
         '''
-        print "I have %d sites"%len(self.sites)
         return CoordsAdapter(nrigid=len(self.sites), coords=coords)
     
 
@@ -182,6 +181,9 @@ class AASystem(object):
             spring.rotRigid[i] += g_P
             
         return spring.coords
+    
+    def neb_distance(self, coords1, coords2):
+        return self.distance_squared(coords1, coords2), self.distance_squared_grad(coords1, coords2)
 
 if __name__ == "__main__":
     natoms = 8
