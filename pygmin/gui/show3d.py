@@ -26,12 +26,17 @@ class Show3D(QGLWidget):
         self.setMinimumSize(200, 200)
         glutInit()#sys.argv)
         self.coords = {}
+        self.minima = {}
         self.last_mouse_pos = QtCore.QPointF(0., 0.)
         self.rotation = rot.aa2mx(np.array([0.,0.,0.])) # np.array([0., 0.])
         self.zoom = 1.0
         
     def setCoords(self, coords, index=1):
         self.coords[index] = coords
+        self.repaint()
+
+    def setMinimum(self, minimum, index=1):
+        self.minima[index] = minimum
         self.repaint()
         
     def setSystem(self, system):
