@@ -3,7 +3,7 @@ from pygmin.utils import rotations
 from pygmin.angleaxis import CoordsAdapter
 from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
 
-__all__ = ["AASiteType", "AASystem", "aadistance"]
+__all__ = ["AASiteType", "AASystem", "aainterpolate"]
 
 def aainterpolate(initial, final, t):
     ''' interpolate between 2 arrays of angle axis coordinates
@@ -135,7 +135,7 @@ class AASystem(object):
             sites : iteratable
                 list of AASiteType
         '''
-        self.sites.append(sites)
+        self.sites += sites
         
     def coords_adapter(self, coords=None):
         '''
@@ -148,6 +148,7 @@ class AASystem(object):
             coords array to wrap
             
         '''
+        print "I have %d sites"%len(self.sites)
         return CoordsAdapter(nrigid=len(self.sites), coords=coords)
     
 
