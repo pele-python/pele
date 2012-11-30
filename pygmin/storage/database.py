@@ -522,6 +522,28 @@ class Database(object):
                 self.db.addMinimum(E, coords)
         return minimum_adder(self, Ecut)
     
+    def removeMinimum(self, m):
+        #delete any distance objects pointing to min2
+        candidates = self.session.query(Distance).\
+            filter(or_(Distance.minimum1 == m, 
+                       Distance.minimum2 == m))
+        candidates = list(candidates)
+        for d in candidates:
+            self.session.delete(d)
+            
+        #delete any transition states objects pointing to min2
+        candidates = self.session.query(TransitionState).\
+            filter(or_(TransitionState.minimum1 == m, 
+                       TransitionState.minimum2 == m))
+        candidates = list(candidates)
+        for ts in candidates:
+            self.session.delete(ts)
+        
+        #delete the minimum
+        self.session.delete(m)
+        self.session.commit()
+
+    
     def mergeMinima(self, min1, min2):
         """
         min2 will be deleted and everything that 

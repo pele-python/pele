@@ -55,7 +55,13 @@ class MyForm(QtGui.QMainWindow):
     #    pickle.dump(self.system.storage, output)
        
     def connect(self):
+        """
+        connect to an existing database
+        """
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Open File', '.')
+        self.connect_db(filename)
+
+    def connect_db(self, filename):
         self.system.set_database(Database(db=filename))
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum)
@@ -63,8 +69,10 @@ class MyForm(QtGui.QMainWindow):
         self.system.database.onMinimumRemoved=self.RemoveMinimum
         
     def SelectMinimum(self, item):
+        print "selecting minimum", item.minimum._id, item.minimum.energy
         self.ui.widget.setSystem(self.system)
         self.ui.widget.setCoords(item.coords)
+        self.ui.widget.setMinimum(item.minimum)
         self.ui.oglTS.setSystem(self.system)
         self.ui.oglTS.setCoords(item.coords)
         
@@ -244,6 +252,13 @@ class MyForm(QtGui.QMainWindow):
 
     def selectTransition(self):
         pass
+
+    def delete_minimum(self):
+        min1 = self.ui.widget.minima[1]
+        print "deleting minimum", min1._id, min1.energy
+        self.RemoveMinimum(min1)
+        self.system.database.removeMinimum(min1)
+
 
 #this is currently not used.  it may be used later though
 #    def LocalConnect(self):

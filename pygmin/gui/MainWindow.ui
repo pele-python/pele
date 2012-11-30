@@ -350,8 +350,15 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuActions">
+    <property name="title">
+     <string>Actions</string>
+    </property>
+    <addaction name="actionDelete_Minimum"/>
+   </widget>
    <addaction name="menuSimulation"/>
    <addaction name="menuHelp"/>
+   <addaction name="menuActions"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew">
@@ -372,6 +379,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionDelete_Minimum">
+   <property name="text">
+    <string>Delete Minimum</string>
    </property>
   </action>
  </widget>
@@ -641,6 +653,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionDelete_Minimum</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>delete_minimum()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>345</x>
+     <y>277</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectMinimum()</slot>
@@ -662,5 +690,6 @@
   <slot>LocalConnect()</slot>
   <slot>doubleEndedConnect()</slot>
   <slot>show_graph()</slot>
+  <slot>delete_minimum()</slot>
  </slots>
 </ui>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Wed Nov 28 17:25:15 2012
+# Created: Fri Nov 30 14:38:20 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -199,6 +199,8 @@ class Ui_MainWindow(object):
         self.menuSimulation.setObjectName(_fromUtf8("menuSimulation"))
         self.menuHelp = QtGui.QMenu(self.menubar)
         self.menuHelp.setObjectName(_fromUtf8("menuHelp"))
+        self.menuActions = QtGui.QMenu(self.menubar)
+        self.menuActions.setObjectName(_fromUtf8("menuActions"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
@@ -211,10 +213,14 @@ class Ui_MainWindow(object):
         self.actionConnect.setObjectName(_fromUtf8("actionConnect"))
         self.actionAbout = QtGui.QAction(MainWindow)
         self.actionAbout.setObjectName(_fromUtf8("actionAbout"))
+        self.actionDelete_Minimum = QtGui.QAction(MainWindow)
+        self.actionDelete_Minimum.setObjectName(_fromUtf8("actionDelete_Minimum"))
         self.menuSimulation.addAction(self.actionConnect)
         self.menuHelp.addAction(self.actionAbout)
+        self.menuActions.addAction(self.actionDelete_Minimum)
         self.menubar.addAction(self.menuSimulation.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
+        self.menubar.addAction(self.menuActions.menuAction())
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
@@ -234,6 +240,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.btnInvert, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.Invert)
         QtCore.QObject.connect(self.btnConnect, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.doubleEndedConnect)
         QtCore.QObject.connect(self.btnShowGraph, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.show_graph)
+        QtCore.QObject.connect(self.actionDelete_Minimum, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.delete_minimum)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -254,9 +261,11 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "TS search", None, QtGui.QApplication.UnicodeUTF8))
         self.menuSimulation.setTitle(QtGui.QApplication.translate("MainWindow", "Database", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuActions.setTitle(QtGui.QApplication.translate("MainWindow", "Actions", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNew.setText(QtGui.QApplication.translate("MainWindow", "New", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClear.setText(QtGui.QApplication.translate("MainWindow", "Clear Database", None, QtGui.QApplication.UnicodeUTF8))
         self.actionConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect to Database", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionDelete_Minimum.setText(QtGui.QApplication.translate("MainWindow", "Delete Minimum", None, QtGui.QApplication.UnicodeUTF8))
 
 from show3d import Show3D
