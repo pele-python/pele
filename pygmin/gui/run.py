@@ -118,27 +118,14 @@ class MyForm(QtGui.QMainWindow):
             self.ui.oglPath.setCoords(self.nebcoords[i,:])
     
     def show_graph(self):
-        #note: this breaks if pylab isn't a local import.  I don't know why
         import pylab as pl
         import networkx as nx
         pl.ion()
-        
-        #define the figure object and axes object
-#        if not hasattr(self, "graph_fig"):
-#            self.graph_fig = pl.figure()
-#        fig = self.graph_fig
-#        print "axes", list(fig.axes)
-#        fig.clf()
-#        fig.clear()
-#        print "figure cleared"
-#        print "axes", list(fig.axes)
-#        fig = pl.figure()
-#        ax = fig.add_subplot(111)
-        #pl.sca(ax)
         pl.clf()
         ax = pl.gca()
+        fig = pl.gcf()
         
-        #get the graph object
+        #get the graph object, eliminate nodes without edges
         graphwrapper = Graph(self.system.database)
         graph = graphwrapper.graph
         degree = graph.degree()
@@ -149,12 +136,18 @@ class MyForm(QtGui.QMainWindow):
         layout = nx.spring_layout(graph)
         layoutlist = layout.items()
         xypos = np.array([xy for n, xy in layoutlist])
+        #color the nodes by energy
+        e = np.array([m.energy for m, xy in layoutlist])
         #plot the nodes
-        points, = ax.plot(xypos[:,0], xypos[:,1], 'o', picker=5)
+        points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
+                            s=8**2, c=e, cmap=pl.cm.autumn)
+        fig.colorbar(points)
         #label the nodes
         ids = [n._id for n, xy in layoutlist]
         for i in range(len(ids)):
             ax.annotate( ids[i], xypos[i] )
+        
+        
     
         #plot the edges as lines
         for u, v in graph.edges():
@@ -177,7 +170,7 @@ class MyForm(QtGui.QMainWindow):
 #                print "you clicked on something other than a node"
                 return True
             thispoint = event.artist
-            ind = event.ind
+            ind = event.ind[0]
             min1 = layoutlist[ind][0]
             print "you clicked on minimum with id", min1._id, "and energy", min1.energy
             global pick_count
