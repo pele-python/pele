@@ -255,9 +255,14 @@ class MyForm(QtGui.QMainWindow):
 
     def delete_minimum(self):
         min1 = self.ui.widget.minima[1]
-        print "deleting minimum", min1._id, min1.energy
-        self.RemoveMinimum(min1)
-        self.system.database.removeMinimum(min1)
+        ret = QtGui.QMessageBox.question(self, "Deleting minima", 
+                                   "Do you want to delete minima %d with energy %g"%(min1._id, min1.energy), 
+                                   QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
+        if(ret == QtGui.QMessageBox.Ok):
+            print "deleting minima"
+            print "deleting minimum", min1._id, min1.energy
+            self.RemoveMinimum(min1)
+            self.system.database.removeMinimum(min1)
 
 
 #this is currently not used.  it may be used later though
