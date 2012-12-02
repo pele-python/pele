@@ -283,7 +283,8 @@ class DisconnectivityGraph(object):
         self._layout_x_axis(self.graph, tree_graph)
 
         #get the line segments which will be drawn to define the graph
-        line_segments = self._get_line_segments(tree_graph, eoffset=1.)
+        eoffset = (elower[-1] - elower[-2]) * 0.2  #this should be passable
+        line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
         
         #draw the minima as points
         import matplotlib.pyplot as plt
