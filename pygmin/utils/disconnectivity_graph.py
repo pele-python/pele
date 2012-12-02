@@ -22,6 +22,9 @@ class Tree(object):
     def number_of_branches(self):
         return len(self.subtrees)
     
+    def is_leaf(self):
+        return self.number_of_branches() == 0
+    
     def number_of_leaves(self):
         if len(self.subtrees) == 0:
             nleaves = 1
@@ -139,23 +142,47 @@ class DisconnectivityGraph(object):
 #        nbranches = tree.number_of_branches()
         nminima = tree.number_of_leaves()
         subtrees = tree.get_subtrees()
+        subtrees = self._order_trees_by_global_minimum(subtrees)
         tree.data["x"] = xmin + dx_per_min * nminima / 2.
         x = xmin
         for subtree in subtrees:
             self._recursive_layout_x_axis(subtree, x, dx_per_min)
             nminima_sub = subtree.number_of_leaves()
             x += dx_per_min * nminima_sub
-            
-        
-        
-          
+  
     def _layout_x_axis(self, graph, tree):
         """
         """
         xmin = 0.
         dx_per_min = 1.
         self._recursive_layout_x_axis(tree, xmin, dx_per_min)
-        
+
+    def _tree_get_minimum_energy(self, tree, emin=1e100):
+        if tree.is_leaf():
+            energy = tree.data["minimum"].energy
+            if energy < emin:
+                emin = energy
+        else:
+            for subtree in tree.get_subtrees():
+                emin = self._tree_get_minimum_energy(subtree, emin)
+        return emin
+    
+    def _order_trees_by_global_minimum(self, trees):
+        """
+        order trees with by the lowest energy minimum.  the global minimum
+        goes in the center, with the remaining being placed alternating on the
+        left and on the right.
+        """
+        mylist = [ (self._tree_get_minimum_energy(tree), tree) for tree in trees]
+        mylist = sorted(mylist)
+        neworder = deque()
+        for i in range(len(mylist)):
+            if i % 2 == 0:
+                neworder.append(mylist[i][1])
+            else:
+                neworder.appendleft(mylist[i][1])
+        return list(neworder)
+            
         
 # this is roughly the algorithm in disconnectionDPS.f90    
 #    def _assign_minima_to_basins(self, energy_levels):
