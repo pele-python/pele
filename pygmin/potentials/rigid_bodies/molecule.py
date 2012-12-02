@@ -8,7 +8,7 @@ global _use_cython
 try:
     import _rbutils_cython
     _use_cython = True
-except:
+except ImportError:
     _use_cython = False
 
 
