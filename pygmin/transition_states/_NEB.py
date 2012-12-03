@@ -7,7 +7,7 @@ import pygmin.optimize.quench as quench
 
 __all__ = ["NEB"]
 
-def distance_cart(x1, x2):
+def distance_cart(x1, x2, distance=True, grad=True):
     return np.sum((x2-x1)**2), -(x2-x1)
 
 class NEB(object):
@@ -145,6 +145,7 @@ class NEB(object):
         # construction
         realgrad = self._getRealEnergyGradient(tmp)
 
+        #print "Spring forces"
         # the total energy of images, band is neglected
         E = sum(self.energies)
         Eneb = 0
@@ -166,16 +167,15 @@ class NEB(object):
         return E+Eneb, grad.reshape(grad.size)
         #return 0., grad.reshape(grad.size)
 
-    def tangent_old(self, central, left, right):
+    def tangent_old(self, central, left, right, gleft, gright):
         """
         Old tangent construction based on average of neighbouring images
 
         coords1d:
             coordinates of the whole neb active images (no end points)
         """
-        d1 = self.distance(central[1], left[1])
-        d2 = self.distance(central[1], right[1])
-        t = d1 / np.linalg.norm(d1) - d2 / np.linalg.norm(d2)
+        t = gleft / np.linalg.norm(gleft) - gright / np.linalg.norm(gright)
+        t = gleft  - gright
         return t / np.linalg.norm(t)
 
     def tangent(self, central, left, right, gleft, gright):
@@ -230,8 +230,8 @@ class NEB(object):
         """
 
         # construct tangent vector
-        d_left, g_left = self.distance(image[1], left[1])
-        d_right, g_right = self.distance(image[1], right[1])
+        d_left, g_left = self.distance(image[1], left[1], distance=self.with_springenergy)
+        d_right, g_right = self.distance(image[1], right[1], distance=self.with_springenergy)
         #print g_left, g_right
         
         t = self.tangent(image[0],left[0],right[0], g_left, g_right)
@@ -239,7 +239,7 @@ class NEB(object):
             return greal - 2.*np.dot(greal, t) * t
 
         g_spring = self.k*(g_left + g_right)
-        
+        #print "spring", np.dot(g_spring, t)
         if True:
             import _NEB_utils
             E, g_tot = _NEB_utils.neb_force(t,greal, g_spring, self.k, self.dneb)
@@ -309,7 +309,7 @@ class NEB(object):
                 if i == 0:
                     dist = 0.
                 else:
-                    dist, t = self.distance( self.coords[i,:], self.coords[i-1,:] )
+                    dist, t = self.distance( self.coords[i,:], self.coords[i-1,:], grad=False)
                 S += dist
                 #print "S",S, "E",self.energies[i], "dist", dist
                 fout.write("%f %g\n" % (S, self.energies[i]))
@@ -360,7 +360,7 @@ def nebtest(MyNEB=NEB, nimages=22):
     tmp = neb.coords
     energies_interpolate = neb.energies.copy()
     pl.figure()
-    pl.subplot(1,2,1)
+    pl.subplot(2,2,1)
     pl.subplots_adjust(wspace=0.3, left=0.05, right=0.95, bottom = 0.14)
 
     pl.title("path")
@@ -377,6 +377,14 @@ def nebtest(MyNEB=NEB, nimages=22):
     pl.ylabel("y")
     pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)
 
+    pl.subplot(1,2,2)
+    pl.title("energy")
+    pl.plot(energies_interpolate, 'ko-', label="interpolate")
+    pl.plot(neb.energies, 'ro-', label="neb")
+    pl.xlabel("image")
+    pl.ylabel("energy")
+    pl.legend(loc='best')
+    
     pl.subplot(1,2,2)
     pl.title("energy")
     pl.plot(energies_interpolate, 'ko-', label="interpolate")

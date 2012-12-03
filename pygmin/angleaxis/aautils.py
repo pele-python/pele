@@ -2,10 +2,13 @@ import numpy as np
 from pygmin.utils import rotations
 from pygmin.angleaxis import CoordsAdapter
 from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
+from pygmin.transition_states import interpolate_linear
+from math import pi
 
-__all__ = ["AASiteType", "AASystem", "aainterpolate"]
 
-def aainterpolate(initial, final, t):
+__all__ = ["AASiteType", "AASystem", "interpolate_angleaxis"]
+
+def interpolate_angleaxis(initial, final, t):
     ''' interpolate between 2 arrays of angle axis coordinates
     
     Parameters
@@ -22,6 +25,7 @@ def aainterpolate(initial, final, t):
     for i in xrange(conf.shape[0]):
         conf[i] = rotations.q2aa(rotations.q_slerp(rotations.aa2q(initial[i]),
                                 rotations.aa2q(final[i]), t))
+    return conf
 
 
 class AASiteType(object):
@@ -182,8 +186,43 @@ class AASystem(object):
             
         return spring.coords
     
-    def neb_distance(self, coords1, coords2):
-        return self.distance_squared(coords1, coords2), self.distance_squared_grad(coords1, coords2)
+    def neb_distance(self, coords1, coords2, distance=True, grad=True):
+        d=None
+        if distance:
+            d = self.distance_squared(coords1, coords2)
+        g = None
+        if grad:
+            g = self.distance_squared_grad(coords1, coords2)
+        return d, g
+    
+    def interpolate(self, initial, final, t):
+        cinitial = self.coords_adapter(initial)
+        cfinal = self.coords_adapter(final)
+        
+        cnew = self.coords_adapter(np.zeros_like(initial))
+        cnew.coords[:] = interpolate_linear(initial, final, t)
+        cnew.posRigid[:] = interpolate_linear(cinitial.posRigid, cfinal.posRigid, t)
+        cnew.rotRigid[:] = interpolate_angleaxis(cinitial.rotRigid, cfinal.rotRigid, t)        
+        return cnew.coords
+    
+    def align_path(self, path):
+        for i in xrange(1, len(path)):
+            c2 = self.coords_adapter(path[i])
+            c1 = self.coords_adapter(path[i-1])
+            for p1, p2 in zip(c1.rotRigid,c2.rotRigid):
+                n2 = p2/np.linalg.norm(p2)*2.*pi
+            
+                while True:
+                    p2n = p2+n2
+                    if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+                        break
+                    p2[:]=p2n
+                    
+                while True:
+                    p2n = p2-n2
+                    if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+                        break
+                    p2[:]=p2n  
 
 if __name__ == "__main__":
     natoms = 8
