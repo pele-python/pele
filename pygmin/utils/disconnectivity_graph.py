@@ -6,6 +6,9 @@ from pygmin.landscape import Graph
 
         
 class Tree(object):
+    """
+    a Tree graph
+    """
     def __init__(self, parent=None):
         self.subtrees = []
         self.data = {}
@@ -230,7 +233,7 @@ class DisconnectivityGraph(object):
 
     def _get_energy_levels(self):
         
-        elist = [self.transition_states[edge].energy for edge in self.graph.edges()]
+        elist = [self._getTS(*edge).energy for edge in self.graph.edges()]
         emin = min(elist)
         emax = max(elist)
         de = (emax - emin) / (self.nbins-1)
@@ -264,7 +267,13 @@ class DisconnectivityGraph(object):
         self._get_line_segment_recursive(line_segments, tree, eoffset)
         return line_segments
     
-    def run(self):
+    def get_minima_layout(self):
+        leaves = self.tree_graph.get_leaves()
+        minima = [leaf.data["minimum"] for leaf in leaves]
+        xpos = [leaf.data["x"] for leaf in leaves]
+        return xpos, minima
+    
+    def calculate(self):
         #find a reduced graph with only those connected to min0
         nodes = nx.node_connected_component(self.graph, self.min0)
         self.graph = self.graph.subgraph(nodes)
@@ -286,15 +295,19 @@ class DisconnectivityGraph(object):
         eoffset = (elower[-1] - elower[-2]) * 0.2  #this should be passable
         line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
         
+        self.tree_graph = tree_graph
+        self.line_segments = line_segments
+    
+    def plot(self):
         #draw the minima as points
         import matplotlib.pyplot as plt
-        leaves = tree_graph.get_leaves()
+        leaves = self.tree_graph.get_leaves()
         energies = [leaf.data["minimum"].energy for leaf in leaves]
         xpos = [leaf.data["x"] for leaf in leaves]        
         plt.plot(xpos, energies, 'o')
         
         #draw the line segemnts
-        for x, y in line_segments:
+        for x, y in self.line_segments:
             plt.plot(x, y, 'k')
 
         

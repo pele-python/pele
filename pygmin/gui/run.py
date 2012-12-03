@@ -8,6 +8,7 @@ import numpy as np
 
 from pygmin.storage import Database
 from pygmin.landscape import Graph
+from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 
 global pick_count
 
@@ -124,6 +125,53 @@ class MyForm(QtGui.QMainWindow):
     def showFrame(self, i):
         if hasattr(self, "nebcoords"):
             self.ui.oglPath.setCoords(self.nebcoords[i,:])
+    
+    def show_disconnectivity_graph(self):
+        import pylab as pl
+        pl.ion()
+        pl.clf()
+        ax = pl.gca()
+        fig = pl.gcf()
+
+        graphwrapper = Graph(self.system.database)
+        dg = DisconnectivityGraph(graphwrapper.graph)
+        dg.calculate()
+        
+        #draw minima as points
+        xpos, minima = dg.get_minima_layout()
+        energies = [m.energy for m in minima]
+        points = ax.scatter(xpos, energies, picker=5)
+        
+        #draw line segments connecting minima
+        line_segments = dg.line_segments
+        for x, y in line_segments:
+            ax.plot(x, y, 'k')
+        
+        
+        #define what happens when a point is clicked on
+        global pick_count
+        pick_count = 0
+        def on_pick(event):
+            if event.artist != points:
+#                print "you clicked on something other than a node"
+                return True
+            thispoint = event.artist
+            ind = event.ind[0]
+            min1 = minima[ind]
+            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+            global pick_count
+            #print pick_count
+            pick_count += 1
+            if (pick_count % 2) == 0:
+                self._SelectMinimum1(min1)
+            else:
+                self._SelectMinimum2(min1)
+        fig = pl.gcf()
+        cid = fig.canvas.mpl_connect('pick_event', on_pick)
+
+        pl.show()
+        
+
     
     def show_graph(self):
         import pylab as pl
