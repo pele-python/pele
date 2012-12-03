@@ -112,7 +112,21 @@ class DisconnectivityGraph(object):
 #
 #        return tsmax
 
-       
+    def _connected_component_subgraphs(self, G):
+        """
+        redefine the networkx version because they use deepcopy
+        on the nodes and edges
+        
+        this was coppied and only slightly modified from the original
+        source
+        """
+        cc=nx.connected_components(G)
+        graph_list=[]
+        for c in cc:
+            graph_list.append(G.subgraph(c))
+        return graph_list
+
+    
     def _split_graph(self, graph, ethresh):
         """
         make a new graph from the old one after excluding edges with energy > ethresh
@@ -124,7 +138,8 @@ class DisconnectivityGraph(object):
         for edge in graph.edges():
             if self._getTS(*edge).energy < ethresh:
                 newgraph.add_edge(*edge)
-        return nx.connected_component_subgraphs(newgraph)
+#        return nx.connected_component_subgraphs(newgraph)
+        return self._connected_component_subgraphs(newgraph)
 
 
     def _recursive_new_tree(self, parent_tree, graph, energy_levels, ilevel):
@@ -159,7 +174,7 @@ class DisconnectivityGraph(object):
         
     
         #deal with the case that we have multiple disconnected graphs
-        subgraphs = nx.connected_component_subgraphs(graph)
+        subgraphs = self._connected_component_subgraphs(graph)
         if len(subgraphs) > 1:
             #if the highest level tree has more than one graph then 
             #they are disconnected graphs
