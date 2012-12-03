@@ -134,7 +134,7 @@ class MyForm(QtGui.QMainWindow):
         fig = pl.gcf()
 
         graphwrapper = Graph(self.system.database)
-        dg = DisconnectivityGraph(graphwrapper.graph)
+        dg = DisconnectivityGraph(graphwrapper.graph, subgraph_size=2)
         dg.calculate()
         
         #draw minima as points
