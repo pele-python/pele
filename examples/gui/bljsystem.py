@@ -6,13 +6,27 @@ import numpy as np
 import time
 #from NEB import NEB
 
+from pygmin import gui
 import pygmin.basinhopping as bh
 import pygmin.potentials.ljpshiftfast as lj
 from pygmin.takestep import displace
 from pygmin.mindist import ExactMatchCluster, MinDistWrapper
 from pygmin.mindist import minPermDistRanRot as minpermdist
 from ljsystem import LJSystem
-        
+
+
+class CompareExact(object):
+    def __init__(self, accuracy = 1e-2, **kwargs):
+        self.kwargs = kwargs
+        self.compare_exact = ExactMatchCluster(**kwargs)
+    
+    def __call__(self, m1, m2):
+        ret =  self.compare_exact(m1.coords, m2.coords)
+        if( not ret):
+            print "2 minima within enery accuracy have different coordinates", m1.energy, m2.energy
+        return ret
+
+
 class BLJSystem(LJSystem):
     def __init__(self):
 #        dlg = NewLJDialog()
@@ -25,6 +39,13 @@ class BLJSystem(LJSystem):
         super(BLJSystem, self).__init__()
         print self.natoms
         self.ntypeA = int(0.8*self.natoms)
+
+    def set_database(self, database):
+        permlist = [range(self.ntypeA), range(self.ntypeA, self.natoms)]
+        compare = CompareExact(permlist=permlist)
+        database.compareMinima = compare
+        gui.GUISystem.set_database(self, database)
+
 
     def create_potential(self):
         potential = lj.LJpshift(self.natoms, self.ntypeA)

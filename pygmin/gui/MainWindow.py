@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Wed Nov 28 17:25:15 2012
+# Created: Mon Dec  3 11:28:19 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -133,6 +133,9 @@ class Ui_MainWindow(object):
         self.btnShowGraph = QtGui.QPushButton(self.NEBTab)
         self.btnShowGraph.setObjectName(_fromUtf8("btnShowGraph"))
         self.gridLayout_2.addWidget(self.btnShowGraph, 3, 1, 1, 1)
+        self.btnDisconnectivity_graph = QtGui.QPushButton(self.NEBTab)
+        self.btnDisconnectivity_graph.setObjectName(_fromUtf8("btnDisconnectivity_graph"))
+        self.gridLayout_2.addWidget(self.btnDisconnectivity_graph, 4, 0, 1, 2)
         self.gridLayout_4.addLayout(self.gridLayout_2, 1, 3, 1, 1)
         self.tabWidget.addTab(self.NEBTab, _fromUtf8(""))
         self.tab = QtGui.QWidget()
@@ -199,6 +202,8 @@ class Ui_MainWindow(object):
         self.menuSimulation.setObjectName(_fromUtf8("menuSimulation"))
         self.menuHelp = QtGui.QMenu(self.menubar)
         self.menuHelp.setObjectName(_fromUtf8("menuHelp"))
+        self.menuActions = QtGui.QMenu(self.menubar)
+        self.menuActions.setObjectName(_fromUtf8("menuActions"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
@@ -211,10 +216,14 @@ class Ui_MainWindow(object):
         self.actionConnect.setObjectName(_fromUtf8("actionConnect"))
         self.actionAbout = QtGui.QAction(MainWindow)
         self.actionAbout.setObjectName(_fromUtf8("actionAbout"))
+        self.actionDelete_Minimum = QtGui.QAction(MainWindow)
+        self.actionDelete_Minimum.setObjectName(_fromUtf8("actionDelete_Minimum"))
         self.menuSimulation.addAction(self.actionConnect)
         self.menuHelp.addAction(self.actionAbout)
+        self.menuActions.addAction(self.actionDelete_Minimum)
         self.menubar.addAction(self.menuSimulation.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
+        self.menubar.addAction(self.menuActions.menuAction())
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
@@ -234,6 +243,8 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.btnInvert, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.Invert)
         QtCore.QObject.connect(self.btnConnect, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.doubleEndedConnect)
         QtCore.QObject.connect(self.btnShowGraph, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.show_graph)
+        QtCore.QObject.connect(self.actionDelete_Minimum, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.delete_minimum)
+        QtCore.QObject.connect(self.btnDisconnectivity_graph, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.show_disconnectivity_graph)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -248,15 +259,18 @@ class Ui_MainWindow(object):
         self.btnInvert.setText(QtGui.QApplication.translate("MainWindow", "Invert", None, QtGui.QApplication.UnicodeUTF8))
         self.btnConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "show graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnDisconnectivity_graph.setText(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), QtGui.QApplication.translate("MainWindow", "NEB", None, QtGui.QApplication.UnicodeUTF8))
         self.btnTSSearch.setText(QtGui.QApplication.translate("MainWindow", "Find TS", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Path", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "TS search", None, QtGui.QApplication.UnicodeUTF8))
         self.menuSimulation.setTitle(QtGui.QApplication.translate("MainWindow", "Database", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuActions.setTitle(QtGui.QApplication.translate("MainWindow", "Actions", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNew.setText(QtGui.QApplication.translate("MainWindow", "New", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClear.setText(QtGui.QApplication.translate("MainWindow", "Clear Database", None, QtGui.QApplication.UnicodeUTF8))
         self.actionConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect to Database", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionDelete_Minimum.setText(QtGui.QApplication.translate("MainWindow", "Delete Minimum", None, QtGui.QApplication.UnicodeUTF8))
 
 from show3d import Show3D

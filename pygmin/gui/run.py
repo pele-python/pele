@@ -4,9 +4,20 @@ import sys
 import bhrunner
 import copy
 import numpy as np
+#import matplotlib.pyplot as plt
 
 from pygmin.storage import Database
 from pygmin.landscape import Graph
+from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
+
+global pick_count
+
+class pick_event(object):
+    """
+    define a matplotlib pick_event event
+    """
+    def __init__(self, artist):
+        pass
 
 class QMinimumInList(QtGui.QListWidgetItem):
     def setCoords(self, coords):
@@ -45,7 +56,13 @@ class MyForm(QtGui.QMainWindow):
     #    pickle.dump(self.system.storage, output)
        
     def connect(self):
+        """
+        connect to an existing database
+        """
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Open File', '.')
+        self.connect_db(filename)
+
+    def connect_db(self, filename):
         self.system.set_database(Database(db=filename))
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum)
@@ -53,21 +70,35 @@ class MyForm(QtGui.QMainWindow):
         self.system.database.onMinimumRemoved=self.RemoveMinimum
         
     def SelectMinimum(self, item):
+        print "selecting minimum", item.minimum._id, item.minimum.energy
         self.ui.widget.setSystem(self.system)
         self.ui.widget.setCoords(item.coords)
+        self.ui.widget.setMinimum(item.minimum)
         self.ui.oglTS.setSystem(self.system)
         self.ui.oglTS.setCoords(item.coords)
         
+    def _SelectMinimum1(self, minimum):
+        """by minimum"""
+        self.ui.oglPath.setSystem(self.system)
+        self.ui.oglPath.setCoords(minimum.coords, index=1)
+        self.ui.oglPath.setMinimum(minimum, index=1)
+        self.neb = None
 
     def SelectMinimum1(self, item):
+        """called by the ui"""
+        return self._SelectMinimum1(item.minimum)
+ 
+    def _SelectMinimum2(self, minimum):
+        """by minimum"""
         self.ui.oglPath.setSystem(self.system)
-        self.ui.oglPath.setCoords(item.coords, index=1)
+        self.ui.oglPath.setCoords(minimum.coords, index=2)
+        self.ui.oglPath.setMinimum(minimum, index=2)
         self.neb = None
-    
+
+
     def SelectMinimum2(self, item):
-        self.ui.oglPath.setSystem(self.system)
-        self.ui.oglPath.setCoords(item.coords, index=2)
-        self.neb = None
+        """called by the ui"""
+        return self._SelectMinimum2(item.minimum)
     
     
     def Invert(self):
@@ -95,23 +126,129 @@ class MyForm(QtGui.QMainWindow):
         if hasattr(self, "nebcoords"):
             self.ui.oglPath.setCoords(self.nebcoords[i,:])
     
+    def show_disconnectivity_graph(self):
+        import pylab as pl
+        pl.ion()
+        pl.clf()
+        ax = pl.gca()
+        fig = pl.gcf()
+
+        graphwrapper = Graph(self.system.database)
+        dg = DisconnectivityGraph(graphwrapper.graph)
+        dg.calculate()
+        
+        #draw minima as points
+        xpos, minima = dg.get_minima_layout()
+        energies = [m.energy for m in minima]
+        points = ax.scatter(xpos, energies, picker=5)
+        
+        #draw line segments connecting minima
+        line_segments = dg.line_segments
+        for x, y in line_segments:
+            ax.plot(x, y, 'k')
+        
+        
+        #define what happens when a point is clicked on
+        global pick_count
+        pick_count = 0
+        def on_pick(event):
+            if event.artist != points:
+#                print "you clicked on something other than a node"
+                return True
+            thispoint = event.artist
+            ind = event.ind[0]
+            min1 = minima[ind]
+            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+            global pick_count
+            #print pick_count
+            pick_count += 1
+            if (pick_count % 2) == 0:
+                self._SelectMinimum1(min1)
+            else:
+                self._SelectMinimum2(min1)
+        fig = pl.gcf()
+        cid = fig.canvas.mpl_connect('pick_event', on_pick)
+
+        pl.show()
+        
+
+    
     def show_graph(self):
         import pylab as pl
         import networkx as nx
         pl.ion()
+        pl.clf()
+        ax = pl.gca()
+        fig = pl.gcf()
         
+        #get the graph object, eliminate nodes without edges
         graphwrapper = Graph(self.system.database)
         graph = graphwrapper.graph
         degree = graph.degree()
         nodes = [n for n, nedges in degree.items() if nedges > 0]
-        ids = dict([(n, n._id) for n in nodes])
-#        subgraph = graph.subgraph(nodes)
-        pl.clf()
-        nx.draw(graph, labels=ids, nodelist=nodes)
+        graph = graph.subgraph(nodes)
+        
+        #get the layout of the nodes from networkx
+        layout = nx.spring_layout(graph)
+        layoutlist = layout.items()
+        xypos = np.array([xy for n, xy in layoutlist])
+        #color the nodes by energy
+        e = np.array([m.energy for m, xy in layoutlist])
+        #plot the nodes
+        points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
+                            s=8**2, c=e, cmap=pl.cm.autumn)
+        fig.colorbar(points)
+        #label the nodes
+        ids = [n._id for n, xy in layoutlist]
+        for i in range(len(ids)):
+            ax.annotate( ids[i], xypos[i] )
+        
+        
+    
+        #plot the edges as lines
+        for u, v in graph.edges():
+            line = np.array([layout[u], layout[v]])
+            ax.plot(line[:,0], line[:,1], '-k')
+        
+        #scale the axes so the points are not cutoff
+        xmin, ymin = np.min(xypos, 0)
+        xmax, ymax = np.max(xypos, 0)
+        dx = (xmax - xmin)*.1
+        dy = (ymax - ymin)*.1
+        ax.set_xlim([xmin-dx, xmax+dx])
+        ax.set_ylim([ymin-dy, ymax+dy])
+        
+        global pick_count
+        pick_count = 0
+
+        def on_pick(event):
+            if event.artist != points:
+#                print "you clicked on something other than a node"
+                return True
+            thispoint = event.artist
+            ind = event.ind[0]
+            min1 = layoutlist[ind][0]
+            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+            global pick_count
+            #print pick_count
+            pick_count += 1
+            if (pick_count % 2) == 0:
+                self._SelectMinimum1(min1)
+            else:
+                self._SelectMinimum2(min1)
+
+        fig = pl.gcf()
+        cid = fig.canvas.mpl_connect('pick_event', on_pick)
+        
+        #ids = dict([(n, n._id) for n in nodes])
+        #nx.draw(graph, labels=ids, nodelist=nodes)
+        #ax.draw()
+#        pl.draw()
         pl.show()
         
     
     def showEnergies(self):
+        #note: this breaks if pylab isn't a local import.  I don't know why
         import pylab as pl
         pl.ion()
         pl.plot(self.nebenergies, "o-", label="energies")
@@ -164,6 +301,18 @@ class MyForm(QtGui.QMainWindow):
     def selectTransition(self):
         pass
 
+    def delete_minimum(self):
+        min1 = self.ui.widget.minima[1]
+        ret = QtGui.QMessageBox.question(self, "Deleting minima", 
+                                   "Do you want to delete minima %d with energy %g"%(min1._id, min1.energy), 
+                                   QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
+        if(ret == QtGui.QMessageBox.Ok):
+            print "deleting minima"
+            print "deleting minimum", min1._id, min1.energy
+            self.RemoveMinimum(min1)
+            self.system.database.removeMinimum(min1)
+
+
 #this is currently not used.  it may be used later though
 #    def LocalConnect(self):
 #        self.local_connect = self.system.create_local_connect()
@@ -190,8 +339,11 @@ class MyForm(QtGui.QMainWindow):
 #        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
     
     def doubleEndedConnect(self):
-        min1 = self.ui.listMinima1.selectedItems()[0].minimum
-        min2 = self.ui.listMinima2.selectedItems()[0].minimum
+#        min1 = self.ui.listMinima1.selectedItems()[0].minimum
+#        min2 = self.ui.listMinima2.selectedItems()[0].minimum
+#        min1 = self.ui.
+        min1 = self.ui.oglPath.minima[1]
+        min2 = self.ui.oglPath.minima[2]
         database = self.system.database
         double_ended_connect = self.system.create_double_ended_connect(min1, min2, database)
         double_ended_connect.connect()

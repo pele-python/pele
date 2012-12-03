@@ -219,6 +219,13 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QPushButton" name="btnDisconnectivity_graph">
+            <property name="text">
+             <string>disconnectivity graph</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -350,8 +357,15 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuActions">
+    <property name="title">
+     <string>Actions</string>
+    </property>
+    <addaction name="actionDelete_Minimum"/>
+   </widget>
    <addaction name="menuSimulation"/>
    <addaction name="menuHelp"/>
+   <addaction name="menuActions"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew">
@@ -372,6 +386,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionDelete_Minimum">
+   <property name="text">
+    <string>Delete Minimum</string>
    </property>
   </action>
  </widget>
@@ -425,7 +444,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>548</x>
-     <y>445</y>
+     <y>412</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -441,7 +460,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>651</x>
-     <y>478</y>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -488,8 +507,8 @@
    <slot>showFrame()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>46</x>
-     <y>477</y>
+     <x>57</x>
+     <y>462</y>
     </hint>
     <hint type="destinationlabel">
      <x>74</x>
@@ -505,7 +524,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>548</x>
-     <y>478</y>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -536,8 +555,8 @@
    <slot>SelectMinimum()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>528</x>
-     <y>130</y>
+     <x>139</x>
+     <y>103</y>
     </hint>
     <hint type="destinationlabel">
      <x>553</x>
@@ -552,8 +571,8 @@
    <slot>doubleEndedConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>521</x>
-     <y>511</y>
+     <x>139</x>
+     <y>112</y>
     </hint>
     <hint type="destinationlabel">
      <x>627</x>
@@ -568,8 +587,8 @@
    <slot>selectTransition()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>528</x>
-     <y>339</y>
+     <x>139</x>
+     <y>103</y>
     </hint>
     <hint type="destinationlabel">
      <x>342</x>
@@ -584,8 +603,8 @@
    <slot>showFrameTS()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>57</x>
-     <y>512</y>
+     <x>33</x>
+     <y>85</y>
     </hint>
     <hint type="destinationlabel">
      <x>172</x>
@@ -601,7 +620,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>651</x>
-     <y>445</y>
+     <y>412</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -616,8 +635,8 @@
    <slot>doubleEndedConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>510</x>
-     <y>489</y>
+     <x>548</x>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>685</x>
@@ -632,12 +651,44 @@
    <slot>show_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>611</x>
-     <y>498</y>
+     <x>651</x>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>691</x>
      <y>476</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionDelete_Minimum</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>delete_minimum()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>345</x>
+     <y>277</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnDisconnectivity_graph</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>show_disconnectivity_graph()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>627</x>
+     <y>497</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>689</x>
+     <y>437</y>
     </hint>
    </hints>
   </connection>
@@ -662,5 +713,7 @@
   <slot>LocalConnect()</slot>
   <slot>doubleEndedConnect()</slot>
   <slot>show_graph()</slot>
+  <slot>delete_minimum()</slot>
+  <slot>show_disconnectivity_graph()</slot>
  </slots>
 </ui>

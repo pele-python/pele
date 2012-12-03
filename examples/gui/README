@@ -5,7 +5,7 @@ and start NEB runs using the gui.
 I decided for qt since it has a very nice API and gui designer. 
 The file MainWindow.py is automatically generated using the command
 
-  pyuic4 MainWindow.ui -o MainWidow.py
+  pyuic4 MainWindow.ui -o MainWindow.py
 
 I will add this to the build script later. To edit the gui use
 

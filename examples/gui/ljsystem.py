@@ -53,11 +53,12 @@ class LJSystem(gui.GUISystem):
             GL.glPopMatrix()
     
     def create_mindist_object(self):
-        return MinDistWrapper(minpermdist, permlist=[range(self.natoms)])
+        return MinDistWrapper(minpermdist, permlist=[range(self.natoms)], niter=10)
     
     def Align(self, coords1, coords2):
         mindist = self.create_mindist_object()
         dist, X1, X2 = mindist(coords1, coords2)
+        print "after alignment the distance is", dist
         return X1, X2
     
     def createNEB(self, coords1, coords2):
