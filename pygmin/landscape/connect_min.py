@@ -398,6 +398,9 @@ class DoubleEndedConnect(object):
         NEB and all transition state search parameters, along with, e.g. 
         now many times to retry a local connect run.  See documentation for
         LocalConnect for details.
+    fresh_connect : bool
+        if true, ignore all existing minima and transition states in the
+        database and try to find a new path
     
     Notes
     -----
@@ -459,7 +462,9 @@ class DoubleEndedConnect(object):
     def __init__(self, min1, min2, pot, mindist, database, 
                  use_all_min=False, verbosity=1,
                  merge_minima=False, 
-                 max_dist_merge=0.1, local_connect_params=dict()):
+                 max_dist_merge=0.1, local_connect_params=dict(),
+                 fresh_connect=False,
+                 ):
         self.minstart = min1
         assert min1._id == min1, "minima must compare equal with their id %d %s %s" % (min1._id, str(min1), str(min1.__hash__()))
         self.minend = min2
@@ -474,7 +479,11 @@ class DoubleEndedConnect(object):
 #        self.tsSearchParams = tsSearchParams
 #        self.NEBquenchParams = NEBquenchParams
         self.database = database
-        self.graph = Graph(self.database)
+        self.fresh_connect = fresh_connect
+        if self.fresh_connect:
+            self.graph = Graph(self.database, minima=[self.minstart, self.minend])
+        else:
+            self.graph = Graph(self.database)
 #        self.nrefine_max = nrefine_max
         
 #        self.NEB_image_density = float(NEB_image_density)
@@ -533,30 +542,25 @@ class DoubleEndedConnect(object):
         if dist > self.max_dist_merge:
             print "    minima merge aborted.  distance is too large", dist
             return
-        self.database.mergeMinima(min1, min2)
-        #print "min1 min2", min1, min2
         
-        if debug:
-            #testing
-            if min2 in self.database.minima():
-                print "error, min2 is still in database"
-            for ts in self.database.transition_states():
-                if min2 == ts.minimum1 or min2 == ts.minimum2:
-                    print "error, a transition state attached to min2 is still in database", ts.minimum1._id, ts.minimum2._id
+#        if debug:
+#            #testing
+#            if min2 in self.database.minima():
+#                print "error, min2 is still in database"
+#            for ts in self.database.transition_states():
+#                if min2 == ts.minimum1 or min2 == ts.minimum2:
+#                    print "error, a transition state attached to min2 is still in database", ts.minimum1._id, ts.minimum2._id
         
-        #self.graph and self.Gdist need to be updated also, but I 
-        #don't know of a good way of doing it.  So just rebuild them
-        del self.graph.graph
-        del self.graph
-        print "    rebuilding self.graph"
-        self.graph = Graph(self.database)
+        #merge minima in transition state graph
+        #note, this will merge minima in the database also
+        self.graph.mergeMinima(min1, min2, update_database=True)
         if debug:
             #testing
             if min2 in self.graph.graph.nodes():
                 print "error, min2 is still in self.graph.graph"
             print "self.graph.graph. nnodes", self.graph.graph.number_of_nodes()
-        
-        self.dist_graph.replaceTransitionStateGraph(self.graph)
+
+        #merge minima in distance graph        
         self.dist_graph.mergeMinima(min1, min2)
 
     def getDist(self, min1, min2):
@@ -582,7 +586,7 @@ class DoubleEndedConnect(object):
         print "adding transition state", min1._id, min2._id
         #update the transition state graph
         ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=eigenvec, eigenval=eigenval)
-        self.graph.refresh()
+#        self.graph.refresh()
 
         #update the distance graph
         self.dist_graph.addMinimum(min1)
@@ -849,7 +853,7 @@ def test(Connect=DoubleEndedConnect, natoms=11):
 
 
 if __name__ == "__main__":
-    test(natoms=28)
+    test(natoms=19)
 
 
     

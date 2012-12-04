@@ -7,5 +7,6 @@ from pygmin.mindist.mindistutils import TestMinDistUtils
 from pygmin.potentials.ATLJ import TestATLJ
 from pygmin.potentials.lj import LJTest
 from pygmin.potentials.ljcut import LJCutTest
+from pygmin.landscape._graph import TestGraph
 
 unittest.main()
