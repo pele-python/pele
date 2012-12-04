@@ -404,20 +404,25 @@ class DisconnectivityGraph(object):
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
-    def plot(self):
+    def plot(self, show_minima=False):
         #draw the minima as points
         import matplotlib.pyplot as plt
         leaves = self.tree_graph.get_leaves()
         energies = [leaf.data["minimum"].energy for leaf in leaves]
-        xpos = [leaf.data["x"] for leaf in leaves]        
-        plt.plot(xpos, energies, 'o')
+        xpos = [leaf.data["x"] for leaf in leaves]
+        
+        if show_minima:      
+            plt.plot(xpos, energies, 'o')
         
         #draw the line segemnts
         for x, y in self.line_segments:
             plt.plot(x, y, 'k')
+            
+        plt.ylabel("Energy")
+        plt.xticks([])
+        plt.box(on=False)
 
         
-        plt.show()
     
         
 #        import pylab as pl
