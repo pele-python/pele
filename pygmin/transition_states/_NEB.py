@@ -1,14 +1,26 @@
 import numpy as np
 import os.path
 import copy
-
 import pygmin.defaults as defaults
-import pygmin.optimize.quench as quench
 
 __all__ = ["NEB"]
+try:
+    import scipy.linalg
+    blas = lambda name, ndarray: scipy.linalg.get_blas_funcs((name,), (ndarray,))[0]
+    bnorm = blas('nrm2', np.array([], dtype = "float64"))
+    def norm(x):
+        assert x.dtype == "float64"
+        return bnorm(x)
+except:
+    norm = np.linalg.norm
 
 def distance_cart(x1, x2, distance=True, grad=True):
-    return np.sum((x2-x1)**2), -(x2-x1)
+    dist=None
+    #print x1.dtype, x2.dtype
+    grad = x1-x2
+    if distance:
+        dist = norm(grad)**2
+    return dist, grad
 
 class NEB(object):
     """Doubly nudged elastic band implementation
@@ -174,9 +186,8 @@ class NEB(object):
         coords1d:
             coordinates of the whole neb active images (no end points)
         """
-        t = gleft / np.linalg.norm(gleft) - gright / np.linalg.norm(gright)
-        t = gleft  - gright
-        return t / np.linalg.norm(t)
+        t = gleft / norm(gleft) - gright / norm(gright)
+        return t / norm(t)
 
     def tangent(self, central, left, right, gleft, gright):
         """
@@ -199,8 +210,8 @@ class NEB(object):
         vmax = max(abs(central - left), abs(central - right))
         vmin = max(abs(central - left), abs(central- right))
 
-        tleft = -gleft/np.linalg.norm(gleft)
-        tright = gright/np.linalg.norm(gright)
+        tleft = gleft#/np.linalg.norm(gleft)
+        tright = -gright#/np.linalg.norm(gright)
 
         # special interpolation treatment for maxima/minima
         if (central >= left and central >= right) or (central <= left and central <= right):
@@ -215,7 +226,7 @@ class NEB(object):
         else:
             t = tright
 
-        return t / np.linalg.norm(t)
+        return t / norm(t)
 
     def NEBForce(self, isclimbing, image, left, right, greal):
         """
@@ -238,7 +249,11 @@ class NEB(object):
         if(isclimbing):
             return greal - 2.*np.dot(greal, t) * t
 
-        g_spring = self.k*(g_left + g_right)
+        if self.dneb:
+            g_spring = self.k*(g_left + g_right)
+        else:
+            g_spring = self.k*(norm(g_left) - norm(g_right))*t
+
         #print "spring", np.dot(g_spring, t)
         if True:
             import _NEB_utils
@@ -256,12 +271,12 @@ class NEB(object):
             # this is the spring
             # the parallel part
             gs_par = np.dot(g_spring,t)*t
-            # perpendicular part
-            gs_perp = g_spring - gs_par
                                     
             g_tot = gperp + gs_par
     
             if(self.dneb):
+                # perpendicular part of spring
+                gs_perp = g_spring - gs_par            
                 # double nudging
                 g_tot += gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
             
@@ -269,6 +284,7 @@ class NEB(object):
                 E = 0.5 / self.k * (d_left **2 + d_right**2)
             else:
                 E = 0.
+            #print np.linalg.norm(gperp), np.linalg.norm(gs_par)
             return E, g_tot
 
     def MakeHighestImageClimbing(self):
@@ -356,7 +372,7 @@ def nebtest(MyNEB=NEB, nimages=22):
     #print "Final: ", final
     #pl.imshow(z)
 
-    neb = MyNEB(InterpolatedPath(initial, final, nimages) ,potential, k=1000)
+    neb = MyNEB(InterpolatedPath(initial, final, nimages) ,potential, k=1000, dneb=False)
     tmp = neb.coords
     energies_interpolate = neb.energies.copy()
     pl.figure()
