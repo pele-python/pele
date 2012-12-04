@@ -577,11 +577,20 @@ class DoubleEndedConnect(object):
     def _addTransitionState(self, E, coords, min_ret1, min_ret2, eigenvec, eigenval):
         #add the minima to the transition state graph.  This step is important
         #to do first because it returns a Database Minimum object.
+        me1, me2 = min_ret1[1], min_ret2[1]
+        if E < me1 or E < me2:
+            print "warning: trying to add a transition state that has energy lower than it's minima."
+            print "    TS energy", E, "minima energy", me1, me2
+            print "    aborting"
+            return False
+        
         min1 = self.graph.addMinimum(min_ret1[1], min_ret1[0])
         min2 = self.graph.addMinimum(min_ret2[1], min_ret2[0])
         if min1 == min2:
             print "warning: stepping off the transition state resulted in twice the same minima", min1._id
             return False
+        
+        
 
         print "adding transition state", min1._id, min2._id
         #update the transition state graph
