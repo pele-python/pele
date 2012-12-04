@@ -42,13 +42,15 @@ def main():
             kwargs["subgraph_size"] = int(a)
         else:
             print "don't understand", o, a
+            print ""
             usage()
             exit(1)
     
     
     dbfile = args[0]
     if not os.path.exists(dbfile):
-        print "database file doesn't exists", dbfile
+        print "database file doesn't exist", dbfile
+        exit()
     
     
     
