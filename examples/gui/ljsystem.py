@@ -109,10 +109,10 @@ class LJSystem(gui.GUISystem):
         mindist = self.create_mindist_object()
         return smoothPath(path, mindist, **kwargs)
     
-    def create_double_ended_connect(self, min1, min2, database):
+    def create_double_ended_connect(self, min1, min2, database, **kwargs):
         mindist = self.create_mindist_object()
         pot = self.create_potential()
-        return DoubleEndedConnect(min1, min2, pot, mindist, database)
+        return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
 
 
         

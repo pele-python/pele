@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Mon Dec  3 11:28:19 2012
+# Created: Tue Dec  4 13:20:44 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -130,12 +130,15 @@ class Ui_MainWindow(object):
         self.btnConnect = QtGui.QPushButton(self.NEBTab)
         self.btnConnect.setObjectName(_fromUtf8("btnConnect"))
         self.gridLayout_2.addWidget(self.btnConnect, 3, 0, 1, 1)
-        self.btnShowGraph = QtGui.QPushButton(self.NEBTab)
-        self.btnShowGraph.setObjectName(_fromUtf8("btnShowGraph"))
-        self.gridLayout_2.addWidget(self.btnShowGraph, 3, 1, 1, 1)
         self.btnDisconnectivity_graph = QtGui.QPushButton(self.NEBTab)
         self.btnDisconnectivity_graph.setObjectName(_fromUtf8("btnDisconnectivity_graph"))
-        self.gridLayout_2.addWidget(self.btnDisconnectivity_graph, 4, 0, 1, 2)
+        self.gridLayout_2.addWidget(self.btnDisconnectivity_graph, 5, 0, 1, 2)
+        self.btnShowGraph = QtGui.QPushButton(self.NEBTab)
+        self.btnShowGraph.setObjectName(_fromUtf8("btnShowGraph"))
+        self.gridLayout_2.addWidget(self.btnShowGraph, 4, 0, 1, 1)
+        self.btnReconnect = QtGui.QPushButton(self.NEBTab)
+        self.btnReconnect.setObjectName(_fromUtf8("btnReconnect"))
+        self.gridLayout_2.addWidget(self.btnReconnect, 3, 1, 1, 1)
         self.gridLayout_4.addLayout(self.gridLayout_2, 1, 3, 1, 1)
         self.tabWidget.addTab(self.NEBTab, _fromUtf8(""))
         self.tab = QtGui.QWidget()
@@ -245,6 +248,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.btnShowGraph, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.show_graph)
         QtCore.QObject.connect(self.actionDelete_Minimum, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.delete_minimum)
         QtCore.QObject.connect(self.btnDisconnectivity_graph, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.show_disconnectivity_graph)
+        QtCore.QObject.connect(self.btnReconnect, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.doubleEndedReConnect)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -258,8 +262,9 @@ class Ui_MainWindow(object):
         self.btnNEB.setText(QtGui.QApplication.translate("MainWindow", "NEB", None, QtGui.QApplication.UnicodeUTF8))
         self.btnInvert.setText(QtGui.QApplication.translate("MainWindow", "Invert", None, QtGui.QApplication.UnicodeUTF8))
         self.btnConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "show graph", None, QtGui.QApplication.UnicodeUTF8))
         self.btnDisconnectivity_graph.setText(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "show graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnReconnect.setText(QtGui.QApplication.translate("MainWindow", "Reconnect", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), QtGui.QApplication.translate("MainWindow", "NEB", None, QtGui.QApplication.UnicodeUTF8))
         self.btnTSSearch.setText(QtGui.QApplication.translate("MainWindow", "Find TS", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Path", None, QtGui.QApplication.UnicodeUTF8))

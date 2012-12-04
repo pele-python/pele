@@ -212,17 +212,24 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="5" column="0" colspan="2">
+           <widget class="QPushButton" name="btnDisconnectivity_graph">
+            <property name="text">
+             <string>disconnectivity graph</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
            <widget class="QPushButton" name="btnShowGraph">
             <property name="text">
              <string>show graph</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0" colspan="2">
-           <widget class="QPushButton" name="btnDisconnectivity_graph">
+          <item row="3" column="1">
+           <widget class="QPushButton" name="btnReconnect">
             <property name="text">
-             <string>disconnectivity graph</string>
+             <string>Reconnect</string>
             </property>
            </widget>
           </item>
@@ -443,8 +450,8 @@
    <slot>AlignMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>548</x>
-     <y>412</y>
+     <x>555</x>
+     <y>379</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -460,7 +467,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>651</x>
-     <y>445</y>
+     <y>412</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -507,8 +514,8 @@
    <slot>showFrame()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>57</x>
-     <y>462</y>
+     <x>68</x>
+     <y>446</y>
     </hint>
     <hint type="destinationlabel">
      <x>74</x>
@@ -523,8 +530,8 @@
    <slot>showEnergies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>548</x>
-     <y>445</y>
+     <x>555</x>
+     <y>412</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -555,8 +562,8 @@
    <slot>SelectMinimum()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>139</x>
-     <y>103</y>
+     <x>567</x>
+     <y>169</y>
     </hint>
     <hint type="destinationlabel">
      <x>553</x>
@@ -571,8 +578,8 @@
    <slot>doubleEndedConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>139</x>
-     <y>112</y>
+     <x>560</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>627</x>
@@ -587,8 +594,8 @@
    <slot>selectTransition()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>139</x>
-     <y>103</y>
+     <x>567</x>
+     <y>373</y>
     </hint>
     <hint type="destinationlabel">
      <x>342</x>
@@ -603,8 +610,8 @@
    <slot>showFrameTS()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>33</x>
-     <y>85</y>
+     <x>44</x>
+     <y>512</y>
     </hint>
     <hint type="destinationlabel">
      <x>172</x>
@@ -620,7 +627,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>651</x>
-     <y>412</y>
+     <y>379</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -635,8 +642,8 @@
    <slot>doubleEndedConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>548</x>
-     <y>478</y>
+     <x>555</x>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>685</x>
@@ -651,7 +658,7 @@
    <slot>show_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>651</x>
+     <x>555</x>
      <y>478</y>
     </hint>
     <hint type="destinationlabel">
@@ -692,6 +699,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnReconnect</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>doubleEndedReConnect()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>607</x>
+     <y>430</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>687</x>
+     <y>402</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectMinimum()</slot>
@@ -715,5 +738,6 @@
   <slot>show_graph()</slot>
   <slot>delete_minimum()</slot>
   <slot>show_disconnectivity_graph()</slot>
+  <slot>doubleEndedReConnect()</slot>
  </slots>
 </ui>

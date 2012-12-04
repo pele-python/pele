@@ -339,13 +339,20 @@ class MyForm(QtGui.QMainWindow):
 #        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
     
     def doubleEndedConnect(self):
+        return self._doubleEndedConnect(reconnect=False)
+
+    def doubleEndedReConnect(self):
+        return self._doubleEndedConnect(reconnect=True)
+
+    def _doubleEndedConnect(self, reconnect=False):
 #        min1 = self.ui.listMinima1.selectedItems()[0].minimum
 #        min2 = self.ui.listMinima2.selectedItems()[0].minimum
 #        min1 = self.ui.
         min1 = self.ui.oglPath.minima[1]
         min2 = self.ui.oglPath.minima[2]
         database = self.system.database
-        double_ended_connect = self.system.create_double_ended_connect(min1, min2, database)
+        double_ended_connect = self.system.create_double_ended_connect(min1, min2, database, 
+                                                                       fresh_connect=reconnect)
         double_ended_connect.connect()
         mints, S, energies = double_ended_connect.returnPath()
         clist = [m.coords for m in mints]
