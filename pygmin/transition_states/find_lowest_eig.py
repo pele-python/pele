@@ -78,7 +78,7 @@ class LowestEigPot(basepot):
         if self.orthogZeroEigs is not None:
             grad = self.orthogZeroEigs(grad, self.coords, False)
         """
-        C  Project out any component of the gradient along LOCALV (which is a unit vector)
+        C  Project out any component of the gradient along vec (which is a unit vector)
         C  This is a big improvement for DFTB.
         """
         grad -= np.dot(grad, vec) * vec
