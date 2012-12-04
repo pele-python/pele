@@ -1,15 +1,62 @@
-import distpot
 import numpy as np
-import pygmin.utils.rotations as rot
-from pygmin.optimize.quench import quench
-from  pygmin import basinhopping
-import pygmin.storage.savenlowest as storage
-from pygmin.mindist import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation
-from pygmin.mindist.exact_match import ExactMatchCluster
+
+from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation, getDistxyz
+from pygmin.utils.rotations import random_aa, aa2mx, q2mx
+from pygmin.mindist.mindistutils import getAlignRotation
+from pygmin.mindist import ExactMatchCluster
+from pygmin.mindist.distpot import MinPermDistPotential
+import pygmin.defaults as defaults
 
 __all__ = ["minPermDistStochastic"]
 
-def minPermDistStochastic(X1, X2, niter = 100, permlist = None, verbose = False, accuracy=0.01):
+def applyRotation(mx, X1d):
+    X = X1d.reshape([-1,3])
+    X = np.dot(mx, X.transpose()).transpose()
+    return X.reshape(-1)
+
+def _optimizePermRot(X1, X2, niter, permlist, verbose=False, use_quench=True):
+    if use_quench:
+        pot = MinPermDistPotential(X1, X2.copy(), permlist=permlist)
+
+    distbest = getDistxyz(X1, X2)
+    mxbest = np.identity(3)
+    X20 = X2.copy()
+    for i in range(niter):
+        #get and apply a random rotation
+        aa = random_aa()
+        if not use_quench:
+            mx = aa2mx(aa)
+            mxtot = mx
+            #print "X2.shape", X2.shape
+        else:
+            #optimize the rotation using a permutationally invariand distance metric
+            ret = defaults.quenchRoutine(aa, pot.getEnergyGradient, tol=0.01)
+            aa1 = ret[0]
+            mx1 = aa2mx(aa1)
+            mxtot = mx1
+        X2 = applyRotation(mxtot, X20)
+        
+        #optimize the permutations
+        dist, X1, X2 = findBestPermutation(X1, X2, permlist)
+        if verbose:
+            print "dist", dist, "distbest", distbest
+        #print "X2.shape", X2.shape
+        
+        #optimize the rotation
+        dist, Q2 = getAlignRotation(X1, X2)
+#        print "dist", dist, "Q2", Q2
+        mx2 = q2mx(Q2)
+        mxtot = np.dot(mx2, mxtot)
+        
+        if dist < distbest:
+            distbest = dist
+            mxbest = mxtot
+    return distbest, mxbest
+    
+    
+
+def minPermDistStochastic(X1, X2, niter=100, permlist=None, verbose=False, accuracy=0.01,
+                      check_inversion=True, use_quench=False):
     """
     Minimize the distance between two clusters.  
     
@@ -31,6 +78,14 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = None, verbose = False,
             permlist = [range(1,natoms/2), range(natoms/2,natoms)]
     verbose : 
         whether to print status information
+    accuracy : 
+        accuracy for determining if the structures are identical
+    check_inversion :
+        if true, account for point inversion symmetry
+    use_quench : 
+        for each step of the iteration, minimize a permutationally invariant
+        distance metric.  This slows the algorithm, but can potentially make
+        it more accurate.
 
     Notes
     -----
@@ -42,101 +97,82 @@ def minPermDistStochastic(X1, X2, niter = 100, permlist = None, verbose = False,
         Global rotational symmetry
 
         Permutational symmetry
+        
+        Point inversion symmetry
 
     
+    This method should have the same outcome as minPermDistStochastic, but 
+    uses a different method.  The algorithm here to find the best distance is
     
-    This method uses basin hopping to find the rotation of X2 which best
-    optimizes the overlap (an effective energy) between X1 and X2.  The overlap
-    is defined to be permutation independent.
-
-    Once the rotation is optimized, the correct permutation can be determined
-    deterministically using the Hungarian algorithm.
-    
+    for i in range(niter):    
+        random_rotation(coords)
+        findBestPermutation(coords)
+        alignRotation(coords)
     """
-    nsites = len(X1)/3
+    natoms = len(X1) / 3
     if permlist is None:
-        permlist = [range(nsites)]
-    
+        permlist = [range(natoms)]
+
+    X1init = X1
+    X2init = X2
+    X1 = np.copy(X1)
+    X2 = np.copy(X2)
+
     #first check for exact match
     exactmatch = ExactMatchCluster(accuracy=accuracy, permlist=permlist)
     if exactmatch(X1, X2):
         #this is kind of cheating, I would prefer to return
         #X2 in best alignment and the actual (small) distance
         return 0.0, X1, X1.copy() 
-
-    ###############################################
-    # move the centers of mass to the origin
-    ###############################################
+    
+    #bring center of mass of x1 and x2 to the origin
+    #save the center of mass of X1 for later
+    X1com = X1.reshape([-1,3]).sum(0) / natoms
     X1 = CoMToOrigin(X1)
     X2 = CoMToOrigin(X2)
-    X2in = np.copy(X2) #I wish i could declare this constant
+    #print "X2.shape", X2.shape
+    
+    #find the best rotation stochastically
+    X20 = X2.copy()
+    distbest, mxbest = _optimizePermRot(X1, X2, niter, permlist, verbose=verbose, use_quench=use_quench)
+    use_inversion = False
+    if check_inversion:
+        X20i = -X20.copy()
+        X2 = X20i.copy()
+        distbest1, mxbest1 = _optimizePermRot(X1, X2, niter, permlist, verbose=verbose, use_quench=use_quench)
+        if distbest1 < distbest:
+            if verbose:
+                print "using inversion in minpermdist"
+            use_inversion = True
+            distbest = distbest1
+            mxbest = mxbest1
 
-    ###############################################
-    # set initial conditions
-    ###############################################
-    aamin = np.array([0.,0.,0.])
-
-    ######################################
-    # set up potential
-    ######################################
-    pot = distpot.MinPermDistPotential( X1, X2, 0.2, permlist )
+    #now we know the best rotation
+    if use_inversion: X20 = X20i
+    X2 = applyRotation(mxbest, X20)
+    dist, X1, X2 = findBestPermutation(X1, X2, permlist)
+    dist, X2 = alignRotation(X1, X2)
+    if dist > distbest+0.001:
+        print "ERROR: minPermDistRanRot: dist is different from distbest %f %f" % (dist, distbest)
     if verbose:
-        #print some stuff. not necessary
-        Emin = pot.getEnergy(aamin)
-        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
-        print "initial energy", Emin, "dist", dist
-    saveit = storage.SaveN( 20 )
-    takestep = distpot.RandomRotationTakeStep()
-    bh = basinhopping.BasinHopping( aamin, pot, takestep, storage=saveit.insert, outstream = None)
+        print "finaldist", dist, "distmin", distbest
+    
+    #add back in the center of mass of X1
+    X1 = X1.reshape([-1,3])
+    X2 = X2.reshape([-1,3])
+    X1 += X1com
+    X2 += X1com
+    X1 = X1.reshape(-1)
+    X2 = X2.reshape(-1)
+    
+    return dist, X1, X2
 
 
-    Eminglobal = pot.globalEnergyMin() #condition for determining isomer
-    if verbose: print "global Emin", Eminglobal
-
-    ##########################################################################
-    # run basin hopping for ninter steps or until the global minimum is found
-    # (i.e. determine they are isomers)
-    ##########################################################################
-    if verbose: print "using basin hopping to optimize rotations + permutations"
-    for i in range(niter):
-        bh.run(1)
-        Emin = saveit.data[0].energy
-        if abs(Emin-Eminglobal) < 1e-6:
-            if verbose: print "isomer found"
-            break
-
-    """
-    Lower energies generally mean smaller distances, but it's not guaranteed.
-    Check a number of the lowest energy structures. To ensure get the correct
-    minimum distance structure.
-    """
-    if verbose: print "lowest structures found"
-    aamin = saveit.data[0].coords
-    dmin, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
-    for minimum in saveit.data:
-        dist, X11, X22 = findBestPermutation(X1, aa2xyz(X2in, minimum.coords), permlist )
-        if verbose: print "E %11.5g dist %11.5g" % (minimum.energy, dist)
-        if dist < dmin:
-            dmin = dist
-            aamin = minimum.coords
-
-    ###################################################################
-    #we've optimized the rotation in a permutation independent manner
-    #now optimize the permutation
-    ###################################################################
-    dmin, X1, X2min = findBestPermutation(X1, aa2xyz(X2in, aamin), permlist )
-
-    ###################################################################
-    # permutations are set, do one final mindist improve accuracy
-    #of rotation optimization
-    ###################################################################
-    dmin, X2min = alignRotation( X1, X2min )
-
-    return dmin, X1, X2min
-
-
-
-
+#
+#
+# below here only testing stuff
+#
+#
 
 import unittest
 from testmindist import TestMinDist
@@ -158,11 +194,12 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         
 
     def testBLJ(self):
+        import pygmin.defaults
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
         #run a quench so the structure is not crazy
-        ret = quench(X2, self.pot.getEnergyGradient)
+        ret = pygmin.defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
         X2 = ret[0]
 
         self.runtest(X1, X2, minPermDistStochastic)
@@ -174,6 +211,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         
         test case where X2 is an isomer of X1.
         """
+        import pygmin.utils.rotations as rot
         X1i = np.copy(self.X1)
         X1 = np.copy(self.X1)        
         X2 = np.copy(X1)
@@ -239,6 +277,10 @@ def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz",
     
 
 def test_binary_LJ(natoms = 12, **kwargs):
+    import pygmin.defaults
+    import pygmin.utils.rotations as rot
+    quench = pygmin.defaults.quenchRoutine
+
     printlist = []
     
     ntypea = int(natoms*.8)
@@ -302,6 +344,9 @@ def test_binary_LJ(natoms = 12, **kwargs):
         
 def test_LJ(natoms = 12, **kwargs):
     from pygmin.potentials.lj import LJ
+    import pygmin.defaults
+    import pygmin.utils.rotations as rot
+    quench = pygmin.defaults.quenchRoutine
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     #quench X1

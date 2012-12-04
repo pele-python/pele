@@ -252,8 +252,8 @@ def getPairLJ(natoms=38):
     coords1, coords2 = ret1[0], ret2[0]
     E1, E2 = ret1[1], ret2[1]
     
-    from pygmin.mindist import MinDistWrapper, minPermDistRanRot
-    mindist = MinDistWrapper(minPermDistRanRot, permlist=[range(natoms)])
+    from pygmin.mindist import MinDistWrapper, minPermDistStochastic
+    mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)])
     mindist(coords1, coords2)
     
     return coords1, coords2, lj, mindist, E1, E2
