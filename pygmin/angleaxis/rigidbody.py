@@ -1,5 +1,6 @@
 import numpy as np
 import aautils
+from pygmin.potentials.potential import potential
 
 class RigidFragment(aautils.AASiteType):
     ''' defines a single rigid fragment 
@@ -25,7 +26,7 @@ class RigidFragment(aautils.AASiteType):
         mass: mass of the atom
         '''
         self.atom_types.append(atomtype)
-        self.atom_positions.append(pos)
+        self.atom_positions.append(pos.copy())
         self.atom_masses.append(mass)
         
     def finalize_setup(self):
@@ -92,7 +93,6 @@ class RBSystem(aautils.AASystem):
         
     def add_sites(self, sites):
         aautils.AASystem.add_sites(self, sites)
-        
         for site in sites:
             nsite_atoms = len(site.atom_positions)
             if not hasattr(site, "atom_indices"):
@@ -115,7 +115,7 @@ class RBSystem(aautils.AASystem):
                 atomistic[i]=x
         return atomistic
 
-    def transform_grad(self, rbcoords, grad):
+    def transform_gradient(self, rbcoords, grad):
         ca = self.coords_adapter(rbcoords)
         rbgrad = self.coords_adapter(np.zeros_like(rbcoords))
         
@@ -124,7 +124,7 @@ class RBSystem(aautils.AASystem):
             g_com[:], g_p[:] = site.transform_grad(p, grad[site.indices])
         return rbgrad.coords
                 
-    def redistribute_forces(self, rbcoords, rbgrad):
+    def redistribute_gradient(self, rbcoords, rbgrad):
         ca = self.coords_adapter(rbcoords)
         cg = self.coords_adapter(rbgrad)
         grad = np.zeros([self.natoms,3])
@@ -133,6 +133,21 @@ class RBSystem(aautils.AASystem):
             for i,x in zip(site.indices, gatom):
                 grad[i]=x
         return grad
+    
+class RBPotentialWrapper(potential):
+    def __init__(self, rbsystem, pot):
+        self.pot = pot
+        self.rbsystem = rbsystem
+        
+    def getEnergy(self, rbcoords):
+        coords = self.rbsystem.to_atomistic(rbcoords)
+        return self.pot.getEnergy(coords.flatten())
+    
+    def getEnergyGradient(self, rbcoords):
+        coords = self.rbsystem.to_atomistic(rbcoords)
+        E, g = self.pot.getEnergyGradient(coords.flatten())
+        return E, self.rbsystem.transform_gradient(rbcoords, g)
+    
     
 if __name__ == "__main__":
     from math import sin, cos, pi
