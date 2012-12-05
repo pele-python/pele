@@ -39,16 +39,22 @@ class RigidFragment(aautils.AASiteType):
         com = np.average(self.atom_positions, axis=0, weights=self.atom_masses)
         for x in self.atom_positions:
             x[:] -= com
+
+        self.cog = np.average(self.atom_positions, axis=0)
+        self.W = float(len(self.atom_masses))
         
         # calculate total mass
         self.M = np.sum(self.atom_masses)
         
         # now calculate the weighted moment of inertia tensor
         self.S[:] = 0.
-        for x, m in zip(self.atom_positions, self.atom_masses):
-            self.S[:] += m*np.outer(x, x)
+        for x in self.atom_positions:
+            self.S[:] += np.outer(x, x)
+#        for x, m in zip(self.atom_positions, self.atom_masses):
+#            self.S[:] += m*np.outer(x, x)
             
-    def to_atomistic(self, com, R):
+    def to_atomistic(self, com, p):
+        R, R1, R2, R3 = aautils.rotMatDeriv(p, False)
         return com + np.dot(R, np.transpose(self.atom_positions)).transpose()
             
     def transform_grad(self, p, g):
@@ -92,7 +98,14 @@ class RBSystem(aautils.AASystem):
             if not hasattr(site, "atom_indices"):
                 site.indices = range(self.natoms, self.natoms+nsite_atoms)
             self.natoms += nsite_atoms
-        
+            
+    def get_atom_labels(self):
+        labels=[]
+        for s in self.sites:
+            for t in s.atom_types:
+                labels.append(str(t))
+        return labels
+    
     def to_atomistic(self, rbcoords):
         ca = self.coords_adapter(rbcoords)
         atomistic = np.zeros([self.natoms,3])
@@ -135,10 +148,12 @@ if __name__ == "__main__":
     system = RBSystem()
     nrigid = 1
     system.add_sites([deepcopy(water) for i in xrange(nrigid)])
-
     rbcoords = np.random.random(6*nrigid)
-    print rbcoords
     coords = system.to_atomistic(rbcoords)
+    
+    exit()
+    
+    print rbcoords
     print coords
     grad = np.random.random(coords.shape)
     rbgrad = system.transform_grad(rbcoords, grad)

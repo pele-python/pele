@@ -41,9 +41,11 @@ class AASiteType(object):
         weighted tensor of gyration S_ij = \sum m_i x_i x_j 
         
     '''
-    def __init__(self, M=1., S=np.identity(3, dtype="float64")):
+    def __init__(self, M=1., S=np.identity(3, dtype="float64"), cog=np.zeros(3), W = 1.0):
         self.M = M
         self.S = S
+        self.cog = cog
+        self.W = W
             
     def distance_squared(self, com1, p1, com2, p2):
         '''
@@ -70,11 +72,11 @@ class AASiteType(object):
         
         dR = dR
         
-        d_M = self.M*np.sum((com2-com1)**2)
+        d_M = self.W*np.sum((com2-com1)**2)
         # dR_kl S_lm dR_km 
         d_P = np.trace(np.dot(dR, np.dot(self.S, dR.transpose()))) 
-    
-        return d_M + d_P
+        d_mix = 2.*self.W * np.dot((com2-com1), np.dot(dR, self.cog))
+        return d_M + d_P + d_mix
 
     def distance_squared_grad(self, com1, p1, com2, p2):
         '''
@@ -101,13 +103,18 @@ class AASiteType(object):
         
         dR = dR
         
-        g_M = -2.*self.M*(com2-com1)
+        g_M = -2.*self.W*(com2-com1)
         # dR_kl S_lm dR_km
         g_P = np.zeros(3) 
         g_P[0] = -2.*np.trace(np.dot(R11, np.dot(self.S, dR.transpose())))
         g_P[1] = -2.*np.trace(np.dot(R12, np.dot(self.S, dR.transpose())))
         g_P[2] = -2.*np.trace(np.dot(R13, np.dot(self.S, dR.transpose())))
     
+        g_M -= 2.*self.W *  np.dot(dR, self.cog)
+        g_P[0] -= 2.*self.W * np.dot((com2-com1), np.dot(R11, self.cog))
+        g_P[1] -= 2.*self.W * np.dot((com2-com1), np.dot(R12, self.cog))
+        g_P[2] -= 2.*self.W * np.dot((com2-com1), np.dot(R13, self.cog))
+
         return g_M, g_P
 
         
@@ -210,7 +217,12 @@ class AASystem(object):
             c2 = self.coords_adapter(path[i])
             c1 = self.coords_adapter(path[i-1])
             for p1, p2 in zip(c1.rotRigid,c2.rotRigid):
-                n2 = p2/np.linalg.norm(p2)*2.*pi
+                if np.linalg.norm(p2) < 1e-6:
+                    if(np.linalg.norm(p1) < 1e-6):
+                        continue
+                    n2 = p1/np.linalg.norm(p1)*2.*pi
+                else:
+                    n2 = p2/np.linalg.norm(p2)*2.*pi
             
                 while True:
                     p2n = p2+n2
@@ -225,20 +237,25 @@ class AASystem(object):
                     p2[:]=p2n  
 
 if __name__ == "__main__":
-    natoms = 8
+    natoms = 3
     x = np.random.random([natoms,3])*5
-    x -= np.sum(x, axis=0)/natoms
+    masses = [1., 1., 16.] #np.random.random(natoms)
+    print masses
+    x -= np.average(x, axis=0, weights=masses)
+    cog = np.average(x, axis=0)
     S=np.zeros([3,3])
     for i in xrange(3):
         for j in xrange(3):
             S[i][j]=np.sum(x[:,i]*x[:,j])
-    site = AASiteType(M=natoms, S=S)
+    site = AASiteType(M=natoms, S=S, W=natoms, cog=cog)
     X1=np.zeros(3)
-    p1=np.zeros(3)
-    X1 = np.random.random(3)*2.
-    X2 = np.random.random(3)*2.
+    p1=np.zeros(3)    
+    
+    X1 = 10.1*np.random.random(3)
+    X2 = 10.1*np.random.random(3)
     p1 = rotations.random_aa()
     p2 = rotations.random_aa()
+        
     R1 = rotations.aa2mx(p1)
     R2 = rotations.aa2mx(p2)
     
@@ -246,7 +263,7 @@ if __name__ == "__main__":
     x2 = np.dot(R2, x.transpose()).transpose() + X2
     
     print "site representation:", np.sum((x1-x2)**2)
-    print site.distance_squared(X1, p1, X2, p2)
+    print "distance function:  ", site.distance_squared(X1, p1, X2, p2)
     print site.distance_squared_grad(X1, p1, X2, p2)
     g_M = np.zeros(3)
     g_P = np.zeros(3)
