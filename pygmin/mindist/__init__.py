@@ -42,7 +42,7 @@ necessarily the optimal
 .. autosummary::
    :toctree: generated/
 
-    minPermDistRanRot
+    minPermDistStochastic
 
 A wrapper
 ---------
@@ -60,7 +60,6 @@ applications require
 from mindistutils import *
 #from minpermdist import *
 from exact_match import *
-from minpermdist_ranrot import *
 from minpermdist_stochastic import *
 from minpermdist_rbmol import *
 from mindist import *

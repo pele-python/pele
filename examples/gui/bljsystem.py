@@ -11,7 +11,7 @@ import pygmin.basinhopping as bh
 import pygmin.potentials.ljpshiftfast as lj
 from pygmin.takestep import displace
 from pygmin.mindist import ExactMatchCluster, MinDistWrapper
-from pygmin.mindist import minPermDistRanRot as minpermdist
+from pygmin.mindist import minPermDistStochastic as minpermdist
 from ljsystem import LJSystem
 
 

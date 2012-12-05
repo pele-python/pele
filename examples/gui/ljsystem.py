@@ -5,7 +5,7 @@ from pygmin.transition_states import NEB, dimer, tstools, InterpolatedPath
 import pygmin.potentials.lj as lj
 from pygmin import gui
 from pygmin.mindist import ExactMatchCluster, MinDistWrapper
-from pygmin.mindist import minPermDistRanRot as minpermdist
+from pygmin.mindist import minPermDistStochastic as minpermdist
 from pygmin.landscape import LocalConnect, smoothPath, DoubleEndedConnect
 import pygmin.basinhopping as bh
 from pygmin.takestep import displace

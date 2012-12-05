@@ -231,7 +231,7 @@ class FindTransitionState(object):
                     print "warning: negative eigenvalue found too many times. ending", self.nnegative
                     res.message.append( "negative eigenvalue found too many times %d" % self.nnegative )
                     break
-                print "the eigenvalue turned negative. Resetting last good values and taking smaller steps"
+                print "the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps"
                 coords = self._resetState(coords)
                 self.reduce_step += 1
             
