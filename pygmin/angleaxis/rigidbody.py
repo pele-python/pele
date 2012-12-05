@@ -62,15 +62,21 @@ class RigidFragment(aautils.AASiteType):
         g_com = np.sum(g, axis=0)
         R, R1, R2, R3 = aautils.rotMatDeriv(p, True)
         g_p = np.zeros_like(g_com)
-        g_p[0] = np.sum(
-                        np.dot(g, np.dot(R1, np.transpose(self.atom_positions))),
-                        )
-        g_p[1] = np.sum(
-                        np.dot(g, np.dot(R2, np.transpose(self.atom_positions)).transpose()),
-                        )
-        g_p[2] = np.sum(
-                        np.dot(g, np.dot(R3, np.transpose(self.atom_positions)).transpose()),
-                        )
+        for ga, x in zip(g, self.atom_positions):
+            g_p[0] += np.dot(ga, np.dot(R1, x))
+            g_p[1] += np.dot(ga, np.dot(R2, x))
+            g_p[2] += np.dot(ga, np.dot(R3, x))
+#                        
+
+#        g_p[0] = -np.sum(
+#                        np.dot(g, np.dot(R1, np.transpose(self.atom_positions)).transpose())
+#                        )
+#        g_p[1] = np.sum(
+#                        np.dot(g, np.dot(R2, np.transpose(self.atom_positions)).transpose())
+#                        )
+#        g_p[2] = np.sum(
+#                        np.dot(g, np.dot(R3, np.transpose(self.atom_positions)).transpose())
+#                        )
         return g_com, g_p
 
     def redistribute_forces(self, p, grad_com, grad_p):
@@ -118,10 +124,9 @@ class RBSystem(aautils.AASystem):
     def transform_gradient(self, rbcoords, grad):
         ca = self.coords_adapter(rbcoords)
         rbgrad = self.coords_adapter(np.zeros_like(rbcoords))
-        
         for site, p, g_com, g_p in zip(self.sites, ca.rotRigid,
                                        rbgrad.posRigid,rbgrad.rotRigid):
-            g_com[:], g_p[:] = site.transform_grad(p, grad[site.indices])
+            g_com[:], g_p[:] = site.transform_grad(p, grad.reshape(-1,3)[site.indices])
         return rbgrad.coords
                 
     def redistribute_gradient(self, rbcoords, rbgrad):

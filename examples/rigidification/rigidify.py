@@ -2,6 +2,7 @@ import numpy as np
 from pygmin.potentials import LJ
 from pygmin.utils import xyz
 from pygmin.angleaxis import rigidbody
+from pygmin.optimize import quench
 
 # read in coordinates from xyz file
 ref = xyz.read_xyz(open("water.xyz"))
@@ -36,11 +37,17 @@ for site, com in zip(rbsystem.sites, rbcoords.posRigid):
     com[:] = ref.coords[site.indices[0]] - site.atom_positions[0]
      
 # for simplicity just use a lj potential here
-pot = LJ()
-
+pot = LJ(sigma=2.)
 # get the flattened coordinate array
 print pot.getEnergy(ref.coords.flatten())
 rbpot = rigidbody.RBPotentialWrapper(rbsystem, pot)
 print rbpot.getEnergy(rbcoords.coords)
-#print rbpot.getEnergyGradient(rbcoords.coords)
+e, g = rbpot.getEnergyGradient(rbcoords.coords)
+g_n = rbpot.NumericalDerivative(rbcoords.coords, eps=1e-4)
+cg = rbsystem.coords_adapter(g-g_n) 
+print cg.posRigid
+print cg.rotRigid
+ret = quench.lbfgs_py(rbcoords.coords, rbpot.getEnergyGradient)
+print ret[1]
+xyz.write_xyz(open("quenched.xyz", "w"), rbsystem.to_atomistic(ret[0]), atomtypes=ref.atomtypes)
 
