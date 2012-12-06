@@ -57,6 +57,7 @@ applications require
 
 """
 
+from permutational_alignment import *
 from mindistutils import *
 #from minpermdist import *
 from exact_match import *

@@ -1,6 +1,6 @@
 import numpy as np
 
-from mindistutils import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation, getDistxyz
+from pygmin.mindist import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation, getDistxyz
 from pygmin.utils.rotations import random_aa, aa2mx, q2mx
 from pygmin.mindist.mindistutils import getAlignRotation
 from pygmin.mindist import ExactMatchCluster
@@ -178,7 +178,7 @@ import unittest
 from testmindist import TestMinDist
 class TestMinPermDistStochastic_BLJ(TestMinDist):
     def setUp(self):
-        from pygmin.potentials.ljpshift import LJpshift as BLJ
+        from pygmin.potentials.ljpshiftfast import LJpshift as BLJ
         from pygmin import defaults
         
         self.natoms = 25
@@ -224,11 +224,12 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
             X2[i:i+3] = np.dot( rot_mx, X1[i:i+3] )
         
         #permute X2
-        import random, mindistutils, copy
+        import random, copy
+        from pygmin.mindist.permutational_alignment import permuteArray
         for atomlist in self.permlist:
             perm = copy.copy(atomlist)
             random.shuffle( perm )
-            X2 = mindistutils.permuteArray( X2, perm)
+            X2 = permuteArray( X2, perm)
 
         X2i = np.copy(X2)
         
@@ -308,12 +309,14 @@ def test_binary_LJ(natoms = 12, **kwargs):
 
     
 
-    import random, mindistutils, copy
+    import random, copy
+    from pygmin.mindist.permutational_alignment import permuteArray
+
     for atomlist in permlist:
         perm = copy.copy(atomlist)
         random.shuffle( perm )
         print perm
-        X2 = mindistutils.permuteArray( X2, perm)
+        X2 = permuteArray( X2, perm)
     printlist.append((X2.copy(), "x2 after permutation"))
 
 
@@ -346,6 +349,9 @@ def test_LJ(natoms = 12, **kwargs):
     from pygmin.potentials.lj import LJ
     import pygmin.defaults
     import pygmin.utils.rotations as rot
+    from pygmin.mindist.permutational_alignment import permuteArray
+    import random
+
     quench = pygmin.defaults.quenchRoutine
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
@@ -360,11 +366,10 @@ def test_LJ(natoms = 12, **kwargs):
     for j in range(natoms):
         i = 3*j
         X2[i:i+3] = np.dot( rot_mx, X1[i:i+3] )
-    import random, mindistutils
     perm = range(natoms)
     random.shuffle( perm )
     print perm
-    X2 = mindistutils.permuteArray( X2, perm)
+    X2 = permuteArray( X2, perm)
 
     #X1 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 0., 1.,] )
     #X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )

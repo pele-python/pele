@@ -1,5 +1,5 @@
 import numpy as np
-from mindistutils import findBestPermutation, CoMToOrigin
+from pygmin.mindist import findBestPermutation, CoMToOrigin
 import rmsfit
 
 
