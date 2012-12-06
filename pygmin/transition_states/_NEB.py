@@ -208,7 +208,7 @@ class NEB(object):
         """
         
         vmax = max(abs(central - left), abs(central - right))
-        vmin = max(abs(central - left), abs(central- right))
+        vmin = min(abs(central - left), abs(central- right))
 
         tleft = gleft#/np.linalg.norm(gleft)
         tright = -gright#/np.linalg.norm(gright)
