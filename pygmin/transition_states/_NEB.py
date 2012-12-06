@@ -43,6 +43,8 @@ class NEB(object):
         if True a separate copy of the potential will be made for
         each image.  This can be used to keep neighbor lists from being rebuilt
         over and over again.  
+    quenchParams :
+        parameters passed to the quench routine.
 
     Notes
     -----
@@ -51,7 +53,7 @@ class NEB(object):
     """
     def __init__(self, path, potential, distance=distance_cart,
                  k=100.0, with_springenergy=False, dneb=True,
-                 copy_potential=False):
+                 copy_potential=False, quenchParams=dict()):
         self.distance = distance
         self.potential = potential
         self.k = k
@@ -64,6 +66,8 @@ class NEB(object):
         self.getEnergyCount = 0
         self.printStateFile = None
         self.iprint = -1
+        
+        self.quenchParams = quenchParams.copy()
 
 
         #initialize coordinate&gradient array
@@ -109,6 +113,7 @@ class NEB(object):
             quenchRoutine = defaults.NEBquenchRoutine 
         #combine default and passed params.  passed params will overwrite default 
         quenchParams = dict(defaults.NEBquenchParams.items() +
+                            self.quenchParams.items() +
                             kwargs.items() )
 
         if quenchParams.has_key("iprint"):
