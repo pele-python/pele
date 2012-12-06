@@ -401,6 +401,9 @@ class DoubleEndedConnect(object):
     fresh_connect : bool
         if true, ignore all existing minima and transition states in the
         database and try to find a new path
+    longest_first : bool
+        if true, always try to connect the longest segment in the path guess
+        first
     
     Notes
     -----
@@ -463,43 +466,31 @@ class DoubleEndedConnect(object):
                  use_all_min=False, verbosity=1,
                  merge_minima=False, 
                  max_dist_merge=0.1, local_connect_params=dict(),
-                 fresh_connect=False,
+                 fresh_connect=False, longest_first=False,
                  ):
         self.minstart = min1
         assert min1._id == min1, "minima must compare equal with their id %d %s %s" % (min1._id, str(min1), str(min1.__hash__()))
         self.minend = min2
         self.pot = pot
         self.mindist = mindist
-        #self.distmatrix = dict()
         self.pairsNEB = dict()
-        #self.idlist = []
+        self.longest_first = longest_first
         
         self.verbosity = int(verbosity)
         self.local_connect_params = dict([("verbosity",verbosity)] + local_connect_params.items())
-#        self.tsSearchParams = tsSearchParams
-#        self.NEBquenchParams = NEBquenchParams
         self.database = database
         self.fresh_connect = fresh_connect
         if self.fresh_connect:
             self.graph = Graph(self.database, minima=[self.minstart, self.minend])
         else:
             self.graph = Graph(self.database)
-#        self.nrefine_max = nrefine_max
-        
-#        self.NEB_image_density = float(NEB_image_density)
-#        self.NEB_iter_density = float(NEB_iter_density)
-#        self.NEBparams = NEBparams
-#        self.reoptimize_climbing = reoptimize_climbing
+
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
-#        self.NEB_max_images =int(NEB_max_images)
 
 
         self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
         self.dist_graph.initialize(self.minstart, self.minend, use_all_min)
-        #self.Gdist = nx.Graph() 
-        #self._initializeDistances()
-        #self._initializeGdist(use_all_min)
         
         print "************************************************************"
         print "starting a double ended connect run between"
@@ -711,29 +702,59 @@ class DoubleEndedConnect(object):
             print "Can't find any way to try to connect the minima"
             return None, None
         
-        print "best guess for path.  (dist=0.0 means the path is known)"
-        
-        #find the shortest single edge in that path and use that
-        #also, print the path
-        #as the minima pair to try to connect.
-        weightmin = 1e100
-        minpair = (None, None)
+        #get the weights of the path segements
+        weightlist = []
         for i in range(1,len(path)):
             min1 = path[i-1]
             min2 = path[i]
             w = weights.get((min1,min2))
             if w is None:
                 w = weights.get((min2,min1))
-            #get the distance between min1 and min2. leave as 0. if they are
-            #already connected by transition states
-            dist = w
-            if w > 1e-6:
-                dist = self.getDist(min1, min2)
-            print "    path guess", min1._id, min2._id, dist
-            if w > 1e-10 and w < weightmin:
-                weightmin = w
-                minpair = (min1, min2)
-        return minpair
+            weightlist.append( (w, min1, min2) )
+        
+        if True:
+            #print the path
+            print "best guess for path.  (dist=0.0 means the path is known)"
+            for w, min1, min2 in weightlist:
+                if w > 1e-6:
+                    dist = self.getDist(min1, min2)
+                else:
+                    dist = w
+                print "    path guess", min1._id, min2._id, dist
+
+        #select which minima pair to return
+        if self.longest_first:
+            weightlist.sort()
+            w, min1, min2 = weightlist[-1]
+        else:
+            weightlist.sort()
+            for w, min1, min2 in weightlist:
+                if w > 1e-6:
+                    break
+        return min1, min2
+            
+        
+#        #find the shortest single edge in that path and use that
+#        #also, print the path
+#        #as the minima pair to try to connect.
+#        weightmin = 1e100
+#        minpair = (None, None)
+#        for i in range(1,len(path)):
+#            min1 = path[i-1]
+#            min2 = path[i]
+#            w = weights.get((min1,min2))
+#            if w is None:
+#                w = weights.get((min2,min1))
+#            #get the distance between min1 and min2. leave as 0. if they are
+#            #already connected by transition states
+#            dist = w
+#            if w > 1e-6:
+#                dist = self.getDist(min1, min2)
+#            print "    path guess", min1._id, min2._id, dist
+#            if w > 1e-10 and w < weightmin:
+#                weightmin = w
+#                minpair = (min1, min2)
+#        return minpair
                 
     
     def connect(self, maxiter=200):
@@ -842,7 +863,7 @@ def test(Connect=DoubleEndedConnect, natoms=11):
         print ts.minimum1._id,ts.minimum2._id, "E", ts.minimum1.energy, ts.minimum2.energy, ts.energy
         
     ret = graph.getPath(min1, min2)
-    if ret == None:
+    if ret is None:
         print "no path found"
         return
     distances, path = ret
