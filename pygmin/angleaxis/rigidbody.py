@@ -1,5 +1,6 @@
 import numpy as np
 import aautils
+from pygmin.potentials.potential import potential
 
 class RigidFragment(aautils.AASiteType):
     ''' defines a single rigid fragment 
@@ -25,7 +26,7 @@ class RigidFragment(aautils.AASiteType):
         mass: mass of the atom
         '''
         self.atom_types.append(atomtype)
-        self.atom_positions.append(pos)
+        self.atom_positions.append(pos.copy())
         self.atom_masses.append(mass)
         
     def finalize_setup(self):
@@ -39,31 +40,43 @@ class RigidFragment(aautils.AASiteType):
         com = np.average(self.atom_positions, axis=0, weights=self.atom_masses)
         for x in self.atom_positions:
             x[:] -= com
+
+        self.cog = np.average(self.atom_positions, axis=0)
+        self.W = float(len(self.atom_masses))
         
         # calculate total mass
         self.M = np.sum(self.atom_masses)
         
         # now calculate the weighted moment of inertia tensor
         self.S[:] = 0.
-        for x, m in zip(self.atom_positions, self.atom_masses):
-            self.S[:] += m*np.outer(x, x)
+        for x in self.atom_positions:
+            self.S[:] += np.outer(x, x)
+#        for x, m in zip(self.atom_positions, self.atom_masses):
+#            self.S[:] += m*np.outer(x, x)
             
-    def to_atomistic(self, com, R):
+    def to_atomistic(self, com, p):
+        R, R1, R2, R3 = aautils.rotMatDeriv(p, False)
         return com + np.dot(R, np.transpose(self.atom_positions)).transpose()
             
     def transform_grad(self, p, g):
         g_com = np.sum(g, axis=0)
         R, R1, R2, R3 = aautils.rotMatDeriv(p, True)
         g_p = np.zeros_like(g_com)
-        g_p[0] = np.sum(
-                        np.dot(g, np.dot(R1, np.transpose(self.atom_positions))),
-                        )
-        g_p[1] = np.sum(
-                        np.dot(g, np.dot(R2, np.transpose(self.atom_positions)).transpose()),
-                        )
-        g_p[2] = np.sum(
-                        np.dot(g, np.dot(R3, np.transpose(self.atom_positions)).transpose()),
-                        )
+        for ga, x in zip(g, self.atom_positions):
+            g_p[0] += np.dot(ga, np.dot(R1, x))
+            g_p[1] += np.dot(ga, np.dot(R2, x))
+            g_p[2] += np.dot(ga, np.dot(R3, x))
+#                        
+
+#        g_p[0] = -np.sum(
+#                        np.dot(g, np.dot(R1, np.transpose(self.atom_positions)).transpose())
+#                        )
+#        g_p[1] = np.sum(
+#                        np.dot(g, np.dot(R2, np.transpose(self.atom_positions)).transpose())
+#                        )
+#        g_p[2] = np.sum(
+#                        np.dot(g, np.dot(R3, np.transpose(self.atom_positions)).transpose())
+#                        )
         return g_com, g_p
 
     def redistribute_forces(self, p, grad_com, grad_p):
@@ -86,13 +99,19 @@ class RBSystem(aautils.AASystem):
         
     def add_sites(self, sites):
         aautils.AASystem.add_sites(self, sites)
-        
         for site in sites:
             nsite_atoms = len(site.atom_positions)
             if not hasattr(site, "atom_indices"):
                 site.indices = range(self.natoms, self.natoms+nsite_atoms)
             self.natoms += nsite_atoms
-        
+            
+    def get_atom_labels(self):
+        labels=[]
+        for s in self.sites:
+            for t in s.atom_types:
+                labels.append(str(t))
+        return labels
+    
     def to_atomistic(self, rbcoords):
         ca = self.coords_adapter(rbcoords)
         atomistic = np.zeros([self.natoms,3])
@@ -102,16 +121,15 @@ class RBSystem(aautils.AASystem):
                 atomistic[i]=x
         return atomistic
 
-    def transform_grad(self, rbcoords, grad):
+    def transform_gradient(self, rbcoords, grad):
         ca = self.coords_adapter(rbcoords)
         rbgrad = self.coords_adapter(np.zeros_like(rbcoords))
-        
         for site, p, g_com, g_p in zip(self.sites, ca.rotRigid,
                                        rbgrad.posRigid,rbgrad.rotRigid):
-            g_com[:], g_p[:] = site.transform_grad(p, grad[site.indices])
+            g_com[:], g_p[:] = site.transform_grad(p, grad.reshape(-1,3)[site.indices])
         return rbgrad.coords
                 
-    def redistribute_forces(self, rbcoords, rbgrad):
+    def redistribute_gradient(self, rbcoords, rbgrad):
         ca = self.coords_adapter(rbcoords)
         cg = self.coords_adapter(rbgrad)
         grad = np.zeros([self.natoms,3])
@@ -120,6 +138,21 @@ class RBSystem(aautils.AASystem):
             for i,x in zip(site.indices, gatom):
                 grad[i]=x
         return grad
+    
+class RBPotentialWrapper(potential):
+    def __init__(self, rbsystem, pot):
+        self.pot = pot
+        self.rbsystem = rbsystem
+        
+    def getEnergy(self, rbcoords):
+        coords = self.rbsystem.to_atomistic(rbcoords)
+        return self.pot.getEnergy(coords.flatten())
+    
+    def getEnergyGradient(self, rbcoords):
+        coords = self.rbsystem.to_atomistic(rbcoords)
+        E, g = self.pot.getEnergyGradient(coords.flatten())
+        return E, self.rbsystem.transform_gradient(rbcoords, g)
+    
     
 if __name__ == "__main__":
     from math import sin, cos, pi
@@ -135,10 +168,12 @@ if __name__ == "__main__":
     system = RBSystem()
     nrigid = 1
     system.add_sites([deepcopy(water) for i in xrange(nrigid)])
-
     rbcoords = np.random.random(6*nrigid)
-    print rbcoords
     coords = system.to_atomistic(rbcoords)
+    
+    exit()
+    
+    print rbcoords
     print coords
     grad = np.random.random(coords.shape)
     rbgrad = system.transform_grad(rbcoords, grad)

@@ -235,6 +235,11 @@ def q_slerp (a, b,t):
     if (costheta < 0.0):
         costheta = -costheta
         c = -c
+    
+    #linear interpolate close to zero
+    if (costheta > 1.0-1e-5):
+        return t*b + (1-t)*b
+        
     theta = np.arccos (costheta)
-   
+
     return (np.sin ((1.0 - t) * theta) * a + np.sin (t * theta) * c) / np.sin (theta)
