@@ -66,10 +66,10 @@ class DisconnectivityGraph(object):
         how many levels at which to bin the transition states
     subgraph_size : int
         if subgraph_size is not None then all disconnected graphs
-        of size greater than subraph_size will be included.  
+        of size greater than subraph_size will be included.
         
     """
-    def __init__(self, graph, min0=None, nlevels=20, nts_min=None,
+    def __init__(self, graph, min0=None, nlevels=20,
                  subgraph_size=None):
         self.graph = graph
         self.nbins = nlevels
