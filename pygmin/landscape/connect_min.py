@@ -150,7 +150,7 @@ class _DistanceGraph(object):
     def _addEdge(self, min1, min2):
         """
         add a new edge to the graph.  Calculate the distance
-        beteen the minima and set the edge weight
+        between the minima and set the edge weight
         """
         if min1 == min2: return
         dist = self.getDist(min1, min2)
@@ -158,6 +158,14 @@ class _DistanceGraph(object):
         self.Gdist.add_edge(min1, min2, {"weight":weight})
         if self.graph.areConnected(min1, min2):
             self.setTransitionStateConnection(min1, min2)
+            #note: this is incomplete.  if a new edge between
+            #min1 and min2 connects
+            #two clusters that were previously unconnected
+            #then the edge weight should be set to zero 
+            #with self.setTransitionStateConnection() for all minima
+            #in the two clusters.  Currently this is being fixed
+            #by calling checkGraph() from time to time.  I'm not sure
+            #which is better.
     
     def addMinimum(self, m):
         """
@@ -278,9 +286,6 @@ class _DistanceGraph(object):
         """
         weight = 0.
         self.Gdist.add_edge(min1, min2, {"weight":weight})
-        #TODO: this will affect other edges.  need to check rest of graph
-        #if self.debug:
-        #    self.checkGraph()
 
     def shortestPath(self, min1, min2):
         """return the minimum weight path path between min1 and min2""" 
@@ -291,9 +296,13 @@ class _DistanceGraph(object):
                     self.Gdist, min1, min2, weight="weight")
         except nx.NetworkXNoPath:
             return None, None
-        weights = nx.get_edge_attributes(self.Gdist, "weight")
+        
+        #get_edge attributes is really slow:
+        #weights = nx.get_edge_attributes(self.Gdist, "weight") #this takes order number_of_edges
+        weights = [ self.Gdist[path[i]][path[i+1]]["weight"] for i in range(len(path)-1) ]
+        
         return path, weights
-    
+        
     def mergeMinima(self, min1, min2):
         """
         rebuild the graph with min2 deleted and 
@@ -348,10 +357,27 @@ class _DistanceGraph(object):
             zero_weight = weights[e] < 1e-10
             #if they are connected they should have zero_weight
             if are_connected and not zero_weight:
-                #dist = self.getDist(e[0], e[1])
                 #print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist
+                if True:
+                    #note: this is an inconsistency, but it's only a problem if
+                    #there is no zero weight path from e[0] to e[1]
+                    path, path_weight = self.shortestPath(e[0], e[1])
+                    weight_sum = sum(path_weight)
+#                    for i in range(len(path)-1):
+#                        m1, m2 = path[i], path[i+1]
+#                        try:
+#                            w = weights[(m1, m2)]
+#                        except KeyError:
+#                            w = weights[(m2, m1)]
+#                        weight_sum += w
+                    if weight_sum > 10e-6:
+                        #now there is definitely a problem.
+                        count += 1
+                        dist = self.getDist(e[0], e[1])
+                        print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist, "path_weight", weight_sum
                 self.setTransitionStateConnection(e[0], e[1])
-                count += 1
+                            
+                     
             if not are_connected and zero_weight:
                 dist = self.getDist(e[0], e[1])
                 print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist
@@ -592,9 +618,6 @@ class DoubleEndedConnect(object):
         self.dist_graph.addMinimum(min1)
         self.dist_graph.addMinimum(min2)
         self.dist_graph.setTransitionStateConnection(min1, min2)
-        if True:
-            #debugging
-            self.dist_graph.checkGraph()
         
         return True
 
@@ -668,6 +691,11 @@ class DoubleEndedConnect(object):
         #remove this edge from Gdist so we don't try this pair again again
         #self._remove_edgeGdist(min1, min2)
         self.dist_graph.removeEdge(min1, min2)
+        
+        if True:
+            #do some santy checks
+            self.dist_graph.checkGraph()
+
 
         return nsuccess > 0            
     
@@ -707,9 +735,10 @@ class DoubleEndedConnect(object):
         for i in range(1,len(path)):
             min1 = path[i-1]
             min2 = path[i]
-            w = weights.get((min1,min2))
-            if w is None:
-                w = weights.get((min2,min1))
+#            w = weights.get((min1,min2))
+#            if w is None:
+#                w = weights.get((min2,min1))
+            w = weights[i-1]
             weightlist.append( (w, min1, min2) )
         
         if True:
@@ -776,6 +805,9 @@ class DoubleEndedConnect(object):
             if min1 is None or min2 is None:
                 break
             local_success = self._localConnect(min1, min2)
+            
+
+            
         print "failed to find connection between", self.minstart._id, self.minend._id
 
     def returnPath(self):

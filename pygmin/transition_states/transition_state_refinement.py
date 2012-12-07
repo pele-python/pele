@@ -191,6 +191,8 @@ class FindTransitionState(object):
         self.step_factor = .1
         self.nnegative = 0
         
+        self.verbosity = 1
+        
     def _saveState(self, coords):
         self.saved_coords = np.copy(coords)
         self.saved_eigenvec = np.copy(self.eigenvec)
@@ -318,18 +320,19 @@ class FindTransitionState(object):
 #        if res.eigenval > 0.:
 #            print "warning transition state search found positive lowest eigenvalue", res.eigenval, \
 #                "step", i
-        if i > 0:
-            overlap = np.dot(self.oldeigenvec, res.eigenvec)
-            if overlap < 0.5:
-                print "warning: the new eigenvector has low overlap with previous", overlap
-        else:
-            overlap = 0.
         
         self.H0_leig = res.H0
         self.eigenvec = res.eigenvec
         self.eigenval = res.eigenval
         self.oldeigenvec = self.eigenvec.copy()
         
+        if i > 0:
+            overlap = np.dot(self.oldeigenvec, res.eigenvec)
+            if overlap < 0.5 and self.verbosity > 2:
+                print "warning: the new eigenvector has low overlap with previous", overlap, self.eigenval
+        else:
+            overlap = 0.
+
         if res.success:
             self.nfail = 0
         else:
