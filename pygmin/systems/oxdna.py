@@ -125,3 +125,14 @@ class OXDNAReseed(takestep.TakestepInterface):
         # random rotation for angle-axis vectors
         for rot in ca.rotRigid:
             rot[:] = rotations.random_aa()
+
+def export_xyz(fl, coords):
+    ca = CoordsAdapter(nrigid=coords.size/6, coords = coords)
+    fl.write("%d\n\n"%(2*ca.nrigid))
+    for i in xrange(ca.nrigid):
+        a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([1., 0., 0.]))
+        x_back = ca.posRigid[i] - 0.4*a # backbone bead
+        x_stack = ca.posRigid[i] + 0.4*a
+        
+        fl.write("C %f %f %f\n"%(x_back[0], x_back[1], x_back[2]))
+        fl.write("H %f %f %f\n"%(x_stack[0], x_stack[1], x_stack[2]))

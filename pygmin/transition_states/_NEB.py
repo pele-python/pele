@@ -204,12 +204,20 @@ class NEB(object):
         Graeme Henkelman and Hannes Jonsson
         J. Chem. Phys 113 (22), 9978 (2000)
 
-        central:
-            central image energy and coordinates [E, coords]
-        left:
-            left image energy and coordinates [E, coords]
-        right:
-            right image energy and coordinates [E, coords]
+        Parameters
+        ----------
+        
+        central : float
+            central image energy
+        left : float
+            left image energy
+        right : float
+            right image energy
+        gleft : np.array
+            gradient to left image (x_0 - x_left)
+        gright : np.array
+            gradient to right image (x_0 - x_right) 
+        
         """
         
         vmax = max(abs(central - left), abs(central - right))

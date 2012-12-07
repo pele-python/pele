@@ -10,7 +10,8 @@ from pygmin.transition_states import NEB, InterpolatedPath
 from pygmin import defaults
 import pylab as pl
 from copy import deepcopy
-
+from pygmin.optimize import quench
+from pygmin.mindist.rmsfit import findrotation_kabsch
 
 def dump_path(filename, system, path):
     fl = open(filename, "w")
@@ -42,7 +43,7 @@ water.add_atom("H", rho*np.array([0.0, -sin(0.5*theta), cos(0.5*theta)]), 1.)
 water.finalize_setup()
 
 #water.S = np.identity(3, dtype="float64")
-water.S*=10.
+#water.S*=10.
 # define the whole water system
 system = RBSystem()
 system.add_sites([deepcopy(water) for i in xrange(nrigid)])
@@ -74,18 +75,45 @@ coords2 = ret[0]
 #np.savetxt("coords2.txt", coords2)
 coords1 = np.loadtxt("coords1.txt")
 coords2 = np.loadtxt("coords2.txt")
-defaults.NEBquenchParams["nsteps"] = 100
+defaults.NEBquenchParams["nsteps"] = 500
 defaults.NEBquenchParams["iprint"] = -1
-defaults.NEBquenchParams["maxErise"] = 0.2
-defaults.NEBquenchParams["maxstep"] = 0.05
-k = 1000.
+defaults.NEBquenchParams["maxstep"] = 0.1
+#defaults.NEBquenchParams["maxErise"] = 0.1
+defaults.NEBquenchRoutine = quench.fire
+k = 100.
 dneb=True
-path=[x for x in InterpolatedPath(coords2, coords1, 50)]#, interpolator=system.interpolate)]
+
+
+c1 = system.coords_adapter(coords1)
+c2 = system.coords_adapter(coords2)
+R = findrotation_kabsch(c2.posRigid, c1.posRigid)
+#R = rotations.aa2mx(p)
+for x, p in zip(c2.posRigid, c2.rotRigid):
+    x[:] = np.dot(R, x)
+    p[:] = rotations.rotate_aa(p, rotations.mx2aa(R))
+
+print coords2[-6:] ,coords1[-6:]   
+for p1, p2 in zip(c1.rotRigid,c2.rotRigid):
+    theta1 = np.linalg.norm(rotations.rotate_aa(p2,-p1))
+    p2n = rotations.rotate_aa(np.array([0., 0., pi]), p2)
+    theta2 = np.linalg.norm(rotations.rotate_aa(p2n,-p1))
+    theta1 -= int(theta1/2./pi)*2.*pi
+    theta2 -= int(theta2/2./pi)*2.*pi
+    if(theta2 < theta1): 
+        p2[:]=p2n
+    print theta2, theta1
+#print coords2[-6:],coords1[-6:]   
+
+path=[x for x in InterpolatedPath(coords2, coords1, 30, interpolator=system.interpolate)]
+for i in path:
+    print pot.getEnergy(i)
 print "foo"
 system.align_path(path)
 print "foo"
+dump_path("interpolate.xyz", system, path)
 
 neb = NEB(path, pot, k=k, dneb=dneb, with_springenergy = False)
+
 neb.optimize()
 neb.optimize()
 dump_path("neb.xyz", system, neb.coords)
