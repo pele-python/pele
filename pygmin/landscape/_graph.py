@@ -129,7 +129,8 @@ class Graph(object):
         for v, data in self.graph[min2].iteritems():
             if v == min1: continue
             if v == min2: 
-                print "wtf?  v == min2"
+                print "warning: minimum", min2._id, "is connected to itself"
+                continue
             #the new edge will be (min1, v).  Add it if it doesn't already exist
             if not self.graph.has_edge(min1, v):
 #                if not self.graph.has_edge(v, min1):
@@ -164,7 +165,9 @@ def create_random_database(nmin=20, nts=None, natoms=2):
         minlist.append( db.addMinimum(e, coords) )
     #add random transition states
     for i in range(nts):
-        j1, j2 = np.random.randint(0, nmin, 2)
+        j1, j2 = 1, 1
+        while j1 == j2:
+            j1, j2 = np.random.randint(0, nmin, 2)
         m1, m2 = minlist[j1], minlist[j2] 
         coords = np.random.uniform(-1,1,natoms*3)
         e = float(j1 + j2)

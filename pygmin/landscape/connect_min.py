@@ -365,6 +365,8 @@ class DoubleEndedConnect(object):
         """
         print "finding a good pair to try to connect"
         #get the shortest path on dist_graph between minstart and minend
+        if True:
+            print "Gdist has", self.dist_graph.Gdist.number_of_nodes(), "nodes and", self.dist_graph.Gdist.number_of_edges(), "edges"
         path, weights = self.dist_graph.shortestPath(self.minstart, self.minend)
         weightsum = sum(weights)
         if path is None or weightsum >= 10e9:
@@ -447,7 +449,7 @@ class DoubleEndedConnect(object):
                 break
             local_success = self._localConnect(min1, min2)
             
-            if True and i % 10 == 0:
+            if True and i % 1 == 0:
                 #do some santy checks
                 self.dist_graph.checkGraph()
 
@@ -509,7 +511,7 @@ def getSetOfMinLJ(natoms = 32): #for testing purposes
 def test(Connect=DoubleEndedConnect, natoms=16):
     from pygmin.landscape import Graph
     from pygmin.optimize.quench import lbfgs_py as quench
-    from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
+    from pygmin.mindist import minPermDistStochastic, MinDistWrapper
     from pygmin.storage.database import Database
     import pygmin.defaults as defaults
     defaults.quenchParams = {"iprint": 1}
@@ -522,6 +524,8 @@ def test(Connect=DoubleEndedConnect, natoms=16):
     min1 = minima[0]
     min2 = minima[1]
     print min1.energy, min2.energy
+    
+    mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)
     
     if False:
         #test to see if min1 and min2 are already connected

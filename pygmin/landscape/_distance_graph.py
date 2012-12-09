@@ -1,4 +1,5 @@
 import networkx as nx
+import numpy as np
 
 from pygmin.landscape import Graph
 
@@ -61,6 +62,8 @@ class _DistanceGraph(object):
         
         self.new_distances = dict() #keep track of newly calculated distances
         self.db_update_min = db_update_min
+        
+        self.infinite_weight = 1e20
 
     def distToWeight(self, dist):
         """
@@ -203,17 +206,23 @@ class _DistanceGraph(object):
                                
 
     def removeEdge(self, min1, min2):
-        """remove an edge from the graph
-        
+        """set the edge weight to near infinity
+                
         used to indicate that the routine should not try to connect
         these minima again.
+        
+        don't overwrite zero edge weight
         """
-        self.Gdist.add_edge(min1, min2, weight=10e10)
-        try:
-            self.Gdist.remove_edge(min1, min2)
-        except nx.NetworkXError:
-            pass
+        if self.Gdist.has_edge(min1, min2):
+            w = self.Gdist[min1][min2]["weight"]
+            if not w < 1e-6:
+                self.Gdist.add_edge(min1, min2, weight=self.infinite_weight)
         return True
+#        try:
+#            self.Gdist.remove_edge(min1, min2)
+#        except nx.NetworkXError:
+#            pass
+#        return True
 
     def _initializeDistances(self):
         """put all distances in the database into distance_map for faster access"""
@@ -304,8 +313,6 @@ class _DistanceGraph(object):
 
     def shortestPath(self, min1, min2):
         """return the minimum weight path path between min1 and min2""" 
-        if True:
-            print "Gdist has", self.Gdist.number_of_nodes(), "nodes and", self.Gdist.number_of_edges(), "edges"
         try:
             path = nx.shortest_path(
                     self.Gdist, min1, min2, weight="weight")
@@ -442,14 +449,14 @@ class _DistanceGraph(object):
 #
 
 import unittest
-class TestGraph(unittest.TestCase):
+class TestDistanceGraph(unittest.TestCase):
     def setUp(self):
         from pygmin.landscape import DoubleEndedConnect
         from pygmin.landscape._graph import create_random_database
         from pygmin.mindist import minPermDistStochastic, MinDistWrapper
         from pygmin.potentials import LJ
         
-        nmin = 20
+        nmin = 10
         natoms=13
         
         pot = LJ()
@@ -464,9 +471,9 @@ class TestGraph(unittest.TestCase):
 
         self.connect = connect
         self.db = db
-
+        self.natoms = natoms
     
-    def test_merge(self):
+    def test_merge_minima(self):
         """merge two minima and make sure the distance graph is still ok"""
         min3, min4 = list(self.db.minima())[2:4]
         allok = self.connect.dist_graph.checkGraph()
@@ -486,8 +493,108 @@ class TestGraph(unittest.TestCase):
         
         self.assertTrue(allok, "merging broke the distance graph")
         
+    def test_add_TS_existing_minima(self):
+        min3, min4 = list(self.db.minima())[4:6]
+        allok = self.connect.dist_graph.checkGraph()
+        self.assertTrue(allok, "the distance graph is broken at the start")
+
+        print min3._id, min4._id, "are connected", self.connect.graph.areConnected(min3, min4)
+        print min3._id, "number of edges", self.connect.graph.graph.degree(min3)
+        print min4._id, "number of edges", self.connect.graph.graph.degree(min4)
         
+        coords = np.random.uniform(-1,1,self.natoms*3)
+        E = float(min3.energy + min4.energy)
+        min_ret1 = [min3.coords, min3.energy]
+        min_ret2 = [min4.coords, min4.energy]
+        
+        eigenvec = coords.copy()
+        eigenval = -1.
+        
+        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+
+        allok = self.connect.dist_graph.checkGraph()
+        self.assertTrue(allok, "adding a transition state broke the distance graph")
+        
+
+    def test_add_TS_new_minima(self):
+        min3 = list(self.db.minima())[6]
+        allok = self.connect.dist_graph.checkGraph()
+        self.assertTrue(allok, "the distance graph is broken at the start")
+
+#        print min3._id, min4._id, "are connected", self.connect.graph.areConnected(min3, min4)
+        print min3._id, "number of edges", self.connect.graph.graph.degree(min3)
+
+        #create new minimum from thin air
+        coords = np.random.uniform(-1,1,self.natoms*3)
+        E = np.random.rand()*10.
+        min_ret2 = [coords, E]
+        min_ret1 = [min3.coords, min3.energy]
+
+
+        #create new TS from thin air        
+        coords = np.random.uniform(-1,1,self.natoms*3)
+        E = float(min3.energy + min_ret2[1])
+        
+        eigenvec = coords.copy()
+        eigenval = -1.
+        
+        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+
+        allok = self.connect.dist_graph.checkGraph()
+        self.assertTrue(allok, "adding a transition state broke the distance graph")
+
+    def run_add_TS(self, min3, min4, nocheck=False):
+        if not nocheck:
+            allok = self.connect.dist_graph.checkGraph()
+            self.assertTrue(allok, "the distance graph is broken at the start")
+
+        print min3._id, min4._id, "are connected", self.connect.graph.areConnected(min3, min4)
+        print min3._id, "number of edges", self.connect.graph.graph.degree(min3)
+        print min4._id, "number of edges", self.connect.graph.graph.degree(min4)
+        
+        coords = np.random.uniform(-1,1,self.natoms*3)
+        E = float(min3.energy + min4.energy)
+        min_ret1 = [min3.coords, min3.energy]
+        min_ret2 = [min4.coords, min4.energy]
+        
+        eigenvec = coords.copy()
+        eigenval = -1.
+        
+        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+
+        if not nocheck:
+            allok = self.connect.dist_graph.checkGraph()
+            self.assertTrue(allok, "adding a transition state broke the distance graph")
+
+
+    def test_add_TS_existing_not_connected(self):
+        minima = list(self.db.minima())
+        min3 = minima[2]
+        for min4 in minima[3:]:
+            if not self.connect.graph.areConnected(min3, min4):
+                break
+        self.run_add_TS(min3, min4)
+        
+    def test_add_TS_existing_already_connected(self):
+        minima = list(self.db.minima())
+        min3 = minima[2]
+        for min4 in minima[3:]:
+            if self.connect.graph.areConnected(min3, min4):
+                break
+        self.run_add_TS(min3, min4)
     
+    def test_add_TS_multiple(self):
+        minima = list(self.db.minima())
+        min3 = minima[2]
+        nnew = 4
+        for min4 in minima[3:3+nnew]:
+            self.run_add_TS(min3, min4, nocheck=True)
+
+        allok = self.connect.dist_graph.checkGraph()
+        self.assertTrue(allok, "adding multiple transition states broke the distance graph")
+
+
+
 
 def mytest(nmin=40, natoms=13):
     from pygmin.landscape import DoubleEndedConnect
