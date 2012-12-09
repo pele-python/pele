@@ -124,13 +124,17 @@ class Graph(object):
         delete minima2.  all transition states pointing to min2 should
         now point to min1
         """
+        self.connected_components.setRebuild()
         #make the edges of min2 now point to min1
-        for v in self.graph.neighbors(min2):
+        for v, data in self.graph[min2].iteritems():
+            if v == min1: continue
+            if v == min2: 
+                print "wtf?  v == min2"
             #the new edge will be (min1, v).  Add it if it doesn't already exist
             if not self.graph.has_edge(min1, v):
-                if not self.graph.has_edge(v, min1):
-                    data = self.graph.get_edge_data(min2, v)
-                    self.graph.add_edge(min1, v, **data)
+#                if not self.graph.has_edge(v, min1):
+#                    data = self.graph.get_edge_data(min2, v)
+                self.graph.add_edge(min1, v, **data)
         self.graph.remove_node(min2)
 
         if update_database:
@@ -142,13 +146,12 @@ class Graph(object):
 # below here only for testing
 #
 
-def create_random_database(nmin=20, nts=None):
+def create_random_database(nmin=20, nts=None, natoms=2):
     """
     create a database for test purposes
     """
     from pygmin.storage import Database
     import numpy as np
-    natoms = 2
     
     if nts is None:
         nts = nmin

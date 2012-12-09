@@ -55,7 +55,7 @@ class _DistanceGraph(object):
         self.Gdist = nx.Graph()
         self.distance_map = dict() #place to store distances locally for faster lookup
         nx.set_edge_attributes(self.Gdist, "weight", dict())
-        self.debug = True
+        self.debug = False
         
         self.defer_database_update = defer_database_update
         
@@ -324,37 +324,64 @@ class _DistanceGraph(object):
         everything pointing to min1 pointing to min2 instead
         """
         print "    rebuilding Gdist"
-        weights = nx.get_edge_attributes(self.Gdist, "weight")
-        newgraph = nx.Graph()
-        nx.set_edge_attributes(newgraph, "weight", dict())
-        for node in self.Gdist.nodes():
-            if node != min2:
-                newgraph.add_node(node)
-        for e in self.Gdist.edges():
-            if not min1 in e and not min2 in e:
-                newgraph.add_edge(e[0], e[1], {"weight":weights[e]})
-            if min1 in e and min2 in e:
+        for m, data in self.Gdist[min2].iteritems():
+            if m == min1:
                 continue
-            #if e already exists in newgraph, make sure we don't overwrite
-            #a zeroed edge weight
-            if min2 in e:
-                if e[0] == min2:
-                    enew = (min1, e[1])
-                else:
-                    enew = (e[0], min1)
-            else:
-                enew = e
-            existing_weight = weights.get(enew)
-            if existing_weight is not None:
-                if existing_weight < 1e-10:
-                    #existing weight is zero.  don't overwrite
-                    continue
-            newgraph.add_edge(enew[0], enew[1], {"weight":weights[e]})
+            if not self.Gdist.has_edge(min1, m):
+                self.add_edge(min1, m, **data)
+            
+            #the edge already exists, keep the edge with the lower weight
+            w2 = data["weight"]
+            w1 = self.Gdist[min1][m]["weight"]
+            wnew = min(w1, w2)
+            #note: this will override any previous call to self.setTransitionStateConnection
+            self.Gdist.add_edge(min1, m, weight=wnew)
+            
+        self.Gdist.remove_node(min2)
+            
+                
         
-        #done, replace Gdist with newgraph
-        self.Gdist = newgraph
-        if self.debug:
-            self.checkGraph()
+        return
+        
+#        weights = nx.get_edge_attributes(self.Gdist, "weight")
+#        newgraph = nx.Graph()
+#        nx.set_edge_attributes(newgraph, "weight", dict())
+#        for node in self.Gdist.nodes():
+#            if node != min2:
+#                newgraph.add_node(node)
+#        for e in self.Gdist.edges():
+#            if not min1 in e and not min2 in e:
+#                newgraph.add_edge(e[0], e[1], {"weight":weights[e]})
+#            if min1 in e and min2 in e:
+#                continue
+#            #if e already exists in newgraph, make sure we don't overwrite
+#            #a zeroed edge weight
+#            if min2 in e:
+#                if e[0] == min2:
+#                    enew = (min1, e[1])
+#                else:
+#                    enew = (e[0], min1)
+#            else:
+#                enew = e
+#            
+#            #get existing weight
+#            try:
+#                existing_weight = weights[enew]
+#            except:
+#                try:
+#                    existing_weight = weights[enew]
+#                except:
+#                    existing_weight = None
+#            if existing_weight is not None:
+#                if existing_weight < 1e-10:
+#                    #existing weight is zero.  don't overwrite
+#                    continue
+#            newgraph.add_edge(enew[0], enew[1], {"weight":weights[e]})
+#        
+#        #done, replace Gdist with newgraph
+#        self.Gdist = newgraph
+#        if self.debug:
+#            self.checkGraph()
 
     def checkGraph(self):
         """
@@ -362,6 +389,7 @@ class _DistanceGraph(object):
         and make any corrections
         """
         print "checking Gdist"
+        allok = True
         #check that all edges that are connected in self.graph
         #have zero edge weight
         #note: this could be done a lot more efficiently
@@ -387,17 +415,97 @@ class _DistanceGraph(object):
 #                        weight_sum += w
                     if weight_sum > 10e-6:
                         #now there is definitely a problem.
+                        allok = False
                         count += 1
                         dist = self.getDist(e[0], e[1])
-                        print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist, "path_weight", weight_sum
+                        print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist, "path_weight", weight_sum, e[0]._id, e[1]._id
                 self.setTransitionStateConnection(e[0], e[1])
                             
                      
             if not are_connected and zero_weight:
+                allok = False
                 dist = self.getDist(e[0], e[1])
-                print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist
+                print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist, e[0]._id, e[1]._id
                 w = self.distToWeight(dist)
                 self.Gdist.add_edge(e[0], e[1], {"weight":w})
         if count > 0:
             print "    found", count, "inconsistencies in Gdist"
-                     
+        
+        return allok
+
+
+
+#
+#
+# below here only stuff for testing
+#
+#
+
+import unittest
+class TestGraph(unittest.TestCase):
+    def setUp(self):
+        from pygmin.landscape import DoubleEndedConnect
+        from pygmin.landscape._graph import create_random_database
+        from pygmin.mindist import minPermDistStochastic, MinDistWrapper
+        from pygmin.potentials import LJ
+        
+        nmin = 20
+        natoms=13
+        
+        pot = LJ()
+        mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)
+        
+        db = create_random_database(nmin=nmin, natoms=natoms, nts=nmin/2)
+        min1, min2 = list(db.minima())[:2] 
+        
+        
+        connect = DoubleEndedConnect(min1, min2, pot, mindist, db, use_all_min=True, 
+                                     merge_minima=True, max_dist_merge=1e100)
+
+        self.connect = connect
+        self.db = db
+
+    
+    def test_merge(self):
+        """merge two minima and make sure the distance graph is still ok"""
+        min3, min4 = list(self.db.minima())[2:4]
+        allok = self.connect.dist_graph.checkGraph()
+        self.assertTrue(allok, "the distance graph is broken at the start")
+
+        print min3._id, min4._id, "are connected", self.connect.graph.areConnected(min3, min4)
+        print min3._id, "number of edges", self.connect.graph.graph.degree(min3)
+        print min4._id, "number of edges", self.connect.graph.graph.degree(min4)
+        self.connect.mergeMinima(min3, min4)
+        
+        self.assertNotIn(min4, self.connect.graph.graph)
+        self.assertNotIn(min4, self.connect.dist_graph.Gdist)
+        self.assertNotIn(min4, self.db.minima())
+        
+        allok = self.connect.dist_graph.checkGraph()
+        
+        
+        self.assertTrue(allok, "merging broke the distance graph")
+        
+        
+    
+
+def mytest(nmin=40, natoms=13):
+    from pygmin.landscape import DoubleEndedConnect
+    from pygmin.landscape._graph import create_random_database
+    from pygmin.mindist import minPermDistStochastic, MinDistWrapper
+    from pygmin.potentials import LJ
+    
+    pot = LJ()
+    mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)
+    
+    db = create_random_database(nmin=nmin, natoms=natoms)
+    min1, min2 = list(db.minima())[:2] 
+    
+    
+    graph = Graph(db)
+    connect = DoubleEndedConnect(min1, min2, pot, mindist, db, use_all_min=True, 
+                                 merge_minima=True, max_dist_merge=.1)
+
+if __name__ == "__main__":
+    #mytest()
+    unittest.main()

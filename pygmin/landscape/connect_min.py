@@ -1,14 +1,12 @@
 import numpy as np
 import networkx as nx
-import copy
-import itertools
 
-from pygmin.transition_states import NEB, InterpolatedPath, findTransitionState, minima_from_ts
-import pygmin.defaults as defaults
 from pygmin.landscape import Graph, LocalConnect
 from pygmin.landscape._distance_graph import _DistanceGraph
 
 __all__ = ["DoubleEndedConnect"]
+
+                     
 
 
 class DoubleEndedConnect(object):
