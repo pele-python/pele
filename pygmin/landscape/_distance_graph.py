@@ -5,7 +5,7 @@ from pygmin.landscape import Graph
 
 class _DistanceGraph(object):
     """
-    This graph is used to guess a good method for connecting two minima
+    This graph is used by DoubleEndedConnect to make educated guesses for connecting two minima
     
     Parameters
     ----------
@@ -25,25 +25,22 @@ class _DistanceGraph(object):
     db_update_min : int
         only update the database when at least this many new distances have been found.
     
+    Description
+    -----------
     This graph has a vertex for every minimum and an edge
-    between (almost) every minima pairs. The edge weight between vertices u and v
+    between every minima pair. The edge weight between vertices u and v
     is
-    
-        if u and v are connected in "graph":
-            weight(u,v) = 0.
+                       
+        if u and v are connected by transition states:
+            weight(u, v) = 0. 
+        elif we have already tried local_connect on (u,v):
+            weight(u, v) = Infinity
         else:
-            weight(u,v) = mindist(u,v)
-            (or  = mindist(u,v)**2)
-    
-    Also, edges are removed from this graph when an NEB is done to try to
-    connect them.  This is to ensure we don't repeat NEB runs over and over
-    again.  The minimum weight path between min1 and min2 in this graph gives a
-    good guess for the best way to try connect min1 and min2.  So the
-    algorithm to find a pair of know minima (trial1, trial2) to try to
-    connect is 
+            weight(u, v) = dist(u, v)**2
 
-    path = Gdist.minimum_weight_path(min1, min2)
-    trial1, trial2 = minima pair in path with lowest nonzero edge weight
+    Edge weights are set to Infinity to ensure that we don't try to connect
+    them again.  The minimum weight path between min1 and min2 in this graph gives a
+    good guess for the best way to try connect min1 and min2.  
 
     """
     def __init__(self, database, graph, mindist, verbosity=0,
@@ -110,7 +107,8 @@ class _DistanceGraph(object):
     
     def _getDistNoCalc(self, min1, min2):
         """
-        get distance from local memory.  don't calculate it.
+        get distance from local memory.  if it doesn't exist, return None,
+        don't calculate it.
         """
         #first try to get the distance from the dictionary 
         dist = self.distance_map.get((min1,min2))
@@ -143,27 +141,36 @@ class _DistanceGraph(object):
         self._setDist(min1, min2, dist)
         return dist
     
-    def _addEdge(self, min1, min2):
-        """
-        add a new edge to the graph.  Calculate the distance
-        between the minima and set the edge weight
-        """
-        if min1 == min2: return
-        dist = self.getDist(min1, min2)
-        weight = self.distToWeight(dist)
-        self.Gdist.add_edge(min1, min2, {"weight":weight})
-        if self.graph.areConnected(min1, min2):
-            self.setTransitionStateConnection(min1, min2)
-            #note: this is incomplete.  if a new edge between
-            #min1 and min2 connects
-            #two clusters that were previously unconnected
-            #then the edge weight should be set to zero 
-            #with self.setTransitionStateConnection() for all minima
-            #in the two clusters.  Currently this is being fixed
-            #by calling checkGraph() from time to time.  I'm not sure
-            #which is better.
+#    def _addEdge(self, min1, min2):
+#        """
+#        add a new edge to the graph.  Calculate the distance
+#        between the minima and set the edge weight
+#        """
+#        if min1 == min2: return
+#        dist = self.getDist(min1, min2)
+#        weight = self.distToWeight(dist)
+#        self.Gdist.add_edge(min1, min2, {"weight":weight})
+#        if self.graph.areConnected(min1, min2):
+#            self.setTransitionStateConnection(min1, min2)
+#            #note: this is incomplete.  if a new edge between
+#            #min1 and min2 connects
+#            #two clusters that were previously unconnected
+#            #then the edge weight should be set to zero 
+#            #with self.setTransitionStateConnection() for all minima
+#            #in the two clusters.  Currently this is being fixed
+#            #by calling checkGraph() from time to time.  I'm not sure
+#            #which is better.
     
     def _addMinimum(self, m):
+        """
+        add a new minimum to the graph
+        
+        must add an edge with the appropriate weight to every other 
+        node in the graph.
+        
+        this can take a long time if there are many minima or if the
+        distance calculation is slow.
+        """
         self.Gdist.add_node(m)
         #for noded that are connected set the edge weight using setTransitionStateConnection
         cc = nx.node_connected_component(self.graph.graph, m)

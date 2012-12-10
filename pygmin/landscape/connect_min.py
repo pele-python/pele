@@ -135,6 +135,10 @@ class DoubleEndedConnect(object):
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
 
+        #check if a connection exists before initializing distance Graph
+        if self.graph.areConnected(self.minstart, self.minend):
+            print "minima are already connected.  not initializing distance graph"
+            return
 
         self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
         self.dist_graph.initialize(self.minstart, self.minend, use_all_min)
@@ -449,7 +453,7 @@ class DoubleEndedConnect(object):
                 break
             local_success = self._localConnect(min1, min2)
             
-            if True and i % 1 == 0:
+            if True and i % 10 == 0:
                 #do some santy checks
                 self.dist_graph.checkGraph()
 
