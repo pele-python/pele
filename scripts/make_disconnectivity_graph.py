@@ -100,6 +100,9 @@ def usage():
     print " options to pass to DoubleEndedConnect:"
     print "   --nlevels=n : number of energy levels"
     print "   --subgraph_size=n :  include all disconnected subgraphs up to size n"
+    print "   --order_by_basin_size : " 
+    print "   --order_by_energy : " 
+    print "   --center_gmin : " 
 
 def main():
     if len(sys.argv) < 2:
@@ -113,7 +116,9 @@ def main():
     OPTIM = False
 
     opts, args = getopt.gnu_getopt(sys.argv[1:], "ho:", 
-                                   ["help", "nlevels=", "subgraph_size=", "OPTIM"])
+                                   ["help", "nlevels=", "subgraph_size=", "OPTIM",
+                                    "order_by_basin_size", "order_by_energy",
+                                    "center_gmin"])
     for o, a in opts:
         if o == "-h" or o == "--help":
             usage()
@@ -124,6 +129,12 @@ def main():
             kwargs["nlevels"] = int(a)
         elif o == "--subgraph_size":
             kwargs["subgraph_size"] = int(a)
+        elif o == "--order_by_basin_size":
+            kwargs["order_by_basin_size"] = True
+        elif o == "--order_by_energy":
+            kwargs["order_by_energy"] = True
+        elif o == "--center_gmin":
+            kwargs["center_gmin"] = True
         elif o == "--OPTIM":
             OPTIM = True
         else:

@@ -67,14 +67,29 @@ class DisconnectivityGraph(object):
     subgraph_size : int
         if subgraph_size is not None then all disconnected graphs
         of size greater than subraph_size will be included.
-        
+    order_by_energy : bool
+        order the subtrees by placing ones with lower energy closer
+        to the center
+    order_by_basin_size : bool
+        order the subtrees by placing larger basins closer to the center
+    center_gmin : bool
+        when a node splits into its daughter
+        nodes, the one containing the global minimum is always placed centrally
+        (even if other nodes carry more minima). This does not guarantee that
+        the global minimum is central in the overall diagram because other
+        nodes may push the one containing the global minimum over to one side
     """
     def __init__(self, graph, min0=None, nlevels=20,
-                 subgraph_size=None):
+                 subgraph_size=None, order_by_energy=False,
+                 order_by_basin_size=True,
+                 center_gmin=False):
         self.graph = graph
         self.nbins = nlevels
         self.subgraph_size = subgraph_size
         self.min0 = min0
+        self.order_by_basin_size = order_by_basin_size
+        self.order_by_energy = order_by_energy
+        self.center_gmin = center_gmin 
         if self.min0 is None:
             #find the minimum energy node
             elist = [ (m.energy, m) for m in self.graph.nodes() ]
@@ -88,29 +103,6 @@ class DisconnectivityGraph(object):
             return self.transition_states[(min1, min2)]
         except KeyError:
             return self.transition_states[(min2, min1)]
-            
-    
-#    def _get_path(self, min1, min2):
-#        #this should be a weighted path
-#        return nx.shortest_path(self.graph, min1, min2)
-#    
-#    def _get_max_ts(self, min1, min2):
-#        path = self._get_path(min1, min2)
-#        emax = -1e100
-#        for i in range(len(path)-1):
-#            m1, m2 = path[i], path[i+1]
-#            try:
-#                edge = (m1, m2)
-#                ts = self.transition_states[edge]
-#            except KeyError:
-#                edge = (m2, m1)
-#                ts = self.transition_states[edge]
-#
-#            if ts.energy > emax:
-#                tsmax = ts
-#                emax = ts.energy
-#
-#        return tsmax
 
     def _connected_component_subgraphs(self, G):
         """
@@ -186,43 +178,14 @@ class DisconnectivityGraph(object):
             newtree.data["ethresh"] = energy_levels[-1] + de
             self._recursive_new_tree(newtree, g, energy_levels, len(energy_levels)-1)
 
-        return tree_graph
-
-#    def _recursive_new_tree_new(self, parent_tree, graphlist, energy_levels, ilevel):
-#        """
-#        for each graph in graphlist, make a branch on tree, split
-#        graph according to energy_levels and pass on
-#        """
-#        if ilevel < 0: return
-#        ethresh = energy_levels[ilevel]
-#        
-#        if len(graphlist) == 1:
-#            #this is a leaf
-#            g = graphlist[0]
-#            for minimum in g.nodes(): break
-#            newtree = parent_tree.make_branch()
-#            newtree.data["minimum"] = minimum 
-#            newtree.data["ilevel"] = ilevel 
-#            newtree.data["ethresh"] = ethresh 
-#
-#        else:
-#            for g in graphlist:
-#                #split g
-#                subgraphs = self._split_graph(g, ethresh)
-#                newtree = parent_tree.make_branch()
-#                newtree.data["ilevel"] = ilevel 
-#                newtree.data["ethresh"] = ethresh                 
-#                self._recursive_new_tree(newtree, subgraphs, energy_levels, ilevel-1)
-                
-            
-        
+        return tree_graph            
 
 
     def _recursive_layout_x_axis(self, tree, xmin, dx_per_min):
 #        nbranches = tree.number_of_branches()
         nminima = tree.number_of_leaves()
         subtrees = tree.get_subtrees()
-        subtrees = self._order_trees_by_global_minimum(subtrees)
+        subtrees = self._order_trees(subtrees)
         tree.data["x"] = xmin + dx_per_min * nminima / 2.
         x = xmin
         for subtree in subtrees:
@@ -247,14 +210,30 @@ class DisconnectivityGraph(object):
                 emin = self._tree_get_minimum_energy(subtree, emin)
         return emin
 
-    def _order_trees_by_global_minimum(self, trees):
+    def _order_trees(self, trees):
         """
-        order trees with by the lowest energy minimum.  the global minimum
-        goes in the center, with the remaining being placed alternating on the
-        left and on the right.
+        order a list of trees for printing
         """
-        mylist = [ (self._tree_get_minimum_energy(tree), tree) for tree in trees]
-        mylist = sorted(mylist)
+        if self.order_by_energy:
+            return self._order_trees_by_minimum_energy(trees)
+        else:
+            return self._order_trees_by_most_leaves(trees)
+
+    def _order_trees_final(self, tree_value_list):
+        """
+        Parameters
+        ----------
+        tree_value_list :
+            a list of (value, tree) pairs where value is the object
+            by which to sort the trees
+        
+        Returns
+        -------
+        treelist :
+            a list of trees ordered with the lowest in the center
+            and the others placed successively on the left and right
+        """
+        mylist = sorted(tree_value_list)
         neworder = deque()
         for i in range(len(mylist)):
             if i % 2 == 0:
@@ -262,50 +241,41 @@ class DisconnectivityGraph(object):
             else:
                 neworder.appendleft(mylist[i][1])
         return list(neworder)
+
+    def _ensure_gmin_is_center(self, tree_value_list):
+        min0index = None
+        for i in range(len(tree_value_list)):
+            v, tree = tree_value_list[i]
+            if self.min0 in [ leaf.data["minimum"] for leaf in tree.get_leaves()]:
+                min0index = i
+                break
+        if min0index is not None:
+            minvalue = min([v for v, tree in tree_value_list])
+            #replace the value with a lower one
+            #for the tree containing min0
+            newvalue = minvalue - 1 #this won't word for non number values
+            tree_value_list[i] = (newvalue, tree_value_list[i][1]) 
+        return tree_value_list 
+
             
         
-# this is roughly the beginning of the algorithm in disconnectionDPS.f90    
-#    def _assign_minima_to_basins(self, energy_levels):
-#        """ energy_levels must be sorted from lowest to highest"""
-#        
-#        basin = {}
-#        for n in self.graph.nodes(): basin[n] = -1
-#        
-#        count = 0
-#        nbasin = 0
-#        for ethresh in energy_levels:
-#            changed  = True
-#            while changed:
-#                changed = False
-#                if True:
-#                    count += 1
-#                    print "looping through again", count
-#                for edge in self.graph.edges():
-#                    ts = self.transition_states[edge]
-#                    if ts.energy < ethresh:
-#                        m1, m2 = ts.minimum1, ts.minimum2
-#                        basin1, basin2 = basin[m1], basin[m2]
-##                        print "%d\t%d\t%d\t%d" % (m1._id, m2._id, basin1, basin2)
-#                        if basin1 == -1 and basin2 == -1:
-#                            #if both minima are unasigned, assigne them to nbasin
-#                            changed = True
-#                            basin[m1] = nbasin
-#                            basin[m2] = nbasin
-#                            nbasin += 1
-#                        elif basin1 != basin2:
-#                            #they were previously assigned different basins
-#                            changed = True
-#                            if basin1 == -1:
-#                                basin[m1] = basin2
-#                            elif basin2 == -1:
-#                                basin[m2] = basin1
-#                            else:
-#                                #assign them both to the same basin
-#                                #use the lower number because that is the higher energy basin
-#                                basin[m1] = min(basin1, basin2)
-#                                basin[m1] = min(basin1, basin2)
-#                        
-#        return basin
+
+    def _order_trees_by_most_leaves(self, trees):
+#        if self.center_gmin:
+#            return self._order_trees_by_most_leaves_and_global_min(trees)
+        mylist = [ (tree.number_of_leaves(), tree) for tree in trees]
+        if self.center_gmin:
+            mylist = self._ensure_gmin_is_center(mylist)
+        return self._order_trees_final(mylist)
+
+    def _order_trees_by_minimum_energy(self, trees):
+        """
+        order trees with by the lowest energy minimum.  the global minimum
+        goes in the center, with the remaining being placed alternating on the
+        left and on the right.
+        """
+        mylist = [ (self._tree_get_minimum_energy(tree), tree) for tree in trees]
+        return self._order_trees_final(mylist)
                         
 
     def _get_energy_levels(self, graph):
