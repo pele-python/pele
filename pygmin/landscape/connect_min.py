@@ -52,8 +52,8 @@ class DoubleEndedConnect(object):
         if true, always try to connect the longest segment in the path guess
         first
     
-    Notes
-    -----
+    Description
+    -----------
     The algorithm is iterative, with each iteration composed of
     
     While min1 and min2 are not connected:
@@ -66,12 +66,14 @@ class DoubleEndedConnect(object):
         4) fall off either side of the transition states to find the two
         minima associated with that candidate
         
-        5) add the transition state and associated minima to the known
+        5) add the transition states and associated minima to the known
         network
         
     
-    Of the above, steps 1 and 2 and 3 are the most involved.  See the NEB and
-    FindTransitionState classes for detailed descriptions of steps 2 and 3.
+    Of the above, steps 1 and 2 and 3 are the most involved.  2, 3, 4 are 
+    wrapped into a separate class called LocalConnect.  See this class and
+    the NEB and FindTransitionState classes for detailed descriptions of 
+    these procedures.
     
     An important note is that the NEB is used only to get a *guess* for the
     transition state.  Thus we only want to put enough time and energy into
@@ -80,30 +82,37 @@ class DoubleEndedConnect(object):
     very fast if the initial guess is good, but can be very slow otherwise.
     
     Choose a pair
-    -------------
+    +++++++++++++
     Here I will describe step 1), the algorithm to find a pair of known
     minima to try to connect.  This choice will keep in mind that the
     ultimate goal is to connect min1 and min2.
     
     In addition to the input parameter "graph", we keep a second graph
-    "Gdist" (now called "dist_graph") which also has minima as the vertices. Gdist has an edge
-    between (almost) every minima. The edge weight between vertices u and v
+    "Gdist" (now wrapped in a separate class _DistanceGraph) which also has 
+    minima as the vertices. Gdist has an edge between every pair of nodes. 
+    The edge weight between vertices u and v
     is
     
-        if u and v are connected in "graph":
-            weight(u,v) = 0.
+        if u and v are connected by transition states:
+            weight(u, v) = 0. 
+        elif we have already tried local_connect on (u,v):
+            weight(u, v) = Infinity
         else:
-            weight(u,v) = mindist(u,v)
+            weight(u, v) = dist(u, v)**2
     
-    Also, edges are removed from Gdist when an NEB is done to try to
-    connect them.  This is to ensure we don't repeat NEB runs over and over
+    This edge weight is set to Infinity to ensure we don't repeat 
+    LocalConnect runs over and over
     again.  The minimum weight path between min1 and min2 in Gdist gives a
     good guess for the best way to try connect min1 and min2.  So the
     algorithm to find a pair of know minima (trial1, trial2) to try to
     connect is 
     
     path = Gdist.minimum_weight_path(min1, min2)
-    trial1, trial2 = minima pair in path with lowest nonzero edge weight
+    trial1, trial2 = minima pair in path with lowest nonzero edge weight. (note:
+    if parameter longest_first is True) then the edgepair with the largest
+    edge weight will be selected) 
+
+    
 
     todo:
         allow user to pass graph
@@ -135,12 +144,13 @@ class DoubleEndedConnect(object):
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
 
+        self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
+
         #check if a connection exists before initializing distance Graph
         if self.graph.areConnected(self.minstart, self.minend):
             print "minima are already connected.  not initializing distance graph"
             return
 
-        self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
         self.dist_graph.initialize(self.minstart, self.minend, use_all_min)
         
         print "************************************************************"
@@ -408,29 +418,6 @@ class DoubleEndedConnect(object):
                 if w > 1e-6:
                     break
         return min1, min2
-            
-        
-#        #find the shortest single edge in that path and use that
-#        #also, print the path
-#        #as the minima pair to try to connect.
-#        weightmin = 1e100
-#        minpair = (None, None)
-#        for i in range(1,len(path)):
-#            min1 = path[i-1]
-#            min2 = path[i]
-#            w = weights.get((min1,min2))
-#            if w is None:
-#                w = weights.get((min2,min1))
-#            #get the distance between min1 and min2. leave as 0. if they are
-#            #already connected by transition states
-#            dist = w
-#            if w > 1e-6:
-#                dist = self.getDist(min1, min2)
-#            print "    path guess", min1._id, min2._id, dist
-#            if w > 1e-10 and w < weightmin:
-#                weightmin = w
-#                minpair = (min1, min2)
-#        return minpair
                 
     
     def connect(self, maxiter=200):
@@ -439,7 +426,10 @@ class DoubleEndedConnect(object):
         """
         self.NEBattempts = 2;
         for i in range(maxiter):
+            #do some book keeping
             self.dist_graph.updateDatabase()
+            
+            #stop if we're done
             if self.graph.areConnected(self.minstart, self.minend):
                 self.dist_graph.updateDatabase(force=True)
                 print "found connection!"
@@ -447,14 +437,18 @@ class DoubleEndedConnect(object):
             
             print ""
             print "======== starting connect cycle", i, "========"
+            #get pair of minima to try to connect
             min1, min2 = self._getNextPair()
-            #raw_input("Press Enter to continue:")
+            
+            #fail if we can't find a good pair to try
             if min1 is None or min2 is None:
                 break
+            
+            #try to connect those minima            
             local_success = self._localConnect(min1, min2)
             
             if True and i % 10 == 0:
-                #do some santy checks
+                #do some sanity checks
                 self.dist_graph.checkGraph()
 
 
