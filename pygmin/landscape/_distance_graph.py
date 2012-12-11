@@ -3,6 +3,8 @@ import numpy as np
 
 from pygmin.landscape import Graph
 
+__all__ = []
+
 class _DistanceGraph(object):
     """
     This graph is used by DoubleEndedConnect to make educated guesses for connecting two minima
@@ -353,49 +355,6 @@ class _DistanceGraph(object):
             
         self.Gdist.remove_node(min2)
             
-                
-        
-        return
-        
-#        weights = nx.get_edge_attributes(self.Gdist, "weight")
-#        newgraph = nx.Graph()
-#        nx.set_edge_attributes(newgraph, "weight", dict())
-#        for node in self.Gdist.nodes():
-#            if node != min2:
-#                newgraph.add_node(node)
-#        for e in self.Gdist.edges():
-#            if not min1 in e and not min2 in e:
-#                newgraph.add_edge(e[0], e[1], {"weight":weights[e]})
-#            if min1 in e and min2 in e:
-#                continue
-#            #if e already exists in newgraph, make sure we don't overwrite
-#            #a zeroed edge weight
-#            if min2 in e:
-#                if e[0] == min2:
-#                    enew = (min1, e[1])
-#                else:
-#                    enew = (e[0], min1)
-#            else:
-#                enew = e
-#            
-#            #get existing weight
-#            try:
-#                existing_weight = weights[enew]
-#            except:
-#                try:
-#                    existing_weight = weights[enew]
-#                except:
-#                    existing_weight = None
-#            if existing_weight is not None:
-#                if existing_weight < 1e-10:
-#                    #existing weight is zero.  don't overwrite
-#                    continue
-#            newgraph.add_edge(enew[0], enew[1], {"weight":weights[e]})
-#        
-#        #done, replace Gdist with newgraph
-#        self.Gdist = newgraph
-#        if self.debug:
-#            self.checkGraph()
 
     def checkGraph(self):
         """
@@ -412,6 +371,7 @@ class _DistanceGraph(object):
         for e in self.Gdist.edges():
             are_connected = self.graph.areConnected(e[0], e[1])
             zero_weight = weights[e] < 1e-10
+
             #if they are connected they should have zero_weight
             if are_connected and not zero_weight:
                 #print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist
@@ -420,13 +380,6 @@ class _DistanceGraph(object):
                     #there is no zero weight path from e[0] to e[1]
                     path, path_weight = self.shortestPath(e[0], e[1])
                     weight_sum = sum(path_weight)
-#                    for i in range(len(path)-1):
-#                        m1, m2 = path[i], path[i+1]
-#                        try:
-#                            w = weights[(m1, m2)]
-#                        except KeyError:
-#                            w = weights[(m2, m1)]
-#                        weight_sum += w
                     if weight_sum > 10e-6:
                         #now there is definitely a problem.
                         allok = False
