@@ -3,7 +3,7 @@ import numpy as np
 __all__ = ["orthogopt"]
 from _orthogoptf import orthogopt as orthogoptf
 
-def orthogopt(v, coords, norm=True):
+def orthogopt(v, coords, norm=False):
     orthogoptf(v, coords, norm)
     return v
 

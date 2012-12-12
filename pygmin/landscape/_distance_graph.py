@@ -339,7 +339,7 @@ class _DistanceGraph(object):
         rebuild the graph with min2 deleted and 
         everything pointing to min1 pointing to min2 instead
         """
-        print "    rebuilding Gdist"
+#        print "    rebuilding Gdist"
         for m, data in self.Gdist[min2].iteritems():
             if m == min1:
                 continue

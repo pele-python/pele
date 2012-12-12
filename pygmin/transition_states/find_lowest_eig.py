@@ -54,7 +54,9 @@ class LowestEigPot(basepot):
         vecl = 1.
         vec_in /= np.linalg.norm(vec_in)
         if self.orthogZeroEigs is not None:
-            vec_in = self.orthogZeroEigs(vec_in, self.coords, True)
+            vec_in = self.orthogZeroEigs(vec_in, self.coords)
+            #now normalize
+            vec_in /= np.linalg.norm(vec_in)
 
         vec = vec_in / np.linalg.norm(vec_in)
         coordsnew = self.coords - self.diff * vec
@@ -76,7 +78,7 @@ class LowestEigPot(basepot):
         #GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2
         grad = (Gplus - Gminus) / (self.diff*vecl**2) - 2.0 * diag2 * vec / vecl**2
         if self.orthogZeroEigs is not None:
-            grad = self.orthogZeroEigs(grad, self.coords, False)
+            grad = self.orthogZeroEigs(grad, self.coords)
         """
         C  Project out any component of the gradient along vec (which is a unit vector)
         C  This is a big improvement for DFTB.
