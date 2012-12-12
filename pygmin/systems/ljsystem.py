@@ -22,10 +22,17 @@ class LJCluster(BaseSystem):
         return coords
     
     def get_compare_exact(self, **kwargs):
-        match = ExactMatchCluster(permlist=[range(self.natoms)], **kwargs)
-        return lambda m1, m2: match(m1.coords, m2.coords)
+        """this function quickly determines whether two clusters are identical
+        given translational, rotational and permutational symmeties
+        """
+        return ExactMatchCluster(permlist=[range(self.natoms)], **kwargs)
     
     def get_mindist(self, **kwargs):
+        """return a function which puts two structures in best alignment.
+        
+        take into account global rotational symmetry, global translational
+        symmetry and permutational symmetry
+        """
         return MinDistWrapper(minPermDistStochastic, permlist=[range(self.natoms)], **kwargs)
     
     def create_database(self, *args, **kwargs):
@@ -36,11 +43,15 @@ class LJCluster(BaseSystem):
         
     
     def get_takestep(self, stepsize=0.6, **kwargs):
+        """random displacement with adaptive step size 
+        adaptive temperature"""
         takeStep = RandomDisplacement(stepsize=stepsize)
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
         return tsAdaptive
     
     def get_orthogonalize_to_zero_eigenvectors(self):
+        """the zero eigenvectors correspond to 3 global translational
+        degrees of freedom and 3 global rotational degrees of freedom"""
         return orthogopt
 
 

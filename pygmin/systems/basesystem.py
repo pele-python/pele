@@ -12,6 +12,31 @@ class NotImplemented(BaseException):
 class BaseSystem(object):
     """
     this class defines a base class for a System object
+    
+    
+    Description
+    -----------
+    The following functions need to be overloaded for running
+    various routine
+
+    
+    Global Optimization
+    -------------------
+        get_potential : required
+        get_takestep : requred
+        get_random_configuration : optional
+        get_compare_exact : optional
+    
+    Connecting Minima and Transition State Searches
+    -----------------------------------------------
+        get_potential : required
+        get_mindist : required
+        get_orthogonalize_to_zero_eigenvectors : required
+        get_random_configuration : optional
+        get_compare_exact : optional
+    
+    additionally, it's a very good idea to specify the accuracy in the database
+    
     """
     def get_potential(self):
         """return the potential object"""
@@ -24,10 +49,15 @@ class BaseSystem(object):
     def get_compare_exact(self):
         """object that returns True if two structures are exact.
         
-            true_false = compare_exact(coords1, coords2)
+            true_false = compare_exact(min1, min2)
         """
         raise NotImplemented
 
+    def get_compare_minima(self):
+        """a wrapper for compare exact so in input can be in 
+        Minimum Form"""
+        compare = self.get_compare_exact()
+        return lambda m1, m2: compare(m1.coords, m2.coords)
     
     def create_database(self, *args, **kwargs):
         """return a new database object"""
@@ -41,15 +71,23 @@ class BaseSystem(object):
                 kwargs["db"] = args[0]
 
         #get a routine to compare the minima as exact
-        if not "compareMinima" in kwargs:
-            compare_exact = None
-            try:
-                compare_exact = self.get_compare_exact()
-                kwargs["compareMinima"] = compare_exact
-            except NotImplemented:
-                pass
+        try:
+            if not "compareMinima" in kwargs:
+                compare_minima = None
+                try:
+                    compare_minima = self.get_compare_minima()
+                    kwargs["compareMinima"] = compare_minima
+                except NotImplemented:
+                    pass
+        except NotImplemented:
+            #compareMinima is optional
+            pass
 
         return Database(**kwargs)
+    
+    def get_takestep(self):
+        """return the takestep object for use in basinhopping, etc."""
+        raise NotImplemented
 
     def get_basinhopping(self, database=None, takestep=None, coords=None, **kwargs):
         """return the basinhopping object with takestep
@@ -64,10 +102,6 @@ class BaseSystem(object):
         minimum_adder = database.minimum_adder()
         bh = basinhopping.BasinHopping(coords, pot, takestep, minimum_adder, **kwargs)
         return bh
-    
-    def get_takestep(self):
-        """return the takestep object for use in basinhopping, etc."""
-        raise NotImplemented
 
     def get_mindist(self):
         """return a mindist object that is callable with the form
@@ -113,9 +147,6 @@ class BaseSystem(object):
             
             if not "orthogZeroEigs" in tssp:
                 tssp["orthogZeroEigs"] = self.get_orthogonalize_to_zero_eigenvectors()
-
-                
-            
                 
         return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
 
