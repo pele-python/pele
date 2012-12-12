@@ -5,7 +5,8 @@ from pygmin.potentials import LJ
 from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 from pygmin.transition_states import orthogopt
 from pygmin.mindist import minPermDistStochastic, MinDistWrapper, ExactMatchCluster
-from compiler.ast import Not
+from pygmin.landscape import smoothPath
+
 
 __all__ = ["AtomicCluster"]
 
@@ -31,7 +32,6 @@ class AtomicCluster(BaseSystem):
         """this function quickly determines whether two clusters are identical
         given translational, rotational and permutational symmeties
         """
-        raise NotImplemented
         permlist = self.get_permlist()
         return ExactMatchCluster(permlist=permlist, **kwargs)
     
@@ -55,4 +55,9 @@ class AtomicCluster(BaseSystem):
         takeStep = RandomDisplacement(stepsize=stepsize)
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
         return tsAdaptive
+
+    
+    def smooth_path(self, path, **kwargs):
+        mindist = self.get_mindist()
+        return smoothPath(path, mindist, **kwargs)
 

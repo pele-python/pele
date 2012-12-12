@@ -35,6 +35,12 @@ class BaseSystem(object):
         get_random_configuration : optional
         get_compare_exact : optional
     
+    GUI
+    ---
+        all of the above functions are required, plus
+        draw : required
+        smooth_path : required
+    
     additionally, it's a very good idea to specify the accuracy in the database
     
     """
@@ -73,7 +79,6 @@ class BaseSystem(object):
         #get a routine to compare the minima as exact
         try:
             if not "compareMinima" in kwargs:
-                compare_minima = None
                 try:
                     compare_minima = self.get_compare_minima()
                     kwargs["compareMinima"] = compare_minima
@@ -151,8 +156,11 @@ class BaseSystem(object):
         return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
 
 
+    def draw(self):
+        raise NotImplemented
 
-
+    def smooth_path(self):
+        raise NotImplemented
 
 
 

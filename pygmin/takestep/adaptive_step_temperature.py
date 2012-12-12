@@ -108,8 +108,8 @@ class AdaptiveStepsizeTemperature(object):
             self.coords = np.copy(trial_coords)
        
         if self.nattempts % self.interval == 0:
-            if self.verbose:
-                print "acceptance probability %.4g" % (float(self.naccept) / self.nattempts)
+#            if self.verbose:
+#                print "    acceptance probability %.4g" % (float(self.naccept) / self.nattempts)
             self.adjustStep()
             self.adjustTemp(driver)
             self.reset()
@@ -122,10 +122,10 @@ class AdaptiveStepsizeTemperature(object):
         else:
             self.stepclass.scale(self.sfactor)
         if self.verbose:
-            print "naccept nsame ndiff, naccept_diff %d %d %d %d" % (
+            print "adaptive step and temperature: naccept nsame ndiff, naccept_diff %d %d %d %d" % (
                 self.naccept, self.nsame, self.nattempts-self.nsame,
                 self.naccept-self.nsame)
-            print "stepsize    is now %.4g ratio %.4g" %(self.stepclass.stepsize,
+            print "    stepsize    is now %.4g ratio %.4g" %(self.stepclass.stepsize,
                                                       fnew)
             
             
@@ -142,7 +142,7 @@ class AdaptiveStepsizeTemperature(object):
         else:
             driver.acceptTest.temperature /= self.Tfactor
         if self.verbose:
-            print "temperature is now %.4g ratio %.4g" %(driver.acceptTest.temperature,
+            print "    temperature is now %.4g ratio %.4g" %(driver.acceptTest.temperature,
                                                          faccept)
 
 if __name__ == "__main__":

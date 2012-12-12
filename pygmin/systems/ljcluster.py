@@ -1,3 +1,5 @@
+import numpy as np
+
 from pygmin.systems import AtomicCluster
 from pygmin.potentials import LJ
 
@@ -22,6 +24,19 @@ class LJCluster(AtomicCluster):
             kwargs["accuracy"] = energy_accuracy
         return super(LJCluster, self).create_database(*args, **kwargs)
 
+
+
+    def draw(self, coordslinear, index):
+        from OpenGL import GL,GLUT
+        coords = coordslinear.reshape(coordslinear.size/3, 3)
+        com=np.mean(coords, axis=0)                  
+        for xx in coords:
+            x=xx-com
+            GL.glPushMatrix()            
+            GL.glTranslate(x[0],x[1],x[2])
+            GLUT.glutSolidSphere(0.5,30,30)
+            GL.glPopMatrix()
+            
 
 
 def run():

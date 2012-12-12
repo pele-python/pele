@@ -43,7 +43,7 @@ class MyForm(QtGui.QMainWindow):
         
     def NewSystem(self):
         self.system = self.systemtype()
-        self.system.set_database(Database())
+        self.system.create_database()
         self.system.database.onMinimumAdded=self.NewMinimum
         self.system.database.onMinimumRemoved=self.RemoveMinimum
         for l in self.listMinima:
@@ -63,7 +63,7 @@ class MyForm(QtGui.QMainWindow):
         self.connect_db(filename)
 
     def connect_db(self, filename):
-        self.system.set_database(Database(db=filename))
+        self.system.create_database(db=filename)
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum)
         self.system.database.onMinimumAdded=self.NewMinimum
@@ -108,9 +108,11 @@ class MyForm(QtGui.QMainWindow):
     def AlignMinima(self):
         coords1 = self.ui.oglPath.coords[1]
         coords2 = self.ui.oglPath.coords[2]
-        coords1, coords2 = self.system.Align(coords1, coords2)
+        align = self.system.get_mindist()
+        dist, coords1, coords2 = align(coords1, coords2)
         self.ui.oglPath.setCoords(coords1, 1)
         self.ui.oglPath.setCoords(coords2, 2)
+        print "best alignment distance", dist
         pass    
     
     def ConnectMinima(self):
@@ -351,7 +353,7 @@ class MyForm(QtGui.QMainWindow):
         min1 = self.ui.oglPath.minima[1]
         min2 = self.ui.oglPath.minima[2]
         database = self.system.database
-        double_ended_connect = self.system.create_double_ended_connect(min1, min2, database, 
+        double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
                                                                        fresh_connect=reconnect)
         double_ended_connect.connect()
         mints, S, energies = double_ended_connect.returnPath()
