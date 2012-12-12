@@ -6,6 +6,7 @@ from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 from pygmin.transition_states import orthogopt
 from pygmin.mindist import minPermDistStochastic, MinDistWrapper, ExactMatchCluster
 from pygmin.landscape import smoothPath
+from pygmin.transition_states import NEB, InterpolatedPathDensity
 
 
 __all__ = ["AtomicCluster"]
@@ -22,7 +23,7 @@ class AtomicCluster(BaseSystem):
         return LJ(self.natoms)
     
     def get_random_configuration(self):
-        coords = np.random.uniform(-1, 1, [3*self.natoms]) * 1.5 * float(self.natoms)**(1./3)
+        coords = np.random.uniform(-1, 1, [3*self.natoms]) * 1.1 * float(self.natoms)**(1./3)
         return coords
     
     def get_permlist(self):
@@ -56,8 +57,21 @@ class AtomicCluster(BaseSystem):
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
         return tsAdaptive
 
-    
+    #
+    #below here only stuff for the gui
+    #
+
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
         return smoothPath(path, mindist, **kwargs)
+        
+    def createNEB(self, coords1, coords2):
+        pot = self.get_potential()
+        dist = np.linalg.norm(coords1- coords2)
+        if dist < 1.: dist = 1
+        image_density = 15.
+        
+        path = InterpolatedPathDensity(coords1, coords2, 
+                                       distance=dist, density=image_density)
+        return NEB(path, pot)
 

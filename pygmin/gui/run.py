@@ -43,7 +43,8 @@ class MyForm(QtGui.QMainWindow):
         
     def NewSystem(self):
         self.system = self.systemtype()
-        self.system.create_database()
+        db = self.system.create_database()
+        self.system.database = db
         self.system.database.onMinimumAdded=self.NewMinimum
         self.system.database.onMinimumRemoved=self.RemoveMinimum
         for l in self.listMinima:
@@ -63,7 +64,8 @@ class MyForm(QtGui.QMainWindow):
         self.connect_db(filename)
 
     def connect_db(self, filename):
-        self.system.create_database(db=filename)
+        db = self.system.create_database(db=filename)
+        self.system.database = db
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum)
         self.system.database.onMinimumAdded=self.NewMinimum
@@ -360,6 +362,7 @@ class MyForm(QtGui.QMainWindow):
         clist = [m.coords for m in mints]
         print "done finding path, now just smoothing path.  This can take a while"
         smoothpath = self.system.smooth_path(clist)
+        print "done"
         
         coords = np.array(smoothpath)
         self.nebcoords = coords

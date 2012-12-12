@@ -156,10 +156,19 @@ class BaseSystem(object):
         return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
 
 
+    #
+    #the following functions are used only for the GUI
+    #
+
     def draw(self):
+        """
+        tell the gui how to represent your system.
+        """
         raise NotImplemented
 
     def smooth_path(self):
+        """ return a smoothed path between two configurations.  
+        used for movies"""
         raise NotImplemented
 
 

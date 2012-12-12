@@ -25,6 +25,9 @@ class LJCluster(AtomicCluster):
         return super(LJCluster, self).create_database(*args, **kwargs)
 
 
+    #
+    #below here is stuff only for the gui
+    #
 
     def draw(self, coordslinear, index):
         from OpenGL import GL,GLUT
