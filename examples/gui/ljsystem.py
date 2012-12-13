@@ -13,6 +13,7 @@ class LJSystem(LJCluster):
         self.natoms = dlg.natoms()
         if dlg.result() == QtGui.QDialog.Rejected:
             raise BaseException("Aborted parameter dialog")
+        super(LJSystem, self).__init__(self.natoms)
         
     def findTS(self, coords):
         raise NotImplemented

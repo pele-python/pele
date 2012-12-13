@@ -10,20 +10,15 @@ class LJCluster(AtomicCluster):
     define the System class for a lennard jones cluster
     """
     def __init__(self, natoms):
+        super(LJCluster, self).__init__()
         self.natoms = natoms
+        self.params["database"]["accuracy"] = 1e-3
     
     def get_permlist(self):
         return [range(self.natoms)]
     
     def get_potential(self):
         return LJ()
-    
-    def create_database(self, *args, **kwargs):
-        if "accuracy" not in kwargs:
-            energy_accuracy = 1e-3
-            kwargs["accuracy"] = energy_accuracy
-        return super(LJCluster, self).create_database(*args, **kwargs)
-
 
     #
     #below here is stuff only for the gui

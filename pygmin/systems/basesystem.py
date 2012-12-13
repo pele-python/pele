@@ -9,7 +9,22 @@ class NotImplemented(BaseException):
     The exception to return if there is a feature
     in the System is not implemented yet
     """
+    pass
 
+class Parameters(dict):
+    """ """
+    def __init__(self):
+        self["database"] = dict()
+        self["basinhopping"] = dict()
+        self["takestep"] = dict()
+        self["double_ended_connect"] = dict()
+        
+def dict_copy_update(dict1, dict2):
+    """return a new dictionary from the union of dict1 and dict2.  if there
+    are conflicts, take the value in dict2"""
+    newdict = dict1.copy()
+    newdict.update(dict2)
+    return newdict
 
 class BaseSystem(object):
     """
@@ -46,6 +61,9 @@ class BaseSystem(object):
     additionally, it's a very good idea to specify the accuracy in the database
     
     """
+    def __init__(self, *args, **kwargs):
+        self.params = Parameters()
+
     def get_potential(self):
         """return the potential object"""
         raise NotImplemented
@@ -69,6 +87,7 @@ class BaseSystem(object):
     
     def create_database(self, *args, **kwargs):
         """return a new database object"""
+        kwargs = dict_copy_update(self.params["database"], kwargs)        
         #note this syntax is quite ugly, but we would like to be able to 
         #create a new database by passing the filename as the first arg, 
         #not as a kwarg.  
@@ -98,6 +117,7 @@ class BaseSystem(object):
         
         random displacement with adaptive step size 
         adaptive temperature"""
+        kwargs = dict_copy_update(self.params["takestep"], kwargs)        
         takeStep = RandomDisplacement(stepsize=stepsize)
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
         return tsAdaptive
@@ -105,6 +125,7 @@ class BaseSystem(object):
     def get_basinhopping(self, database=None, takestep=None, coords=None, **kwargs):
         """return the basinhopping object with takestep
         and accept step already implemented"""
+        kwargs = dict_copy_update(self.params["basinhopping"], kwargs)
         pot = self.get_potential()
         if coords is None:
             coords = self.get_random_configuration()
@@ -140,6 +161,7 @@ class BaseSystem(object):
     
     def get_double_ended_connect(self, min1, min2, database, **kwargs):
         """return a DoubleEndedConnect object"""
+        kwargs = dict_copy_update(self.params["double_ended_connect"], kwargs)
         pot = self.get_potential()
         mindist = self.get_mindist()
         

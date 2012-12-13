@@ -233,7 +233,8 @@ class FindTransitionState(object):
                     print "warning: negative eigenvalue found too many times. ending", self.nnegative
                     res.message.append( "negative eigenvalue found too many times %d" % self.nnegative )
                     break
-                print "the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps"
+                if self.verbosity > 2:
+                    print "the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps"
                 coords = self._resetState(coords)
                 self.reduce_step += 1
             
@@ -289,10 +290,12 @@ class FindTransitionState(object):
         success = True
         #check if results make sense
         if self.eigenval >= 0.:
-            print "warning: transition state is ending with positive eigenvalue", self.eigenval
+            if self.verbosity > 2:
+                print "warning: transition state is ending with positive eigenvalue", self.eigenval
             success = False
         if rms > self.tol:
-            print "warning: transition state search appears to have failed: rms", rms
+            if self.verbosity > 2:
+                print "warning: transition state search appears to have failed: rms", rms
             success = False
         if i >= self.nsteps:
             res.message.append( "maximum iterations reached %d" % i )

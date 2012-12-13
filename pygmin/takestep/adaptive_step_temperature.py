@@ -11,7 +11,7 @@ class AdaptiveStepsizeTemperature(object):
                  target_new_min_prob=0.8, 
                  target_new_min_accept_prob=0.3, 
                  interval=100, Tfactor=0.95, sfactor=0.95, ediff=.001, 
-                 verbose=True):
+                 verbose=False):
         """
         adjust both the stepsize and the temperature adaptively
         

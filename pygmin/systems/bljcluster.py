@@ -10,25 +10,23 @@ class BLJCluster(AtomicCluster):
     define the System class for a lennard jones cluster
     """
     def __init__(self, natoms, ntypeA="default", **potential_kwargs):
+        super(BLJCluster, self).__init__()
         self.natoms = natoms
         if ntypeA == "default":
             self.ntypeA = int(self.natoms * 0.8)
         else:
             self.ntypeA = ntypeA
         self.potential_kwargs = potential_kwargs
+        
+
+        self.params["database"]["accuracy"] = 1e-3
+
     
     def get_potential(self):
         return LJpshift(self.natoms, self.ntypeA, **self.potential_kwargs)
     
     def get_permlist(self):
         return [range(self.ntypeA), range(self.ntypeA, self.natoms)]
-    
-    def create_database(self, *args, **kwargs):
-        if "accuracy" not in kwargs:
-            energy_accuracy = 1e-3
-            kwargs["accuracy"] = energy_accuracy
-        return super(BLJCluster, self).create_database(*args, **kwargs)
-
 
     def draw(self, coordslinear, index):
         # index = 1 or 2

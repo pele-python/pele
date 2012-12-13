@@ -8,10 +8,10 @@ class BLJSystem(BLJCluster):
         dlg = NewLJDialog()
         dlg.exec_()
         self.natoms = dlg.natoms()
+        super(BLJSystem, self).__init__(self.natoms)
         if dlg.result() == QtGui.QDialog.Rejected:
             raise BaseException("Aborted parameter dialog")
 
-        super(BLJSystem, self).__init__(self.natoms)
     
     def findTS(self, coords):
         raise NotImplemented    
