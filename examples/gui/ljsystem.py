@@ -2,7 +2,7 @@ from PyQt4 import QtGui
 import NewLJ
 import numpy as np
 
-from pygmin.transition_states import NEB, dimer, tstools, InterpolatedPath
+from pygmin.transition_states import dimer, tstools
 
 from pygmin.systems import LJCluster, NotImplemented
  

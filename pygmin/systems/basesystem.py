@@ -1,6 +1,8 @@
 from pygmin.landscape import DoubleEndedConnect
 from pygmin import basinhopping
 from pygmin.storage import Database
+from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
+
 
 class NotImplemented(BaseException):
     """
@@ -23,7 +25,7 @@ class BaseSystem(object):
     Global Optimization
     -------------------
         get_potential : required
-        get_takestep : requred
+        get_takestep : optional
         get_random_configuration : optional
         get_compare_exact : optional
     
@@ -32,8 +34,8 @@ class BaseSystem(object):
         get_potential : required
         get_mindist : required
         get_orthogonalize_to_zero_eigenvectors : required
+        get_compare_exact : optional, recommended
         get_random_configuration : optional
-        get_compare_exact : optional
     
     GUI
     ---
@@ -90,9 +92,15 @@ class BaseSystem(object):
 
         return Database(**kwargs)
     
-    def get_takestep(self):
-        """return the takestep object for use in basinhopping, etc."""
-        raise NotImplemented
+
+    def get_takestep(self, stepsize=0.6, **kwargs):
+        """return the takestep object for use in basinhopping, etc.
+        
+        random displacement with adaptive step size 
+        adaptive temperature"""
+        takeStep = RandomDisplacement(stepsize=stepsize)
+        tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
+        return tsAdaptive
 
     def get_basinhopping(self, database=None, takestep=None, coords=None, **kwargs):
         """return the basinhopping object with takestep

@@ -41,6 +41,9 @@ class LJCluster(AtomicCluster):
             GL.glPopMatrix()
             
 
+#
+#only for testing below here
+#
 
 def run():
     #create the system object

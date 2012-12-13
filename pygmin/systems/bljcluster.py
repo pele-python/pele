@@ -56,6 +56,12 @@ class BLJCluster(AtomicCluster):
             GL.glPopMatrix()
 
 
+
+#
+#only for testing below here
+#
+
+
 def run():
     #create the system object
     sys = BLJCluster(15)

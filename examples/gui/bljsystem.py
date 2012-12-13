@@ -1,8 +1,5 @@
 from PyQt4 import QtGui
-import NewLJ
 from ljsystem import NewLJDialog
-
-from pygmin.transition_states import NEB, InterpolatedPath
 
 from pygmin.systems import BLJCluster, NotImplemented
  
