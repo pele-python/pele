@@ -11,14 +11,38 @@ class NotImplemented(BaseException):
     """
     pass
 
-class Parameters(dict):
+
+class BaseParameters(dict):
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(name)
+
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+class Parameters(BaseParameters):
     """ """
     def __init__(self):
-        self["database"] = dict()
-        self["basinhopping"] = dict()
-        self["takestep"] = dict()
-        self["double_ended_connect"] = dict()
+        self["database"] = BaseParameters()
+        self["basinhopping"] = BaseParameters()
+        self["takestep"] = BaseParameters()
         
+        self.double_ended_connect = BaseParameters()
+        self.double_ended_connect.local_connect_params = BaseParameters()
+
+        self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters()
+        self.double_ended_connect.local_connect_params.NEBparams = BaseParameters()
+        self.double_ended_connect.local_connect_params.NEBquenchParams = BaseParameters()
+        
+        self.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams = BaseParameters()
+        self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()
+        
+
+
+
+
 def dict_copy_update(dict1, dict2):
     """return a new dictionary from the union of dict1 and dict2.  if there
     are conflicts, take the value in dict2"""

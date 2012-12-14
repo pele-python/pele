@@ -12,7 +12,8 @@ class LJCluster(AtomicCluster):
     def __init__(self, natoms):
         super(LJCluster, self).__init__()
         self.natoms = natoms
-        self.params["database"]["accuracy"] = 1e-3
+        
+        self.params.database.accuracy = 1e-3
     
     def get_permlist(self):
         return [range(self.natoms)]
