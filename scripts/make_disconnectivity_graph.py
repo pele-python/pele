@@ -102,6 +102,7 @@ def usage():
     print "   --subgraph_size=n :  include all disconnected subgraphs up to size n"
     print "   --order_by_basin_size : " 
     print "   --order_by_energy : " 
+    print "   --include_gmin : " 
     print "   --center_gmin : " 
 
 def main():
@@ -118,6 +119,7 @@ def main():
     opts, args = getopt.gnu_getopt(sys.argv[1:], "ho:", 
                                    ["help", "nlevels=", "subgraph_size=", "OPTIM",
                                     "order_by_basin_size", "order_by_energy",
+                                    "include_gmin",
                                     "center_gmin"])
     for o, a in opts:
         if o == "-h" or o == "--help":
@@ -133,6 +135,8 @@ def main():
             kwargs["order_by_basin_size"] = True
         elif o == "--order_by_energy":
             kwargs["order_by_energy"] = True
+        elif o == "--includer_gmin":
+            kwargs["includer_gmin"] = True
         elif o == "--center_gmin":
             kwargs["center_gmin"] = True
         elif o == "--OPTIM":
