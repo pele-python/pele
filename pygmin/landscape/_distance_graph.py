@@ -303,7 +303,7 @@ class _DistanceGraph(object):
             """
             print "adding all minima to distance graph (Gdist)."
             print "    This might take a while."
-            for m in self.database.minima():
+            for m in self.graph.graph.nodes():
                 self.addMinimum(m)
         elif use_limited_min:
             print "adding relevant minima to distance graph (Gdist)."

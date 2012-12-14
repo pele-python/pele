@@ -64,6 +64,10 @@ class DisconnectivityGraph(object):
          
     nlevels : int
         how many levels at which to bin the transition states
+    minima : list of Minima
+        a list of minima to ensure are displayed in the graph.
+        e.g. they will be displayed even if they're in a connected
+        cluster smaller than smaller than subgraph_size
     subgraph_size : int
         if subgraph_size is not None then all disconnected graphs
         of size greater than subraph_size will be included.
@@ -79,23 +83,28 @@ class DisconnectivityGraph(object):
         the global minimum is central in the overall diagram because other
         nodes may push the one containing the global minimum over to one side
     """
-    def __init__(self, graph, min0=None, nlevels=20,
+    def __init__(self, graph, minima=[], nlevels=20,
                  subgraph_size=None, order_by_energy=False,
                  order_by_basin_size=True,
-                 center_gmin=False):
+                 center_gmin=False, include_gmin=True):
         self.graph = graph
         self.nbins = nlevels
         self.subgraph_size = subgraph_size
-        self.min0 = min0
         self.order_by_basin_size = order_by_basin_size
         self.order_by_energy = order_by_energy
         self.center_gmin = center_gmin 
-        if self.min0 is None:
+        self.gmin0 = None
+        if self.center_gmin:
+            include_gmin = True
+
+        self.min0list = minima
+        if include_gmin:
             #find the minimum energy node
             elist = [ (m.energy, m) for m in self.graph.nodes() ]
             elist = sorted(elist)
-            self.min0 = elist[0][1]
-            print "min0", self.min0.energy, self.min0._id
+            self.gmin0 = elist[0][1]
+            self.min0list.append(self.gmin0)
+#            print "min0", self.min0.energy, self.min0._id
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
     
     def _getTS(self, min1, min2):
@@ -243,10 +252,11 @@ class DisconnectivityGraph(object):
         return list(neworder)
 
     def _ensure_gmin_is_center(self, tree_value_list):
+        if self.gmin0 is None: return
         min0index = None
         for i in range(len(tree_value_list)):
             v, tree = tree_value_list[i]
-            if self.min0 in [ leaf.data["minimum"] for leaf in tree.get_leaves()]:
+            if self.gmin0 in [ leaf.data["minimum"] for leaf in tree.get_leaves()]:
                 min0index = i
                 break
         if min0index is not None:
@@ -281,6 +291,8 @@ class DisconnectivityGraph(object):
     def _get_energy_levels(self, graph):
         #define the energy levels
         elist = [self._getTS(*edge).energy for edge in graph.edges()]
+        if len(elist) == 0:
+            raise Exception("there are no edges in the graph.  Is the global minimum connected?")
         emin = min(elist)
         emax = max(elist)
         de = (emax - emin) / (self.nbins-1)
@@ -330,22 +342,41 @@ class DisconnectivityGraph(object):
         xpos = [leaf.data["x"] for leaf in leaves]
         return xpos, minima
     
-    def _reduce_graph(self, graph, min0):
+    def _reduce_graph(self, graph, min0list):
         """determine how much of the graph
         to include in the disconnectivity graph
         """
         used_nodes = []
         #make sure we include the subgraph containing min0
-        used_nodes += nx.node_connected_component(self.graph, self.min0)
+        if len(min0list) == 0:
+            #use the biggest connected cluster
+            cc = nx.connected_components(graph)
+            used_nodes += cc[0] #list is ordered by size of cluster
+        else:
+            for min0 in min0list:
+                used_nodes += nx.node_connected_component(graph, min0)
         
         if self.subgraph_size is not None:
-            node_lists = nx.connected_components(self.graph)
+            node_lists = nx.connected_components(graph)
             for nodes in node_lists:
                 if len(nodes) >= self.subgraph_size:
                     used_nodes += nodes
 
-        graph = self.graph.subgraph(used_nodes)
-        return graph
+        newgraph = graph.subgraph(used_nodes)
+        
+        rmlist = [n for n in newgraph.nodes() if newgraph.degree(n) == 0]
+        if len(rmlist) > 0:
+            if self.gmin0 is not None:
+                if self.gmin0 in rmlist:
+                    print "global minimum has no edges, not showing in graph"
+            print "removing", len(rmlist), "disconnected minima from graph"
+            for n in rmlist:
+                newgraph.remove_node(n)
+        
+        
+        
+        
+        return newgraph
 
         
     
@@ -356,7 +387,7 @@ class DisconnectivityGraph(object):
         #find a reduced graph with only those connected to min0
 #        nodes = nx.node_connected_component(self.graph, self.min0)
 #        self.graph = self.graph.subgraph(nodes)
-        graph = self._reduce_graph(self.graph, self.min0)
+        graph = self._reduce_graph(self.graph, self.min0list)
 
         #define the energy levels
         elower = self._get_energy_levels(graph)

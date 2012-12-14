@@ -1,8 +1,9 @@
-from pygmin.landscape import DoubleEndedConnect
+from pygmin.landscape import DoubleEndedConnect, DoubleEndedConnectPar
 from pygmin import basinhopping
 from pygmin.storage import Database
 from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 
+__all__ = ["NotImplemented", "BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
 class NotImplemented(BaseException):
     """
@@ -37,10 +38,7 @@ class Parameters(BaseParameters):
         self.double_ended_connect.local_connect_params.NEBquenchParams = BaseParameters()
         
         self.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams = BaseParameters()
-        self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()
-        
-
-
+        self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()     
 
 
 def dict_copy_update(dict1, dict2):
@@ -183,7 +181,7 @@ class BaseSystem(object):
         """
         raise NotImplemented
     
-    def get_double_ended_connect(self, min1, min2, database, **kwargs):
+    def get_double_ended_connect(self, min1, min2, database, parallel=False, **kwargs):
         """return a DoubleEndedConnect object"""
         kwargs = dict_copy_update(self.params["double_ended_connect"], kwargs)
         pot = self.get_potential()
@@ -197,18 +195,20 @@ class BaseSystem(object):
             if "local_connect_params" in kwargs:
                 lcp = kwargs["local_connect_params"]
             else:
-                lcp = kwargs["local_connect_params"] = dict()
+                lcp = kwargs["local_connect_params"] = BaseParameters()
             
             if "tsSearchParams" in lcp:
                 tssp = lcp["tsSearchParams"]
             else:
-                tssp = lcp["tsSearchParams"] = dict()
+                tssp = lcp["tsSearchParams"] = BaseParameters()
             
             if not "orthogZeroEigs" in tssp:
                 tssp["orthogZeroEigs"] = self.get_orthogonalize_to_zero_eigenvectors()
                 
-        return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
-
+        if parallel:
+            return DoubleEndedConnectPar(min1, min2, pot, mindist, database, **kwargs)
+        else:
+            return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
 
     #
     #the following functions are used only for the GUI
@@ -221,8 +221,12 @@ class BaseSystem(object):
         raise NotImplemented
 
     def smooth_path(self):
-        """ return a smoothed path between two configurations.  
+        """return a smoothed path between two configurations.  
         used for movies"""
+        raise NotImplemented
+    
+    def createNEB(self):
+        """ """
         raise NotImplemented
 
 
