@@ -9,6 +9,7 @@ import numpy as np
 from pygmin.storage import Database
 from pygmin.landscape import Graph
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
+from dlg_params import DlgParams
 
 global pick_count
 
@@ -49,6 +50,10 @@ class MyForm(QtGui.QMainWindow):
         self.system.database.onMinimumRemoved=self.RemoveMinimum
         for l in self.listMinima:
             l.clear()
+            
+    def edit_params(self):
+        self.paramsdlg = DlgParams(self.system.params)
+        self.paramsdlg.show()
         
     #def save(self):
     #    import pickle

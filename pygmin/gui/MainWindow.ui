@@ -369,6 +369,7 @@
      <string>Actions</string>
     </property>
     <addaction name="actionDelete_Minimum"/>
+    <addaction name="actionEditParams"/>
    </widget>
    <addaction name="menuSimulation"/>
    <addaction name="menuHelp"/>
@@ -398,6 +399,11 @@
   <action name="actionDelete_Minimum">
    <property name="text">
     <string>Delete Minimum</string>
+   </property>
+  </action>
+  <action name="actionEditParams">
+   <property name="text">
+    <string>Edit default parameters</string>
    </property>
   </action>
  </widget>
@@ -514,8 +520,8 @@
    <slot>showFrame()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>68</x>
-     <y>446</y>
+     <x>79</x>
+     <y>441</y>
     </hint>
     <hint type="destinationlabel">
      <x>74</x>
@@ -610,8 +616,8 @@
    <slot>showFrameTS()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>44</x>
-     <y>512</y>
+     <x>55</x>
+     <y>507</y>
     </hint>
     <hint type="destinationlabel">
      <x>172</x>
@@ -715,6 +721,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionEditParams</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>edit_params()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>345</x>
+     <y>277</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectMinimum()</slot>
@@ -739,5 +761,6 @@
   <slot>delete_minimum()</slot>
   <slot>show_disconnectivity_graph()</slot>
   <slot>doubleEndedReConnect()</slot>
+  <slot>edit_params()</slot>
  </slots>
 </ui>
