@@ -14,6 +14,7 @@ class LJCluster(AtomicCluster):
         self.natoms = natoms
         
         self.params.database.accuracy = 1e-3
+        self.params.basinhopping["temperature"] = 1.0
     
     def get_permlist(self):
         return [range(self.natoms)]
