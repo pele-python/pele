@@ -322,8 +322,9 @@ class DisconnectivityGraph(object):
         else:
             emax = self.Emax
         de = (emax - emin) / (self.nlevels-1)
-        #the lower edge of the bins
-        elower = [emin + de*i for i in range(self.nlevels)]
+        #the upper edge of the bins
+        elower = [emin + de*(i) for i in range(self.nlevels)]
+        elevels = elower.append(emin + de*self.nlevels)
         
         return elower
 
@@ -429,20 +430,20 @@ class DisconnectivityGraph(object):
         graph = self._reduce_graph(self.graph, self.min0list)
 
         #define the energy levels
-        elower = self._get_energy_levels(graph)
+        elevels = self._get_energy_levels(graph)
         
         #remove more nodes
-        graph = self._remove_high_energy_minima(graph, elower[-1])
+        graph = self._remove_high_energy_minima(graph, elevels[-1])
         graph = self._remove_nodes_with_few_edges(graph, 1)
         
         #make the tree graph defining the discontinuity of the minima
-        tree_graph = self._make_tree(graph, elower)
+        tree_graph = self._make_tree(graph, elevels)
         
         #layout the x positions of the minima and the nodes
         self._layout_x_axis(tree_graph)
 
         #get the line segments which will be drawn to define the graph
-        eoffset = (elower[-1] - elower[-2]) * 0.2  #this should be passable
+        eoffset = (elevels[-1] - elevels[-2]) * 0.2  #this should be passable
         line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
         
         self.tree_graph = tree_graph
