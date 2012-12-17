@@ -68,6 +68,38 @@ setup(name='pygmin',
         )
 
 
+###########################################################
+"""
+programming note:  f2py and cython are not mutually compatible with distutils.
+To use f2py, we must use numpy.distutils, but numpy.distutils doesn't support
+cython.  There are several ways around this, but all of them are hacky.
+
+1   Use numpy.distutils to compile the fortran extension modules and use
+    distutils to compile the .pyx files.  This seems like an optimal solution,
+    but it fails when you pass a flag to numpy.distutils that distutils doesn't
+    understand, e.g. --fcompiler.  A possible solution is to check for the
+    known incompatible flags and remove them when passing to distutils.  
+
+2.  Compile cython .pyx files into .c files by hand and use numpy.distils
+    to include the .c as source files.  This is the way scipy does it.
+    We could also have setup.py accept a flag --cython which does this for
+    all .pyx files.
+
+Currently we are using method 1.
+"""
+###########################################################
+
+import sys
+#remove any flag incompatible with non-numpy distutils.
+flag = "--fcompiler"
+rmlist = []
+for arg in sys.argv:
+    if flag in arg:
+        rmlist.append(arg)
+for arg in rmlist:
+    sys.argv.remove(arg)
+
+
 #now build the cython modules
 #we have to do this separately because cython isn't supported by numpy.distutils
 from distutils.core import setup

@@ -16,20 +16,16 @@ python packages
      https://networkx.lanl.gov
      ( $ easy_install networkx ) 
      for graph functionality
-  munkres
-     ( $ easy_install munkres ) 
-     for min dist routines
-     
   SQLAlchemy 0.7 
      http://www.sqlalchemy.org/
      ( $ easy_install SQLAlchemy ) 
      for managing database of stationary points 
 
+  hungarian (optional)
+     ( $ easy_install hungarian ) 
+     for min dist routines
+     
 
-External packages
------------------
-  boost-python, boost-dev and python-dev
-     for C++ potentials and GMIN interface
 
 
 Compilation
@@ -56,16 +52,16 @@ Add --prefix=mydir, or --home to install locally
 
 
 
-using cmake:
-The following is equivalent to python setup.py build_ext -i
-$ cmake .
-$ make 
-
-
 PYTHONPATH:  
 ----------
 make sure to add the install directory to your PYTHONPATH environment variable.
 
 
 === Running ===
-see the examples in the examples folder
+The documentation can be found at
+
+http://js850.github.com/PyGMIN/
+
+Alternatively the documentation can be compiled using sphinx ( in doc/ run $ make html ).
+
+Also, see the examples in the examples folder.
