@@ -1,5 +1,5 @@
 import sqlalchemy.orm
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore, Qt
 from PyQt4.Qt import QVariant
 
 from ui_params import Ui_Dialog as UI
@@ -12,28 +12,34 @@ class DlgParams(QtGui.QDialog):
         self.params = params
 
         self.model = QtGui.QStandardItemModel()
+        self.model.setHorizontalHeaderLabels(["parameter", "value", "description"])
         self.ui.treeParams.setModel(self.model)
-        
-        root = QtGui.QStandardItem("pygmin")
-        self.model.appendRow(root)
+        self.ui.treeParams.setColumnWidth(0, 300)
         self.model.setColumnCount(2)
-        self.fill(root, params)
+        self.fill(params)
         self.model.itemChanged.connect(self.itemChanged)
         
-    def fill(self, node, params):
+    def fill(self, params, node=None):
         i=0
         for key,value in params.iteritems():         
-            item = QtGui.QStandardItem(key)
-            item.setEditable(False)
+            new_node = QtGui.QStandardItem(key)
+            new_node.setEditable(False)
             if hasattr(value, "iteritems"):
-                self.fill(item, value)
+                self.fill(value, new_node)
+                editable= QtGui.QStandardItem()
+                editable.setEditable(False)
+                editable.setEnabled(False)
             else:
                 #item.setChild(0, 0, QtGui.QStandardItem(str(value)))
                 editable = QtGui.QStandardItem(str(value))
-                node.setChild(i, 1, editable)
                 editable.setData((params, key))
                 
-            node.setChild(i, 0, item)
+            if node is None:
+                self.model.appendRow([new_node, editable])
+            else:
+                node.setChild(i, 0, new_node)
+                node.setChild(i, 1, editable)
+                
             i+=1
     
     def itemChanged(self, item):
