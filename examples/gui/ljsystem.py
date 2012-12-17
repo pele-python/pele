@@ -4,7 +4,7 @@ import numpy as np
 
 from pygmin.transition_states import dimer, tstools
 
-from pygmin.systems import LJCluster, NotImplemented
+from pygmin.systems import LJCluster
  
 class LJSystem(LJCluster):
     def __init__(self):
@@ -16,7 +16,7 @@ class LJSystem(LJCluster):
         super(LJSystem, self).__init__(self.natoms)
         
     def findTS(self, coords):
-        raise NotImplemented
+        raise NotImplementedError
         pot = self.get_potential()
                 
         ret = dimer.findTransitionState(coords+np.random.random(coords.shape)*0.01, pot, zeroEigenVecs=self.zeroEigenVecs, tol=1.e-6)

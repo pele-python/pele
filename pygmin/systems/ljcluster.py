@@ -7,7 +7,7 @@ __all__ = ["LJCluster"]
 
 class LJCluster(AtomicCluster):
     """
-    define the System class for a lennard jones cluster
+    define the System class for a Lennard-Jones cluster
     """
     def __init__(self, natoms):
         super(LJCluster, self).__init__()

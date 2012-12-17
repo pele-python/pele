@@ -1,6 +1,6 @@
 import numpy as np
 
-from pygmin.systems import BaseSystem, NotImplemented
+from pygmin.systems import BaseSystem
 from pygmin.potentials import LJ
 from pygmin.transition_states import orthogopt
 from pygmin.mindist import minPermDistStochastic, MinDistWrapper, ExactMatchCluster
@@ -26,7 +26,7 @@ class AtomicCluster(BaseSystem):
         return coords
     
     def get_permlist(self):
-        raise NotImplemented
+        raise NotImplementedError
     
     def get_compare_exact(self, **kwargs):
         """this function quickly determines whether two clusters are identical

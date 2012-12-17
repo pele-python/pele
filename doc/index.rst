@@ -17,6 +17,13 @@ Contents:
    :maxdepth: 3
 
    landscape
+.. toctree::
+   :maxdepth: 1
+
+   system_class
+.. toctree::
+   :maxdepth: 3
+
    disconnectivity_graph
    quenching
    database

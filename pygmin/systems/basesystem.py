@@ -3,17 +3,30 @@ from pygmin import basinhopping
 from pygmin.storage import Database
 from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 
-__all__ = ["NotImplemented", "BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
+__all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
-class NotImplemented(BaseException):
-    """
-    The exception to return if there is a feature
-    in the System is not implemented yet
-    """
-    pass
+#class NotImplemented(BaseException):
+#    """
+#    The exception to return if there is a feature
+#    in the System is not implemented yet
+#    """
+#    pass
 
 
 class BaseParameters(dict):
+    """define a dictionary who's values can be accessed like attributes
+    
+    if `params` is a BaseParameters object then this command::
+    
+        base_params["key"] = value
+    
+    is the same as::
+    
+        base_params.key = value
+        
+    This only works for keys that are strings
+    
+    """
     def __getattr__(self, name):
         try:
             return self[name]
@@ -24,7 +37,7 @@ class BaseParameters(dict):
     __delattr__ = dict.__delitem__
 
 class Parameters(BaseParameters):
-    """ """
+    """Define the parameter tree for use with BaseSystem class"""
     def __init__(self):
         self["database"] = BaseParameters()
         self["basinhopping"] = BaseParameters()
@@ -51,10 +64,9 @@ def dict_copy_update(dict1, dict2):
 class BaseSystem(object):
     """
     this class defines a base class for a System object
-    
-    
-    Description
-    -----------
+        
+    Description:
+    -------------
     The following functions need to be overloaded for running
     various routine
 
@@ -88,18 +100,18 @@ class BaseSystem(object):
 
     def get_potential(self):
         """return the potential object"""
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_random_configuration(self):
         """a starting point for basinhopping, etc."""
-        raise NotImplemented
+        raise NotImplementedError
     
     def get_compare_exact(self):
         """object that returns True if two structures are exact.
         
             true_false = compare_exact(min1, min2)
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_compare_minima(self):
         """a wrapper for compare exact so in input can be in 
@@ -125,9 +137,9 @@ class BaseSystem(object):
                 try:
                     compare_minima = self.get_compare_minima()
                     kwargs["compareMinima"] = compare_minima
-                except NotImplemented:
+                except NotImplementedError:
                     pass
-        except NotImplemented:
+        except NotImplementedError:
             #compareMinima is optional
             pass
 
@@ -169,7 +181,7 @@ class BaseSystem(object):
         the mindist object returns returns the best alignment between two
         configurations, taking into account all global symmetries 
         """
-        raise NotImplemented
+        raise NotImplementedError
     
     def get_orthogonalize_to_zero_eigenvectors(self):
         """return a which makes a vector orthogonal to the known zero
@@ -179,7 +191,7 @@ class BaseSystem(object):
             vec = orthogVec(vec, coords)
         
         """
-        raise NotImplemented
+        raise NotImplementedError
     
     def get_double_ended_connect(self, min1, min2, database, parallel=False, **kwargs):
         """return a DoubleEndedConnect object"""
@@ -218,16 +230,16 @@ class BaseSystem(object):
         """
         tell the gui how to represent your system.
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def smooth_path(self):
         """return a smoothed path between two configurations.  
         used for movies"""
-        raise NotImplemented
+        raise NotImplementedError
     
     def createNEB(self):
         """ """
-        raise NotImplemented
+        raise NotImplementedError
 
 
 

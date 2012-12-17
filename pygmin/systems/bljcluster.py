@@ -7,7 +7,7 @@ __all__ = ["BLJCluster"]
 
 class BLJCluster(AtomicCluster):
     """
-    define the System class for a lennard jones cluster
+    define the System class for a binary Lennard-Jones cluster
     """
     def __init__(self, natoms, ntypeA="default", **potential_kwargs):
         super(BLJCluster, self).__init__()
