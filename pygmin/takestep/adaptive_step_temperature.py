@@ -4,56 +4,52 @@ __all__ = ["AdaptiveStepsizeTemperature"]
 
 class AdaptiveStepsizeTemperature(object):
     """
-    todo: 
-        make the interface with changing the temperature not quite so ugly
+    adjust both the stepsize and the temperature adaptively
+    
+    Parameters
+    ----------
+    
+    stepclass : 
+        the step taking class
+    target_new_min_prob : 
+        the target probability for a step ending up in a new minimum.
+        Used to adjust the stepsize.
+    target_new_min_accept_prob : 
+        the target probability that a step that ends in a new minimum is accepted.
+        Use to adjust the temperature
+        
+        Note: the total acceptance probability is
+        
+            accrat = 1 - target_new_min_prob * (1 - target_new_min_accept_prob)
+        
+        so if you want a total acceptance probability of 0.5, you must choose both other 
+        probabilities accordingly
+        
+    interval : 
+        the interval at which to adjust temperature and stepsize
+    Tfactor : 
+        the factor with which to multipy (or divide) the temperature
+    sfactor : 
+        the factor with which to multipy (or divide) the stepsize
+    ediff : 
+        if two minima have energies that are within ediff from each other then
+        they are considered to be the same minimum
+    verbose :
+        print status messages
+        
+    Notes
+    -----                    
+    We will base the stepsize adjustment on the probability of ending up 
+    in a different minimum
+    
+    We will base the temperature adjustment on the probability of accepting
+    a move that ended up in a different minimum
     """
     def __init__(self, stepclass, 
                  target_new_min_prob=0.8, 
                  target_new_min_accept_prob=0.3, 
                  interval=100, Tfactor=0.95, sfactor=0.95, ediff=.001, 
                  verbose=False):
-        """
-        adjust both the stepsize and the temperature adaptively
-        
-        Parameters
-        ----------
-        
-        stepclass : 
-            the step taking class
-        target_new_min_prob : 
-            the target probability for a step ending up in a new minimum.
-            Used to adjust the stepsize.
-        target_new_min_accept_prob : 
-            the target probability that a step that ends in a new minimum is accepted.
-            Use to adjust the temperature
-            
-            Note: the total acceptance probability is
-            
-                accrat = 1 - target_new_min_prob * (1 - target_new_min_accept_prob)
-            
-            so if you want a total acceptance probability of 0.5, you must choose both other 
-            probabilities accordingly
-            
-        interval : 
-            the interval at which to adjust temperature and stepsize
-        Tfactor : 
-            the factor with which to multipy (or divide) the temperature
-        sfactor : 
-            the factor with which to multipy (or divide) the stepsize
-        ediff : 
-            if two minima have energies that are within ediff from each other then
-            they are considered to be the same minimum
-        verbose :
-            print status messages
-            
-        Notes
-        -----                    
-        We will base the stepsize adjustment on the probability of ending up 
-        in a different minimum
-        
-        We will base the temperature adjustment on the probability of accepting
-        a move that ended up in a different minimum
-        """
         self.stepclass = stepclass
         self.target_new_min_accept_prob = target_new_min_accept_prob
         self.target_new_min_prob = target_new_min_prob
@@ -159,7 +155,7 @@ if __name__ == "__main__":
     potential = lj.LJ()
     
     takeStep = displace.RandomDisplacement( stepsize=0.4 )
-    tsAdaptive = AdaptiveStepsizeTemperature(takeStep, interval=300)
+    tsAdaptive = AdaptiveStepsizeTemperature(takeStep, interval=300, verbose=True)
     opt = bh.BasinHopping(coords, potential, takeStep=tsAdaptive)
     opt.printfrq = 50
     opt.run(5000)

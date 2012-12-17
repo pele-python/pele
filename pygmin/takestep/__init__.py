@@ -22,6 +22,7 @@ Grouping moves + adaptive steptaking
    :toctree: generated/
 
     AdaptiveStepsize
+    AdaptiveStepsizeTemperature
     GroupSteps
     BlockMoves
     Reseeding

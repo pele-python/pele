@@ -17,6 +17,7 @@ Contents:
    :maxdepth: 3
 
    landscape
+   disconnectivity_graph
    quenching
    database
    utils
