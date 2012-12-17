@@ -103,7 +103,8 @@ def usage():
     print "   --order_by_basin_size : " 
     print "   --order_by_energy : " 
     print "   --include_gmin : " 
-    print "   --center_gmin : " 
+    print "   --center_gmin : "
+    print "   --Emax=emax   :" 
 
 def main():
     if len(sys.argv) < 2:
@@ -120,7 +121,9 @@ def main():
                                    ["help", "nlevels=", "subgraph_size=", "OPTIM",
                                     "order_by_basin_size", "order_by_energy",
                                     "include_gmin",
-                                    "center_gmin"])
+                                    "center_gmin",
+                                    "Emax=",
+                                    ])
     for o, a in opts:
         if o == "-h" or o == "--help":
             usage()
@@ -129,6 +132,8 @@ def main():
             outfile = a 
         elif o == "--nlevels":
             kwargs["nlevels"] = int(a)
+        elif o == "--Emax":
+            kwargs["Emax"] = float(a)
         elif o == "--subgraph_size":
             kwargs["subgraph_size"] = int(a)
         elif o == "--order_by_basin_size":
