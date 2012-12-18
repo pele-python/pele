@@ -1,8 +1,9 @@
 import numpy as np #to access np.exp() not built int exp
-import potential
+
+from pygmin.potentials import BasePotential
 
 
-class LJ(potential.potential):
+class LJ(BasePotential):
     """
     A stripped down, simple version of LJ for example purposes
     """

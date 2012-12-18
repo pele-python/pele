@@ -1,7 +1,7 @@
 from math import *
 import numpy as np #to access np.exp() not built int exp
 
-from pygmin.potentials.potential import potential as basepot
+from pygmin.potentials import BasePotential
 import fortran.lj as ljf
 
 
@@ -17,9 +17,9 @@ def apply_periodic( dr, boxl ):
     #print "dr ",dr
     return dr;
 
-class LJ(basepot):
+class LJ(BasePotential):
+    """ simple lennard jones potential"""
     def __init__(self, eps=1.0, sig=1.0, boxl=None):
-        """ simple lennard jones potential"""
         self.sig = sig
         self.eps = eps
         self.boxl = boxl

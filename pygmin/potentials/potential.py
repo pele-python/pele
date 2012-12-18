@@ -3,13 +3,23 @@ Created on 13 Apr 2012
 
 @author: ruehle
 '''
-
 import numpy as np
 
-class potential(object):
+__all__ = ["BasePotential"]
+
+
+class BasePotential(object):
     '''
     Base class for all potentials
+    
+    Derived classes must overload getEnergy().  It is also highly
+    recommended to overload getEnergyGradient(), otherwise gradients
+    will be calculated numerically  
+    
+        getEnergyGradient()
     '''
+    def getEnergy(self):
+        raise NotImplementedError
         
     def getEnergyGradient(self, coords):
         return self.getEnergyGradientNumerical(coords)
@@ -51,6 +61,7 @@ class potential(object):
         return self.getEnergyListSlow(coords, ilist)
 
     def getEnergyGradientListSlow(self, coords, ilist):
+        """you really don't want to be using this..."""
         coords2 = np.zeros(6)
         E = 0.
         g = np.zeros( len(coords) )
@@ -68,3 +79,10 @@ class potential(object):
         the energy and gradient of select interactions defined in ilist
         """
         return self.getEnergyGradientListSlow(coords, ilist)
+
+class potential(BasePotential):
+    """
+    for backward compatibility
+    """
+    pass
+

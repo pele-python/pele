@@ -4,12 +4,12 @@ Created on 3 Jun 2012
 @author: ruehle
 '''
 
-import potential
+from pygmin.potentials import BasePotential 
 import numpy as np
 
 __all__ = ["GMINPotential"]
 
-class GMINPotential(potential.potential):
+class GMINPotential(BasePotential):
     '''
     classdocs
     '''

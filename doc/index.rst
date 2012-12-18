@@ -22,10 +22,11 @@ Contents:
 
    system_class
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    disconnectivity_graph
    quenching
+   potentials
    database
    utils
 

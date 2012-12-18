@@ -1,6 +1,7 @@
 from math import *
 import numpy as np #to access np.exp() not built int exp
-import potential
+
+from pygmin.potentials import BasePotential
 
 __all__ = ["LJpshift"]
 
@@ -35,7 +36,7 @@ class BLJ_interaction_type:
         self.const = 4.0*(sigrc6)-7.0*sigrc12
         self.rconst = (6.0*sigrc12-3.0*sigrc6)/self.rcut**2
 
-class LJpshift(potential.potential):
+class LJpshift(BasePotential):
     """binary lennard jones potential with smooth cutoff"""
     def __init__(self, natoms, ntypeA, boxl=None, rcut=2.5, epsBB=0.5, sigBB=0.88, epsAB=1.5, sigAB=0.8):
         self.boxl = boxl

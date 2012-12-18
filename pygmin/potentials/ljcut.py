@@ -1,13 +1,15 @@
 import numpy as np
 
 import fortran.ljcut as _ljcut
-from pygmin.potentials.potential import potential as basepot
+from pygmin.potentials import BasePotential
 
-class LJCut(basepot):
+__all__ = ["LJCut"]
+
+class LJCut(BasePotential):
+    """ 
+    lennard jones potential with a cutoff that is continuous and smooth
+    """
     def __init__(self, eps=1.0, sig=1.0, rcut = 2.5, boxl=None):
-        """ 
-        simple lennard jones potential with a cutoff that is continuous and smooth
-        """
         self.sig = sig
         self.eps = eps
         self.rcut = rcut

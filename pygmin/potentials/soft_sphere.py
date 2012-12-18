@@ -1,14 +1,14 @@
 import numpy as np
-from pygmin.potentials.potential import potential
+
+from pygmin.potentials import BasePotential
 from fortran.soft_sphere_pot import soft_sphere_pot
-#energy,force = soft_sphere_pot(dimen,x,diams,[npart])
 
 __all__ = ["SoftSphere"]
 
 
 
 
-class SoftSphere(potential):
+class SoftSphere(BasePotential):
     def __init__(self, diams, dimen = 3 ):
         self.diams = diams
         self.dimen = dimen

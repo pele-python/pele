@@ -1,14 +1,15 @@
 import numpy as np #to access np.exp() not built int exp
-import potential
 from scipy import weave
 from scipy.weave import converters
-from lj import LJ
+
+from pygmin.potentials import LJ
+from pygmin.potentials import BasePotential
 import fortran.AT as ATfort
 
 __all__ = ["ATLJ"]
 
 
-class ATLJ(potential.potential):
+class ATLJ(BasePotential):
     """
     Lennard Jones + three body Axilrod-Teller term
     

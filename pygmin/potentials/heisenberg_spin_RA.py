@@ -1,12 +1,13 @@
 import numpy as np
-from copy import copy
-from pygmin.potentials.potential import potential as BasePotential
-import pygmin.utils.rotations as rotations
 from numpy import sin, cos
-
+from copy import copy
 import networkx as nx
 
+from pygmin.potentials import BasePotential
+import pygmin.utils.rotations as rotations
 from pygmin.potentials.heisenberg_spin import make3dVector,  make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
+
+
 
 __all__ = ["HeisenbergModelRA"]
 
@@ -15,6 +16,7 @@ __all__ = ["HeisenbergModelRA"]
 class HeisenbergModelRA(BasePotential):
     """
     The classical Heisenberg Model of 3d spins on a lattice with random anisotropy.
+    
     The Hamiltonian is
         
     H = - sum_ij J_ij dot( s_i, s_j )  - sum_i dot( h_i, s_i )**2

@@ -1,10 +1,10 @@
 import numpy as np
 from copy import copy
-from pygmin.potentials.potential import potential as BasePotential
-import pygmin.utils.rotations as rotations
 from numpy import sin, cos
-
 import networkx as nx
+
+from pygmin.potentials import BasePotential
+import pygmin.utils.rotations as rotations
 
 __all__ = ["HeisenbergModel"]
 
@@ -85,6 +85,7 @@ def grad3ToGrad2(coords2, grad3):
 class HeisenbergModel(BasePotential):
     """
     The classical Heisenberg Model of 3d spins on a lattice.
+    
     The Hamiltonian is
     
     H = - sum_ij J dot( s_i, s_j )

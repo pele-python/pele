@@ -1,6 +1,6 @@
 import numpy as np
 from copy import copy
-from pygmin.potentials.potential import potential as BasePotential
+from pygmin.potentials import BasePotential
 
 import networkx as nx
 
@@ -38,7 +38,7 @@ class RectangularLattice(object):
 
 class XYModel(BasePotential):
     """
-    xy model
+    XY model of 2d spins on a lattice
     """
     def __init__(self, dim = [4, 4], phi=np.pi):
         self.dim = copy(dim)

@@ -1,5 +1,5 @@
 import numpy as np
-from pygmin.potentials.potential import potential as BasePotential
+from pygmin.potentials import BasePotential
 
 
 class XYModel(BasePotential):
