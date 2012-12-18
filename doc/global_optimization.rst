@@ -1,3 +1,5 @@
+.. _global_optimization:
+
 Global Optimization
 ===================
 
@@ -31,8 +33,6 @@ the behaviour of the basin hopping procedure.
   opt = bh.BasinHopping(coords, potential, takeStep=step)
   opt.run(100)
 
-Step Taking
------------
 
 .. automodule:: pygmin.takestep
 

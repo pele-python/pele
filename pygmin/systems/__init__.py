@@ -25,14 +25,19 @@ basinhopping::
         get_random_configuration : optional
         get_compare_exact : optional
 
-landscape explortation and transition state searches::
+landscape exploration and transition state searches::
 
         get_potential : required
         get_mindist : required
         get_orthogonalize_to_zero_eigenvectors : required
         get_compare_exact : optional, recommended
         get_random_configuration : optional
+        
+See :ref:`Potentials <potentials_description>` for more information about how to implement get_potential().
+See :ref:`Structure Alignment <structure_alignment>` for more information about how to implement get_mindist().
+See :ref:`Global Optimization <global_optimization>` for more information about how to implement get_takestep().
 
+ 
 
 .. autosummary::
     :toctree: generated
@@ -62,7 +67,7 @@ Here we list the existing systems.
     BLJCluster
 
 Parameter Class
-===============
+---------------
 The parameter class is what the system class uses for
 holding and maintaining global defaults for all the many adjustable
 parameters in pygmin.  

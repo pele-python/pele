@@ -1,4 +1,4 @@
-.. _structure_alignment
+.. _structure_alignment:
 
 Structure Alignment
 ===================
