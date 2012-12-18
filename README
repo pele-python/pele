@@ -42,25 +42,27 @@ and/or fortran)
 
 using setup.py:
 The standard python setup utility (distutils).  There are lots of options for
-how and where to install. For more information
-$ python setup.py --help 
-or, for even more options
-$ python setup.py --help-commands
+how and where to install. For more information::
+  
+  python setup.py --help 
+  python setup.py --help-commands
 
 Developers probably want to install "in-place", i.e. build the extension
-modules in their current directories.
-$ python setup.py build_ext -i
+modules in their current directories.::
 
-Users can install pygmin in the standard python package location.
-$ python setup.py build
-$ python setup.py install [--prefix=mydir --home]
-Add --prefix=mydir, or --home to install locally
+  python setup.py build_ext -i
 
+Users can install pygmin in the standard python package location.::
+
+  python setup.py build
+  python setup.py install [--user]
+
+where --user installs it in $HOME/.local/
 
 
 PYTHONPATH:  
 ----------
-make sure to add the install directory to your PYTHONPATH environment variable.
+make sure to add the install directory to your PYTHONPATH environment variable
 
 
 === Running ===
