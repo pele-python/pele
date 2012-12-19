@@ -27,8 +27,9 @@ numerically and your system will run a lot slower.
 pygmin potentials
 -----------------
 these are potentials that exist completely within the pygmin package
+
 .. autosummary::
-   :toctree: generated/
+    :toctree: generated/
 
     LJ
     LJCut
