@@ -295,9 +295,12 @@ class MyForm(QtGui.QMainWindow):
                     obj.takeItem(obj.row(i))
                         
     def StartBasinHopping(self):
+        db = self.system.database
+        self.system.database = None
         self.bhrunner = bhrunner.BHRunner(self.system)
         self.bhrunner.start()
-    
+        self.system.database = db
+        
     def tsSearch(self):
         import numpy as np
         ts = self.system.findTS(self.ui.oglTS.coords[1])

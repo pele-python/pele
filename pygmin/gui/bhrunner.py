@@ -31,8 +31,7 @@ class BHProcess(mp.Process):
         print seed
         np.random.seed(seed)
         print np.random.random(2)
-        opt = self.system.get_basinhopping(database=self.system.database, outstream=None)
-        opt.storage = self.insert
+        opt = self.system.get_basinhopping(add_minimum = self.insert, outstream=None)
         #while(True):
         #print 'bhrunner.py: number of BH steps set to 1'
         opt.run(500)
