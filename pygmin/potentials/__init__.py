@@ -40,7 +40,10 @@ these are potentials that exist completely within the pygmin package
 
 GMIN potentials
 ---------------
-to be written
+.. autosummary::
+   :toctree: generated/
+
+    GMINPotential
 
 other external potentials
 -------------------------
