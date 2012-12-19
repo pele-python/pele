@@ -1,3 +1,5 @@
+.. _landscape_description:
+
 Energy Landscape Exploration
 ============================
 

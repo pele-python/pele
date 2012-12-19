@@ -1,3 +1,5 @@
+.. _disconnectivity_graph:
+
 Disconnectivity Graphs
 ======================
 

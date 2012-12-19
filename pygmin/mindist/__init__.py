@@ -43,6 +43,7 @@ necessarily the optimal
    :toctree: generated/
 
     minPermDistStochastic
+    ExactMatchCluster
 
 A wrapper
 ---------

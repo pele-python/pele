@@ -6,7 +6,16 @@
 Welcome to pygmin's documentation!
 ==================================
 
-Contents:
+Tutorial
+--------
+.. toctree::
+   :maxdepth: 2
+
+   tutorial
+
+
+Reference
+---------
 
 .. toctree::
    :maxdepth: 2
