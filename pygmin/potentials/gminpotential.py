@@ -11,7 +11,35 @@ __all__ = ["GMINPotential"]
 
 class GMINPotential(BasePotential):
     '''
-    classdocs
+    Interface to fortran GMIN potential
+    
+    Potentials implemented in GMIN can be called from python if GMIN is compiled with the flag WITH_PYTHON enabled. This creates
+    python modules (dynamic libraries). However, the interface is still very rough and GMINPotential provides a wrapper for
+    easy access to GMIN.
+    
+    The imported GMIN module requires a data file to be present in the current directory. All parameters except for the ones
+    responsible to setup the potential will be ignored and can be skipped. The first call after importing the module should be
+    initialize.
+    
+    Attributes
+    ----------
+    
+    GMIN : 
+        reference to the gmin module
+        
+    Examples
+    --------
+    
+    The following example imports the GMIN python interface and evaluates the energy
+    
+    >>> import gmin_
+    >>>
+    >>> gmin_.initialize() # finish gmin initialization
+    >>> pot = GMINPotential(gmin_)
+    >>>
+    >>> coords = pot.getCoords()
+    >>> pot.getEnergy(coords)
+    
     '''
 
 
