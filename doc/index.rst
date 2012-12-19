@@ -9,7 +9,7 @@ Welcome to pygmin's documentation!
 Tutorial
 --------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    tutorial
 
