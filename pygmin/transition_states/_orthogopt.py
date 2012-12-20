@@ -1,7 +1,8 @@
 import numpy as np
 
-__all__ = ["orthogopt"]
 from _orthogoptf import orthogopt as orthogoptf
+
+__all__ = ["orthogopt"]
 
 def orthogopt(v, coords, norm=False):
     orthogoptf(v, coords, norm)
