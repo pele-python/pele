@@ -179,6 +179,10 @@ def lbfgs_py(coords, getEnergyGradient, **kwargs):
     A wrapper function for the python implementation of LBFGS without linesearch.
     
     This is designed to be as similar as possible to GMIN's LBFGS algorithm
+
+    See Also
+    --------
+    LBFGS  
     """
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = _lbfgs_py(coords, pot, **kwargs)
@@ -197,9 +201,15 @@ def _mylbfgs(coords, pot, **kwargs):
 
 def mylbfgs(coords, getEnergyGradient, **kwargs):
     """
-    A wrapper function for another LBFGS implementation.  This version uses 
+    A wrapper function for MYLBFGS.  
+    
+    This version uses 
     the GMIN fortran code to update the Hessian approximation and generate 
-    a trial step.   The actual step taking algorithm is the same as lbfgs_py.  
+    a trial step.   The actual step taking algorithm is the same as lbfgs_py.
+    
+    See Also
+    --------
+    MYLBFGS  
     """
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = _mylbfgs(coords, pot, **kwargs)

@@ -56,6 +56,11 @@ class LBFGS(object):
     
     3. take step
     
+    See Also
+    --------
+    MYLBFGS : this implemented in a compiled language
+    lbfgs_py : a function wrapper
+    
     """
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
                  rel_energy = False, H0=1., events=[],

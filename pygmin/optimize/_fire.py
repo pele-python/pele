@@ -11,7 +11,9 @@ __all__ = ["Fire"]
 
 class Fire(object):
     '''
-    classdocs
+    The FIRE optimization algorithm
+    
+    this needs to be documented!!!
     '''
     
     def __init__(self, coords, potential, restart=None, logfile='-', trajectory=None,

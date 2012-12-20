@@ -1,4 +1,2 @@
-Quenching
-=========
 
 .. automodule:: pygmin.optimize

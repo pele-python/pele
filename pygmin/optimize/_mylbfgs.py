@@ -6,13 +6,23 @@ from mylbfgs_updatestep import mylbfgs_updatestep
 __all__ = ["MYLBFGS"]
 
 class MYLBFGS(LBFGS):
+    """
+    minimize a function using the LBFGS routine
+    
+    this class inherits everything from the pythonic LBFGS
+    except the implementation of the LBFGS algorithm (determining an appropriate
+    step size and direction). This is reimplemented 
+    using the Fortran code from GMIN.
+    
+    Parameters
+    ----------
+    see base class LBFGS
+    
+    See Also
+    --------
+    LBFGS : base class
+    """
     def __init__(self, X, pot, **lbfgs_py_kwargs):
-        """
-        this class inherits everything from the pythonic LBFGS
-        except the implementation of the LBFGS algorithm (determining an appropriate
-        step size and direction). This is reimplemented 
-        using the Fortran code from GMIN.
-        """
         super(MYLBFGS, self).__init__(X, pot, **lbfgs_py_kwargs)
         
         
@@ -70,9 +80,9 @@ class MYLBFGS(LBFGS):
         return self.stp
 
 
-class LBFGS(MYLBFGS):
-    """for backward compatibility """
-    pass
+#class LBFGS(MYLBFGS):
+#    """for backward compatibility """
+#    pass
 
 #
 #only testing stuff below here
