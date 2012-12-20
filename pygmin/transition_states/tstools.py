@@ -1,6 +1,7 @@
 import numpy as np
+
 from pygmin import defaults
-import pygmin.optimize.quench as quench
+from pygmin.optimize import mylbfgs
 
 __all__ = ["minima_from_ts"]
 
@@ -43,7 +44,7 @@ def minima_from_ts(getEnergyGradient, xt, n=None, displace=1e-3,
     quenchParameters = dict(defaults.quenchParams.items() + 
                             quenchParameters.items())
     if quenchRoutine==None:
-        quenchRoutine = quench.mylbfgs
+        quenchRoutine = mylbfgs
         #quenchRoutine = defaults.quenchRoutine
         #js850> this should be done more carefully
         quenchParameters = dict(quenchParameters.items() +

@@ -6,7 +6,6 @@ from pygmin.utils.rbtools import *
 import pygmin.utils.amber as readAmb
 import ambgmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
-from pygmin.optimize import quench
 from pygmin.takestep import generic
 import pygmin.basinhopping as bh
 from pygmin.takestep import displace

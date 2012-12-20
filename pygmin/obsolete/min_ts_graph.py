@@ -118,7 +118,7 @@ def getSetOfMinLJ(natoms = 11): #for testing purposes
     return pot, saveit
 
 def test():
-    from pygmin.optimize.quench import lbfgs_py as quench
+    from pygmin.optimize import lbfgs_py as quench
     from pygmin.storage.savenlowest import Minimum
     natoms = 11
     #get min1

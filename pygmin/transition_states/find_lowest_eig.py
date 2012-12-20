@@ -6,7 +6,7 @@ from pygmin.transition_states import orthogopt
 from pygmin.potentials.potential import potential as basepot
 import pygmin.defaults as defaults
 #from pygmin.optimize.lbfgs_py import LBFGS
-from pygmin.optimize.mylbfgs import LBFGS
+from pygmin.optimize import MYLBFGS
 import pygmin.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector"]
@@ -137,7 +137,7 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     
     #minimize, using the last eigenvector as a starting point
     #and starting with H0 from last minimization 
-    quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
+    quencher = MYLBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
                      **kwargs)
     res = quencher.run()
 
@@ -250,7 +250,7 @@ def testpot1():
         print "lowest eigenvector", v[:,imin]
 
     
-    from pygmin.optimize.quench import lbfgs_py as quench
+    from pygmin.optimize import lbfgs_py as quench
     ret = quench(vec, eigpot.getEnergyGradient, iprint=10, tol = 1e-5, maxstep = 1e-3, \
                  rel_energy = True)
     print ret
@@ -272,7 +272,7 @@ def testpot3():
     
     vec = np.random.rand(len(coords))
     
-    from pygmin.optimize.quench import lbfgs_py as quench
+    from pygmin.optimize import lbfgs_py as quench
     ret = quench(vec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, \
                  rel_energy = True)
 

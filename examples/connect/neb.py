@@ -5,13 +5,13 @@ from pygmin.mindist import minPermDistStochastic
 import pylab as pl
 from pygmin import defaults
 from copy import copy
-from pygmin.optimize import quench
+from pygmin.optimize import lbfgs_py
 
 defaults.NEBquenchParams["nsteps"] = 2000
 defaults.NEBquenchParams["iprint"] = 1
 defaults.NEBquenchParams["maxErise"] = 0.1
 defaults.NEBquenchParams["maxstep"] = 0.001
-defaults.NEBquenchRoutine = quench.lbfgs_py
+defaults.NEBquenchRoutine = lbfgs_py
 #defaults.NEBquenchParams["M"] = 1
 k = 100.
 nimages = 20

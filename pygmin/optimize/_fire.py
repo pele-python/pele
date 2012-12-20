@@ -7,6 +7,7 @@ Created on 30 Apr 2012
 import numpy as np
 import math
 
+__all__ = ["Fire"]
 
 class Fire(object):
     '''

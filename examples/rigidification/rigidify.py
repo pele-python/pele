@@ -2,7 +2,7 @@ import numpy as np
 from pygmin.potentials import LJ
 from pygmin.utils import xyz
 from pygmin.angleaxis import rigidbody
-from pygmin.optimize import quench
+from pygmin.optimize import lbfgs_py
 
 # read in coordinates from xyz file
 ref = xyz.read_xyz(open("water.xyz"))
@@ -47,7 +47,7 @@ g_n = rbpot.NumericalDerivative(rbcoords.coords, eps=1e-4)
 cg = rbsystem.coords_adapter(g-g_n) 
 print cg.posRigid
 print cg.rotRigid
-ret = quench.lbfgs_py(rbcoords.coords, rbpot.getEnergyGradient)
+ret = lbfgs_py(rbcoords.coords, rbpot.getEnergyGradient)
 print ret[1]
 xyz.write_xyz(open("quenched.xyz", "w"), rbsystem.to_atomistic(ret[0]), atomtypes=ref.atomtypes)
 

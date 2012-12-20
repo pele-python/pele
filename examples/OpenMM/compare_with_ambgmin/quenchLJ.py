@@ -16,10 +16,10 @@ print pot.getEnergy(coords)
 a,b = pot.getEnergyGradient(coords) 
 print type(a) 
 
-from pygmin.optimize.quench import quench, cg , fire 
+from pygmin.optimize import lbfgs_scipy, cg , fire 
 
 # lbfgs 
-ret = quench( coords, pot.getEnergyGradient, iprint=-1 , tol = 1e-3, nsteps=100) 
+ret = lbfgs_scipy( coords, pot.getEnergyGradient, iprint=-1 , tol = 1e-3, nsteps=100) 
      # core dump! 
 
 # cg  

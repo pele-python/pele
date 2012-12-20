@@ -4,7 +4,7 @@ import scipy
 from math import *
 import accept_tests.metropolis as metropolis
 import copy
-import optimize.quench as quench
+from optimize import mylbfgs
 import basinhopping as bh
 
 
@@ -44,14 +44,14 @@ class BHPT:
 
           event(Equench_new, newcoords, acceptstep)
 
-      quenchRoutine:  (quench.quench)
+      quenchRoutine:  (mylbfgs)
           Optionally pass a non-default quench routine.
 
     """
     def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
             acceptTests=[],  \
             nometropolis=False, \
-            quenchRoutine = quench.quench, \
+            quenchRoutine = mylbfgs, \
             Tmin = 1., Tmax = 1.2, nreplicas = 4 \
             ):
         #note: make a local copy of lists of events so that an inputted list is not modified.

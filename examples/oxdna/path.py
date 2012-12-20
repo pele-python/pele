@@ -3,7 +3,6 @@ from pygmin.utils.rbtools import CoordsAdapter
 from pygmin.utils import rotations
 import oxdnagmin_ as GMIN
 from pygmin.potentials import GMINPotential
-from pygmin.optimize import quench
 from pygmin.transition_states import NEB, InterpolatedPath
 from pygmin.storage import Database
 from pygmin import defaults

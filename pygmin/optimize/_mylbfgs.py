@@ -1,11 +1,11 @@
 import numpy as np
-from bfgs import lineSearch, BFGS
-import lbfgs_py
+#from bfgs import lineSearch, BFGS
+from pygmin.optimize import LBFGS
 from mylbfgs_updatestep import mylbfgs_updatestep
 
 __all__ = ["MYLBFGS"]
 
-class MYLBFGS(lbfgs_py.LBFGS):
+class MYLBFGS(LBFGS):
     def __init__(self, X, pot, **lbfgs_py_kwargs):
         """
         this class inherits everything from the pythonic LBFGS
@@ -13,7 +13,7 @@ class MYLBFGS(lbfgs_py.LBFGS):
         step size and direction). This is reimplemented 
         using the Fortran code from GMIN.
         """
-        lbfgs_py.LBFGS.__init__(self, X, pot, **lbfgs_py_kwargs)
+        super(MYLBFGS, self).__init__(X, pot, **lbfgs_py_kwargs)
         
         
         N = self.N
@@ -80,7 +80,7 @@ class LBFGS(MYLBFGS):
     
 
 def test(pot, natoms = 100, iprint=-1):
-    import bfgs
+    #import bfgs
     
     
     #X = bfgs.getInitialCoords(natoms, pot)
@@ -90,7 +90,7 @@ def test(pot, natoms = 100, iprint=-1):
     runtest(X, pot, natoms, iprint)
 
 def runtest(X, pot, natoms = 100, iprint=-1):
-    from lbfgs_py import PrintEvent
+    from _lbfgs_py import PrintEvent
     tol = 1e-5
     maxstep = 0.005
 
@@ -108,7 +108,7 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     
     print ""
     print "now do the same with scipy lbfgs"
-    from pygmin.optimize.quench import quench
+    from pygmin.optimize import lbfgs_scipy as quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
     print ret
     #print ret[1], ret[2], ret[3]    
@@ -121,21 +121,21 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     
     if False:
         print "now do the same with gradient + linesearch"
-        import bfgs
-        gpl = bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
+        import _bfgs
+        gpl = _bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
         ret = gpl.run(1000, tol = 1e-6)
         print ret[1], ret[2], ret[3]    
             
     if False:
         print "calling from wrapper function"
-        from pygmin.optimize.quench import lbfgs_py
+        from pygmin.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
         
     if True:
         print ""
         print "now do the same with lbfgs_py"
-        from pygmin.optimize.quench import lbfgs_py
+        from pygmin.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
 

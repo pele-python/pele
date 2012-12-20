@@ -4,7 +4,6 @@ import basinhopping as bh
 import take_step.adaptive_step as adaptive_step
 import take_step.random_displacement as ts
 import storage.savenlowest
-import optimize.quench as quench
         
 
         

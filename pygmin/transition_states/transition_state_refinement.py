@@ -453,7 +453,7 @@ def guesstsATLJ():
     coords2 = np.array([ 0., 0., 0., \
               -a, 0., 0., \
               a, 0., 0. ])
-    from pygmin.optimize.quench import lbfgs_py as quench
+    from pygmin.optimize import lbfgs_py as quench
     from pygmin.transition_states import InterpolatedPath
     ret1 = quench(coords1, pot.getEnergyGradient)
     ret2 = quench(coords2, pot.getEnergyGradient)
@@ -470,7 +470,7 @@ def guesstsATLJ():
     return pot, coords
 
 def guessts(coords1, coords2, pot):
-    from pygmin.optimize.quench import lbfgs_py as quench
+    from pygmin.optimize import lbfgs_py as quench
     from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
     from pygmin.transition_states import NEB
     ret1 = quench(coords1, pot.getEnergyGradient)

@@ -1,6 +1,6 @@
 import numpy as np
 from pygmin.potentials.lj import LJ
-from pygmin.optimize.quench import quench
+from pygmin.optimize import lbfgs_scipy as quench
 from pygmin.mc import MonteCarlo
 from pygmin.takestep.displace import RandomDisplacement as TakeStep
 from pygmin.takestep.adaptive import AdaptiveStepsize

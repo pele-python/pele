@@ -5,7 +5,7 @@ between two lennard jones clusters
 import numpy as np
 
 from pygmin.potentials.lj import LJ
-from pygmin.optimize import quench
+from pygmin.optimize import lbfgs_py
 from pygmin.mindist import minPermDistStochastic
 
 pot = LJ()
@@ -15,8 +15,8 @@ natoms = 40
 #get two random quenched structures to compare
 coords1 = np.random.rand(natoms*3)*natoms**(1./3)*1.5
 coords2 = np.random.rand(natoms*3)*natoms**(1./3)*1.5
-ret1 = quench.lbfgs_py(coords1, pot.getEnergyGradient)
-ret2 = quench.lbfgs_py(coords2, pot.getEnergyGradient)
+ret1 = lbfgs_py(coords1, pot.getEnergyGradient)
+ret2 = lbfgs_py(coords2, pot.getEnergyGradient)
 coords1 = ret1[0]
 coords2 = ret2[0]
 

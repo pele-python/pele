@@ -1,5 +1,5 @@
 import numpy as np
-from pygmin.optimize import quench
+from pygmin.optimize import fire, lbfgs_py
 from pygmin.transition_states import gramm_schmidt
 
 __all__ = ["findTransitionState_dimer", "DimerSearch"]
@@ -16,7 +16,7 @@ def findTransitionState_dimer(x0, potential, direction=None, tol=1.0e-6, maxstep
     #search.findNextTS(direction)
     #search.findNextTS(direction)
     #search.findNextTS(direction)
-    x, E, rms, tmp = quench.fire(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, iprint=iprint) 
+    x, E, rms, tmp = fire(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, iprint=iprint) 
     #x, E, rms, tmp = quench.mylbfgs(x0, search.getEnergyGradient, tol=tol, maxstep=maxstep, maxErise=1000.)
         
     from collections import namedtuple

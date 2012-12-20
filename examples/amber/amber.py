@@ -2,7 +2,7 @@ import ambgmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
 import numpy as np
 import pygmin.basinhopping as bh
-from pygmin.optimize import quench
+from pygmin.optimize import lbfgs_py
 from pygmin.takestep import displace
 
 GMIN.initialize()   
@@ -12,7 +12,7 @@ coords = pot.getCoords()
 
 step = displace.RandomDisplacement(stepsize=0.7)
 
-opt = bh.BasinHopping(coords, pot, takeStep=step, quenchRoutine=quench.lbfgs_py)
+opt = bh.BasinHopping(coords, pot, takeStep=step, quenchRoutine=lbfgs_py)
 opt.quenchParameters['tol'] = 1e-4
 opt.run(3)
 

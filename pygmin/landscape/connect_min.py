@@ -513,7 +513,6 @@ def getSetOfMinLJ(natoms = 32): #for testing purposes
 
 def test(Connect=DoubleEndedConnect, natoms=16):
     from pygmin.landscape import Graph
-    from pygmin.optimize.quench import lbfgs_py as quench
     from pygmin.mindist import minPermDistStochastic, MinDistWrapper
     from pygmin.storage.database import Database
     import pygmin.defaults as defaults

@@ -2,7 +2,7 @@ import dmagmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
 import numpy as np
 import pygmin.basinhopping as bh
-from pygmin.optimize import quench
+import pygmin.optimize._quench as quench
 from pygmin.takestep import generic
 from pygmin.utils.rbtools import *
 from pygmin.potentials.coldfusioncheck import addColdFusionCheck

@@ -2,7 +2,7 @@ import distpot
 import numpy as np
 import copy
 import pygmin.utils.rotations as rot
-from pygmin.optimize.quench import quench
+#from pygmin.optimize import lbfgs_scipy as quench
 from pygmin import basinhopping
 import pygmin.storage.savenlowest as storage
 from mindistutils import CoMToOrigin, alignRotation, findBestPermutationRBMol, getDistaa
@@ -165,7 +165,7 @@ class TestMinPermDistRBMol_OTP(unittest.TestCase):
         from pygmin.potentials.rigid_bodies.molecule import Molecule, setupLWOTP
         from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
         from pygmin.potentials.lj import LJ
-        from pygmin.optimize.quench import quench
+        from pygmin.optimize import lbfgs_py as quench
         
         #set up system
         nmol = 5
@@ -211,6 +211,7 @@ class TestMinPermDistRBMol_OTP(unittest.TestCase):
 
 
     def testOPT(self):
+        from pygmin.optimize import lbfgs_py as quench
         coords1 = np.copy(self.coords1)
         coords1i = np.copy(coords1)
         
@@ -271,6 +272,7 @@ def test_LWOTP(nmol = 5):
     from pygmin.potentials.rigid_bodies.molecule import Molecule, setupLWOTP
     from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
     from pygmin.potentials.lj import LJ
+    from pygmin.optimize import lbfgs_py as quench
 
     printlist = []
     

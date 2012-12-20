@@ -152,7 +152,7 @@ class CrystalSystem:
         return [x1/np.linalg.norm(x1), x2/np.linalg.norm(x2), x3/np.linalg.norm(x3)]
         
     def findTS(self, coords):
-        from pygmin.optimize import quench
+        from pygmin.optimize import fire
         pot = gminpot.GMINPotential(GMIN)
         tau = np.random.random(coords.shape) - 0.5
         tau[-6:]=0.
@@ -160,7 +160,7 @@ class CrystalSystem:
         import pygmin.optimize.transition_state.transition_state_refinement as tsr
         defaults.quenchParams["maxstep"]=0.01
         defaults.quenchParams["tol"]=1.e-4
-        defaults.quenchRoutine = quench.fire
+        defaults.quenchRoutine = fire
         ret = dimer.findTransitionState(coords+1e-2*tau, pot, direction=tau, zeroEigenVecs=self.zeroEigenVecs, tol=1e-4, maxstep=0.01)
         #ret = tsr.findTransitionState(coords+1e-2*tau, pot, tol=1e-4)
         print "TS:",ret.energy

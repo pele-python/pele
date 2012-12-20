@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 from pygmin.potentials.lj import LJ
-import pygmin.optimize.quench as quench
+from pygmin.optimize import lbfgs_py
 from pygmin.landscape import DoubleEndedConnect, smoothPath
 from pygmin.mindist import minPermDistStochastic, MinDistWrapper
 from pygmin.transition_states import orthogopt
@@ -20,8 +20,8 @@ pot = LJ()
 #import the starting and ending points and quench them, 
 coords1 = np.genfromtxt("coords.A")
 coords2 = np.genfromtxt("coords.B")
-res1 = quench.lbfgs_py(coords1.reshape(-1), pot.getEnergyGradient)
-res2 = quench.lbfgs_py(coords2.reshape(-1), pot.getEnergyGradient)
+res1 = lbfgs_py(coords1.reshape(-1), pot.getEnergyGradient)
+res2 = lbfgs_py(coords2.reshape(-1), pot.getEnergyGradient)
 coords1 = res1[0]
 coords2 = res2[0]
 E1 = res1[1]

@@ -22,7 +22,7 @@ print "initial energy", E
 #set up quench routine
 #from optimize.quench import fire as quench
 #from optimize.quench import cg as quench
-from pygmin.optimize.quench import quench as quench #numpy lbfgs routine
+from pygmin.optimize import lbfgs_scipy as quench #numpy lbfgs routine
 #from optimize.quench import fmin as quench
 #from optimize.quench import steepest_descent as quench
 

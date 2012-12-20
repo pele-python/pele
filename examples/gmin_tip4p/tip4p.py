@@ -4,13 +4,12 @@ from pygmin.potentials import GMINPotential
 from pygmin.angleaxis import RigidFragment, RBSystem
 import gmin_ as GMIN
 from pygmin.utils import rotations
-from pygmin.optimize import quench
 from pygmin.takestep import buildingblocks
 from pygmin.transition_states import NEB, InterpolatedPath
 from pygmin import defaults
 import pylab as pl
 from copy import deepcopy
-from pygmin.optimize import quench
+from pygmin.optimize import mylbfgs, fire
 from pygmin.mindist.rmsfit import findrotation_kabsch
 
 def dump_path(filename, system, path):
@@ -67,7 +66,7 @@ coords2 = coords.copy()
 #print "Energy before and after rotation molecule 2 by Pi around its symmetry axis", E, pot.getEnergy(coords)
 #
 buildingblocks.rotate(3.0, ca.rotRigid)
-ret = quench.mylbfgs(coords, pot.getEnergyGradient, iprint=0)
+ret = mylbfgs(coords, pot.getEnergyGradient, iprint=0)
 #print ret[1]
 coords2 = ret[0]
 
@@ -79,7 +78,7 @@ defaults.NEBquenchParams["nsteps"] = 500
 defaults.NEBquenchParams["iprint"] = -1
 defaults.NEBquenchParams["maxstep"] = 0.1
 #defaults.NEBquenchParams["maxErise"] = 0.1
-defaults.NEBquenchRoutine = quench.fire
+defaults.NEBquenchRoutine = fire
 k = 100.
 dneb=True
 

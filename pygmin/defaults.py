@@ -1,4 +1,4 @@
-import pygmin.optimize.quench as quench
+import pygmin.optimize._quench as quench
 #import pygmin.transition_states
 
 """

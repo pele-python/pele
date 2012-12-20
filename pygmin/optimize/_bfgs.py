@@ -32,7 +32,7 @@ def lineSearch(X, V, pot, aguess = 0.1, tol = 1e-3):
     
     einit = pot.getEnergy(X)
     #from optimize.quench import steepest_descent as quench
-    from quench import quench as quench
+    from pygmin.optimize import lbfgs_scipy as quench
     a = np.zeros(1) * aguess
     ret = quench(a, ls.getEnergyGradient, tol=tol)
     a = ret[0][0]
@@ -229,12 +229,12 @@ def test():
     print "done", ret[1], ret[2], ret[3]
     
     print "now do the same with scipy lbfgs"
-    from quench import quench
+    from pygmin.optimize import lbfgs_scipy as quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
     print "now do the same with scipy bfgs"
-    from quench import bfgs as oldbfgs
+    from pygmin.optimize import bfgs as oldbfgs
     ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     

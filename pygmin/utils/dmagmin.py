@@ -1,7 +1,7 @@
 import dmagmin_ as GMIN
 from pygmin.utils import rotations
 from pygmin import takestep
-from pygmin.optimize import quench
+from pygmin.optimize import mylbfgs
 import crystals
 import lattice
 import numpy as np
@@ -112,11 +112,11 @@ class GenRandomCrystal(takestep.TakestepInterface):
 # special quencher for crystals
 def quenchCrystal(coords, pot, **kwargs):
     ''' Special quench routine for crystals which makes sure that the final structure is a reduced cell '''
-    coords, E, rms, calls = quench.mylbfgs(coords, pot, **kwargs)
+    coords, E, rms, calls = mylbfgs(coords, pot, **kwargs)
     #while(GMIN.reduceCell(coords)):
     if(GMIN.reduceCell(coords)):
         #print "Reduced cell, redo minimization"
-        coords, E, rms, callsn = quench.mylbfgs(coords, pot, **kwargs)
+        coords, E, rms, callsn = mylbfgs(coords, pot, **kwargs)
         calls+=callsn
     return coords, E, rms, calls
 

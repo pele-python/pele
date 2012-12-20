@@ -28,7 +28,7 @@ printlist.append((coords.copy(), "intial coords"))
 
 #test a quench with default lbfgs
 #from optimize.quench import quench
-from pygmin.optimize.quench import lbfgs_ase as quench
+from pygmin.optimize import lbfgs_ase as quench
 coords, E, rms, funcalls = quench(coords, pot.getEnergyGradient, iprint=1)
 printlist.append((coords.copy(), "intial coords"))
 print "energy post quench", pot.getEnergy(coords)

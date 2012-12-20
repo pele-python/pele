@@ -1,7 +1,10 @@
 import numpy as np
-from bfgs import lineSearch, BFGS
+#from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
 from pygmin.optimize import Result
+
+__all__ = ["LBFGS"]
+
 
 class LBFGS(object):
     """
@@ -347,10 +350,7 @@ class PrintEvent:
         
     
 
-def test(pot, natoms = 100, iprint=-1):
-    import bfgs
-    
-    
+def test(pot, natoms = 100, iprint=-1):    
     #X = bfgs.getInitialCoords(natoms, pot)
     #X += np.random.uniform(-1,1,[3*natoms]) * 0.3
     X = np.random.uniform(-1,1,[natoms*3])*(1.*natoms)**(1./3)*.5
@@ -364,36 +364,36 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     e, g = pot.getEnergyGradient(X)
     print "energy", e
     
-    lbfgs = LBFGS(X, pot, maxstep = 0.1)
+    lbfgs = LBFGS(X, pot, maxstep = 0.1, tol=tol, iprint=iprint, nsteps=10000)
     printevent = PrintEvent( "debugout.xyz")
     lbfgs.attachEvent(printevent)
     
-    ret = lbfgs.run(10000, tol = tol, iprint=iprint)
-    print "done", ret[1], ret[2], ret[3], ret[5]
+    ret = lbfgs.run()
+    print "done", ret
     
     print "now do the same with scipy lbfgs"
-    from pygmin.optimize.quench import quench
+    from pygmin.optimize import lbfgs_scipy as quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
-    print ret[1], ret[2], ret[3]    
+    print ret 
     
     if False:
         print "now do the same with scipy bfgs"
         from pygmin.optimize.quench import bfgs as oldbfgs
         ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
-        print ret[1], ret[2], ret[3]    
+        print ret    
     
     if False:
         print "now do the same with gradient + linesearch"
-        import bfgs
-        gpl = bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
+        import _bfgs
+        gpl = _bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
         ret = gpl.run(1000, tol = 1e-6)
-        print ret[1], ret[2], ret[3]    
+        print ret 
             
     if False:
         print "calling from wrapper function"
-        from pygmin.optimize.quench import lbfgs_py
+        from pygmin.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
-        print ret[1], ret[2], ret[3]    
+        print ret
 
 
     if True:
@@ -411,7 +411,9 @@ if __name__ == "__main__":
 
     #test(pot, natoms=3, iprint=1)
     
-    coords = np.loadtxt("coords")
+#    coords = np.loadtxt("coords")
+    natoms = 10
+    coords = np.random.uniform(-1,1,natoms*3)
     print coords.size
     coords = np.reshape(coords, coords.size)
     print coords

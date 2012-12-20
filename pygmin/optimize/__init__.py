@@ -2,6 +2,7 @@
 """
 
 from result import *
-#from quench import *
-#from lbfgs_py import *
-#from mylbfgs import *
+from _lbfgs_py import *
+from _mylbfgs import *
+from _fire import *
+from _quench import *

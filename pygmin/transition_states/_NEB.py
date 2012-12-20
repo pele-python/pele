@@ -359,8 +359,8 @@ def nebtest(MyNEB=NEB, nimages=22):
     import pylab as pl
     from interpolate import InterpolatedPath
     from pygmin import defaults
-    from pygmin.optimize import quench
-    defaults.NEBquenchRoutine = quench.lbfgs_py
+    from pygmin.optimize import lbfgs_py
+    defaults.NEBquenchRoutine = lbfgs_py
     defaults.NEBquenchParams["iprint"]=1
     defaults.NEBquenchParams["debug"]=True
     defaults.NEBquenchParams["maxErise"]=0.1

@@ -1,6 +1,4 @@
 Quenching
 =========
 
-.. automodule:: pygmin.optimize.quench 
-      :members:
-      :undoc-members:
+.. automodule:: pygmin.optimize

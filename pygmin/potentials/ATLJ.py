@@ -141,7 +141,7 @@ class TestATLJ(unittest.TestCase):
         natoms = 10
         coords = np.random.uniform(-1,1,natoms*3)*2
         
-        from pygmin.optimize.quench import quench
+        from pygmin.optimize import mylbfgs as quench
         lj = LJ()
         ret = quench(coords, lj.getEnergyGradient)
         coords = ret[0]
@@ -163,7 +163,7 @@ class TestATLJ(unittest.TestCase):
         natoms = 10
         coords = np.random.uniform(-1,1,natoms*3)*2
         
-        from pygmin.optimize.quench import quench
+        from pygmin.optimize import mylbfgs as quench
         lj = LJ()
         #ret = quench(coords, lj.getEnergyGradient)
         #coords = ret[0]
@@ -200,7 +200,7 @@ def main():
     print V
 
     print "try a quench"
-    from pygmin.optimize.quench import quench
+    from pygmin.optimize import mylbfgs as quench
     ret = quench( coords, lj.getEnergyGradient, iprint=-1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
     print "energy ", ret[1]

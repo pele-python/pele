@@ -1,6 +1,6 @@
 import ambgmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
-from pygmin.optimize.quench import quench, cg , fire 
+from pygmin.optimize import lbfgs_scipy, cg , fire 
 
 import numpy as np
 from copy import copy

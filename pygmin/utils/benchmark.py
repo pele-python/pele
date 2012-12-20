@@ -74,20 +74,20 @@ class QuenchBenchmark(object):
 if __name__ == "__main__":
     import pygmin.potentials.lj as lj
     import scipy.optimize
-    from pygmin.optimize import quench
+    from pygmin.optimize import _quench as quench
     print "Running benchmark with lennard jones potential"
     pot = lj.LJ()
     
     natoms = 36
     
     coords = np.random.random(3*natoms)*10.0
-    coords, E, tmp, tmp=quench.quench(coords, pot.getEnergyGradient, tol=1e-3)
+    coords, E, tmp, tmp=quench.lbfgs_scipy(coords, pot.getEnergyGradient, tol=1e-3)
     
     coords = coords + np.random.random(coords.shape)*0.1
-    tmp, Emin, tmp, tmp = quench.quench(coords, pot.getEnergyGradient, tol=1e-3)
+    tmp, Emin, tmp, tmp = quench.lbfgs_scipy(coords, pot.getEnergyGradient, tol=1e-3)
     
     bench = QuenchBenchmark(pot)
-    bench.addMinimizer("lbfgs", quench.quench)
+    bench.addMinimizer("lbfgs", quench.lbfgs_scipy)
     bench.addMinimizer("mylbfgs", quench.mylbfgs)
     bench.addMinimizer("lbfgs_py", quench.lbfgs_py)
     bench.addMinimizer("lbfgs_ase", quench.lbfgs_ase)

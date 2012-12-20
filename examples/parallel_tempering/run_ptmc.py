@@ -6,7 +6,7 @@ from pygmin.takestep import RandomDisplacement, AdaptiveStepsize
 from pygmin.ptmc import PTMC, getTemps
 import copy
 from pygmin.tools.histogram import EnergyHistogram, PrintHistogram
-from pygmin.optimize.quench import quench
+from pygmin.optimize import mylbfgs as quench
 from pygmin.accept_tests.spherical_container import SphericalContainer
 
 def runptmc(nsteps_tot = 100000):

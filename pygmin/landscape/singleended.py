@@ -9,7 +9,7 @@ __all__ = ["find_escape_paths"]
 import numpy as np
 
 from pygmin.transition_states import DimerSearch, minima_from_ts, zeroEV_cluster
-from pygmin.optimize import quench
+from pygmin.optimize import fire
 
 def _uphill_search(x0, search, push, push_minrms):
     ev = search.tau
@@ -29,7 +29,7 @@ def _uphill_search(x0, search, push, push_minrms):
     #search.tau_done=[]
     #search.x0 = x1
     #search.findNextTS()
-    return quench.fire(x1, search.getEnergyGradient, tol=1e-6)
+    return fire(x1, search.getEnergyGradient, tol=1e-6)
         
 def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minrms=1.e-2):
     print "Single ended search for minimum", minimum._id, minimum.energy
@@ -57,18 +57,18 @@ def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minr
         
         
 if __name__ == "__main__":
-    from graph import Graph
+    from pygmin.landscape import Graph
     from connect_min import getSetOfMinLJ
     from pygmin import defaults
     
     natoms = 8
     
-    defaults.quenchRoutine = quench.fire
+    defaults.quenchRoutine = fire
     pot, saveit = getSetOfMinLJ(natoms)
     graph = Graph(saveit)
  
     minima = saveit.minima()
-    find_escape_pathes(minima[0], pot, graph, ntries=20)
+    find_escape_paths(minima[0], pot, graph, ntries=20)
     
     #print graph
     #for node in graph.graph.nodes():

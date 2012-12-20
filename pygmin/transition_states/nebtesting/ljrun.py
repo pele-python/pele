@@ -1,7 +1,7 @@
 import numpy as np
 
 import NEB.NEB as NEB
-from optimize.quench import quench
+from pygmin.optimize import lbfgs_scipy as quench
 from potentials.lj import LJ
 from mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
 from printing.print_atoms_xyz import printAtomsXYZ

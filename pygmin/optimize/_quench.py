@@ -1,5 +1,3 @@
-import numpy as np
-
 """
 wrappers for the various optimizers.
 
@@ -9,6 +7,13 @@ your own wrapper if want fine grained control
 we should make this consistent with scipy
 scipy.minimize would do a similar thing
 """
+
+import numpy as np
+
+from pygmin.optimize import LBFGS, MYLBFGS, Fire
+
+__all__ = ["lbfgs_scipy", "fire", "lbfgs_py", "mylbfgs", "cg", "fmin", 
+           "steepest_descent", "bfgs"]
 
 class getEnergyGradientWrapper:
     """
@@ -24,7 +29,7 @@ class getEnergyGradientWrapper:
         return ret[1]
 
 
-def quench(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
+def lbfgs_scipy(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
     """
     a wrapper function for lbfgs routine in scipy
     """
@@ -53,7 +58,6 @@ def fire(coords, getEnergyGradient, tol = 1e-3, nsteps=100000, maxstep = 0.5, **
     """
     A wrapper function for the pygmin FIRE implementation
     """
-    import fire as fire
     opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep, **kwargs)
     opt.run(fmax=tol, steps=nsteps)
     e,g = getEnergyGradient(opt.coords)
@@ -161,7 +165,6 @@ def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
 
 
 def _lbfgs_py(coords, pot, **kwargs):
-    from lbfgs_py import LBFGS
     lbfgs = LBFGS(coords, pot, **kwargs)
     
     ret = lbfgs.run()
@@ -182,8 +185,7 @@ def lbfgs_py(coords, getEnergyGradient, **kwargs):
     return ret
 
 def _mylbfgs(coords, pot, **kwargs):
-    from mylbfgs import LBFGS
-    lbfgs = LBFGS(coords, pot, **kwargs)
+    lbfgs = MYLBFGS(coords, pot, **kwargs)
     
     ret = lbfgs.run()
     
