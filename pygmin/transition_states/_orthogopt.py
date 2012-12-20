@@ -1,14 +1,45 @@
 import numpy as np
 
 from _orthogoptf import orthogopt as orthogoptf
+from pygmin.transition_states.zeroev import zeroEV_translation, zeroEV_rotation
 
-__all__ = ["orthogopt"]
+__all__ = ["orthogopt", "orthogopt_translation_only"]
 
-def orthogopt(v, coords, norm=False):
-    orthogoptf(v, coords, norm)
+def orthogopt(v, coords, norm=False, translation_only=False):
+    """
+    make a vector orthogonal to eigenvectors of the Hessian corresponding to overall 
+    translations and rotations.
+
+    Parameters
+    ----------
+    v : numpy array
+        the vector to make orthogonal
+    coords : numpy array
+        the zero eivengectors are calculated for this structure
+    norm : bool, optional
+        normalize v before returning?
+    translation_only : bool
+        if True, orthogonalize to translations but not rotations
+    
+    Returns
+    -------
+    v : 
+        the orthogonalized vector
+    """
+    orthogoptf(v, coords, norm, translation_only)
     return v
 
-def subcross(vec3, redcoords, n):
+def orthogopt_translation_only(v, coords, norm=False, translation_only=True):
+    """a convience wrapper for orthogopt with the translation_only flag set to True"""
+    return orthogopt(v, coords, norm=norm, translation_only=translation_only)
+
+
+
+
+def _subcross(vec3, redcoords, n):
+    """
+    a utility function for orthogopt_slow
+    """
     if n == 0:
         pm = 1.0
         i = 1
@@ -33,10 +64,12 @@ def subcross(vec3, redcoords, n):
     return vdot
     
 
-def orthogopt_slow(vec, coords, otest):
+def orthogopt_slow(vec, coords, otest=False):
     """
     make vec orthogonal to eigenvectors of the Hessian corresponding to overall 
-    translations and rotations.  
+    translations and rotations.
+    
+    this is a really ugly recoding in python of the fortran othogopt
     """
     
     coords = np.reshape(coords, [-1,3])
@@ -61,11 +94,12 @@ def orthogopt_slow(vec, coords, otest):
             vec3[:,i] -= veccom
             if otest: vec3 /= np.linalg.norm(vec3)
         
-        if np.max(vdot) > vdottol:
-            continue
+        if False:
+            if np.max(vdot) > vdottol:
+                continue
         
         for i in range(3):
-            vdot[i] = subcross(vec3, redcoords, i)
+            vdot[i] = _subcross(vec3, redcoords, i)
             #print "vdot rotation   ", vdot[i], i    
             if otest: vec3 /= np.linalg.norm(vec3)
         
@@ -78,8 +112,64 @@ def orthogopt_slow(vec, coords, otest):
     
     vec = np.reshape(vec3, [-1])
     return vec
-    
+
+
+import unittest
+class TestOrthogopt(unittest.TestCase):
+    def test_o(self):
+        """test orthogopt"""
+        from pygmin.transition_states import zeroEV_cluster
+        natoms = 13
+        vec = np.random.uniform(-1,1,natoms*3)
+        vec /= np.linalg.norm(vec)
+        coords = np.random.uniform(-1,1,natoms*3)
         
+        #orthogonalize vec
+        vec = orthogopt(vec, coords)
+        
+        zeroev = zeroEV_cluster(coords)
+        for u in zeroev:
+            #print np.dot(u, vec)
+            self.assertAlmostEqual(0., np.dot(u, vec), 5)
+    
+    def test_slow(self):
+        """test orthogopt_slow"""
+        from pygmin.transition_states import zeroEV_cluster
+        natoms = 13
+        vec = np.random.uniform(-1,1,natoms*3)
+        vec /= np.linalg.norm(vec)
+        coords = np.random.uniform(-1,1,natoms*3)
+        
+        #orthogonalize vec
+        vec = orthogopt_slow(vec, coords)
+        
+        zeroev = zeroEV_cluster(coords)
+        for u in zeroev:
+            #print np.dot(u, vec)
+            self.assertAlmostEqual(0., np.dot(u, vec), 5)
+
+    def test_translation_only(self):
+        """test orthogopt with translations only""" 
+        from pygmin.transition_states import zeroEV_cluster
+        natoms = 13
+        vec = np.random.uniform(-1,1,natoms*3)
+        vec /= np.linalg.norm(vec)
+        coords = np.random.uniform(-1,1,natoms*3)
+        
+        #orthogonalize vec
+        vec = orthogopt_translation_only(vec, coords)
+        
+        zeroev = zeroEV_translation(coords)
+        for u in zeroev:
+            #print np.dot(u, vec)
+            self.assertAlmostEqual(0., np.dot(u, vec), 5)
+        
+        rotev = zeroEV_rotation(coords)
+        for u in rotev:
+            #print np.dot(u, vec)
+            self.assertNotAlmostEqual(0., np.dot(u, vec), 5)
+
+
 if __name__ == "__main__":
     np.random.seed(0)
     natoms = 10
@@ -90,3 +180,5 @@ if __name__ == "__main__":
     v2 = orthogopt_slow(vold, x, True)
     print v1-v2
     print "max difference between two methods", np.max(np.abs(v1-v2))
+    
+    unittest.main()

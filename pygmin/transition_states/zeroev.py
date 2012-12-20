@@ -6,7 +6,7 @@ Created on 2 Aug 2012
 
 import numpy as np
 
-__all__ = ["zeroEV_cluster", "gramm_schmidt"]
+__all__ = ["zeroEV_translation", "zeroEV_rotation", "zeroEV_cluster", "gramm_schmidt"]
 
 def zeroEV_translation(coords):
     """
@@ -46,6 +46,9 @@ def zeroEV_rotation(coords):
     return [r1/np.linalg.norm(r1), r2/np.linalg.norm(r2), r3/np.linalg.norm(r3)]
 
 def zeroEV_cluster(coords):
+    """
+    return the set of zero eigenvalue vectors corresponding to uniform translation and rotation
+    """
     return zeroEV_translation(coords) + zeroEV_rotation(coords)
         
 def gramm_schmidt(v):

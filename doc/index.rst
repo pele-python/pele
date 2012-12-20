@@ -34,9 +34,19 @@ Reference
    :maxdepth: 2
 
    disconnectivity_graph
+
+Modules
+-------
+.. toctree::
+   :maxdepth: 1
+
    quenching
    potentials
    database
+   structure_alignment
+   step_taking
+   transition_states
+   landscape_module
    utils
 
 Indices and tables

@@ -44,12 +44,12 @@
       RETURN
       END SUBROUTINE VECNORM
 
-      SUBROUTINE ORTHOGOPT(VEC1,COORDS,OTEST, natoms) 
+      SUBROUTINE ORTHOGOPT(VEC1,COORDS,OTEST, natoms, translation_only) 
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: NATOMS
       DOUBLE PRECISION, INTENT(IN) :: COORDS(3*NATOMS)
       DOUBLE PRECISION, INTENT(INOUT) :: VEC1(3*NATOMS)
-      LOGICAL, INTENT(IN) :: OTEST
+      LOGICAL, INTENT(IN) :: OTEST, translation_only
       INTEGER J2, J3, NCHECK, NOPT
       DOUBLE PRECISION DUMMY1, DUMMY2, ROOTN, VDOT, &
                       CMX, CMY, CMZ, AMASS(NATOMS), TMASS, RMASS(NATOMS)
@@ -89,7 +89,9 @@
          write(*,*) '*** WARNING, cannot orthogonalise to known eigenvectors in ORTHOGOPT'
       ENDIF
 
-
+      !
+      !orthogonalize to translations in the x direction
+      !
       DUMMY1=0.0D0
       DO J2=1,NOPT,3
          DUMMY1=DUMMY1+VEC1(J2)
@@ -102,6 +104,9 @@
       ENDDO
       IF (OTEST) CALL VECNORM(VEC1,NOPT)
 
+      !
+      !orthogonalize to translations in the y direction
+      !
       DUMMY1=0.0D0
       DO J2=2,NOPT,3
          DUMMY1=DUMMY1+VEC1(J2)
@@ -114,6 +119,9 @@
       ENDDO
       IF (OTEST) CALL VECNORM(VEC1,NOPT)
 
+      !
+      !orthogonalize to translations in the z direction
+      !
 30    DUMMY1=0.0D0
       DO J2=3,NOPT,3
          DUMMY1=DUMMY1+VEC1(J2)
@@ -127,6 +135,10 @@
       IF (OTEST) CALL VECNORM(VEC1,NOPT)
 
 31    CONTINUE
+      if (translation_only) then
+         IF ((VDOT.GT.1.0D-6).AND.(NCHECK.LT.100)) GOTO 1
+         return
+      endif
       !IF ((VDOT.GT.1.0D-6).AND.BULKT.AND.(NCHECK.LT.100)) GOTO 1
 !     PRINT*,'after next part VDOT=',VDOT
       IF (NCHECK.GE.100) THEN

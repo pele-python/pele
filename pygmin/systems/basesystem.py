@@ -65,41 +65,47 @@ class BaseSystem(object):
     """
     this class defines a base class for a System object
         
-    Description:
+    Notes
     -------------
     The following functions need to be overloaded for running
-    various routine
+    the given routines
 
     
-    Global Optimization
-    -------------------
-        get_potential : required
-        get_takestep : optional
-        get_random_configuration : optional
-        get_compare_exact : optional
+    Global Optimization::
+
+    1. get_potential : required
+    #. get_takestep : optional
+    #. get_random_configuration : optional
+    #. get_compare_exact : optional
+
+    Connecting Minima and Transition State Searches::
+
+    1. get_potential : required
+    #. get_mindist : required
+    #. get_orthogonalize_to_zero_eigenvectors : required
+    #. get_compare_exact : optional, recommended
+    #. get_random_configuration : optional
     
-    Connecting Minima and Transition State Searches
-    -----------------------------------------------
-        get_potential : required
-        get_mindist : required
-        get_orthogonalize_to_zero_eigenvectors : required
-        get_compare_exact : optional, recommended
-        get_random_configuration : optional
-    
-    GUI
-    ---
-        all of the above functions are required, plus
-        draw : required
-        smooth_path : required
-    
-    additionally, it's a very good idea to specify the accuracy in the database
+    GUI::
+        
+    1. all of the above functions are required, plus
+    #. draw : required
+    #. smooth_path : required
+
+    additionally, it's a very good idea to specify the accuracy in the 
+    database using self.params.database.accuracy
     
     """
     def __init__(self, *args, **kwargs):
         self.params = Parameters()
 
     def get_potential(self):
-        """return the potential object"""
+        """return the potential object
+        
+        See Also
+        --------
+        pygmin.potentials
+        """
         raise NotImplementedError
 
     def get_random_configuration(self):
@@ -110,6 +116,10 @@ class BaseSystem(object):
         """object that returns True if two structures are exact.
         
             true_false = compare_exact(min1, min2)
+        
+        See Also
+        --------
+        pygmin.mindist
         """
         raise NotImplementedError
 
@@ -120,7 +130,12 @@ class BaseSystem(object):
         return lambda m1, m2: compare(m1.coords, m2.coords)
     
     def create_database(self, *args, **kwargs):
-        """return a new database object"""
+        """return a new database object
+        
+        See Also
+        --------
+        pygmin.storage
+        """
         kwargs = dict_copy_update(self.params["database"], kwargs)        
         #note this syntax is quite ugly, but we would like to be able to 
         #create a new database by passing the filename as the first arg, 
@@ -149,8 +164,13 @@ class BaseSystem(object):
     def get_takestep(self, stepsize=0.6, **kwargs):
         """return the takestep object for use in basinhopping, etc.
         
-        random displacement with adaptive step size 
-        adaptive temperature"""
+        default is random displacement with adaptive step size 
+        adaptive temperature
+        
+        See Also
+        --------
+        pygmin.takestep
+        """
         kwargs = dict_copy_update(self.params["takestep"], kwargs)        
         takeStep = RandomDisplacement(stepsize=stepsize)
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
@@ -158,7 +178,12 @@ class BaseSystem(object):
 
     def get_basinhopping(self, database=None, takestep=None, coords=None, add_minimum=None, **kwargs):
         """return the basinhopping object with takestep
-        and accept step already implemented"""
+        and accept step already implemented
+        
+        See Also
+        --------
+        pygmin.basinhopping
+        """
         kwargs = dict_copy_update(self.params["basinhopping"], kwargs)
         pot = self.get_potential()
         if coords is None:
@@ -180,7 +205,12 @@ class BaseSystem(object):
         Notes
         -----
         the mindist object returns returns the best alignment between two
-        configurations, taking into account all global symmetries 
+        configurations, taking into account all global symmetries
+        
+        See Also
+        --------
+        pygmin.mindist
+         
         """
         raise NotImplementedError
     
@@ -191,11 +221,19 @@ class BaseSystem(object):
         
             vec = orthogVec(vec, coords)
         
+        See Also
+        --------
+        pygmin.transition_states
         """
         raise NotImplementedError
     
     def get_double_ended_connect(self, min1, min2, database, parallel=False, **kwargs):
-        """return a DoubleEndedConnect object"""
+        """return a DoubleEndedConnect object
+    
+        See Also
+        --------
+        pygmin.landscape
+        """
         kwargs = dict_copy_update(self.params["double_ended_connect"], kwargs)
         pot = self.get_potential()
         mindist = self.get_mindist()
@@ -235,7 +273,12 @@ class BaseSystem(object):
 
     def smooth_path(self):
         """return a smoothed path between two configurations.  
-        used for movies"""
+        used for movies
+        
+        See Also
+        --------
+        pygmin.landscape.smoothPath
+        """
         raise NotImplementedError
     
     def createNEB(self):

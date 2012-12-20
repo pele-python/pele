@@ -19,22 +19,24 @@ def _refineTSWrapper(inputs):
 
 class DoubleEndedConnectPar(DoubleEndedConnect):
     """
+    parallelized version of DoubleEndedConnect
+    
     Overload some of the routines from DoubleEndedConnect so they can
     be parallelized
     
-    Extra Parameters
+    Parameters
     ----------------
-    ncores :
+    ncores : int, optional
         the number of cores to use in parallel runs
         
     Notes
     -----
-    The routines that are done in parallel are:
+    This class inherits from DoubleEndedConnect, so can accepts all those parameters as well.
     
-    NEB : the potentials are calculated in parallel
+    The routines that are done in parallel are::
     
-    findTransitionStates : each transition state candidate from the NEB
-        run is refined in parallel. 
+    1. NEB : the potentials for each image are calculated in parallel
+    2. findTransitionStates : each transition state candidate from the NEB run is refined in parallel. 
     
     """
     def __init__(self, *args, **kwargs):
