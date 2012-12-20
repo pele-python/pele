@@ -90,19 +90,15 @@ def minPermDistStochastic(X1, X2, niter=100, permlist=None, verbose=False, accur
     Notes
     -----
 
-    The following symmetries will be accounted for
+    The following symmetries will be accounted for::
     
-        Translational symmetry
-
-        Global rotational symmetry
-
-        Permutational symmetry
-        
-        Point inversion symmetry
+    1. Translational symmetry
+    #. Global rotational symmetry
+    #. Permutational symmetry
+    #. Point inversion symmetry
 
     
-    This method should have the same outcome as minPermDistStochastic, but 
-    uses a different method.  The algorithm here to find the best distance is
+    The algorithm here to find the best distance is
     
     for i in range(niter):    
         random_rotation(coords)

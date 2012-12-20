@@ -7,13 +7,13 @@ Most of these algorithms will not need to be directly called by the user.  Howev
 it is important to know how these work because they form some of the core routines of
 :ref:`landscape exploration <landscape_module>`.  
  
-
+ 
 Local transition state search
 +++++++++++++++++++++++++++++
 
 .. autosummary::
    :toctree: generated/
-
+    
     FindTransitionState
     findTransitionState
 

@@ -3,61 +3,61 @@ from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
 from pygmin.optimize import Result
 
-class LBFGS:
+class LBFGS(object):
+    """
+    minimize a function using the LBFGS routine
+    
+    Parameters
+    ----------
+    X : array
+        the starting configuration for the minimization
+    pot :
+        the potential object
+    nsteps : int
+        the maximum number of iterations
+    tol : float
+        the minimization will stop when the rms grad is less than tol
+    iprint : int
+        how often to print status information
+    maxstep : float
+        the maximum step size
+    maxErise : float
+        the maximum the energy is alowed to rise during a step.
+        The step size will be reduced until this condition is satisfied.
+    M : int
+        the number of previous iterations to use in determining the optimal step
+    rel_energy : bool
+        if True, then maxErise the the *relative* maximum the energy is allowed
+        to rise during a step
+    H0 : float
+        the initial guess for the inverse diagonal Hessian.  This particular
+        implementation of LBFGS takes all the inverse diagonal components to be the same. 
+    events : list of callables
+        these are called after each iteration.  events can also be added using
+        attachEvent()
+    alternate_stop_criterion : callable
+        this criterion will be used rather than rms gradiant to determine when
+        to stop the iteration
+    debug : 
+        print debugging information
+         
+    Notes
+    -----
+    This each iteration of this minimization routine is composed of the 
+    following parts
+    
+    1. determine a step size and direction using the LBFGS algorithm
+    
+    2. ensure the step size is appropriate (see maxErise and maxstep).
+       Reduce the step size until conditions are satisfied.
+    
+    3. take step
+    
+    """
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
                  rel_energy = False, H0=1., events=[],
                  alternate_stop_criterion=None, debug=False,
                  iprint=-1, nsteps=10000, tol=1e-6):
-        """
-        minimize a function using the LBFGS routine
-        
-        Parameters
-        ----------
-        X : array
-            the starting configuration for the minimization
-        pot :
-            the potential object
-        nsteps : int
-            the maximum number of iterations
-        tol : float
-            the minimization will stop when the rms grad is less than tol
-        iprint : int
-            how often to print status information
-        maxstep : float
-            the maximum step size
-        maxErise : float
-            the maximum the energy is alowed to rise during a step.
-            The step size will be reduced until this condition is satisfied.
-        M : int
-            the number of previous iterations to use in determining the optimal step
-        rel_energy : bool
-            if True, then maxErise the the *relative* maximum the energy is allowed
-            to rise during a step
-        H0 : float
-            the initial guess for the inverse diagonal Hessian.  This particular
-            implementation of LBFGS takes all the inverse diagonal components to be the same. 
-        events : list of callables
-            these are called after each iteration.  events can also be added using
-            attachEvent()
-        alternate_stop_criterion : callable
-            this criterion will be used rather than rms gradiant to determine when
-            to stop the iteration
-        debug : 
-            print debugging information
-             
-        Notes
-        -----
-        This each iteration of this minimization routine is composed of the 
-        following parts
-        
-        1) determine a step size and direction using the LBFGS algorithm
-        
-        2) ensure the step size is appropriate (see maxErise and maxstep).
-           Reduce the step size until conditions are satisfied.
-        
-        3) take step
-        
-        """
         self.X = X
         self.pot = pot
         e, self.G = self.pot.getEnergyGradient(self.X)

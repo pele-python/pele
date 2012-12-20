@@ -411,6 +411,7 @@ class FindTransitionState(object):
 
         return coords
 
+
 def findTransitionState(*args, **kwargs):
     """
     simply a wrapper for initializing and running FindTransitionState

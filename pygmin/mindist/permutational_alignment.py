@@ -232,8 +232,37 @@ def findBestPermutation( X1, X2, permlist = None, user_algorithm=None):
         e.g. for a 50/50 binary mixture, 
         
             permlist = [range(1,natoms/2), range(natoms/2,natoms)]
-    specify_algoriithm : None or callable
+    user_algoriithm : None or callable
         you can optionally pass which algorithm to use.
+    
+    Returns
+    -------
+    dist : float
+        the minimum distance
+    X1new : 
+        should be the same as X1
+    X2new :
+        X2 in best alignment with X1
+    
+    Notes
+    -----
+    This for each list of interchangeable atoms in permlist the permutation
+    which minimizes the distance between the two structures is found.  This minimimization
+    is done by mapping the problem onto the linear assignment problem which can then be solved
+    using graph theoretic techniques.  
+    
+    http://en.wikipedia.org/wiki/Linear_assignment_problem
+    http://en.wikipedia.org/wiki/Hungarian_algorithm
+
+    there are several packages in pypi which solve the linear assignment problem
+    
+    hungarian : c++ code wrapped in python.  scales roughly like natoms**2.5
+    
+    munkres : completely in python. scales roughly like natoms**3.  very slow for natoms > 10
+    
+    in addition we have wrapped the OPTIM version for use in pygmin.  It uses the sparse 
+    version of the Jonker-Volgenant algorithm.  Furthermore the cost matrix calculated in 
+    a compiled language for an additional speed boost. It scales roughtly like natoms**2
 
     """
     if permlist is None:

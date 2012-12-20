@@ -3,7 +3,9 @@ from bfgs import lineSearch, BFGS
 import lbfgs_py
 from mylbfgs_updatestep import mylbfgs_updatestep
 
-class LBFGS(lbfgs_py.LBFGS):
+__all__ = ["MYLBFGS"]
+
+class MYLBFGS(lbfgs_py.LBFGS):
     def __init__(self, X, pot, **lbfgs_py_kwargs):
         """
         this class inherits everything from the pythonic LBFGS
@@ -67,7 +69,14 @@ class LBFGS(lbfgs_py.LBFGS):
         
         return self.stp
 
-        
+
+class LBFGS(MYLBFGS):
+    """for backward compatibility """
+    pass
+
+#
+#only testing stuff below here
+# 
     
 
 def test(pot, natoms = 100, iprint=-1):
