@@ -50,6 +50,12 @@ class NEB(object):
     -----
     use the Interpolation tools in this package to construct the initial path
     from a starting and ending point
+    
+    See Also
+    --------
+    NEBPar : parallel version of this class
+    InterpolatedPath : used to construct required parameter `path`
+    InterpolatedPathDensity : alternate interpolater
     """
     def __init__(self, path, potential, distance=distance_cart,
                  k=100.0, with_springenergy=False, dneb=True,

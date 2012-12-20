@@ -21,8 +21,10 @@ class _PotentialProcess(mp.Process):
         will be made and each one used for a different item in coordslist.  This
         is useful to minimize rebuilding of neighborlists.
 
-    Attributes
-    ----------
+    Notes
+    -----
+    attributes:
+    
     start():
         start the process.  The proceess will sit idle waiting for instructions
         sent through the pipe conn
@@ -33,8 +35,10 @@ class _PotentialProcess(mp.Process):
         kill the process
     
     
-    Usage
-    -----
+    Examples
+    ---------
+    example usage::
+    
     >>> parent_conn, child_conn = mp.Pipe()
     >>> worker = _PotentialProcess( potential, child_conn)
     >>> worker.start()
@@ -95,10 +99,17 @@ class NEBPar(NEB):
     """
     Exactly the same as NEB, but calculate the potentials in parallel
     
-    New Parameters
+    Parameters
     --------------
+    inherited parameters :
+        all required and optional parameters from NEB are accepted
     ncores : 
         the number of cores to use
+    
+    See Also
+    --------
+    NEB : base class
+    pygmin.landscape.LocalConnectPar : were this class is used
     """
     def __init__(self, *args, **kwargs):
         #self.ncores = ncores

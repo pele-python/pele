@@ -8,7 +8,7 @@ from pygmin.landscape import DoubleEndedConnect, LocalConnect
 from pygmin.landscape.local_connect import _refineTS
 from pygmin.transition_states import NEBPar
 
-__all__ = ["DoubleEndedConnectPar"]
+__all__ = ["DoubleEndedConnectPar", "LocalConnectPar"]
 
 def _refineTSWrapper(inputs):
     """
@@ -38,6 +38,11 @@ class DoubleEndedConnectPar(DoubleEndedConnect):
     1. NEB : the potentials for each image are calculated in parallel
     2. findTransitionStates : each transition state candidate from the NEB run is refined in parallel. 
     
+    See Also
+    --------
+    DoubleEndedConnect : the class this inherits from
+    LocalConnectPar : parallel version of LocalConnect
+    
     """
     def __init__(self, *args, **kwargs):
         #self.ncores = ncores
@@ -56,13 +61,22 @@ class LocalConnectPar(LocalConnect):
     Overload some of the routines from LocalConnect so they can
     be parallelized
     
-    Extra Parameters
+    Parameters
     ----------------
+    inherited params :
+        all required and optional parameters from LocalConnect are also accepted
     ncores :
         the number of cores to use in parallel runs
-        
+    
+    See Also
+    --------
+    LocalConnect : base class
+    DoubleEndedConnectPar : uses this class
+    pygmin.transition_states.NEBPar : parallel version of NEB
+
+    
     Notes
-    -----
+    -----    
     The routines that are done in parallel are:
     
     NEB : the potentials are calculated in parallel

@@ -95,6 +95,8 @@ class BaseSystem(object):
     additionally, it's a very good idea to specify the accuracy in the 
     database using self.params.database.accuracy
     
+    See the method documentation for more information and relevant links
+    
     """
     def __init__(self, *args, **kwargs):
         self.params = Parameters()

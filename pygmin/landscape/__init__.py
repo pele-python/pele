@@ -25,7 +25,20 @@ Other utilities
 .. autosummary::
    :toctree: generated/
 
+    Graph
     smoothPath
+
+Core Routines
++++++++++++++
+These are some core routines used by this module.  The user probably won't need to call them,
+but will want to know about them.  Parameters for these routines can be changed by passing
+dictionaries to DoubleEndedConnect
+
+.. autosummary::
+    :toctree: generated/
+    
+    LocalConnect
+    LocalConnectPar
 
 """
 

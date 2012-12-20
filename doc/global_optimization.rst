@@ -2,7 +2,7 @@
 
 Global Optimization
 ===================
-
+ 
 The main algorithm for global optimization is basin hopping. The core object for a
 basin hopping run is a BasinHopping object. The step taking and various other customization
 routines (e.g. storage, acceptance criterion, ...) can be attached to this object to customize

@@ -1,6 +1,12 @@
 """
 .. currentmodule:: pygmin.transition_states
-
+Transition States
+=================
+this module contains functions and classes related to local transition state searches.
+Most of these algorithms will not need to be directly called by the user.  However
+it is important to know how these work because they form some of the core routines of
+:ref:`landscape exploration <landscape_module>`.  
+ 
 
 Local transition state search
 +++++++++++++++++++++++++++++
@@ -26,6 +32,7 @@ Nudged Elastic Band
     :toctree: generated/
     
     NEB
+    NEBPar
     InterpolatedPath
     InterpolatedPathDensity
 
@@ -48,10 +55,10 @@ Frozen degrees of freedom also contribute zero eigenvecotrs
 
 from zeroev import *
 from _orthogopt import *
+from interpolate import *
 from _NEB import *
 from _NEB_parallel import *
 from dimer import *
 from find_lowest_eig import *
-from interpolate import *
 from transition_state_refinement import *
 from tstools import *

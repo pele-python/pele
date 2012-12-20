@@ -28,10 +28,6 @@ takes an eigenvector following (Newton-Raphsson-like) step uphill.  Step 1. can
 be done in two ways.  If the Hessian is know, it can be diagonalized. However, even if the
 Hessian is known this can be very slow.  A :ref:`better method <find_lowest_eigenvector_description>` uses an iterative scheme.
 
-Documentation
---------------
-.. autofunction:: pygmin.transition_states.findTransitionState
-
-.. autoclass:: pygmin.transition_states.FindTransitionState
+See :ref:`landscape <landscape_module>` for more complete documentation
 
 

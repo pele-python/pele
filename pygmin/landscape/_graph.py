@@ -40,8 +40,8 @@ class Graph(object):
     '''
     Wrapper to represent a database object as a graph
     
-    Parameter
-    ---------
+    Parameters
+    ----------
     database :
         the database object to represent
     minima : list of minima
@@ -52,7 +52,9 @@ class Graph(object):
     
     Examples
     --------
-    >>> graph = Graph(mydatabase)
+    a graph can be easily constructed from a database::
+    
+    >>> graph = Graph(database)
     '''
     
     def __init__(self, database, minima=None):

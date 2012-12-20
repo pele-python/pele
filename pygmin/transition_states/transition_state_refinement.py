@@ -108,6 +108,12 @@ class FindTransitionState(object):
         2) Step uphill in the direction of the lowest eigenvector
         
         3) minimize in the space tangent to the lowest eigenvector
+    
+    See Also
+    --------
+    findTransitionState : function wrapper for this class
+    findLowestEigenVector : a core algorithm
+    pygmin.landscape.LocalConnect : the class which most often calls this routine
      
     """
     """
@@ -408,6 +414,10 @@ class FindTransitionState(object):
 def findTransitionState(*args, **kwargs):
     """
     simply a wrapper for initializing and running FindTransitionState
+    
+    See Also
+    --------
+    FindTransitionState : for all documentation
     """
     finder = FindTransitionState(*args, **kwargs)
     return finder.run()

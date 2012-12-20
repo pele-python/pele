@@ -24,12 +24,20 @@ def InterpolatedPathDensity(initial, final, distance, density=10., **kwargs):
     Return a InterpolatedPath object with the appropriate 
     number of images corresponding to the given density
     
-    Params
-    ------
+    Parameters
+    ----------
+    initial, final : array
+        initial and final configurations
+    distance :
+        distance between initial and final configurations
     density : 
         number of images per "unit" separation
     kwargs : 
-        parameters passed to InterpolatedPath
+        additional parameters passed to InterpolatedPath
+        
+    See Also
+    --------
+    InterpolatedPath
     """
     if distance > 1:
         nimages = int(density * distance)
@@ -46,15 +54,16 @@ class InterpolatedPath(object):
         ----------
         intitial:
             first point
-            
         final:
             second point
-            
         nimages: integer
             number of images
-            
         interpolator: callable
             interpolation algorithm
+        
+        See Also
+        --------
+        InterpolatedPathDensity : use image density
             
         Examples
         --------

@@ -26,26 +26,24 @@ Reference
    :maxdepth: 3
 
    landscape
-.. toctree::
-   :maxdepth: 1
 
-   system_class
 .. toctree::
    :maxdepth: 2
 
    disconnectivity_graph
 
 Modules
--------
++++++++
 .. toctree::
    :maxdepth: 1
 
+   system_class
    quenching
    potentials
    database
    structure_alignment
    step_taking
-   transition_states
+   transition_states_module
    landscape_module
    utils
 

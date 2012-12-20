@@ -52,8 +52,8 @@ class DoubleEndedConnect(object):
         if true, always try to connect the longest segment in the path guess
         first
     
-    Description
-    -----------
+    Notes
+    -----
     The algorithm is iterative, with each iteration composed of
     
     While min1 and min2 are not connected:
@@ -81,8 +81,8 @@ class DoubleEndedConnect(object):
     can refine it to the correct transition state.  FindTransitionState is
     very fast if the initial guess is good, but can be very slow otherwise.
     
-    Choose a pair
-    +++++++++++++
+    Choose a pair:
+
     Here I will describe step 1), the algorithm to find a pair of known
     minima to try to connect.  This choice will keep in mind that the
     ultimate goal is to connect min1 and min2.
@@ -116,6 +116,11 @@ class DoubleEndedConnect(object):
 
     todo:
         allow user to pass graph
+    
+    See Also
+    --------
+    DoubleEndedConnectPar : parallel version of this class
+    LocalConnect : the core algorithm of this routine
         
     """    
     def __init__(self, min1, min2, pot, mindist, database, 

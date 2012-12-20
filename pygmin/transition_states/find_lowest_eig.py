@@ -115,6 +115,10 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
 
     kwargs : 
         any additional keyword arguments are passed to the minimizer
+    
+    See Also
+    --------
+    FindTransitionState : uses this class
     """
     #combine kwargs with defaults.lowestEigenvectorQuenchParams
     kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 

@@ -79,6 +79,13 @@ class LocalConnect(object):
     to make parallelization easier.  This class intentionally has no knowledge of the
     global landscape (database, graph, etc.).
     
+    See Also
+    --------
+    DoubleEndedConnect : the routine from which local connect is genearlly called
+    pygmin.transition_states.NEB : one of the core routines
+    pygmin.transition_states.findTransitionState : one of the core routine
+    LocalConnectPar : parallel version of this class
+    
     """
     def __init__(self, pot, mindist, tsSearchParams=dict(), 
                  NEBquenchParams = dict(), verbosity=1,

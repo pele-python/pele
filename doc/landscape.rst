@@ -43,6 +43,4 @@ and minimized in order to find the pair of minima which the transition state con
 
 
 
-.. currentmodule:: pygmin.landscape
-
-.. autoclass:: DoubleEndedConnect
+See :ref:`landscape <landscape_module>` for more complete documentation
