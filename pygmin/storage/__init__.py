@@ -11,6 +11,15 @@ new minima as they are found.  And it is used heavily in DoubleEndedConnect
 to keep track of minima and add new transition states.  The database
 ensures that all minima and transition state objects are unique
 
+.. autosummary::
+   :toctree: generated/
+
+    Database
+    Minimum
+    TransitionState
+    Distance
+
+
 
 Minimum
 -------
