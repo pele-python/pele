@@ -1,3 +1,14 @@
+"""
+.. currentmodule:: pygmin.utils.crystals
+
+.. autosummary::
+    :toctree: generated/
+    
+    compareTransformed
+    compareStructures
+    has_overlap
+"""
+
 import lattice
 import vec3
 from pygmin.utils import rotations

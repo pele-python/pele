@@ -1,3 +1,15 @@
+"""
+tools for reading from and writing to .xyz files
+
+.. currentmodule:: pygmin.utils.xyz
+
+.. autosummary::
+    :toctree: generated/
+    
+    read_xyz
+    write_xyz
+"""
+
 import numpy as np
 from itertools import cycle
 from collections import namedtuple

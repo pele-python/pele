@@ -45,8 +45,9 @@ Modules
    step_taking
    transition_states_module
    landscape_module
-   utils
    monte_carlo
+   accept_tests
+   utils
 
 Indices and tables
 ==================

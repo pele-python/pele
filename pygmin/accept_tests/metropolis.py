@@ -2,13 +2,22 @@ import numpy as np
 
 __all__ = ["Metropolis"]
 
-class Metropolis:
+class Metropolis(object):
+    """Accept steps based on the metropolis criterion
+    
+    Parameters
+    ----------
+    temperature : float
+    random : callable
+        return a random number in [0,1)
+    """
     def __init__(self, temperature, random=np.random.rand):
         self.random = random
         self.temperature = temperature
         self._accept_next = False
 
     def acceptRejectE(self, Eold, Enew):
+        """the Metropolis criterion"""
         if(self._accept_next):            
             self._accept_next = False
             return True
@@ -23,13 +32,14 @@ class Metropolis:
 
         return acceptstep
     
-    '''
-        Force acception of the next step. This is useful for reseeding.
-    '''
     def forceAccept(self):
+        '''
+            Force acception of the next step. This is useful for reseeding.
+        '''
         self._accept_next = True
 
     def __call__(self, Eold, Enew, qcoords=[], coords=[]):
+        """wrapper for acceptRejectE"""
         return self.acceptRejectE(Eold, Enew)
 
 class MetropolisNonQuench:

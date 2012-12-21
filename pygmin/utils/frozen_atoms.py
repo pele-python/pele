@@ -1,13 +1,23 @@
 """
-tools for dealing with frozen atoms
+tools for dealing with frozen atoms.  Especially in relation to neighbor lists
+
+.. currentmodule:: pygmin.utils.frozen_atoms
+
+.. autosummary::
+    :toctree: generated/
+    
+    FreezePot
+    makeBLJNeighborListPotFreeze
+    
 """
 import numpy as np
 
 import pygmin.potentials.ljpshift as ljpshift
 from pygmin.potentials.potential import potential as basepot
 from pygmin.potentials.ljcut import LJCut
-from pygmin.utils.neighbor_list import NeighborListSubset, NeighborListPotential, MultiComponentSystem, NeighborListSubsetBuild, NeighborListPotentialBuild
+from pygmin.utils.neighbor_list import NeighborListSubsetBuild, NeighborListPotentialBuild
 from pygmin.utils.neighbor_list import NeighborListPotentialMulti
+
 __all__ = ["makeBLJNeighborListPotFreeze", "FreezePot"]
 
 

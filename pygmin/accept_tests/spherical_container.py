@@ -4,8 +4,16 @@ __all__ = ["SphericalContainer"]
 
 class SphericalContainer(object):
     """
-    a class to make sure the cluster doesn't leave a sphercial region of
-    given radius
+    Reject a structure if any atoms are outside a spherical region
+
+    This test is necessary to avoid evaporation in clusters
+    
+    a class to make sure the cluster doesn't leave a spherical region of
+    given radius.  The center of the spherical region is at the center of mass.
+    
+    Parameters
+    ----------
+    radius : float
     """
     def __init__(self, radius):
         self.radius2 = radius**2
@@ -13,6 +21,7 @@ class SphericalContainer(object):
         self.nrejected = 0
     
     def accept(self, coords):
+        """ perform the test"""
         self.count += 1
         #get center of mass
         natoms = len(coords)/3
@@ -25,7 +34,9 @@ class SphericalContainer(object):
         return not reject
     
     def acceptWrapper(self, eold, enew, coordsold, coordsnew):
+        """wrapper for accept"""
         return self.accept(coordsnew)
     
     def __call__(self, enew, coordsnew, **kwargs):
+        """wrapper for accept"""
         return self.accept(coordsnew)

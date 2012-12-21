@@ -1,3 +1,15 @@
+"""
+Create and print histograms.  Especially energy histograms.
+
+.. currentmodule:: pygmin.utils.histogram
+
+.. autosummary::
+    :toctree: generated
+    
+    EnergyHistogram
+    PrintHistogram
+""" 
+
 import numpy as np
 
 __all__ = ["EnergyHistogram", "PrintHistogram"]

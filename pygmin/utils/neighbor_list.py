@@ -1,3 +1,22 @@
+"""
+classes to build and maintain neighborlists
+.. currentmodule:: pygmin.utils.neighbor_list
+
+.. autosummary:: 
+    :toctree: generated/
+    
+    NeighborList
+    NeighborListSubset
+    NeighborListPotential
+    MultiComponentSystem
+    NeighborListSubsetBuild
+    NeighborListPotentialBuild
+    NeighborListPotentialMulti
+    makeBLJNeighborListPot
+
+    
+"""
+
 import numpy as np
 
 from pygmin.potentials.potential import potential as basepot
@@ -72,7 +91,7 @@ class NeighborList(object):
             
 class NeighborListSubset(object):
     """
-    Create a neighbor list and keep it updated.
+    Create a neighbor list and keep it updated for a subset of the atoms.
     
     This class is designed to deal with only a subset of all atoms
 

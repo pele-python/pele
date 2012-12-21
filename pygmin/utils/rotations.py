@@ -4,9 +4,30 @@ Functions related to rotations
 Most of these were adapted from victor's rotations.f90.  Not all functions from
 the file have been implemented.
 Warning, they have not all been tested in this format.
-So far I have tested 
-q2mx
-q2aa
+
+.. currentmodule:: pygmin.utils.rotations
+
+.. autosummary::
+    :toctree: generated/
+    
+    
+    q_multiply
+    aa2q
+    q2aa
+    q2mx
+    mx2q
+    mx2aa
+    rot_q2mx
+    aa2mx
+    random_q
+    random_aa
+    takestep_aa
+    rotate_aa
+    small_random_aa
+    vec_random
+    vec_random_ndim
+    q_slerp
+
 """
 import numpy as np
 

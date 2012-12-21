@@ -1,4 +1,14 @@
-'''Helper functions to handle crystal lattice'''
+'''Helper functions to handle crystal lattice
+
+.. currentmodule:: pygmin.utils.lattice
+
+.. autosummary::
+    :toctree: generated/
+    
+    lowerTriangular
+    volume
+    Cell
+'''
 import numpy as np
 import collections
 from math import sqrt, cos, sin, acos

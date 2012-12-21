@@ -1,3 +1,12 @@
+"""
+.. currentmodule:: pygmin.utils.rbtools
+.. autosummary:: 
+    :toctree: generated/
+
+    pygmin.utils.rbtools.CoordsAdapter 
+
+"""
+
 __all__ = ["CoordsAdapter"]
 class CoordsAdapter():
     '''Wrapper to access coordinate array for rigid body systems
