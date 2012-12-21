@@ -196,7 +196,7 @@ class BaseSystem(object):
             if database is None:
                 database = self.create_database()
             add_minimum = database.minimum_adder()
-        bh = basinhopping.BasinHopping(coords, pot, takestep, add_minimum, **kwargs)
+        bh = basinhopping.BasinHopping(coords, pot, takestep, storage=add_minimum, **kwargs)
         return bh
 
     def get_mindist(self):

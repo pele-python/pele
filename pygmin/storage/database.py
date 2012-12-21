@@ -13,7 +13,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, bindparam, case, insert
 from sqlalchemy.schema import Index
 
-__all__ = ["Minimum", "TransitionState", "Database"]
+__all__ = ["Minimum", "TransitionState", "Database", "Distance"]
 
 verbose=False
 
@@ -221,7 +221,7 @@ class Database(object):
     accuracy : float, optional
         energy tolerance to count minima as equal
     db : string, optional
-        database to connect to
+        filename of new or existing database to connect to
     connect_string : string, optional
         connection string, default is sqlite database
     
@@ -236,13 +236,13 @@ class Database(object):
     onMinimumAdded : list of function
     compareMinima
     
-    Example
-    -------
+    Examples
+    --------
     
     >>> from pygmin.storage import database
     >>> db = database.Database(db="test.db")
     >>> for energy in np.random.random(10):
-    >>>     a.addMinimum(energy, np.random.random(10)
+    >>>     a.addMinimum(energy, np.random.random(10))
     >>>
     >>> for minimum in database.minima():
     >>>     print minimum.energy

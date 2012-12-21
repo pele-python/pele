@@ -52,6 +52,7 @@ TakestepInterface as a parent class (directly derived from that or a child class
 Building blocks to design custom takestep routines
 
 .. autosummary::
+    :toctree: generated/
 
     uniform_displace
     rotate
@@ -61,6 +62,7 @@ Building blocks to design custom takestep routines
 The takestep interface
 
 .. autosummary::
+    :toctree: generated/
 
     TakestepInterface
     Takestep

@@ -1,8 +1,9 @@
 import numpy as np
+from pygmin.takestep import TakestepInterface
 
 __all__ = ["AdaptiveStepsizeTemperature"]
 
-class AdaptiveStepsizeTemperature(object):
+class AdaptiveStepsizeTemperature(TakestepInterface):
     """
     adjust both the stepsize and the temperature adaptively
     
@@ -28,9 +29,9 @@ class AdaptiveStepsizeTemperature(object):
     interval : 
         the interval at which to adjust temperature and stepsize
     Tfactor : 
-        the factor with which to multipy (or divide) the temperature
+        the factor with which to multiply (or divide) the temperature
     sfactor : 
-        the factor with which to multipy (or divide) the stepsize
+        the factor with which to multiply (or divide) the stepsize
     ediff : 
         if two minima have energies that are within ediff from each other then
         they are considered to be the same minimum
@@ -91,13 +92,16 @@ class AdaptiveStepsizeTemperature(object):
             return
         
         self.nattempts += 1
-        same = False
         if accepted:
             self.naccept += 1
+
+        #determine if the new minima is the same as the last one
+        same = False
         if abs(self.energy - trial_energy) <= self.ediff:
             #if np.std(self.coords - trial_coords) <= self.xdiff:
             same = True
             self.nsame += 1
+        
         #print abs(self.energy - trial_energy), np.std(self.coords - trial_coords), np.max(np.abs(self.coords - trial_coords))
         if not same:
             self.energy = trial_energy
@@ -111,22 +115,32 @@ class AdaptiveStepsizeTemperature(object):
             self.reset()
         
     def adjustStep(self):
-        """adjust the step size"""
+        """adjust the step size
+        
+        increase the step size if we're ending up in the same minima too often,
+        else decrease the step size
+        """
         fnew = 1. - float(self.nsame) / self.nattempts
         if fnew < self.target_new_min_prob:
             self.stepclass.scale(1. / self.sfactor)
         else:
             self.stepclass.scale(self.sfactor)
+        
+        #print some status info
         if self.verbose:
-            print "adaptive step and temperature: naccept nsame ndiff, naccept_diff %d %d %d %d" % (
+            print "adaptive step and temperature: naccept nsame ndiff naccept_diff %d %d %d %d new min probability %.4g" % (
                 self.naccept, self.nsame, self.nattempts-self.nsame,
-                self.naccept-self.nsame)
-            print "    stepsize    is now %.4g ratio %.4g" %(self.stepclass.stepsize,
-                                                      fnew)
+                self.naccept-self.nsame, float(self.naccept - self.nsame) / self.nattempts)
+            print "    stepsize    is now %.4g ratio %.4g target %.4g" %(self.stepclass.stepsize,
+                                                      fnew, self.target_new_min_prob)
             
             
     def adjustTemp(self, driver):
-        """adjust the temperature"""
+        """adjust the temperature
+        
+        increase the temeperature if new minima are rejected too often,
+        else decrease the temperature
+        """
         ndiff = self.nattempts - self.nsame
         ndiff_accept = self.naccept - self.nsame
         if ndiff == 0:
@@ -138,25 +152,27 @@ class AdaptiveStepsizeTemperature(object):
         else:
             driver.acceptTest.temperature /= self.Tfactor
         if self.verbose:
-            print "    temperature is now %.4g ratio %.4g" %(driver.acceptTest.temperature,
-                                                         faccept)
+            print "    temperature is now %.4g ratio %.4g target %.4g" % (driver.acceptTest.temperature,
+                                                         faccept, self.target_new_min_accept_prob)
 
 if __name__ == "__main__":
     import numpy as np
-    import pygmin.potentials.lj as lj
-    import pygmin.basinhopping as bh
     from pygmin.takestep import displace
+    from pygmin.systems import LJCluster
     #from pygmin.takestep import adaptive
     
     natoms = 38
+    sys = LJCluster(natoms=38)
+    
     
     # random initial coordinates
-    coords=np.random.random(3*natoms)
-    potential = lj.LJ()
+    coords = sys.get_random_configuration()
     
     takeStep = displace.RandomDisplacement( stepsize=0.4 )
     tsAdaptive = AdaptiveStepsizeTemperature(takeStep, interval=300, verbose=True)
-    opt = bh.BasinHopping(coords, potential, takeStep=tsAdaptive)
+    
+    db = sys.create_database()
+    opt = sys.get_basinhopping(database=db, takestep=tsAdaptive, coords=coords)
     opt.printfrq = 50
     opt.run(5000)
         

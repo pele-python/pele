@@ -12,7 +12,7 @@ import numpy as np
 class AdaptiveStepsize(TakestepInterface):
     '''Adaptive stepsize adjustment
     
-    AdaptiveStepsize is a warpper for a takestep object and automatically adjusts
+    AdaptiveStepsize is a wrapper for a takestep object and automatically adjusts
     the stepsize by calling takestep.scale() to obtain a certain acceptance
     ration during basing hopping runs.
     

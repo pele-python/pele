@@ -11,7 +11,7 @@ class TakestepInterface(object):
         coords : array like object
             coordinates
         '''
-        raise BaseException("takeStep not implemented")
+        raise NotImplementedError
         
     def updateStep(self, accepted, **kwargs):
         '''feedback from basin hopping if last step was accepted
