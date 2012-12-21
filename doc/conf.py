@@ -26,8 +26,11 @@ sys.path.insert(0, os.path.abspath('sphinxext'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# js850> use a modified version of viewcode which fixes this bug
+# https://bitbucket.org/birkenfeld/sphinx/issue/623/extension-viewcode-fails-with-function
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.pngmath',
-              'sphinx.ext.viewcode',
+              #'sphinx.ext.viewcode-new',
+              'viewcode-new',
               'sphinx.ext.autosummary',
               'numpydoc']
 
