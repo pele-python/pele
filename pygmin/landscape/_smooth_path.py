@@ -5,6 +5,23 @@ from pygmin.transition_states import InterpolatedPathDensity
 __all__ = ["smoothPath"]
 
 def smoothPath(path, mindist, density=5.):
+    """return a smooth (interpolated) path
+    
+    usefull for making movies.  Especially for min-ts-min pathways
+    returned by DoubleEndedConnect.
+    
+    Parameters
+    ----------
+    path : list of arrays
+        the pathway to smooth
+    mindist : callable
+        function that returns the mindist distance between two structures ::
+        
+            dist, newcoords1, newcoords2 = mindist(coords1, coords2)
+    
+    density : float, optional
+        how dense to do the smoothing.
+    """
     fullpath = []
     coords1 = path[0] 
     for i in range(1,len(path)):

@@ -7,5 +7,5 @@ corresponding eigenvector.  The scheme is simply an optimization problem:  find
 the vector along which the second derivative is minimal.  The second derivative
 is approximated using three points along the vector.  
 
-See :ref:`landscape <landscape_module>` for more complete documentation
+See :ref:`transition state search <transition_states_module>` for more complete documentation
 

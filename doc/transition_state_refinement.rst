@@ -17,7 +17,7 @@ eigenvalue) which minimizing in all other directions.
 
 The algorithm consists of:
 
-  1. find the lowest eigenvalue and corresponding eigenvector
+  1. :ref:`find the lowest eigenvalue <find_lowest_eigenvector_description>` and corresponding eigenvector
 
   2. step uphill parallel to the lowest eigenvector
 
@@ -28,6 +28,6 @@ takes an eigenvector following (Newton-Raphsson-like) step uphill.  Step 1. can
 be done in two ways.  If the Hessian is know, it can be diagonalized. However, even if the
 Hessian is known this can be very slow.  A :ref:`better method <find_lowest_eigenvector_description>` uses an iterative scheme.
 
-See :ref:`landscape <landscape_module>` for more complete documentation
+See :ref:`transition state search <transition_states_module>` for more complete documentation
 
 

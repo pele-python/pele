@@ -20,8 +20,6 @@ Local connect has three steps.
 #. Falls off both sides of the transition state and minimize in order to find
    the pair of minima which the transition state connects.
 
-Documentation
---------------
-.. autoclass:: pygmin.landscape.LocalConnect
+See :ref:`landscape <landscape_module>` for more complete documentation
 
 
