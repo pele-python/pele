@@ -4,48 +4,25 @@ from pygmin.mc import MonteCarlo
 import pygmin.defaults as defaults
 
 class BasinHopping(MonteCarlo):
-    """A class to run the basin hopping algorithm
+    """
+    A class to run the basin hopping algorithm
 
-      coords: 
-          The initial set of coordinates.  A one dimensional list or numpy array
+    Parameters
+    ----------
+    All required and optional parameters from base class MonteCarlo :
+    quenchRoutine : callable, optional
+        Use this non-default quench routine.
+    quenchParameters : dict(), optional
+        parameters passed to the quench routine
+    insert_rejected : bool
+        insert the rejected structure into the storage class
+    
+    See Also
+    --------
+    pygmin.mc.MonteCarlo : base class
+    pygmin.potentials, pygmin.takestep, pygmin.storage, pygmin.accept_tests
 
-      potential: 
-          A class implimenting the potential.  The class must have the
-          following functions implimented
 
-          energy = potential.getEnergy( coords )
-          energy, gradient = potential.getEnergyGradient( coords )
-
-      takeStep: 
-          The class which randomly perterbs the system, e.g. random
-          dispacement.  It must have two functions implemented
-  
-          takeStep.takeStep(coords)       #actually takes the step
-          takeStep.updateStep(coords)     #for adaptive step size management
-  
-      acceptTests:  (None) 
-          Acceptance criterion for check.  If None is given, metropolis is used.
-  
-      confCheck: ([])
-          list of checks if current configuration is valid. This is executed before acceptTest
-          and accepTest is only called if all checks return True.
-  
-      temperature:  (1.0)
-          The temperature used in the metropolis criterion.  If no temperature is
-          passed, the default 1.0 is used unless the flag "nometropolis" is set
-          to False
-
-      event_after_step:  ([])
-          An optional list of functions which act just after each monte carlo
-          round.  Each even in the list takes the form
-
-          event(Equench_new, newcoords, acceptstep)
-
-      quenchRoutine:  (quench.quench)
-          Optionally pass a non-default quench routine.
-
-      outstream: (stdout)
-          the file stream to print quench information to
     """
 
     def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
@@ -92,11 +69,11 @@ class BasinHopping(MonteCarlo):
         self.printStep()
 
 
-    def mcStep(self):
+    def _mcStep(self):
         """
         take one monte carlo basin hopping step
 
-        redefine the MonteCarlo base class step
+        overload the MonteCarlo base class step
         """
         self.coords_after_step = self.coords.copy() #make  a working copy
         #########################################################################
@@ -130,9 +107,6 @@ class BasinHopping(MonteCarlo):
             self.acceptstep = self.acceptTest(self.markovE, self.trial_energy, self.coords, self.trial_coords)
 
         #########################################################################
-    
-        
-        
         #return new coords and energy and whether or not they were accepted
         #########################################################################
         return self.acceptstep, self.trial_coords, self.trial_energy
@@ -152,4 +126,12 @@ class BasinHopping(MonteCarlo):
     def __setstate__(self, dct):
         self.__dict__.update(dct)
         self.outstream = sys.stdout
-                
+
+
+if __name__ == "__main__":
+    from pygmin.systems import LJCluster
+    natoms = 13
+    sys = LJCluster(natoms)
+    bh = sys.get_basinhopping()
+    bh.run(100)
+

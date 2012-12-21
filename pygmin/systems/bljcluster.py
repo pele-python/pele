@@ -8,6 +8,19 @@ __all__ = ["BLJCluster"]
 class BLJCluster(AtomicCluster):
     """
     define the System class for a binary Lennard-Jones cluster
+    
+    Parameters
+    ----------
+    natoms : int
+    ntypeA : int
+        number of type-A, big particles
+    **kwargs : other keyword parameters
+        these are passed on to the potential
+    
+    See Also
+    --------
+    BaseSystem, AtomicCluster
+
     """
     def __init__(self, natoms, ntypeA="default", **potential_kwargs):
         super(BLJCluster, self).__init__()

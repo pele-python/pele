@@ -46,6 +46,7 @@ Modules
    transition_states_module
    landscape_module
    utils
+   monte_carlo
 
 Indices and tables
 ==================
