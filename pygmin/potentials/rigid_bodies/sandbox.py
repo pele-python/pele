@@ -101,7 +101,7 @@ def test_sandbox(nmol = 6):
     print "max error in gradient", maxgraddiff, "max relative", maxgrad_relative
 
     #do a quench to make sure everything is working well
-    from pygmin.optimize import as lbfgs_scipy
+    from pygmin.optimize import lbfgs_scipy
     coords, E, rms, funcalls = lbfgs_scipy(coords, mysys.getEnergyGradient, iprint=-1)
     print "postquench E", E, "rms", rms, "funtion calls", funcalls
     xyz = mysys.getxyz(coords )
