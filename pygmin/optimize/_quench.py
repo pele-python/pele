@@ -58,7 +58,7 @@ def fire(coords, getEnergyGradient, tol = 1e-3, nsteps=100000, maxstep = 0.5, **
     """
     A wrapper function for the pygmin FIRE implementation
     """
-    opt = fire.Fire(coords, getEnergyGradient, maxmove = maxstep, **kwargs)
+    opt = Fire(coords, getEnergyGradient, maxmove = maxstep, **kwargs)
     opt.run(fmax=tol, steps=nsteps)
     e,g = getEnergyGradient(opt.coords)
     rms = np.linalg.norm(g)/np.sqrt(len(g))
