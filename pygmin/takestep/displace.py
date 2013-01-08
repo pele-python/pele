@@ -55,7 +55,7 @@ class RotationalDisplacement(TakestepSlice):
         """
         take a random orientational step
         """
-        c = coords[slice]        
+        c = coords[self.srange]        
         for x in c.reshape(c.size/3,3):
             rotations.takestep_aa( x, self.stepsize )
             
