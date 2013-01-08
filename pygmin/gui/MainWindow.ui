@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>692</width>
-    <height>555</height>
+    <width>839</width>
+    <height>623</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -86,152 +86,166 @@
       </widget>
       <widget class="QWidget" name="NEBTab">
        <attribute name="title">
-        <string>NEB</string>
+        <string>Connect</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <widget class="Show3D" name="oglPath" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="leftMargin">
+           <number>5</number>
           </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,0">
           <item>
-           <widget class="QListWidget" name="listMinima1">
+           <widget class="Show3D" name="oglPath" native="true">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>16777215</height>
-             </size>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="listMinima2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>16777215</height>
-             </size>
+           <widget class="QSlider" name="sliderFrame">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
          </layout>
         </item>
-        <item row="1" column="0">
-         <widget class="QSlider" name="sliderFrame">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <layout class="QGridLayout" name="gridLayout_2">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="leftMargin">
-           <number>20</number>
+           <number>6</number>
           </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>20</number>
-          </property>
-          <item row="1" column="0">
-           <widget class="QPushButton" name="btnAlign">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>100</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Align</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="btnEnergies">
-            <property name="text">
-             <string>Energies</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="btnNEB">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>NEB</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="btnInvert">
-            <property name="text">
-             <string>Invert</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="btnConnect">
-            <property name="text">
-             <string>Connect</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="QPushButton" name="btnDisconnectivity_graph">
-            <property name="text">
-             <string>disconnectivity graph</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QPushButton" name="btnShowGraph">
-            <property name="text">
-             <string>show graph</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QPushButton" name="btnReconnect">
-            <property name="text">
-             <string>Reconnect</string>
-            </property>
-           </widget>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,0,0">
+            <item>
+             <widget class="QListWidget" name="listMinima1">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>200</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listMinima2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>200</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <property name="leftMargin">
+               <number>20</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>20</number>
+              </property>
+              <item row="1" column="0">
+               <widget class="QPushButton" name="btnAlign">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Align</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QPushButton" name="btnEnergies">
+                <property name="text">
+                 <string>Energies</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="btnNEB">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>NEB</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QPushButton" name="btnInvert">
+                <property name="text">
+                 <string>Invert</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QPushButton" name="btnConnect">
+                <property name="text">
+                 <string>Connect</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0" colspan="2">
+               <widget class="QPushButton" name="btnDisconnectivity_graph">
+                <property name="text">
+                 <string>disconnectivity graph</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QPushButton" name="btnShowGraph">
+                <property name="text">
+                 <string>show graph</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QPushButton" name="btnReconnect">
+                <property name="text">
+                 <string>Reconnect</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -348,8 +362,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>692</width>
-     <height>25</height>
+     <width>839</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSimulation">
