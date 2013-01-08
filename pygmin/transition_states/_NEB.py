@@ -13,6 +13,8 @@ try:
         return bnorm(x)
 except:
     norm = np.linalg.norm
+    
+norm = np.linalg.norm
 
 def distance_cart(x1, x2, distance=True, grad=True):
     dist=None
@@ -234,6 +236,8 @@ class NEB(object):
 
         # special interpolation treatment for maxima/minima
         if (central >= left and central >= right) or (central <= left and central <= right):
+            if(central <= left):
+                vmax, vmin = vmin, vmax
             if(left > right):
                 t = vmax * tleft + vmin*tright
             else:
@@ -274,7 +278,7 @@ class NEB(object):
             g_spring = self.k*(norm(g_left) - norm(g_right))*t
 
         #print "spring", np.dot(g_spring, t)
-        if True:
+        if False:
             import _NEB_utils
             E, g_tot = _NEB_utils.neb_force(t,greal, g_spring, self.k, self.dneb)
             if self.with_springenergy:
@@ -349,9 +353,16 @@ class NEB(object):
                 #print "S",S, "E",self.energies[i], "dist", dist
                 fout.write("%f %g\n" % (S, self.energies[i]))
 
-
-
-
+    def copy(self):
+        ''' create a copy of the current neb '''
+        import copy        
+        neb = copy.copy(self)
+        neb.coords = neb.coords.copy()
+        neb.energies = neb.energies.copy()
+        neb.isclimbing = copy.deepcopy(neb.isclimbing)
+        
+        neb.active = neb.coords[1:neb.nimages-1,:]
+        return neb
 
 import nebtesting as test
 
