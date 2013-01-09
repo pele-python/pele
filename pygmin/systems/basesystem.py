@@ -272,7 +272,7 @@ class BaseSystem(object):
 
     def draw(self):
         """
-        tell the gui how to represent your system.
+        tell the gui how to represent your system using openGL objects
         """
         raise NotImplementedError
 
@@ -321,7 +321,7 @@ class BaseSystem(object):
         
         #write the coords into the xyz file
         for coords in coordslist:
-            write_xyz(f, coords, ["LA"])
+            write_xyz(f, coords, title=oname)
         f.flush()
                 
         #load the molecule from the temporary file

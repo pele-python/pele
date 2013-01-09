@@ -22,7 +22,7 @@ class AtomicCluster(BaseSystem):
         return LJ(self.natoms)
     
     def get_random_configuration(self):
-        coords = np.random.uniform(-1, 1, [3*self.natoms]) * 1.1 * float(self.natoms)**(1./3)
+        coords = np.random.uniform(-1, 1, [3*self.natoms]) * 0.7 * float(self.natoms)**(1./3)
         return coords
     
     def get_permlist(self):

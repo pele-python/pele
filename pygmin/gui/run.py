@@ -132,6 +132,9 @@ class MyForm(QtGui.QMainWindow):
     def Invert(self):
         coords2 = self.ui.oglPath.coords[2]
         self.ui.oglPath.setCoords(-coords2, 2)
+        if self.usepymol:
+            self.pymolviewer.update_coords([-coords2], index=2)
+
     
     def AlignMinima(self):
         coords1 = self.ui.oglPath.coords[1]
@@ -140,6 +143,9 @@ class MyForm(QtGui.QMainWindow):
         dist, coords1, coords2 = align(coords1, coords2)
         self.ui.oglPath.setCoords(coords1, 1)
         self.ui.oglPath.setCoords(coords2, 2)
+        if self.usepymol:
+            self.pymolviewer.update_coords([coords1], index=1)
+            self.pymolviewer.update_coords([coords2], index=2)
         print "best alignment distance", dist
         pass    
     
