@@ -87,9 +87,47 @@ this new value::
 The top level functions often use multiple levels of algorithms.  E.g. 
 DoubleEndedConnect calls LocalConnect which calls FindTransitionState.  
 If you want to change a parameter in one of these low level algorithm
-you must use the parameter tree.  E.g.::
+you must use the parameter tree.
+the parameter tree looks like this::
+
+    -params
+    -----double_ended_connect
+    ---------local_connect_params
+    -------------NEBparams
+    -----------------NEBquenchParams
+    -------------tsSearchParams
+    -----------------lowestEigenvectorQuenchParams
+    -----------------tangentSpaceQuenchParams
+
+            
+All of the these listed above are dictionaries that are passed to the appropriate functions or classes.  
+For simplification, they 
+can be accessed either by keyword or attribute.  The maximum uphill step in the transition state search can
+be modified in either of these two equivalent ways::
 
     mysys.params.double_ended_connect.local_connect_params.tsSearchParams.max_uphill_step = 0.2
+    mysys.params["double_ended_connect"]["local_connect_params"]["tsSearchParams"]["max_uphill_step"] = 0.2
+
+The logic is that the dictionary `double_ended_connect` is passed to 
+`DoubleEndedConnect` by the system class.  `DoubleEndedConnect` passes 
+`local_connect_params` to `LocalConnect`, `LocalConnect passes` 
+`tsSearchParams` to `FindTransitionState` and so on.  Each parameter dictionary is passed
+to the following function
+
+===============================  =============================================
+parameter dictionary             passed as parameters to
+===============================  =============================================
+`double_ended_connect`           :ref:`DoubleEndedConnect <landscape_module>`
+`local_connect_params`           :ref:`LocalConnect <landscape_module>`
+`NEBparams`                      :ref:`create_NEB <transition_states_module>`
+`NEBquenchParams`                the :ref:`optimizer <optimize_module>` called by :ref:`NEB <transition_states_module>`
+`tsSearchParams`                 :ref:`FindTransitionState <transition_states_module>`
+`lowestEigenvectorQuenchParams`  the :ref:`optimizer <optimize_module>` called by :ref:`findLowestEigenVector <transition_states_module>`
+`tangentSpaceQuenchParams`       the :ref:`optimizer <optimize_module>` called by :ref:`FindTransitionState <transition_states_module>` 
+                                   for the tangent space quench
+===============================  =============================================
+
+
 
 
 Note that the Parameters class doesn't hold the pygmin default values for
