@@ -62,3 +62,4 @@ from dimer import *
 from find_lowest_eig import *
 from transition_state_refinement import *
 from tstools import *
+from _NEB_wrapper import *

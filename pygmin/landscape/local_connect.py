@@ -1,6 +1,6 @@
 from pygmin.optimize import Result
 import pygmin.defaults as defaults
-from pygmin.transition_states import NEB, InterpolatedPath, findTransitionState, minima_from_ts
+from pygmin.transition_states import NEB, InterpolatedPath, findTransitionState, minima_from_ts, create_NEB
 
 __all__ = ["LocalConnect"]
 
@@ -143,7 +143,8 @@ class LocalConnect(object):
         """
         wrap the actual call to initializing the NEB object so it can be overloaded
         """
-        return NEB(*args, **kwargs)
+        return create_NEB(*args, **kwargs)
+#        return NEB(*args, **kwargs)
    
     def _doNEB(self, minNEB1, minNEB2, repetition = 0):
         """
@@ -162,42 +163,23 @@ class LocalConnect(object):
             print "    doubling the number of steps"
             factor = float(repetition + 1)
         
-        #determine the number of images
-        nimages = int(max(1., dist) * self.NEB_image_density * factor)
-        if nimages > self.NEB_max_images:
-            nimages = self.NEB_max_images
-        
-        #determine the number of iterations
-        NEBquenchParams = self.NEBquenchParams.copy()
-        if NEBquenchParams.has_key("nsteps"):
-            niter = NEBquenchParams["nsteps"]
-        else:
-            niter = int(self.NEB_iter_density * nimages)
-            NEBquenchParams["nsteps"] = niter
-
-        #if nimages is already self.NEB_max_images then doubling the number
-        #of images will have no effect.  so double the number of steps instead
-        if repetition > 0 and nimages == self.NEB_max_images:
-            niter *= factor
-            NEBquenchParams["nsteps"] = niter
-        
-        #run NEB 
-        NEBparams = dict(defaults.NEBparams.items() + self.NEBparams.items())
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
-        print "    nimages", nimages
-        print "    nsteps ", niter
-        #raw_input("Press Enter to continue:")
-        #neb = NEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
-        #          self.pot, **NEBparams)
-        neb = self._getNEB(InterpolatedPath(newcoords1, newcoords2, nimages), 
-                           self.pot, **NEBparams)
-        neb.optimize(**NEBquenchParams)
+        neb = self._getNEB(self.pot, newcoords1, newcoords2, 
+                         image_density=self.NEB_image_density, max_images=self.NEB_max_images, 
+                         iter_density=self.NEB_iter_density, 
+                         NEBparams=self.NEBparams, NEBquenchParams=self.NEBquenchParams, 
+                         verbose=True, factor=factor)
+#        neb.optimize(**NEBquenchParams)
+        neb.optimize()
         neb.MakeAllMaximaClimbing()
 
         if self.reoptimize_climbing > 0:
             print "optimizing climbing images for a small number of steps"
-            NEBquenchParams["nsteps"] = self.reoptimize_climbing
-            neb.optimize(**NEBquenchParams)
+#            NEBquenchParams["nsteps"] = self.reoptimize_climbing
+#            neb.optimize(**NEBquenchParams)
+            neb.quenchParams["nsteps"] = self.reoptimize_climbing
+            neb.optimize()
+
 
     
         #get the transition state candidates from the NEB result
