@@ -49,17 +49,11 @@ class LocalConnect(object):
         two structures
     tsSearchParams: dict
         parameters passed to the transition state search algorithm
+    NEBparams : dict
+        NEB setup parameters.  Use NEBquenchParams for parameters related 
+        to the optimization of the band.
     NEBquenchParams : dict
         parameters passed to the NEB minimization routine
-    NEBparams : dict
-        NEB setup parameters.  E.g. this is used to pass the spring constant.
-        (note: this is not for parameters related to interpolation).  Use
-        NEBquenchParams for parameters related to the optimization of the band.
-    NEB_image_density : float
-        how many NEB images per unit distance to use.
-    NEB_iter_density : float
-    NEB_max_images :
-        the maximum number of NEB images
     nrefine_max : int
         the maximum number of NEB transition state candidates to refine
     reoptimize_climbing : int
@@ -83,6 +77,7 @@ class LocalConnect(object):
     --------
     DoubleEndedConnect : the routine from which local connect is genearlly called
     pygmin.transition_states.NEB : one of the core routines
+    pygmin.transition_states.create_NEB : the wrapper which sets up NEB
     pygmin.transition_states.findTransitionState : one of the core routine
     LocalConnectPar : parallel version of this class
     
@@ -165,10 +160,8 @@ class LocalConnect(object):
         
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
         neb = self._getNEB(self.pot, newcoords1, newcoords2, 
-                         image_density=self.NEB_image_density, max_images=self.NEB_max_images, 
-                         iter_density=self.NEB_iter_density, 
-                         NEBparams=self.NEBparams, NEBquenchParams=self.NEBquenchParams, 
-                         verbose=True, factor=factor)
+                         NEBquenchParams=self.NEBquenchParams, 
+                         verbose=True, factor=factor, **self.NEBparams)
 #        neb.optimize(**NEBquenchParams)
         neb.optimize()
         neb.MakeAllMaximaClimbing()

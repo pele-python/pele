@@ -6,8 +6,8 @@ __all__ = ["create_NEB"]
 
 def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
                 iter_density=15, 
-                NEBparams=dict(), NEBquenchParams=dict(), 
-                verbose=False, factor=1, parallel=False, ncores=4):
+                NEBquenchParams=dict(), 
+                verbose=False, factor=1, parallel=False, ncores=4, **NEBparams):
     """
     a wrapper function to do the interpolation and set up the NEB
     
