@@ -1,9 +1,11 @@
 import numpy as np
 import os.path
 import copy
-import pygmin.defaults as defaults
 
-__all__ = ["NEB"]
+import pygmin.defaults as defaults
+from pygmin.transition_states import InterpolatedPath
+
+__all__ = ["NEB",]
 try:
     import scipy.linalg
     blas = lambda name, ndarray: scipy.linalg.get_blas_funcs((name,), (ndarray,))[0]
@@ -363,6 +365,14 @@ class NEB(object):
         
         neb.active = neb.coords[1:neb.nimages-1,:]
         return neb
+
+
+
+
+
+#
+# only testing stuff below here
+#
 
 import nebtesting as test
 

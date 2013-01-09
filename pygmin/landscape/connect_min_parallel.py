@@ -6,7 +6,7 @@ import pygmin.utils.fix_multiprocessing
 
 from pygmin.landscape import DoubleEndedConnect, LocalConnect
 from pygmin.landscape.local_connect import _refineTS
-from pygmin.transition_states import NEBPar
+from pygmin.transition_states import create_NEB
 
 __all__ = ["DoubleEndedConnectPar", "LocalConnectPar"]
 
@@ -153,7 +153,8 @@ class LocalConnectPar(LocalConnect):
     
     def _getNEB(self, *args, **kwargs):
         #this is all that need be changed to get the NEB to run in parallel.
-        return NEBPar(*args, ncores=self.ncores, **kwargs)
+        return create_NEB(*args, parallel=True, ncores=self.ncores, **kwargs)
+#        return NEBPar(*args, ncores=self.ncores, **kwargs)
 
 
 

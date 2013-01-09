@@ -81,7 +81,7 @@ to __init__()::
 then, when you create the double ended connect object it will use
 this new value::
     
-    mysys.get_double_ended_connect(min1, min2, database)
+    connect = mysys.get_double_ended_connect(min1, min2, database)
 
 
 The top level functions often use multiple levels of algorithms.  E.g. 
@@ -94,7 +94,7 @@ you must use the parameter tree.  E.g.::
 
 Note that the Parameters class doesn't hold the pygmin default values for
 each algorithm.  These are defined in the algorithms themselves.  Instead,
-the Parameters class keeps track only of what has been changed.
+the Parameters class keeps track only of what has been overridden.
 
 .. autosummary::
     :toctree: generated

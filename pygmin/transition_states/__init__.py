@@ -33,6 +33,7 @@ Nudged Elastic Band
     
     NEB
     NEBPar
+    create_NEB
     InterpolatedPath
     InterpolatedPathDensity
 
@@ -62,3 +63,4 @@ from dimer import *
 from find_lowest_eig import *
 from transition_state_refinement import *
 from tstools import *
+from _NEB_wrapper import *

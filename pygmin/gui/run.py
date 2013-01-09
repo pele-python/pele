@@ -43,6 +43,20 @@ class MyForm(QtGui.QMainWindow):
         self.NewSystem()
         self.transition=None
         
+        #try to load the pymol viewer.  
+        self.usepymol = True
+        try:
+            from pymol_viewer import PymolViewer
+            self.pymolviewer = PymolViewer(self.system.load_coords_pymol)
+        except (ImportError or NotImplementedError):
+            self.usepymol = False
+            #note: glutInit() must be called exactly once.  pymol calls it
+            #during pymol.finish_launching(), so if we call it again it will
+            #give an error. On the other hand, if we're not using pymol we 
+            #must call it.
+            from OpenGL.GLUT import glutInit
+            glutInit()
+        
     def NewSystem(self):
         self.system = self.systemtype()
         db = self.system.create_database()
@@ -84,6 +98,8 @@ class MyForm(QtGui.QMainWindow):
         self.ui.widget.setMinimum(item.minimum)
         self.ui.oglTS.setSystem(self.system)
         self.ui.oglTS.setCoords(item.coords)
+        if self.usepymol:
+            self.pymolviewer.update_coords([item.coords], index=1, delete_all=True)
         
     def _SelectMinimum1(self, minimum):
         """by minimum"""
@@ -91,6 +107,9 @@ class MyForm(QtGui.QMainWindow):
         self.ui.oglPath.setCoords(minimum.coords, index=1)
         self.ui.oglPath.setMinimum(minimum, index=1)
         self.neb = None
+        if self.usepymol:
+            self.pymolviewer.update_coords([minimum.coords], index=1)
+
 
     def SelectMinimum1(self, item):
         """called by the ui"""
@@ -102,6 +121,8 @@ class MyForm(QtGui.QMainWindow):
         self.ui.oglPath.setCoords(minimum.coords, index=2)
         self.ui.oglPath.setMinimum(minimum, index=2)
         self.neb = None
+        if self.usepymol:
+            self.pymolviewer.update_coords([minimum.coords], index=2)
 
 
     def SelectMinimum2(self, item):
@@ -112,6 +133,9 @@ class MyForm(QtGui.QMainWindow):
     def Invert(self):
         coords2 = self.ui.oglPath.coords[2]
         self.ui.oglPath.setCoords(-coords2, 2)
+        if self.usepymol:
+            self.pymolviewer.update_coords([-coords2], index=2)
+
     
     def AlignMinima(self):
         coords1 = self.ui.oglPath.coords[1]
@@ -120,6 +144,9 @@ class MyForm(QtGui.QMainWindow):
         dist, coords1, coords2 = align(coords1, coords2)
         self.ui.oglPath.setCoords(coords1, 1)
         self.ui.oglPath.setCoords(coords2, 2)
+        if self.usepymol:
+            self.pymolviewer.update_coords([coords1], index=1)
+            self.pymolviewer.update_coords([coords2], index=2)
         print "best alignment distance", dist
         pass    
     
@@ -131,6 +158,8 @@ class MyForm(QtGui.QMainWindow):
         self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
         self.ui.oglPath.setCoords(None, 2)
         self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
+        if self.usepymol:
+            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
 
     def showFrame(self, i):
         if hasattr(self, "nebcoords"):
@@ -380,6 +409,9 @@ class MyForm(QtGui.QMainWindow):
         self.ui.oglPath.setCoords(None, 2)
         self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
         
+        if self.usepymol:
+            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
+     
 def refresh_pl():
     pl.pause(0.0)    
     
