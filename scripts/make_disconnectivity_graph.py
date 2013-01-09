@@ -97,7 +97,7 @@ def usage():
     print "   -o outfile : save the plot to this pdf file."
     print "   --OPTIM :    load data from min.data and ts.data"
     print ""
-    print " options to pass to DoubleEndedConnect:"
+    print " options to pass to DisconnectivityGraph:"
     print "   --nlevels=n : number of energy levels"
     print "   --subgraph_size=n :  include all disconnected subgraphs up to size n"
     print "   --order_by_basin_size : " 
