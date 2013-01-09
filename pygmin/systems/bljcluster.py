@@ -49,6 +49,17 @@ class BLJCluster(AtomicCluster):
     #
 
     def draw(self, coordslinear, index):
+        """
+        tell the gui how to represent your system using openGL objects
+        
+        Parameters
+        ----------
+        coords : array
+        index : int
+            we can have more than one molecule on the screen at one time.  index tells
+            which one to draw.  They are viewed at the same time, so they should be
+            visually distinct, e.g. different colors.  accepted values are 1 or 2        
+        """
         # index = 1 or 2
         from OpenGL import GL,GLUT
         coords = coordslinear.reshape(coordslinear.size/3, 3)

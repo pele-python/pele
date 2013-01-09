@@ -94,6 +94,7 @@ class BaseSystem(object):
     1. all of the above functions are required, plus
     #. draw : required
     #. smooth_path : required
+    #. load_coords_pymol : recommended
 
     additionally, it's a very good idea to specify the accuracy in the 
     database using self.params.database.accuracy
@@ -270,14 +271,23 @@ class BaseSystem(object):
     #the following functions are used only for the GUI
     #
 
-    def draw(self):
+    def draw(self, coords, index):
         """
         tell the gui how to represent your system using openGL objects
+        
+        Parameters
+        ----------
+        coords : array
+        index : int
+            we can have more than one molecule on the screen at one time.  index tells
+            which one to draw.  They are viewed at the same time, so they should be
+            visually distinct, e.g. different colors.  accepted values are 1 or 2        
         """
         raise NotImplementedError
 
     def smooth_path(self):
-        """return a smoothed path between two configurations.  
+        """return a smoothed path between two configurations.
+
         used for movies
         
         See Also
@@ -303,7 +313,7 @@ class BaseSystem(object):
             later
         index : int
             we can have more than one molecule on the screen at one time.  index tells
-            which one to draw.  They are viewed at the same time, so should be
+            which one to draw.  They are viewed at the same time, so they should be
             visually distinct, e.g. different colors.  accepted values are 1 or 2
         
         Notes
@@ -314,12 +324,11 @@ class BaseSystem(object):
         #pymol is imported here so you can do, e.g. basinhopping without installing pymol
         import pymol 
 
-        #create the temporary file
-        suffix = ".xyz"
-        f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
+        #create the temporary file (.xyz or .pdb, or whatever else pymol can read)
+        #note: this is the part that will be really system dependent.        
+        f = tempfile.NamedTemporaryFile(mode="w", suffix=".xyz")
         fname = f.name
-        
-        #write the coords into the xyz file
+        #write the coords into file
         for coords in coordslist:
             write_xyz(f, coords, title=oname)
         f.flush()

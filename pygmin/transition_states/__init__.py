@@ -33,6 +33,7 @@ Nudged Elastic Band
     
     NEB
     NEBPar
+    create_NEB
     InterpolatedPath
     InterpolatedPathDensity
 

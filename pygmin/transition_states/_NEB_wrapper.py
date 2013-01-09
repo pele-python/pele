@@ -9,20 +9,21 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
                 NEBquenchParams=dict(), 
                 verbose=False, factor=1, parallel=False, ncores=4, **NEBparams):
     """
-    a wrapper function to do the interpolation and set up the NEB
+    a wrapper function to do the interpolation and set up the nudged elastic band object
     
     Parameters
     ----------
     image_density : float
         how many NEB images per unit distance to use.
-    max_images :
+    coords1, coords2 : array
+        the structures to connect with the band
+    max_images : int
         the maximum number of NEB images
     iter_density : float
     NEBquenchParams : dict
         parameters passed to the NEB minimization routine
     NEBparams : dict
-        NEB setup parameters.  E.g. this is used to pass the spring constant.
-        (note: this is not for parameters related to interpolation).  Use
+        NEB setup parameters.  These are passed directly to the NEB class.  Use
         NEBquenchParams for parameters related to the optimization of the band.
     verbose : bool
     factor : int
@@ -41,7 +42,7 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
     See Also
     ---------
     NEB
-    IntepolatedPath
+    InterpolatedPath
     """
     #determine the number of images to use
     dist = np.linalg.norm(coords1 - coords2)
