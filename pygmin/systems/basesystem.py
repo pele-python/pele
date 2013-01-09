@@ -1,7 +1,10 @@
+import tempfile
+
 from pygmin.landscape import DoubleEndedConnect, DoubleEndedConnectPar
 from pygmin import basinhopping
 from pygmin.storage import Database
 from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
+from pygmin.utils.xyz import write_xyz
 
 __all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
@@ -286,6 +289,58 @@ class BaseSystem(object):
     def createNEB(self):
         """ """
         raise NotImplementedError
+    
+    def load_coords_pymol(self, coordslist, oname, index=1):
+        """load the coords into pymol
+        
+        the new object must be named oname so we can manipulate it later
+                        
+        Parameters
+        ----------
+        coordslist : list of arrays
+        oname : str
+            the new pymol object must be named oname so it can be manipulated
+            later
+        index : int
+            we can have more than one molecule on the screen at one time.  index tells
+            which one to draw.  They are viewed at the same time, so should be
+            visually distinct, e.g. different colors.  accepted values are 1 or 2
+        
+        Notes
+        -----
+        the implementation here is a bit hacky.  we create a temporary xyz file from coords
+        and load the molecule in pymol from this file.  
+        """
+        #pymol is imported here so you can do, e.g. basinhopping without installing pymol
+        import pymol 
+
+        #create the temporary file
+        suffix = ".xyz"
+        f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
+        fname = f.name
+        
+        #write the coords into the xyz file
+        for coords in coordslist:
+            write_xyz(f, coords, ["LA"])
+        f.flush()
+                
+        #load the molecule from the temporary file
+        pymol.cmd.load(fname)
+        
+        #get name of the object just create and change it to oname
+        objects = pymol.cmd.get_object_list()
+        objectname = objects[-1]
+        pymol.cmd.set_name(objectname, oname)
+        
+        #here you might want to change the representation of the molecule, e.g.
+        # >>> pymol.cmd.hide("everything", oname)
+        # >>> pymol.cmd.show("spheres", oname)
+        
+        #set the color according to index
+        if index == 1:
+            pymol.cmd.color("red", oname)
+        else:
+            pymol.cmd.color("gray", oname)
 
 
 

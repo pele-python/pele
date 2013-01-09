@@ -14,7 +14,7 @@ class BLJSystem(BLJCluster):
 
     
     def findTS(self, coords):
-        raise NotImplementedError    
+        raise NotImplementedError
         
 if __name__ == "__main__":
     import pygmin.gui.run as gr

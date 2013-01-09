@@ -24,7 +24,7 @@ class Show3D(QGLWidget):
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
         self.setMinimumSize(200, 200)
-        glutInit()#sys.argv)
+#        glutInit()#sys.argv)
         self.coords = {}
         self.minima = {}
         self.last_mouse_pos = QtCore.QPointF(0., 0.)
