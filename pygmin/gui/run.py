@@ -1,3 +1,4 @@
+import pylab as pl    
 from PyQt4 import QtCore, QtGui
 import MainWindow 
 import sys
@@ -379,16 +380,16 @@ class MyForm(QtGui.QMainWindow):
         self.ui.oglPath.setCoords(None, 2)
         self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
         
-
-        
-        
-
-        
-
+def refresh_pl():
+    pl.pause(0.0)    
     
 def run_gui(systemtype):
     app = QtGui.QApplication(sys.argv)
+    import pylab as pl
     myapp = MyForm(systemtype)
-            
+    refresh_timer = QtCore.QTimer()
+    refresh_timer.timeout.connect(refresh_pl)
+    refresh_timer.start(0.)
+    
     myapp.show()
     sys.exit(app.exec_())
