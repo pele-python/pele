@@ -4,36 +4,33 @@ from mindistutils import getAlignRotation
 from permutational_alignment import findBestPermutation
 from pygmin.utils import rotations
 
-class NotImplemented(BaseException):
-    pass
-
 class TransformPolicy(object):   
     def translate(self, X, d):
-        raise NotImplemented
+        raise NotImplementedError
     
     def rotate(self, X, mx):
-        raise NotImplemented
+        raise NotImplementedError
     
     def can_invert(self):
-        raise NotImplemented
+        raise NotImplementedError
     
     def invert(self, X):
-        raise NotImplemented
+        raise NotImplementedError
     
 class MeasurePolicy(object):
     def get_com(self, X):
-        raise NotImplemented
+        raise NotImplementedError
     
     def get_dist(self, X1, X2):
-        raise NotImplemented
+        raise NotImplementedError
     
     def find_permutation(self, X1, X2):
         ''' find the best permutation for the current set of coordinates '''
-        raise NotImplemented
+        raise NotImplementedError
     
     def find_rotation(self, X1, X2):
         ''' find optimal rotation for 2 structures '''
-        raise NotImplemented
+        raise NotImplementedError
 
 class TransformAtomicCluster(TransformPolicy):
     # TODO: make this a class method?    
