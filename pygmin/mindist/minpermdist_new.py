@@ -1,77 +1,9 @@
 import numpy as np
 from pygmin.mindist import ExactMatchCluster
-from mindistutils import getAlignRotation
-from permutational_alignment import findBestPermutation
-from pygmin.utils import rotations
+from pygmin.utils import rotations     
+from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 
-class TransformPolicy(object):   
-    def translate(self, X, d):
-        raise NotImplementedError
-    
-    def rotate(self, X, mx):
-        raise NotImplementedError
-    
-    def can_invert(self):
-        raise NotImplementedError
-    
-    def invert(self, X):
-        raise NotImplementedError
-    
-class MeasurePolicy(object):
-    def get_com(self, X):
-        raise NotImplementedError
-    
-    def get_dist(self, X1, X2):
-        raise NotImplementedError
-    
-    def find_permutation(self, X1, X2):
-        ''' find the best permutation for the current set of coordinates '''
-        raise NotImplementedError
-    
-    def find_rotation(self, X1, X2):
-        ''' find optimal rotation for 2 structures '''
-        raise NotImplementedError
-
-class TransformAtomicCluster(TransformPolicy):
-    # TODO: make this a class method?    
-    def translate(self, X, d):
-        ''' translate the system by a constant vector '''
-        Xtmp = X.reshape([-1,3])
-        Xtmp+=d
-        
-    def rotate(self, X, mx,):
-        ''' rotate the system '''
-        Xtmp = X.reshape([-1,3])
-        Xtmp = np.dot(mx, Xtmp.transpose()).transpose()
-        X[:] = Xtmp.reshape(X.shape)
-        
-    def can_invert(self):
-        return True
-    
-    def invert(self, X):
-        X[:] = -X
-        
-class MeasureAtomicCluster(MeasurePolicy):
-    def get_com(self, X):
-        ''' calculate the com '''
-        X = np.reshape(X, [-1,3])
-        natoms = len(X[:,0])
-        com = X.sum(0) / natoms
-        return com
-
-    def get_dist(self, X1, X2):
-        ''' calculate the distance between 2 sets of coordinates '''
-        return np.linalg.norm(X1-X2)
-    
-    def find_permutation(self, X1, X2, permlist=None):
-        ''' find the best permutation for the current set of coordinates '''
-        return findBestPermutation(X1, X2, permlist)
-    
-    def find_rotation(self, X1, X2):
-        ''' find optimal rotation for 2 structures '''
-        dist, Q2 = getAlignRotation(X1, X2)
-        mx = rotations.q2mx(Q2)
-        return dist, mx     
+__all__ = ["MinPermDistCluster"]
 
 class MinPermDistCluster(object):
     def __init__(self, niter=100,
@@ -80,13 +12,12 @@ class MinPermDistCluster(object):
         self.niter = 100
         
         self.verbose = False
-        self.permlist = None
         self.measure = measure
         self.transform=transform
     
     def exact_match(self, X1, X2, accuracy = 0.01):
         ''' checks for an exact match '''
-        exactmatch = ExactMatchCluster(accuracy=accuracy, permlist=self.permlist)
+        exactmatch = ExactMatchCluster(accuracy=accuracy, permlist=self.measure.permlist)
         return exactmatch(X1, X2)
     
     def _optimize_perm_rot(self, X1, X2):
@@ -106,11 +37,11 @@ class MinPermDistCluster(object):
             self.transform.rotate(X2_, mx)
             
             #optimize the permutations
-            dist, X1, X2_ = self.measure.find_permutation(X1, X2_)
+            dist, perm = self.measure.find_permutation(X1, X2_)
             if self.verbose:
                 print "dist", dist, "distbest", distbest
             #print "X2.shape", X2.shape
-            
+            X2_ = self.transform.permute(X2_, perm)
             #optimize the rotation
             dist, mx2 = self.measure.find_rotation(X1, X2_)
             mxtot = np.dot(mx2, mxtot)
@@ -151,7 +82,7 @@ class MinPermDistCluster(object):
             if distbest1 < distbest:
                 if self.verbose:
                     print "using inversion in minpermdist"
-                print "inversion rules", distbest1
+
                 use_inversion = True
                 distbest = distbest1
                 mxbest = mxbest1
@@ -160,8 +91,8 @@ class MinPermDistCluster(object):
         if use_inversion: X2 = X2i
         
         self.transform.rotate(X2, mxbest)
-        dist, X1, X2 = self.measure.find_permutation(X1, X2)
-        
+        dist, perm = self.measure.find_permutation(X1, X2)
+        X2 = self.transform.permute(X2, perm)
         tmp, mx = self.measure.find_rotation(X1.copy(), X2.copy())
         self.transform.rotate(X2, mx)
         

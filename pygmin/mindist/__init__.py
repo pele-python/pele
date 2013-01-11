@@ -67,3 +67,5 @@ from minpermdist_rbmol import *
 from mindist import *
 from rmsfit import *
 
+from minpermdist_new import *
+
