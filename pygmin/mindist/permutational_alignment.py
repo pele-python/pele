@@ -260,9 +260,3 @@ def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape
             newperm[atom] = perm[i]
     return dist, newperm
 
-def findBestPermutation( X1, X2, permlist = None, user_algorithm=None):
-    print "WARNING: findBestPermutation is obsolete"
-    dist, perm = find_best_permutation(X1, X2, permlist=permlist, user_algorithm=user_algorithm)
-    X2new = X2[perm]
-    return X2
-

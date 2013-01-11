@@ -1,23 +1,24 @@
 import numpy as np
-from pygmin.mindist import ExactMatchCluster
+from exact_match import ExactMatchCluster
 from pygmin.utils import rotations     
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 
 __all__ = ["MinPermDistCluster"]
 
 class MinPermDistCluster(object):
-    def __init__(self, niter=100,
+    def __init__(self, niter=100, verbose=False, accuracy=0.01,
                  measure=MeasureAtomicCluster(), transform=TransformAtomicCluster()):
         
         self.niter = 100
         
-        self.verbose = False
+        self.verbose = verbose
         self.measure = measure
         self.transform=transform
+        self.accuracy = accuracy
     
-    def exact_match(self, X1, X2, accuracy = 0.01):
+    def exact_match(self, X1, X2):
         ''' checks for an exact match '''
-        exactmatch = ExactMatchCluster(accuracy=accuracy, permlist=self.measure.permlist)
+        exactmatch = ExactMatchCluster(accuracy=self.accuracy, permlist=self.measure.permlist)
         return exactmatch(X1, X2)
     
     def _optimize_perm_rot(self, X1, X2):

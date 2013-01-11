@@ -1,5 +1,5 @@
 from mindistutils import getAlignRotation
-from permutational_alignment_new import find_best_permutation
+from permutational_alignment import find_best_permutation
 from pygmin.utils import rotations
 import numpy as np
 

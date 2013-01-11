@@ -1,5 +1,7 @@
 import numpy as np
-from pygmin.mindist import findBestPermutation, CoMToOrigin
+from permutational_alignment import find_best_permutation
+#from backward_compatibility import findBestPermutation
+from mindistutils import CoMToOrigin
 import rmsfit
 
 
@@ -143,9 +145,14 @@ class ExactMatchCluster(object):
         # make a copy since findBestPermutation will mess up order
         x2_trial = x2.copy()
         # get the best permutation
-        dist, x1n, x2n = findBestPermutation(x1_trial.flatten(), x2_trial.flatten())
-        x1n = x1n.reshape([-1,3])
-        x2n = x2n.reshape([-1,3])
+        #dist, x1n_, x2n_ = findBestPermutation(x1_trial.flatten(), x2_trial.flatten())
+        #x1n = x1n_.reshape([-1,3])
+        #x2n = x2n_.reshape([-1,3])
+        dist, perm = find_best_permutation(x1_trial, x2_trial)
+        #
+        x1n = x1_trial.reshape([-1,3])
+        x2n = x2_trial.reshape([-1,3])
+        x2n = x2n[perm]
         
         #x1n = x1_trial
         #x2n = x2_trial
