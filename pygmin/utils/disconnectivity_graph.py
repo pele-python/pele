@@ -223,8 +223,8 @@ class DisconnectivityGraph(object):
     def _layout_x_axis(self, tree):
         """
         """
-        xmin = 0.
-        dx_per_min = 1.
+        xmin = 4.0
+        dx_per_min = 1
         self._recursive_layout_x_axis(tree, xmin, dx_per_min)
 
     def _tree_get_minimum_energy(self, tree, emin=1e100):
@@ -345,7 +345,7 @@ class DisconnectivityGraph(object):
                 ylow = tree.data["minimum"].energy
             else:
                 ylow = tree.data["ethresh"]
-            yhigh = yparent - eoffset
+            yhigh = max(yparent - eoffset, ylow)
             #add vertical line segment
             line_segments.append( ([x,x], [ylow, yhigh]) )
             if not tree.parent.data.has_key("children_not_connected"):
@@ -452,20 +452,29 @@ class DisconnectivityGraph(object):
     def plot(self, show_minima=False):
         #draw the minima as points
         import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(6,7))
+        fig.set_facecolor('white')
+        ax = fig.add_subplot(111, adjustable='box')
+        ax.tick_params(axis='y', direction='out')
+        ax.yaxis.tick_left()
+        ax.spines['left'].set_color('black')
+        ax.spines['left'].set_linewidth(0.5)
+        ax.spines['top'].set_color('none')
+        ax.spines['bottom'].set_color('none')
+        ax.spines['right'].set_color('none')
         leaves = self.tree_graph.get_leaves()
         energies = [leaf.data["minimum"].energy for leaf in leaves]
         xpos = [leaf.data["x"] for leaf in leaves]
         
         if show_minima:      
-            plt.plot(xpos, energies, 'o')
+            ax.plot(xpos, energies, 'o')
         
         #draw the line segemnts
         for x, y in self.line_segments:
-            plt.plot(x, y, 'k')
+            ax.plot(x, y, 'k', linewidth=0.5)
             
-        plt.ylabel("Energy")
         plt.xticks([])
-        plt.box(on=False)
+        plt.box(on=True)
 
         
     

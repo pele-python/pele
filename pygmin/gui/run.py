@@ -413,7 +413,7 @@ class MyForm(QtGui.QMainWindow):
             self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
      
 def refresh_pl():
-    pl.pause(0.0)    
+    pl.pause(0.000001)    
     
 def run_gui(systemtype):
     app = QtGui.QApplication(sys.argv)
