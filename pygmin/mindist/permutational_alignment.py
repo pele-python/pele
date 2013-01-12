@@ -165,7 +165,7 @@ def find_permutations_OPTIM(X1, X2, boxl=None, make_cost_matrix=None):
     use OPTIM's minperm() routine to calculate the optimum permutation
     """    
     
-    if make_cost_matrix is not None:
+    if make_cost_matrix is not _make_cost_matrix:
         raise RuntimeError("cannot use a custom cost matrix with findBestPermutationListOPTIM")
 
     #deal with periodic boundary conditions
@@ -186,7 +186,7 @@ def find_permutations_OPTIM(X1, X2, boxl=None, make_cost_matrix=None):
     return dist, perm
 
 
-def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape=True, user_cost_matrix=None):
+def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape=True, user_cost_matrix=_make_cost_matrix):
     """
     find the permutation of the atoms which minimizes the distance |X1-X2|
     
@@ -257,6 +257,6 @@ def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape
             dist, perm = user_algorithm( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix)
             
         for atom,i in zip(atomlist,xrange(len(atomlist))):
-            newperm[atom] = perm[i]
+            newperm[atom] = atomlist[perm[i]]
     return dist, newperm
 
