@@ -36,6 +36,7 @@ def zeroEV_rotation(coords):
                    [ 0.,  0., 0.]])
     x = coords.reshape(coords.size/3,3)
     com = x.sum(0)/x.shape[0]
+    
     #print com
     r1 = np.dot(Rx,(x-com).transpose()).transpose().reshape(coords.shape)
     r2 = np.dot(Ry,(x-com).transpose()).transpose().reshape(coords.shape)
@@ -61,15 +62,38 @@ def gramm_schmidt(v):
         for uk in u:
             vn -= np.dot(vn,uk)*uk
         #print "lz",len(u)
-        vn = vi / np.linalg.norm(vi)
+        vn = vn / np.linalg.norm(vn)
         u.append(vn)
     return u
 
+def orthogonalize(v, ozev):
+    for u in ozev:
+        v-=np.dot(v,u)*u
+    return v
+
 if __name__ == '__main__':
+    from _orthogopt import orthogopt_slow, orthogopt
+    natoms = 105
+    for i in xrange(1):
+        
+        x = np.random.random(3*natoms)*5
+        xx = x.reshape(-1,3)
+        com = xx.sum(0)/xx.shape[0]
+        xx-=com
+        v = np.random.random(3*natoms)
+        test1 = orthogopt_slow(v.copy(), x.copy())
+        zev = zeroEV_cluster(x)
+        ozev = gramm_schmidt(zeroEV_cluster(x))
+        
+        orthogonalize(v, ozev)
+        
+        print np.linalg.norm(v-test1)
+    exit()
+    
     from pygmin.potentials import lj
     pot = lj.LJ()
-    x = np.array([-0.,0.,0.,1.,1.,1.])
-    
+    x = np.array([-1.,0.,0.,1., 0., 0., 0., 1., 1., 0.,-1.,-1.])
+    x = np.random.random(x.shape)
     #x = np.random.random(6)
     print x
     v = zeroEV_cluster(x)
@@ -77,6 +101,11 @@ if __name__ == '__main__':
     print np.dot(v[3],v[4]),np.dot(v[3],v[5]),np.dot(v[5],v[4])
     u = gramm_schmidt(zeroEV_cluster(x))
     for i in u:
-        print (pot.getEnergy(x + 1e-6) - pot.getEnergy(x))/1e-6,i
+        #print x+1e-4*i
+        print (pot.getEnergy(x + 1e-4*i) - pot.getEnergy(x))/1e-4,i
     print np.dot(u[3],u[4]),np.dot(u[3],u[5]),np.dot(u[5],u[4])
-    print u[5],u[4]
+    print "########################"
+    
+    r = np.random.random(x.shape)
+    print orthogopt(r.copy(), x.copy()) - orthogonalize(r.copy(), u)
+    #print u[5],u[4]
