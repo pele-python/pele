@@ -13,15 +13,8 @@ from pygmin.transition_states import NEB, InterpolatedPathDensity
 from pygmin.optimize import fire, mylbfgs
 from pygmin import defaults
 
-class TIP4Pmindist(object):
-    def __init__(self, system):
-        self.system = system
-        
-    def __call__(self, coords1, coords2):
-        coords1 = coords1.copy()
-        coords2 = coords2.copy()
-        tip4p.align(self.system, coords1, coords2)
-        return np.sqrt(self.system.distance_squared(coords1, coords2)), coords1, coords2
+from pygmin.angleaxis.aamindist import *
+from pygmin.mindist import MinPermDistCluster
 
 class TIP4PSystem(BaseSystem):
     def __init__(self):
@@ -35,7 +28,7 @@ class TIP4PSystem(BaseSystem):
         
         
         defaults.NEBquenchParams["nsteps"] = 200
-        defaults.NEBquenchParams["iprint"] = 1
+        defaults.NEBquenchParams["iprint"] = -1
         defaults.NEBquenchParams["maxstep"] = 0.1
         #defaults.NEBquenchParams["maxErise"] = 0.1
         defaults.NEBquenchParams["tol"] = 1e-6
@@ -80,7 +73,9 @@ class TIP4PSystem(BaseSystem):
         return RotationalDisplacement(**kwargs)
     
     def get_mindist(self, **kwargs):
-        return TIP4Pmindist(self.aasystem)
+        transform = TransformAngleAxisCluster(self.aasystem)
+        measure = MeasureAngleAxisCluster(self.aasystem, transform)
+        return MinPermDistCluster(transform = transform, measure=measure)
     
     def createNEB(self, coords1, coords2):
         pot = self.get_potential()

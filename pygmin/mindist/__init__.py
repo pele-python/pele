@@ -66,3 +66,5 @@ from exact_match import *
 from minpermdist_stochastic import *
 from mindist import *
 from rmsfit import *
+
+from _minpermdist_policies import *
