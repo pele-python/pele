@@ -3,27 +3,48 @@ from permutational_alignment import find_best_permutation
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 import rmsfit
 
+__all__= ["StandardClusterAlignment", "ExactMatchCluster"]
 
-__all__= ["ExactMatchCluster"]
-
-def check_standard_alignment_cluster(coords1, coords2, check_match, accuracy = 0.01, check_inversion=True):
-        '''
-        eumerates standard alignments for atomic clusters
+class StandardClusterAlignment(object):
+    '''
+    class to iterate over standard alignments for atomic clusters
+    
+    Quickly determines possible alignments of clusters which exactly match.
+    It uses atoms which are far away from the center to determine possible
+    rotations. The algorithm does the following:
+    
+    1) Get 2 reference atoms from structure 1 which are farest away from center
+       and are not linear
+    2) Determine candidates from structure 2 which are in same shell
+       as reference atoms from structure 1 (+- accuracy)
+    3) loop over all candidate combinations to determine
+       orientation and check for match. Skip directly if angle of candidates
+       does not match angle of reference atoms in structure 1.
+       
+    Parameters
+    ----------
+    coords1 : np.array
+        first coordinates
+    coords2 : np.array
+        second coordinates
+    accuracy : float
+        accuracy of shell for atom candidates in standard alignment
+    can_invert : boolean
+        is an inversion possible?
         
-        Quickly determines possible alignments of clusters which exactly match.
-        It uses atoms which are far away from the center to determine possible
-        rotations. The algorithm does the following:
+    Examples
+    --------
+    
+    >> for rot, invert in StandardClusterAlignment(X1, X2):
+    >>     print "possible rotation:",rot,"inversion:",invert
+    
+    '''
+    def __init__(self, coords1, coords2, accuracy = 0.01, can_invert=True):
+        x1 = coords1.reshape([-1,3]).copy()
+        x2 = coords2.reshape([-1,3]).copy()
         
-        1) Get 2 reference atoms from structure 1 which are farest away from center
-           and are not linear
-        2) Determine candidates from structure 2 which are in same shell
-           as reference atoms from structure 1 (+- accuracy)
-        3) loop over all candidate combinations to determine
-           orientation and check for match. Skip directly if angle of candidates
-           does not match angle of reference atoms in structure 1.
-        '''
-        x1 = coords1.reshape([-1,3])
-        x2 = coords2.reshape([-1,3])
+        self.accuracy = accuracy
+        self.can_invert = can_invert
         
         # calculate distance of all atoms
         R1 = np.sqrt(np.sum(x1*x1, axis=1))
@@ -56,34 +77,68 @@ def check_standard_alignment_cluster(coords1, coords2, check_match, accuracy = 0
         candidates2 = np.arange(len(R2))[ \
              (R2 > R1[idx1_2] - accuracy)*(R2 < R1[idx1_2] + accuracy)] 
         
-        # now loop over all combinations
-        for idx2_1 in candidates1:
-            for idx2_2 in candidates2:
-                if idx2_1 == idx2_2:
-                    continue
+        self.x1 = x1
+        self.x2 = x2
+        self.idx1_1 = idx1_1
+        self.idx1_2 = idx1_2
+        self.idx2_1 = None
+        self.idx2_2 = None
+        self.invert = False
+        
+        self.candidates2 = candidates2
+        
+        self.iter1 = iter(candidates1)
+        self.iter2 = iter(self.candidates2)
                 
-                # we can immediately trash the match if angle does not match
-                cos_theta2 = np.dot(x2[idx2_1], x2[idx2_2]) / \
-                    (np.linalg.norm(x2[idx2_1])*np.linalg.norm(x2[idx2_2]))
-                if(np.abs(cos_theta2 - cos_theta2) > 0.5):
-                    continue
+    def __iter__(self):
+        return self
+    
+    def next(self):
+        # obtain first index for first call
+        if self.idx2_1 is None:
+            self.idx2_1 = self.iter1.next()
+            
+        # toggle inversion if inversion is possible
+        if self.can_invert and self.invert == False and self.idx2_2 is not None:
+            self.invert = True
+        else:
+            # determine next pair of indices
+            self.invert = False
+            # try to increment 2nd iterator
+            try: 
+                self.idx2_2 = self.iter2.next()
+            except StopIteration:
+                # end of list, start over again
+                self.iter2 = iter(self.candidates2)
+                # and increment iter1
+                self.idx2_1 = self.iter1.next()
+            
+            if self.idx2_1 == self.idx2_2:
+                return self.next()
+        
+        x1 = self.x1
+        x2 = self.x2
+        idx1_1 = self.idx1_1
+        idx1_2 = self.idx1_2
+        idx2_1 = self.idx2_1
+        idx2_2 = self.idx2_2
+        
+        # we can immediately trash the match if angle does not match
+        cos_theta2 = np.dot(x2[idx2_1], x2[idx2_2]) / \
+            (np.linalg.norm(x2[idx2_1])*np.linalg.norm(x2[idx2_2]))
+        if(np.abs(cos_theta2 - cos_theta2) > 0.5):
+            return self.next()
 
-                # get rotation for current atom match candidates
-                rot = rmsfit.findrotation_kabsch( \
-                              x1[[idx1_1, idx1_2]], x2[[idx2_1, idx2_2]], align_com=False)
-                # pass on the match for a closer check
-                if check_match(rot.transpose(), False):
-                    return True
+        mul = 1.0
+        if(self.invert):
+            mul=-1.0
+
+        # get rotation for current atom match candidates
+        rot = rmsfit.findrotation_kabsch( \
+                      x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
                 
-                if check_inversion:
-                    # get rotation for current atom match candidates
-                    rot = rmsfit.findrotation_kabsch( \
-                                  x1[[idx1_1, idx1_2]], -x2[[idx2_1, idx2_2]], align_com=False)
-                    # pass on the match for a closer check
-                    if check_match(rot.transpose(), True):
-                        return True                        
-        return False
-
+        return rot.transpose(), self.invert
+    
 class ExactMatchCluster(object):
     ''' Deterministic check if 2 clusters are a perfect match
     
@@ -128,18 +183,20 @@ class ExactMatchCluster(object):
         
     def __call__(self, coords1, coords2):
         com1 = self.measure.get_com(coords1)
-        self.x1 = coords1.copy()
-        self.transform.translate(self.x1, -com1)
+        x1 = coords1.copy()
+        self.transform.translate(x1, -com1)
         
         com2 = self.measure.get_com(coords2)
-        self.x2 = coords2.copy()
-        self.transform.translate(self.x2, -com2)
+        x2 = coords2.copy()
+        self.transform.translate(x2, -com2)
         
-        return check_standard_alignment_cluster(self.x1, self.x2, self.check_match,
-                                   accuracy = self.accuracy,
-                                   check_inversion=self.transform.can_invert())
+        for rot, invert in StandardClusterAlignment(x1, x2, accuracy = self.accuracy,
+                                   can_invert=self.transform.can_invert()):
+            if self.check_match(x1, x2, rot, invert):
+                return True
+        return False
                         
-    def check_match(self, rot, invert):
+    def check_match(self, x1, x2, rot, invert):
         ''' Make a more detailed comparison if the 2 structures match
         
         Parameters
@@ -155,8 +212,7 @@ class ExactMatchCluster(object):
             
         '''    
         # apply the rotation
-        x1 = self.x1
-        x2_trial = self.x2.copy()
+        x2_trial = x2.copy()
         if(invert):
             self.transform.invert(x2_trial)
         self.transform.rotate(x2_trial, rot)
@@ -185,7 +241,7 @@ if __name__ == '__main__':
         xx1 = np.random.random(3*natoms)*5
         xx1 = xx1.reshape([-1,3])
         mx = rotations.q2mx(rotations.random_q())
-        xx2 = np.dot(mx, xx1.transpose()).transpose()
+        xx2 = -np.dot(mx, xx1.transpose()).transpose()
         xx2 +=2.*(np.random.random(xx2.shape)-0.5)*0.001
         #xx2 = xx1.copy()
         tmp = xx2[1].copy()
