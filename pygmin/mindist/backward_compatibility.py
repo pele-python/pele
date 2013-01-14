@@ -2,7 +2,9 @@ from minpermdist_stochastic import MinPermDistCluster
 from _minpermdist_policies import MeasureAtomicCluster
 from permutational_alignment import optimize_permutations
 from pygmin.utils import rotations
+from pygmin.utils import rotations as rot
 from rmsfit import find_rotation
+import numpy as np
 
 def getAlignRotation(XA, XB):
     print "WARNING: getAlignRotation is obsolete, use find_rotation"
@@ -22,6 +24,56 @@ def findBestPermutation( X1, X2, permlist = None, user_algorithm=None):
     print "WARNING: findBestPermutation is obsolete, use optimize_permutations instead"    
     return optimize_permutations(X1, X2, permlist=permlist, user_algorithm=user_algorithm)
     return dist, X1, X2new.flatten()
+
+def alignCoM( X1, X2):
+    """
+    align the center of mass of X2 with that of X1
+    """
+    natoms = len(X1) / 3
+    for i in xrange(3):
+        com = np.sum( X1[i::3] - X2[i::3] )
+        com /= natoms
+        X2[i::3] += com
+
+def CoMToOrigin( X1):
+    """
+    move the center of mass to the origin
+    """
+    X1 = np.reshape(X1, [-1,3])
+    natoms = len(X1[:,0])
+    com = X1.sum(0) / natoms
+    X1 -= com
+    return X1.reshape(-1)
+
+def alignRotation(XA, XB):
+    """
+    Align structure XB with XA
+
+    Align structure XB to be as similar as possible to structure XA.
+    To be precise, rotate XB, so as to minimize the distance |XA - XB|.
+
+    Rotations will be done around the origin, not the center of mass
+    """
+    nsites = len(XA)/3
+
+    dist, Q2 = getAlignRotation(XA, XB)
+    ###################################################################
+    # Q2 contains the quaternion which rotates XB to best align with X1.
+    # rotate XB according to Q2
+    ###################################################################
+
+    rot_mx = rot.q2mx( Q2 )
+    #print rot_mx
+    for j in range(nsites):
+        i = 3*j
+        XB[i:i+3] = np.dot( rot_mx, XB[i:i+3] )
+    
+    dist = np.linalg.norm(XA - XB) #more precise than what it returned
+
+    return dist, XB
+
+def getDistxyz( xyz1, xyz2 ):
+    return np.linalg.norm(xyz1 - xyz2)
 
 class MinDistWrapper(object):
     """
