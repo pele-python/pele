@@ -1,12 +1,12 @@
 import numpy as np
-from exact_match import ExactMatchCluster
+from exact_match import StandardClusterAlignment
 from pygmin.utils import rotations     
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 
 __all__ = ["MinPermDistCluster"]
 
 class MinPermDistCluster(object):
-    def __init__(self, niter=100, verbose=False, accuracy=0.01,
+    def __init__(self, niter=100, verbose=False, tol=0.01, accuracy=0.01,
                  measure=MeasureAtomicCluster(), transform=TransformAtomicCluster()):
         
         self.niter = 100
@@ -15,100 +15,88 @@ class MinPermDistCluster(object):
         self.measure = measure
         self.transform=transform
         self.accuracy = accuracy
-    
-    def exact_match(self, X1, X2):
-        ''' checks for an exact match '''
-        exactmatch = ExactMatchCluster(accuracy=self.accuracy, permlist=self.measure.permlist)
-        return exactmatch(X1, X2)
-    
-    def _optimize_perm_rot(self, X1, X2):
-        # TODO: add back option to quench again
-        distbest = self.measure.get_dist(X1, X2)
-        mxbest = np.identity(3)
+        self.tol = tol
         
-        for i in range(self.niter):
-            X2_ = X2.copy()
+    def check_match(self, x1, x2, rot, invert):
+        x2_trial = x2.copy()
+        if(invert):
+            self.transform.invert(x2_trial)
+        self.transform.rotate(x2_trial, rot)
+
         
-            #get and apply a random rotation
-            aa = rotations.random_aa()
-            mx = rotations.aa2mx(aa)
-            mxtot = mx
-            #print "X2.shape", X2.shape
-            
-            self.transform.rotate(X2_, mx)
-            
-            #optimize the permutations
-            dist, perm = self.measure.find_permutation(X1, X2_)
-            if self.verbose:
-                print "dist", dist, "distbest", distbest
-            #print "X2.shape", X2.shape
-            X2_ = self.transform.permute(X2_, perm)
-            #optimize the rotation
-            dist, mx2 = self.measure.find_rotation(X1, X2_)
-            mxtot = np.dot(mx2, mxtot)
-            
-            # TODO: check with custom distance function here?
-            # dist = self.get_dist(X1, X2)
-            
-            if dist < distbest:
-                distbest = dist
-                mxbest = mxtot
-        return distbest, mxbest 
+        # get the best permutation
+        dist, perm = self.measure.find_permutation(x1, x2_trial)
+        x2_trial = self.transform.permute(x2_trial, perm)
+       
+        # now find best rotational alignment, this is more reliable than just
+        # aligning the 2 reference atoms
+        dist, rot2 = self.measure.find_rotation(x1, x2_trial)
+        self.transform.rotate(x2_trial, rot2)
+        # use the maximum distance, not rms as cutoff criterion
+        
+        dist =  self.measure.get_dist(x1, x2_trial)
+        
+        if dist < self.distbest:
+            self.distbest = dist
+            self.rotbest = np.dot(rot2, rot)
+            self.x2_best = x2_trial    
     
-    def __call__(self, coords1, coords2, accuracy=0.01):
+    def finalize_best_match(self, x1):
+        self.transform.translate(self.x2_best, self.com_shift)
+
+        dist = self.measure.get_dist(x1, self.x2_best)
+        if np.abs(dist - self.distbest) > 1e-6:
+            raise RuntimeError        
+        if self.verbose:
+            print "finaldist", dist, "distmin", self.distbest
+
+        return dist, self.x2_best
+        
+    def __call__(self, coords1, coords2):        
         # we don't want to change the given coordinates
         check_inversion = False
-        X1 = np.copy(coords1)
-        X2 = np.copy(coords2)
+        x1 = np.copy(coords1)
+        x2 = np.copy(coords2)
     
-        #first check for exact match        
-        if self.exact_match(X1, X2):
-            #this is kind of cheating, I would prefer to return
-            #X2 in best alignment and the actual (small) distance
-            return 0.0, X1, X1.copy()
-        
-        com1 = self.measure.get_com(X1)
-        self.transform.translate(X1, -com1)
-        com2 = self.measure.get_com(X2)
-        self.transform.translate(X2, -com2)
-        
-        #find the best rotation stochastically
-        distbest, mxbest = self._optimize_perm_rot(X1, X2)
-        
-        use_inversion = False
-        if self.transform.can_invert():
-            X2i = X2.copy()
-            self.transform.invert(X2i)
-            distbest1, mxbest1 = self._optimize_perm_rot(X1, X2i)
-            if distbest1 < distbest:
-                if self.verbose:
-                    print "using inversion in minpermdist"
+        com1 = self.measure.get_com(x1)
+        self.transform.translate(x1, -com1)
+        com2 = self.measure.get_com(x2)
+        self.transform.translate(x2, -com2)
 
-                use_inversion = True
-                distbest = distbest1
-                mxbest = mxbest1
+        self.com_shift = com1
+        
+        self.mxbest = np.identity(3)
+        self.distbest = self.measure.get_dist(x1, x2)
     
-        #now we know the best rotation
-        if use_inversion: X2 = X2i
+        if self.distbest < self.tol:
+            return self.distbest, x1, x2
         
-        self.transform.rotate(X2, mxbest)
-        dist, perm = self.measure.find_permutation(X1, X2)
-        X2 = self.transform.permute(X2, perm)
-        tmp, mx = self.measure.find_rotation(X1.copy(), X2.copy())
-        self.transform.rotate(X2, mx)
+#        for rot, invert in StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
+#                                                    can_invert=self.transform.can_invert()):
+        for rot, invert in StandardClusterAlignment(x1, x2):
+            pass
+            #self.check_match(x1, x2, rot, invert)
+            #if self.distbest < self.tol:
+            #    dist, x2 = self.finalize_best_match(coords1)
+            #    return dist, coords1, x2
         
-        # Now perform a sanity check
-        dist = self.measure.get_dist(X1, X2)
-        if dist > distbest+0.001:
-            print "ERROR: minPermDistRanRot: dist is different from distbest %f %f" % (dist, distbest)
-        if self.verbose:
-            print "finaldist", dist, "distmin", distbest
+        # if we didn't find a perfect match here, try random rotations to optimize the match
+        for i in range(self.niter):
+            rot = rotations.aa2mx(rotations.random_aa())
+            self.check_match(x1, x2, rot, False)
+            if(self.transform.can_invert):
+                self.check_match(x1, x2, rot, True)
+
+#        self.transform.rotate(X2, mxbest)
+#        dist, perm = self.measure.find_permutation(X1, X2)
+#        X2 = self.transform.permute(X2, perm)
+#        tmp, mx = self.measure.find_rotation(X1.copy(), X2.copy())
+#        self.transform.rotate(X2, mx)
         
-        # shift back com
-        self.transform.translate(X1, com1)
-        self.transform.translate(X2, com1)
+        # TODO: should we do an additional sanity check for permutation / rotation?        
         
-        return dist, X1, X2
+        dist, x2 = self.finalize_best_match(coords1)                
+        return dist, coords1, x2
     
 def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
          minPermDist=MinPermDistCluster()):
