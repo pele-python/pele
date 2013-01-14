@@ -135,7 +135,7 @@ class StandardClusterAlignment(object):
             mul=-1.0
 
         # get rotation for current atom match candidates
-        rot = rmsfit.findrotation( \
+        dist, rot = rmsfit.findrotation( \
                       x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
                 
         return rot, self.invert

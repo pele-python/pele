@@ -1,4 +1,4 @@
-from rmsfit import find_rotation
+from rmsfit import findrotation
 from permutational_alignment import find_best_permutation
 from pygmin.utils import rotations
 import numpy as np
@@ -100,7 +100,7 @@ class MeasureAtomicCluster(MeasurePolicy):
         return find_best_permutation(X1, X2, self.permlist)
     
     def find_rotation(self, X1, X2):
-        dist, mx = find_rotation(X1, X2)
+        dist, mx = findrotation(X1, X2)
         return dist, mx
     
     

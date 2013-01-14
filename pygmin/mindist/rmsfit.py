@@ -11,8 +11,8 @@ def findrotation_kabsch(coords1, coords2, align_com=True):
         raise BaseException("dimension of arrays does not match")
     
     # reshape the arrays
-    x1 = coords1.reshape(-1,3)
-    x2 = coords2.reshape(-1,3)
+    x1 = coords1.reshape([-1,3])
+    x2 = coords2.reshape([-1,3])
     
     # determine number of atoms
     natoms = x1.shape[0]
@@ -54,21 +54,24 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
         raise BaseException("dimension of arrays does not match")
     
     # reshape the arrays
-    x1 = coords1.reshape(-1,3)
-    x2 = coords2.reshape(-1,3)
+    x1 = coords1.flatten()
+    x2 = coords2.flatten()
     
-    # determine number of atoms
+    x1 = x1.reshape([-1,3])
+    x2 = x2.reshape([-1,3])
+#    
+#    # determine number of atoms
     natoms = x1.shape[0]
     
     # set both com to zero
     if(align_com):
         com1 = np.sum(x1,axis=0) / float(natoms)
         com2 = np.sum(x2,axis=0) / float(natoms)
-        x1 -= com1
-        x2 -= com2
+        x1 = x1.copy() - com1
+        x2 = x2.copy() - com2
 
-    x1 = coords1
-    x2 = coords2
+    x1 = x1.flatten() 
+    x2 = x2.flatten()
     
     # TODO: this is very dirty!
     #########################################
@@ -131,7 +134,7 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
 
     return dist, rotations.q2mx(Q2)
 
-find_rotation = findrotation_kearsley
+findrotation = findrotation_kearsley
 
 if __name__ == "__main__":
     from pygmin.utils import rotations
