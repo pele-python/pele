@@ -260,3 +260,11 @@ def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape
             newperm[atom] = atomlist[perm[i]]
     return dist, newperm
 
+def optimize_permutations( X1, X2, permlist = None, user_algorithm=None):
+    dist, perm = find_best_permutation(X1, X2, permlist=permlist, user_algorithm=user_algorithm)
+    X2_ = X2.reshape([-1, 3])
+    X2new = X2_[perm]
+    
+    return dist, X1, X2new.flatten()
+
+
