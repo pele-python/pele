@@ -11,6 +11,8 @@ class readAmberParam:
     bondConn:
         list of 2-ples such that bondConn[i][0] and bondConn[i][1] are the 
         atom numbers of the i-th bond; atom numbers start at 1   
+    
+    TODO: deprecate -- use OpenMM parser instead (11 Jan 13) 
                 
     """
     
