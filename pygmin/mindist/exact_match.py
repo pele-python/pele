@@ -69,13 +69,14 @@ class StandardClusterAlignment(object):
         # do a very quick check if most distant atom from
         # center are within accuracy
         if np.abs(R1[idx1_1] - R2.max()) > accuracy:
-            return False
-        
-        # get indices of atoms in shell of thickness 2*accuracy
-        candidates1 = np.arange(len(R2))[ \
-             (R2 > R1[idx1_1] - accuracy)*(R2 < R1[idx1_1] + accuracy)] 
-        candidates2 = np.arange(len(R2))[ \
-             (R2 > R1[idx1_2] - accuracy)*(R2 < R1[idx1_2] + accuracy)] 
+            candidates1 = []
+            candidates2 = []
+        else:
+            # get indices of atoms in shell of thickness 2*accuracy
+            candidates1 = np.arange(len(R2))[ \
+                 (R2 > R1[idx1_1] - accuracy)*(R2 < R1[idx1_1] + accuracy)] 
+            candidates2 = np.arange(len(R2))[ \
+                 (R2 > R1[idx1_2] - accuracy)*(R2 < R1[idx1_2] + accuracy)] 
         
         self.x1 = x1
         self.x2 = x2
