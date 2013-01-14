@@ -11,7 +11,7 @@ from pygmin.storage import Database
 from pygmin.landscape import Graph
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from dlg_params import DlgParams
-
+from pygmin.config import config
 global pick_count
 
 class pick_event(object):
@@ -44,12 +44,15 @@ class MyForm(QtGui.QMainWindow):
         self.transition=None
         
         #try to load the pymol viewer.  
-        self.usepymol = True
-        try:
-            from pymol_viewer import PymolViewer
-            self.pymolviewer = PymolViewer(self.system.load_coords_pymol)
-        except (ImportError or NotImplementedError):
-            self.usepymol = False
+        self.usepymol = config.getboolean("gui", "use_pymol")
+        if self.usepymol:
+            try:
+                from pymol_viewer import PymolViewer
+                self.pymolviewer = PymolViewer(self.system.load_coords_pymol)
+            except (ImportError or NotImplementedError):
+                self.usepymol = False
+            
+        if self.usepymol == False:
             #note: glutInit() must be called exactly once.  pymol calls it
             #during pymol.finish_launching(), so if we call it again it will
             #give an error. On the other hand, if we're not using pymol we 
@@ -113,6 +116,7 @@ class MyForm(QtGui.QMainWindow):
 
     def SelectMinimum1(self, item):
         """called by the ui"""
+        print "selecting minimum 1", item.minimum._id, item.minimum.energy
         return self._SelectMinimum1(item.minimum)
  
     def _SelectMinimum2(self, minimum):
@@ -127,6 +131,7 @@ class MyForm(QtGui.QMainWindow):
 
     def SelectMinimum2(self, item):
         """called by the ui"""
+        print "selecting minimum 2", item.minimum._id, item.minimum.energy
         return self._SelectMinimum2(item.minimum)
     
     
@@ -141,7 +146,10 @@ class MyForm(QtGui.QMainWindow):
         coords1 = self.ui.oglPath.coords[1]
         coords2 = self.ui.oglPath.coords[2]
         align = self.system.get_mindist()
+        pot = self.system.get_potential()
+        print "energy before alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
         dist, coords1, coords2 = align(coords1, coords2)
+        print "energy after alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
         self.ui.oglPath.setCoords(coords1, 1)
         self.ui.oglPath.setCoords(coords2, 2)
         if self.usepymol:
