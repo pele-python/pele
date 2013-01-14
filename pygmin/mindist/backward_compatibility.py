@@ -16,3 +16,24 @@ def findBestPermutation( X1, X2, permlist = None, user_algorithm=None):
     print "WARNING: findBestPermutation is obsolete, use optimize_permutations instead"    
     return optimize_permutations(X1, X2, permlist=permlist, user_algorithm=user_algorithm)
     return dist, X1, X2new.flatten()
+
+class MinDistWrapper(object):
+    """
+    wrap a mindist routine into a callable object with the form mindist(X1, X2)
+    
+    Parameters
+    ----------
+    mindist : callable
+        the mindist routine
+    args : 
+        extra arguements for mindist
+    kwargs : 
+        extra keyword arguments for mindist
+    """
+    def __init__(self, mindist, *args, **kwargs):
+        self.mindist = mindist
+        self.args = args
+        self.kwargs = kwargs
+    
+    def __call__(self, X1, X2):
+        return self.mindist(X1, X2, *self.args, **self.kwargs)
