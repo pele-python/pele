@@ -1,6 +1,12 @@
 from minpermdist_stochastic import MinPermDistCluster
 from _minpermdist_policies import MeasureAtomicCluster
 from permutational_alignment import optimize_permutations
+from pygmin.utils import rotations
+from rmsfit import find_rotation
+
+def getAlignRotation(XA, XB):
+    print "WARNING: getAlignRotation is obsolete, use find_rotation"
+    return rotations.mx2q(find_rotation(XA, XB))
 
 def minPermDistStochastic(X1, X2, niter=100, permlist=None, verbose=False, accuracy=0.01,
                       check_inversion=True):
