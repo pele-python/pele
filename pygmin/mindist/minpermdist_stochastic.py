@@ -74,17 +74,16 @@ class MinPermDistCluster(object):
 #        for rot, invert in StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
 #                                                    can_invert=self.transform.can_invert()):
         for rot, invert in StandardClusterAlignment(x1, x2):
-            pass
-            #self.check_match(x1, x2, rot, invert)
-            #if self.distbest < self.tol:
-            #    dist, x2 = self.finalize_best_match(coords1)
-            #    return dist, coords1, x2
+            self.check_match(x1, x2, rot, invert)
+            if self.distbest < self.tol:
+                dist, x2 = self.finalize_best_match(coords1)
+                return dist, coords1, x2
         
         # if we didn't find a perfect match here, try random rotations to optimize the match
         for i in range(self.niter):
             rot = rotations.aa2mx(rotations.random_aa())
             self.check_match(x1, x2, rot, False)
-            if(self.transform.can_invert):
+            if(self.transform.can_invert()):
                 self.check_match(x1, x2, rot, True)
 
 #        self.transform.rotate(X2, mxbest)
