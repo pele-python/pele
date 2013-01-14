@@ -135,10 +135,10 @@ class StandardClusterAlignment(object):
             mul=-1.0
 
         # get rotation for current atom match candidates
-        rot = rmsfit.findrotation_kabsch( \
+        rot = rmsfit.findrotation( \
                       x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
                 
-        return rot.transpose(), self.invert
+        return rot, self.invert
     
 class ExactMatchCluster(object):
     ''' Deterministic check if 2 clusters are a perfect match
