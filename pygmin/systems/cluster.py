@@ -3,7 +3,7 @@ import numpy as np
 from pygmin.systems import BaseSystem
 from pygmin.potentials import LJ
 from pygmin.transition_states import orthogopt
-from pygmin.mindist import minPermDistStochastic, MinDistWrapper, ExactMatchCluster
+from pygmin.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster
 from pygmin.landscape import smoothPath
 from pygmin.transition_states import NEB, InterpolatedPathDensity
 
@@ -33,7 +33,7 @@ class AtomicCluster(BaseSystem):
         given translational, rotational and permutational symmeties
         """
         permlist = self.get_permlist()
-        return ExactMatchCluster(permlist=permlist, **kwargs)
+        return ExactMatchAtomicCluster(permlist=permlist, **kwargs)
     
     def get_mindist(self, **kwargs):
         """return a function which puts two structures in best alignment.
@@ -42,7 +42,7 @@ class AtomicCluster(BaseSystem):
         symmetry and permutational symmetry
         """
         permlist = self.get_permlist()
-        return MinDistWrapper(minPermDistStochastic, permlist=permlist, **kwargs)
+        return MinPermDistAtomicCluster(permlist=permlist, **kwargs)
         
     def get_orthogonalize_to_zero_eigenvectors(self):
         """the zero eigenvectors correspond to 3 global translational
