@@ -71,9 +71,8 @@ class MinPermDistCluster(object):
         if self.distbest < self.tol:
             return self.distbest, x1, x2
         
-#        for rot, invert in StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
-#                                                    can_invert=self.transform.can_invert()):
-        for rot, invert in StandardClusterAlignment(x1, x2):
+        for rot, invert in StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
+                                                    can_invert=self.transform.can_invert()):
             self.check_match(x1, x2, rot, invert)
             if self.distbest < self.tol:
                 dist, x2 = self.finalize_best_match(coords1)

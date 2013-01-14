@@ -211,6 +211,29 @@ class AASystem(object):
         cnew.posRigid[:] = interpolate_linear(cinitial.posRigid, cfinal.posRigid, t)
         cnew.rotRigid[:] = interpolate_angleaxis(cinitial.rotRigid, cfinal.rotRigid, t)        
         return cnew.coords
+  
+    def align_coords(self, x1, x2):
+        c2 = self.coords_adapter(x1)
+        c1 = self.coords_adapter(x2)
+        for p1, p2 in zip(c1.rotRigid,c2.rotRigid):
+            if np.linalg.norm(p2) < 1e-6:
+                if(np.linalg.norm(p1) < 1e-6):
+                    continue
+                n2 = p1/np.linalg.norm(p1)*2.*pi
+            else:
+                n2 = p2/np.linalg.norm(p2)*2.*pi
+        
+            while True:
+                p2n = p2+n2
+                if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+                    break
+                p2[:]=p2n
+                
+            while True:
+                p2n = p2-n2
+                if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+                    break
+                p2[:]=p2n 
     
     def align_path(self, path):
         for i in xrange(1, len(path)):
