@@ -98,14 +98,6 @@ class MinPermDistCluster(object):
         dist, x2 = self.finalize_best_match(coords1)                
         return dist, coords1, x2
         
-        
-class MinPermDistAtomicCluster(MinPermDistCluster):
-    def __init__(self, permlist=None, **kwargs):
-        transform=TransformAtomicCluster()
-        measure = MeasureAtomicCluster(permlist=permlist)
-        
-        MinPermDistCluster.__init__(self, transform=transform, measure=measure, **kwargs)
-        
 def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
          minPermDist=MinPermDistCluster()):
     import copy

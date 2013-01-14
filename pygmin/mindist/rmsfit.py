@@ -1,4 +1,5 @@
 import numpy as np
+from pygmin.utils import rotations
 
 def findrotation_kabsch(coords1, coords2, align_com=True):
     '''
@@ -66,6 +67,10 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
         x1 -= com1
         x2 -= com2
 
+    x1 = coords1
+    x2 = coords2
+    
+    # TODO: this is very dirty!
     #########################################
     #Create matrix QMAT
     #########################################
