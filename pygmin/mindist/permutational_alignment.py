@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 
-__all__ = ["find_best_permutation"] 
+__all__ = ["find_best_permutation", "optimize_permutations"] 
 
 have_minperm = False
 have_hungarian = False
