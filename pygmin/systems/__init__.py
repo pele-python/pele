@@ -108,11 +108,12 @@ be modified in either of these two equivalent ways::
     mysys.params.double_ended_connect.local_connect_params.tsSearchParams.max_uphill_step = 0.2
     mysys.params["double_ended_connect"]["local_connect_params"]["tsSearchParams"]["max_uphill_step"] = 0.2
 
-The logic is that the dictionary `double_ended_connect` is passed to 
-`DoubleEndedConnect` by the system class.  `DoubleEndedConnect` passes 
-`local_connect_params` to `LocalConnect`, `LocalConnect passes` 
-`tsSearchParams` to `FindTransitionState` and so on.  Each parameter dictionary is passed
-to the following function
+The logic is that the system class passes the dictionary `double_ended_connect`
+as kwargs (key word arguments) to `DoubleEndedConnect`.  One of those keyword
+argemnts is `local_connect_params`, which is then passed by
+`DoubleEndedConnect` as kwargs to `LocalConnect`.  `LocalConnect` then passes
+`tsSearchParams` to `FindTransitionState` and so on.  Each parameter dictionary
+holds keyword arguments for the following function
 
 ===============================  =============================================
 parameter dictionary             passed as parameters to
@@ -147,3 +148,4 @@ from basesystem import *
 from cluster import *
 from ljcluster import *
 from bljcluster import *
+
