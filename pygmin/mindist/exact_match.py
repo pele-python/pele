@@ -113,6 +113,8 @@ class StandardClusterAlignment(object):
                 self.iter2 = iter(self.candidates2)
                 # and increment iter1
                 self.idx2_1 = self.iter1.next()
+                self.idx2_2 = None
+                return self.next()
             
             if self.idx2_1 == self.idx2_2:
                 return self.next()
@@ -124,9 +126,17 @@ class StandardClusterAlignment(object):
         idx2_1 = self.idx2_1
         idx2_2 = self.idx2_2
         
+        assert idx1_1 is not None
+        assert idx1_2 is not None
+        assert idx2_1 is not None
+        assert idx2_2 is not None
+        
         # we can immediately trash the match if angle does not match
-        cos_theta2 = np.dot(x2[idx2_1], x2[idx2_2]) / \
-            (np.linalg.norm(x2[idx2_1])*np.linalg.norm(x2[idx2_2]))
+        try:
+            cos_theta2 = np.dot(x2[idx2_1], x2[idx2_2]) / \
+                (np.linalg.norm(x2[idx2_1])*np.linalg.norm(x2[idx2_2]))
+        except ValueError:
+            raise
         if(np.abs(cos_theta2 - cos_theta2) > 0.5):
             return self.next()
 
