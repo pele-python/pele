@@ -27,6 +27,9 @@ class QMinimumInList(QtGui.QListWidgetItem):
     def setMinimum(self, minimum):
         self.minid = id(minimum)
         self.minimum = minimum
+    def __lt__(self, item2):
+        #sort the energies in the list lowest to highest
+        return self.minimum.energy > item2.minimum.energy
 
 class MyForm(QtGui.QMainWindow):
     def __init__(self, systemtype, parent=None):
@@ -155,10 +158,10 @@ class MyForm(QtGui.QMainWindow):
         print "energy after alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
         self.ui.oglPath.setCoords(coords1, 1)
         self.ui.oglPath.setCoords(coords2, 2)
+        print "best alignment distance", dist
         if self.usepymol:
             self.pymolviewer.update_coords([coords1], index=1)
             self.pymolviewer.update_coords([coords2], index=2)
-        print "best alignment distance", dist
     
     def ConnectMinima(self):
         """do an NEB run (not a connect run).  Don't find best alignment first"""
