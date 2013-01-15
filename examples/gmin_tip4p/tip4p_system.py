@@ -14,7 +14,7 @@ from pygmin.optimize import fire, mylbfgs
 from pygmin import defaults
 
 from pygmin.angleaxis.aamindist import *
-from pygmin.mindist import MinPermDistCluster
+from pygmin.angleaxis import MinPermDistAACluster, ExactMatchAACluster
 
 class TIP4PSystem(BaseSystem):
     def __init__(self):
@@ -72,10 +72,11 @@ class TIP4PSystem(BaseSystem):
         kwargs = dict_copy_update(self.params["takestep"], kwargs)                
         return RotationalDisplacement(**kwargs)
     
+    def get_compare_exact(self, **kwargs):
+        return ExactMatchAACluster(self.aasystem, **kwargs)
+    
     def get_mindist(self, **kwargs):
-        transform = TransformAngleAxisCluster(self.aasystem)
-        measure = MeasureAngleAxisCluster(self.aasystem, transform)
-        return MinPermDistCluster(transform = transform, measure=measure)
+        return MinPermDistAACluster(self.aasystem, **kwargs)
     
     def createNEB(self, coords1, coords2):
         pot = self.get_potential()

@@ -1,13 +1,19 @@
 import numpy as np
 from pygmin.utils import rotations
+from pygmin.mindist import ExactMatchCluster, MinPermDistCluster, StandardClusterAlignment
 from pygmin.mindist import TransformPolicy, MeasurePolicy
-from pygmin.mindist import getAlignRotation, find_best_permutation
+from pygmin.mindist import findrotation, find_best_permutation
+from math import pi
 
 class TransformAngleAxisCluster(TransformPolicy):
     ''' transformation rules for atomic clusters '''
     def __init__(self, topology):
         self.topology = topology
-        
+        self._can_invert = True
+        for s in topology.sites:
+            if s.inversion is None:
+                self._can_invert = False
+                
     def translate(self, X, d):
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
@@ -16,7 +22,7 @@ class TransformAngleAxisCluster(TransformPolicy):
         if(ca.natoms > 0):
             ca.posAtom += d
         
-    def rotate(self, X, mx,):
+    def rotate(self, X, mx):
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
             ca.posRigid[:] = np.dot(mx, ca.posRigid.transpose()).transpose()
@@ -28,10 +34,13 @@ class TransformAngleAxisCluster(TransformPolicy):
             ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
         
     def can_invert(self):
-        return False
+        return self._can_invert
     
     def invert(self, X):
-        raise RuntimeError("system cannot be inverted")
+        ca = self.topology.coords_adapter(X)
+        ca.posRigid[:] = - ca.posRigid 
+        for p, site in zip(ca.rotRigid, self.topology.sites):
+            p[:] = rotations.rotate_aa(rotations.mx2aa(site.inversion), p)
     
     def permute(self, X, perm):
         Xnew = X.copy()
@@ -65,8 +74,30 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         
         return com
 
+    def align(self, coords1, coords2):
+        c1 = self.topology.coords_adapter(coords1)
+        c2 = self.topology.coords_adapter(coords2)
+        
+        # now account for symmetry in water
+        for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
+            p2_min = p2.copy()
+            theta_min = np.linalg.norm(rotations.rotate_aa(p2_min,-p1))
+            theta_min -= int(theta_min/2./pi)*2.*pi
+            theta_0 = theta_min    
+            for rot in site.symmetries:
+                p2n = rotations.rotate_aa(rotations.mx2aa(rot), p2)
+                theta = np.linalg.norm(rotations.rotate_aa(p2n,-p1))
+                theta -= int(theta/2./pi)*2.*pi
+                if(theta < theta_min): 
+                    theta_min = theta
+                    p2_min[:] = p2n
+            p2[:] = p2_min
+
     def get_dist(self, X1, X2):
-        return self.topology.distance_squared(X1, X2)
+        x1 = X1.copy()
+        x2 = X2.copy()
+        self.align(x1, x2)
+        return self.topology.distance_squared(x1, x2)
     
     def find_permutation(self, X1, X2):
         ca1 = self.topology.coords_adapter(X1)
@@ -81,10 +112,69 @@ class MeasureAngleAxisCluster(MeasurePolicy):
             raise NotImplementedError
         
         
-        dist, Q2 = getAlignRotation(ca1.posRigid.flatten(), ca2.posRigid.flatten())
-        mx = rotations.q2mx(Q2)
+        dist, mx = findrotation(ca1.posRigid.flatten(), ca2.posRigid.flatten())
         X2trans = X2.copy()
         self.transform.rotate(X2trans, mx)
         
         return self.get_dist(X1, X2trans), mx
     
+class ExactMatchAACluster(ExactMatchCluster):
+    def __init__(self, topology, transform=None, measure=None, **kwargs):
+        self.topology = topology
+        
+        if transform is None:
+            transform = TransformAngleAxisCluster(topology)
+        
+        if measure is None:
+            measure = MeasureAngleAxisCluster(topology, transform=transform)
+        
+        ExactMatchCluster.__init__(self, transform=transform, measure=measure, **kwargs)
+        
+    def __call__(self, coords1, coords2):
+        x1 = coords1.copy()
+        x2 = coords2.copy()
+        
+        ca1 = self.topology.coords_adapter(x1)
+        ca2 = self.topology.coords_adapter(x2)
+        
+        com1 = self.measure.get_com(coords1)
+        self.transform.translate(x1, -com1)
+        
+        com2 = self.measure.get_com(coords2)
+        self.transform.translate(x2, -com2)
+        
+        for rot, invert in StandardClusterAlignment(ca1.posRigid, ca2.posRigid, accuracy = self.accuracy,
+                                   can_invert=self.transform.can_invert()):
+            if self.check_match(x1, x2, rot, invert):
+                return True
+        return False
+    
+class MinPermDistAACluster(MinPermDistCluster):
+    def __init__(self, topology, transform=None, measure=None, **kwargs):
+        self.topology = topology
+        
+        if transform is None:
+            transform = TransformAngleAxisCluster(topology)
+        
+        if measure is None:
+            measure = MeasureAngleAxisCluster(topology, transform=transform)
+        
+        MinPermDistCluster.__init__(self, transform=transform, measure=measure, **kwargs)
+
+    def _standard_alignments(self, x1, x2):
+        ca1 = self.topology.coords_adapter(x1)
+        ca2 = self.topology.coords_adapter(x2)
+        return StandardClusterAlignment(ca1.posRigid, ca2.posRigid, accuracy=self.accuracy, 
+                                        can_invert=self.transform.can_invert())
+
+    def finalize_best_match(self, x1):
+        self.transform.translate(self.x2_best, self.com_shift)
+        self.measure.align(x1, self.x2_best)
+        
+        dist = self.measure.get_dist(x1, self.x2_best)
+        if np.abs(dist - self.distbest) > 1e-6:
+            raise RuntimeError        
+        if self.verbose:
+            print "finaldist", dist, "distmin", self.distbest
+
+        return dist, self.x2_best

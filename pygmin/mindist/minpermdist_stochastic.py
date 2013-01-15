@@ -51,7 +51,10 @@ class MinPermDistCluster(object):
             print "finaldist", dist, "distmin", self.distbest
 
         return dist, self.x2_best
-        
+
+    def _standard_alignments(self, x1, x2):
+        return StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
+                                                    can_invert=self.transform.can_invert())
     def __call__(self, coords1, coords2):        
         # we don't want to change the given coordinates
         check_inversion = False
@@ -72,8 +75,7 @@ class MinPermDistCluster(object):
         if self.distbest < self.tol:
             return self.distbest, x1, x2
         
-        for rot, invert in StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
-                                                    can_invert=self.transform.can_invert()):
+        for rot, invert in self._standard_alignments(x1, x2):
             self.check_match(x1, x2, rot, invert)
             if self.distbest < self.tol:
                 dist, x2 = self.finalize_best_match(coords1)
