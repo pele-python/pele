@@ -57,7 +57,8 @@ class OpenMMAmberPotential(BasePotential):
 # '''  ------------------------------------------------------------------- '''
     def getEnergy(self, coords):
         """ returns energy in kcal/mol """
-         
+        
+        # using unit.Quantity is 5 times faster than calling copyToLocalCoords!  
         coordinates = unit.Quantity( coords.reshape(self.natoms,3) , angstrom)        
         self.simulation.context.setPositions( coordinates )        
                 
