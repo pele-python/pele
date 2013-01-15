@@ -67,7 +67,8 @@ class MinPermDistCluster(object):
         
         self.mxbest = np.identity(3)
         self.distbest = self.measure.get_dist(x1, x2)
-    
+        self.x2_best = x2.copy()
+        
         if self.distbest < self.tol:
             return self.distbest, x1, x2
         
