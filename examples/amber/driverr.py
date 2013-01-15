@@ -1,5 +1,5 @@
-
-from pygmin.systems.amberSystem import AMBERSystem_GMIN, AMBERSystem_OpenMM 
+from pygmin.systems.amberSystem import AMBERSystem_GMIN, AMBERSystem_OpenMM
+import time  
 
 # create new amber system
 print '----------------------------------'
@@ -7,13 +7,14 @@ print 'GMIN POTENTIAL'
 sys   = AMBERSystem_GMIN('coords.prmtop', 'coords.inpcrd')        
 sys.test_potential('coords.pdb')
 
+# openmm potential is ~6x slower than gmin potential 
 #print 'OPENmm POTENTIAL' 
-#sysOpenMM  = AMBERSystem_OpenMM('coords.prmtop', 'coords.inpcrd')
-#sysOpenMM.test_potential('coords.pdb')
+#sys  = AMBERSystem_OpenMM('coords.prmtop', 'coords.inpcrd')
+#sys.test_potential('coords.pdb')
 
 # load existing database 
 from pygmin.storage import Database
-dbcurr = Database(db="aladipep.db")
+dbcurr = sys.create_database(db="aladipep.db")
 
 print "---------id, minener"
 
@@ -31,15 +32,20 @@ for ts in dbcurr.transition_states() :
 #    sysOpenMM.create_database(db=dbcurr)    
         
 # ------- TEST gui 
-from pygmin.gui import run as gr    
-gr.run_gui(sys, db="aladipep.db")
+#from pygmin.gui import run as gr    
+#gr.run_gui(sys, db="aladipep.db")
 
 # ------ Test potential 
 sys.test_potential('coords.pdb')
     
 # ------ BH 
-sys.test_BH(dbcurr)
 
+start = time.clock()
+sys.test_BH(dbcurr)
+elapsed = (time.clock() - start)
+print "time taken by BH = ", elapsed 
+
+exit() 
 # ------- Connect runs 
 sys.test_connect(dbcurr)  
     

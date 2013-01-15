@@ -27,6 +27,9 @@ class QMinimumInList(QtGui.QListWidgetItem):
     def setMinimum(self, minimum):
         self.minid = id(minimum)
         self.minimum = minimum
+    def __lt__(self, item2):
+        #sort the energies in the list lowest to highest
+        return self.minimum.energy > item2.minimum.energy
 
 class MyForm(QtGui.QMainWindow):
     def __init__(self, systemtype, parent=None):
@@ -89,8 +92,12 @@ class MyForm(QtGui.QMainWindow):
     def connect_db(self, filename):
         db = self.system.create_database(db=filename)
         self.system.database = db
+        #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
-            self.NewMinimum(minimum)
+            self.NewMinimum(minimum, sort_items=False)
+        for obj in self.listMinima:
+            obj.sortItems(1)
+
         self.system.database.onMinimumAdded=self.NewMinimum
         self.system.database.onMinimumRemoved=self.RemoveMinimum
         
@@ -155,10 +162,10 @@ class MyForm(QtGui.QMainWindow):
         print "energy after alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
         self.ui.oglPath.setCoords(coords1, 1)
         self.ui.oglPath.setCoords(coords2, 2)
+        print "best alignment distance", dist
         if self.usepymol:
             self.pymolviewer.update_coords([coords1], index=1)
             self.pymolviewer.update_coords([coords2], index=2)
-        print "best alignment distance", dist
     
     def ConnectMinima(self):
         """do an NEB run (not a connect run).  Don't find best alignment first"""
@@ -357,7 +364,8 @@ class MyForm(QtGui.QMainWindow):
         pl.legend(loc='best')
         pl.show()
      
-    def NewMinimum(self, minimum):
+    def NewMinimum(self, minimum, sort_items=True):
+        """ add a new minimum to the system """
         E=minimum.energy
         minid=id(minimum)
         coords=minimum.coords
@@ -366,7 +374,8 @@ class MyForm(QtGui.QMainWindow):
             item.setCoords(coords)
             item.setMinimum(minimum)
             obj.addItem(item)    
-            obj.sortItems(1)
+            if sort_items:
+                obj.sortItems(1)
                 
     def RemoveMinimum(self, minimum):
         minid = id(minimum)

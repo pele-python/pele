@@ -4,7 +4,7 @@ import tempfile
 
 # pygmin  
 from pygmin.systems import BaseSystem
-from pygmin.mindist import minPermDistStochastic, MinDistWrapper, ExactMatchCluster
+from pygmin.mindist import ExactMatchAtomicCluster, MinPermDistAtomicCluster
 from pygmin.transition_states import orthogopt
 from pygmin.transition_states import InterpolatedPathDensity, NEB
 from pygmin.systems import BaseParameters
@@ -21,6 +21,7 @@ __all__ = ["AMBERSystem_GMIN", "AMBERSystem_OpenMM"]
 class AMBERBaseSystem(BaseSystem):
     """
     System class for biomolecules using AMBER ff. 
+    
     Sets up using prmtop and inpcrd files used in Amber GMIN and Optim. 
     
     Potential parameters (e.g. non-bonded cut-offs are set in    
@@ -29,9 +30,11 @@ class AMBERBaseSystem(BaseSystem):
     
     Parameters
     ----------
-    prmtopFname   = prmtop file name 
+    prmtopFname   : str 
+        prmtop file name 
     
-    inpcrdFname   = inpcrd file name 
+    inpcrdFname   : str
+        inpcrd file name 
         
     See Also
     --------
@@ -78,12 +81,16 @@ class AMBERBaseSystem(BaseSystem):
         coords = np.reshape(np.transpose(coords), 3*len(coords), 1)
         return coords 
 
-    def get_mindist(self):
-        # todo - permutable hydrogens for ala dipep 
-        permlist = [[0, 2, 3],    [11, 12, 13],     [19, 20, 21] ]
-#        permlist = []
+    def get_permlist(self):
+        # todo - permutable hydrogens for ala dipep
+        # todo - make this general
+        return [[0, 2, 3],    [11, 12, 13],     [19, 20, 21] ]
         
-        return MinDistWrapper(minPermDistStochastic, permlist=permlist, niter=10)
+
+    def get_mindist(self):
+        permlist = self.get_permlist() 
+        return MinPermDistAtomicCluster(permlist=permlist, niter=10)
+
 
     def createNEB(self, coords1, coords2):
         pot = self.get_potential()
@@ -103,8 +110,8 @@ class AMBERBaseSystem(BaseSystem):
         return orthogopt
     
     def get_compare_exact(self, **kwargs):
-        permlist = [range(self.natoms)]
-        return ExactMatchCluster(permlist=permlist, **kwargs)
+        permlist = self.get_permlist()
+        return ExactMatchAtomicCluster(permlist=permlist, **kwargs)
     
     def drawCylinder(self, X1, X2):
         from OpenGL import GL,GLUT, GLU
