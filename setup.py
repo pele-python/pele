@@ -20,7 +20,7 @@ if False:
 #    extra_compile_args += ["-ffixed-line-length-none"]
 
 fmodules = ModuleList(extra_compile_args=extra_compile_args)
-fmodules.add_module("pygmin/mindist/overlap.f90")
+#fmodules.add_module("pygmin/mindist/overlap.f90")
 fmodules.add_module("pygmin/mindist/minperm.f90")
 fmodules.add_module("pygmin/optimize/mylbfgs_fort.f90")
 fmodules.add_module("pygmin/optimize/mylbfgs_updatestep.f90")

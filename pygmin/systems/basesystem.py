@@ -133,6 +133,8 @@ class BaseSystem(object):
         """a wrapper for compare exact so in input can be in 
         Minimum Form"""
         compare = self.get_compare_exact()
+        if compare is None:
+            return None
         return lambda m1, m2: compare(m1.coords, m2.coords)
     
     def create_database(self, *args, **kwargs):

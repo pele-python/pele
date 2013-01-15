@@ -2,6 +2,7 @@ PyGMIN, a python version of GMIN, OPTIM, and PATHSAMPLE.  GMIN was originally
 written by David Wales and is desiged to find the global energy minimum for
 molecular systems.
 
+The code project upon which this python package is based can be found at
 http://www-wales.ch.cam.ac.uk/software.html
 
 The code is hosted at
@@ -10,27 +11,49 @@ https://github.com/js850/PyGMIN
 for documentation, see
 http://js850.github.com/PyGMIN/
 
-===INSTALLATION===
 
-Required packages:  
+INSTALLATION
+============
 
-python packages
-----------------
+Required packages
+-----------------
+
+for compilation::
+  cython
+  f2py (comes bundled with numpy, see below)
+
+python packages (install using easy_install or pip)::
+
   numpy (with f2py)
   scipy
   networkx
      https://networkx.lanl.gov
-     ( $ easy_install networkx ) 
      for graph functionality
   SQLAlchemy 0.7 
      http://www.sqlalchemy.org/
-     ( $ easy_install SQLAlchemy ) 
      for managing database of stationary points 
 
+
   hungarian (optional)
-     ( $ easy_install hungarian ) 
      for min dist routines
      
+
+If you want to use the gui you need python bindings for qt4 and opengl.  The
+following packages install what you need for ubuntu (using the repository
+managager apt-get or aptitude)::
+
+  python-qt4
+  python-opengl 
+  python-qt4-gl
+
+  pymol (optional)
+
+
+If you want to use the gui you also need the python package::
+
+  matplotlib
+
+
 
 
 
@@ -38,21 +61,19 @@ Compilation
 -----------
 
 Compilation is required for use of the fast potentials, those written in C++
-and/or fortran)
-
-using setup.py:
-The standard python setup utility (distutils).  There are lots of options for
-how and where to install. For more information::
+and/or fortran).  The package uses the standard python setup utility
+(distutils).  There are lots of options for how and where to install. For more
+information::
   
   python setup.py --help 
   python setup.py --help-commands
 
 Developers probably want to install "in-place", i.e. build the extension
-modules in their current directories.::
+modules in their current directories::
 
   python setup.py build_ext -i
 
-Users can install pygmin in the standard python package location.::
+Users can install pygmin in the standard python package location::
 
   python setup.py build
   python setup.py install [--user]
@@ -60,7 +81,7 @@ Users can install pygmin in the standard python package location.::
 where --user installs it in $HOME/.local/
 
 
-PYTHONPATH:  
+PYTHONPATH  
 ----------
 make sure to add the install directory to your PYTHONPATH environment variable
 

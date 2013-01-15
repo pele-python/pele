@@ -57,13 +57,11 @@ applications require
 
 
 """
-
+from backward_compatibility import *
 from permutational_alignment import *
-from mindistutils import *
-#from minpermdist import *
 from exact_match import *
 from minpermdist_stochastic import *
-from minpermdist_rbmol import *
-from mindist import *
 from rmsfit import *
+from _minpermdist_policies import *
 
+from _wrapper_atomiccluster import *

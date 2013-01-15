@@ -1,11 +1,12 @@
 import numpy as np
 import itertools
 
-__all__ = ["findBestPermutation"] 
+__all__ = ["find_best_permutation", "optimize_permutations"] 
 
 have_minperm = False
 have_hungarian = False
 have_munkres = False
+
 try:
     import minperm
     have_minperm = True    
@@ -25,15 +26,15 @@ except ImportError:
 
 _findBestPermutationList = None
 if have_minperm:
-    def _findBestPermutationList(*args, **kwargs):
-        return findBestPermutationListOPTIM(*args, **kwargs)
+    def _find_permutations(*args, **kwargs):
+        return find_permutations_OPTIM(*args, **kwargs)
 
 elif have_hungarian:
-    def _findBestPermutationList(*args, **kwargs):
-        return findBestPermutationListHungarian(*args, **kwargs)
+    def _find_permutations(*args, **kwargs):
+        return find_permutations_hungarian(*args, **kwargs)
 elif have_munkres:
-    def _findBestPermutationList(*args, **kwargs):
-        return findBestPermutationListMunkres(*args, **kwargs)
+    def _find_permutations(*args, **kwargs):
+        return find_permutations_munkres(*args, **kwargs)
 else:
     raise BaseException("No Hungarian algorithm implementation found!"
                         "Please compile minperm.f90 or install the hungarian or the munkres package")
@@ -53,22 +54,21 @@ def permuteArray(Xold, perm):
     return Xnew
 
 
-def makeCostMatrix(X1, X2, atomlist):
+def _make_cost_matrix(X1, X2):
     """
     return the cost matrix for use in the hungarian algorithm.
     
     the cost matrix is the distance matrix (squared) for all atoms in atomlist
     """
-    atomlistnp = np.array(atomlist)
-    X13 = X1[atomlistnp,:]
-    X23 = X2[atomlistnp,:]
-    cost = (((X13[np.newaxis,:] - X23[:,np.newaxis,:])**2).sum(2))
+    cost = (((X1[np.newaxis,:] - X2[:,np.newaxis,:])**2).sum(2))
     return cost
 
-def findBestPermutationListMunkres( X1, X2, atomlist = None ):
+def find_permutations_munkres( X1, X2, make_cost_matrix=_make_cost_matrix ):
     """
     For a given set of positions X1 and X2, find the best permutation of the
     atoms in X2.
+    
+    The positions must already be reshaped to reflect the dimensionality of the system!
 
     Use an implementation of the Hungarian Algorithm in the Python package
     index (PyPi) called munkres (another name for the algorithm).  The
@@ -84,18 +84,11 @@ def findBestPermutationListMunkres( X1, X2, atomlist = None ):
     was casing an integer pointer as (npy_intp *).  I may add the corrected 
     version to pygmin at some point
     """
-    nsites = len(X1) / 3
-
-    if atomlist == None:
-        atomlist = range(nsites)
-
     #########################################
     # create the cost matrix
     # cost[j,i] = (X1(i,:) - X2(j,:))**2
     #########################################
-    X1 = X1.reshape([-1,3])
-    X2 = X2.reshape([-1,3])
-    cost = makeCostMatrix(X1, X2, atomlist)
+    cost = make_cost_matrix(X1, X2)
     #cost = np.sqrt(cost)
 
     #########################################
@@ -110,23 +103,20 @@ def findBestPermutationListMunkres( X1, X2, atomlist = None ):
     #########################################
     costnew = 0.
     X2new = np.copy(X2)
+    new_indices = range(len(X1))
     for (iold, inew) in newind:
         costnew += cost[iold, inew]
-        if iold != inew:
-            atomiold = atomlist[iold]
-            atominew = atomlist[inew]
-            X2new[atominew,:] = X2[atomiold,:]
-        
-    X1 = X1.reshape(-1)
-    X2new = X2new.reshape(-1)
-#    dist = np.linalg.norm(X1-X2new)
-    dist = np.sqrt(costnew)
-    return dist, X1.reshape(-1), X2new.reshape(-1)
+        new_indices[inew] = iold
 
-def findBestPermutationListHungarian( X1, X2, atomlist = None ):
+    dist = np.sqrt(costnew)
+    return dist, new_indices
+
+def find_permutations_hungarian( X1, X2, make_cost_matrix=_make_cost_matrix ):
     """
     For a given set of positions X1 and X2, find the best permutation of the
     atoms in X2.
+
+    The positions must already be reshaped to reflect the dimensionality of the system!
 
     Use an implementation of the Hungarian Algorithm in the Python package
     index (PyPi) called munkres (another name for the algorithm).  The
@@ -142,20 +132,11 @@ def findBestPermutationListHungarian( X1, X2, atomlist = None ):
     was casing an integer pointer as (npy_intp *).  I may add the corrected 
     version to pygmin at some point
     """
-    nsites = len(X1) / 3
-
-    if atomlist == None:
-        atomlist = range(nsites)
-    atomlist = np.array(atomlist)
-
-
     #########################################
     # create the cost matrix
     # cost[j,i] = (X1(i,:) - X2(j,:))**2
     #########################################
-    X1 = X1.reshape([-1,3])
-    X2 = X2.reshape([-1,3])
-    cost = makeCostMatrix(X1, X2, atomlist)
+    cost = make_cost_matrix(X1, X2)
     #cost = np.sqrt(cost)
 
     #########################################
@@ -175,53 +156,44 @@ def findBestPermutationListHungarian( X1, X2, atomlist = None ):
     #########################################
     # apply the permutation
     #########################################
-    newperm = np.array(atomlist[perm])
-    X2new = np.copy(X2)
-    X2new[atomlist,:] = X2[newperm,:]
+    # TODO: how to get new distance?
+    dist = -1
+    return dist, perm
 
-        
-    X1 = X1.reshape(-1)
-    X2new = X2new.reshape(-1)
-    dist = np.linalg.norm(X1-X2new)
-    return dist, X1, X2new
-
-def findBestPermutationListOPTIM(X1, X2, atomlist, boxl=None):
+def find_permutations_OPTIM(X1, X2, boxl=None, make_cost_matrix=None):
     """
     use OPTIM's minperm() routine to calculate the optimum permutation
     """    
+    
+    if make_cost_matrix is not _make_cost_matrix:
+        raise RuntimeError("cannot use a custom cost matrix with findBestPermutationListOPTIM")
+
     #deal with periodic boundary conditions
     periodic = boxl is not None
     if not periodic:
         #it must have a value for passing to fortran 
         boxl = 1.
     sx = sy = sz = boxl
-    
-    X1 = X1.reshape([-1,3])
-    X2 = X2.reshape([-1,3])
-    atomlist = np.array(atomlist)
-    X13 = X1[atomlist,:].reshape(-1)
-    X23 = X2[atomlist,:].reshape(-1)
-    
+        
     #run the minperm algorithm
-    perm, dist, worstdist, worstradius = minperm.minperm(X13, X23, sx, sy, sz, periodic)
+    perm, dist, worstdist, worstradius = minperm.minperm(X1.flatten(), X2.flatten(), sx, sy, sz, periodic)
     perm -= 1 #fortran indexing
 
     #note, dist returned by minperm comes will only be accurate to 6 decimal places at best.
     #if we want a more accurate distance we should calculate it from the coordinates
 
-    # apply the permutation
-    newperm = np.array(atomlist[perm])
-    X2new = np.copy(X2)
-    X2new[atomlist,:] = X2[newperm,:]
-
     dist = np.sqrt(dist)
-    return dist, X1.reshape(-1), X2new.reshape(-1)
+    return dist, perm
 
-    
 
-def findBestPermutation( X1, X2, permlist = None, user_algorithm=None):
+def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape=True, user_cost_matrix=_make_cost_matrix):
     """
     find the permutation of the atoms which minimizes the distance |X1-X2|
+    
+    With all the default parameters, findBestPermutation assumes that X1, X2
+    are arrays of atoms in 3d space and performs reshaping on the coordinates. However,
+    if you want to pass a 2D system or a custom array with own cost function, you can turn
+    automatic reshaping off. 
     
     Parameters
     ----------
@@ -235,14 +207,18 @@ def findBestPermutation( X1, X2, permlist = None, user_algorithm=None):
     user_algoriithm : None or callable
         you can optionally pass which algorithm to use.
     
+    gen_cost_matrix : None or callable
+        user function to generate the cost matrix
+        
+    reshape : boolean
+        shall coordinate reshaping be performed.
+    
     Returns
     -------
     dist : float
         the minimum distance
-    X1new : 
-        should be the same as X1
-    X2new :
-        X2 in best alignment with X1
+    perm:
+        a list of all permutations
     
     Notes
     -----
@@ -265,218 +241,30 @@ def findBestPermutation( X1, X2, permlist = None, user_algorithm=None):
     a compiled language for an additional speed boost. It scales roughtly like natoms**2
 
     """
+    if reshape:
+        X1 = X1.reshape([-1,3])
+        X2 = X2.reshape([-1,3])
+    
     if permlist is None:
-        permlist = [range(len(X1)/3)]
+        permlist = [range(len(X1))]
+    
+    newperm = range(len(X1))
+    
     for atomlist in permlist:
         if user_algorithm is None:
-            dist, X1, X2 = _findBestPermutationList( X1, X2, atomlist )
+            dist, perm = _find_permutations( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix)
         else:
-            dist, X1, X2 = user_algorithm( X1, X2, atomlist )
-    dist = np.linalg.norm(X1-X2)
-    return dist, X1, X2
+            dist, perm = user_algorithm( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix)
+            
+        for atom,i in zip(atomlist,xrange(len(atomlist))):
+            newperm[atom] = atomlist[perm[i]]
+    return dist, newperm
 
-
-#####################################################################
-# only testing stuff below here
-#####################################################################
-
-
-import unittest
-from testmindist import TestMinDist
-class TestPermLJ(TestMinDist):
-    """
-    test permutational optimization algorithms with the LJ potential
-    """
-    def setUp(self):
-        from pygmin.potentials import LJ
-        from pygmin import defaults
-        from pygmin.mindist import CoMToOrigin
-        
-        self.natoms = 15
-        self.pot = LJ(self.natoms)
-        self.permlist = [range(self.natoms)]
-        
-        self.X1 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
-        ret = defaults.quenchRoutine(self.X1, self.pot.getEnergyGradient, tol=.1)
-        self.X1 = ret[0]
-        self.X1 = CoMToOrigin(self.X1)
-
-    def testLJ(self):
-        """basic test to make sure everythings working right"""
-        import pygmin.defaults as defaults
-        X1 = np.copy(self.X1)
-        X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
-        
-        #run a quench so the structure is not crazy
-        ret = defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
-        X2 = ret[0]
-
-        self.runtest(X1, X2, findBestPermutation)
-
-    def testLJ_OPTIM(self):
-        """test findBestPermutationListOPTIM"""
-        import pygmin.defaults as defaults
-        X1 = np.copy(self.X1)
-        X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
-        
-        #run a quench so the structure is not crazy
-        ret = defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
-        X2 = ret[0]
-
-        self.runtest(X1, X2, findBestPermutationListOPTIM, atomlist=self.permlist[0])
-
-    def testLJ_munkres(self):
-        """test findBestPermutationListOPTIM"""
-        import pygmin.defaults as defaults
-        X1 = np.copy(self.X1)
-        X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
-        
-        #run a quench so the structure is not crazy
-        ret = defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
-        X2 = ret[0]
-
-        self.runtest(X1, X2, findBestPermutationListMunkres, atomlist=self.permlist[0])
-
-    def testLJ_hungarian(self):
-        """test findBestPermutationListOPTIM"""
-        import pygmin.defaults as defaults
-        X1 = np.copy(self.X1)
-        X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
-        
-        #run a quench so the structure is not crazy
-        ret = defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
-        X2 = ret[0]
-
-        self.runtest(X1, X2, findBestPermutationListHungarian, atomlist=self.permlist[0])
-
-    def test_multiple(self):
-        """test hungarian, munkres, and OPTIM algorithms agains each other"""
-        import pygmin.defaults as defaults
-        from pygmin.mindist import CoMToOrigin
-        X1 = np.copy(self.X1)
-        X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
-        X2 = CoMToOrigin(X2)
-        X1 = CoMToOrigin(X1)
-        X2i = X2.copy()
-        
-        d1, X11, X21 = findBestPermutationListHungarian(X1, X2, self.permlist[0])
-        d1calc = np.linalg.norm(X11-X21)
-        
-        X2 = X2i.copy()
-        d2, X12, X22 = findBestPermutationListOPTIM(X1, X2, self.permlist[0])
-        d2calc = np.linalg.norm(X12-X22)
-
-        X2 = X2i.copy()
-        d3, X13, X23 = findBestPermutationListMunkres(X1, X2, self.permlist[0])
-        d3calc = np.linalg.norm(X13-X23)
-
-        
-        self.assertAlmostEqual(d1, d2, 5)
-        self.assertAlmostEqual(d1, d1calc, 5)
-        self.assertAlmostEqual(d2, d2calc, 5)
-        
-        self.assertAlmostEqual(d1, d3, 5)
-        self.assertAlmostEqual(d3, d3calc, 5)
-        
-        
-
-
-import unittest
-from testmindist import TestMinDist
-class TestMinDistUtils(TestMinDist):
-    def setUp(self):
-        from pygmin.potentials.ljpshiftfast import LJpshift as BLJ
-        from pygmin import defaults
-        
-        self.natoms = 15
-        self.ntypeA = int(self.natoms * .8)
-        self.pot = BLJ(self.natoms, self.ntypeA)
-        self.permlist = [range(self.ntypeA), range(self.ntypeA, self.natoms)]
-        
-        self.X1 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
-        ret = defaults.quenchRoutine(self.X1, self.pot.getEnergyGradient, tol=.1)
-        self.X1 = ret[0]
-
-
-    def testBLJ(self):
-        import pygmin.defaults as defaults
-        X1 = np.copy(self.X1)
-        X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
-        
-        #run a quench so the structure is not crazy
-        ret = defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
-        X2 = ret[0]
-
-        self.runtest(X1, X2, findBestPermutation)
-
-
-    def testBLJ_isomer(self):
-        """
-        test with BLJ potential.  We have two classes of permutable atoms  
-        
-        test case where X2 is an isomer of X1.
-        """
-        X1i = np.copy(self.X1)
-        X1 = np.copy(self.X1)        
-        X2 = np.copy(X1)
-        
-        #permute X2
-        import random, copy
-        for atomlist in self.permlist:
-            perm = copy.copy(atomlist)
-            random.shuffle( perm )
-            X2 = permuteArray( X2, perm)
-
-        X2i = np.copy(X2)
-        
-        #distreturned, X1, X2 = self.runtest(X1, X2)
-        distreturned, X1, X2 = self.runtest(X1, X2, findBestPermutation)
-        
-        #it's an isomer, so the distance should be zero
-        self.assertAlmostEqual(distreturned, 0., 14, "didn't find isomer: dist = %g" % (distreturned) )
-
-def run_blj():
-    from pygmin.potentials.ljpshiftfast import LJpshift as BLJ
-    from pygmin import defaults
+def optimize_permutations( X1, X2, permlist = None, user_algorithm=None):
+    dist, perm = find_best_permutation(X1, X2, permlist=permlist, user_algorithm=user_algorithm)
+    X2_ = X2.reshape([-1, 3])
+    X2new = X2_[perm]
     
-    natoms = 5000
-    ntypeA = int(natoms * .8)
-    pot = BLJ(natoms, ntypeA)
-    permlist = [range(ntypeA), range(ntypeA, natoms)]
-    
-    X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)/2
-#    ret = defaults.quenchRoutine(X1, pot.getEnergyGradient, tol=.1)
-#    X1 = ret[0]
+    return dist, X1, X2new.flatten()
 
-    X1i = np.copy(X1)
-    X1 = np.copy(X1)        
-    X2 = np.copy(X1)
-    
-    #permute X2
-    import random, copy
-    for atomlist in permlist:
-        perm = copy.copy(atomlist)
-        random.shuffle( perm )
-        X2 = permuteArray( X2, perm)
-
-    X2i = np.copy(X2)
-    
-    #distreturned, X1, X2 = runtest(X1, X2)
-    distreturned, X1, X2 = findBestPermutation(X1, X2, permlist)
-    #X1 = X1i
-    #X2 = X2i
-    #distreturned, X1, X2 = runtest(X1, X2, findBestPermutation2)
-
-    
-    #it's an isomer, so the distance should be zero
-    if not abs(distreturned) < 1e-14: 
-        "didn't find isomer: dist = %g" % (distreturned)
-
-if __name__ == "__main__":
-    run_blj()
-    
-    unittest.main()
-    
-    
-    
 
