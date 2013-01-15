@@ -1,6 +1,7 @@
 import numpy as np
 import aautils
 from pygmin.potentials.potential import potential
+from pygmin.mindist import StandardClusterAlignment, optimize_permutations
 
 class RigidFragment(aautils.AASiteType):
     ''' defines a single rigid fragment 
@@ -53,6 +54,8 @@ class RigidFragment(aautils.AASiteType):
             self.S[:] += np.outer(x, x)
 #        for x, m in zip(self.atom_positions, self.atom_masses):
 #            self.S[:] += m*np.outer(x, x)
+
+        self._determine_symmetries()
             
     def to_atomistic(self, com, p):
         R, R1, R2, R3 = aautils.rotMatDeriv(p, False)
@@ -90,7 +93,41 @@ class RigidFragment(aautils.AASiteType):
         
         return grad
 
+
+    def _determine_inversion(self, permlist):
+        x = np.array(self.atom_positions)
+        xi = -x
+        for rot, invert in StandardClusterAlignment(-x, x, can_invert=False):
+            xn = np.dot(rot, x.transpose()).transpose()
+            if np.linalg.norm(xn-xi) < 1e-6:
+                self.inversion = rot
+                return
+
+    def _determine_rotational_symmetry(self, permlist):
+        x = np.array(self.atom_positions)
+        for rot, invert in StandardClusterAlignment(x, x, can_invert=False):
+            xn = np.dot(rot, x.transpose()).transpose()
+            dist, tmp, xn = optimize_permutations(x, xn, permlist=permlist)
+            if np.linalg.norm(xn.flatten()-x.flatten()) < 1e-6:
+                self.symmetries.append(rot)
+                
+        
+    def _determine_symmetries(self):
+        perm_dict = dict()
+        for t in self.atom_types:
+            perm_dict[t] = []
             
+        for i, t in zip(xrange(len(self.atom_types)), self.atom_types):
+            perm_dict[t].append(i)
+            
+        permlist = []
+        for i in perm_dict.itervalues():
+            if len(i) > 1:
+                permlist.append(i)
+        
+        self._determine_inversion(permlist)
+        self._determine_rotational_symmetry(permlist)
+                    
 class RBSystem(aautils.AASystem):
     def __init__(self):
         aautils.AASystem.__init__(self)

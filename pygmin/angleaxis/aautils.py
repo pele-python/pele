@@ -46,6 +46,9 @@ class AASiteType(object):
         self.S = S
         self.cog = cog
         self.W = W
+        
+        self.inversion = None
+        self.symmetries = []
             
     def distance_squared(self, com1, p1, com2, p2):
         '''
