@@ -116,8 +116,8 @@ class StandardClusterAlignment(object):
                 self.idx2_2 = None
                 return self.next()
             
-            if self.idx2_1 == self.idx2_2:
-                return self.next()
+        if self.idx2_1 == self.idx2_2:
+            return self.next()
         
         x1 = self.x1
         x2 = self.x2
@@ -148,7 +148,7 @@ class StandardClusterAlignment(object):
         dist, rot = rmsfit.findrotation( \
                       x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
                 
-        return rot, self.invert
+        return rot.transpose(), self.invert
     
 class ExactMatchCluster(object):
     ''' Deterministic check if 2 clusters are a perfect match
