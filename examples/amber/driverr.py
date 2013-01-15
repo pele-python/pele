@@ -13,7 +13,7 @@ sys.test_potential('coords.pdb')
 
 # load existing database 
 from pygmin.storage import Database
-dbcurr = Database(db="aladipep.db")
+dbcurr = sys.create_database(db="aladipep.db")
 
 print "---------id, minener"
 
