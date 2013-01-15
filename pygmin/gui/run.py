@@ -171,6 +171,9 @@ class MyForm(QtGui.QMainWindow):
         pl.clf()
         ax = pl.gca()
         fig = pl.gcf()
+        
+        ax.grid(True)
+        
 
         graphwrapper = Graph(self.system.database)
         dg = DisconnectivityGraph(graphwrapper.graph, subgraph_size=2)
@@ -415,13 +418,26 @@ class MyForm(QtGui.QMainWindow):
 def refresh_pl():
     pl.pause(0.000001)    
     
-def run_gui(systemtype):
+def run_gui(systemtype, db=None):
     app = QtGui.QApplication(sys.argv)
     import pylab as pl
     myapp = MyForm(systemtype)
+    if db is not None:
+        myapp.connect_db(db)
+        
     refresh_timer = QtCore.QTimer()
     refresh_timer.timeout.connect(refresh_pl)
     refresh_timer.start(0.)
-    
     myapp.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec_()) 
+       
+#def run_gui(systemtype):
+#    app = QtGui.QApplication(sys.argv)
+#    import pylab as pl
+#    myapp = MyForm(systemtype)
+#    refresh_timer = QtCore.QTimer()
+#    refresh_timer.timeout.connect(refresh_pl)
+#    refresh_timer.start(0.)
+#    
+#    myapp.show()
+#    sys.exit(app.exec_())
