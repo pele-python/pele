@@ -123,9 +123,9 @@ class AMBERBaseSystem(BaseSystem):
         
     def draw(self, coordsl, index):
         from OpenGL import GL,GLUT
-        coords=coordsl.reshape(coordsl.size/3,3)
-        #coords = coords.reshape(GMIN.getNAtoms, 3)
-        com=np.mean(coords, axis=0)                  
+        coords=coordsl.reshape(coordsl.size/3,3)        
+        com=np.mean(coords, axis=0)             
+        # draw atoms as spheres      
         for xx in coords:
             x = xx-com
             GL.glPushMatrix()            
