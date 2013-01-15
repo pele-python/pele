@@ -92,8 +92,12 @@ class MyForm(QtGui.QMainWindow):
     def connect_db(self, filename):
         db = self.system.create_database(db=filename)
         self.system.database = db
+        #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
-            self.NewMinimum(minimum)
+            self.NewMinimum(minimum, sort_items=False)
+        for obj in self.listMinima:
+            obj.sortItems(1)
+
         self.system.database.onMinimumAdded=self.NewMinimum
         self.system.database.onMinimumRemoved=self.RemoveMinimum
         
@@ -360,7 +364,8 @@ class MyForm(QtGui.QMainWindow):
         pl.legend(loc='best')
         pl.show()
      
-    def NewMinimum(self, minimum):
+    def NewMinimum(self, minimum, sort_items=True):
+        """ add a new minimum to the system """
         E=minimum.energy
         minid=id(minimum)
         coords=minimum.coords
@@ -369,7 +374,8 @@ class MyForm(QtGui.QMainWindow):
             item.setCoords(coords)
             item.setMinimum(minimum)
             obj.addItem(item)    
-            obj.sortItems(1)
+            if sort_items:
+                obj.sortItems(1)
                 
     def RemoveMinimum(self, minimum):
         minid = id(minimum)
