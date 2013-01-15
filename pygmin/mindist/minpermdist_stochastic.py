@@ -6,7 +6,7 @@ from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 __all__ = ["MinPermDistCluster"]
 
 class MinPermDistCluster(object):
-    def __init__(self, niter=100, verbose=False, tol=0.01, accuracy=0.01,
+    def __init__(self, niter=10, verbose=False, tol=0.01, accuracy=0.01,
                  measure=MeasureAtomicCluster(), transform=TransformAtomicCluster()):
         
         self.niter = 100
