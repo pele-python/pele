@@ -4,7 +4,7 @@ from pygmin.angleaxis import CoordsAdapter
 from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
 from pygmin.transition_states import interpolate_linear
 from math import pi
-
+from pygmin import takestep
 
 __all__ = ["AASiteType", "AASystem", "interpolate_angleaxis"]
 
@@ -262,6 +262,23 @@ class AASystem(object):
                         break
                     p2[:]=p2n  
 
+class TakestepAA(takestep.TakestepInterface):
+    def __init__(self, topology, rotate=1.6, translate=0.):
+        self.rotate = rotate
+        self.translate = translate
+        self.topology = topology
+        self
+    
+    def takeStep(self, coords, **kwargs):
+        ca = self.topology.coords_adapter(coords)
+        takestep.uniform_displace(self.translate, ca.posRigid)
+        takestep.rotate(self.rotate, ca.rotRigid)
+
+    def scale(self, factor):
+        self.translate *= factor
+        self.rotate *= factor
+        
+        
 if __name__ == "__main__":
     natoms = 3
     x = np.random.random([natoms,3])*5

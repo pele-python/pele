@@ -15,6 +15,7 @@ from pygmin import defaults
 
 from pygmin.angleaxis.aamindist import *
 from pygmin.angleaxis import MinPermDistAACluster, ExactMatchAACluster
+from pygmin.angleaxis.aautils import TakestepAA
 
 class TIP4PSystem(BaseSystem):
     def __init__(self):
@@ -32,7 +33,11 @@ class TIP4PSystem(BaseSystem):
         defaults.NEBquenchParams["maxstep"] = 0.1
         #defaults.NEBquenchParams["maxErise"] = 0.1
         defaults.NEBquenchParams["tol"] = 1e-6
-        defaults.NEBquenchRoutine = fire     
+        defaults.NEBquenchRoutine = fire
+        
+        self.params.basinhopping["temperature"]=8.
+        self.params.takestep["translate"]=0.0
+        self.params.takestep["rotate"]=1.6
         
         GMIN.initialize()
         pot = GMINPotential(GMIN)
@@ -69,8 +74,8 @@ class TIP4PSystem(BaseSystem):
         --------
         pygmin.takestep
         """
-        kwargs = dict_copy_update(self.params["takestep"], kwargs)                
-        return RotationalDisplacement(**kwargs)
+        kwargs = dict_copy_update(self.params["takestep"], kwargs)
+        return TakestepAA(self.aasystem, **kwargs)
     
     def get_compare_exact(self, **kwargs):
         return ExactMatchAACluster(self.aasystem, **kwargs)
