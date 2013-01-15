@@ -13,7 +13,7 @@ class StandardClusterAlignment(object):
     It uses atoms which are far away from the center to determine possible
     rotations. The algorithm does the following:
     
-    1) Get 2 reference atoms from structure 1 which are farest away from center
+    1) Get 2 reference atoms from structure 1 which are farthest away from center
        and are not linear
     2) Determine candidates from structure 2 which are in same shell
        as reference atoms from structure 1 (+- accuracy)
