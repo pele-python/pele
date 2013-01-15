@@ -11,10 +11,12 @@ from pygmin.potentials import BasePotential
 
 from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
 from simtk.openmm import * 
-from simtk.unit import  * 
+from simtk.unit import   kilocalories_per_mole, kilojoules_per_mole, nanometer, angstrom, picosecond 
 import simtk.openmm.app.forcefield as openmmff
 
-class amberPot(BasePotential):
+__all__ = ["OpenMMAmberPotential"]
+
+class OpenMMAmberPotential(BasePotential):
     """ 
     OpenMM  
     
@@ -30,43 +32,57 @@ class amberPot(BasePotential):
         # todo: set up ff and simulation object  
         self.system = self.prmtop.createSystem(nonbondedMethod=openmmff.NoCutoff ) # no cutoff
         self.integrator = VerletIntegrator(0.001*picosecond)
-        self.simulation = Simulation(self.prmtop.topology, self.system, self.integrator)
+        self.simulation = Simulation(self.prmtop.topology, self.system , self.integrator)
+        
+        #  Another way of setting up potential using just pdb file ( no prmtop ) 
+        #pdb = PDBFile('coords.pdb')
+        #forcefield = ForceField('amber99sb.xml', 'tip3p.xml')
+        #system = forcefield.createSystem(pdb.topology, nonbondedMethod=ff.NoCutoff)
+        #integrator = VerletIntegrator(0.001*picoseconds)
+        #simulation = Simulation(pdb.topology, system, integrator)
+        #simulation.context.setPositions(pdb.positions)
         
         # remove units 
-        self.localCoords = self.inpcrd.positions/angstrom 
+        self.localCoords = self.inpcrd.positions/angstrom
+        self.kJtokCal    =  kilocalories_per_mole/kilojoules_per_mole 
             
 # '''  ------------------------------------------------------------------- '''
     def copyToLocalCoords(self, coords):
+        """ copy to local coords -- deprecated  """
+                
         # copy to local coords         
         for i in range(self.natoms):
             self.localCoords[i] = Vec3(coords[3*i], coords[3*i+1] , coords[3*i+2] )              
 
 # '''  ------------------------------------------------------------------- '''
     def getEnergy(self, coords):
-        # copy to local coords 
-        self.copyToLocalCoords(coords)
+        """ returns energy in kcal/mol """
+         
+        coordinates = unit.Quantity( coords.reshape(self.natoms,3) , angstrom)        
+        self.simulation.context.setPositions( coordinates )        
                 
         # attach units to coordinates before computing energy 
-        self.simulation.context.setPositions(self.localCoords * angstrom)
+        self.simulation.context.setPositions(coordinates)
         potE = self.simulation.context.getState(getEnergy=True).getPotentialEnergy()
 
-        # remove units before returning   todo 
-        return potE / kilojoules_per_mole 
+        # remove units from potE and then convert to kcal/mol to be consistent with GMIN   
+        return potE / kilojoules_per_mole / self.kJtokCal
 
 #'''  ------------------------------------------------------------------- '''
     def getEnergyGradient(self, coords):
-        # copy to local coords 
-        self.copyToLocalCoords(coords)
+        """ returns energy and gradient in kcal/mol and kcal/mol/angstrom""" 
         
-        # attach units to coordinates  
-        self.simulation.context.setPositions(self.localCoords * angstrom)
+        coordinates = unit.Quantity( coords.reshape(self.natoms,3) , angstrom)        
+        self.simulation.context.setPositions( coordinates )        
+        
         # get pot energy 
         potE = self.simulation.context.getState(getEnergy=True).getPotentialEnergy()
-        E = potE / kilojoules_per_mole 
+            
+        E = potE / kilojoules_per_mole /self.kJtokCal
         # get forces  
         forcee = self.simulation.context.getState(getForces=True).getForces(asNumpy=True)
         # xply to -1 to convert gradient ; divide by 10 to convert to kJ/mol/angstroms 
-        grad = -forcee / ( kilojoules_per_mole / nanometer ) / 10 # todo - 10 is hardcoded   
+        grad = -forcee / ( kilojoules_per_mole / nanometer ) / 10 / self.kJtokCal # todo - 10 is hardcoded   
                 
         # remove units before returning   
         return E, grad.reshape(-1)  
