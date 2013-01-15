@@ -413,14 +413,17 @@ class TestDistanceGraph(unittest.TestCase):
     def setUp(self):
         from pygmin.landscape import DoubleEndedConnect
         from pygmin.landscape._graph import create_random_database
-        from pygmin.mindist import minPermDistStochastic, MinDistWrapper
-        from pygmin.potentials import LJ
+        from pygmin.systems import LJCluster
+#        from pygmin.mindist import minPermDistStochastic, MinDistWrapper
+#        from pygmin.potentials import LJ
         
         nmin = 10
         natoms=13
         
-        pot = LJ()
-        mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)
+        sys = LJCluster(natoms)
+        
+        pot = sys.get_potential()
+        mindist = sys.get_mindist()
         
         db = create_random_database(nmin=nmin, natoms=natoms, nts=nmin/2)
         min1, min2 = list(db.minima())[:2] 
