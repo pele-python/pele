@@ -1,13 +1,17 @@
 import networkx as nx
 from collections import deque
 
-from pygmin.landscape import Graph
+#from pygmin.landscape import Graph
 
-
-        
 class Tree(object):
     """
     a Tree graph
+    
+    Each member of this class is a node in a Tree.  The node can
+    have many children, but only one parent.  If the node has no
+    parents then it is the root node.  If the node has no children
+    then it is a leaf.
+            
     """
     def __init__(self, parent=None):
         self.subtrees = []
@@ -15,6 +19,7 @@ class Tree(object):
         self.parent=parent
     
     def make_branch(self):
+        """return a new Tree which is a child of this Tree"""
         newtree = Tree(parent=self)
         self.subtrees.append(newtree)
         return newtree
@@ -29,6 +34,7 @@ class Tree(object):
         return self.number_of_branches() == 0
     
     def number_of_leaves(self):
+        """return the number of leaves that are descendants of this Tree""" 
         if len(self.subtrees) == 0:
             nleaves = 1
         else:
@@ -38,7 +44,8 @@ class Tree(object):
         return nleaves
     
     def get_leaves(self):
-        if len(self.subtrees) == 0:
+        """return a list of the leaves that are descendants of this Tree""" 
+        if self.is_leaf():
             leaves = [self]
         else:
             leaves = []
@@ -88,6 +95,28 @@ class DisconnectivityGraph(object):
         (even if other nodes carry more minima). This does not guarantee that
         the global minimum is central in the overall diagram because other
         nodes may push the one containing the global minimum over to one side
+    
+    See Also
+    ---------
+    make_disconnectivity_graph.py :
+        a script (in pygmin/scripts) to make the disconnectivity graph from the command line
+    pygmin.storage.Database :
+        The database format in which minima and transition states are stored in pygmin
+    pygmin.landscape.Graph : 
+        a wrapper to creteate a networkx Graph from a database
+    
+    Examples
+    --------
+    These examples assume a Database with minima already exists
+    
+    >>> from pygmin.landscape import Graph
+    >>> import matplotlib.pyplot as plt
+    >>> graphwrapper = Graph(database)
+    >>> dg = DisconnectivityGraph(graphwrapper.graph)
+    >>> dg.calculate()
+    >>> dg.plot()
+    >>> plt.show()
+
     """
     def __init__(self, graph, minima=[], nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
@@ -115,6 +144,7 @@ class DisconnectivityGraph(object):
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
     
     def _getTS(self, min1, min2):
+        """return the transition state object between two minima"""
         try:
             return self.transition_states[(min1, min2)]
         except KeyError:
@@ -132,7 +162,7 @@ class DisconnectivityGraph(object):
         redefine the networkx version because they use deepcopy
         on the nodes and edges
         
-        this was coppied and only slightly modified from the original
+        this was copied and only slightly modified from the original
         source
         """
         cc=nx.connected_components(G)
@@ -157,6 +187,7 @@ class DisconnectivityGraph(object):
 
 
     def _recursive_new_tree(self, parent_tree, graph, energy_levels, ilevel):
+        """the recursive function called by `_make_tree` to build the disconnectivity Tree"""
         if ilevel < 0: return
         ethresh = energy_levels[ilevel]
 #        if graph.number_of_edges() == 0: return
@@ -178,7 +209,13 @@ class DisconnectivityGraph(object):
                 self._recursive_new_tree(newtree, g, energy_levels, ilevel-1)
 
     def _make_tree(self, graph, energy_levels):
-        """
+        """make the disconnectivity graph tree
+        
+        start at the highest energy level, and at each energy level Elevel, remove the 
+        edges with energy higher than Elevel.  This breaks the graph into disconnected
+        components (subgraphs), which become nodes in the disconnectivity tree.
+        Recursively repeat the process for each of those subgraphs in order to 
+        build the disconnectivity graph.
         """
         tree_graph = Tree()
 #        print tree_graph
@@ -221,13 +258,18 @@ class DisconnectivityGraph(object):
             x += dx_per_min * nminima_sub
   
     def _layout_x_axis(self, tree):
-        """
+        """determining the x position of the branches and leaves
+        
+        used in displaying the disconnectivity graph
         """
         xmin = 4.0
         dx_per_min = 1
         self._recursive_layout_x_axis(tree, xmin, dx_per_min)
 
     def _tree_get_minimum_energy(self, tree, emin=1e100):
+        """
+        a recursive function to find the leaf descendant in tree with the minimum energy
+        """
         if tree.is_leaf():
             energy = tree.data["minimum"].energy
             if energy < emin:
@@ -240,6 +282,10 @@ class DisconnectivityGraph(object):
     def _order_trees(self, trees):
         """
         order a list of trees for printing
+        
+        This is the highest level function for ordering trees.  This 
+        and functions called by this will account for all the user options 
+        like center_gmin and order by energy
         """
         if self.order_by_energy:
             return self._order_trees_by_minimum_energy(trees)
@@ -307,27 +353,6 @@ class DisconnectivityGraph(object):
         return self._order_trees_final(mylist)
                         
 
-    def _get_energy_levels(self, graph):
-        """
-        combine input and the graph data to determine what the 
-        energy levels will be.
-        """
-        #define the energy levels
-        elist = [self._getTS(*edge).energy for edge in graph.edges()]
-        if len(elist) == 0:
-            raise Exception("there are no edges in the graph.  Is the global minimum connected?")
-        emin = min(elist)
-        if self.Emax is None:
-            emax = max(elist)
-        else:
-            emax = self.Emax
-        de = (emax - emin) / (self.nlevels-1)
-        #the upper edge of the bins
-        elower = [emin + de*(i) for i in range(self.nlevels)]
-        elevels = elower.append(emin + de*self.nlevels)
-        
-        return elower
-
     #######################################################################
     #functions which return the line segments that make up the visual graph
     #######################################################################
@@ -365,15 +390,10 @@ class DisconnectivityGraph(object):
         return line_segments
     
     
-    
-    def get_minima_layout(self):
-        """
-        return the x position of the minima        
-        """
-        leaves = self.tree_graph.get_leaves()
-        minima = [leaf.data["minimum"] for leaf in leaves]
-        xpos = [leaf.data["x"] for leaf in leaves]
-        return xpos, minima
+    ##########################################################################
+    # functions for determining which minima to include in the 
+    # disconnectivity graph
+    ##########################################################################
     
     def _remove_nodes_with_few_edges(self, graph, nmin):
         rmlist = [n for n in graph.nodes() if graph.degree(n) < nmin]
@@ -396,8 +416,7 @@ class DisconnectivityGraph(object):
         return graph
 
     def _reduce_graph(self, graph, min0list):
-        """determine how much of the graph
-        to include in the disconnectivity graph
+        """determine how much of the graph to include in the disconnectivity graph
         """
         used_nodes = []
         #make sure we include the subgraph containing min0
@@ -418,7 +437,42 @@ class DisconnectivityGraph(object):
         newgraph = graph.subgraph(used_nodes)
         return newgraph
 
+    ##########################################################################
+    # general functions
+    ##########################################################################
+    
+    
+    def get_minima_layout(self):
+        """
+        return the x position of the minima        
+        """
+        leaves = self.tree_graph.get_leaves()
+        minima = [leaf.data["minimum"] for leaf in leaves]
+        xpos = [leaf.data["x"] for leaf in leaves]
+        return xpos, minima
+
+    def _get_energy_levels(self, graph):
+        """
+        combine input and the graph data to determine what the 
+        energy levels will be.
+        """
+        #define the energy levels
+        elist = [self._getTS(*edge).energy for edge in graph.edges()]
+        if len(elist) == 0:
+            raise Exception("there are no edges in the graph.  Is the global minimum connected?")
+        emin = min(elist)
+        if self.Emax is None:
+            emax = max(elist)
+        else:
+            emax = self.Emax
+        de = (emax - emin) / (self.nlevels-1)
+        #the upper edge of the bins
+        elower = [emin + de*(i) for i in range(self.nlevels)]
+        elevels = elower.append(emin + de*self.nlevels)
         
+        return elower
+
+       
     
     def calculate(self):
         """
@@ -450,8 +504,15 @@ class DisconnectivityGraph(object):
         self.line_segments = line_segments
     
     def plot(self, show_minima=False):
-        #draw the minima as points
+        """draw the disconnectivity graph using matplotlib
+        
+        don't forget to call calculate() first
+        
+        also, you must call pyplot.show() to actually see the plot
+        """
         import matplotlib.pyplot as plt
+        
+        #set up how the figure should look
         fig = plt.figure(figsize=(6,7))
         fig.set_facecolor('white')
         ax = fig.add_subplot(111, adjustable='box')
@@ -462,17 +523,20 @@ class DisconnectivityGraph(object):
         ax.spines['top'].set_color('none')
         ax.spines['bottom'].set_color('none')
         ax.spines['right'].set_color('none')
-        leaves = self.tree_graph.get_leaves()
-        energies = [leaf.data["minimum"].energy for leaf in leaves]
-        xpos = [leaf.data["x"] for leaf in leaves]
         
+        #draw the minima as points
         if show_minima:      
+            leaves = self.tree_graph.get_leaves()
+            energies = [leaf.data["minimum"].energy for leaf in leaves]
+            xpos = [leaf.data["x"] for leaf in leaves]
+        
             ax.plot(xpos, energies, 'o')
         
         #draw the line segemnts
         for x, y in self.line_segments:
             ax.plot(x, y, 'k', linewidth=0.5)
-            
+
+        #remove xtics            
         plt.xticks([])
         plt.box(on=True)
 

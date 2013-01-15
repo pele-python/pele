@@ -40,25 +40,37 @@ class Graph(object):
     '''
     Wrapper to represent a database object as a graph
     
+    This class is primarily used by DoubleEndedConnect and has a number
+    of utility functions for that purpose.  If you want access to the
+    networkx Graph object, it is stored as self.graph
+    
     Parameters
     ----------
     database :
         the database object to represent
-    minima : list of minima
+    minima : list of minima, optional
         if none, include all minima and transition states from the database, 
         else include only the minima in the list and no transition states.
         This is used, for example, to try to find a new connection between 
         two minima.
+    
+    See Also
+    --------
+    DoubleEndedConnect
     
     Examples
     --------
     a graph can be easily constructed from a database::
     
     >>> graph = Graph(database)
+    
+    the networkx graph is accessed directly by
+    
+    >>> networkx_graph = graph.graph
     '''
     
     def __init__(self, database, minima=None):
-        self.graph=nx.Graph()
+        self.graph = nx.Graph()
         self.storage = database
         self.connected_components = _ConnectedComponents(self.graph)
         self.minima = minima
