@@ -51,7 +51,7 @@ class Parameters(BaseParameters):
 
         self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters()
         self.double_ended_connect.local_connect_params.NEBparams = BaseParameters()
-        self.double_ended_connect.local_connect_params.NEBquenchParams = BaseParameters()
+        self.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams = BaseParameters()
         
         self.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams = BaseParameters()
         self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()     
@@ -104,6 +104,9 @@ class BaseSystem(object):
     """
     def __init__(self, *args, **kwargs):
         self.params = Parameters()
+        
+        tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
+        tsSearchParams.lowestEigenvectorQuenchParams.nsteps = 50
 
     def get_potential(self):
         """return the potential object
@@ -287,7 +290,7 @@ class BaseSystem(object):
         """
         raise NotImplementedError
 
-    def smooth_path(self):
+    def smooth_path(self, images):
         """return a smoothed path between two configurations.
 
         used for movies
