@@ -40,11 +40,15 @@ class TIP4PSystem(BaseSystem):
         self.params.takestep["translate"]=0.0
         self.params.takestep["rotate"]=1.6
         
-        self.params.double_ended_connect.local_connect_params.nrefine_max = 1
+        self.params.double_ended_connect.local_connect_params.nrefine_max = 5
         self.params.double_ended_connect.local_connect_params.NEBparams.max_images=50
-        self.params.double_ended_connect.local_connect_params.NEBparams.image_density=100.0
-        self.params.double_ended_connect.local_connect_params.NEBparams.iter_density=0.5
+        self.params.double_ended_connect.local_connect_params.NEBparams.image_density=10.0
+        self.params.double_ended_connect.local_connect_params.NEBparams.iter_density=5
         self.params.double_ended_connect.local_connect_params.NEBparams.k = 1000.
+        
+        tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
+
+        tsSearchParams["nfail_max"]=20
         
         GMIN.initialize()
         pot = GMINPotential(GMIN)
@@ -62,6 +66,8 @@ class TIP4PSystem(BaseSystem):
         self.aasystem = system
         self.potential = pot
         self.nrigid = nrigid
+        self.params.double_ended_connect.local_connect_params.NEBparams.distance=self.aasystem.neb_distance
+
 
     def get_potential(self):
         return self.potential
