@@ -16,6 +16,7 @@ from pygmin import defaults
 from pygmin.angleaxis.aamindist import *
 from pygmin.angleaxis import MinPermDistAACluster, ExactMatchAACluster
 from pygmin.angleaxis.aautils import TakestepAA
+from pygmin.landscape import smoothPath
 
 class TIP4PSystem(BaseSystem):
     def __init__(self):
@@ -28,7 +29,7 @@ class TIP4PSystem(BaseSystem):
         neb_params["aadist"] = True
         
         
-        defaults.NEBquenchParams["nsteps"] = 200
+        defaults.NEBquenchParams["nsteps"] = 100
         defaults.NEBquenchParams["iprint"] = -1
         defaults.NEBquenchParams["maxstep"] = 0.1
         #defaults.NEBquenchParams["maxErise"] = 0.1
@@ -39,6 +40,12 @@ class TIP4PSystem(BaseSystem):
         self.params.takestep["translate"]=0.0
         self.params.takestep["rotate"]=1.6
         
+        self.params.double_ended_connect.local_connect_params.nrefine_max = 1
+        self.params.double_ended_connect.local_connect_params.NEBparams.max_images=50
+        self.params.double_ended_connect.local_connect_params.NEBparams.image_density=100.0
+        self.params.double_ended_connect.local_connect_params.NEBparams.iter_density=0.5
+        self.params.double_ended_connect.local_connect_params.NEBparams.k = 1000.
+        
         GMIN.initialize()
         pot = GMINPotential(GMIN)
         coords = pot.getCoords()
@@ -47,6 +54,8 @@ class TIP4PSystem(BaseSystem):
         print "I have %d water molecules in the system"%nrigid
 
         water = tip4p.water()
+        water.S *= 2
+        
         system = RBSystem()
         system.add_sites([deepcopy(water) for i in xrange(nrigid)])
         
@@ -148,6 +157,11 @@ class TIP4PSystem(BaseSystem):
             self.drawCylinder(coords[3*i]-com, coords[3*i+1]-com)
             self.drawCylinder(coords[3*i]-com, coords[3*i+2]-com)
             
+    def smooth_path(self, path, **kwargs):
+        mindist = self.get_mindist()
+        return smoothPath(path, mindist, **kwargs)
+    
+    
 if __name__ == "__main__":
     import pygmin.gui.run as gr
-    gr.run_gui(TIP4PSystem)
+    gr.run_gui(TIP4PSystem, db="storage.sqlite")
