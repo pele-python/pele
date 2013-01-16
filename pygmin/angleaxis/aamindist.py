@@ -80,18 +80,20 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         
         # now account for symmetry in water
         for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
-            p2_min = p2.copy()
-            theta_min = np.linalg.norm(rotations.rotate_aa(p2_min,-p1))
-            theta_min -= int(theta_min/2./pi)*2.*pi
-            theta_0 = theta_min    
+            theta_min = 10.
+            mx2 = rotations.aa2mx(p2)
+            mx1 = rotations.aa2mx(p1).transpose()
+            mx =  np.dot(mx1, mx2)
             for rot in site.symmetries:
-                p2n = rotations.rotate_aa(rotations.mx2aa(rot), p2)
-                theta = np.linalg.norm(rotations.rotate_aa(p2n,-p1))
+                mx_diff = np.dot(mx, rot)
+                theta = np.linalg.norm(rotations.mx2aa(mx_diff))
+                                       
                 theta -= int(theta/2./pi)*2.*pi
                 if(theta < theta_min): 
                     theta_min = theta
-                    p2_min[:] = p2n
-            p2[:] = p2_min
+                    rot_best = rot
+            p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2)
+                    
 
     def get_dist(self, X1, X2):
         x1 = X1.copy()
@@ -117,6 +119,15 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         self.transform.rotate(X2trans, mx)
         
         return self.get_dist(X1, X2trans), mx
+    
+class MeasureRigidBodyCluster(MeasureAngleAxisCluster):
+    def get_dist(self, X1, X2):
+        x1 = X1.copy()
+        x2 = X2.copy()
+        self.align(x1, x2)
+        atom1 = self.topology.to_atomistic(x1)
+        atom2 = self.topology.to_atomistic(x2)
+        return np.linalg.norm(atom1-atom2)
     
 class ExactMatchAACluster(ExactMatchCluster):
     def __init__(self, topology, transform=None, measure=None, **kwargs):
