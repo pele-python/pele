@@ -83,6 +83,9 @@ class TIP4PSystem(BaseSystem):
     def get_mindist(self, **kwargs):
         return MinPermDistAACluster(self.aasystem, **kwargs)
     
+    def get_orthogonalize_to_zero_eigenvectors(self):
+        return self.aasystem.orthogopt
+    
     def createNEB(self, coords1, coords2):
         pot = self.get_potential()
         #dist = np.linalg.norm(coords1- coords2)
