@@ -52,8 +52,6 @@ class LocalConnect(object):
     NEBparams : dict
         NEB setup parameters.  Use NEBquenchParams for parameters related 
         to the optimization of the band.
-    NEBquenchParams : dict
-        parameters passed to the NEB minimization routine
     nrefine_max : int
         the maximum number of NEB transition state candidates to refine
     reoptimize_climbing : int
@@ -75,7 +73,7 @@ class LocalConnect(object):
     
     See Also
     --------
-    DoubleEndedConnect : the routine from which local connect is genearlly called
+    DoubleEndedConnect : the routine from which local connect is generally called
     pygmin.transition_states.NEB : one of the core routines
     pygmin.transition_states.create_NEB : the wrapper which sets up NEB
     pygmin.transition_states.findTransitionState : one of the core routine
@@ -83,22 +81,17 @@ class LocalConnect(object):
     
     """
     def __init__(self, pot, mindist, tsSearchParams=dict(), 
-                 NEBquenchParams = dict(), verbosity=1,
-                 NEB_image_density = 10., NEB_iter_density=15., NEBparams=dict(), 
-                 nrefine_max=100, reoptimize_climbing=0, 
-                 NEB_max_images=40):
+                 verbosity=1,
+                 NEBparams=dict(), 
+                 nrefine_max=100, reoptimize_climbing=0):
         self.pot = pot
         self.mindist = mindist
         self.tsSearchParams = tsSearchParams
-        self.NEBquenchParams = NEBquenchParams
         self.verbosity = int(verbosity)
         self.nrefine_max = nrefine_max
         
-        self.NEB_image_density = float(NEB_image_density)
-        self.NEB_iter_density = float(NEB_iter_density)
         self.NEBparams = NEBparams
         self.reoptimize_climbing = reoptimize_climbing
-        self.NEB_max_images =int(NEB_max_images)
 
         self.res = Result()
         self.res.new_transition_states = []
@@ -160,7 +153,7 @@ class LocalConnect(object):
         
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
         neb = self._getNEB(self.pot, newcoords1, newcoords2, 
-                         NEBquenchParams=self.NEBquenchParams, 
+#                         NEBquenchParams=self.NEBquenchParams, 
                          verbose=True, factor=factor, **self.NEBparams)
 #        neb.optimize(**NEBquenchParams)
         neb.optimize()
