@@ -267,30 +267,41 @@ class AASystem(object):
     def zeroEV(self, x):
         zev = []
         ca = self.coords_adapter(x)
-        translate = zeroev.zeroEV_translation(ca.posRigid)
+        cv = self.coords_adapter(np.zeros(x.shape))
+            
+        translate_rigid = zeroev.zeroEV_translation(ca.posRigid)
+        
+        for v in translate_rigid:
+            cv.posRigid[:] = v
+            zev.append(cv.coords.copy())
+            
         #rotate_r = zeroev.zeroEV_rotation(ca.posRigid)
         #rotate_aa = 
         transform = TransformAngleAxisCluster(self)
-        d = 1e-6
+        d = 1e-5
         dx = x.copy()
         transform.rotate(dx, rotations.aa2mx(np.array([d, 0, 0])))
+        self.align_path([x, dx])
         dx -= x
-        dx /= d
+        dx /= np.linalg.norm(dx)
         
         dy = x.copy()
         transform.rotate(dy, rotations.aa2mx(np.array([0, d, 0])))
+        self.align_path([x, dy])
         dy -= x
-        dy /= d
+        dy /= np.linalg.norm(dy)
         
         dz = x.copy()
         transform.rotate(dz, rotations.aa2mx(np.array([0, 0, d])))
+        self.align_path([x, dz])
         dz -= x
-        dz /= d
+        dz /= np.linalg.norm(dz)
         
+        #print "Zero eigenvectors", zev         
         return zev + [dx, dy, dz]
     
     def orthogopt(self, v, coords):
-        zev = self.zeroEV(coords)
+        zev = zeroev.gramm_schmidt(self.zeroEV(coords))
         zeroev.orthogonalize(v, zev)
         return v
     

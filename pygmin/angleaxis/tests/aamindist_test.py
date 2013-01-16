@@ -4,11 +4,27 @@ from pygmin.angleaxis.molecules import create_water
 from pygmin.angleaxis import RBSystem
 import pygmin.angleaxis.aamindist as am
 import time
+import gmin_ as GMIN
+from pygmin.potentials import GMINPotential
 
+GMIN.initialize()
+pot = GMINPotential(GMIN)
 nrigid = 10
 water = create_water()
 system = RBSystem()
 system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+
+x = pot.getCoords()
+zev = system.zeroEV(x)
+
+eps = 1e-5
+for dx in zev:    
+    print "ev test", (pot.getEnergy(x) - pot.getEnergy(x + eps*dx))/eps  
+
+dx = np.random.random(x.shape)
+dx/=np.linalg.norm(dx)
+print "ev test", (pot.getEnergy(x) - pot.getEnergy(x + eps*dx))/eps  
+
 
 t0 = time.time()
 for i in xrange(1000):
