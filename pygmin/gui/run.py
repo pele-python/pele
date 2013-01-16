@@ -67,8 +67,8 @@ class MyForm(QtGui.QMainWindow):
         self.system = self.systemtype()
         db = self.system.create_database()
         self.system.database = db
-        self.system.database.onMinimumAdded=self.NewMinimum
-        self.system.database.onMinimumRemoved=self.RemoveMinimum
+        self.system.database.on_minimum_added.connect(self.NewMinimum)
+        self.system.database.on_minimum_removed.connect(self.RemoveMinimum)
         for l in self.listMinima:
             l.clear()
             
@@ -98,8 +98,8 @@ class MyForm(QtGui.QMainWindow):
         for obj in self.listMinima:
             obj.sortItems(1)
 
-        self.system.database.onMinimumAdded=self.NewMinimum
-        self.system.database.onMinimumRemoved=self.RemoveMinimum
+        self.system.database.on_minimum_added.connect(self.NewMinimum)
+        self.system.database.on_minimum_removed(self.RemoveMinimum)
         
     def SelectMinimum(self, item):
         """when you click on a minimum in the basinhopping tab"""
