@@ -5,6 +5,8 @@ from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
 from pygmin.transition_states import interpolate_linear
 from math import pi
 from pygmin import takestep
+from pygmin.transition_states import zeroev
+from pygmin.angleaxis.aamindist import TransformAngleAxisCluster
 
 __all__ = ["AASiteType", "AASystem", "interpolate_angleaxis"]
 
@@ -260,7 +262,43 @@ class AASystem(object):
                     p2n = p2-n2
                     if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
                         break
-                    p2[:]=p2n  
+                    p2[:]=p2n
+                    
+    def zeroEV(self, x):
+        zev = []
+        ca = self.coords_adapter(x)
+        translate = zeroev.zeroEV_translation(ca.posRigid)
+        #rotate_r = zeroev.zeroEV_rotation(ca.posRigid)
+        #rotate_aa = 
+        transform = TransformAngleAxisCluster(self)
+        d = 1e-6
+        dx = x.copy()
+        transform.rotate(dx, rotations.aa2mx(np.array([d, 0, 0])))
+        dx -= x
+        dx /= d
+        
+        dy = x.copy()
+        transform.rotate(dy, rotations.aa2mx(np.array([0, d, 0])))
+        dy -= x
+        dy /= d
+        
+        dz = x.copy()
+        transform.rotate(dz, rotations.aa2mx(np.array([0, 0, d])))
+        dz -= x
+        dz /= d
+        
+        return zev + [dx, dy, dz]
+    
+    def orthogopt(self, v, coords):
+        zev = self.zeroEV(coords)
+        zeroev.orthogonalize(v, zev)
+        return v
+    
+    def ortogopt_aa(self, v, coords):
+        v = v.copy()
+        zev = zeroev.gramm_schmidt(self.zeroEV(coords))
+        zeroev.orthogonalize(v, zev)
+        return v
 
 class TakestepAA(takestep.TakestepInterface):
     def __init__(self, topology, rotate=1.6, translate=0.):

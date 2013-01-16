@@ -12,6 +12,7 @@ import sqlalchemy.orm
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, bindparam, case, insert
 from sqlalchemy.schema import Index
+from pygmin.utils.events import Signal
 
 __all__ = ["Minimum", "TransitionState", "Database", "Distance"]
 
@@ -251,11 +252,6 @@ class Database(object):
     compareMinima : callable, `bool = compareMinima(min1, min2)`, optional
         called to determine if two minima are identical.  Only called
         if the energies are within `accuracy` of each other.
-    onMinimumAdded : callable, `onMinimumAdded(minimum)`, optional
-        called when a new, unique, minimum is added to the database
-    onMinimumRemoved : callable, `onMinimumRemoved(minimum)`, optional
-        called when a minimum is removed from the database 
-
 
     Attributes
     ----------
@@ -263,8 +259,10 @@ class Database(object):
     session : sqlalchemy session
     
     accuracy : float
-    onMinimumRemoved : list of function
-    onMinimumAdded : list of function
+    on_minimum_removed : signal 
+        called when a minimum is removed from the database 
+    on_minimum_added : signal
+        called when a new, unique, minimum is added to the database
     compareMinima
     
     Examples
@@ -290,19 +288,18 @@ class Database(object):
     session = None
     connection = None
     accuracy = 1e-3
-    onMinimumRemoved=None
-    onMinimumAdded=None
     compareMinima=None
     
-    def __init__(self, db=":memory:", accuracy=1e-3, connect_string='sqlite:///%s',\
-                 onMinimumAdded=None, onMinimumRemoved=None, compareMinima=None):
+    def __init__(self, db=":memory:", accuracy=1e-3, connect_string='sqlite:///%s',
+                 compareMinima=None):
         self.engine = create_engine(connect_string%(db), echo=verbose)
         Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         self.accuracy=accuracy
-        self.onMinimumAdded=onMinimumAdded
-        self.onMinimumRemoved=onMinimumRemoved
+        self.on_minimum_added = Signal()
+        self.on_minimum_removed = Signal()
+        
         self.compareMinima=compareMinima
         self.lock = threading.Lock()
         self.connection = self.engine.connect()
@@ -363,8 +360,7 @@ class Database(object):
         if(commit):
             self.session.commit()
         self.lock.release()
-        if(self.onMinimumAdded):
-            self.onMinimumAdded(new)
+        self.on_minimum_added(new)
         return new
     
     def getMinimum(self, id):
@@ -617,6 +613,7 @@ class Database(object):
         for ts in candidates:
             self.session.delete(ts)
         
+        self.on_minimum_removed(m)
         #delete the minimum
         self.session.delete(m)
         self.session.commit()
