@@ -5,7 +5,7 @@ from pygmin.potentials import LJ
 from pygmin.transition_states import orthogopt
 from pygmin.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster
 from pygmin.landscape import smoothPath
-from pygmin.transition_states import NEB, InterpolatedPathDensity
+from pygmin.transition_states import create_NEB
 
 
 __all__ = ["AtomicCluster"]
@@ -59,11 +59,6 @@ class AtomicCluster(BaseSystem):
         
     def createNEB(self, coords1, coords2):
         pot = self.get_potential()
-        dist = np.linalg.norm(coords1- coords2)
-        if dist < 1.: dist = 1
-        image_density = 15.
-        
-        path = InterpolatedPathDensity(coords1, coords2, 
-                                       distance=dist, density=image_density)
-        return NEB(path, pot)
+        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
+        return create_NEB(pot, coords1, coords2, verbose=True, **NEBparams)
 

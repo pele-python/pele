@@ -241,7 +241,7 @@ if __name__ == "__main__":
     print E
     import tstools
     potential.trajectory = []
-    m1,m2 = tstools.minima_from_ts(potential.getEnergyGradient, x0, tau, displace=1e-2)
+    m1,m2 = tstools.minima_from_ts(potential, x0, tau, displace=1e-2)
     for xt in potential.trajectory:
         pl.plot(xt[0], xt[1], 'x')
     pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)

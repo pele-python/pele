@@ -39,7 +39,7 @@ def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minr
     for i in xrange(ntries):
         
         x_ts, energy_ts, rms, tmp = _uphill_search(minimum.coords, search, push, push_minrms)
-        ret1, ret2 = minima_from_ts(potential.getEnergyGradient, x_ts, displace=1e-2)
+        ret1, ret2 = minima_from_ts(potential, x_ts, displace=1e-2)
         
         min1 = graph.addMinimum(ret1[1], ret1[0])
         min2 = graph.addMinimum(ret2[1], ret2[0])

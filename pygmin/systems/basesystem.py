@@ -49,6 +49,9 @@ class Parameters(BaseParameters):
         self.double_ended_connect = BaseParameters()
         self.double_ended_connect.local_connect_params = BaseParameters()
 
+        self.double_ended_connect.local_connect_params.pushoff_params = BaseParameters()
+        self.double_ended_connect.local_connect_params.pushoff_params.quenchParams = BaseParameters()
+
         self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters()
         self.double_ended_connect.local_connect_params.NEBparams = BaseParameters()
         self.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams = BaseParameters()
@@ -106,7 +109,7 @@ class BaseSystem(object):
         self.params = Parameters()
         
         tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
-        tsSearchParams.lowestEigenvectorQuenchParams.nsteps = 50
+        tsSearchParams.lowestEigenvectorQuenchParams.nsteps = 100
 
     def get_potential(self):
         """return the potential object

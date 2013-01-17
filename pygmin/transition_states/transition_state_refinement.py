@@ -96,6 +96,8 @@ class FindTransitionState(object):
     nsteps_tangent1, nsteps_tangent2 : int
         the number of iterations for tangent space minimization before and after
         the eigenvalue is deemed to be converged
+    verbosity : int
+        how much debugging information to print (only partially implemented)
         
     
     Notes
@@ -149,6 +151,7 @@ class FindTransitionState(object):
                  demand_initial_negative_vec=True,
                  nsteps_tangent1=10,
                  nsteps_tangent2=100,
+                 verbosity=1,
                  ):
         self.pot = pot
         self.coords = np.copy(coords)
@@ -162,6 +165,7 @@ class FindTransitionState(object):
         self.iprint = iprint
         self.lowestEigenvectorQuenchParams = lowestEigenvectorQuenchParams
         self.max_uphill_step = max_uphill_step
+        self.verbosity = verbosity
         self.tangent_space_quencher = defaults.tangentSpaceQuenchRoutine
         self.tangent_space_quench_params = dict(defaults.tangentSpaceQuenchParams.items() +
                                                 tangentSpaceQuenchParams.items())
@@ -197,7 +201,6 @@ class FindTransitionState(object):
         self.step_factor = .1
         self.nnegative = 0
         
-        self.verbosity = 1
         
     def _saveState(self, coords):
         self.saved_coords = np.copy(coords)
@@ -263,7 +266,7 @@ class FindTransitionState(object):
             
             if self.iprint > 0:
                 if (i+1) % self.iprint == 0:
-                    ostring = "findTransitionState: %3d E %g rms %g eigenvalue %g rms perp %g grad par %g overlap %g" % (
+                    ostring = "findTS: %3d E %9g rms %8g eigenvalue %9g rms perp %8g grad par %9g overlap %g" % (
                                     i, E, rms, self.eigenval, tangentrms, gradpar, overlap)
                     extra = "  Evec search: %d rms %g" % (self.leig_result.nfev, self.leig_result.rms)
                     extra += "  Tverse search: %d step %g" % (self.tangent_result.nfev, 
@@ -272,7 +275,7 @@ class FindTransitionState(object):
                     print ostring, extra
             
             if callable(self.event):
-                self.event(E, coords, rms)
+                self.event(E=E, coords=coords, rms=rms)
             if rms < self.tol:
                 break
             if self.nfail >= self.nfail_max:
@@ -333,7 +336,6 @@ class FindTransitionState(object):
         self.H0_leig = res.H0
         self.eigenvec = res.eigenvec
         self.eigenval = res.eigenval
-        self.oldeigenvec = self.eigenvec.copy()
         
         if i > 0:
             overlap = np.dot(self.oldeigenvec, res.eigenvec)
@@ -347,6 +349,7 @@ class FindTransitionState(object):
         else:
             self.nfail += 1
         
+        self.oldeigenvec = self.eigenvec.copy()
         return overlap
     
     def _minimizeTangentSpace(self, coords):
@@ -405,6 +408,8 @@ class FindTransitionState(object):
 
 
         if np.abs(h) > maxstep:
+            if self.verbosity >= 5:
+                print "reducing step from", h, "to", maxstep 
             h *= maxstep / abs(h)
         self.uphill_step_size = h
         coords += h * self.eigenvec

@@ -55,9 +55,9 @@ class LowestEigPot(basepot):
         vec_in /= np.linalg.norm(vec_in)
         if self.orthogZeroEigs is not None:
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
-            #now normalize
-            vec_in /= np.linalg.norm(vec_in)
+            #vec_in /= np.linalg.norm(vec_in)
 
+        #now normalize
         vec = vec_in / np.linalg.norm(vec_in)
         coordsnew = self.coords - self.diff * vec
         Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
@@ -143,7 +143,7 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
 
     #res = Result()
     res.eigenval = res.energy
-    res.eigenvec = res.coords
+    res.eigenvec = res.coords / np.linalg.norm(res.coords)
     delattr(res, "energy")
     delattr(res, "coords")
     res.H0 = quencher.H0

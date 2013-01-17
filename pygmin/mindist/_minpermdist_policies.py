@@ -62,6 +62,9 @@ class MeasurePolicy(object):
 
 class TransformAtomicCluster(TransformPolicy):
     ''' transformation rules for atomic clusters '''
+    
+    def __init__(self, can_invert=True):
+        self._can_invert = can_invert
         
     def translate(self, X, d):
         Xtmp = X.reshape([-1,3])
@@ -76,7 +79,7 @@ class TransformAtomicCluster(TransformPolicy):
         return X.reshape(-1,3)[perm].flatten()
         
     def can_invert(self):
-        return True
+        return self._can_invert
     
     def invert(self, X):
         X[:] = -X

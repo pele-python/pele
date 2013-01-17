@@ -4,7 +4,7 @@ from pygmin.transition_states import NEB, InterpolatedPath, findTransitionState,
 
 __all__ = ["LocalConnect"]
 
-def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None):
+def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params=dict()):
     """
     find nearest transition state to NEB climbing image.  Then fall
     off the transition state to find the associated minima.
@@ -29,8 +29,8 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None):
     
     #find the minima which this transition state connects
     print "falling off either side of transition state to find new minima"
-    ret1, ret2 = minima_from_ts(pot.getEnergyGradient, coords, n = ret.eigenvec, \
-        displace=1e-3, quenchParameters={"tol":1e-7, "iprint":-1})
+    ret1, ret2 = minima_from_ts(pot, coords, n = ret.eigenvec, \
+        **pushoff_params)
     
     return True, ret, ret1, ret2
 
@@ -57,6 +57,9 @@ class LocalConnect(object):
     reoptimize_climbing : int
         the number of iterations to use for re-optimizing the climbing images
         after the NEB is done.
+    pushoff_params : int
+        parameters for detemining how to find the minima on either side of 
+        a transition state
     verbosity : int
         this controls how many status messages are printed.  (not really
         implemented yet)
@@ -83,7 +86,8 @@ class LocalConnect(object):
     def __init__(self, pot, mindist, tsSearchParams=dict(), 
                  verbosity=1,
                  NEBparams=dict(), 
-                 nrefine_max=100, reoptimize_climbing=0):
+                 nrefine_max=100, reoptimize_climbing=0,
+                 pushoff_params=dict()):
         self.pot = pot
         self.mindist = mindist
         self.tsSearchParams = tsSearchParams
@@ -92,6 +96,8 @@ class LocalConnect(object):
         
         self.NEBparams = NEBparams
         self.reoptimize_climbing = reoptimize_climbing
+        
+        self.pushoff_params = pushoff_params
 
         self.res = Result()
         self.res.new_transition_states = []
@@ -118,7 +124,7 @@ class LocalConnect(object):
                                         )
             
             ret = _refineTS(self.pot, coords, tsSearchParams=self.tsSearchParams, 
-                                 eigenvec0=eigenvec0)
+                                 eigenvec0=eigenvec0, pushoff_params=self.pushoff_params)
             ts_success = ret[0]
             if ts_success:
                 #the transition state is good, add it to the list
