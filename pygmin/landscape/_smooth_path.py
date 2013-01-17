@@ -21,6 +21,9 @@ def smoothPath(path, mindist, density=5., interpolator=None):
     
     density : float, optional
         how dense to do the smoothing.
+    interpolator : callable, optional
+        allows to specify a custom interpolation routine (e.g. for angle axis)
+        
     """
     fullpath = []
     coords1 = path[0] 
