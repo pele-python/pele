@@ -30,7 +30,7 @@ class TIP4PSystem(BaseSystem):
         print "I have %d water molecules in the system"%nrigid
 
         water = tip4p.water()
-        water.S *= 2
+        #water.S *= 2
         
         system = RBSystem()
         system.add_sites([deepcopy(water) for i in xrange(nrigid)])
@@ -38,23 +38,7 @@ class TIP4PSystem(BaseSystem):
         self.aasystem = system
         self.potential = pot
         self.nrigid = nrigid
-
-        
-        neb_params = BaseParameters()
-        self.params["neb"]=neb_params
-        
-        neb_params["nimages"] = 15
-        neb_params["k"] = 10.
-        neb_params["aadist"] = True
-        
-        
-        defaults.NEBquenchParams["nsteps"] = 100
-        defaults.NEBquenchParams["iprint"] = -1
-        defaults.NEBquenchParams["maxstep"] = 0.1
-        #defaults.NEBquenchParams["maxErise"] = 0.1
-        defaults.NEBquenchParams["tol"] = 1e-6
-        defaults.NEBquenchRoutine = fire
-        
+                
         self.params.basinhopping["temperature"]=8.
         self.params.takestep["translate"]=0.0
         self.params.takestep["rotate"]=1.6
@@ -62,11 +46,20 @@ class TIP4PSystem(BaseSystem):
         self.params.double_ended_connect.local_connect_params.nrefine_max = 5
         
         NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
-        NEBparams.max_images=50
-        NEBparams.image_density=10.0
+        NEBparams.max_images=100
+        NEBparams.image_density=5.0
         NEBparams.iter_density=5
-        NEBparams.k = 50.
+        NEBparams.k = 10.
         NEBparams.interpolator=self.aasystem.interpolate
+        
+        quenchParams = NEBparams.NEBquenchParams
+        quenchParams["nsteps"] = 100
+        quenchParams["iprint"] = -1
+        quenchParams["maxstep"] = 0.1
+        #NEBquenchParams["maxErise"] = 0.1
+        quenchParams["tol"] = 1e-6
+        NEBparams.quenchRoutine = fire
+        
         
         tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
 
@@ -105,21 +98,28 @@ class TIP4PSystem(BaseSystem):
     
     def get_orthogonalize_to_zero_eigenvectors(self):
         return self.aasystem.orthogopt
-    
-    def createNEB(self, coords1, coords2):
-        pot = self.get_potential()
-        #dist = np.linalg.norm(coords1- coords2)
-        #if dist < 1.: dist = 1
-        #image_density = 15.
-        
-        #path = InterpolatedPathDensity(coords1, coords2, 
-        #                               distance=dist, density=image_density)
-        path = tip4p.get_path(self.aasystem, coords1, coords2, self.params.neb.nimages)
-                              
-        if(self.params.neb.aadist):
-            return NEB(path, pot, k = self.params.neb.k, distance=self.aasystem.neb_distance)
-        else:
-            return NEB(path, pot, k = self.params.neb.k)
+#    
+#    def createNEB(self, coords1, coords2):
+#        minima = self.database.minima()
+#        dc = self.get_double_ended_connect(minima[0], minima[1], self.database)
+#        
+#        local_connect = dc._getLocalConnectObject()
+#        return local_connect._getNEB(self.get_potential(), coords1, coords2,
+#                                     **local_connect.NEBparams)
+#    
+#        pot = self.get_potential()
+#        #dist = np.linalg.norm(coords1- coords2)
+#        #if dist < 1.: dist = 1
+#        #image_density = 15.
+#        
+#        #path = InterpolatedPathDensity(coords1, coords2, 
+#        #                               distance=dist, density=image_density)
+#        path = tip4p.get_path(self.aasystem, coords1, coords2, self.params.neb.nimages)
+#                              
+#        if(self.params.neb.aadist):
+#            return NEB(path, pot, k = self.params.neb.k, distance=self.aasystem.neb_distance)
+#        else:
+#            return NEB(path, pot, k = self.params.neb.k)
     
     def drawCylinder(self, X1, X2):
         from OpenGL import GL,GLUT, GLU
