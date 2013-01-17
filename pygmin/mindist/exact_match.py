@@ -63,7 +63,7 @@ class StandardClusterAlignment(object):
             # stop if angle is larger than threshold
             cos_theta1 = np.dot(x1[idx1_1], x1[idx1_2]) / \
                 (np.linalg.norm(x1[idx1_1])*np.linalg.norm(x1[idx1_2])) 
-            if cos_theta1 < 0.9:
+            if np.abs(cos_theta1) < 0.9:
                 break
             
         # do a very quick check if most distant atom from
@@ -86,6 +86,7 @@ class StandardClusterAlignment(object):
         self.idx2_2 = None
         self.invert = False
         
+        self.cos_theta1 = cos_theta1
         self.candidates2 = candidates2
         
         self.iter1 = iter(candidates1)
@@ -137,7 +138,7 @@ class StandardClusterAlignment(object):
                 (np.linalg.norm(x2[idx2_1])*np.linalg.norm(x2[idx2_2]))
         except ValueError:
             raise
-        if(np.abs(cos_theta2 - cos_theta2) > 0.5):
+        if(np.abs(cos_theta2 - self.cos_theta1) > 0.5):
             return self.next()
 
         mul = 1.0
@@ -147,7 +148,7 @@ class StandardClusterAlignment(object):
         # get rotation for current atom match candidates
         dist, rot = rmsfit.findrotation( \
                       x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
-                
+        
         return rot, self.invert
     
 class ExactMatchCluster(object):
@@ -238,6 +239,7 @@ class ExactMatchCluster(object):
         dist, rot2 = self.measure.find_rotation(x1, x2_trial)
         self.transform.rotate(x2_trial, rot2)
         # use the maximum distance, not rms as cutoff criterion
+        
         
         if  self.measure.get_dist(x1, x2_trial) < self.tol:
             return True
