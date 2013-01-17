@@ -21,6 +21,25 @@ from pygmin.landscape import smoothPath
 class TIP4PSystem(BaseSystem):
     def __init__(self):
         BaseSystem.__init__(self)
+        
+        GMIN.initialize()
+        pot = GMINPotential(GMIN)
+        coords = pot.getCoords()
+
+        nrigid = coords.size / 6
+        print "I have %d water molecules in the system"%nrigid
+
+        water = tip4p.water()
+        water.S *= 2
+        
+        system = RBSystem()
+        system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+        
+        self.aasystem = system
+        self.potential = pot
+        self.nrigid = nrigid
+
+        
         neb_params = BaseParameters()
         self.params["neb"]=neb_params
         
@@ -41,31 +60,17 @@ class TIP4PSystem(BaseSystem):
         self.params.takestep["rotate"]=1.6
         
         self.params.double_ended_connect.local_connect_params.nrefine_max = 5
-        self.params.double_ended_connect.local_connect_params.NEBparams.max_images=50
-        self.params.double_ended_connect.local_connect_params.NEBparams.image_density=10.0
-        self.params.double_ended_connect.local_connect_params.NEBparams.iter_density=5
-        self.params.double_ended_connect.local_connect_params.NEBparams.k = 1000.
+        
+        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
+        NEBparams.max_images=50
+        NEBparams.image_density=10.0
+        NEBparams.iter_density=5
+        NEBparams.k = 50.
+        NEBparams.interpolator=self.aasystem.interpolate
         
         tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
 
         tsSearchParams["nfail_max"]=20
-        
-        GMIN.initialize()
-        pot = GMINPotential(GMIN)
-        coords = pot.getCoords()
-
-        nrigid = coords.size / 6
-        print "I have %d water molecules in the system"%nrigid
-
-        water = tip4p.water()
-        water.S *= 2
-        
-        system = RBSystem()
-        system.add_sites([deepcopy(water) for i in xrange(nrigid)])
-        
-        self.aasystem = system
-        self.potential = pot
-        self.nrigid = nrigid
         self.params.double_ended_connect.local_connect_params.NEBparams.distance=self.aasystem.neb_distance
 
 
@@ -93,10 +98,10 @@ class TIP4PSystem(BaseSystem):
         return TakestepAA(self.aasystem, **kwargs)
     
     def get_compare_exact(self, **kwargs):
-        return ExactMatchAACluster(self.aasystem, **kwargs)
+        return ExactMatchAACluster(self.aasystem, accuracy=0.1, **kwargs)
     
     def get_mindist(self, **kwargs):
-        return MinPermDistAACluster(self.aasystem, **kwargs)
+        return MinPermDistAACluster(self.aasystem,accuracy=0.1, **kwargs)
     
     def get_orthogonalize_to_zero_eigenvectors(self):
         return self.aasystem.orthogopt
@@ -165,7 +170,7 @@ class TIP4PSystem(BaseSystem):
             
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
-        return smoothPath(path, mindist, **kwargs)
+        return smoothPath(path, mindist, interpolator=self.aasystem.interpolate, **kwargs)
     
     
 if __name__ == "__main__":
