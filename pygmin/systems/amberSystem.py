@@ -7,7 +7,8 @@ import os
 from pygmin.systems import BaseSystem
 from pygmin.mindist import ExactMatchAtomicCluster, MinPermDistAtomicCluster
 from pygmin.transition_states import orthogopt
-from pygmin.transition_states import InterpolatedPathDensity, NEB
+from pygmin.transition_states import InterpolatedPathDensity, NEB, create_NEB
+from pygmin.landscape import smoothPath
 from pygmin.systems import BaseParameters
 from pygmin.utils.elements import elements
 
@@ -50,11 +51,65 @@ class AMBERBaseSystem(BaseSystem):
         self.natoms = self.potential.prmtop.topology._numAtoms  
         
         self.params.database.accuracy = 1e-3
-        self.params.basinhopping["temperature"] = 1.0
-        self.params.double_ended_connect.local_connect_params.NEBparams.image_density = 1.
+        self.params.basinhopping["temperature"] = 1.
+        
+        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
+        NEBparams.iter_density = 30.
+        NEBparams.image_density = 5.
+        NEBparams.NEBquenchParams.iprint = 100
+        NEBparams.NEBquenchParams.maxErise = 1.
+        NEBparams.NEBquenchParams.maxstep = .01
+        NEBparams.NEBquenchParams.tol = 1e-2
+
+
         
         self.params.takestep_random_displacement = BaseParameters()
         self.params.takestep_random_displacement.stepsize = 2.
+        
+        self.set_params(self.params)
+    
+    def set_params(self, params):
+        """set default parameters for the system"""
+        
+        #set NEBparams
+        NEBparams = params.double_ended_connect.local_connect_params.NEBparams
+        NEBparams.iter_density = 15.
+        NEBparams.image_density = 5.
+        NEBparams.max_images = 100.
+        if False: #use fire
+            from pygmin.optimize import fire
+            NEBparams.quenchRoutine = fire
+        else: #use lbfgs
+            NEBparams.NEBquenchParams.maxErise = 0.5
+            NEBparams.NEBquenchParams.maxstep = .1
+        NEBparams.NEBquenchParams.tol = 1e-2
+            
+        
+        
+        #set transition state search params
+        tsSearchParams = params.double_ended_connect.local_connect_params.tsSearchParams
+        tsSearchParams.nsteps = 200
+        tsSearchParams.lowestEigenvectorQuenchParams.nsteps = 100
+        tsSearchParams.lowestEigenvectorQuenchParams.tol = 0.001
+        tsSearchParams.tangentSpaceQuenchParams.maxstep = .1
+        tsSearchParams.nfail_max = 1000
+        
+        
+        tsSearchParams.nsteps_tangent1 = 5
+        tsSearchParams.nsteps_tangent2 = 100
+        tsSearchParams.max_uphill_step = .3
+        
+        #control the output
+        tsSearchParams.verbosity = 0
+        NEBparams.NEBquenchParams.iprint = 50
+        tsSearchParams.lowestEigenvectorQuenchParams.iprint = -50
+        tsSearchParams.tangentSpaceQuenchParams.iprint = -5
+        tsSearchParams.iprint = 10
+        
+#        self.params.double_ended_connect.local_connect_params.pushoff_params.verbose = True
+#        self.params.double_ended_connect.local_connect_params.pushoff_params.stepmin = 1e-3
+#        self.params.double_ended_connect.local_connect_params.pushoff_params.gdiff = 100.
+#        #self.params.double_ended_connect.local_connect_params.pushoff_params.quenchRoutine = fire
             
     def __call__(self):
         return self 
@@ -63,7 +118,6 @@ class AMBERBaseSystem(BaseSystem):
         return self.potential 
 
     def get_basinhopping(self, *args, **kwargs):
-        
         return BaseSystem.get_basinhopping(self, *args, insert_rejected=True, **kwargs)
     
     def get_takestep(self):
@@ -71,7 +125,7 @@ class AMBERBaseSystem(BaseSystem):
         
         # todo: hardcoded stepsize etc 
         takeStepRnd   = RandomDisplacement( **self.params.takestep_random_displacement )
-        tsAdaptive = AdaptiveStepsizeTemperature(takeStepRnd, interval=10, verbose=True)
+        tsAdaptive = AdaptiveStepsizeTemperature(takeStepRnd, interval=50, verbose=False)
         return tsAdaptive     
     
     def get_random_configuration(self):
@@ -99,23 +153,15 @@ class AMBERBaseSystem(BaseSystem):
         
 
     def get_mindist(self):
-        permlist = self.get_permlist() 
-        return MinPermDistAtomicCluster(permlist=permlist, niter=10)
+        permlist = self.get_permlist()
+        
+        return MinPermDistAtomicCluster(permlist=permlist, niter=10, can_invert=False)
 
 
     def createNEB(self, coords1, coords2):
         pot = self.get_potential()
-        dist = np.linalg.norm(coords1- coords2)
-        if dist < 1.: dist = 1
-        try :
-            image_density = self.params.double_ended_connect.local_connect_params.NEB_image_density
-        except:
-            image_density = 1.
-            print "using image_density", image_density
-        
-        path = InterpolatedPathDensity(coords1, coords2, 
-                                       distance=dist, density=image_density)
-        return NEB(path, pot)
+        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
+        return create_NEB(pot, coords1, coords2, verbose=True, **NEBparams)
 
     def get_orthogonalize_to_zero_eigenvectors(self):
         return orthogopt
@@ -123,7 +169,11 @@ class AMBERBaseSystem(BaseSystem):
     def get_compare_exact(self, **kwargs):
         permlist = self.get_permlist()
         return ExactMatchAtomicCluster(permlist=permlist, **kwargs)
-    
+
+    def smooth_path(self, path, **kwargs):
+        mindist = self.get_mindist()
+        return smoothPath(path, mindist, **kwargs)
+
     def drawCylinder(self, X1, X2):
         from OpenGL import GL,GLUT, GLU
         z = np.array([0.,0.,1.]) #default cylinder orientation
@@ -165,6 +215,8 @@ class AMBERBaseSystem(BaseSystem):
             xyz1 = coords[atomPairs[0]] - com  
             xyz2 = coords[atomPairs[1]] - com 
             self.drawCylinder(xyz1, xyz2)                        
+    
+    
         
     def load_coords_pymol(self, coordslist, oname, index=1):
         """load the coords into pymol
