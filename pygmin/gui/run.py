@@ -177,7 +177,20 @@ class MyForm(QtGui.QMainWindow):
     
     def ConnectMinima(self):
         """do an NEB run (not a connect run).  Don't find best alignment first"""
-        self.neb = self.system.createNEB(self.ui.oglPath.coords[1], self.ui.oglPath.coords[2])
+        coords1 = self.ui.oglPath.coords[1]
+        coords2 = self.ui.oglPath.coords[2]
+        min1 = self.ui.oglPath.minima[1]
+        min2 = self.ui.oglPath.minima[2]
+        
+        double_ended = self.system.get_double_ended_connect(min1, min2, 
+                                                            self.system.database, 
+                                                            fresh_connect=True)
+        
+        local_connect = double_ended._getLocalConnectObject()
+        self.neb =  local_connect._getNEB(self.system.get_potential(),
+                                          coords1, coords2,
+                                          **local_connect.NEBparams)        
+        
         self.neb.optimize()
         self.nebcoords = self.neb.coords
         self.nebenergies = self.neb.energies
