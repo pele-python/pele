@@ -140,6 +140,9 @@ the Parameters class keeps track only of what has been overridden.
     
     BaseParameters
     Parameters
+    
+For a translation between an OPTIM odata file and the pygmin Parameter tree, see
+:ref:`here <optim2params>`
 
 """
 
