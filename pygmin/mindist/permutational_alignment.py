@@ -249,6 +249,7 @@ def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape
         permlist = [range(len(X1))]
     
     newperm = range(len(X1))
+    dist = -1.
     
     for atomlist in permlist:
         if user_algorithm is None:
