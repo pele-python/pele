@@ -83,11 +83,14 @@ class InterpolatedPath(object):
     interpolator=None
     current = 0
     
-    def __init__(self, initial, final, nimages, interpolator=interpolate_linear):
+    def __init__(self, initial, final, nimages, interpolator=None):
         self.initial=initial
         self.final=final
         self.nimages = nimages
-        self.interpolator = interpolator
+        if interpolator is None:
+            self.interpolator = interpolate_linear
+        else:
+            self.interpolator = interpolator
         
     
     def __len__(self):

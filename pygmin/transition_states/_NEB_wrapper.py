@@ -7,7 +7,7 @@ __all__ = ["create_NEB"]
 def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
                 iter_density=15, 
                 NEBquenchParams=dict(),
-                interpolator = None,
+                interpolator=None,
                 verbose=False, factor=1, parallel=False, ncores=4, **NEBparams):
     """
     a wrapper function to do the interpolation and set up the nudged elastic band object
@@ -35,6 +35,8 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
         if True, then use class NEBPar to evaluate the image potentials in parallel
     ncores : int
         the number of cores to use.  Ignored if parallel is False
+    interpolator : callable, optional
+        the function used to do the path interpolation for the NEB
     
     Returns
     -------
