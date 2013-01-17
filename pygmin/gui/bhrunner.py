@@ -31,13 +31,16 @@ class BHProcess(mp.Process):
         print seed
         np.random.seed(seed)
         print np.random.random(2)
-        opt = self.system.get_basinhopping(add_minimum = self.insert, outstream=None)
+        db = self.system.create_database()
+        db.on_minimum_added.connect(self.insert)
+        opt = self.system.get_basinhopping(database=db, outstream=None)
+        
         #while(True):
         #print 'bhrunner.py: number of BH steps set to 1'
         opt.run(500)
         
-    def insert(self, E, coords):
-            self.comm.send([E,coords])
+    def insert(self, m):
+            self.comm.send([m.energy,m.coords])
         
 class PollThread(QtCore.QThread):
     def __init__(self, bhrunner, conn):
