@@ -98,6 +98,8 @@ the parameter tree looks like this::
     -------------tsSearchParams
     -----------------lowestEigenvectorQuenchParams
     -----------------tangentSpaceQuenchParams
+    -------------pushoff_params
+    -----------------quenchParams
 
             
 All of the these listed above are dictionaries that are passed to the appropriate functions or classes.  
@@ -126,6 +128,7 @@ parameter dictionary             passed as parameters to
 `lowestEigenvectorQuenchParams`  the :ref:`optimizer <optimize_module>` called by :ref:`findLowestEigenVector <transition_states_module>`
 `tangentSpaceQuenchParams`       the :ref:`optimizer <optimize_module>` called by :ref:`FindTransitionState <transition_states_module>` 
                                    for the tangent space quench
+`pushoff_params`                 the :ref:`routine <transition_states_module>` which finds the minima on either side of a transition state
 ===============================  =============================================
 
 

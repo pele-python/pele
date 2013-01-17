@@ -53,16 +53,6 @@ class AMBERBaseSystem(BaseSystem):
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.
         
-        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
-        NEBparams.iter_density = 30.
-        NEBparams.image_density = 5.
-        NEBparams.NEBquenchParams.iprint = 100
-        NEBparams.NEBquenchParams.maxErise = 1.
-        NEBparams.NEBquenchParams.maxstep = .01
-        NEBparams.NEBquenchParams.tol = 1e-2
-
-
-        
         self.params.takestep_random_displacement = BaseParameters()
         self.params.takestep_random_displacement.stepsize = 2.
         
@@ -76,6 +66,7 @@ class AMBERBaseSystem(BaseSystem):
         NEBparams.iter_density = 15.
         NEBparams.image_density = 5.
         NEBparams.max_images = 100.
+        NEBparams.k = 10.
         if False: #use fire
             from pygmin.optimize import fire
             NEBparams.quenchRoutine = fire

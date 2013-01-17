@@ -90,7 +90,6 @@ class BaseSystem(object):
     #. get_mindist : required
     #. get_orthogonalize_to_zero_eigenvectors : required
     #. get_compare_exact : optional, recommended
-    #. get_random_configuration : optional
     
     GUI::
         
