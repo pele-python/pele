@@ -4,7 +4,7 @@ from pygmin.transition_states import InterpolatedPathDensity
 
 __all__ = ["smoothPath"]
 
-def smoothPath(path, mindist, density=5.):
+def smoothPath(path, mindist, density=5., interpolator=None):
     """return a smooth (interpolated) path
     
     usefull for making movies.  Especially for min-ts-min pathways
@@ -28,7 +28,7 @@ def smoothPath(path, mindist, density=5.):
         #coords1 = path[i-1]
         coords2 = path[i]
         dist, coords1, coords2 = mindist(coords1, coords2)
-        newpath = InterpolatedPathDensity(coords1, coords2, dist, density)
+        newpath = InterpolatedPathDensity(coords1, coords2, dist, density, interpolator=interpolator)
         fullpath += list(newpath)
         #print "dist", dist, len(newpath), len(fullpath)
         

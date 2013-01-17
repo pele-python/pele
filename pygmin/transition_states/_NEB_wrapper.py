@@ -6,7 +6,8 @@ __all__ = ["create_NEB"]
 
 def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
                 iter_density=15, 
-                NEBquenchParams=dict(), 
+                NEBquenchParams=dict(),
+                interpolator = None,
                 verbose=False, factor=1, parallel=False, ncores=4, **NEBparams):
     """
     a wrapper function to do the interpolation and set up the nudged elastic band object
@@ -70,9 +71,9 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
         print "    NEB: nsteps ", niter
 
     if parallel:
-        return NEBPar(InterpolatedPath(coords1, coords2, nimages), 
+        return NEBPar(InterpolatedPath(coords1, coords2, nimages, interpolator=interpolator), 
                    pot, quenchParams=NEBquenchParams, ncores=ncores, **NEBparams)
     else:
-        return NEB(InterpolatedPath(coords1, coords2, nimages), 
+        return NEB(InterpolatedPath(coords1, coords2, nimages, interpolator=interpolator), 
                    pot, quenchParams=NEBquenchParams, **NEBparams)
 
