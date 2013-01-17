@@ -46,11 +46,15 @@ class NEB(object):
     copy_potential : bool, optional
         if True a separate copy of the potential will be made for
         each image.  This can be used to keep neighbor lists from being rebuilt
-        over and over again.  
+        over and over again.
     quenchRoutine : callable
         the quench routine to use in optimizing the band
     quenchParams :
         parameters passed to the quench routine.
+    save_energies : bool
+        if True and quenchParams.iprint exists and is positive, then the energy 
+        along the NEB path will be printed to a file of the form "neb.EofS.####" 
+        every iprint steps.
 
     Notes
     -----
@@ -65,7 +69,8 @@ class NEB(object):
     """
     def __init__(self, path, potential, distance=distance_cart,
                  k=100.0, with_springenergy=False, dneb=True,
-                 copy_potential=False, quenchParams=dict(), quenchRoutine=None):
+                 copy_potential=False, quenchParams=dict(), quenchRoutine=None,
+                 save_energies=False):
         self.distance = distance
         self.potential = potential
         self.k = k
@@ -78,6 +83,7 @@ class NEB(object):
         self.getEnergyCount = 0
         self.printStateFile = None
         self.iprint = -1
+        self.save_energies=save_energies
         
         self.quenchRoutine = quenchRoutine
         self.quenchParams = quenchParams.copy()
@@ -195,7 +201,7 @@ class NEB(object):
                     )
             Eneb += En
         if self.iprint > 0:
-            if self.getEnergyCount % self.iprint == 0:
+            if self.getEnergyCount % self.iprint == 0 and self.save_energies:
                 self.printState()
         self.getEnergyCount += 1
         #print "ENeb = ", Eneb

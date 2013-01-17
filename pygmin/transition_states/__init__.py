@@ -52,6 +52,18 @@ Frozen degrees of freedom also contribute zero eigenvecotrs
     zeroEV_rotation
     zeroEV_cluster
     gramm_schmidt
+
+Finding minima on either side of a transition state
+---------------------------------------------------
+When a transition state is found we step off either side of the transition state to find
+the minima which the transition state connects.  This routine controls that process
+
+.. autosummary::
+    :toctree: generated/
+
+    minima_from_ts
+
+
 """
 
 from zeroev import *

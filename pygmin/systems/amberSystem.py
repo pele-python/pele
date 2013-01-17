@@ -53,16 +53,6 @@ class AMBERBaseSystem(BaseSystem):
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.
         
-        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
-        NEBparams.iter_density = 30.
-        NEBparams.image_density = 5.
-        NEBparams.NEBquenchParams.iprint = 100
-        NEBparams.NEBquenchParams.maxErise = 1.
-        NEBparams.NEBquenchParams.maxstep = .01
-        NEBparams.NEBquenchParams.tol = 1e-2
-
-
-        
         self.params.takestep_random_displacement = BaseParameters()
         self.params.takestep_random_displacement.stepsize = 2.
         
@@ -76,6 +66,7 @@ class AMBERBaseSystem(BaseSystem):
         NEBparams.iter_density = 15.
         NEBparams.image_density = 5.
         NEBparams.max_images = 100.
+        NEBparams.k = 10.
         if False: #use fire
             from pygmin.optimize import fire
             NEBparams.quenchRoutine = fire
@@ -146,7 +137,7 @@ class AMBERBaseSystem(BaseSystem):
 #        return [[0, 2, 3],    [11, 12, 13],     [19, 20, 21] ]
         if os.path.exists('coordsModTerm.pdb'):
             plist = amberPDB_to_permList.amberPDB_to_permList('coordsModTerm.pdb')
-            return plist     
+            return plist
         else:
             print 'amberSystem: coordsModTerm.pdb not found.'    
             return []                     
@@ -274,11 +265,11 @@ class AMBERBaseSystem(BaseSystem):
         pymol.cmd.hide("everything", oname)
         pymol.cmd.show("lines", oname)
         
-        #set the color according to index
-        if index == 1:
-            pymol.cmd.color("red", oname)
-        else:
-            pymol.cmd.color("blue", oname)
+#        #set the color according to index
+#        if index == 1:
+#            pymol.cmd.color("red", oname)
+#        else:
+#            pymol.cmd.color("blue", oname)
 
     def test_potential(self, pdbfname ):
         """ tests amber potential for pdbfname 
