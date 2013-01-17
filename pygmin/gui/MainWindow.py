@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Tue Jan  8 15:29:31 2013
+# Created: Thu Jan 17 18:41:33 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -145,6 +145,9 @@ class Ui_MainWindow(object):
         self.btnReconnect = QtGui.QPushButton(self.NEBTab)
         self.btnReconnect.setObjectName(_fromUtf8("btnReconnect"))
         self.gridLayout_2.addWidget(self.btnReconnect, 3, 1, 1, 1)
+        self.btnconnect_in_optim = QtGui.QPushButton(self.NEBTab)
+        self.btnconnect_in_optim.setObjectName(_fromUtf8("btnconnect_in_optim"))
+        self.gridLayout_2.addWidget(self.btnconnect_in_optim, 4, 1, 1, 1)
         self.verticalLayout_5.addLayout(self.gridLayout_2)
         self.verticalLayout_2.addLayout(self.verticalLayout_5)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
@@ -207,7 +210,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 839, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 839, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuSimulation = QtGui.QMenu(self.menubar)
         self.menuSimulation.setObjectName(_fromUtf8("menuSimulation"))
@@ -261,6 +264,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.btnDisconnectivity_graph, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.show_disconnectivity_graph)
         QtCore.QObject.connect(self.btnReconnect, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.doubleEndedReConnect)
         QtCore.QObject.connect(self.actionEditParams, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.edit_params)
+        QtCore.QObject.connect(self.btnconnect_in_optim, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.connect_in_optim)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -277,6 +281,7 @@ class Ui_MainWindow(object):
         self.btnDisconnectivity_graph.setText(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
         self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "show graph", None, QtGui.QApplication.UnicodeUTF8))
         self.btnReconnect.setText(QtGui.QApplication.translate("MainWindow", "Reconnect", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnconnect_in_optim.setText(QtGui.QApplication.translate("MainWindow", "Connect in OPTIM", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.btnTSSearch.setText(QtGui.QApplication.translate("MainWindow", "Find TS", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Path", None, QtGui.QApplication.UnicodeUTF8))

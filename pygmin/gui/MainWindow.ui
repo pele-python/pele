@@ -243,6 +243,13 @@
                 </property>
                </widget>
               </item>
+              <item row="4" column="1">
+               <widget class="QPushButton" name="btnconnect_in_optim">
+                <property name="text">
+                 <string>Connect in OPTIM</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -363,7 +370,7 @@
      <x>0</x>
      <y>0</y>
      <width>839</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSimulation">
@@ -438,8 +445,8 @@
    <slot>SelectMinimum()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>471</x>
-     <y>217</y>
+     <x>816</x>
+     <y>284</y>
     </hint>
     <hint type="destinationlabel">
      <x>7</x>
@@ -454,8 +461,8 @@
    <slot>StartBasinHopping()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>669</x>
-     <y>477</y>
+     <x>816</x>
+     <y>545</y>
     </hint>
     <hint type="destinationlabel">
      <x>432</x>
@@ -470,8 +477,8 @@
    <slot>AlignMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>555</x>
-     <y>379</y>
+     <x>652</x>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -486,8 +493,8 @@
    <slot>ConnectMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>651</x>
-     <y>412</y>
+     <x>758</x>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -534,8 +541,8 @@
    <slot>showFrame()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>79</x>
-     <y>441</y>
+     <x>95</x>
+     <y>579</y>
     </hint>
     <hint type="destinationlabel">
      <x>74</x>
@@ -550,8 +557,8 @@
    <slot>showEnergies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>555</x>
-     <y>412</y>
+     <x>652</x>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -582,8 +589,8 @@
    <slot>SelectMinimum()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>567</x>
-     <y>169</y>
+     <x>803</x>
+     <y>235</y>
     </hint>
     <hint type="destinationlabel">
      <x>553</x>
@@ -598,8 +605,8 @@
    <slot>doubleEndedConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>560</x>
-     <y>511</y>
+     <x>707</x>
+     <y>579</y>
     </hint>
     <hint type="destinationlabel">
      <x>627</x>
@@ -614,8 +621,8 @@
    <slot>selectTransition()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>567</x>
-     <y>373</y>
+     <x>803</x>
+     <y>544</y>
     </hint>
     <hint type="destinationlabel">
      <x>342</x>
@@ -630,8 +637,8 @@
    <slot>showFrameTS()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>55</x>
-     <y>507</y>
+     <x>66</x>
+     <y>580</y>
     </hint>
     <hint type="destinationlabel">
      <x>172</x>
@@ -646,8 +653,8 @@
    <slot>Invert()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>651</x>
-     <y>379</y>
+     <x>796</x>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -662,8 +669,8 @@
    <slot>doubleEndedConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>555</x>
-     <y>445</y>
+     <x>652</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>685</x>
@@ -678,8 +685,8 @@
    <slot>show_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>555</x>
-     <y>478</y>
+     <x>652</x>
+     <y>544</y>
     </hint>
     <hint type="destinationlabel">
      <x>691</x>
@@ -710,8 +717,8 @@
    <slot>show_disconnectivity_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>627</x>
-     <y>497</y>
+     <x>796</x>
+     <y>577</y>
     </hint>
     <hint type="destinationlabel">
      <x>689</x>
@@ -726,8 +733,8 @@
    <slot>doubleEndedReConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>607</x>
-     <y>430</y>
+     <x>796</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -748,6 +755,22 @@
     <hint type="destinationlabel">
      <x>345</x>
      <y>277</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnconnect_in_optim</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>connect_in_optim()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>688</x>
+     <y>530</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>833</x>
+     <y>565</y>
     </hint>
    </hints>
   </connection>
@@ -776,5 +799,6 @@
   <slot>show_disconnectivity_graph()</slot>
   <slot>doubleEndedReConnect()</slot>
   <slot>edit_params()</slot>
+  <slot>connect_in_optim()</slot>
  </slots>
 </ui>

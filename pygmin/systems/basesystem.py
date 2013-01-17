@@ -5,6 +5,7 @@ from pygmin import basinhopping
 from pygmin.storage import Database
 from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 from pygmin.utils.xyz import write_xyz
+from pygmin.optimize import mylbfgs
 
 __all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
@@ -45,6 +46,7 @@ class Parameters(BaseParameters):
         self["database"] = BaseParameters()
         self["basinhopping"] = BaseParameters()
         self["takestep"] = BaseParameters()
+        self.structural_quench_params = BaseParameters()
         
         self.double_ended_connect = BaseParameters()
         self.double_ended_connect.local_connect_params = BaseParameters()
@@ -122,6 +124,17 @@ class BaseSystem(object):
     def get_random_configuration(self):
         """a starting point for basinhopping, etc."""
         raise NotImplementedError
+    
+    def get_random_minimized_configuration(self):
+        coords = self.get_random_configuration()
+        quencher = self.get_minimizer()
+        return quencher(coords)
+    
+    def get_minimizer(self):
+        """return a function to minimize the structure"""
+        pot = self.get_potential()
+        params = self.params.structural_quench_params
+        return lambda coords: mylbfgs(coords, pot.getEnergyGradient, **params)
     
     def get_compare_exact(self):
         """object that returns True if two structures are exact.

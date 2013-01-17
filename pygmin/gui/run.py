@@ -15,6 +15,7 @@ from pygmin.landscape import Graph
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from dlg_params import DlgParams
 from pygmin.config import config
+
 global pick_count
 
 class pick_event(object):
@@ -468,12 +469,15 @@ class MyForm(QtGui.QMainWindow):
     def doubleEndedReConnect(self):
         return self._doubleEndedConnect(reconnect=True)
 
-    def _doubleEndedConnect(self, reconnect=False):
+    def _doubleEndedConnect(self, reconnect=False, min1min2=None):
 #        min1 = self.ui.listMinima1.selectedItems()[0].minimum
 #        min2 = self.ui.listMinima2.selectedItems()[0].minimum
 #        min1 = self.ui.
-        min1 = self.ui.oglPath.minima[1]
-        min2 = self.ui.oglPath.minima[2]
+        if min1min2 is None:
+            min1 = self.ui.oglPath.minima[1]
+            min2 = self.ui.oglPath.minima[2]
+        else:
+            min1, min2 = min1min2
         database = self.system.database
         double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
                                                                        fresh_connect=reconnect)
@@ -494,6 +498,30 @@ class MyForm(QtGui.QMainWindow):
         if self.usepymol:
             self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
      
+    def connect_in_optim(self):
+        """spawn an OPTIM job and retrieve the minima and transition states 
+        it finds"""
+        min1 = self.ui.oglPath.minima[1]
+        min2 = self.ui.oglPath.minima[2]
+        existing_minima = set(self.system.database.minima())
+        spawner = self.system.get_optim_spawner(min1.coords, min2.coords)
+        spawner.run()
+        db = self.system.database
+        newminima, newts = spawner.load_results(self.system.database)
+        for m in newminima:
+            if m not in existing_minima:
+                self.NewMinimum(m)
+            
+        #now use DoubleEndedConnect to test if they are connected
+        graph = Graph(db)
+        if graph.areConnected(min1, min2):
+            #use double ended connect to draw the interpolated path
+            #this is ugly
+            self._doubleEndedConnect(reconnect=False, min1min2=(min1, min2))
+                                                       
+
+        
+        
 #def refresh_pl():
     #pl.pause(0.000001)    
     

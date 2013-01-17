@@ -14,6 +14,14 @@ class LJSystem(LJCluster):
         if dlg.result() == QtGui.QDialog.Rejected:
             raise BaseException("Aborted parameter dialog")
         super(LJSystem, self).__init__(self.natoms)
+    
+    def get_optim_spawner(self, coords1, coords2):
+        from pygmin.systems.spawn_OPTIM import SpawnOPTIM_LJ
+        import os
+        # TODO: this should be passable somehow
+        optim = os.path.expanduser("~")+"/git/OPTIM/source/build/OPTIM"
+        optim = "OPTIM"
+        return SpawnOPTIM_LJ(coords1, coords2, self, OPTIM=optim)
 
 
 class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
