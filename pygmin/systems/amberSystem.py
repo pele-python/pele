@@ -137,7 +137,7 @@ class AMBERBaseSystem(BaseSystem):
 #        return [[0, 2, 3],    [11, 12, 13],     [19, 20, 21] ]
         if os.path.exists('coordsModTerm.pdb'):
             plist = amberPDB_to_permList.amberPDB_to_permList('coordsModTerm.pdb')
-            return plist     
+            return plist
         else:
             print 'amberSystem: coordsModTerm.pdb not found.'    
             return []                     
@@ -265,11 +265,11 @@ class AMBERBaseSystem(BaseSystem):
         pymol.cmd.hide("everything", oname)
         pymol.cmd.show("lines", oname)
         
-        #set the color according to index
-        if index == 1:
-            pymol.cmd.color("red", oname)
-        else:
-            pymol.cmd.color("blue", oname)
+#        #set the color according to index
+#        if index == 1:
+#            pymol.cmd.color("red", oname)
+#        else:
+#            pymol.cmd.color("blue", oname)
 
     def test_potential(self, pdbfname ):
         """ tests amber potential for pdbfname 
