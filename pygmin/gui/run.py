@@ -25,6 +25,11 @@ class pick_event(object):
         pass
 
 class QMinimumInList(QtGui.QListWidgetItem):
+    
+    def __init__(self, minimum):
+        text="%.4f (%d)"%(minimum.energy, minimum._id)
+        QtGui.QListWidgetItem.__init__(self, text)
+        
     def setCoords(self, coords):
         self.coords = coords
     def setMinimum(self, minimum):
@@ -373,7 +378,7 @@ class MyForm(QtGui.QMainWindow):
         minid=id(minimum)
         coords=minimum.coords
         for obj in self.listMinima:
-            item = QMinimumInList('%.4f'%E)
+            item = QMinimumInList(minimum)
             item.setCoords(coords)
             item.setMinimum(minimum)
             obj.addItem(item)    
