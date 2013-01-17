@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use("QT4Agg")
+    
 import pylab as pl    
 from PyQt4 import QtCore, QtGui
 import MainWindow 
@@ -473,19 +476,19 @@ class MyForm(QtGui.QMainWindow):
         if self.usepymol:
             self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
      
-def refresh_pl():
-    pl.pause(0.000001)    
+#def refresh_pl():
+    #pl.pause(0.000001)    
     
 def run_gui(systemtype, db=None):
     app = QtGui.QApplication(sys.argv)
-    import pylab as pl
+    
     myapp = MyForm(systemtype)
     if db is not None:
         myapp.connect_db(db)
         
-    refresh_timer = QtCore.QTimer()
-    refresh_timer.timeout.connect(refresh_pl)
-    refresh_timer.start(0.)
+#    refresh_timer = QtCore.QTimer()
+#    refresh_timer.timeout.connect(refresh_pl)
+#    refresh_timer.start(0.)
     myapp.show()
     sys.exit(app.exec_()) 
        
