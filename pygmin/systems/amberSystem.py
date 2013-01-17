@@ -1,6 +1,7 @@
 # utils 
 import numpy as np
 import tempfile
+import os 
 
 # pygmin  
 from pygmin.systems import BaseSystem
@@ -8,6 +9,7 @@ from pygmin.mindist import ExactMatchAtomicCluster, MinPermDistAtomicCluster
 from pygmin.transition_states import orthogopt
 from pygmin.transition_states import InterpolatedPathDensity, NEB
 from pygmin.systems import BaseParameters
+from pygmin.utils.elements import elements
 
 # OpenMM related 
 from pygmin.potentials import OpenMMAmberPotential 
@@ -82,9 +84,18 @@ class AMBERBaseSystem(BaseSystem):
         return coords 
 
     def get_permlist(self):
-        # todo - permutable hydrogens for ala dipep
-        # todo - make this general
-        return [[0, 2, 3],    [11, 12, 13],     [19, 20, 21] ]
+        from pygmin.utils import amberPDB_to_permList
+        
+        # todo: - file name coordsModTerm.pdb is hardcoded, derive from coords.pdb  
+        #       - coordsModTerm.pdb should have prefix N for N terminal residue and prefix C for C terminal      
+        
+#        return [[0, 2, 3],    [11, 12, 13],     [19, 20, 21] ]
+        if os.path.exists('coordsModTerm.pdb'):
+            plist = amberPDB_to_permList.amberPDB_to_permList('coordsModTerm.pdb')
+            return plist     
+        else:
+            print 'amberSystem: coordsModTerm.pdb not found.'    
+            return []                     
         
 
     def get_mindist(self):
@@ -130,15 +141,23 @@ class AMBERBaseSystem(BaseSystem):
         
     def draw(self, coordsl, index):
         from OpenGL import GL,GLUT
+                                        
         coords=coordsl.reshape(coordsl.size/3,3)        
-        com=np.mean(coords, axis=0)             
+        com=np.mean(coords, axis=0) 
+                    
         # draw atoms as spheres      
-        for xx in coords:
-            x = xx-com
+        for i in self.potential.prmtop.topology.atoms():             
+            atomElem = i.name[0]         
+            atomNum  = i.index         
+            x = coords[atomNum] - com 
             GL.glPushMatrix()            
-            GL.glTranslate(x[0],x[1],x[2])
-            GLUT.glutSolidSphere(0.3,30,30)
-            GL.glPopMatrix()
+            GL.glTranslate(x[0],x[1],x[2])            
+            col = elements[atomElem]['color']
+            # scaling down the radius by factor of 5, else the spheres fuse into one another 
+            rad = elements[atomElem]['radius']/5  
+            GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, col)            
+            GLUT.glutSolidSphere(rad,30,30)
+            GL.glPopMatrix()            
                     
         # draw bonds  
         for atomPairs in self.potential.prmtop.topology.bonds():
@@ -170,16 +189,11 @@ class AMBERBaseSystem(BaseSystem):
         """
         #pymol is imported here so you can do, e.g. basinhopping without installing pymol
         import pymol 
-        
-        
-        # todo -- work with 
+                
         #create the temporary file
         suffix = ".pdb"
         f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
         fname = f.name
-
-#        fname = 'temp.pdb'
-#        f = open(fname,'w')
         
         from simtk.openmm.app import pdbfile as openmmpdb
 
@@ -193,9 +207,7 @@ class AMBERBaseSystem(BaseSystem):
 #            openmmpdb.PDBFile.writeFile(self.potential.prmtop.topology , self.potential.localCoords * openmm_angstrom , file=sys.stdout, modelIndex=1)
             openmmpdb.PDBFile.writeModel(self.potential.prmtop.topology , self.potential.localCoords * openmm_angstrom , file=f, modelIndex=ct)
                         
-#        f.flush()
         print "closing file"
-#        f.close() 
         f.flush()
                 
         #load the molecule from the temporary file
