@@ -299,6 +299,7 @@ class LBFGS(object):
         i = 1
         self.funcalls += 1
         e, G = self.pot.getEnergyGradient(X)
+        rms = np.linalg.norm(G) / sqrtN
         res.success = False
         while i < nsteps:
             stp = self.getStep(X, G)
