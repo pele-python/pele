@@ -99,12 +99,13 @@ class Reseeding(TakestepInterface):
         do 1 reseeding step if the energy did not improve after so many steps.
         
     '''
-    def __init__(self, takestep, reseed, maxnoimprove=100):
+    def __init__(self, takestep, reseed, maxnoimprove=100, accuracy=1e-4):
         self.takestep = takestep
         self.reseed = reseed
         self.maxnoimprove = maxnoimprove
         self._noimprove = 0
         self.lowest = None
+        self.accuracy = accuracy
         
     def takeStep(self, coords, **kwargs):
         if self._noimprove >= self.maxnoimprove:
@@ -116,7 +117,7 @@ class Reseeding(TakestepInterface):
         else:
             self.takestep.takeStep(coords, **kwargs)
        
-    def updateStep(self, accepted, **kwargs):
+    def updateStep(self, accepted, **kwargs):        
         driver = kwargs["driver"]
         if self.lowest == None:
             self.lowest = driver.markovE
@@ -125,9 +126,10 @@ class Reseeding(TakestepInterface):
             self._noimprove=1
         else:
             self.takestep.updateStep(accepted, **kwargs)
-            if driver.markovE >= self.lowest:
+            if driver.markovE + self.accuracy >= self.lowest or accepted==False:
                 self._noimprove+=1
             else:
+                #print "resetting reseed counter"
                 self.lowest = driver.markovE
                 self._noimprove=1
             
