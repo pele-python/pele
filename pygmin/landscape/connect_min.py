@@ -152,7 +152,6 @@ class DoubleEndedConnect(object):
 
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
-        print "merge_minima", self.merge_minima
 
         self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
 

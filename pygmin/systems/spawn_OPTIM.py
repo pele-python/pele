@@ -1,6 +1,8 @@
 import os
 import subprocess
 import numpy as np
+import tempfile
+import shutil
 
 from pygmin.optimize import Result
 
@@ -58,12 +60,8 @@ class PathInfoReader(object):
         res.coords = self.read_coords(fin)
         
         return res
-    
-#    def read_ts(self, fin):
-#        coords = self.read_coords(fin)
-#        #read eigenvalues and eigenvectors?
-#         
-#        return coords
+
+
 
 class SpawnOPTIM(object):
     """
@@ -74,15 +72,16 @@ class SpawnOPTIM(object):
     #. call OPTIM
     #. when OPTIM finishes, load the results into the database
     """
-    def __init__(self, coords1, coords2, OPTIM="OPTIM"):
+    def __init__(self, coords1, coords2, OPTIM="OPTIM", rundir=None, tempdir=False):
         self.coords1 = coords1.reshape(-1,3)
         self.coords2 = coords2.reshape(-1,3)
         self.OPTIM = OPTIM
+        self.rundir = rundir
+        self.tempdir = tempdir
         
     def run(self):
-        rundir = self.make_temporary_dir()
-        self.rundir = rundir
-        print "rundir", rundir
+        self.rundir = self.make_temporary_dir()
+        rundir = self.rundir
         self.make_input_files(rundir)
         self.call_optim(rundir, self.OPTIM)
         
@@ -99,6 +98,13 @@ class SpawnOPTIM(object):
         with open(finish, "w") as fout:
             for xyz in self.coords2:
                 fout.write( "%f %f %f\n" % tuple(xyz))
+        
+        #make perm.allow file, if appropriate
+        permallow = rundir + "/perm.allow"
+        self.write_perm_allow(permallow)
+        
+        #make any additional files
+        self.write_additional_input_files(rundir)
 
     
     def write_odata(self, fout):
@@ -115,11 +121,40 @@ class SpawnOPTIM(object):
         """
         raise NotImplementedError
 
+    def make_permallow_from_permlist(self, permlist):
+        """return a string corresponding to the perm.allow file from a permlist"""
+        permallow = ""
+        #first line is number of groups
+        permallow += "%d\n" % len(permlist)
+        for permgroup in permlist:
+            #print the size of the permgroup and the dependency
+            #permlist doesn't yet support dependency
+            permallow += "%d %d\n" % (len(permgroup), 0)
+            #now print the atoms in the permgroup.  adding 1 for the fortran indexing
+            atoms = [str(i + 1) for i in permgroup]
+            permallow += " ".join(atoms) + "\n"
+        return permallow
+
+    def write_perm_allow(self, fname):
+        """make the perm.allow file if appropriate"""
+        pass
+    
+    def write_additional_input_files(self, rundir):
+        """use this function to write any other input files that are needed"""
+        pass
     
     def make_temporary_dir(self):
-        dname = "odata_spawn"
-        if not os.path.isdir(dname):
-            os.mkdir(dname)
+        if self.tempdir:
+            dname = tempfile.mkdtemp(prefix="optim_spawned")
+        else:
+            if self.rundir is None:
+                dname = "optim_spawned"
+            else:
+                dname = self.rundir
+            if not os.path.isdir(dname):
+                os.mkdir(dname)
+        self.rundir = dname
+        print "rundir", dname
         return dname
     
     def call_optim(self, rundir, OPTIM):
@@ -137,6 +172,13 @@ class SpawnOPTIM(object):
         os.chdir(curdir)
     
     def load_results(self, database):
+        """load the resulting min-ts-min triplets from the path.info file and put them in the database
+        
+        Returns
+        -------
+        newminima : a set of the minima found
+        newts : a set of the transition states found
+        """
         reader = PathInfoReader(self.sys.natoms, fname=self.rundir+"/path.info")
         newminima = set()
         newts = set()
@@ -152,7 +194,13 @@ class SpawnOPTIM(object):
             newminima.add(min2)
             newts.add(ts)
         
+        #delete rundir if is a temporary directory
+        if self.tempdir:
+            print "removing directory", self.rundir
+            shutil.rmtree(self.rundir)
+            
         return newminima, newts
+    
         
     
 class SpawnOPTIM_LJ(SpawnOPTIM):
@@ -197,8 +245,17 @@ POINTS
         fout.write(odatastr)
         fout.write("\n")
 
-if __name__ == "__main__":
+
+
+
+#
+# only testing stuff below here
+#
+
+def spawnlj(**kwargs):
     from pygmin.systems import LJCluster
+    from pygmin.config import config
+    import os
     natoms = 13
     sys = LJCluster(natoms)
     db = sys.create_database()
@@ -208,6 +265,14 @@ if __name__ == "__main__":
     m2 = db.addMinimum(E2, x2)
     
     optim = "/home/js850/git/OPTIM/source/build/OPTIM"
-    spawner = SpawnOPTIM_LJ(x1, x2, sys, OPTIM=optim)
+    optim = config.get("exec", "OPTIM")
+    optim = os.path.expandvars(os.path.expanduser(optim))
+    spawner = SpawnOPTIM_LJ(x1, x2, sys, OPTIM=optim, **kwargs)
     spawner.run()
     spawner.load_results(db)
+
+if __name__ == "__main__":
+    spawnlj(tempdir=True)
+    
+    
+    
