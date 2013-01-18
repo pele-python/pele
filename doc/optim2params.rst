@@ -90,9 +90,11 @@ UPDATES mupdate1 mupdate2 mupdate3 mupdate4::
   lowestEigenvectorQuenchParams.M = mupdate3
   NEBparams.NEBquenchParams.M = mupdate4
 
-checkchirality::
+CHECKCHIRALITY::
 
 (not implemented, but should be)
 
 
+RANROT n::
 
+  (niter in the stochastic minpermdist routine.  not in parameter tree yet)

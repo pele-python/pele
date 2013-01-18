@@ -121,7 +121,7 @@ class DisconnectivityGraph(object):
     def __init__(self, graph, minima=[], nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
                  order_by_basin_size=True,
-                 center_gmin=False, include_gmin=True):
+                 center_gmin=True, include_gmin=True):
         self.graph = graph
         self.nlevels = nlevels
         self.Emax = Emax

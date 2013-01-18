@@ -520,6 +520,27 @@ class MyForm(QtGui.QMainWindow):
             self._doubleEndedConnect(reconnect=False, min1min2=(min1, min2))
                                                        
 
+    def _merge_minima(self, min1, min2):
+        mindist = self.system.get_mindist()
+        dist, x1, x2 = mindist(min1.coords, min2.coords)
+        query  = "Do you want to merge minimum %d with energy %g" %(min1._id, min1.energy)
+        query += "                with minimum %d with energy %g" %(min2._id, min2.energy)
+        query += "    separated by distance %g" % (dist)
+        ret = QtGui.QMessageBox.question(self, "Merging minima", 
+                                   query, 
+                                   QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
+        if(ret == QtGui.QMessageBox.Ok):
+            m1, m2 = min1, min2
+            if m1._id > m2._id:
+                m1, m2 = m2, m1
+            print "merging minima", m1._id, m2._id#, ": minimum", m2._id, "will be deleted"
+            self.system.database.mergeMinima(m1, m2)
+            self.RemoveMinimum(m2)
+
+    def merge_minima(self):
+        min1 = self.ui.oglPath.minima[1]
+        min2 = self.ui.oglPath.minima[2]
+        self._merge_minima(min1, min2)
         
         
 #def refresh_pl():
