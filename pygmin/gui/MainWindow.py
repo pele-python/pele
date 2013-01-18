@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Thu Jan 17 18:41:33 2013
+# Created: Fri Jan 18 14:21:18 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -234,9 +234,12 @@ class Ui_MainWindow(object):
         self.actionDelete_Minimum.setObjectName(_fromUtf8("actionDelete_Minimum"))
         self.actionEditParams = QtGui.QAction(MainWindow)
         self.actionEditParams.setObjectName(_fromUtf8("actionEditParams"))
+        self.actionMerge_Minima = QtGui.QAction(MainWindow)
+        self.actionMerge_Minima.setObjectName(_fromUtf8("actionMerge_Minima"))
         self.menuSimulation.addAction(self.actionConnect)
         self.menuHelp.addAction(self.actionAbout)
         self.menuActions.addAction(self.actionDelete_Minimum)
+        self.menuActions.addAction(self.actionMerge_Minima)
         self.menuActions.addAction(self.actionEditParams)
         self.menubar.addAction(self.menuSimulation.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -265,6 +268,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.btnReconnect, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.doubleEndedReConnect)
         QtCore.QObject.connect(self.actionEditParams, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.edit_params)
         QtCore.QObject.connect(self.btnconnect_in_optim, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.connect_in_optim)
+        QtCore.QObject.connect(self.actionMerge_Minima, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.merge_minima)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -295,5 +299,6 @@ class Ui_MainWindow(object):
         self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
         self.actionDelete_Minimum.setText(QtGui.QApplication.translate("MainWindow", "Delete Minimum", None, QtGui.QApplication.UnicodeUTF8))
         self.actionEditParams.setText(QtGui.QApplication.translate("MainWindow", "Edit default parameters", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionMerge_Minima.setText(QtGui.QApplication.translate("MainWindow", "Merge Minima", None, QtGui.QApplication.UnicodeUTF8))
 
 from show3d import Show3D
