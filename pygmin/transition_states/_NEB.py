@@ -39,6 +39,8 @@ class NEB(object):
         distance function for the elastic band
     k : float
         elastic constant for band
+    adjustk_freq : integer
+        frequency to adjust k, set to zero to disable
     dneb: boolean, optional
         do double nudging, default True
     with_springenergy: boolean, optional
@@ -55,6 +57,8 @@ class NEB(object):
         if True and quenchParams.iprint exists and is positive, then the energy 
         along the NEB path will be printed to a file of the form "neb.EofS.####" 
         every iprint steps.
+    verbose : integer
+        verbosity level
 
     Notes
     -----
@@ -68,12 +72,14 @@ class NEB(object):
     InterpolatedPathDensity : alternate interpolater
     """
     def __init__(self, path, potential, distance=distance_cart,
-                 k=100.0, with_springenergy=False, dneb=True,
+                 k=100.0, adjustk_freq=0, with_springenergy=False, dneb=True,
                  copy_potential=False, quenchParams=dict(), quenchRoutine=None,
-                 save_energies=False):
+                 save_energies=False, verbose=-1):
         self.distance = distance
         self.potential = potential
         self.k = k
+        self.verbose = verbose
+        
         nimages = len(path)
         self.nimages = nimages
         self.copy_potential = copy_potential
@@ -87,7 +93,7 @@ class NEB(object):
         
         self.quenchRoutine = quenchRoutine
         self.quenchParams = quenchParams.copy()
-
+        self.adjustk_freq = adjustk_freq
 
         #initialize coordinate&gradient array
         self.coords = np.zeros([nimages, path[0].size])
@@ -143,6 +149,7 @@ class NEB(object):
         if quenchParams.has_key("iprint"):
             self.iprint = quenchParams["iprint"]
 
+        self.step = 0
         qres = quenchRoutine(
                     self.active.reshape(self.active.size), self.getEnergyGradient,
                     **quenchParams)
@@ -205,6 +212,7 @@ class NEB(object):
                 self.printState()
         self.getEnergyCount += 1
         #print "ENeb = ", Eneb
+        self._step(coords1d)
         return E+Eneb, grad.reshape(grad.size)
         #return 0., grad.reshape(grad.size)
 
@@ -326,6 +334,35 @@ class NEB(object):
             #print np.linalg.norm(gperp), np.linalg.norm(gs_par)
             return E, g_tot
 
+    def _step(self, coords):
+        self.step+=1
+        if(self.adjustk_freq <= 0):
+            return
+        if self.step % 5 == 0:
+            self._adjust_k(coords)
+            
+    def _adjust_k(self, coords):
+        tmp = self.coords.copy()
+        tmp[1:self.nimages-1,:] = coords.reshape(self.active.shape)
+        
+        d = []
+        for i in xrange(0, self.nimages-1):
+            d.append(self.distance(tmp[i,:],tmp[i+1,:], distance=True, grad=False)[0])
+            
+        d = np.array(np.sqrt(d))
+        average_d = np.average(d)
+        deviation = np.abs(100.*(d - average_d) / average_d)
+        avdev = np.average(deviation)
+
+        if avdev > 10:
+            self.k *=1.05
+            if self.verbose > 0:
+                print "increasing DNEB force constant to", self.k
+        else: 
+            self.k /=1.05
+            if self.verbose > 0:
+                print "decreasing DNEB force constant to", self.k
+        
     def MakeHighestImageClimbing(self):
         """
         Make the image with the highest energy a climbing image
