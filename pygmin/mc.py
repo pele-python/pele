@@ -169,7 +169,6 @@ class MonteCarlo(object):
         #self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(newE) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE) + " accepted= " + str(acceptstep) + "\n" )
         self.printStep()
 #       try:
-        self.takeStep.updateStep(acceptstep, driver=self)
 #        except:
 #            print "WARNING: takeStep.updateStep() not implemented"
         if(self.storage and (self.insert_rejected or acceptstep)):
@@ -179,6 +178,7 @@ class MonteCarlo(object):
             self.coords = newcoords
             self.markovE = newE
             self.naccepted += 1
+        self.takeStep.updateStep(acceptstep, driver=self)
         for event in self.event_after_step:
             event(self.markovE, self.coords, acceptstep)
 

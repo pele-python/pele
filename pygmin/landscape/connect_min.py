@@ -30,7 +30,9 @@ class DoubleEndedConnect(object):
         if True, then all known minima and transition states in graph will
         be used to try to connect min1 and min2.  This requires a mindist()
         call (or a retrieveal operation from database) for every pair which
-        can take a very long time if many minima are known.  
+        can take a very long time if many minima are known.
+    niter : int, optional
+        maximum number of iterations
     verbosity : int
         this controls how many status messages are printed.  (not really
         implemented yet)
@@ -128,6 +130,7 @@ class DoubleEndedConnect(object):
                  merge_minima=False, 
                  max_dist_merge=0.1, local_connect_params=dict(),
                  fresh_connect=False, longest_first=False,
+                 niter=200
                  ):
         self.minstart = min1
         assert min1._id == min1, "minima must compare equal with their id %d %s %s" % (min1._id, str(min1), str(min1.__hash__()))
@@ -136,6 +139,7 @@ class DoubleEndedConnect(object):
         self.mindist = mindist
         self.pairsNEB = dict()
         self.longest_first = longest_first
+        self.niter = niter
         
         self.verbosity = int(verbosity)
         self.local_connect_params = dict([("verbosity",verbosity)] + local_connect_params.items())
@@ -174,9 +178,6 @@ class DoubleEndedConnect(object):
         This will delete min2 and make everything that
         pointed to min2 point to min1.
         """
-        if False:
-            print "MERGE MINIMA IS NOT WORKING YET"
-            return
         #prefer to delete the minima with the large id.  this potentially will be easier
         if min2._id < min1._id:
             min1, min2 = min2, min1
@@ -425,12 +426,12 @@ class DoubleEndedConnect(object):
         return min1, min2
                 
     
-    def connect(self, maxiter=200):
+    def connect(self):
         """
         the main loop of the algorithm
         """
         self.NEBattempts = 2;
-        for i in range(maxiter):
+        for i in range(self.niter):
             #do some book keeping
             self.dist_graph.updateDatabase()
             

@@ -390,6 +390,7 @@
      <string>Actions</string>
     </property>
     <addaction name="actionDelete_Minimum"/>
+    <addaction name="actionMerge_Minima"/>
     <addaction name="actionEditParams"/>
    </widget>
    <addaction name="menuSimulation"/>
@@ -425,6 +426,11 @@
   <action name="actionEditParams">
    <property name="text">
     <string>Edit default parameters</string>
+   </property>
+  </action>
+  <action name="actionMerge_Minima">
+   <property name="text">
+    <string>Merge Minima</string>
    </property>
   </action>
  </widget>
@@ -774,6 +780,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionMerge_Minima</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>merge_minima()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>419</x>
+     <y>311</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectMinimum()</slot>
@@ -800,5 +822,6 @@
   <slot>doubleEndedReConnect()</slot>
   <slot>edit_params()</slot>
   <slot>connect_in_optim()</slot>
+  <slot>merge_minima()</slot>
  </slots>
 </ui>
