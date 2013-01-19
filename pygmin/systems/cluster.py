@@ -57,8 +57,9 @@ class AtomicCluster(BaseSystem):
         mindist = self.get_mindist()
         return smoothPath(path, mindist, **kwargs)
         
-    def createNEB(self, coords1, coords2):
+    def createNEB(self, coords1, coords2, **kwargs):
         pot = self.get_potential()
-        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
+        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams.copy()
+        NEBparams.update(kwargs)
         return create_NEB(pot, coords1, coords2, verbose=True, **NEBparams)
 

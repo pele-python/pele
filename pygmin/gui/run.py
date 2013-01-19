@@ -4,6 +4,7 @@ matplotlib.use("QT4Agg")
 import pylab as pl    
 from PyQt4 import QtCore, QtGui
 import MainWindow 
+from collections import deque
 import sys
 import bhrunner
 import copy
@@ -17,6 +18,9 @@ from dlg_params import DlgParams
 from pygmin.config import config
 
 global pick_count
+
+def no_event(*args, **kwargs):
+    return
 
 class pick_event(object):
     """
@@ -183,13 +187,49 @@ class MyForm(QtGui.QMainWindow):
         min1 = self.ui.oglPath.minima[1]
         min2 = self.ui.oglPath.minima[2]
         
+        #use the functions in DoubleEndedConnect to set up the NEB in the proper way
         double_ended = self.system.get_double_ended_connect(min1, min2, 
                                                             self.system.database, 
                                                             fresh_connect=True)
         
+        # the following lines implement the ability to follow the status of the
+        # NEB in real time.  the callback is passed to the NEB and plots the
+        # last several values of the energies of the path.  The implementation
+        # is quite simple and could easily be a lot faster.
+        # set follow_neb=False to turn this off
+        class NEBCallback(object):
+            def __init__(self, frq=30, nplots=3):
+                self.count = 0
+                self.nplots = nplots
+                self.data = deque()
+                self.frq = frq
+            def __call__(self, energies=None, coords=None, **kwargs):
+                self.count += 1
+                if self.count % self.frq == 1:
+                    self.data.append(energies.copy())
+                    if len(self.data) > self.nplots:
+                        self.data.popleft()
+                    pl.clf()
+                    for E in self.data:
+                        line, = pl.plot(E, "o-")
+                        # note: if we save the line and use line.set_ydata(E)
+                        # this would be a lot faster, but we would have to keep
+                        # track of the y-axis limits manually
+                    pl.draw()
+                    pl.pause(.0000001)
+
+        follow_neb = True
+        if follow_neb:
+            pl.ion()
+            pl.clf()
+            neb_callback = NEBCallback()
+        else:
+            neb_callback = no_event
+        
         local_connect = double_ended._getLocalConnectObject()
         self.neb =  local_connect._getNEB(self.system.get_potential(),
-                                          coords1, coords2,
+                                          coords1, coords2, event=neb_callback,
+                                          verbose=True,
                                           **local_connect.NEBparams)        
         
         self.neb.optimize()
