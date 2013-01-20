@@ -45,7 +45,7 @@ class QMinimumInList(QtGui.QListWidgetItem):
         return self.minimum.energy > item2.minimum.energy
 
 class MyForm(QtGui.QMainWindow):
-    def __init__(self, systemtype, parent=None):
+    def __init__(self, app, systemtype, parent=None):
         QtGui.QWidget.__init__(self)
         self.ui = MainWindow.Ui_MainWindow()
         self.ui.setupUi(self)
@@ -58,6 +58,7 @@ class MyForm(QtGui.QMainWindow):
         self.systemtype = systemtype
         self.NewSystem()
         self.transition=None
+        self.app = app
         
         #try to load the pymol viewer.  
         self.usepymol = config.getboolean("gui", "use_pymol")
@@ -198,11 +199,13 @@ class MyForm(QtGui.QMainWindow):
         # is quite simple and could easily be a lot faster.
         # set follow_neb=False to turn this off
         class NEBCallback(object):
-            def __init__(self, frq=30, nplots=3):
+            def __init__(self, app, frq=30, nplots=3):
                 self.count = 0
                 self.nplots = nplots
                 self.data = deque()
                 self.frq = frq
+                self.app = app
+                
             def __call__(self, energies=None, coords=None, **kwargs):
                 self.count += 1
                 if self.count % self.frq == 1:
@@ -216,13 +219,13 @@ class MyForm(QtGui.QMainWindow):
                         # this would be a lot faster, but we would have to keep
                         # track of the y-axis limits manually
                     pl.draw()
-                    pl.pause(.0000001)
+                    self.app.processEvents()
 
         follow_neb = True
         if follow_neb:
             pl.ion()
             pl.clf()
-            neb_callback = NEBCallback()
+            neb_callback = NEBCallback(self.app)
         else:
             neb_callback = no_event
         
@@ -589,7 +592,7 @@ class MyForm(QtGui.QMainWindow):
 def run_gui(systemtype, db=None):
     app = QtGui.QApplication(sys.argv)
     
-    myapp = MyForm(systemtype)
+    myapp = MyForm(app, systemtype)
     if db is not None:
         myapp.connect_db(db)
         
