@@ -24,7 +24,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="BHTab">
        <attribute name="title">
@@ -66,15 +66,11 @@
             </item>
             <item>
              <widget class="QPushButton" name="btnRun">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a short basinhopping run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Run</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="btnPause">
-              <property name="text">
-               <string>Pause</string>
               </property>
              </widget>
             </item>
@@ -177,6 +173,9 @@
                   <height>100</height>
                  </size>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Find best alignment between two structures&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Align</string>
                 </property>
@@ -184,6 +183,9 @@
               </item>
               <item row="2" column="0">
                <widget class="QPushButton" name="btnEnergies">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Plot the energies of the NEB or connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Energies</string>
                 </property>
@@ -203,6 +205,9 @@
                   <height>16777215</height>
                  </size>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start an NEB run (no alignment is done)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>NEB</string>
                 </property>
@@ -210,6 +215,9 @@
               </item>
               <item row="1" column="1">
                <widget class="QPushButton" name="btnInvert">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Invert one of the structures&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Invert</string>
                 </property>
@@ -217,6 +225,9 @@
               </item>
               <item row="3" column="0">
                <widget class="QPushButton" name="btnConnect">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Connect</string>
                 </property>
@@ -224,6 +235,9 @@
               </item>
               <item row="5" column="0" colspan="2">
                <widget class="QPushButton" name="btnDisconnectivity_graph">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>disconnectivity graph</string>
                 </property>
@@ -231,6 +245,9 @@
               </item>
               <item row="4" column="0">
                <widget class="QPushButton" name="btnShowGraph">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>show graph</string>
                 </property>
@@ -238,6 +255,9 @@
               </item>
               <item row="3" column="1">
                <widget class="QPushButton" name="btnReconnect">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a fresh double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Reconnect</string>
                 </property>
@@ -245,6 +265,9 @@
               </item>
               <item row="4" column="1">
                <widget class="QPushButton" name="btnconnect_in_optim">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spawn an external OPTIM job&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Connect in OPTIM</string>
                 </property>

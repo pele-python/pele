@@ -1,0 +1,14 @@
+I decided for qt since it has a very nice API and gui designer. 
+The file MainWindow.py is automatically generated using the command
+
+  pyuic4 MainWindow.ui -o MainWindow.py
+
+To edit the gui use
+
+  designer-qt4 MainWindow.ui
+
+As far as I remember correctly, the following packages are required (on Fedora):
+- for running the gui: PyQt4, PyOpenGl
+- for development (contains the qt designer): PyQt4-devel 
+
+js850> for ubuntu, I had to install python-qt4, python-opengl, python-qt4-gl

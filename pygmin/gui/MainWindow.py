@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Fri Jan 18 14:21:18 2013
+# Created: Mon Jan 21 11:42:22 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -57,9 +57,6 @@ class Ui_MainWindow(object):
         self.btnRun = QtGui.QPushButton(self.BHTab)
         self.btnRun.setObjectName(_fromUtf8("btnRun"))
         self.verticalLayout_3.addWidget(self.btnRun)
-        self.btnPause = QtGui.QPushButton(self.BHTab)
-        self.btnPause.setObjectName(_fromUtf8("btnPause"))
-        self.verticalLayout_3.addWidget(self.btnPause)
         self.horizontalLayout_3.addLayout(self.verticalLayout_3)
         self.verticalLayout_4.addLayout(self.horizontalLayout_3)
         self.tabWidget.addTab(self.BHTab, _fromUtf8(""))
@@ -246,7 +243,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuActions.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QObject.connect(self.listWidget, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum)
         QtCore.QObject.connect(self.btnRun, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.StartBasinHopping)
         QtCore.QObject.connect(self.btnAlign, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.AlignMinima)
@@ -274,17 +271,26 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
         self.listWidget.setSortingEnabled(True)
+        self.btnRun.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a short basinhopping run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRun.setText(QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnPause.setText(QtGui.QApplication.translate("MainWindow", "Pause", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.BHTab), QtGui.QApplication.translate("MainWindow", "Basin Hopping", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnAlign.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Find best alignment between two structures</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnAlign.setText(QtGui.QApplication.translate("MainWindow", "Align", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnEnergies.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Plot the energies of the NEB or connect run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnEnergies.setText(QtGui.QApplication.translate("MainWindow", "Energies", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnNEB.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start an NEB run (no alignment is done)</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnNEB.setText(QtGui.QApplication.translate("MainWindow", "NEB", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnInvert.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Invert one of the structures</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnInvert.setText(QtGui.QApplication.translate("MainWindow", "Invert", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnConnect.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a double ended connect run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnDisconnectivity_graph.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Show the disconnectivity graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnDisconnectivity_graph.setText(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnShowGraph.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Show the graph of minima and transition states</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "show graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnReconnect.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a fresh double ended connect run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnReconnect.setText(QtGui.QApplication.translate("MainWindow", "Reconnect", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnconnect_in_optim.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Spawn an external OPTIM job</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnconnect_in_optim.setText(QtGui.QApplication.translate("MainWindow", "Connect in OPTIM", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.btnTSSearch.setText(QtGui.QApplication.translate("MainWindow", "Find TS", None, QtGui.QApplication.UnicodeUTF8))
