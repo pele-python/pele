@@ -95,6 +95,9 @@ class DisconnectivityGraph(object):
         (even if other nodes carry more minima). This does not guarantee that
         the global minimum is central in the overall diagram because other
         nodes may push the one containing the global minimum over to one side
+    include_gmin : bool
+        make sure to include the global minimum, even if it is not part of the
+        main connected region
     
     See Also
     ---------
