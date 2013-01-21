@@ -104,7 +104,7 @@ class SpawnOPTIM(object):
         self.write_perm_allow(permallow)
         
         #make any additional files
-        self.write_additional_input_files(rundir)
+        self.write_additional_input_files(rundir, self.coords1, self.coords2)
 
     
     def write_odata(self, fout):
@@ -139,7 +139,7 @@ class SpawnOPTIM(object):
         """make the perm.allow file if appropriate"""
         pass
     
-    def write_additional_input_files(self, rundir):
+    def write_additional_input_files(self, rundir, coords1, coords2):
         """use this function to write any other input files that are needed"""
         pass
     

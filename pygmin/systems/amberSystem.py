@@ -1,7 +1,8 @@
 # utils 
 import numpy as np
 import tempfile
-import os 
+import os
+import shutil
 
 # pygmin  
 from pygmin.systems import BaseSystem
@@ -11,6 +12,7 @@ from pygmin.transition_states import InterpolatedPathDensity, NEB, create_NEB
 from pygmin.landscape import smoothPath
 from pygmin.systems import BaseParameters
 from pygmin.utils.elements import elements
+from pygmin.systems.spawn_OPTIM import SpawnOPTIM
 
 # OpenMM related 
 from pygmin.potentials import OpenMMAmberPotential 
@@ -20,6 +22,86 @@ from simtk.unit import angstrom as openmm_angstrom
 from pygmin.potentials import GMINAmberPotential
 
 __all__ = ["AMBERSystem_GMIN", "AMBERSystem_OpenMM"]
+
+
+class AmberSpawnOPTIM(SpawnOPTIM):
+    def __init__(self, coords1, coords2, sys, **kwargs):
+        super(AmberSpawnOPTIM, self).__init__(coords1, coords2, **kwargs)
+        self.sys = sys
+    
+    def write_odata_coords(self, coords, fout):
+        pass
+
+    def write_perm_allow(self, fname):
+        permallow = self.make_permallow_from_permlist(self.sys.get_permlist())
+        with open(fname, "w") as fout:
+            fout.write(permallow)
+    
+    def write_additional_input_files(self, rundir, coords1, coords2):
+        #write start
+        with open(rundir + "/start", "w") as fout:
+            for xyz in coords1.reshape(-1,3):
+                fout.write( "%f %f %f\n" % tuple(xyz))
+        
+        #write coords.prmtop and coords.inpcrd
+        shutil.copyfile(self.sys.prmtopFname, rundir + "/coords.prmtop")
+        shutil.copyfile(self.sys.inpcrdFname, rundir + "/coords.inpcrd")
+        min_in = """
+STOP
+ &cntrl
+  imin   = 1,
+  ncyc = 1,
+  maxcyc = 1,
+  igb = 0,
+  ntb    = 0,
+  cut    = 999.99,
+  rgbmax = 25.0,
+  ifswitch = 1
+ /
+"""
+        with open(rundir + "/min.in", "w") as fout:
+            fout.write(min_in)
+            
+    
+    def write_odata(self, fout):
+        odatastr = """
+DUMPALLPATHS
+
+UPDATES 6000
+NEWCONNECT 15 3 2.0 20.0 30 0.5
+CHECKCHIRALITY
+comment PATH dumps intermediate conformations along the path
+PATH 100 1.0D-2
+COMMENT NEWNEB 30 500 0.01
+NEBK 10.0
+comment DUMPNEBXYZ
+AMBERIC
+comment AMBERSTEP
+DIJKSTRA EXP
+DUMPALLPATHS
+REOPTIMISEENDPOINTS
+COMMENT MAXTSENERGY -4770.0
+EDIFFTOL  1.0D-4
+MAXERISE 1.0D-4 1.0D0
+GEOMDIFFTOL  0.05D0
+BFGSTS 500 10 100 0.01 100
+NOIT
+BFGSMIN 1.0D-6
+PERMDIST
+MAXSTEP  0.1
+TRAD     0.2
+MAXMAX   0.3
+BFGSCONV 1.0D-6
+PUSHOFF 0.1
+STEPS 800
+BFGSSTEPS 2000
+MAXBFGS 0.1
+NAB start
+"""
+        fout.write(odatastr)
+        fout.write("\n")
+
+
 
 class AMBERBaseSystem(BaseSystem):
     """
@@ -44,7 +126,7 @@ class AMBERBaseSystem(BaseSystem):
     BaseSystem
     """
     
-    def __init__(self, prmtopFname, inpcrdFname ):
+    def __init__(self, prmtopFname, inpcrdFname):
         
         super(AMBERBaseSystem, self).__init__()
         
@@ -57,6 +139,8 @@ class AMBERBaseSystem(BaseSystem):
         self.params.takestep_random_displacement.stepsize = 2.
         
         self.set_params(self.params)
+        self.prmtopFname = prmtopFname
+        self.inpcrdFname = inpcrdFname
     
     def set_params(self, params):
         """set default parameters for the system"""
@@ -270,6 +354,16 @@ class AMBERBaseSystem(BaseSystem):
 #            pymol.cmd.color("red", oname)
 #        else:
 #            pymol.cmd.color("blue", oname)
+
+    def get_optim_spawner(self, coords1, coords2):
+        import os
+        from pygmin.config import config
+        optim = config.get("exec", "AMBOPTIM")
+        optim = os.path.expandvars(os.path.expanduser(optim))
+        print "optim executable", optim
+        return AmberSpawnOPTIM(coords1, coords2, self, OPTIM=optim, tempdir=False)
+
+
 
     def test_potential(self, pdbfname ):
         """ tests amber potential for pdbfname 
