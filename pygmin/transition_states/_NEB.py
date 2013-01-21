@@ -16,7 +16,7 @@ try:
 except:
     norm = np.linalg.norm
     
-norm = np.linalg.norm
+#norm = np.linalg.norm
 
 def distance_cart(x1, x2, distance=True, grad=True):
     dist=None
@@ -116,6 +116,8 @@ class NEB(object):
         
         self.dneb = dneb
         self.with_springenergy = with_springenergy
+        
+        self.distances = np.zeros(self.nimages - 1)
 
     def optimize(self, quenchRoutine=None,
                  **kwargs):
@@ -207,7 +209,8 @@ class NEB(object):
                     [self.energies[i],tmp[i, :]],
                     [self.energies[i-1],tmp[i-1, :]],
                     [self.energies[i+1],tmp[i+1, :]],
-                    realgrad[i,:]
+                    realgrad[i,:],
+                    i
                     )
             Eneb += En
         if self.iprint > 0:
@@ -217,7 +220,8 @@ class NEB(object):
         #print "ENeb = ", Eneb
         self._step(coords1d)
         if self.event is not None:
-            self.event(coords=self.coords, energies=self.energies)
+            self.event(coords=self.coords, energies=self.energies,
+                       distances=self.distances)
         return E+Eneb, grad.reshape(grad.size)
         #return 0., grad.reshape(grad.size)
 
@@ -280,7 +284,7 @@ class NEB(object):
 
         return t / norm(t)
 
-    def NEBForce(self, isclimbing, image, left, right, greal):
+    def NEBForce(self, isclimbing, image, left, right, greal, icenter):
         """
         Calculate NEB force for 1 image. That contains projected real force and spring force.
 
@@ -293,8 +297,10 @@ class NEB(object):
         """
 
         # construct tangent vector
-        d_left, g_left = self.distance(image[1], left[1], distance=self.with_springenergy)
-        d_right, g_right = self.distance(image[1], right[1], distance=self.with_springenergy)
+        d_left, g_left = self.distance(image[1], left[1], distance=True)#self.with_springenergy)
+        d_right, g_right = self.distance(image[1], right[1], distance=True)#self.with_springenergy)
+        self.distances[icenter-1] = np.sqrt(d_left)
+        self.distances[icenter] = np.sqrt(d_right)
         #print g_left, g_right
         
         t = self.tangent(image[0],left[0],right[0], g_left, g_right)

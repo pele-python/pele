@@ -206,18 +206,22 @@ class MyForm(QtGui.QMainWindow):
                 self.frq = frq
                 self.app = app
                 
-            def __call__(self, energies=None, coords=None, **kwargs):
+            def __call__(self, energies=None, distances=None, **kwargs):
                 self.count += 1
                 if self.count % self.frq == 1:
-                    self.data.append(energies.copy())
+                    S = np.zeros(energies.shape)
+                    S[1:] = np.cumsum(distances)
+                    self.data.append((S, energies.copy()))
                     if len(self.data) > self.nplots:
                         self.data.popleft()
                     pl.clf()
-                    for E in self.data:
-                        line, = pl.plot(E, "o-")
+                    for S, E in self.data:
+                        line, = pl.plot(S, E, "o-")
                         # note: if we save the line and use line.set_ydata(E)
                         # this would be a lot faster, but we would have to keep
                         # track of the y-axis limits manually
+                    pl.ylabel("NEB image energy")
+                    pl.xlabel("distance along the path")
                     pl.draw()
                     self.app.processEvents()
 
