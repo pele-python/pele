@@ -22,7 +22,7 @@ for compilation::
   cython
   f2py (comes bundled with numpy, see below)
 
-python packages (install using easy_install or pip)::
+python packages::
 
   numpy (with f2py)
   scipy
@@ -34,13 +34,19 @@ python packages (install using easy_install or pip)::
      for managing database of stationary points 
 
 
-  hungarian (optional)
+  hungarian (optional, use pip/easy_install to get newest version with bugfixes!)
      for min dist routines
      
+All packages can be installed via the python package managers pip or easy_install.
+However, some of the packages (numpy, scipy) have additional dependencies and it
+can be more convenient to use the linux package manager (apt, yum, ...).
 
-If you want to use the gui you need python bindings for qt4 and opengl.  The
-following packages install what you need for ubuntu (using the repository
-managager apt-get or aptitude)::
+If you want to use the gui you need:
+  matplotlib 
+  qt4 python bindings
+  opengl python bindings
+
+The Ubuntu packages are (apt-get or aptitude)::
 
   python-qt4
   python-opengl 
@@ -48,14 +54,9 @@ managager apt-get or aptitude)::
 
   pymol (optional)
 
-
-If you want to use the gui you also need the python package::
-
-  matplotlib
-
-
-
-
+Or Fedora (yum)::
+   PyQt4
+   PyOpenGl
 
 Compilation
 -----------
