@@ -137,10 +137,12 @@ class AMBERBaseSystem(BaseSystem):
         
         self.params.takestep_random_displacement = BaseParameters()
         self.params.takestep_random_displacement.stepsize = 2.
-        
+                
         self.set_params(self.params)
         self.prmtopFname = prmtopFname
         self.inpcrdFname = inpcrdFname
+        
+        self.populatePeptideBondList()
     
     def set_params(self, params):
         """set default parameters for the system"""
@@ -216,7 +218,7 @@ class AMBERBaseSystem(BaseSystem):
         from pygmin.utils import amberPDB_to_permList
         
         # todo: - file name coordsModTerm.pdb is hardcoded, derive from coords.pdb  
-        #       - coordsModTerm.pdb should have prefix N for N terminal residue and prefix C for C terminal      
+        #       - coordsModTerm.pdb should have prefix N for N-terminal residue and prefix C for C-terminal      
         
 #        return [[0, 2, 3],    [11, 12, 13],     [19, 20, 21] ]
         if os.path.exists('coordsModTerm.pdb'):
@@ -364,6 +366,75 @@ class AMBERBaseSystem(BaseSystem):
         return AmberSpawnOPTIM(coords1, coords2, self, OPTIM=optim, tempdir=False)
 
 
+    def populatePeptideBondList(self):
+        listofC = [] 
+        listofO = [] 
+        listofN = [] 
+        listofH = [] 
+            
+        for i in self.potential.prmtop.topology.atoms():
+            if i.name == 'C':
+                listofC.append(i.index)  
+            
+            if i.name == 'O':
+                listofO.append(i.index)
+                  
+            if i.name == 'N':
+                listofN.append(i.index)
+                  
+            if i.name == 'H':
+                listofH.append(i.index)          
+        
+        #print listofC     
+        #print listofO     
+        #print listofN     
+        #print listofH     
+        
+        # atom numbers of peptide bond 
+        self.peptideBondAtoms = [] 
+        
+        for i in listofC: 
+            if listofO.__contains__(i+1) and listofN.__contains__(i+2) and listofH.__contains__(i+3): 
+                self.peptideBondAtoms.append([i,i+1,i+2,i+3]) 
+        
+
+        print 'atom numbers of C,O,N,H (in order) in peptide bonds = '
+        print self.peptideBondAtoms              
+
+    def check_cistrans(self, coords):
+        """ 
+        Sanity check on the peptide bonds which should be TRANS   
+        
+        Returns True if any of the peptide bond is CIS        
+        
+        """
+        
+        from pygmin.utils.measure import Measure  
+        m = Measure() 
+        
+        isCis = False 
+        
+        for i in self.peptideBondAtoms:                            
+            atNum = i[0] 
+            rC    = np.array( [ coords[3*atNum] , coords[3*atNum+1] , coords[3*atNum+2] ])                       
+            atNum = i[1] 
+            rO    = np.array( [ coords[3*atNum] , coords[3*atNum+1] , coords[3*atNum+2] ])                       
+            atNum = i[2] 
+            rN    = np.array( [ coords[3*atNum] , coords[3*atNum+1] , coords[3*atNum+2] ])                       
+            atNum = i[3] 
+            rH    = np.array( [ coords[3*atNum] , coords[3*atNum+1] , coords[3*atNum+2] ])
+            
+            # compute O-C-N-H torsion angle 
+            rad, deg = m.torsion(rO,rC,rN,rH)
+            
+            # check cis 
+            if deg < 90: 
+                isCis = True 
+                print 'CIS peptide bond between atoms ', i 
+                
+        return isCis 
+            
+
 
     def test_potential(self, pdbfname ):
         """ tests amber potential for pdbfname 
@@ -464,17 +535,21 @@ if __name__ == "__main__":
     
     # create new amber system
     print '----------------------------------'
-    print 'GMIN POTENTIAL' 
-    sysGMIN   = AMBERSystem_GMIN('coords.prmtop', 'coords.inpcrd')        
-    sysGMIN.test_potential('coords.pdb')
-
-    print 'OPENmm POTENTIAL' 
-    sysOpenMM  = AMBERSystem_OpenMM('coords.prmtop', 'coords.inpcrd')
-    sysOpenMM.test_potential('coords.pdb')
+#    print 'GMIN POTENTIAL' 
+#    sysGMIN   = AMBERSystem_GMIN('coords.prmtop', 'coords.inpcrd')        
+#    sysGMIN.test_potential('coords.pdb')
     
+    print 'OPENmm POTENTIAL' 
+    sysOpenMM  = AMBERSystem_OpenMM('/home/ss2029/WORK/PyGMIN/examples/amber/coords.prmtop', '/home/ss2029/WORK/PyGMIN/examples/amber/coords.inpcrd')
+    sysOpenMM.test_potential('/home/ss2029/WORK/PyGMIN/examples/amber/coords.pdb')
+    
+    sysOpenMM.check_cistrans()
+    
+    exit() 
+
     # load existing database 
     from pygmin.storage import Database
-    dbcurr = Database(db="aladipep.db")
+    dbcurr = Database(db="/home/ss2029/WORK/PyGMIN/examples/amber/aladipep.db")
     
 #    dbcurr.removeMinimum(1)
     
