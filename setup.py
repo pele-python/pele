@@ -35,6 +35,7 @@ fmodules.add_module("pygmin/potentials/fortran/soft_sphere_pot.f90")
 fmodules.add_module("pygmin/utils/_fortran_utils.f90")
 fmodules.add_module("pygmin/transition_states/_orthogoptf.f90")
 fmodules.add_module("pygmin/transition_states/_NEB_utils.f90")
+fmodules.add_module("pygmin/angleaxis/_aadist.f90")
 
 cxx_modules = [ ]
 
