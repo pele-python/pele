@@ -95,9 +95,11 @@ class BasinHopping(MonteCarlo):
         # check if step is a valid configuration, otherwise reject
         #########################################################################
         self.acceptstep = True
+        self.config_ok = True
         for check in self.confCheck:
             if not check(self.trial_energy, self.trial_coords, driver=self):
                 self.acceptstep=False
+                self.config_ok = False
         
         #########################################################################
         #check whether step is accepted with user defined tests.  If any returns
