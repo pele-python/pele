@@ -53,6 +53,14 @@ class DoubleEndedConnect(object):
     longest_first : bool
         if true, always try to connect the longest segment in the path guess
         first
+    conf_checks : list of callables
+        a list of callable function that determine if a configuration is valid.
+        They must return a bool, and accept the keyword parameters
+        
+            conf_check(energy=energy, coords=coords)
+        
+        If any configuration in a minimum-transition_state-minimum triplet fails
+        a test then the whole triplet is rejected.
     
     Notes
     -----
@@ -130,7 +138,7 @@ class DoubleEndedConnect(object):
                  merge_minima=False, 
                  max_dist_merge=0.1, local_connect_params=dict(),
                  fresh_connect=False, longest_first=False,
-                 niter=200
+                 niter=200, conf_checks=None
                  ):
         self.minstart = min1
         assert min1._id == min1, "minima must compare equal with their id %d %s %s" % (min1._id, str(min1), str(min1.__hash__()))
@@ -140,6 +148,10 @@ class DoubleEndedConnect(object):
         self.pairsNEB = dict()
         self.longest_first = longest_first
         self.niter = niter
+        if conf_checks is None:
+            self.conf_checks = []
+        else:
+            self.conf_checks = conf_checks
         
         self.verbosity = int(verbosity)
         self.local_connect_params = dict([("verbosity",verbosity)] + local_connect_params.items())
@@ -244,6 +256,20 @@ class DoubleEndedConnect(object):
             print "    TS energy", E, "minima energy", me1, me2
             print "    aborting"
             return False
+        
+        #check the minima and transition states are valid configurations.
+        #if any fail, then don't add anything.  
+        configs_ok = True
+        for xtrial, etrial in [ min_ret1[:2], min_ret2[:2], (coords, E) ]:
+            for check in self.conf_checks:
+                if not check(energy=etrial, coords=xtrial):
+                    configs_ok = False
+                    break
+            if not configs_ok:
+                break
+        if not configs_ok:
+            return False
+                
         
         #add the minima to the transition state graph.  
         #This step is important to do first because it returns a Database Minimum object.
