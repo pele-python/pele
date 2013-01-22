@@ -24,10 +24,11 @@ class TIP4PSystem(BaseSystem):
         
         GMIN.initialize()
         pot = GMINPotential(GMIN)
-        coords = pot.getCoords()
-
+        coords = pot.getCoords()        
         nrigid = coords.size / 6
+
         print "I have %d water molecules in the system"%nrigid
+        print "The initial energy is", pot.getEnergy(coords)
 
         water = tip4p.water()
         #water.S *= 2
@@ -46,19 +47,20 @@ class TIP4PSystem(BaseSystem):
         self.params.double_ended_connect.local_connect_params.nrefine_max = 5
         
         NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
-        NEBparams.max_images=100
-        NEBparams.image_density=5.0
+        NEBparams.max_images=200
+        NEBparams.image_density=10.0
         NEBparams.iter_density=5
-        NEBparams.k = 10.
+        NEBparams.k = 400.
+        NEBparams.adjustk_freq = 5
         NEBparams.interpolator=self.aasystem.interpolate
         
+        NEBparams.quenchRoutine = mylbfgs
         quenchParams = NEBparams.NEBquenchParams
-        quenchParams["nsteps"] = 100
+        #quenchParams["nsteps"] = 1000
         quenchParams["iprint"] = -1
         quenchParams["maxstep"] = 0.1
-        #NEBquenchParams["maxErise"] = 0.1
+        quenchParams["maxErise"] = 1000
         quenchParams["tol"] = 1e-6
-        NEBparams.quenchRoutine = fire
         
         
         tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
@@ -175,4 +177,4 @@ class TIP4PSystem(BaseSystem):
     
 if __name__ == "__main__":
     import pygmin.gui.run as gr
-    gr.run_gui(TIP4PSystem, db="storage.sqlite")
+    gr.run_gui(TIP4PSystem, db="tip4p_8.sqlite")
