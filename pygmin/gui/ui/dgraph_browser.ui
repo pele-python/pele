@@ -15,14 +15,21 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="MPLWidget" name="widget" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="leftMargin">
+      <number>10</number>
      </property>
-    </widget>
+     <item>
+      <widget class="MPLWidgetWithToolbar" name="widget" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -161,7 +168,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>MPLWidget</class>
+   <class>MPLWidgetWithToolbar</class>
    <extends>QWidget</extends>
    <header>mplwidget.h</header>
    <container>1</container>

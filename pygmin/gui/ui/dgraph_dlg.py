@@ -3,6 +3,9 @@ from PyQt4.QtGui import QDialog, QApplication
 import dgraph_browser
 import sys
 
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+
+
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from pygmin.landscape import Graph
 from pygmin.storage import Database
@@ -29,7 +32,9 @@ class DGraphDialog(QDialog):
         
         self.ui = dgraph_browser.Ui_Form()
         self.ui.setupUi(self)
-        self.plw = self.ui.widget
+        self.canvas = self.ui.widget.canvas
+#        self.ui.wgt_mpl_toolbar = NavigationToolbar()
+#        self.toolbar = self.
         
         self.input_params = params.copy()
         self.params = {}
@@ -124,7 +129,7 @@ class DGraphDialog(QDialog):
         dg = DisconnectivityGraph(graph, **params)
         dg.calculate()
         
-        ax = self.plw.axes
+        ax = self.canvas.axes
         ax.clear()
         ax.hold(True)
         
@@ -148,17 +153,17 @@ class DGraphDialog(QDialog):
             energies = [m.energy for m in minima]
             points = ax.scatter(xpos, energies, picker=5)
         
-        
-        def on_pick(event):
-            if event.artist != points:
-#                print "you clicked on something other than a node"
-                return True
-            thispoint = event.artist
-            ind = event.ind[0]
-            min1 = minima[ind]
-            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-            self.minimum_selected(min1)
-        self.plw.fig.canvas.mpl_connect('pick_event', on_pick)
+            
+            def on_pick(event):
+                if event.artist != points:
+    #                print "you clicked on something other than a node"
+                    return True
+                thispoint = event.artist
+                ind = event.ind[0]
+                min1 = minima[ind]
+                print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+                self.minimum_selected(min1)
+            self.canvas.mpl_connect('pick_event', on_pick)
 
         
         
@@ -178,13 +183,13 @@ class DGraphDialog(QDialog):
         xmin -= d
         ymax += d
         ymin -= d*4.
-        self.plw.axes.set_xlim(xmin, xmax)
-        self.plw.axes.set_ylim(ymin, ymax)
+        self.canvas.axes.set_xlim(xmin, xmax)
+        self.canvas.axes.set_ylim(ymin, ymax)
         
         
         ax.set_xticks([])
 
-        self.plw.draw()
+        self.canvas.draw()
 
 
 

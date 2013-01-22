@@ -1,5 +1,8 @@
 from PyQt4 import QtGui, QtCore
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+from PyQt4.QtGui import QWidget, QVBoxLayout
+
 from matplotlib.figure import Figure
 import numpy as np
 
@@ -16,6 +19,8 @@ class MPLWidget(FigureCanvas):
         
         FigureCanvas.__init__(self, self.fig)
         
+        if parent is not None:
+            self.setParent(parent)
         #self.reparent(parent, QtCore.QPoint(0, 0))
 
         FigureCanvas.setSizePolicy(self,
@@ -44,5 +49,21 @@ class MPLWidget(FigureCanvas):
     def minimumSizeHint(self):
         return QtCore.QSize(10, 10)
 
+class MPLWidgetWithToolbar(QWidget):
+    ''' defines a matplotlib widget '''
+    def __init__(self, *args, **kwargs):
+        super(MPLWidgetWithToolbar, self).__init__(*args, **kwargs)
+        
+        self.canvas = MPLWidget(parent=self)
+        
+        self.mpl_toolbar = NavigationToolbar(self.canvas, self)
+        
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.canvas)
+        vbox.addWidget(self.mpl_toolbar)
+        self.setLayout(vbox)
+        
+
+        
         
         

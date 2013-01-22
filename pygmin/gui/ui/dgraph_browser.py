@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'nebbrowser.ui'
+# Form implementation generated from reading ui file 'dgraph_browser.ui'
 #
-# Created: Mon Jan 21 15:19:00 2013
+# Created: Tue Jan 22 12:22:32 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -20,14 +20,18 @@ class Ui_Form(object):
         Form.resize(754, 553)
         self.horizontalLayout = QtGui.QHBoxLayout(Form)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        self.widget = MPLWidget(Form)
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setContentsMargins(10, -1, -1, -1)
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.widget = MPLWidgetWithToolbar(Form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
         self.widget.setSizePolicy(sizePolicy)
         self.widget.setObjectName(_fromUtf8("widget"))
-        self.horizontalLayout.addWidget(self.widget)
+        self.verticalLayout.addWidget(self.widget)
+        self.horizontalLayout.addLayout(self.verticalLayout)
         self.verticalLayout_2 = QtGui.QVBoxLayout()
         self.verticalLayout_2.setContentsMargins(0, -1, -1, -1)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
@@ -105,4 +109,4 @@ class Ui_Form(object):
         self.chkbx_include_gmin.setText(QtGui.QApplication.translate("Form", "include global min", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_rebuild_graph.setText(QtGui.QApplication.translate("Form", "Rebuild Graph", None, QtGui.QApplication.UnicodeUTF8))
 
-from mplwidget import MPLWidget
+from mplwidget import MPLWidgetWithToolbar
