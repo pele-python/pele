@@ -18,6 +18,7 @@ from dlg_params import DlgParams
 from pygmin.config import config
 #import ui.dgraph_browser
 from pygmin.gui.ui.dgraph_dlg import DGraphDialog
+from pygmin.gui.nebdlg import NEBDialog
 
 global pick_count
 
@@ -97,7 +98,10 @@ class MyForm(QtGui.QMainWindow):
     #    filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '.')
     #    output = open(filename, "w")
     #    pickle.dump(self.system.storage, output)
-       
+    
+    def processEvents(self):
+        self.app.processEvents()
+     
     def connect(self):
         """
         connect to an existing database
@@ -195,51 +199,23 @@ class MyForm(QtGui.QMainWindow):
                                                             self.system.database, 
                                                             fresh_connect=True)
         
-        # the following lines implement the ability to follow the status of the
-        # NEB in real time.  the callback is passed to the NEB and plots the
-        # last several values of the energies of the path.  The implementation
-        # is quite simple and could easily be a lot faster.
-        # set follow_neb=False to turn this off
-        class NEBCallback(object):
-            def __init__(self, app, frq=30, nplots=3):
-                self.count = 0
-                self.nplots = nplots
-                self.data = deque()
-                self.frq = frq
-                self.app = app
-                
-            def __call__(self, energies=None, distances=None, **kwargs):
-                self.count += 1
-                if self.count % self.frq == 1:
-                    S = np.zeros(energies.shape)
-                    S[1:] = np.cumsum(distances)
-                    self.data.append((S, energies.copy()))
-                    if len(self.data) > self.nplots:
-                        self.data.popleft()
-                    pl.clf()
-                    for S, E in self.data:
-                        line, = pl.plot(S, E, "o-")
-                        # note: if we save the line and use line.set_ydata(E)
-                        # this would be a lot faster, but we would have to keep
-                        # track of the y-axis limits manually
-                    pl.ylabel("NEB image energy")
-                    pl.xlabel("distance along the path")
-                    pl.draw()
-                    self.app.processEvents()
+
+        local_connect = double_ended._getLocalConnectObject()
+        self.neb =  local_connect._getNEB(self.system.get_potential(),
+                                          coords1, coords2,
+                                          verbose=True,
+                                          **local_connect.NEBparams)        
+        
 
         follow_neb = True
         if follow_neb:
-            pl.ion()
-            pl.clf()
-            neb_callback = NEBCallback(self.app)
-        else:
-            neb_callback = no_event
+            if not hasattr(self, "neb_dlg"):
+                self.neb_dlg = NEBDialog()
+                self.neb_dlg.process_events.connect(self.processEvents)
+            self.neb_dlg.show()
+            self.neb_dlg.attach_to_NEB(self.neb)
         
-        local_connect = double_ended._getLocalConnectObject()
-        self.neb =  local_connect._getNEB(self.system.get_potential(),
-                                          coords1, coords2, event=neb_callback,
-                                          verbose=True,
-                                          **local_connect.NEBparams)        
+        
         
         self.neb.optimize()
         self.nebcoords = self.neb.coords

@@ -45,71 +45,70 @@ class NEBCallback(object):
                 # note: if we save the line and use line.set_ydata(E)
                 # this would be a lot faster, but we would have to keep
                 # track of the y-axis limits manually
-#            pl.ylabel("NEB image energy")
-#            pl.xlabel("distance along the path")
+            self.axes.set_ylabel("NEB image energy")
+            self.axes.set_xlabel("distance along the path")
             self.plw.draw()
             self.process_events()
-            import pylab as pl
-            pl.pause(.0001)
-#            if self.app is not None:
-#                self.app.processEvents()
 
 
 
 class NEBDialog(QDialog):
-    def __init__(self, min1, min2, system):
+    def __init__(self):
         super(NEBDialog, self).__init__()
                 
         self.ui = ui.nebbrowser.Ui_Form()
         self.ui.setupUi(self)
         self.plw = self.ui.widget
         
-        self.system = system
-        self.min1 = min1
-        self.min2 = min2
+#        self.plw.axes.set_ylabel("NEB image energy")
+#        pl.xlabel("distance along the path")
+        
+#        self.system = system
+#        self.min1 = min1
+#        self.min2 = min2
         
 #        self.minimum_selected = Signal()
         # self.minimum_selected(minim)
     
+        #the function which tells the eventloop to continue processing events
+        #if this is not set, the plots will stall and not show until the end of the NEB run.
+        #ideally it is the function app.processEvents where app is returned by
+        #app = QApplication(sys.argv)
         self.process_events = Signal()
             
 
-    def do_NEB(self, coords1, coords2):
-        throwaway_db = Database()
-        min1 = throwaway_db.addMinimum(0., coords1)
-        min2 = throwaway_db.addMinimum(1., coords2)
-        #use the functions in DoubleEndedConnect to set up the NEB in the proper way
-        double_ended = self.system.get_double_ended_connect(min1, min2, 
-                                                            throwaway_db, 
-                                                            fresh_connect=True)
-        local_connect = double_ended._getLocalConnectObject()
+    def attach_to_NEB(self, neb):
+        neb_callback = NEBCallback(self.plw, self.plw.axes)
+        neb_callback.process_events.connect(self.process_events)        
+        neb.events.append(neb_callback)
 
-        
-        
-        follow_neb = True
-        if follow_neb:
-            neb_callback = NEBCallback(self.plw, self.plw.axes)
-            neb_callback.process_events.connect(self.process_events)
-        else:
-            neb_callback = no_event
-        
-        self.neb =  local_connect._getNEB(self.system.get_potential(),
-                                          coords1, coords2, event=neb_callback,
-                                          verbose=True,
-                                          **local_connect.NEBparams)        
-        
-        self.neb.optimize()
-#        self.nebcoords = self.neb.coords
-#        self.nebenergies = self.neb.energies
-#        self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
-#        self.ui.oglPath.setCoords(None, 2)
-#        self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
-#        if self.usepymol:
-#            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
+def getNEB(coords1, coords2, system):
+    """setup the NEB object"""
+    throwaway_db = Database()
+    min1 = throwaway_db.addMinimum(0., coords1)
+    min2 = throwaway_db.addMinimum(1., coords2)
+    #use the functions in DoubleEndedConnect to set up the NEB in the proper way
+    double_ended = system.get_double_ended_connect(min1, min2, 
+                                                        throwaway_db, 
+                                                        fresh_connect=True)
+    local_connect = double_ended._getLocalConnectObject()
+
+    
+    
+    neb =  local_connect._getNEB(system.get_potential(),
+                                      coords1, coords2,
+                                      verbose=True,
+                                      **local_connect.NEBparams)        
+    
+    return neb
+
 
 def start():
     print "starting  neb"
-    wnd.do_NEB(min1.coords, min2.coords)
+    neb = getNEB(x1, x2, system)
+#    wnd.do_NEB(min1.coords, min2.coords)
+    wnd.attach_to_NEB(neb)
+    neb.optimize()
     
 if __name__ == "__main__":
     from pygmin.systems import LJCluster
@@ -118,10 +117,9 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     
     def process_events():
-#        print "pausing"
-        #pl.pause(.00001)
         app.processEvents()
     
+    #setup system
     natoms = 13
     system = LJCluster(natoms)
     x1, e1 = system.get_random_minimized_configuration()[:2]
@@ -130,15 +128,16 @@ if __name__ == "__main__":
     min1 = db.addMinimum(e1, x1)
     min2 = db.addMinimum(e2, x2)
     
-    
+    #setup neb dialog
     pl.ion()
 #    pl.show()
-    wnd = NEBDialog(min1, min2, system)    
+    wnd = NEBDialog()   
     wnd.show()
     wnd.process_events.connect(process_events)
-    #wnd.process_events = process_events
-#    wnd.plw.show()
-    
+
+    #initilize the NEB and run it.
+    #we have to do it through QTimer because the gui has to 
+    #be intitialized first... I don't really understand it 
     from PyQt4.QtCore import QTimer
     QTimer.singleShot(10, start)
         

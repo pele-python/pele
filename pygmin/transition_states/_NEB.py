@@ -59,8 +59,8 @@ class NEB(object):
         every iprint steps.
     verbose : integer
         verbosity level
-    event : callable
-        callback function called just before getEnergyGradient returns
+    events : list of callables
+        list of callback functions called just before getEnergyGradient returns
 
     Notes
     -----
@@ -76,12 +76,15 @@ class NEB(object):
     def __init__(self, path, potential, distance=distance_cart,
                  k=100.0, adjustk_freq=0, with_springenergy=False, dneb=True,
                  copy_potential=False, quenchParams=dict(), quenchRoutine=None,
-                 save_energies=False, verbose=-1, event=None):
+                 save_energies=False, verbose=-1, events=None):
         self.distance = distance
         self.potential = potential
         self.k = k
         self.verbose = verbose
-        self.event = event
+        if events is None:
+            self.events = []
+        else:
+            self.events = events
         
         nimages = len(path)
         self.nimages = nimages
@@ -219,8 +222,8 @@ class NEB(object):
         self.getEnergyCount += 1
         #print "ENeb = ", Eneb
         self._step(coords1d)
-        if self.event is not None:
-            self.event(coords=self.coords, energies=self.energies,
+        for event in self.events:
+            event(coords=self.coords, energies=self.energies,
                        distances=self.distances)
         return E+Eneb, grad.reshape(grad.size)
         #return 0., grad.reshape(grad.size)
