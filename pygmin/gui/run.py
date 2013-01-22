@@ -211,9 +211,9 @@ class MyForm(QtGui.QMainWindow):
         if follow_neb:
             if not hasattr(self, "neb_dlg"):
                 self.neb_dlg = NEBDialog()
-                self.neb_dlg.process_events.connect(self.processEvents)
+                self.neb_dlg.nebwgt.process_events.connect(self.processEvents)
             self.neb_dlg.show()
-            self.neb_dlg.attach_to_NEB(self.neb)
+            self.neb_dlg.nebwgt.attach_to_NEB(self.neb)
         
         
         

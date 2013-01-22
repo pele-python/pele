@@ -3,7 +3,7 @@ matplotlib.use("QT4Agg")
 
 from collections import deque
 import numpy as np
-from PyQt4.QtGui import QDialog, QApplication
+from PyQt4.QtGui import QDialog, QApplication, QWidget, QVBoxLayout
 import sys
 
 from pygmin.storage import Database
@@ -33,7 +33,7 @@ class NEBCallback(object):
     def __call__(self, energies=None, distances=None, stepnum=None, **kwargs):
         self.count += 1
         if self.count % self.frq == 1:
-#            print "plotting NEB energies"
+            print "plotting NEB energies"
             S = np.zeros(energies.shape)
             S[1:] = np.cumsum(distances)
             self.data.append((S, energies.copy(), stepnum))
@@ -55,9 +55,10 @@ class NEBCallback(object):
 
 
 
-class NEBDialog(QDialog):
-    def __init__(self):
-        super(NEBDialog, self).__init__()
+
+class NEBWidget(QWidget):
+    def __init__(self, parent=None):
+        super(NEBWidget, self).__init__(parent=parent)
                 
         self.ui = ui.nebbrowser.Ui_Form()
         self.ui.setupUi(self)
@@ -84,6 +85,18 @@ class NEBDialog(QDialog):
         neb_callback = NEBCallback(self.plw, self.plw.axes)
         neb_callback.process_events.connect(self.process_events)        
         neb.events.append(neb_callback)
+
+class NEBDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super(NEBDialog, self).__init__(*args, **kwargs)
+        self.nebwgt = NEBWidget(parent=self)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.nebwgt)
+#        vbox.addWidget(self.mpl_toolbar)
+        self.setLayout(vbox)
+
+
 
 def getNEB(coords1, coords2, system):
     """setup the NEB object"""
@@ -134,8 +147,9 @@ if __name__ == "__main__":
     #setup neb dialog
     pl.ion()
 #    pl.show()
-    wnd = NEBDialog()   
-    wnd.show()
+    dlg = NEBDialog()
+    wnd = dlg.nebwgt   
+    dlg.show()
     wnd.process_events.connect(process_events)
 
     #initilize the NEB and run it.
