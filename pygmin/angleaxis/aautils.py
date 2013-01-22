@@ -7,6 +7,7 @@ from math import pi
 from pygmin import takestep
 from pygmin.transition_states import zeroev
 from pygmin.angleaxis.aamindist import TransformAngleAxisCluster
+import _aadist
 
 __all__ = ["AASiteType", "AASystem", "interpolate_angleaxis"]
 
@@ -71,6 +72,8 @@ class AASiteType(object):
         returns:
             distance squared
         '''
+        return _aadist.sitedist(com1, p1, com2, p2, self.S, self.W, self.cog)
+
         R1 = rotations.aa2mx(p1)
         R2 = rotations.aa2mx(p2)
         dR = R2 - R1
@@ -102,6 +105,8 @@ class AASiteType(object):
         returns: tuple
             spring cart, spring rot
         '''
+        
+        return _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
         R1, R11, R12, R13 = rotMatDeriv(p1, True)
         R2 = rotations.aa2mx(p2)
         dR = R2 - R1
@@ -354,8 +359,32 @@ if __name__ == "__main__":
     x1 = np.dot(R1, x.transpose()).transpose() + X1
     x2 = np.dot(R2, x.transpose()).transpose() + X2
     
+    import _aadist
     print "site representation:", np.sum((x1-x2)**2)
     print "distance function:  ", site.distance_squared(X1, p1, X2, p2)
+
+    print "fortran function:  ", _aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+
+    coords1 = np.random.random(120)
+    coords2 = np.random.random(120)
+    
+    import time
+    t0 = time.time()
+    for i in xrange(1000):
+        site.distance_squared(X1, p1, X2, p2)
+    t1 = time.time()
+    print "time python", t1-t0
+    for i in xrange(1000):
+        _aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+        #_aadist.aadist(coords1, coords2, site.S, site.W, cog)
+    t2 = time.time()
+    print "time fortran", t2-t1
+    for i in xrange(1000/20):
+        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
+    t2 = time.time()
+    print "time fortran acc", t2-t1
+    
     print site.distance_squared_grad(X1, p1, X2, p2)
     g_M = np.zeros(3)
     g_P = np.zeros(3)
@@ -371,3 +400,6 @@ if __name__ == "__main__":
     print g_M, g_P
     xx = site.distance_squared_grad(X1, p1, X2, p2)
     print g_M/xx[0], g_P/xx[1]
+    print _aadist.sitedist_grad(X1, p1, X2, p2, site.S, site.W, cog)
+#    print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
+
