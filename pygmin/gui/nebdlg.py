@@ -30,23 +30,26 @@ class NEBCallback(object):
         self.axes = axes
         
         
-    def __call__(self, energies=None, distances=None, **kwargs):
+    def __call__(self, energies=None, distances=None, stepnum=None, **kwargs):
         self.count += 1
         if self.count % self.frq == 1:
 #            print "plotting NEB energies"
             S = np.zeros(energies.shape)
             S[1:] = np.cumsum(distances)
-            self.data.append((S, energies.copy()))
+            self.data.append((S, energies.copy(), stepnum))
             if len(self.data) > self.nplots:
                 self.data.popleft()
             self.axes.clear()
-            for S, E in self.data:
-                line, = self.axes.plot(S, E, "o-")
+            for S, E, N in self.data:
+                line, = self.axes.plot(S, E, "o-", label=str(N))
                 # note: if we save the line and use line.set_ydata(E)
                 # this would be a lot faster, but we would have to keep
                 # track of the y-axis limits manually
             self.axes.set_ylabel("NEB image energy")
             self.axes.set_xlabel("distance along the path")
+            self.axes.legend(title="step num")
+            leg = self.axes.legend(title="step num", fancybox='True')
+            leg.get_frame().set_alpha(0.5)
             self.plw.draw()
             self.process_events()
 

@@ -224,7 +224,7 @@ class NEB(object):
         self._step(coords1d)
         for event in self.events:
             event(coords=self.coords, energies=self.energies,
-                       distances=self.distances)
+                       distances=self.distances, stepnum=self.getEnergyCount)
         return E+Eneb, grad.reshape(grad.size)
         #return 0., grad.reshape(grad.size)
 
