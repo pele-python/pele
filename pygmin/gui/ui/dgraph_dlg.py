@@ -9,15 +9,29 @@ from pygmin.storage import Database
 from pygmin.utils.events import Signal
 
 class DGraphDialog(QDialog):
-    def __init__(self, database):
+    """
+    dialog for showing and modifying the disconnectivity graph
+    
+    Parameters
+    ----------
+    database : Database object
+    graph : networkx Graph, optional
+        you can bypass the database and pass a graph directly.  if you pass the graph,
+        pass None as the database
+    params : dict
+        initialize the values for the disconnectivity graph
+    """
+    def __init__(self, database, graph=None, params={}):
         super(DGraphDialog, self).__init__()
         
         self.database = database
+        self.graph = graph
         
         self.ui = dgraph_browser.Ui_Form()
         self.ui.setupUi(self)
         self.plw = self.ui.widget
-            
+        
+        self.input_params = params.copy()
         self.params = {}
         self.set_defaults()
         self.rebuild_disconnectivity_graph()
@@ -25,12 +39,48 @@ class DGraphDialog(QDialog):
         self.minimum_selected = Signal()
         # self.minimum_selected(minim)
 
+    def _set_checked(self, keyword, default):
+        """utility to set the default values for check boxes
+        
+        objects must have the name chkbx_keyword
+        """
+        if keyword in self.input_params:
+            v = self.input_params[keyword]
+        else:
+            v = default
+        line = "self.ui.chkbx_%s.setChecked(bool(%d))" % (keyword, v)
+        exec(line)
+
+    def _set_lineEdit(self, keyword, default=None):
+        """utility to set the default values for lineEdit objects
+                
+        objects must have the name lineEdit_keyword
+        """
+
+        if keyword in self.input_params:
+            v = self.input_params[keyword]
+        else:
+            v = default
+        if v is not None:
+            line = "self.ui.lineEdit_%s.setText(str(%d))" % (keyword, v)
+            exec(line)
+
+
+
     def set_defaults(self):
-        self.ui.chkbx_center_gmin.setChecked(True)
-        self.ui.chkbx_show_minima.setChecked(True)
-        self.ui.chkbx_order_by_energy.setChecked(False)
-        self.ui.chkbx_order_by_basin_size.setChecked(True)
-        self.ui.chkbx_include_gmin.setChecked(True)
+        self._set_checked("center_gmin", True)
+        self._set_checked("show_minima", True)
+        self._set_checked("order_by_energy", False)
+        self._set_checked("order_by_basin_size", True)
+        self._set_checked("include_gmin", True)
+#        self.ui.chkbx_show_minima.setChecked(True)
+#        self.ui.chkbx_order_by_energy.setChecked(False)
+#        self.ui.chkbx_order_by_basin_size.setChecked(True)
+#        self.ui.chkbx_include_gmin.setChecked(True)
+
+        self._set_lineEdit("Emax")
+        self._set_lineEdit("subgraph_size")
+        self._set_lineEdit("nlevels")
 
 
     def _get_input_parameters(self):
@@ -65,9 +115,16 @@ class DGraphDialog(QDialog):
 
     def _build_disconnectivity_graph(self, show_minima=True, **params):
         #this should be somewhere else
-        db = self.database
-        ax = self.plw.axes
+        if self.database is None:
+            graph = self.graph
+        else:
+            db = self.database
+            graphwrapper = Graph(db)
+            graph = graphwrapper.graph
+        dg = DisconnectivityGraph(graph, **params)
+        dg.calculate()
         
+        ax = self.plw.axes
         ax.clear()
         ax.hold(True)
         
@@ -83,9 +140,6 @@ class DGraphDialog(QDialog):
         
         
         
-        graphwrapper = Graph(db)
-        dg = DisconnectivityGraph(graphwrapper.graph, **params)
-        dg.calculate()
         
         
         #draw minima as points

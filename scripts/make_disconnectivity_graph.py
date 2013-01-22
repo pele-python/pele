@@ -9,6 +9,14 @@ import pygmin.utils.disconnectivity_graph as dg
 from pygmin.storage import Database
 from pygmin.landscape import Graph
 
+try:
+    from PyQt4.QtGui import QApplication
+    from pygmin.gui.ui.dgraph_dlg import DGraphDialog
+    use_gui = True
+except ImportError:
+    use_gui = False
+    
+
 global _id_count
 _id_count = 0
 
@@ -171,6 +179,13 @@ def main():
         graphwrapper = Graph(db)
         graph = graphwrapper.graph
     
+    if outfile is None and use_gui:
+        app = QApplication(sys.argv) 
+        kwargs["show_minima"] = False
+        md = DGraphDialog(None, graph=graph, params=kwargs)
+        md.show()
+        sys.exit(app.exec_())
+        
     mydg = dg.DisconnectivityGraph(graph, **kwargs)
     mydg.calculate()
     print "number of minima:", mydg.tree_graph.number_of_leaves()
