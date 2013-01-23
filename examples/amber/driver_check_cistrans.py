@@ -41,11 +41,10 @@ for ts in dbcurr.transition_states() :
     print '------------'
     
 print 'Number of TS deleted = ', ct 
-            
 
 
-
-
+# save the pruned database
+dbcurr.session.commit() 
 
 
 
