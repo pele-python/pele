@@ -130,6 +130,7 @@ class AMBERBaseSystem(BaseSystem):
         
         super(AMBERBaseSystem, self).__init__()
         
+        self.set_params(self.params)
         self.natoms = self.potential.prmtop.topology._numAtoms  
         
         self.params.database.accuracy = 1e-3
@@ -138,30 +139,42 @@ class AMBERBaseSystem(BaseSystem):
         self.params.takestep_random_displacement = BaseParameters()
         self.params.takestep_random_displacement.stepsize = 2.
                 
-        self.set_params(self.params)
         self.prmtopFname = prmtopFname
         self.inpcrdFname = inpcrdFname
-        
+ 
+        # atom numbers of peptide bonds       
         self.populatePeptideBondList()
-    
+        # atom numbers of CA neighbors                
+        self.populate_CAneighborList() 
+
+        self.params.basinhopping.insert_rejected = True
+        
+        # self.params.basinhopping['sanity'] =True
+
+        self.sanitycheck = True  # False  
+        
+        if self.sanitycheck:
+            self.params.basinhopping.confCheck = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
+            self.params.double_ended_connect.conf_checks = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
+
+
     def set_params(self, params):
         """set default parameters for the system"""
         
         #set NEBparams
         NEBparams = params.double_ended_connect.local_connect_params.NEBparams
         NEBparams.iter_density = 15.
-        NEBparams.image_density = 5.
+        NEBparams.image_density = 10.
         NEBparams.max_images = 100.
-        NEBparams.k = 10.
+        NEBparams.k = 100.
+        NEBparams.adjustk_freq = 5
         if False: #use fire
             from pygmin.optimize import fire
             NEBparams.quenchRoutine = fire
         else: #use lbfgs
-            NEBparams.NEBquenchParams.maxErise = 0.5
+            NEBparams.NEBquenchParams.maxErise = 100.5
             NEBparams.NEBquenchParams.maxstep = .1
-        NEBparams.NEBquenchParams.tol = 1e-2
-            
-        
+        NEBparams.NEBquenchParams.tol = 1e-2                    
         
         #set transition state search params
         tsSearchParams = params.double_ended_connect.local_connect_params.tsSearchParams
@@ -169,8 +182,7 @@ class AMBERBaseSystem(BaseSystem):
         tsSearchParams.lowestEigenvectorQuenchParams.nsteps = 100
         tsSearchParams.lowestEigenvectorQuenchParams.tol = 0.001
         tsSearchParams.tangentSpaceQuenchParams.maxstep = .1
-        tsSearchParams.nfail_max = 1000
-        
+        tsSearchParams.nfail_max = 1000        
         
         tsSearchParams.nsteps_tangent1 = 5
         tsSearchParams.nsteps_tangent2 = 100
@@ -193,9 +205,6 @@ class AMBERBaseSystem(BaseSystem):
     
     def get_potential(self):
         return self.potential 
-
-    def get_basinhopping(self, *args, **kwargs):
-        return BaseSystem.get_basinhopping(self, *args, insert_rejected=True, **kwargs)
     
     def get_takestep(self):
         from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
@@ -401,18 +410,81 @@ class AMBERBaseSystem(BaseSystem):
         print 'atom numbers of C,O,N,H (in order) in peptide bonds = '
         print self.peptideBondAtoms              
 
+    def populate_CAneighborList(self):
+        listofCA = [] 
+        listofC = [] 
+        listofN = [] 
+        listofCB = [] 
+            
+        for i in self.potential.prmtop.topology.atoms():
+            if i.name == 'CA':
+                listofCA.append(i.index)  
+            
+            if i.name == 'C':
+                listofC.append(i.index)
+                  
+            if i.name == 'N':
+                listofN.append(i.index)
+                  
+            if i.name == 'CB':
+                listofCB.append(i.index)  
+                
+        #print listofCA     
+        #print listofC     
+        #print listofN     
+        #print listofCB     
+        
+        # atom numbers of peptide bond 
+        self.CAneighborList = [] 
+        
+        for i in listofCA:
+            # find atoms bonded to CA 
+            neighborlist = []     
+            for b in self.potential.prmtop.topology.bonds():
+                if b[0] == i:
+                    neighborlist.append(b[1]) 
+                if b[1] == i:
+                    neighborlist.append(b[0]) 
+            
+            # print 'atoms bonded to CA ',i, ' = ', neighborlist    
+            nn = [i] 
+            # append C (=O) 
+            for n in neighborlist: 
+                if listofC.__contains__(n):
+                    nn.append(n) 
+        
+            # append CB  
+            for n in neighborlist: 
+                if listofCB.__contains__(n):
+                    nn.append(n) 
+        
+            # append N  
+            for n in neighborlist: 
+                if listofN.__contains__(n):
+                    nn.append(n) 
+        
+            self.CAneighborList.append(nn) 
+
+        # atoms numbers start at 0             
+        print 'atom numbers of CA,C(=O),CB,N (in order) neighbors of CA = '
+        print self.CAneighborList
+
+
+    def check_cistrans_wrapper(self, energy, coords, **kwargs):
+        return self.check_cistrans(coords)
+
     def check_cistrans(self, coords):
         """ 
-        Sanity check on the peptide bonds which should be TRANS   
+        Sanity check on the isomer state of peptide bonds   
         
-        Returns True if any of the peptide bond is CIS        
+        Returns False if the check fails i.e. if any of the peptide bond is CIS         
         
         """
         
         from pygmin.utils.measure import Measure  
         m = Measure() 
         
-        isCis = False 
+        isTrans = True 
         
         for i in self.peptideBondAtoms:                            
             atNum = i[0] 
@@ -426,14 +498,54 @@ class AMBERBaseSystem(BaseSystem):
             
             # compute O-C-N-H torsion angle 
             rad, deg = m.torsion(rO,rC,rN,rH)
+                        
+            # print 'peptide torsion (deg) ', i, ' = ', deg 
+            # check cis 
+            if deg < 90 or deg > 270: 
+                isTrans = False  
+                print 'CIS peptide bond between atoms ', i, ' torsion (deg) = ', deg 
+                
+        return isTrans  
+            
+
+    def check_CAchirality_wrapper(self, energy, coords, **kwargs):
+        return self.check_cistrans(coords)
+
+    def check_CAchirality(self, coords):
+        """ 
+        Sanity check on the CA to check if it is L of D    
+        
+        Returns False if the check fails i.e. if any D-amino acid is present          
+        
+        """
+        
+        print 'in check CA chirality'
+        from pygmin.utils.measure import Measure  
+        m = Measure() 
+        
+        isL = True 
+        
+        for i in self.CAneighborList:                            
+            atNum = i[0] 
+            rCA   = np.array( [ coords[3*atNum] , coords[3*atNum+1] , coords[3*atNum+2] ])                       
+            atNum = i[1] 
+            rC    = np.array( [ coords[3*atNum] , coords[3*atNum+1] , coords[3*atNum+2] ])                       
+            atNum = i[2] 
+            rCB   = np.array( [ coords[3*atNum] , coords[3*atNum+1] , coords[3*atNum+2] ])                       
+            atNum = i[3] 
+            rN    = np.array( [ coords[3*atNum] , coords[3*atNum+1] , coords[3*atNum+2] ])
+            
+            # compute improper torsion angle between C-CA-CB and CA-CB-N 
+            rad, deg = m.torsion(rC,rCA,rCB,rN)                        
             
             # check cis 
-            if deg < 90: 
-                isCis = True 
-                print 'CIS peptide bond between atoms ', i 
-                
-        return isCis 
-            
+            if deg < 180 :
+                # this condition was found by inspection of structures todo   
+                isL = False  
+                print 'chiral state of CA atom ', i[0], ' is D' 
+                print 'CA improper torsion (deg) ', i, ' = ', deg 
+
+        return isL  
 
 
     def test_potential(self, pdbfname ):
@@ -496,11 +608,10 @@ class AMBERBaseSystem(BaseSystem):
     
         self.params.basinhopping["temperature"] = 10.0 
          
-    #    sys.params.basinhopping["insert_rejected"] = True      
         # todo - how do you save N lowest?    
     
-    #    bh = sys.get_basinhopping(database=database, takestep = tsAdaptive, coords=x0)    
         bh = self.get_basinhopping(database=db, takestep = takeStepRnd)     
+        bh = self.get_basinhopping(database=db, takestep = tsAdaptive)     
                   
         print 'Running BH .. '
         bh.run(20)
