@@ -155,7 +155,7 @@ class AMBERBaseSystem(BaseSystem):
         
         if self.sanitycheck:
             self.params.basinhopping.confCheck = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
-            self.params.double_ended_connect.conf_checks = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
+            self.params.double_ended_connect.conf_checks = [self.check_cistrans_wrapper_kwargs, self.check_CAchirality_wrapper_kwargs]
 
 
     def set_params(self, params):
@@ -469,6 +469,8 @@ class AMBERBaseSystem(BaseSystem):
         print 'atom numbers of CA,C(=O),CB,N (in order) neighbors of CA = '
         print self.CAneighborList
 
+    def check_cistrans_wrapper_kwargs(self, coords=None, **kwargs):
+        return self.check_cistrans(coords)
 
     def check_cistrans_wrapper(self, energy, coords, **kwargs):
         return self.check_cistrans(coords)
@@ -503,13 +505,16 @@ class AMBERBaseSystem(BaseSystem):
             # check cis 
             if deg < 90 or deg > 270: 
                 isTrans = False  
-                print 'CIS peptide bond between atoms ', i, ' torsion (deg) = ', deg 
+#                print 'CIS peptide bond between atoms ', i, ' torsion (deg) = ', deg 
                 
         return isTrans  
             
 
+    def check_CAchirality_wrapper_kwargs(self, coords=None, **kwargs):
+        return self.check_CAchirality(coords)
+    
     def check_CAchirality_wrapper(self, energy, coords, **kwargs):
-        return self.check_cistrans(coords)
+        return self.check_CAchirality(coords)
 
     def check_CAchirality(self, coords):
         """ 
@@ -519,7 +524,7 @@ class AMBERBaseSystem(BaseSystem):
         
         """
         
-        print 'in check CA chirality'
+#        print 'in check CA chirality'
         from pygmin.utils.measure import Measure  
         m = Measure() 
         
