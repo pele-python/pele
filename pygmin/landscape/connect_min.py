@@ -174,12 +174,13 @@ class DoubleEndedConnect(object):
 
         self.dist_graph.initialize(self.minstart, self.minend, use_all_min)
         
-        print "************************************************************"
-        print "starting a double ended connect run between"
-        print "        minimum 1: id %d energy %f" % (self.minstart._id, self.minstart.energy)
-        print "        minimum 2: id %d energy %f" % (self.minend._id, self.minend.energy)
-        print "        dist %f" % self.getDist(self.minstart, self.minend)
-        print "************************************************************"
+        if self.verbosity > 0:
+            print "************************************************************"
+            print "starting a double ended connect run between"
+            print "        minimum 1: id %d energy %f" % (self.minstart._id, self.minstart.energy)
+            print "        minimum 2: id %d energy %f" % (self.minend._id, self.minend.energy)
+            print "        dist %f" % self.getDist(self.minstart, self.minend)
+            print "************************************************************"
         
     
 

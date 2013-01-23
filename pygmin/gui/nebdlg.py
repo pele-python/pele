@@ -5,6 +5,7 @@ from collections import deque
 import numpy as np
 from PyQt4.QtGui import QDialog, QApplication, QWidget, QVBoxLayout
 import sys
+from itertools import izip
 
 from pygmin.storage import Database
 from pygmin.utils.events import Signal
@@ -20,7 +21,7 @@ def no_event(*args, **kwargs):
 # is quite simple and could easily be a lot faster.
 # set follow_neb=False to turn this off
 class NEBCallback(object):
-    def __init__(self, plw, axes, frq=30, nplots=3):
+    def __init__(self, plw, axes, neb=None, frq=30, nplots=3):
         self.count = 0
         self.nplots = nplots
         self.data = deque()
@@ -28,23 +29,47 @@ class NEBCallback(object):
         self.process_events = Signal()
         self.plw = plw
         self.axes = axes
+        self.neb = neb
         
+        self.on_coords_select = Signal()
+
+        self.points_list = []
+        def on_pick_tmp(event):
+            self.on_pick(event)
+            return
+        self.plw.mpl_connect('pick_event', on_pick_tmp)
+     
+    def on_pick(self, event):
+        for points, nebdata in izip(self.points_list, self.data):
+            if event.artist == points:
+                #nebdata is in the form  (S, E, stepnum)
+                S, E, stepnum = nebdata
+                ind = event.ind[0]
+                print "you picked a point with energy", E[ind], "index", ind
+                self.on_coords_select(energy=E[ind], index=ind) 
         
     def __call__(self, energies=None, distances=None, stepnum=None, **kwargs):
         self.count += 1
         if self.count % self.frq == 1:
-            print "plotting NEB energies"
+#            print "plotting NEB energies"
             S = np.zeros(energies.shape)
             S[1:] = np.cumsum(distances)
             self.data.append((S, energies.copy(), stepnum))
             if len(self.data) > self.nplots:
                 self.data.popleft()
             self.axes.clear()
+            
+            
+            self.points_list = []
             for S, E, N in self.data:
-                line, = self.axes.plot(S, E, "o-", label=str(N))
+                line, = self.axes.plot(S, E, "-", label=str(N))
+                points = self.axes.scatter(S, E, picker=5)
+                self.points_list.append(points) 
                 # note: if we save the line and use line.set_ydata(E)
                 # this would be a lot faster, but we would have to keep
                 # track of the y-axis limits manually
+            self.points_list = [self.points_list[-1]] #only enable interactive for the last line plotted
+
             self.axes.set_ylabel("NEB image energy")
             self.axes.set_xlabel("distance along the path")
             self.axes.legend(title="step num")
@@ -79,11 +104,14 @@ class NEBWidget(QWidget):
         #ideally it is the function app.processEvents where app is returned by
         #app = QApplication(sys.argv)
         self.process_events = Signal()
+        
+        self.on_neb_pick = Signal()
             
 
     def attach_to_NEB(self, neb):
         neb_callback = NEBCallback(self.plw, self.plw.axes)
-        neb_callback.process_events.connect(self.process_events)        
+        neb_callback.process_events.connect(self.process_events)
+        neb_callback.on_coords_select.connect(self.on_neb_pick)      
         neb.events.append(neb_callback)
 
 class NEBDialog(QDialog):
