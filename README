@@ -37,7 +37,7 @@ python packages::
   hungarian (optional, use pip/easy_install to get newest version with bugfixes!)
      for min dist routines
      
-All packages can be installed via the python package managers pip or easy_install.
+All the above packages can be installed via the python package managers pip or easy_install.
 However, some of the packages (numpy, scipy) have additional dependencies and it
 can be more convenient to use the linux package manager (apt, yum, ...).
 
@@ -46,7 +46,7 @@ If you want to use the gui you need:
   qt4 python bindings
   opengl python bindings
 
-The Ubuntu packages are (apt-get or aptitude)::
+The Ubuntu packages are (apt-get)::
 
   python-qt4
   python-opengl 
@@ -57,6 +57,16 @@ The Ubuntu packages are (apt-get or aptitude)::
 Or Fedora (yum)::
    PyQt4
    PyOpenGl
+
+
+Prerequisits on Ubuntu
+----------------------
+if you're running ubuntu, you can get all the prerequisits with the following commands
+
+$ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip
+$ pip install --user networkx sqlalchemy hungarian
+(in the above, the flag --user will install localy.)
+
 
 Compilation
 -----------
@@ -85,6 +95,27 @@ where --user installs it in $HOME/.local/
 PYTHONPATH  
 ----------
 make sure to add the install directory to your PYTHONPATH environment variable
+
+
+Installing on Mac
+-----------------
+When I used macports, everything installed very easily.  However, at least on my machine
+the OpenGL / Qt implementation was broken and I could never get it to work.  So I aborted
+using macports and installed everything by hand.  I eventually got (almost) everything working.
+Here are a few hints
+
+use the Enthought python distribution instead of the prepackaged one.  This seems to be standard, plus
+it includes numpy and scipy http://www.enthought.com/products/epd.php
+
+if you want to use the gui you have to install pyqt and its dependencies.  This is not as simple as
+it should be.  I roughly followed the instructions here http://www.noktec.be/python/how-to-install-pyqt4-on-osx
+Even though my mac is 64 bit I had to compile things with --arch=i386.  I think I even had to install Qt from source
+to get it with the 32 bit architechture.    Also, when compiling pyqt, you have to point to the qmake in the Qt install folder, not /usr/bin/qmake
+as the website says.  Sorry for the vague instructions, I'm writing this from memory.  If you have more complete installation help please
+email or submit a pull request.
+
+Installing pymol was easy with macports, but since I've abandoned macports 
+I haven't gotten it installed and running (I haven't tried the pay version) 
 
 
 === Running ===
