@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Mon Jan 21 15:13:24 2013
+# Created: Wed Jan 23 14:17:34 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -145,6 +145,9 @@ class Ui_MainWindow(object):
         self.btnconnect_in_optim = QtGui.QPushButton(self.NEBTab)
         self.btnconnect_in_optim.setObjectName(_fromUtf8("btnconnect_in_optim"))
         self.gridLayout_2.addWidget(self.btnconnect_in_optim, 4, 1, 1, 1)
+        self.btn_launch_connect_explorer = QtGui.QPushButton(self.NEBTab)
+        self.btn_launch_connect_explorer.setObjectName(_fromUtf8("btn_launch_connect_explorer"))
+        self.gridLayout_2.addWidget(self.btn_launch_connect_explorer, 6, 0, 1, 2)
         self.verticalLayout_5.addLayout(self.gridLayout_2)
         self.verticalLayout_2.addLayout(self.verticalLayout_5)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
@@ -266,6 +269,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.actionEditParams, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.edit_params)
         QtCore.QObject.connect(self.btnconnect_in_optim, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.connect_in_optim)
         QtCore.QObject.connect(self.actionMerge_Minima, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.merge_minima)
+        QtCore.QObject.connect(self.btn_launch_connect_explorer, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.launch_connect_explorer)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -292,6 +296,7 @@ class Ui_MainWindow(object):
         self.btnReconnect.setText(QtGui.QApplication.translate("MainWindow", "Reconnect", None, QtGui.QApplication.UnicodeUTF8))
         self.btnconnect_in_optim.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Spawn an external OPTIM job</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnconnect_in_optim.setText(QtGui.QApplication.translate("MainWindow", "Connect in OPTIM", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_launch_connect_explorer.setText(QtGui.QApplication.translate("MainWindow", "launch connect explorer", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.btnTSSearch.setText(QtGui.QApplication.translate("MainWindow", "Find TS", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Path", None, QtGui.QApplication.UnicodeUTF8))

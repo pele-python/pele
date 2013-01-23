@@ -72,7 +72,7 @@ def minima_from_ts(pot, xt, n=None,
     
     quenchParams = dict(defaults.quenchParams.items() + 
                             quenchParams.items())
-    if quenchRoutine==None:
+    if quenchRoutine is None:
         quenchRoutine = mylbfgs
         #quenchRoutine = defaults.quenchRoutine
         #js850> this should be done more carefully

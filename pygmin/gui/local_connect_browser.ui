@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>635</width>
+    <width>928</width>
     <height>718</height>
    </rect>
   </property>
@@ -27,6 +27,8 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <zorder></zorder>
+       <zorder></zorder>
       </widget>
      </item>
      <item>
@@ -48,13 +50,44 @@
      </property>
      <item>
       <layout class="QFormLayout" name="formLayout">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+       </property>
        <property name="leftMargin">
         <number>10</number>
        </property>
        <item row="0" column="0">
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="btn_refineTS">
          <property name="text">
-          <string>PushButton</string>
+          <string>refine transition state</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="btn_show_neb_path">
+         <property name="text">
+          <string>show NEB path</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QPushButton" name="btn_show_ts_path">
+         <property name="text">
+          <string>show TS refinement trajectory</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QPushButton" name="btn_show_pushoff1">
+         <property name="text">
+          <string>show left pushoff path</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QPushButton" name="btn_show_pushoff2">
+         <property name="text">
+          <string>show right pushoff path</string>
          </property>
         </widget>
        </item>
@@ -79,5 +112,76 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btn_show_ts_path</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>show_TS_path()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>453</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>628</x>
+     <y>91</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_show_neb_path</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>show_neb_path()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>423</x>
+     <y>65</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>628</x>
+     <y>56</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_show_pushoff1</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>show_pushoff_path1()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>440</x>
+     <y>124</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>631</x>
+     <y>144</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_show_pushoff2</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>show_pushoff_path2()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>491</x>
+     <y>160</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>631</x>
+     <y>189</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>show_TS_path()</slot>
+  <slot>show_neb_path()</slot>
+  <slot>show_pushoff_path1()</slot>
+  <slot>show_pushoff_path2()</slot>
+ </slots>
 </ui>

@@ -19,6 +19,7 @@ from pygmin.config import config
 #import ui.dgraph_browser
 from pygmin.gui.ui.dgraph_dlg import DGraphDialog
 from pygmin.gui.nebdlg import NEBDialog
+from pygmin.gui.local_connect_dlg import LocalConnectDialog
 
 global pick_count
 
@@ -236,7 +237,6 @@ class MyForm(QtGui.QMainWindow):
         make it interactive, so that when you click on an end point
         that minima is selected
         """
-        self.dgraph_dlg = DGraphDialog(self.system.database)
         self.pick_count = 0
 #        pick_count = 0
         def minimum_selecter(min1):
@@ -249,7 +249,9 @@ class MyForm(QtGui.QMainWindow):
                 
         self.minimum_selecter = minimum_selecter
 
-        self.dgraph_dlg.minimum_selected.connect(minimum_selecter)
+        if not hasattr(self, "dgraph_dlg"):
+            self.dgraph_dlg = DGraphDialog(self.system.database)
+            self.dgraph_dlg.minimum_selected.connect(minimum_selecter)
 #        self.dgraph_dlg.minimum_selected=minimum_selecter
         self.dgraph_dlg.show()
         
@@ -586,6 +588,21 @@ class MyForm(QtGui.QMainWindow):
         min1 = self.ui.oglPath.minima[1]
         min2 = self.ui.oglPath.minima[2]
         self._merge_minima(min1, min2)
+
+
+
+    def launch_connect_explorer(self):
+        coords1 = self.ui.oglPath.coords[1]
+        coords2 = self.ui.oglPath.coords[2]
+
+        if not hasattr(self, "local_connect_explorer"):
+            self.local_connect_explorer = LocalConnectDialog(self.system)
+            self.local_connect_explorer.nebwgt.process_events.connect(self.processEvents)
+        self.local_connect_explorer.show()
+        self.local_connect_explorer.createNEB(coords1, coords2)
+        self.local_connect_explorer.runNEB()
+
+
         
         
 #def refresh_pl():

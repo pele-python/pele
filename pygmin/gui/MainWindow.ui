@@ -273,6 +273,13 @@
                 </property>
                </widget>
               </item>
+              <item row="6" column="0" colspan="2">
+               <widget class="QPushButton" name="btn_launch_connect_explorer">
+                <property name="text">
+                 <string>launch connect explorer</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -491,7 +498,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>816</x>
-     <y>545</y>
+     <y>578</y>
     </hint>
     <hint type="destinationlabel">
      <x>432</x>
@@ -507,7 +514,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>445</y>
+     <y>412</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -523,7 +530,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>758</x>
-     <y>478</y>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -587,7 +594,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>478</y>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>417</x>
@@ -683,7 +690,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>796</x>
-     <y>445</y>
+     <y>412</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -699,7 +706,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>511</y>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>685</x>
@@ -715,7 +722,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>544</y>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>691</x>
@@ -747,7 +754,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>796</x>
-     <y>577</y>
+     <y>544</y>
     </hint>
     <hint type="destinationlabel">
      <x>689</x>
@@ -763,7 +770,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>796</x>
-     <y>511</y>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -794,8 +801,8 @@
    <slot>connect_in_optim()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>688</x>
-     <y>530</y>
+     <x>796</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>833</x>
@@ -816,6 +823,22 @@
     <hint type="destinationlabel">
      <x>419</x>
      <y>311</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_launch_connect_explorer</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>launch_connect_explorer()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>714</x>
+     <y>565</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>837</x>
+     <y>536</y>
     </hint>
    </hints>
   </connection>
@@ -846,5 +869,6 @@
   <slot>edit_params()</slot>
   <slot>connect_in_optim()</slot>
   <slot>merge_minima()</slot>
+  <slot>launch_connect_explorer()</slot>
  </slots>
 </ui>

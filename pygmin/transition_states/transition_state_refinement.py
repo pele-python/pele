@@ -275,7 +275,7 @@ class FindTransitionState(object):
                     print ostring, extra
             
             if callable(self.event):
-                self.event(E=E, coords=coords, rms=rms)
+                self.event(energy=E, coords=coords, rms=rms, eigenval=self.eigenval, stepnum=i)
             if rms < self.tol:
                 break
             if self.nfail >= self.nfail_max:

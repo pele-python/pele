@@ -20,12 +20,12 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
     coords = ret.coords
     if not ret.success:
         print "transition state search failed"
-        return False, None
+        return False, ret, None, None
         
     if ret.eigenval >= 0.:
         print "warning: transition state has positive lowest eigenvalue, skipping:", ret.eigenval, ret.energy, ret.rms
         print "         not adding transition state"
-        return False, None
+        return False, ret, None, None
     
     #find the minima which this transition state connects
     print "falling off either side of transition state to find new minima"

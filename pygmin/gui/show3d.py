@@ -159,6 +159,11 @@ class Show3D(QGLWidget):
 class Show3DWithSlider(QWidget):
     def __init__(self, *args, **kwargs):
         super(Show3DWithSlider, self).__init__(*args, **kwargs)
+         
+        self.label = QtGui.QLabel(parent=self)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.label.setText("")
+
         
         self.oglwgt = Show3D(parent=self)
         
@@ -168,6 +173,7 @@ class Show3DWithSlider(QWidget):
         QtCore.QObject.connect(self.slider, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), self._showFrame)
 
         vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(self.label)
         vbox.addWidget(self.oglwgt)
         vbox.addWidget(self.slider)
         self.setLayout(vbox)
@@ -178,13 +184,16 @@ class Show3DWithSlider(QWidget):
     def setSystem(self, system):
         self.oglwgt.setSystem(system)
     
-    def setCoordsPath(self, coordspath, frame=0):
+    def setCoordsPath(self, coordspath, frame=0, labels=None):
         self.coordspath = coordspath
+        self.messages = labels
         self.slider.setRange(0, coordspath.shape[0]-1)
         self.showFrame(frame)
 
     def _showFrame(self, i):
         self.oglwgt.setCoords(self.coordspath[i,:], index=1)
+        if self.messages is not None:
+            self.label.setText(self.messages[i])
         
 
     def showFrame(self, i):
