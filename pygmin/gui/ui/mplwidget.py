@@ -23,10 +23,10 @@ class MPLWidget(FigureCanvas):
             self.setParent(parent)
         #self.reparent(parent, QtCore.QPoint(0, 0))
 
-        FigureCanvas.setSizePolicy(self,
-                                   QtGui.QSizePolicy.Expanding,
-                                   QtGui.QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+#        FigureCanvas.setSizePolicy(self,
+#                                   QtGui.QSizePolicy.Expanding,
+#                                   QtGui.QSizePolicy.Expanding)
+#        FigureCanvas.updateGeometry(self)
 
 #    def compute_initial_figure(self):
 #        t = np.arange(0.0, 3.0, 0.01)
@@ -42,12 +42,13 @@ class MPLWidget(FigureCanvas):
 
 
 
-    def sizeHint(self):
-        w, h = self.get_width_height()
-        return QtCore.QSize(w, h)
+#    def sizeHint(self):
+#        w, h = self.get_width_height()
+#        return QtCore.QSize(0,0)
+#        return QtCore.QSize(w, h)
 
-    def minimumSizeHint(self):
-        return QtCore.QSize(10, 10)
+#    def minimumSizeHint(self):
+#        return QtCore.QSize(10, 10)
 
 class MPLWidgetWithToolbar(QWidget):
     ''' defines a matplotlib widget '''

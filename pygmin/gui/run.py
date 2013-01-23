@@ -553,9 +553,9 @@ class MyForm(QtGui.QMainWindow):
         spawner.run()
         db = self.system.database
         newminima, newts = spawner.load_results(self.system.database)
-        for m in newminima:
-            if m not in existing_minima:
-                self.NewMinimum(m)
+#        for m in newminima:
+#            if m not in existing_minima:
+#                self.NewMinimum(m)
             
         #now use DoubleEndedConnect to test if they are connected
         graph = Graph(db)

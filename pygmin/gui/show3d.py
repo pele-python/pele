@@ -11,10 +11,16 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from PyQt4 import QtGui, QtCore
-from PyQt4.Qt import Qt
+from PyQt4.Qt import Qt, QWidget
 from PyQt4.QtOpenGL import *
 import numpy as np
 import pygmin.utils.rotations as rot
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+
 
 class Show3D(QGLWidget):
     '''
@@ -103,7 +109,7 @@ class Show3D(QGLWidget):
         glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(40.0, 1.0, 1.0, 40.0)
+        gluPerspective(40.0, float(w)/float(h), 1.0, 40.0)
     
     def initializeGL(self):
         '''
@@ -143,4 +149,51 @@ class Show3D(QGLWidget):
               0, 1, 0)
         glPushMatrix()
         
+    def sizeHint(self):
+        w, h = 500,500 #self.get_width_height()
+        return QtCore.QSize(w, h)
+
+    def minimumSizeHint(self):
+        return QtCore.QSize(10, 10)
+
+class Show3DWithSlider(QWidget):
+    def __init__(self, *args, **kwargs):
+        super(Show3DWithSlider, self).__init__(*args, **kwargs)
+        
+        self.oglwgt = Show3D(parent=self)
+        
+        self.slider = QtGui.QSlider(parent=self)
+        self.slider.setOrientation(QtCore.Qt.Horizontal)
+        self.slider.setObjectName(_fromUtf8("myslider"))
+        QtCore.QObject.connect(self.slider, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), self._showFrame)
+
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(self.oglwgt)
+        vbox.addWidget(self.slider)
+        self.setLayout(vbox)
+
     
+#    def __getattr__(self, name):
+#        return getattr(self.oglwgt, name)
+    def setSystem(self, system):
+        self.oglwgt.setSystem(system)
+    
+    def setCoordsPath(self, coordspath, frame=0):
+        self.coordspath = coordspath
+        self.slider.setRange(0, coordspath.shape[0]-1)
+        self.showFrame(frame)
+
+    def _showFrame(self, i):
+        self.oglwgt.setCoords(self.coordspath[i,:], index=1)
+        
+
+    def showFrame(self, i):
+        self.slider.setValue(i)
+        self._showFrame(i)
+
+#    def setCoordsSingle(self):
+
+#    def on_myslider_sliderMoved(self, index):
+#        print "slider moved", index
+##        self.oglwgt.setCoords(self.neb.coords[0,:], index=index)
+
