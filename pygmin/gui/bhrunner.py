@@ -34,10 +34,15 @@ class BHProcess(mp.Process):
         db = self.system.create_database()
         db.on_minimum_added.connect(self.insert)
         opt = self.system.get_basinhopping(database=db, outstream=None)
+        try:
+            nsteps = self.system.params.gui.basinhopping_nsteps
+        except AttributeError or KeyError:
+            nsteps = 100
+
         
         #while(True):
         #print 'bhrunner.py: number of BH steps set to 1'
-        opt.run(500)
+        opt.run(nsteps)
         
     def insert(self, m):
             self.comm.send([m.energy,m.coords])

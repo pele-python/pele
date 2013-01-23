@@ -47,6 +47,8 @@ class Parameters(BaseParameters):
         self["basinhopping"] = BaseParameters()
         self["takestep"] = BaseParameters()
         self.structural_quench_params = BaseParameters()
+        self.gui = BaseParameters()
+        
         
         self.double_ended_connect = BaseParameters()
         self.double_ended_connect.local_connect_params = BaseParameters()
@@ -111,6 +113,8 @@ class BaseSystem(object):
         
         tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
         tsSearchParams.lowestEigenvectorQuenchParams.nsteps = 100
+        
+#        self.params.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams.maxErise = 1e50
 
     def get_potential(self):
         """return the potential object
