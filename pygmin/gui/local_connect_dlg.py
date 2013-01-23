@@ -1,5 +1,6 @@
 import numpy as np
 from PyQt4.QtGui import QDialog, QApplication
+from PyQt4 import QtCore
 import sys
 
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
@@ -11,6 +12,12 @@ from pygmin.landscape.local_connect import _refineTS
 
 import local_connect_browser
 from nebdlg import getNEB
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+
 
 class LocalConnectDialog(QDialog):
     def __init__(self, system):
@@ -28,6 +35,16 @@ class LocalConnectDialog(QDialog):
         self.oglwgt.setSystem(self.system)
         
         self.nebwgt.on_neb_pick.connect(self.on_neb_pick)
+        
+        QtCore.QObject.connect(self.oglwgt.slider, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), self.highlight_neb)
+
+        self.oglview = "None"
+    
+    def highlight_neb(self, index):
+        if self.oglview == "neb":
+            self.nebwgt.highlight(index)
+        else:
+            self.nebwgt.highlight(-1)
 
 
     def _prepareNEB(self, coords1, coords2):
@@ -55,14 +72,12 @@ class LocalConnectDialog(QDialog):
     def createNEB(self, coords1, coords2):
         self._prepareNEB(coords1, coords2)
         self.nebwgt.attach_to_NEB(self.neb)
-        
         return self.neb
-
 
     def on_neb_pick(self, energy, index):
 #        print "in local_connect.  you picked E", energy, "index", index
         self.neb_chosen_index = index
-        self.oglwgt.setCoordsPath(self.neb.coords, frame=index)
+        self.show_neb_path(frame=index)
 
     def runNEB(self):
         self.neb.optimize()
@@ -193,14 +208,18 @@ class LocalConnectDialog(QDialog):
 
     def show_pushoff_path1(self):
         self.oglwgt.setCoordsPath(self.pushoff_coordspath1, labels=self.pushoff_labels1)
+        self.oglview = "pushoff2"
     def show_pushoff_path2(self):
         self.oglwgt.setCoordsPath(self.pushoff_coordspath2, labels=self.pushoff_labels2)
+        self.oglview = "pushoff1"
     
     def show_neb_path(self, frame=0):
         self.oglwgt.setCoordsPath(self.neb.coords, frame=frame, labels=self.neb_labels)
+        self.oglview = "neb"
 
     def show_TS_path(self):
         self.oglwgt.setCoordsPath(self.ts_coordspath, labels=self.ts_labels)
+        self.oglview = "ts"
         
         
         
