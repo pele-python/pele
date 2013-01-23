@@ -44,7 +44,7 @@ class LocalConnectDialog(QDialog):
     
         
         
-        self.neb =  self.local_connect._getNEB(system.get_potential(),
+        self.neb =  self.local_connect.create_neb(system.get_potential(),
                                           coords1, coords2,
                                           verbose=True,
                                           **self.local_connect.NEBparams)        
@@ -65,7 +65,7 @@ class LocalConnectDialog(QDialog):
         self.oglwgt.setCoordsPath(self.neb.coords, frame=index)
 
     def runNEB(self):
-        self.neb.optimize()
+        self.neb=self.neb.run()
         self.neb_labels = ["NEB path: energy=%f"%(E) for E in self.neb.energies]
         self.show_neb_path()
 #        wnd.oglwgt.setCoordsPath(wnd.neb.coords)

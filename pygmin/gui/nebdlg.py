@@ -112,7 +112,7 @@ class NEBWidget(QWidget):
         neb_callback = NEBCallback(self.plw, self.plw.axes)
         neb_callback.process_events.connect(self.process_events)
         neb_callback.on_coords_select.connect(self.on_neb_pick)      
-        neb.events.append(neb_callback)
+        neb.update_event.connect(neb_callback)
 
 class NEBDialog(QDialog):
     def __init__(self, *args, **kwargs):

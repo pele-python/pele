@@ -202,7 +202,7 @@ class MyForm(QtGui.QMainWindow):
         
 
         local_connect = double_ended._getLocalConnectObject()
-        self.neb =  local_connect._getNEB(self.system.get_potential(),
+        self.neb =  local_connect.create_neb(self.system.get_potential(),
                                           coords1, coords2,
                                           verbose=True,
                                           **local_connect.NEBparams)        
@@ -218,7 +218,7 @@ class MyForm(QtGui.QMainWindow):
         
         
         
-        self.neb.optimize()
+        self.neb = self.neb.run()
         self.nebcoords = self.neb.coords
         self.nebenergies = self.neb.energies
         self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
