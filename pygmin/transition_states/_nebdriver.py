@@ -1,7 +1,7 @@
 import numpy as np
 from pygmin.transition_states import NEB, NEBPar
 from pygmin.transition_states._NEB import distance_cart
-from interpolate import InterpolatedPath
+from interpolate import InterpolatedPath, interpolate_linear
 from pygmin.utils.events import Signal
 
 #def calc_neb_dist(coords, nimages, dist=True, grad=False):
@@ -36,6 +36,8 @@ class NEBDriver(object):
         how many NEB images per unit distance to use.
     iter_density : float
         how many optimization iterations per unit distance to use.
+    reinterpolate : integer
+        reinterpolate the path to achieve equidistant spacing every so many steps
     factor : int
         The number of images is multiplied by this factor.  If the number of 
         images is already at it's maximum, then the number of iterations is 
@@ -56,9 +58,10 @@ class NEBDriver(object):
     '''
     
     def __init__(self, potential, coords1, coords2,
-                 max_images = -1, image_density=10, iter_density = 10,
+                 k = 100., max_images = -1, image_density=10, iter_density = 10,
                  verbose=-1, factor=1., NEBquenchParams=dict(),
-                 interpolator=None, distance=distance_cart, parallel=False, ncores=4, **kwargs):
+                 reinterpolate=50,
+                 interpolator=interpolate_linear, distance=distance_cart, parallel=False, ncores=4, **kwargs):
         
         self.potential = potential
         self.interpolator = interpolator
@@ -73,9 +76,10 @@ class NEBDriver(object):
         self.quenchParams=NEBquenchParams
         self.coords1 = coords1
         self.coords2 = coords2   
-             
+        self.reinterpolate = reinterpolate
         self._nebclass = NEB
         self._kwargs = kwargs.copy()
+        self.k = k
         
         if parallel:
             self._kwargs["ncores"]=ncores
@@ -103,21 +107,36 @@ class NEBDriver(object):
             niter *= self.factor
             quenchParams["nsteps"] = niter    
         
-        if self.verbose:    
+        if self.verbose>0:    
             print "    NEB: nimages", nimages
             print "    NEB: nsteps ", niter
                 
-        neb = self._nebclass(path, self.potential,
-                  quenchParams=quenchParams, verbose=self.verbose,
-                  distance=self.distance, **self._kwargs)
         
-        #neb.quenchParams["nsteps"]=10
-        #print "OPTIMIZING NEB"
-        neb.events.append(self.update_event)
-        neb.optimize()
+        if self.reinterpolate > 0:
+            quenchParams["nsteps"] = self.reinterpolate    
         
-        return neb        
-       
+        self.steps_total = 0
+        k = self.k
+        while True:       
+            neb = self._nebclass(path, self.potential, k=k,
+                      quenchParams=quenchParams, verbose=self.verbose,
+                      distance=self.distance, **self._kwargs)
+            
+            #neb.quenchParams["nsteps"]=10
+            #print "OPTIMIZING NEB"
+            
+            neb.events.append(self._process_event)
+            res = neb.optimize()
+            self.steps_total += res.nsteps
+            if res.success or self.steps_total >= niter:
+                res.nsteps = self.steps_total
+                return neb
+            k=neb.k
+            distances = []
+            for i in xrange(len(path)-1):           
+                distances.append(self.distance(res.path[i], res.path[i+1])[0])
+            path = self._reinterpolate(res.path, distances)
+        
     def generate_path(self, coords1, coords2):
         #determine the number of images to use
         dist, tmp = self.distance(coords1, coords2)
@@ -127,4 +146,30 @@ class NEBDriver(object):
         path = InterpolatedPath(coords1, coords2, nimages, interpolator=self.interpolator)
 
         return path
-          
+
+    def _reinterpolate(self, path, distances):
+        acc_dist = np.sum(distances)
+        nimages = len(path)
+        
+        newpath = []
+        newpath.append(path[0].copy())
+        
+        icur=0
+        s_cur = 0.
+        s_next=distances[icur]
+        
+        for i in xrange(1,nimages-1):
+            s = float(i)*acc_dist / (nimages-1)
+            while s > s_next:
+                icur+=1
+                s_cur = s_next
+                s_next+=distances[icur]
+            
+            t = (s - s_cur)/(s_next - s_cur)
+            newpath.append(self.interpolator(path[icur], path[icur+1], t))
+        newpath.append(path[-1].copy())
+        return newpath
+       
+    def _process_event(self, coords=None, energies=None, distances=None, stepnum=None):
+        self.update_event(coords=coords, energies=energies,
+                       distances=distances, stepnum=stepnum+self.steps_total)
