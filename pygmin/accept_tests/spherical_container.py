@@ -1,4 +1,5 @@
 import numpy as np
+import pygmin.exceptions as exc
 
 __all__ = ["SphericalContainer"]
 
@@ -16,7 +17,9 @@ class SphericalContainer(object):
     radius : float
     """
     def __init__(self, radius):
-        self.radius2 = radius**2
+        if radius < 0:
+            raise exc.SignError
+        self.radius2 = float(radius)**2
         self.count = 0
         self.nrejected = 0
     
