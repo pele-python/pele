@@ -1,5 +1,6 @@
 import unittest
 import random
+import pygmin.exceptions as exc
 import pygmin.accept_tests.dont_leave_basin as dlb
 
 class TestDontLeaveBasinTest(unittest.TestCase):
@@ -232,10 +233,10 @@ class TestDontLeaveBasinTest(unittest.TestCase):
         test that trying to use a negative energy criterion raises the 
         SignError exception 
         """
-        self.assertRaises(dlb.SignError, dlb.DontLeaveBasin, -100.0)
-        self.assertRaises(dlb.SignError, dlb.DontLeaveBasin, -1.0)
-        self.assertRaises(dlb.SignError, dlb.DontLeaveBasin, -1.0e-4)
-        self.assertRaises(dlb.SignError, dlb.DontLeaveBasin, -1.0e-6)
+        self.assertRaises(exc.SignError, dlb.DontLeaveBasin, -100.0)
+        self.assertRaises(exc.SignError, dlb.DontLeaveBasin, -1.0)
+        self.assertRaises(exc.SignError, dlb.DontLeaveBasin, -1.0e-4)
+        self.assertRaises(exc.SignError, dlb.DontLeaveBasin, -1.0e-6)
         
 if __name__ == '__main__':
     unittest.main()

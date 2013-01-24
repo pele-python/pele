@@ -34,7 +34,7 @@ class Metropolis(object):
     
     def forceAccept(self):
         '''
-            Force acception of the next step. This is useful for reseeding.
+            Force acceptance of the next step. This is useful for reseeding.
         '''
         self._accept_next = True
 
