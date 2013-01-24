@@ -63,7 +63,7 @@ class NEBDriver(object):
     
     def __init__(self, potential, coords1, coords2,
                  k = 100., max_images = -1, image_density=10, iter_density = 10,
-                 verbose=-1, factor=1., NEBquenchParams=dict(),
+                 verbose=0, factor=1., NEBquenchParams=dict(),
                  reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
                  interpolator=interpolate_linear, distance=distance_cart, parallel=False, ncores=4, **kwargs):
         
@@ -139,7 +139,7 @@ class NEBDriver(object):
             niter *= self.factor
             quenchParams["nsteps"] = niter    
         
-        if self.verbose>0:    
+        if self.verbose>=0:    
             print "    NEB: nimages", nimages
             print "    NEB: nsteps ", niter
                 
@@ -163,7 +163,11 @@ class NEBDriver(object):
             self.steps_total += res.nsteps
             if res.success or self.steps_total >= self.niter:
                 res.nsteps = self.steps_total
+                
+                if self.verbose >= 0:
+                    print "NEB finished after %d steps, rms %e"%(res.nsteps, res.rms)
                 return neb
+            
             k=neb.k
             distances = []
             for i in xrange(len(path)-1):           
@@ -174,6 +178,9 @@ class NEBDriver(object):
                 self.niter = int(self.iter_density * len(path))
                 if self.factor > 1. and len(path) == self.max_images and self.max_images > 0:
                     self.niter *= self.factor    
+            if self.verbose >= 1:
+                print "NEB reinterpolating path, %d images, niter is %d"%(len(path),self.niter)
+        
         
     def generate_path(self, coords1, coords2):
         #determine the number of images to use
@@ -190,7 +197,7 @@ class NEBDriver(object):
         nimages = len(path)
         if self.adaptive_images:
             nimages = int(max(1., acc_dist) * self.image_density * self.factor)
-        
+            
         newpath = []
         newpath.append(path[0].copy())
         

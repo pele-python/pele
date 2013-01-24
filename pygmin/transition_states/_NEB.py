@@ -168,8 +168,6 @@ class NEB(object):
                     **quenchParams)
         tmp,E,rms,nsteps = qres[:4]
         
-        if self.verbose > 0:
-            print "neb rms", rms
         self.active[:,:] = tmp.reshape(self.active.shape)
         if self.copy_potential:
             for i in xrange(0,self.nimages):
@@ -387,11 +385,11 @@ class NEB(object):
         avdev = np.average(deviation)
         if avdev > 10:
             self.k *=1.05
-            if self.verbose > 0:
+            if self.verbose >= 1:
                 print "increasing DNEB force constant to", self.k
         else: 
             self.k /=1.05
-            if self.verbose > 0:
+            if self.verbose >= 1:
                 print "decreasing DNEB force constant to", self.k
         
     def MakeHighestImageClimbing(self):
