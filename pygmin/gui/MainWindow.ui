@@ -46,6 +46,13 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Energy (id)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QListWidget" name="listWidget">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Expanding">

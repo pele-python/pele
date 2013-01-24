@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Wed Jan 23 14:17:34 2013
+# Created: Thu Jan 24 17:59:01 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -45,6 +45,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addWidget(self.widget)
         self.verticalLayout_3 = QtGui.QVBoxLayout()
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.label_2 = QtGui.QLabel(self.BHTab)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.verticalLayout_3.addWidget(self.label_2)
         self.listWidget = QtGui.QListWidget(self.BHTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -274,6 +277,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Energy (id)", None, QtGui.QApplication.UnicodeUTF8))
         self.listWidget.setSortingEnabled(True)
         self.btnRun.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a short basinhopping run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRun.setText(QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
