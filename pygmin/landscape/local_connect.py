@@ -156,7 +156,7 @@ class LocalConnect(object):
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
         
         neb = self.create_neb(self.pot, newcoords1, newcoords2, 
-                         verbose=True, factor=factor, **self.NEBparams)
+                         factor=factor, **self.NEBparams)
         neb = neb.run()
 
         #neb = nebdriver(newcoords1, newcoords2)
