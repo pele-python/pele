@@ -113,16 +113,20 @@ class NEBWidget(QWidget):
     
     def highlight2(self, x, y):
         """draw a circle around x, y"""
-        if hasattr(self, "highlight_circle"):
+#        if hasattr(self, "highlight_circle"):
+        try:
             self.highlight_circle.remove()
+        except: pass
         self.highlight_circle=Circle((x, y),radius=0.5, fill=False)
         self.plw.axes.add_patch(self.highlight_circle)
         
     
     def highlight1(self, x, y):
         ylim = self.plw.axes.get_ylim()
-        if hasattr(self, "highlight_line"):
+#        if hasattr(self, "highlight_line"):
+        try:
             self.highlight_line.remove()
+        except: pass
         self.highlight_line = Line2D([x,x],list(ylim), ls='--', c='k')
 #        self.highlight_line.set_data([x,x],list(ylim))
                                                         

@@ -197,6 +197,8 @@ class Show3DWithSlider(QWidget):
     
 
     def showFrame(self, i):
+        if i == -1:
+            i = self.coordspath.shape[0] - 1
         self.slider.setValue(i)
         self._showFrame(i)
 

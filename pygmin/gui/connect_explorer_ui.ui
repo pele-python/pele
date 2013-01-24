@@ -17,7 +17,7 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <property name="leftMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <item>
       <widget class="NEBWidget" name="wgt_neb" native="true">
@@ -44,7 +44,7 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <property name="leftMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <item>
       <layout class="QFormLayout" name="formLayout">
@@ -52,7 +52,7 @@
         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
        </property>
        <property name="leftMargin">
-        <number>10</number>
+        <number>0</number>
        </property>
        <item row="0" column="0">
         <widget class="QPushButton" name="btn_refineTS">
@@ -61,28 +61,45 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QPushButton" name="btn_show_neb_path">
          <property name="text">
           <string>show NEB path</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QPushButton" name="btn_show_ts_path">
          <property name="text">
           <string>show TS refinement trajectory</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QPushButton" name="btn_show_pushoff1">
+       <item row="4" column="0">
+        <widget class="QPushButton" name="btn_show_pushoff">
          <property name="text">
           <string>show left pushoff path</string>
          </property>
         </widget>
        </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>refine all</string>
+         </property>
+        </widget>
+       </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Transition states found</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="list_ts"/>
      </item>
     </layout>
    </item>
@@ -111,8 +128,8 @@
    <slot>show_TS_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>708</x>
-     <y>103</y>
+     <x>690</x>
+     <y>136</y>
     </hint>
     <hint type="destinationlabel">
      <x>628</x>
@@ -127,8 +144,8 @@
    <slot>show_neb_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>606</x>
-     <y>70</y>
+     <x>588</x>
+     <y>103</y>
     </hint>
     <hint type="destinationlabel">
      <x>628</x>
@@ -137,14 +154,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>btn_show_pushoff1</sender>
+   <sender>btn_show_pushoff</sender>
    <signal>clicked()</signal>
    <receiver>Form</receiver>
    <slot>show_pushoff_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>657</x>
-     <y>136</y>
+     <x>639</x>
+     <y>169</y>
     </hint>
     <hint type="destinationlabel">
      <x>631</x>
@@ -156,7 +173,7 @@
    <sender>btn_refineTS</sender>
    <signal>clicked()</signal>
    <receiver>Form</receiver>
-   <slot>refine_transition_state()</slot>
+   <slot>on_refine_transition_state()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>575</x>
@@ -168,11 +185,45 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>list_ts</sender>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
+   <receiver>Form</receiver>
+   <slot>on_list_ts_selected()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>736</x>
+     <y>475</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>922</x>
+     <y>480</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>on_refine_all_ts()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>517</x>
+     <y>64</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>925</x>
+     <y>65</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>show_TS_path()</slot>
   <slot>show_neb_path()</slot>
-  <slot>refine_transition_state()</slot>
+  <slot>on_refine_transition_state()</slot>
   <slot>show_pushoff_path()</slot>
+  <slot>on_list_ts_selected()</slot>
+  <slot>on_refine_all_ts()</slot>
  </slots>
 </ui>
