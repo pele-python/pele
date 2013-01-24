@@ -48,12 +48,15 @@ class TIP4PSystem(BaseSystem):
         
         NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
         NEBparams.max_images=200
-        NEBparams.image_density=10.0
-        NEBparams.iter_density=5
+        NEBparams.image_density=3.0
+        NEBparams.iter_density=10
         NEBparams.k = 400.
         NEBparams.adjustk_freq = 5
+        NEBparams.reinterpolate = 50
+        NEBparams.adaptive_nimages = True
+        NEBparams.adaptive_niter = True
         NEBparams.interpolator=self.aasystem.interpolate
-        
+        NEBparams.verbose = -1
         NEBparams.quenchRoutine = mylbfgs
         quenchParams = NEBparams.NEBquenchParams
         #quenchParams["nsteps"] = 1000
