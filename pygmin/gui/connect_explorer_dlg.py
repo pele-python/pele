@@ -145,65 +145,71 @@ class ConnectExplorerDialog(QDialog):
 
             #the paths from falling off both sides are in pcoordslist.  try to split them up
             i = ret1.nsteps
-            self.pushoff_coordspath1 = np.array([tsret.coords.copy()] + pcoordslist[:i])
-            self.pushoff_coordspath2 = np.array([tsret.coords.copy()] + pcoordslist[i:])
+            pushoff_coordspath1 = [tsret.coords.copy()] + pcoordslist[:i]
+            pushoff_coordspath2 = [tsret.coords.copy()] + pcoordslist[i:]
             data1 = [(tsret.energy, tsret.rms)] + pdata[:i]
             data2 = [(tsret.energy, tsret.rms)] + pdata[i:]
-            self.pushoff_labels1 = ["Pushoff left: energy=%g, rms=%g"%(vals) for vals in data1]
-            self.pushoff_labels2 = ["Pushoff right: energy=%g, rms=%g"%(vals) for vals in data2]
-
-
-    def pushoff_TS(self):
-        print "falling off either side of the transition state"
-        ret = self.ts_result
-        #check to make sure it is a valid transition state 
-        coords = ret.coords.copy()
-        if not ret.success:
-            print "transition state search failed"
-            return False
+            pushoff_labels1 = ["Pushoff left: energy=%g, rms=%g"%(vals) for vals in data1]
+            pushoff_labels2 = ["Pushoff right: energy=%g, rms=%g"%(vals) for vals in data2]
+            #combine them together with one in reversed order.
+            self.pushoff_coordspath = list(reversed(pushoff_coordspath1)) + pushoff_coordspath2
+            self.pushoff_labels = list(reversed(pushoff_labels1)) + pushoff_labels2
+            self.pushoff_coordspath = np.array(self.pushoff_coordspath)
             
-        if ret.eigenval >= 0.:
-            print "warning: transition state has positive lowest eigenvalue", ret.eigenval, ret.energy, ret.rms
-            return False
-        
-        data = []
-        coordslist = []
-        def pushoff_callback(coords=None, energy=None, rms=None, **kwargs):
-            coordslist.append(coords)
-            data.append((energy, rms))
-        
-        kwargs = self.local_connect.pushoff_params.copy()
-        kwargs["quenchParams"]["events"] = [pushoff_callback]
-        
-        #find the minima which this transition state connects
-        print "falling off either side of transition state to find new minima"
-        ret1, ret2 = minima_from_ts(self.system.get_potential(), coords, n=ret.eigenvec,
-            **self.local_connect.pushoff_params)
-        #get the Results objects
-        ret1 = ret1[4] 
-        ret2 = ret2[4]
+            
 
 
-        #the paths from falling off both sides are in coordslist.  try to split them up
-        i = ret1.nsteps
-        self.pushoff_coordspath1 = np.array([ret.coords.copy()] + coordslist[:i])
-        self.pushoff_coordspath2 = np.array([ret.coords.copy()] + coordslist[i:])
-        data1 = [(ret.energy, ret.rms)] + data[:i]
-        data2 = [(ret.energy, ret.rms)] + data[i:]
-        self.pushoff_labels1 = ["Pushoff left: energy=%g, rms=%g"%(vals) for vals in data1]
-        self.pushoff_labels2 = ["Pushoff right: energy=%g, rms=%g"%(vals) for vals in data2]
+#    def pushoff_TS(self):
+#        print "falling off either side of the transition state"
+#        ret = self.ts_result
+#        #check to make sure it is a valid transition state 
+#        coords = ret.coords.copy()
+#        if not ret.success:
+#            print "transition state search failed"
+#            return False
+#            
+#        if ret.eigenval >= 0.:
+#            print "warning: transition state has positive lowest eigenvalue", ret.eigenval, ret.energy, ret.rms
+#            return False
+#        
+#        data = []
+#        coordslist = []
+#        def pushoff_callback(coords=None, energy=None, rms=None, **kwargs):
+#            coordslist.append(coords)
+#            data.append((energy, rms))
+#        
+#        kwargs = self.local_connect.pushoff_params.copy()
+#        kwargs["quenchParams"]["events"] = [pushoff_callback]
+#        
+#        #find the minima which this transition state connects
+#        print "falling off either side of transition state to find new minima"
+#        ret1, ret2 = minima_from_ts(self.system.get_potential(), coords, n=ret.eigenvec,
+#            **self.local_connect.pushoff_params)
+#        #get the Results objects
+#        ret1 = ret1[4] 
+#        ret2 = ret2[4]
+#
+#
+#        #the paths from falling off both sides are in coordslist.  try to split them up
+#        i = ret1.nsteps
+#        self.pushoff_coordspath1 = np.array([ret.coords.copy()] + coordslist[:i])
+#        self.pushoff_coordspath2 = np.array([ret.coords.copy()] + coordslist[i:])
+#        data1 = [(ret.energy, ret.rms)] + data[:i]
+#        data2 = [(ret.energy, ret.rms)] + data[i:]
+#        self.pushoff_labels1 = ["Pushoff left: energy=%g, rms=%g"%(vals) for vals in data1]
+#        self.pushoff_labels2 = ["Pushoff right: energy=%g, rms=%g"%(vals) for vals in data2]
+#
+#
+#
+##        self.pushoff_coordspath = np.array(coordslist)
+##        self.pushoff_labels = ["Pushoff path: energy=%g, rms=%g"%(vals) for vals in data]
 
-
-
-#        self.pushoff_coordspath = np.array(coordslist)
-#        self.pushoff_labels = ["Pushoff path: energy=%g, rms=%g"%(vals) for vals in data]
-
-    def show_pushoff_path1(self):
-        self.oglwgt.setCoordsPath(self.pushoff_coordspath1, labels=self.pushoff_labels1)
-        self.oglview = "pushoff2"
-    def show_pushoff_path2(self):
-        self.oglwgt.setCoordsPath(self.pushoff_coordspath2, labels=self.pushoff_labels2)
-        self.oglview = "pushoff1"
+    def show_pushoff_path(self):
+        self.oglwgt.setCoordsPath(self.pushoff_coordspath, labels=self.pushoff_labels)
+        self.oglview = "pushoff"
+#    def show_pushoff_path2(self):
+#        self.oglwgt.setCoordsPath(self.pushoff_coordspath2, labels=self.pushoff_labels2)
+#        self.oglview = "pushoff1"
     
     def show_neb_path(self, frame=0):
         self.oglwgt.setCoordsPath(self.neb.coords, frame=frame, labels=self.neb_labels)

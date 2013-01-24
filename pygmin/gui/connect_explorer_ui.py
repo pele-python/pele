@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'local_connect_browser.ui'
+# Form implementation generated from reading ui file 'connect_explorer_ui.ui'
 #
-# Created: Thu Jan 24 10:10:04 2013
+# Created: Thu Jan 24 10:24:34 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -59,17 +59,13 @@ class Ui_Form(object):
         self.btn_show_pushoff1 = QtGui.QPushButton(Form)
         self.btn_show_pushoff1.setObjectName(_fromUtf8("btn_show_pushoff1"))
         self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.btn_show_pushoff1)
-        self.btn_show_pushoff2 = QtGui.QPushButton(Form)
-        self.btn_show_pushoff2.setObjectName(_fromUtf8("btn_show_pushoff2"))
-        self.formLayout.setWidget(4, QtGui.QFormLayout.LabelRole, self.btn_show_pushoff2)
         self.verticalLayout_3.addLayout(self.formLayout)
         self.horizontalLayout.addLayout(self.verticalLayout_3)
 
         self.retranslateUi(Form)
         QtCore.QObject.connect(self.btn_show_ts_path, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.show_TS_path)
         QtCore.QObject.connect(self.btn_show_neb_path, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.show_neb_path)
-        QtCore.QObject.connect(self.btn_show_pushoff1, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.show_pushoff_path1)
-        QtCore.QObject.connect(self.btn_show_pushoff2, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.show_pushoff_path2)
+        QtCore.QObject.connect(self.btn_show_pushoff1, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.show_pushoff_path)
         QtCore.QObject.connect(self.btn_refineTS, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.refine_transition_state)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
@@ -79,7 +75,6 @@ class Ui_Form(object):
         self.btn_show_neb_path.setText(QtGui.QApplication.translate("Form", "show NEB path", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_show_ts_path.setText(QtGui.QApplication.translate("Form", "show TS refinement trajectory", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_show_pushoff1.setText(QtGui.QApplication.translate("Form", "show left pushoff path", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_show_pushoff2.setText(QtGui.QApplication.translate("Form", "show right pushoff path", None, QtGui.QApplication.UnicodeUTF8))
 
 from nebdlg import NEBWidget
 from show3d import Show3DWithSlider

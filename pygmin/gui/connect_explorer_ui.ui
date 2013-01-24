@@ -82,13 +82,6 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QPushButton" name="btn_show_pushoff2">
-         <property name="text">
-          <string>show right pushoff path</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
     </layout>
@@ -147,7 +140,7 @@
    <sender>btn_show_pushoff1</sender>
    <signal>clicked()</signal>
    <receiver>Form</receiver>
-   <slot>show_pushoff_path1()</slot>
+   <slot>show_pushoff_path()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>657</x>
@@ -156,22 +149,6 @@
     <hint type="destinationlabel">
      <x>631</x>
      <y>144</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btn_show_pushoff2</sender>
-   <signal>clicked()</signal>
-   <receiver>Form</receiver>
-   <slot>show_pushoff_path2()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>491</x>
-     <y>160</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>631</x>
-     <y>189</y>
     </hint>
    </hints>
   </connection>
@@ -195,8 +172,7 @@
  <slots>
   <slot>show_TS_path()</slot>
   <slot>show_neb_path()</slot>
-  <slot>show_pushoff_path1()</slot>
-  <slot>show_pushoff_path2()</slot>
   <slot>refine_transition_state()</slot>
+  <slot>show_pushoff_path()</slot>
  </slots>
 </ui>
