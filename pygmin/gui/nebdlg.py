@@ -106,13 +106,36 @@ class NEBWidget(QWidget):
         self.process_events = Signal()
         
         self.on_neb_pick = Signal()
-            
+        self.on_neb_pick.connect(self.on_pick)
+    
+    def highlight(self, index):
+        """draw a vertical line to highlight a particular point in the neb curve"""
+        if index < 0:
+            #I would like to delete the line here, but I don't know how to do it easily
+            return
+        from matplotlib.lines import Line2D
+        S = self.neb_callback.data[-1][0]
+        x = S[index]
+        ylim = self.plw.axes.get_ylim()
+        if not hasattr(self, "highlight_line"):
+            self.highlight_line = Line2D([x,x],list(ylim), ls='--', c='k')
+        self.highlight_line.set_data([x,x],list(ylim))
+                                                
+        self.plw.axes.add_line(self.highlight_line)
+#        self.plw.axes.plot([x,x], list(ylim), 'k')
+        self.plw.draw()
+        self.process_events()
+        
+    
+    def on_pick(self, index=None, *args, **kwargs):
+        self.highlight(index)
 
     def attach_to_NEB(self, neb):
         neb_callback = NEBCallback(self.plw, self.plw.axes)
+        self.neb_callback = neb_callback
         neb_callback.process_events.connect(self.process_events)
         neb_callback.on_coords_select.connect(self.on_neb_pick)      
-        neb.events.append(neb_callback)
+        neb.update_event.connect(neb_callback)
 
 class NEBDialog(QDialog):
     def __init__(self, *args, **kwargs):
@@ -166,6 +189,7 @@ if __name__ == "__main__":
     #setup system
     natoms = 13
     system = LJCluster(natoms)
+    system.params.double_ended_connect.local_connect_params.NEBparams.iter_density = 5.
     x1, e1 = system.get_random_minimized_configuration()[:2]
     x2, e2 = system.get_random_minimized_configuration()[:2]
     db = Database()

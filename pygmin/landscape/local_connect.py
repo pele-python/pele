@@ -1,6 +1,7 @@
 from pygmin.optimize import Result
 import pygmin.defaults as defaults
 from pygmin.transition_states import NEB, InterpolatedPath, findTransitionState, minima_from_ts, create_NEB
+from pygmin.transition_states._nebdriver import NEBDriver
 
 __all__ = ["LocalConnect"]
 
@@ -85,9 +86,10 @@ class LocalConnect(object):
     """
     def __init__(self, pot, mindist, tsSearchParams=dict(), 
                  verbosity=1,
-                 NEBparams=dict(), 
+                 NEBparams=dict(),
                  nrefine_max=100, reoptimize_climbing=0,
-                 pushoff_params=dict()):
+                 pushoff_params=dict(),
+                 create_neb=NEBDriver):
         self.pot = pot
         self.mindist = mindist
         self.tsSearchParams = tsSearchParams
@@ -101,7 +103,8 @@ class LocalConnect(object):
 
         self.res = Result()
         self.res.new_transition_states = []
-    
+        self.create_neb = create_neb
+        
     def _refineTransitionStates(self, neb, climbing_images):
         """
         refine the transition state candidates.  If at least one is successful
@@ -132,13 +135,6 @@ class LocalConnect(object):
                 self.res.new_transition_states.append( (tsret, m1ret, m2ret) )
                 success = True
         return success
-
-    def _getNEB(self, *args, **kwargs):
-        """
-        wrap the actual call to initializing the NEB object so it can be overloaded
-        """
-        return create_NEB(*args, **kwargs)
-#        return NEB(*args, **kwargs)
    
     def _doNEB(self, minNEB1, minNEB2, repetition = 0):
         """
@@ -158,11 +154,13 @@ class LocalConnect(object):
             factor = float(repetition + 1)
         
         print "starting NEB run to try to connect minima", minNEB1._id, minNEB2._id, dist
-        neb = self._getNEB(self.pot, newcoords1, newcoords2, 
-#                         NEBquenchParams=self.NEBquenchParams, 
+        
+        neb = self.create_neb(self.pot, newcoords1, newcoords2, 
                          verbose=True, factor=factor, **self.NEBparams)
-#        neb.optimize(**NEBquenchParams)
-        neb.optimize()
+        neb = neb.run()
+
+        #neb = nebdriver(newcoords1, newcoords2)
+        #neb.optimize()
         neb.MakeAllMaximaClimbing()
 
         if self.reoptimize_climbing > 0:
