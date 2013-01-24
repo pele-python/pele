@@ -18,92 +18,9 @@ from pygmin.systems.spawn_OPTIM import SpawnOPTIM
 from pygmin.potentials import OpenMMAmberPotential 
 from simtk.unit import angstrom as openmm_angstrom
 
-# GMIN potential  
-from pygmin.potentials import GMINAmberPotential
+__all__ = ["AMBERSystem"]
 
-__all__ = ["AMBERSystem_GMIN", "AMBERSystem_OpenMM"]
-
-
-class AmberSpawnOPTIM(SpawnOPTIM):
-    def __init__(self, coords1, coords2, sys, **kwargs):
-        super(AmberSpawnOPTIM, self).__init__(coords1, coords2, **kwargs)
-        self.sys = sys
-    
-    def write_odata_coords(self, coords, fout):
-        pass
-
-    def write_perm_allow(self, fname):
-        permallow = self.make_permallow_from_permlist(self.sys.get_permlist())
-        with open(fname, "w") as fout:
-            fout.write(permallow)
-    
-    def write_additional_input_files(self, rundir, coords1, coords2):
-        #write start
-        with open(rundir + "/start", "w") as fout:
-            for xyz in coords1.reshape(-1,3):
-                fout.write( "%f %f %f\n" % tuple(xyz))
-        
-        #write coords.prmtop and coords.inpcrd
-        shutil.copyfile(self.sys.prmtopFname, rundir + "/coords.prmtop")
-        shutil.copyfile(self.sys.inpcrdFname, rundir + "/coords.inpcrd")
-        min_in = """
-STOP
- &cntrl
-  imin   = 1,
-  ncyc = 1,
-  maxcyc = 1,
-  igb = 0,
-  ntb    = 0,
-  cut    = 999.99,
-  rgbmax = 25.0,
-  ifswitch = 1
- /
-"""
-        with open(rundir + "/min.in", "w") as fout:
-            fout.write(min_in)
-            
-    
-    def write_odata(self, fout):
-        odatastr = """
-DUMPALLPATHS
-
-UPDATES 6000
-NEWCONNECT 15 3 2.0 20.0 30 0.5
-CHECKCHIRALITY
-comment PATH dumps intermediate conformations along the path
-PATH 100 1.0D-2
-COMMENT NEWNEB 30 500 0.01
-NEBK 10.0
-comment DUMPNEBXYZ
-AMBERIC
-comment AMBERSTEP
-DIJKSTRA EXP
-DUMPALLPATHS
-REOPTIMISEENDPOINTS
-COMMENT MAXTSENERGY -4770.0
-EDIFFTOL  1.0D-4
-MAXERISE 1.0D-4 1.0D0
-GEOMDIFFTOL  0.05D0
-BFGSTS 500 10 100 0.01 100
-NOIT
-BFGSMIN 1.0D-6
-PERMDIST
-MAXSTEP  0.1
-TRAD     0.2
-MAXMAX   0.3
-BFGSCONV 1.0D-6
-PUSHOFF 0.1
-STEPS 800
-BFGSSTEPS 2000
-MAXBFGS 0.1
-NAB start
-"""
-        fout.write(odatastr)
-        fout.write("\n")
-
-
-
-class AMBERBaseSystem(BaseSystem):
+class AMBERSystem(BaseSystem):
     """
     System class for biomolecules using AMBER ff. 
     
@@ -128,7 +45,23 @@ class AMBERBaseSystem(BaseSystem):
     
     def __init__(self, prmtopFname, inpcrdFname):
         
-        super(AMBERBaseSystem, self).__init__()
+        super(AMBERSystem, self).__init__()
+        
+        if os.path.exists('min.in') and os.path.exists('data') :
+#            print 'Files min.in and data found. trying to import ambgmin_ now ..' 
+            try:
+                import ambgmin_
+                from pygmin.potentials import GMINAmberPotential
+                self.potential        = GMINAmberPotential.GMINAmberPotential(prmtopFname, inpcrdFname)
+                print 'amberSystem> Using GMIN Amber potential ..'
+            except ImportError:
+                # using OpenMM because ambgmin_ could not be imported 
+                print 'amberSystem> Using OpenMM amber potential ..'
+                self.potential    = OpenMMAmberPotential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
+        else:
+            # using OpenMM because min.in and data files not found 
+            print 'amberSystem> Using OpenMM amber potential ..'
+            self.potential    = OpenMMAmberPotential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
         
         self.set_params(self.params)
         self.natoms = self.potential.prmtop.topology._numAtoms  
@@ -143,15 +76,13 @@ class AMBERBaseSystem(BaseSystem):
         self.inpcrdFname = inpcrdFname
  
         # atom numbers of peptide bonds       
-        self.populatePeptideBondList()
+        self.populate_peptideAtomList()
         # atom numbers of CA neighbors                
         self.populate_CAneighborList() 
 
-        self.params.basinhopping.insert_rejected = True
+        self.params.basinhopping.insert_rejected = False 
         
-        # self.params.basinhopping['sanity'] =True
-
-        self.sanitycheck = True  # False  
+        self.sanitycheck = True  # False   # todo: this should be part of params and show up in GUI 
         
         if self.sanitycheck:
             self.params.basinhopping.confCheck = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
@@ -225,16 +156,23 @@ class AMBERBaseSystem(BaseSystem):
 
     def get_permlist(self):
         from pygmin.utils import amberPDB_to_permList
-        
-        # todo: - file name coordsModTerm.pdb is hardcoded, derive from coords.pdb  
-        #       - coordsModTerm.pdb should have prefix N for N-terminal residue and prefix C for C-terminal      
-        
-#        return [[0, 2, 3],    [11, 12, 13],     [19, 20, 21] ]
+                
+        #return [[0, 2, 3], [11, 12, 13], [19, 20, 21]  ] # aladipep 
+        #return [[0, 2, 3], [11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [49,50,51]] # tetraala 
+            
         if os.path.exists('coordsModTerm.pdb'):
+            print 'constructing perm list from coordsModTerm.pdb'
+            print '   (see comments in amberPDB_to_permList.py)'
+
             plist = amberPDB_to_permList.amberPDB_to_permList('coordsModTerm.pdb')
+            
+            print '\nGroups of permutable atoms (atom numbers start at 0) = '
+            for i in plist: 
+                print i
+        
             return plist
         else:
-            print 'amberSystem: coordsModTerm.pdb not found.'    
+            print 'amberSystem> coordsModTerm.pdb not found. permlist could not be created.'    
             return []                     
         
 
@@ -375,7 +313,7 @@ class AMBERBaseSystem(BaseSystem):
         return AmberSpawnOPTIM(coords1, coords2, self, OPTIM=optim, tempdir=False)
 
 
-    def populatePeptideBondList(self):
+    def populate_peptideAtomList(self):
         listofC = [] 
         listofO = [] 
         listofN = [] 
@@ -406,9 +344,9 @@ class AMBERBaseSystem(BaseSystem):
             if listofO.__contains__(i+1) and listofN.__contains__(i+2) and listofH.__contains__(i+3): 
                 self.peptideBondAtoms.append([i,i+1,i+2,i+3]) 
         
-
-        print 'atom numbers of C,O,N,H (in order) in peptide bonds = '
-        print self.peptideBondAtoms              
+        print '\nPeptide bond atom numbers (C,O,N,H, in order):  '
+        for i in self.peptideBondAtoms:
+            print i               
 
     def populate_CAneighborList(self):
         listofCA = [] 
@@ -466,10 +404,12 @@ class AMBERBaseSystem(BaseSystem):
             self.CAneighborList.append(nn) 
 
         # atoms numbers start at 0             
-        print 'atom numbers of CA,C(=O),CB,N (in order) neighbors of CA = '
-        print self.CAneighborList
+        print '\nCA neighbors atom numbers (CA,C(=O),CB, N, in order):  '
+        for i in self.CAneighborList:
+            print i               
 
     def check_cistrans_wrapper_kwargs(self, coords=None, **kwargs):
+        print 'in check_cistrans_wrapper_kwargs'
         return self.check_cistrans(coords)
 
     def check_cistrans_wrapper(self, energy, coords, **kwargs):
@@ -547,8 +487,8 @@ class AMBERBaseSystem(BaseSystem):
             if deg < 180 :
                 # this condition was found by inspection of structures todo   
                 isL = False  
-                print 'chiral state of CA atom ', i[0], ' is D' 
-                print 'CA improper torsion (deg) ', i, ' = ', deg 
+#                print 'chiral state of CA atom ', i[0], ' is D' 
+#                print 'CA improper torsion (deg) ', i, ' = ', deg 
 
         return isL  
 
@@ -605,7 +545,7 @@ class AMBERBaseSystem(BaseSystem):
         dg.plot()
         plt.show()
             
-    def test_BH(self,db):
+    def test_BH(self,db,nsteps):
                         
         from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
         takeStepRnd   = RandomDisplacement( stepsize=2 )
@@ -619,7 +559,7 @@ class AMBERBaseSystem(BaseSystem):
         bh = self.get_basinhopping(database=db, takestep = tsAdaptive)     
                   
         print 'Running BH .. '
-        bh.run(20)
+        bh.run(nsteps)
             
         print "Number of minima found = ", len(db.minima())
         min0 = db.minima()[0]
@@ -632,84 +572,110 @@ class AMBERBaseSystem(BaseSystem):
         dist, c1, c2 = mindist(m1.coords, m2.coords)
         print "distance", dist
 
-#  ============= Define GMIN and OpenMM specific classes as parents of AmberBaseClass 
+class AmberSpawnOPTIM(SpawnOPTIM):
+    def __init__(self, coords1, coords2, sys, **kwargs):
+        super(AmberSpawnOPTIM, self).__init__(coords1, coords2, **kwargs)
+        self.sys = sys
+    
+    def write_odata_coords(self, coords, fout):
+        pass
 
-class AMBERSystem_GMIN(AMBERBaseSystem):
-    def __init__(self, prmtopFname, inpcrdFname ):
-        self.potential        = GMINAmberPotential.GMINAmberPotential(prmtopFname, inpcrdFname)
-        super(AMBERSystem_GMIN, self).__init__(prmtopFname, inpcrdFname)
+    def write_perm_allow(self, fname):
+        permallow = self.make_permallow_from_permlist(self.sys.get_permlist())
+        with open(fname, "w") as fout:
+            fout.write(permallow)
+    
+    def write_additional_input_files(self, rundir, coords1, coords2):
+        #write start
+        with open(rundir + "/start", "w") as fout:
+            for xyz in coords1.reshape(-1,3):
+                fout.write( "%f %f %f\n" % tuple(xyz))
+        
+        #write coords.prmtop and coords.inpcrd
+        shutil.copyfile(self.sys.prmtopFname, rundir + "/coords.prmtop")
+        shutil.copyfile(self.sys.inpcrdFname, rundir + "/coords.inpcrd")
+        min_in = """
+STOP
+ &cntrl
+  imin   = 1,
+  ncyc = 1,
+  maxcyc = 1,
+  igb = 0,
+  ntb    = 0,
+  cut    = 999.99,
+  rgbmax = 25.0,
+  ifswitch = 1
+ /
+"""
+        with open(rundir + "/min.in", "w") as fout:
+            fout.write(min_in)
+            
+    
+    def write_odata(self, fout):
+        odatastr = """
+DUMPALLPATHS
 
-class AMBERSystem_OpenMM(AMBERBaseSystem):
-    def __init__(self, prmtopFname, inpcrdFname ):
-        self.potential    = OpenMMAmberPotential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
-        super(AMBERSystem_OpenMM, self).__init__(prmtopFname, inpcrdFname)
+UPDATES 6000
+NEWCONNECT 15 3 2.0 20.0 30 0.5
+CHECKCHIRALITY
+comment PATH dumps intermediate conformations along the path
+PATH 100 1.0D-2
+COMMENT NEWNEB 30 500 0.01
+NEBK 10.0
+comment DUMPNEBXYZ
+AMBERIC
+comment AMBERSTEP
+DIJKSTRA EXP
+DUMPALLPATHS
+REOPTIMISEENDPOINTS
+COMMENT MAXTSENERGY -4770.0
+EDIFFTOL  1.0D-4
+MAXERISE 1.0D-4 1.0D0
+GEOMDIFFTOL  0.05D0
+BFGSTS 500 10 100 0.01 100
+NOIT
+BFGSMIN 1.0D-6
+PERMDIST
+MAXSTEP  0.1
+TRAD     0.2
+MAXMAX   0.3
+BFGSCONV 1.0D-6
+PUSHOFF 0.1
+STEPS 800
+BFGSSTEPS 2000
+MAXBFGS 0.1
+NAB start
+"""
+        fout.write(odatastr)
+        fout.write("\n")
 
-#===================================================================================
-
+# ============================ MAIN ================================ 
 
 if __name__ == "__main__":
     
-    # create new amber system
-    print '----------------------------------'
-#    print 'GMIN POTENTIAL' 
-#    sysGMIN   = AMBERSystem_GMIN('coords.prmtop', 'coords.inpcrd')        
-#    sysGMIN.test_potential('coords.pdb')
+    # create new amber system    
+    sysAmb  = AMBERSystem('/home/ss2029/WORK/PyGMIN/examples/amber/coords.prmtop', '/home/ss2029/WORK/PyGMIN/examples/amber/coords.inpcrd')
     
-    print 'OPENmm POTENTIAL' 
-    sysOpenMM  = AMBERSystem_OpenMM('/home/ss2029/WORK/PyGMIN/examples/amber/coords.prmtop', '/home/ss2029/WORK/PyGMIN/examples/amber/coords.inpcrd')
-    sysOpenMM.test_potential('/home/ss2029/WORK/PyGMIN/examples/amber/coords.pdb')
-    
-    sysOpenMM.check_cistrans()
-    
-    exit() 
-
     # load existing database 
     from pygmin.storage import Database
     dbcurr = Database(db="/home/ss2029/WORK/PyGMIN/examples/amber/aladipep.db")
-    
-#    dbcurr.removeMinimum(1)
-    
-#    for i in range(1):
-#        dbcurr.removeMinimum( dbcurr.getMinimum(i))
-    
-    print "---------id, minener"
-    
-    for minimum in dbcurr.minima():
-        print minimum._id, minimum.energy    
-
-    print "---------id, m1_id, m2_id, tsener"
-    for ts in dbcurr.transition_states() :
-        print ts._id, ts._minimum1_id, ts._minimum2_id,  ts.energy      
-                
-    # create new database  
-    # dbcurr = sysOpenMM.create_database(db=dbcurr)    
-
-    # connect to existing db 
-#    sysOpenMM.create_database(db=dbcurr)    
-    
-#    for i in db.minima:
-#        print i         
-    
+                        
     # ------- TEST gui 
     from pygmin.gui import run as gr    
-    gr.run_gui(sysOpenMM, db="aladipep.db")
+    gr.run_gui(sysAmb)
     
-#    # ------ Test potential 
-#    sys.test_potential('coords.pdb')
-#    
+    # ------ Test potential 
+    sysAmb.test_potential('coords.pdb')
+    
     # ------ BH 
-#    sysOpenMM.test_BH(dbcurr)
-#    # ------- Connect runs 
-#    sys.test_connect(db)  
-#    
-#    # ------- Disconn graph  
-#    sys.test_disconn_graph(db)  
-#    
-#    # ------- Test mindist  
-#    sys.test_mindist( db)
-#    
-
-
-
-
-
+    sysAmb.test_BH(dbcurr)
+    
+    # ------- Connect runs 
+    sysAmb.test_connect(dbcurr)  
+    
+    # ------- Disconn graph  
+    sysAmb.test_disconn_graph(dbcurr)  
+    
+    # ------- Test mindist  
+    sysAmb.test_mindist( dbcurr)
+    

@@ -1,16 +1,12 @@
-from pygmin.systems.amberSystem import AMBERSystem_GMIN, AMBERSystem_OpenMM
+from pygmin.systems.amberSystem import AMBERSystem
 import time  
 
 # create new amber system
-print '----------------------------------'
-print 'GMIN POTENTIAL' 
-sys   = AMBERSystem_GMIN('coords.prmtop', 'coords.inpcrd')        
-sys.test_potential('coords.pdb')
+sys   = AMBERSystem('coords.prmtop', 'coords.inpcrd')        
 
 # openmm potential is ~6x slower than gmin potential 
-#print 'OPENmm POTENTIAL' 
-#sys  = AMBERSystem_OpenMM('coords.prmtop', 'coords.inpcrd')
-#sys.test_potential('coords.pdb')
+
+sys.test_potential('coords.pdb')
 
 # load existing database 
 from pygmin.storage import Database
@@ -41,7 +37,7 @@ sys.test_potential('coords.pdb')
 # ------ BH 
 
 start = time.clock()
-sys.test_BH(dbcurr)
+sys.test_BH(dbcurr,100)
 elapsed = (time.clock() - start)
 print "time taken by BH = ", elapsed 
 
@@ -55,11 +51,3 @@ sys.test_disconn_graph(dbcurr)
 # ------- Test mindist  
 sys.test_mindist(dbcurr)
     
-
-
-
-
-
-
-
-
