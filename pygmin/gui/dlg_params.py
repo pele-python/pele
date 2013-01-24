@@ -85,7 +85,6 @@ class DlgParams(QtGui.QDialog):
                 dict_[attr_] = type(dict_[attr_])(item.text())
         except ValueError:
             item.setText(str(dict_[attr_]))
-        print dict_
              
     def accept(self, *args, **kwargs):
         return QtGui.QDialog.accept(self, *args, **kwargs)
