@@ -21,9 +21,15 @@ class DlgParams(QtGui.QDialog):
         self.ui.treeParams.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.ui.treeParams.customContextMenuRequested.connect(self.open_context_menu)
         
+        self.ui.treeParams.setSortingEnabled(True)
+        self.ui.treeParams.sortByColumn(0, QtCore.Qt.AscendingOrder)
+        
     def fill(self, params, node=None):
         i=0
-        for key,value in params.iteritems():         
+        for key,value in params.iteritems():
+            if callable(value):
+                continue
+                        
             new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
@@ -34,7 +40,13 @@ class DlgParams(QtGui.QDialog):
                 editable.setEnabled(False)
             else:
                 #item.setChild(0, 0, QtGui.QStandardItem(str(value)))
-                editable = QtGui.QStandardItem(str(value))
+                if type(value) == bool:
+                    editable = QtGui.QStandardItem()
+                    editable.setCheckable(True)
+                    editable.setEditable(False)
+                    editable.setCheckState(QtCore.Qt.Checked if value else QtCore.Qt.Unchecked)
+                else:
+                    editable = QtGui.QStandardItem(str(value))
                 editable.setData((params, key))
                 
             if node is None:
@@ -64,13 +76,16 @@ class DlgParams(QtGui.QDialog):
     
     def item_changed(self, item):
         tmp = item.data().toPyObject()
-        print tmp
         if tmp is None: return
         dict_, attr_ = tmp
         try:
-            dict_[attr_] = type(dict_[attr_])(item.text())
+            if type(dict_[attr_]) == bool:
+                dict_[attr_] = True if item.checkState() == QtCore.Qt.Checked else False
+            else:
+                dict_[attr_] = type(dict_[attr_])(item.text())
         except ValueError:
             item.setText(str(dict_[attr_]))
+        print dict_
              
     def accept(self, *args, **kwargs):
         return QtGui.QDialog.accept(self, *args, **kwargs)
@@ -80,7 +95,7 @@ class DlgParams(QtGui.QDialog):
 
 if __name__ == "__main__":
     import sys
-    d = {"str": "hello", "subitem": { "int": 1, "subsub": {"test": 3}}, "float": 1.0} 
+    d = {"str": "hello", "subitem": { "int": 1, "subsub": {"test": 3}}, "float": 1.0, "bool": True} 
     app = QtGui.QApplication(sys.argv)
     dlg = DlgParams(d)
     dlg.show()
