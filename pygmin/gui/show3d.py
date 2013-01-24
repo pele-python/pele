@@ -194,11 +194,14 @@ class Show3DWithSlider(QWidget):
         self.oglwgt.setCoords(self.coordspath[i,:], index=1)
         if self.messages is not None:
             self.label.setText(self.messages[i])
-        
+    
 
     def showFrame(self, i):
         self.slider.setValue(i)
         self._showFrame(i)
+
+    def get_slider_index(self):
+        return self.slider.value()
 
 #    def setCoordsSingle(self):
 

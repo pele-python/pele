@@ -6,6 +6,9 @@ import numpy as np
 from PyQt4.QtGui import QDialog, QApplication, QWidget, QVBoxLayout
 import sys
 from itertools import izip
+from matplotlib.lines import Line2D
+from matplotlib.patches import Circle
+
 
 from pygmin.storage import Database
 from pygmin.utils.events import Signal
@@ -108,21 +111,38 @@ class NEBWidget(QWidget):
         self.on_neb_pick = Signal()
         self.on_neb_pick.connect(self.on_pick)
     
-    def highlight(self, index):
+    def highlight2(self, x, y):
+        """draw a circle around x, y"""
+        if hasattr(self, "highlight_circle"):
+            self.highlight_circle.remove()
+        self.highlight_circle=Circle((x, y),radius=0.5, fill=False)
+        self.plw.axes.add_patch(self.highlight_circle)
+        
+    
+    def highlight1(self, x, y):
+        ylim = self.plw.axes.get_ylim()
+        if hasattr(self, "highlight_line"):
+            self.highlight_line.remove()
+        self.highlight_line = Line2D([x,x],list(ylim), ls='--', c='k')
+#        self.highlight_line.set_data([x,x],list(ylim))
+                                                        
+        self.plw.axes.add_line(self.highlight_line)
+#        self.plw.axes.plot([x,x], list(ylim), 'k')
+    
+    def highlight(self, index, style=1):
         """draw a vertical line to highlight a particular point in the neb curve"""
         if index < 0:
             #I would like to delete the line here, but I don't know how to do it easily
             return
         from matplotlib.lines import Line2D
-        S = self.neb_callback.data[-1][0]
+        S, energies, tmp = self.neb_callback.data[-1]
         x = S[index]
-        ylim = self.plw.axes.get_ylim()
-        if not hasattr(self, "highlight_line"):
-            self.highlight_line = Line2D([x,x],list(ylim), ls='--', c='k')
-        self.highlight_line.set_data([x,x],list(ylim))
-                                                
-        self.plw.axes.add_line(self.highlight_line)
-#        self.plw.axes.plot([x,x], list(ylim), 'k')
+        y = energies[index]
+        if style == 2:
+            self.highlight2(x, y)
+        else:
+            self.highlight1(x, y)
+        
         self.plw.draw()
         self.process_events()
         

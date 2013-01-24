@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'local_connect_browser.ui'
 #
-# Created: Wed Jan 23 14:30:25 2013
+# Created: Thu Jan 24 10:10:04 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -70,6 +70,7 @@ class Ui_Form(object):
         QtCore.QObject.connect(self.btn_show_neb_path, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.show_neb_path)
         QtCore.QObject.connect(self.btn_show_pushoff1, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.show_pushoff_path1)
         QtCore.QObject.connect(self.btn_show_pushoff2, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.show_pushoff_path2)
+        QtCore.QObject.connect(self.btn_refineTS, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.refine_transition_state)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):

@@ -40,11 +40,14 @@ class LocalConnectDialog(QDialog):
 
         self.oglview = "None"
     
-    def highlight_neb(self, index):
-        if self.oglview == "neb":
-            self.nebwgt.highlight(index)
+    def highlight_neb(self, index, style=1):
+        if style != 1:
+            self.nebwgt.highlight(index, style=style)
         else:
-            self.nebwgt.highlight(-1)
+            if self.oglview == "neb":
+                self.nebwgt.highlight(index, style=style)
+            else:
+                self.nebwgt.highlight(-1)
 
 
     def _prepareNEB(self, coords1, coords2):
@@ -92,30 +95,20 @@ class LocalConnectDialog(QDialog):
 #        print "slider moved", index
 #        self.oglwgt.setCoords(self.neb.coords[0,:], index=index)
 
-    def on_btn_refineTS_clicked(self):
-        self.refine_transition_state()
+#    def on_btn_refineTS_clicked(self):
+#        print "button clicked"
+#        self.refine_transition_state()
 
-    def refine_transition_state_old(self):
-        print "refining ts"
-        coords = self.oglwgt.oglwgt.coords[1].copy()
-        tsdata = []
-        coordslist = []
-        
-        def findTS_callback(coords=None, energy=None, rms=None, eigenval=None, **kwargs):
-            coordslist.append(coords.copy())
-            tsdata.append((energy, rms, eigenval))
-        self.ts_result = findTransitionState(coords, self.system.get_potential(),
-                                  event=findTS_callback, 
-                                  **self.local_connect.tsSearchParams)
-        self.ts_coordspath = np.array(coordslist)
-        self.ts_labels = ["TS path: energy=%g, rms=%g, eigenval=%g"%(vals) for vals in tsdata]
-#        print "tscoords shape", self.ts_coords.shape, len(coordslist)
-        self.show_TS_path()
-        
-        self.pushoff_TS()
     def refine_transition_state(self):
         print "refining ts"
-        coords = self.oglwgt.oglwgt.coords[1].copy()
+        #figure out which image to start from
+        if self.oglview != "neb":
+            print "choose which NEB image to start from"
+            return
+#            raise Exception("choose which NEB image to start from")
+        index = self.oglwgt.get_slider_index() 
+        coords = self.neb.coords[index,:].copy()
+        self.highlight_neb(index, style=2)
         tsdata = []
         tscoordslist = []
         
@@ -243,6 +236,10 @@ if __name__ == "__main__":
     natoms = 13
     system = LJCluster(natoms)
     system.params.double_ended_connect.local_connect_params.NEBparams.iter_density = 5.
+    system.params.double_ended_connect.local_connect_params.NEBparams.image_density = 3.
+#    system.params.double_ended_connect.local_connect_params.NEBparams.adaptive_nimages = 5.
+    system.params.double_ended_connect.local_connect_params.NEBparams.reinterpolate = 400
+    system.params.double_ended_connect.local_connect_params.NEBparams.max_images = 40
     x1, e1 = system.get_random_minimized_configuration()[:2]
     x2, e2 = system.get_random_minimized_configuration()[:2]
     db = Database()

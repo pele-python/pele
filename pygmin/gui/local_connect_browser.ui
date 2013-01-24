@@ -27,8 +27,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <zorder></zorder>
-       <zorder></zorder>
       </widget>
      </item>
      <item>
@@ -120,8 +118,8 @@
    <slot>show_TS_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>453</x>
-     <y>98</y>
+     <x>708</x>
+     <y>103</y>
     </hint>
     <hint type="destinationlabel">
      <x>628</x>
@@ -136,8 +134,8 @@
    <slot>show_neb_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>423</x>
-     <y>65</y>
+     <x>606</x>
+     <y>70</y>
     </hint>
     <hint type="destinationlabel">
      <x>628</x>
@@ -152,8 +150,8 @@
    <slot>show_pushoff_path1()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
-     <y>124</y>
+     <x>657</x>
+     <y>136</y>
     </hint>
     <hint type="destinationlabel">
      <x>631</x>
@@ -177,11 +175,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_refineTS</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>refine_transition_state()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>575</x>
+     <y>28</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>923</x>
+     <y>17</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>show_TS_path()</slot>
   <slot>show_neb_path()</slot>
   <slot>show_pushoff_path1()</slot>
   <slot>show_pushoff_path2()</slot>
+  <slot>refine_transition_state()</slot>
  </slots>
 </ui>
