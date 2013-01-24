@@ -3,6 +3,8 @@ from permutational_alignment import find_best_permutation
 from pygmin.utils import rotations
 import numpy as np
 
+__all__ = ["TransformPolicy", "MeasurePolicy", "TransformAtomicCluster", "MeasureAtomicCluster"]
+
 class TransformPolicy(object):
     ''' interface for possible transformations on a set of coordinates
     
