@@ -91,6 +91,31 @@ class NEBDriver(object):
             self._kwargs["ncores"]=ncores
             self._nebclass = NEBPar
 
+    @classmethod
+    def params(cls, obj = None):
+        if obj is None:
+            obj = NEBDriver(None, None, None)
+        ''' return the the parameters of current instance '''
+        params = obj._kwargs.copy()
+        params["k"] = obj.k
+        params["image_density"] = obj.image_density
+        params["max_images"] = obj.max_images
+        params["iter_density"] = obj.iter_density
+        params["reinterpolate"] = obj.reinterpolate
+        params["adaptive_nimages"] = obj.adaptive_images
+        params["adaptive_niter"] = obj.adaptive_niter
+        
+        params["verbose"] = obj.verbose
+        params["NEBquenchParams"] = obj.quenchParams.copy()
+        # factor is not here, todo, move this out of constuctor
+        params["interpolator"] = obj.interpolator
+        params["distance"] = obj.distance
+        
+        if params.has_key("ncores"):
+            params["parallel"] = True
+         
+        return params
+    
     def run(self):
                 #determine the number of iterations                
         coords1 = self.coords1
