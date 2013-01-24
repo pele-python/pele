@@ -63,7 +63,6 @@ class LocalConnectDialog(QDialog):
         
         self.neb =  self.local_connect.create_neb(system.get_potential(),
                                           coords1, coords2,
-                                          verbose=True,
                                           **self.local_connect.NEBparams)        
         
 #        return neb
