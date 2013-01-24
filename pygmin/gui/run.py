@@ -204,7 +204,6 @@ class MyForm(QtGui.QMainWindow):
         local_connect = double_ended._getLocalConnectObject()
         self.neb =  local_connect.create_neb(self.system.get_potential(),
                                           coords1, coords2,
-                                          verbose=True,
                                           **local_connect.NEBparams)        
         
 
