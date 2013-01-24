@@ -10,7 +10,7 @@ from pygmin.utils.events import Signal
 from pygmin.transition_states import findTransitionState, minima_from_ts
 from pygmin.landscape.local_connect import _refineTS
 
-import local_connect_browser
+import connect_explorer_ui
 from nebdlg import getNEB
 
 try:
@@ -19,14 +19,14 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class LocalConnectDialog(QDialog):
+class ConnectExplorerDialog(QDialog):
     def __init__(self, system):
-        super(LocalConnectDialog, self).__init__()
+        super(ConnectExplorerDialog, self).__init__()
         
         self.system = system
 #        self.database = database
         
-        self.ui = local_connect_browser.Ui_Form()
+        self.ui = connect_explorer_ui.Ui_Form()
         self.ui.setupUi(self)
         self.nebwgt = self.ui.wgt_neb
 #        self.nebwgt.show()
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     min2 = db.addMinimum(e2, x2)
     
     #setup neb dialog
-    wnd = LocalConnectDialog(system)   
+    wnd = ConnectExplorerDialog(system)   
     wnd.show()
     wnd.nebwgt.process_events.connect(process_events)
     

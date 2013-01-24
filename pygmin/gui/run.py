@@ -19,7 +19,7 @@ from pygmin.config import config
 #import ui.dgraph_browser
 from pygmin.gui.ui.dgraph_dlg import DGraphDialog
 from pygmin.gui.nebdlg import NEBDialog
-from pygmin.gui.local_connect_dlg import LocalConnectDialog
+from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
 
 global pick_count
 
@@ -595,7 +595,7 @@ class MyForm(QtGui.QMainWindow):
         coords2 = self.ui.oglPath.coords[2]
 
         if not hasattr(self, "local_connect_explorer"):
-            self.local_connect_explorer = LocalConnectDialog(self.system)
+            self.local_connect_explorer = ConnectExplorerDialog(self.system)
             self.local_connect_explorer.nebwgt.process_events.connect(self.processEvents)
         self.local_connect_explorer.show()
         self.local_connect_explorer.createNEB(coords1, coords2)
