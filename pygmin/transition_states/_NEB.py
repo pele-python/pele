@@ -4,7 +4,8 @@ import copy
 
 import pygmin.defaults as defaults
 from pygmin.transition_states import InterpolatedPath
-
+from pygmin.optimize import Result        
+        
 __all__ = ["NEB",]
 try:
     import scipy.linalg
@@ -52,7 +53,7 @@ class NEB(object):
     quenchRoutine : callable
         the quench routine to use in optimizing the band
     quenchParams :
-        parameters passed to the quench routine.
+        parameters passed to the quench routine. The default tolerance for quench is 1e-4
     save_energies : bool
         if True and quenchParams.iprint exists and is positive, then the energy 
         along the NEB path will be printed to a file of the form "neb.EofS.####" 
@@ -99,6 +100,10 @@ class NEB(object):
         
         self.quenchRoutine = quenchRoutine
         self.quenchParams = quenchParams.copy()
+        
+        if not quenchParams.has_key("tol"):
+            self.quenchParams["tol"] = 1e-4
+            
         self.adjustk_freq = adjustk_freq
 
         #initialize coordinate&gradient array
@@ -161,8 +166,10 @@ class NEB(object):
         qres = quenchRoutine(
                     self.active.reshape(self.active.size), self.getEnergyGradient,
                     **quenchParams)
-        tmp,E,rms,tmp4 = qres[:4]
-        print "neb rms", rms
+        tmp,E,rms,nsteps = qres[:4]
+        
+        if self.verbose > 0:
+            print "neb rms", rms
         self.active[:,:] = tmp.reshape(self.active.shape)
         if self.copy_potential:
             for i in xrange(0,self.nimages):
@@ -171,6 +178,17 @@ class NEB(object):
         else:
             for i in xrange(0,self.nimages):
                 self.energies[i] = self.potential.getEnergy(self.coords[i,:])
+        
+        res = Result()
+        res.path = self.coords 
+        res.nsteps = nsteps
+        res.energy = self.energies
+        res.rms = rms
+        res.success = False
+        if rms<quenchParams["tol"]:
+            res.success = True
+            
+        return res
 
     def _getRealEnergyGradient(self, coordsall):
         # calculate real energy and gradient along the band. energy is needed for tangent
@@ -367,7 +385,6 @@ class NEB(object):
         average_d = np.average(d)
         deviation = np.abs(100.*(d - average_d) / average_d)
         avdev = np.average(deviation)
-
         if avdev > 10:
             self.k *=1.05
             if self.verbose > 0:
