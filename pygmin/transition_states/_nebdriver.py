@@ -154,7 +154,7 @@ class NEBDriver(object):
             neb = self._nebclass(path, self.potential, k=k,
                       quenchParams=quenchParams, verbose=self.verbose,
                       distance=self.distance, **self._kwargs)
-            
+            self.neb = neb
             #neb.quenchParams["nsteps"]=10
             #print "OPTIMIZING NEB"
             
