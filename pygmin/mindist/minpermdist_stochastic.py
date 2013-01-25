@@ -6,6 +6,59 @@ from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 __all__ = ["MinPermDistCluster"]
 
 class MinPermDistCluster(object):
+    """
+    Minimize the distance between two clusters.  
+    
+    Parameters
+    ----------
+    niter : int
+        the number of basinhopping iterations to perform
+    verbose : boolean 
+        whether to print status information
+    accuracy :float, optional
+        accuracy for standard alignment which determines if the structures are identical
+    tol : float, optional
+        tolerance for an exact match to stop iterations
+    transform : 
+        Transform policy which tells MinpermDist how to transform the given coordinates
+    measure : 
+        measure policy which tells minpermdist how to perform certains measures on the coordinates.
+    
+    Notes
+    -----
+
+    The following symmetries will be accounted for::
+    
+    1. Translational symmetry
+    #. Global rotational symmetry
+    #. Permutational symmetry
+    #. Point inversion symmetry
+
+    
+    The algorithm here to find the best distance is
+    
+    for rotation in standardalignments:
+        optimize permutation
+        optimize rotation
+        check_match
+        
+    for i in range(niter):    
+        random_rotation
+        optimize permutations
+        align rotation
+        check_match
+        
+    The minpermdist algorithm is generic and can act on various types of
+    coordinates, e.g. carthesian, angle axis, .... The transform and measure
+    policies define and interface to manipulate and analyze a given set of
+    coordinates. If the coordinates don't have a standard format, custom policies
+    can be specified. As an example see the angle axis minpermdist routines.
+        
+    See also
+    --------
+    TransformPolicy, MeasurePolicy
+    
+    """
     def __init__(self, niter=10, verbose=False, tol=0.01, accuracy=0.01,
                  measure=MeasureAtomicCluster(), transform=TransformAtomicCluster()):
         
@@ -18,6 +71,7 @@ class MinPermDistCluster(object):
         self.tol = tol
         
     def check_match(self, x1, x2, rot, invert):
+        ''' check a given rotation for a match '''
         x2_trial = x2.copy()
         if(invert):
             self.transform.invert(x2_trial)
@@ -42,6 +96,7 @@ class MinPermDistCluster(object):
             self.x2_best = x2_trial    
     
     def finalize_best_match(self, x1):
+        ''' do final processing of the best match '''
         self.transform.translate(self.x2_best, self.com_shift)
 
         dist = self.measure.get_dist(x1, self.x2_best)
@@ -53,10 +108,23 @@ class MinPermDistCluster(object):
         return dist, self.x2_best
 
     def _standard_alignments(self, x1, x2):
+        ''' get iterator for standard alignments '''
         return StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
                                                     can_invert=self.transform.can_invert())
     def __call__(self, coords1, coords2):        
-        # we don't want to change the given coordinates
+        '''
+        Parameters
+        ----------
+        coords1, coords2 : np.array 
+            the structures to align.  X2 will be aligned with X1, both
+            the center of masses will be shifted to the origin
+            
+        Returns
+        -------
+        a tripple of (dist, coords1, coords2). coords1 are the unchanged coords1
+        and coords2 are brought in best alignment with coords2
+    '''
+    # we don't want to change the given coordinates
         check_inversion = False
         x1 = np.copy(coords1)
         x2 = np.copy(coords2)

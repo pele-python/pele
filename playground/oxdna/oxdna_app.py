@@ -9,19 +9,28 @@ from math import pi
 from pygmin.utils.rbtools import CoordsAdapter
 from pygmin.utils import rotations
 from pygmin.systems.oxdna import *
+from pygmin import defaults
+from pygmin.optimize import mylbfgs 
 
 EDIFF=0.01
 t0=time.clock()
 
 # this is the base application which controls the program flow
 class AppOXDNA(AppBasinHopping):
-    target=-19.40126
-    default_temperature = 0.1
+    #target=-19.40126
+    target=None
+    default_temperature = 0.4
     
     def __init__(self, *args, **kwargs):
         AppBasinHopping.__init__(self, *args, **kwargs)
         self.quenchRoutine = defaults.quenchRoutine
         self.potential = GMINPotential(GMIN)
+        
+        self.quenchParameters["tol"]=1e-4
+        self.quenchParameters["M"]=80
+        self.quenchParameters["maxErise"]=0.1
+        self.quenchRoutine=mylbfgs
+
         
     # create potentia which calls GMIN
     def create_potential(self):
@@ -34,7 +43,7 @@ class AppOXDNA(AppBasinHopping):
         # step = OXDNATakestep(displace=self.options.displace, rotate=self.options.rotate)
         group = takestep.BlockMoves()
 
-        step1 = takestep.AdaptiveStepsize(OXDNATakestep(displace=self.options.displace, rotate=0.), frequency=50)
+        #step1 = takestep.AdaptiveStepsize(OXDNATakestep(displace=self.options.displace, rotate=0.), frequency=50)
         step2 = takestep.AdaptiveStepsize(OXDNATakestep(displace=0., rotate=self.options.rotate), frequency=50)
         
         step1 = takestep.AdaptiveStepsize(OXDNAScrewStep(rotate_backbone=0.5, rotate_base=3.))
@@ -44,7 +53,7 @@ class AppOXDNA(AppBasinHopping):
         # with a generate random configuration
         genrandom = OXDNAReseed()
         # in a reseeding takestep procedure
-        reseed = takestep.Reseeding(group, genrandom, maxnoimprove=self.options.reseed)
+        reseed = takestep.Reseeding(step2, genrandom, maxnoimprove=self.options.reseed)
         return reseed
     
     # generate some initial coordinates for basin hopping

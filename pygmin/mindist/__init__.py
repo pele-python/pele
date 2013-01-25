@@ -3,34 +3,31 @@
 
 Tools for finding the best alignment between two structures
 
-translational alignment
------------------------
-.. autosummary::
-   :toctree: generated/
-
-    alignCoM
-    CoMToOrigin
-
 rotational alignment
 ------------------------------------
-The center of mass of the two structures must be at the origin
+Find the optimal rotation for two sets of coordinates (i.e. perform a rms fit)
 
 .. autosummary::
    :toctree: generated/
 
-    alignRotation
-    getAlignRotation
+    findrotation
+    findrotation_kabsch
+    findrotation_kearsley
 
 permutational aligment
 ----------------------
 Finding the best alignment can be mapped onto the Assignment Problem and solved
-very quickly using the Hungarian algorithm (aka munkres)
+very quickly using the Hungarian algorithm (aka munkres) or shortest augmenting path
 
 .. autosummary::
    :toctree: generated/
 
-    findBestPermutation
-    findBestPermutationRBMol
+    optimize_permutations
+    find_best_permutation
+    find_permutations_munkres
+    find_permutations_hungarian
+    find_permutations_OPTIM
+    
 
 rotational + permutational alignment
 ------------------------------------
@@ -42,19 +39,37 @@ necessarily the optimal
 .. autosummary::
    :toctree: generated/
 
-    minPermDistStochastic
+    MinPermDistCluster
     ExactMatchCluster
+    StandardClusterAlignment
 
-A wrapper
----------
-This wrapper provides the simplified interface for mindist that some 
-applications require
+For atomic cluster, specialized wrapper exist.
 
 .. autosummary::
    :toctree: generated/
+    
+    MinPermDistAtomicCluster
+    ExactMatchAtomicCluster
 
-    MinDistWrapper
+See the angleaxis module for angleaxis minpermdist routines
+    
+Customizing minpermdist - minpermdist policies
+----------------------------------------------
+.. autosummary::
+   :toctree: generated/
 
+    TransformPolicy
+    MeasurePolicy
+    
+
+
+OBSOLETE: translational alignment
+-----------------------
+.. autosummary::
+   :toctree: generated/
+
+    alignCoM
+    CoMToOrigin
 
 """
 from backward_compatibility import *

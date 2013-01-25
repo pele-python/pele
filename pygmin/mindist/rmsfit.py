@@ -1,6 +1,8 @@
 import numpy as np
 from pygmin.utils import rotations
 
+all = ["findrotation", "findrotation_kabsch", "findrotation_kearsley"]
+
 def findrotation_kabsch(coords1, coords2, align_com=True):
     '''
     Kabsch, Wolfgang, (1976) "A solution of the best rotation to relate two sets of vectors", Acta Crystallographica 32:922

@@ -6,6 +6,7 @@ from pygmin.storage import Database
 from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 from pygmin.utils.xyz import write_xyz
 from pygmin.optimize import mylbfgs
+from pygmin.transition_states._nebdriver import NEBDriver
 
 __all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
@@ -57,8 +58,7 @@ class Parameters(BaseParameters):
         self.double_ended_connect.local_connect_params.pushoff_params.quenchParams = BaseParameters()
 
         self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters()
-        self.double_ended_connect.local_connect_params.NEBparams = BaseParameters()
-        self.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams = BaseParameters()
+        self.double_ended_connect.local_connect_params.NEBparams = BaseParameters(NEBDriver.params())
         
         self.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams = BaseParameters()
         self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()     
