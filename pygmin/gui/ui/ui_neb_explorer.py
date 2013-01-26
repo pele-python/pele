@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_neb_explorer.ui'
 #
-# Created: Sat Jan 26 03:59:19 2013
+# Created: Sat Jan 26 17:36:06 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -53,11 +53,15 @@ class Ui_MainWindow(object):
         self.action3D = QtGui.QAction(MainWindow)
         self.action3D.setCheckable(True)
         self.action3D.setObjectName(_fromUtf8("action3D"))
+        self.actionParams = QtGui.QAction(MainWindow)
+        self.actionParams.setObjectName(_fromUtf8("actionParams"))
+        self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionE)
         self.toolBar.addAction(self.actionS)
         self.toolBar.addAction(self.actionK)
         self.toolBar.addAction(self.actionNimages)
         self.toolBar.addAction(self.actionRms)
+        self.toolBar.addAction(self.actionParams)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -75,4 +79,5 @@ class Ui_MainWindow(object):
         self.actionRms.setText(QtGui.QApplication.translate("MainWindow", "rms", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNimages.setText(QtGui.QApplication.translate("MainWindow", "nimages", None, QtGui.QApplication.UnicodeUTF8))
         self.action3D.setText(QtGui.QApplication.translate("MainWindow", "3D", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionParams.setText(QtGui.QApplication.translate("MainWindow", "params", None, QtGui.QApplication.UnicodeUTF8))
 

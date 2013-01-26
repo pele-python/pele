@@ -34,11 +34,13 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionRun"/>
    <addaction name="actionE"/>
    <addaction name="actionS"/>
    <addaction name="actionK"/>
    <addaction name="actionNimages"/>
    <addaction name="actionRms"/>
+   <addaction name="actionParams"/>
   </widget>
   <action name="actionRun">
    <property name="text">
@@ -115,6 +117,11 @@
    </property>
    <property name="text">
     <string>3D</string>
+   </property>
+  </action>
+  <action name="actionParams">
+   <property name="text">
+    <string>params</string>
    </property>
   </action>
  </widget>
