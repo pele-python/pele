@@ -19,16 +19,27 @@ class NEBRunner(object):
         neb = self.create_neb(coords1, coords2)
         self.neb = neb
         neb.update_event.connect(self._neb_update)
+        
+        self.k = []
+        self.nimages = []
+        self.energies=[]
+        self.stepnum = []
+        self.distances = []
+        self.rms = []
         neb.run()
         
-    def _neb_update(self, energies=None, distances=None, stepnum=None, **kwargs):
+    def _neb_update(self, energies=None, distances=None, stepnum=None, path=None, rms=None, **kwargs):
         self.app.processEvents()
         self.count += 1
         if self.count % self.frq == 1:
-            self.k = self.neb.neb.k
-            self.nimages = len(self.neb.neb.coords)
-            self.on_update_gui(energies = energies, distances=distances, 
-                               stepnum=stepnum, nebrunner=self, **kwargs)
+            self.stepnum.append(stepnum)
+            self.k.append(self.neb.neb.k)
+            self.rms.append(rms)
+            self.nimages.append(len(self.neb.neb.coords))
+            self.energies.append(energies.copy())
+            self.distances.append(distances.copy())
+            self.path = path.copy()
+            self.on_update_gui(self)
                        
     def create_neb(self, coords1, coords2):
         """setup the NEB object"""
@@ -50,21 +61,27 @@ class NEBRunner(object):
                                           **local_connect.NEBparams)        
 
 class NEBEnergyWidget(MPLWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, nplots = 3):
         #QtGui.QWidget
         MPLWidget.__init__(self, parent=parent)
         #self.canvas = MPLWidget(self)
+        self.nplots = nplots
         
-    def update_gui(self, energies=None, distances=None, stepnum=None, **kwargs):
-        acc_dist = [0.]
-        acc=0.
-        for d in distances:
-            acc+=d
-            acc_dist.append(acc)
+    def update_gui(self, nebrunner):
+        nplots = min(self.nplots, len(nebrunner.energies))
         self.axes.clear()
         self.axes.set_xlabel("distance")
         self.axes.set_ylabel("energy")
-        self.axes.plot(acc_dist, energies)
+        
+        for distances, energies, stepnum in zip(nebrunner.distances[-nplots:],
+                                       nebrunner.energies[-nplots:], nebrunner.stepnum[-nplots:]):
+            acc_dist = [0.]
+            acc=0.
+            for d in distances:
+                acc+=d
+                acc_dist.append(acc)
+            self.axes.plot(acc_dist, energies, "o-", label="step %d"%stepnum)
+        self.axes.legend(loc='best')
         self.draw()
 
 class NEBDistanceWidget(MPLWidget):
@@ -73,29 +90,29 @@ class NEBDistanceWidget(MPLWidget):
         MPLWidget.__init__(self, parent=parent)
         #self.canvas = MPLWidget(self)
         
-    def update_gui(self, energies=None, distances=None, stepnum=None, **kwargs):
+    def update_gui(self, nebrunner):
         self.axes.clear()
-        self.axes.set_xlabel("distance")
-        self.axes.set_ylabel("energy")
+        self.axes.set_xlabel("relative distance")
+        self.axes.set_ylabel("image")
         self.axes.set_title("distances")
-        self.axes.plot(distances)
+        self.axes.plot(nebrunner.distances[-1])
         self.draw()
         
 class NEBTimeseries(MPLWidget):
-    def __init__(self, parent=None, attrname="k"):
+    def __init__(self, parent=None, attrname="k", yscale='linear'):
         MPLWidget.__init__(self, parent=parent)
         self.neb_attribute=attrname
-        self.timeseries = []
-        self.stepnum = []
+        self.yscale = yscale
         
-    def update_gui(self, energies=None, distances=None, stepnum=None, nebrunner=None, **kwargs):
+    def update_gui(self, nebrunner):
         value = getattr(nebrunner, self.neb_attribute)
-        self.timeseries.append(value)
-        self.stepnum.append(stepnum)
+        stepnum = nebrunner.stepnum
+        
         self.axes.clear()
         self.axes.set_xlabel("step")
         self.axes.set_ylabel(self.neb_attribute)
-        self.axes.plot(self.stepnum, self.timeseries)
+        self.axes.set_yscale(self.yscale)
+        self.axes.plot(stepnum, value)
         self.draw()
         
 class NEBExplorer(QtGui.QMainWindow):
@@ -107,23 +124,13 @@ class NEBExplorer(QtGui.QMainWindow):
         
         self.nebrunner = NEBRunner(app, system)
         
-        self.new_view("Energies", NEBEnergyWidget(), QtCore.Qt.TopDockWidgetArea)
-        self.new_view("Distances", NEBDistanceWidget(), QtCore.Qt.TopDockWidgetArea)
-        self.new_view("k", NEBTimeseries(attrname="k"), QtCore.Qt.BottomDockWidgetArea)
-        self.new_view("nimages", NEBTimeseries(attrname="nimages"), QtCore.Qt.BottomDockWidgetArea)
-        #self.new_view("Distances", NEBEnergyWidget())
-        #self.mdi.tileSubWindows()
-        #self.new_doc("3d view", Show3D(self))
+        self.view_energies = self.new_view("Energies", NEBEnergyWidget(), QtCore.Qt.TopDockWidgetArea)
+        self.view_distances = self.new_view("Distances", NEBDistanceWidget(), QtCore.Qt.TopDockWidgetArea)
+        self.view_k = self.new_view("k", NEBTimeseries(attrname="k"), QtCore.Qt.BottomDockWidgetArea)
+        self.view_nimages = self.new_view("nimages", NEBTimeseries(attrname="nimages"), QtCore.Qt.BottomDockWidgetArea)
+        self.view_rms = self.new_view("rms", NEBTimeseries(attrname="rms", yscale='log'), QtCore.Qt.BottomDockWidgetArea)
         self.centralWidget().hide()
-                
-#    def new_view(self, title, widget):
-#        child = QtGui.QMdiSubWindow(self)
-#        child.setWindowTitle(title)
-#        self.mdi.addSubWindow(child)
-#        child.setWidget(widget)
-#        self.nebrunner.on_update_gui.connect(widget.update_gui)
-#        return child
-    
+                    
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
         child = QtGui.QDockWidget(title, self)
         child.setWidget(widget)
