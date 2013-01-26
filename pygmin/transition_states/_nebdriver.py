@@ -140,8 +140,9 @@ class NEBDriver(object):
             quenchParams["nsteps"] = niter    
         
         if self.verbose>=0:    
-            print "    NEB: nimages", nimages
-            print "    NEB: nsteps ", niter
+            print "    NEB: nimages   ", nimages
+            print "    NEB: nsteps    ", niter
+            print "    NEB: verbosity ", self.verbose
                 
         
         if self.reinterpolate > 0:
@@ -171,7 +172,7 @@ class NEBDriver(object):
             k=neb.k
             distances = []
             for i in xrange(len(path)-1):           
-                distances.append(self.distance(res.path[i], res.path[i+1])[0])
+                distances.append(np.sqrt(self.distance(res.path[i], res.path[i+1])[0]))
             path = self._reinterpolate(res.path, distances)
             
             if self.adaptive_niter:
@@ -185,6 +186,7 @@ class NEBDriver(object):
     def generate_path(self, coords1, coords2):
         #determine the number of images to use
         dist, tmp = self.distance(coords1, coords2)
+        dist=np.sqrt(dist)
         nimages = int(max(1., dist) * self.image_density * self.factor)
         if self.max_images > 0:
             nimages = min(nimages, self.max_images)
@@ -219,4 +221,5 @@ class NEBDriver(object):
        
     def _process_event(self, coords=None, energies=None, distances=None, stepnum=None):
         self.update_event(coords=coords, energies=energies,
-                       distances=distances, stepnum=stepnum+self.steps_total)
+                       distances=distances, stepnum=stepnum+self.steps_total,
+                       path=self.neb.coords)

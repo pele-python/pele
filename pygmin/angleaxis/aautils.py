@@ -184,7 +184,7 @@ class AASystem(object):
                                            ca1.posRigid[i], ca1.rotRigid[i],
                                            ca2.posRigid[i], ca2.rotRigid[i])
                  
-        return np.sqrt(d_sq)
+        return d_sq
                 
     # calculate the spring force on x1 to x2
     def distance_squared_grad(self, coords1, coords2):
