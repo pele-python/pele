@@ -207,6 +207,8 @@ class NEBDriver(object):
         nimages = len(path)
         if self.adaptive_images:
             nimages = int(max(1., acc_dist) * self.image_density * self.factor)
+        if self.max_images > 0:
+            nimages = min(nimages, self.max_images)
             
         newpath = []
         newpath.append(path[0].copy())
