@@ -6,6 +6,7 @@ from nebdlg import NEBWidget
 from show3d import Show3D
 from pygmin.storage import Database
 from pygmin.gui.ui.mplwidget import MPLWidget
+from  pygmin.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
 
 class NEBRunner(object):
     def __init__(self, app, system, freq = 30):
@@ -119,16 +120,31 @@ class NEBExplorer(QtGui.QMainWindow):
     def __init__(self, parent=None, system=None, app=None):
         QtGui.QMainWindow.__init__(self)
     
+        self.ui = UI()
+        self.ui.setupUi(self)
+        
+        self.system = system
         self.mdi = QtGui.QMdiArea(self)
         self.setCentralWidget(self.mdi)
         
         self.nebrunner = NEBRunner(app, system)
+#        
+#        from dlg_params import EditParamsWidget
+#        w = QtGui.QDockWidget("NEB parameters", self)
+#        w.setWidget(EditParamsWidget(self, 
+#                         self.system.params.double_ended_connect.local_connect_params.NEBparams))
+#        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, w)
+#        
+#        self.editparams = w
+#        
         
         self.view_energies = self.new_view("Energies", NEBEnergyWidget(), QtCore.Qt.TopDockWidgetArea)
         self.view_distances = self.new_view("Distances", NEBDistanceWidget(), QtCore.Qt.TopDockWidgetArea)
         self.view_k = self.new_view("k", NEBTimeseries(attrname="k"), QtCore.Qt.BottomDockWidgetArea)
         self.view_nimages = self.new_view("nimages", NEBTimeseries(attrname="nimages"), QtCore.Qt.BottomDockWidgetArea)
         self.view_rms = self.new_view("rms", NEBTimeseries(attrname="rms", yscale='log'), QtCore.Qt.BottomDockWidgetArea)
+        
+        
         self.centralWidget().hide()
                     
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
@@ -140,7 +156,24 @@ class NEBExplorer(QtGui.QMainWindow):
     
     def new_neb(self, coords1, coords2):
         self.nebrunner.run(coords1, coords2)
+        
+    def toggle_view(self, view, show):
+        if show:
+            view.show()
+        else:
+            view.hide()
 
+    def on_actionRms_toggled(self, checked):
+        self.toggle_view(self.view_rms, checked)
+    def on_actionE_toggled(self, checked):
+        self.toggle_view(self.view_energies, checked)
+    def on_actionS_toggled(self, checked):
+        self.toggle_view(self.view_distances, checked)
+    def on_actionK_toggled(self, checked):
+        self.toggle_view(self.view_k, checked)
+    def on_actionNimages_toggled(self, checked):
+        self.toggle_view(self.view_nimages, checked)
+        
 def start():
     wnd.new_neb(x1, x2)
     
