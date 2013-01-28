@@ -94,9 +94,12 @@ class AMBERSystem(BaseSystem):
         
         #set NEBparams
         NEBparams = params.double_ended_connect.local_connect_params.NEBparams
+        NEBparams.NEBquenchParams = BaseParameters()
+#        NEBquenchParams = NEBparams.NEBquenchParams
+
         NEBparams.iter_density = 15.
         NEBparams.image_density = 10.
-        NEBparams.max_images = 100.
+        NEBparams.max_images = 50
         NEBparams.k = 100.
         NEBparams.adjustk_freq = 5
         if False: #use fire
@@ -105,7 +108,12 @@ class AMBERSystem(BaseSystem):
         else: #use lbfgs
             NEBparams.NEBquenchParams.maxErise = 100.5
             NEBparams.NEBquenchParams.maxstep = .1
-        NEBparams.NEBquenchParams.tol = 1e-2                    
+        NEBparams.NEBquenchParams.tol = 1e-2
+        
+        NEBparams.reinterpolate = 100
+        NEBparams.adaptive_niter = True
+        NEBparams.adaptive_nimages = True
+        NEBparams.adjustk_freq = 50                    
         
         #set transition state search params
         tsSearchParams = params.double_ended_connect.local_connect_params.tsSearchParams
