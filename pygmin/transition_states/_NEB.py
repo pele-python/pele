@@ -126,6 +126,7 @@ class NEB(object):
         self.with_springenergy = with_springenergy
         
         self.distances = np.zeros(self.nimages - 1)
+        self.rms = 0.
 
     def optimize(self, quenchRoutine=None,
                  **kwargs):
@@ -238,9 +239,13 @@ class NEB(object):
         self.getEnergyCount += 1
         #print "ENeb = ", Eneb
         self._step(coords1d)
+        
+        rms = np.linalg.norm(grad)
+        
         for event in self.events:
             event(coords=self.coords, energies=self.energies,
-                       distances=self.distances, stepnum=self.getEnergyCount)
+                       distances=self.distances, stepnum=self.getEnergyCount, rms=rms)
+            
         return E+Eneb, grad.reshape(grad.size)
         #return 0., grad.reshape(grad.size)
 

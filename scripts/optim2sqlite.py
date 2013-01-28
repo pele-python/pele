@@ -1,10 +1,17 @@
+"""
+Creates a database from 
+  min.data 
+  extractedmin 
+  ts.data 
+  extractedts 
+"""
+
 from pygmin.storage.database import Database, Minimum, TransitionState
 import time
 import numpy as np
-from pygmin.potentials.lj import LJ
 
-natoms = 38
-pot = LJ()
+natoms = input('Enter number of atoms: ') 
+# pot = LJ()
 # open database
 db = Database(db="storage.sqlite")
 

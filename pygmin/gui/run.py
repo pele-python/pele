@@ -194,30 +194,17 @@ class MyForm(QtGui.QMainWindow):
         coords2 = self.ui.oglPath.coords[2]
         min1 = self.ui.oglPath.minima[1]
         min2 = self.ui.oglPath.minima[2]
+        from neb_explorer import NEBExplorer
         
-        #use the functions in DoubleEndedConnect to set up the NEB in the proper way
-        double_ended = self.system.get_double_ended_connect(min1, min2, 
-                                                            self.system.database, 
-                                                            fresh_connect=True)
+        if not hasattr(self, "nebexplorer"):
+            self.nebexplorer = NEBExplorer(system=self.system, app=self.app)
+        self.nebexplorer.show()
+        self.nebexplorer.new_neb(coords1, coords2)
         
-
-        local_connect = double_ended._getLocalConnectObject()
-        self.neb =  local_connect.create_neb(self.system.get_potential(),
-                                          coords1, coords2,
-                                          **local_connect.NEBparams)        
+        # this is shit!
+        self.neb = self.nebexplorer.nebrunner.neb.neb
         
-
-        follow_neb = True
-        if follow_neb:
-            if not hasattr(self, "neb_dlg"):
-                self.neb_dlg = NEBDialog()
-                self.neb_dlg.nebwgt.process_events.connect(self.processEvents)
-            self.neb_dlg.show()
-            self.neb_dlg.nebwgt.attach_to_NEB(self.neb)
-        
-        
-        
-        self.neb = self.neb.run()
+        #self.neb = self.neb.run()
         self.nebcoords = self.neb.coords
         self.nebenergies = self.neb.energies
         self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)

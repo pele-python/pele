@@ -105,7 +105,6 @@ class Show3D(QGLWidget):
         '''
         Resize the GL window 
         '''
-        print "resizegl"
         glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
