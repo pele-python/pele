@@ -7,6 +7,7 @@ from show3d import Show3D
 from pygmin.storage import Database
 from pygmin.gui.ui.mplwidget import MPLWidget
 from  pygmin.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
+from dlg_params import DlgParams
 
 class NEBRunner(object):
     def __init__(self, app, system, freq = 30):
@@ -155,6 +156,8 @@ class NEBExplorer(QtGui.QMainWindow):
         return child
     
     def new_neb(self, coords1, coords2):
+        self.coords1 = coords1.copy()
+        self.coords2 = coords2.copy()
         self.nebrunner.run(coords1, coords2)
         
     def toggle_view(self, view, show):
@@ -163,6 +166,14 @@ class NEBExplorer(QtGui.QMainWindow):
         else:
             view.hide()
 
+    def on_actionRun_triggered(self):
+        self.nebrunner.run(self.coords1, self.coords2)
+        
+    def on_actionParams_triggered(self):
+        if not hasattr(self, "paramsdlg"):
+            self.paramsdlg = DlgParams(self.system.params.double_ended_connect.local_connect_params.NEBparams)
+        self.paramsdlg.show()
+        
     def on_actionRms_toggled(self, checked):
         self.toggle_view(self.view_rms, checked)
     def on_actionE_toggled(self, checked):
