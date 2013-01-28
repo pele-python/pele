@@ -227,15 +227,15 @@ how more detailed information and help choosing which routine to use.
 Lets continue defining the system class for MyPotential.  Lets set
 it up as a cluster of atoms floating in a vacuum.   Thus we have all three spatial
 symmetries listed above.  Assuming the atoms are indistinguishable we also have
-permutational symmetry.  The mindist function which deals with these 4 symmetries
+permutational symmetry.  The mindist class which deals with these 4 symmetries
 is minPermDistStochastic() ::
 
-  from pygmin.mindist import minPermDistStochastic
+  from pygmin.mindist import MinPermDistAtomicCluster
   class MySystem(BaseSystem):
     ...    
     def get_mindist(self):
         permlist = [range(self.natoms)]
-        return MinDistWrapper(minPermDistStochastic, permlist=permlist)
+        return MinPermDistAtomicCluster(permlist=permlist, niter=10)
 
 We're not quite ready yet.  The routine which searches for transition states
 uses a routine which walks uphill in the direction of the lowest eigenvector

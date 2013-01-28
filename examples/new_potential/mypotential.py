@@ -36,7 +36,7 @@ class MyPot(BasePotential):
         return E, grad.reshape(-1)
 
 from pygmin.systems import BaseSystem
-from pygmin.mindist import minPermDistStochastic, MinDistWrapper, ExactMatchCluster
+from pygmin.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster
 from pygmin.transition_states import orthogopt
 class MySystem(BaseSystem):
     def __init__(self, natoms):
@@ -49,14 +49,14 @@ class MySystem(BaseSystem):
     
     def get_mindist(self):
         permlist = [range(self.natoms)]
-        return MinDistWrapper(minPermDistStochastic, permlist=permlist, niter=10)
+        return MinPermDistAtomicCluster(permlist=permlist, niter=10)
 
     def get_orthogonalize_to_zero_eigenvectors(self):
         return orthogopt
     
     def get_compare_exact(self, **kwargs):
         permlist = [range(self.natoms)]
-        return ExactMatchCluster(permlist=permlist, **kwargs)
+        return ExactMatchAtomicCluster(permlist=permlist, **kwargs)
     
 
 import numpy as np
