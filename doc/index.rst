@@ -6,6 +6,10 @@
 Welcome to pygmin's documentation!
 ==================================
 
+The source code repository can be found at `<https://github.com/js850/PyGMIN>`_
+
+The documentation is hosted at `<http://js850.github.com/PyGMIN/>`_
+
 Tutorial
 --------
 .. toctree::
