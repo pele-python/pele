@@ -128,14 +128,21 @@ class RigidFragment(aautils.AASiteType):
         self._determine_inversion(permlist)
         self._determine_rotational_symmetry(permlist)
                     
-class RBSystem(aautils.AASystem):
+class RBTopology(aautils.AATopology):
     def __init__(self):
-        aautils.AASystem.__init__(self)
+        aautils.AATopology.__init__(self)
         self.indices=[]
         self.natoms=0
         
+    def get_atomtypes(self):
+        atom_types = [None for i in xrange(self.natoms)]
+        for site in self.sites:
+            for i, atype in zip(site.indices, site.atom_types):
+                atom_types[i]=atype
+        return atom_types
+        
     def add_sites(self, sites):
-        aautils.AASystem.add_sites(self, sites)
+        aautils.AATopology.add_sites(self, sites)
         for site in sites:
             nsite_atoms = len(site.atom_positions)
             if not hasattr(site, "atom_indices"):
@@ -202,7 +209,7 @@ if __name__ == "__main__":
     water.add_atom("H", rho*np.array([0.0, -sin(0.5*theta), cos(0.5*theta)]), 1.)
     water.finalize_setup()
     # define the whole water system
-    system = RBSystem()
+    system = RBTopology()
     nrigid = 1
     system.add_sites([deepcopy(water) for i in xrange(nrigid)])
     rbcoords = np.random.random(6*nrigid)

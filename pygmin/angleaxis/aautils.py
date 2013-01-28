@@ -9,7 +9,7 @@ from pygmin.transition_states import zeroev
 from pygmin.angleaxis.aamindist import TransformAngleAxisCluster
 import _aadist
 
-__all__ = ["AASiteType", "AASystem", "interpolate_angleaxis"]
+__all__ = ["AASiteType", "AATopology", "interpolate_angleaxis"]
 
 def interpolate_angleaxis(initial, final, t):
     ''' interpolate between 2 arrays of angle axis coordinates
@@ -128,7 +128,7 @@ class AASiteType(object):
         return g_M, g_P
 
         
-class AASystem(object):
+class AATopology(object):
     ''' 
         Angle axis system wrapper
         
@@ -376,7 +376,8 @@ if __name__ == "__main__":
     print "time python", t1-t0
     for i in xrange(1000):
         _aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
-        #_aadist.aadist(coords1, coords2, site.S, site.W, cog)
+    
+ #_aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
     print "time fortran", t2-t1
     for i in xrange(1000/20):
