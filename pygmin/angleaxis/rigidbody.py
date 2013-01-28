@@ -30,7 +30,7 @@ class RigidFragment(aautils.AASiteType):
         self.atom_positions.append(pos.copy())
         self.atom_masses.append(mass)
         
-    def finalize_setup(self):
+    def finalize_setup(self, shift_com=True):
         '''finalize setup after all sites have been added
         
         This will shift the center of mass to the origin and calculate
@@ -39,8 +39,9 @@ class RigidFragment(aautils.AASiteType):
         
         # first correct for the center of mass
         com = np.average(self.atom_positions, axis=0, weights=self.atom_masses)
-        for x in self.atom_positions:
-            x[:] -= com
+        if shift_com:
+            for x in self.atom_positions:
+                x[:] -= com
 
         self.cog = np.average(self.atom_positions, axis=0)
         self.W = float(len(self.atom_masses))
