@@ -59,13 +59,22 @@ class StandardClusterAlignment(object):
         idx1_1 = idx_sorted[-1]
         
         # find second atom which is not in a line
+        cos_best = 99.00
         for idx1_2 in reversed(idx_sorted[0:-1]):
             # stop if angle is larger than threshold
             cos_theta1 = np.dot(x1[idx1_1], x1[idx1_2]) / \
                 (np.linalg.norm(x1[idx1_1])*np.linalg.norm(x1[idx1_2])) 
+            
+            # store the best match in case it is a almost linear molecule
+            if np.abs(cos_theta1) < np.abs(cos_best):
+                cos_best = cos_theta1
+                idx1_2_best = idx1_2
+            
             if np.abs(cos_theta1) < 0.9:
                 break
-            
+        
+        idx1_2 = idx1_2_best
+         
         # do a very quick check if most distant atom from
         # center are within accuracy
         if np.abs(R1[idx1_1] - R2.max()) > accuracy:
