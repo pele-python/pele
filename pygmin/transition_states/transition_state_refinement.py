@@ -201,7 +201,30 @@ class FindTransitionState(object):
         self.step_factor = .1
         self.nnegative = 0
         
+    @classmethod
+    def params(cls, obj = None):
+        if obj is None:
+            obj = FindTransitionState(np.zeros(2), None)
         
+        params = dict()
+        
+        params["tangentSpaceQuenchParams"] = obj.tangent_space_quench_params.copy()
+        params["lowestEigenvectorQuenchParams"] = obj.lowestEigenvectorQuenchParams.copy()
+        params["tol"] = obj.tol
+        params["nsteps"] = obj.nsteps
+        params["nfail_max"] = obj.nfail_max
+        params["iprint"] = obj.iprint
+        params["max_uphill_step"]=obj.max_uphill_step
+        params["demand_initial_negative_vec"]=obj.demand_initial_negative_vec
+        params["nsteps_tangent1"]=obj.nsteps_tangent1
+        params["nsteps_tangent2"]=obj.nsteps_tangent2
+        params["verbosity"]=obj.verbosity
+        
+        # event=None, eigenvec0=None, orthogZeroEigs=0,
+        return params
+    
+    
+    
     def _saveState(self, coords):
         self.saved_coords = np.copy(coords)
         self.saved_eigenvec = np.copy(self.eigenvec)

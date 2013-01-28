@@ -7,6 +7,7 @@ from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 from pygmin.utils.xyz import write_xyz
 from pygmin.optimize import mylbfgs
 from pygmin.transition_states._nebdriver import NEBDriver
+from pygmin.transition_states import FindTransitionState
 
 __all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
@@ -57,11 +58,11 @@ class Parameters(BaseParameters):
         self.double_ended_connect.local_connect_params.pushoff_params = BaseParameters()
         self.double_ended_connect.local_connect_params.pushoff_params.quenchParams = BaseParameters()
 
-        self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters()
+        self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters(FindTransitionState.params())
         self.double_ended_connect.local_connect_params.NEBparams = BaseParameters(NEBDriver.params())
         
-        self.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams = BaseParameters()
-        self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()     
+        #self.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams = BaseParameters()
+        #self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()     
 
 
 def dict_copy_update(dict1, dict2):
@@ -112,7 +113,7 @@ class BaseSystem(object):
         self.params = Parameters()
         
         tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
-        tsSearchParams.lowestEigenvectorQuenchParams.nsteps = 100
+        tsSearchParams.lowestEigenvectorQuenchParams["nsteps"] = 100
         
 #        self.params.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams.maxErise = 1e50
 
