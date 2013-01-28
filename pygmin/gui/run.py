@@ -220,7 +220,7 @@ class MyForm(QtGui.QMainWindow):
     def show_disconnectivity_graph(self):
         """show the disconnectivity graph 
         
-        make it interactive, so that when you click on an end point
+        it is interactive, so that when you click on an end point
         that minima is selected
         """
         self.pick_count = 0
@@ -233,64 +233,18 @@ class MyForm(QtGui.QMainWindow):
             else:
                 self._SelectMinimum2(min1)
                 
-        self.minimum_selecter = minimum_selecter
 
         if not hasattr(self, "dgraph_dlg"):
+            self.minimum_selecter = minimum_selecter
             self.dgraph_dlg = DGraphDialog(self.system.database)
             self.dgraph_dlg.minimum_selected.connect(minimum_selecter)
+        else:
+            self.dgraph_dlg.rebuild_disconnectivity_graph()
 #        self.dgraph_dlg.minimum_selected=minimum_selecter
         self.dgraph_dlg.show()
         
         
         return
-    
-#        import pylab as pl
-#        pl.ion()
-#        pl.clf()
-#        ax = pl.gca()
-#        fig = pl.gcf()
-#        
-#        ax.grid(True)
-#        
-#
-#        graphwrapper = Graph(self.system.database)
-#        dg = DisconnectivityGraph(graphwrapper.graph, subgraph_size=2)
-#        dg.calculate()
-#        
-#        #draw minima as points
-#        xpos, minima = dg.get_minima_layout()
-#        energies = [m.energy for m in minima]
-#        points = ax.scatter(xpos, energies, picker=5)
-#        
-#        #draw line segments connecting minima
-#        line_segments = dg.line_segments
-#        for x, y in line_segments:
-#            ax.plot(x, y, 'k')
-#        
-#        
-#        #define what happens when a point is clicked on
-#        global pick_count
-#        pick_count = 0
-#        def on_pick(event):
-#            if event.artist != points:
-##                print "you clicked on something other than a node"
-#                return True
-#            thispoint = event.artist
-#            ind = event.ind[0]
-#            min1 = minima[ind]
-#            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-#            global pick_count
-#            #print pick_count
-#            pick_count += 1
-#            if (pick_count % 2) == 0:
-#                self._SelectMinimum1(min1)
-#            else:
-#                self._SelectMinimum2(min1)
-#        fig = pl.gcf()
-#        cid = fig.canvas.mpl_connect('pick_event', on_pick)
-#
-#        pl.show()
-        
 
     
     def show_graph(self):

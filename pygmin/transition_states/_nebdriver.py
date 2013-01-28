@@ -206,9 +206,9 @@ class NEBDriver(object):
         acc_dist = np.sum(distances)
         nimages = len(path)
         if self.adaptive_images:
-            nimages = int(max(1., acc_dist) * self.image_density * self.factor)
+            nimages = int(int(max(1., acc_dist) * self.image_density * self.factor))
         if self.max_images > 0:
-            nimages = min(nimages, self.max_images)
+            nimages = int(min(nimages, self.max_images))
             
         newpath = []
         newpath.append(path[0].copy())

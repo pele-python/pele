@@ -7,4 +7,4 @@ sys   = AMBERSystem('coords.prmtop', 'coords.inpcrd')
 
 #start the gui 
 from pygmin.gui import run as gr    
-gr.run_gui(sys)#, db="aladipep.db")
+gr.run_gui(sys)
