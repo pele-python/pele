@@ -1,6 +1,7 @@
 from PyQt4 import QtGui, QtCore, Qt
 from PyQt4.QtGui import QDockWidget
 from pygmin.utils.events import Signal
+from copy import deepcopy
 
 from nebdlg import NEBWidget
 from show3d import Show3D
@@ -8,6 +9,7 @@ from pygmin.storage import Database
 from pygmin.gui.ui.mplwidget import MPLWidget
 from  pygmin.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
 from dlg_params import DlgParams
+from show3d import Show3DWithSlider
 
 class NEBRunner(object):
     def __init__(self, app, system, freq = 30):
@@ -16,32 +18,45 @@ class NEBRunner(object):
         self.frq = freq
         self.app = app
     
-    def run(self, coords1, coords2):
+    def run(self, coords1, coords2, run=True):
         self.count=0
         neb = self.create_neb(coords1, coords2)
         self.neb = neb
         neb.update_event.connect(self._neb_update)
-        
+        self.step_shift = 0
         self.k = []
         self.nimages = []
         self.energies=[]
         self.stepnum = []
         self.distances = []
         self.rms = []
-        neb.run()
+        self.neb = neb
+        neb.prepare()
+        if(run):
+            neb.run()
         
-    def _neb_update(self, energies=None, distances=None, stepnum=None, path=None, rms=None, **kwargs):
+    def continue_run(self):
+        path = self.neb.path
+        self.step_shift += self.neb.steps_total
+        neb = self.create_neb(path[0], path[-1])
+        neb.update_event.connect(self._neb_update)
+        neb.prepare(path=path)
+        self.neb = neb
+        self.neb.run()
+        
+    def _neb_update(self, energies=None, distances=None, stepnum=None, path=None, rms=None, k=None,**kwargs):
         self.app.processEvents()
         self.count += 1
         if self.count % self.frq == 1:
-            self.stepnum.append(stepnum)
-            self.k.append(self.neb.neb.k)
+            self.stepnum.append(stepnum+self.step_shift)
+            self.k.append(k)
             self.rms.append(rms)
-            self.nimages.append(len(self.neb.neb.coords))
+            self.nimages.append(len(path))
             self.energies.append(energies.copy())
             self.distances.append(distances.copy())
-            self.path = path.copy()
+            self.path = deepcopy(path)
             self.on_update_gui(self)
+        self.app.processEvents()
                        
     def create_neb(self, coords1, coords2):
         """setup the NEB object"""
@@ -82,9 +97,32 @@ class NEBEnergyWidget(MPLWidget):
             for d in distances:
                 acc+=d
                 acc_dist.append(acc)
+            self.acc_dist = acc_dist
             self.axes.plot(acc_dist, energies, "o-", label="step %d"%stepnum)
         self.axes.legend(loc='best')
         self.draw()
+        
+    def highlight_frame(self, index):
+        """draw a vertical line to highlight a particular point in the neb curve"""
+        from matplotlib.lines import Line2D
+        
+        if not hasattr(self, "acc_dist"):
+            return
+        
+        if index < 0:
+            #I would like to delete the line here, but I don't know how to do it easily
+            return
+        
+        x = self.acc_dist[index]
+        ylim = self.axes.get_ylim()
+        
+        try:
+            self.highlight_line.remove()
+        except: pass
+        self.highlight_line = Line2D([x,x],list(ylim), ls='--', c='k')
+        self.axes.add_line(self.highlight_line)
+        self.draw()
+
 
 class NEBDistanceWidget(MPLWidget):
     def __init__(self, parent=None):
@@ -129,6 +167,7 @@ class NEBExplorer(QtGui.QMainWindow):
         self.setCentralWidget(self.mdi)
         
         self.nebrunner = NEBRunner(app, system)
+        self.nebrunner.on_update_gui.connect(self.update)
 #        
 #        from dlg_params import EditParamsWidget
 #        w = QtGui.QDockWidget("NEB parameters", self)
@@ -139,15 +178,27 @@ class NEBExplorer(QtGui.QMainWindow):
 #        self.editparams = w
 #        
         
-        self.view_energies = self.new_view("Energies", NEBEnergyWidget(), QtCore.Qt.TopDockWidgetArea)
+        self.energies = NEBEnergyWidget()
+        self.view_energies = self.new_view("Energies", self.energies, QtCore.Qt.TopDockWidgetArea)
         self.view_distances = self.new_view("Distances", NEBDistanceWidget(), QtCore.Qt.TopDockWidgetArea)
         self.view_k = self.new_view("k", NEBTimeseries(attrname="k"), QtCore.Qt.BottomDockWidgetArea)
         self.view_nimages = self.new_view("nimages", NEBTimeseries(attrname="nimages"), QtCore.Qt.BottomDockWidgetArea)
         self.view_rms = self.new_view("rms", NEBTimeseries(attrname="rms", yscale='log'), QtCore.Qt.BottomDockWidgetArea)
         
+        self.show3d = Show3DWithSlider()
+        self.view_3d = QtGui.QDockWidget("NEB parameters", self)
+        self.view_3d.setWidget(self.show3d)
+        self.addDockWidget(QtCore.Qt.TopDockWidgetArea, self.view_3d)
         
+        #self.view_3d.setFloating(True)
+        self.view_3d.hide()
+        self.show3d.setSystem(self.system)
+        self.show3d.on_frame_updated.connect(self.set_current_frame)
         self.centralWidget().hide()
-                    
+        
+    def set_current_frame(self, index, sender=None):
+        self.energies.highlight_frame(index)
+        
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
         child = QtGui.QDockWidget(title, self)
         child.setWidget(widget)
@@ -166,10 +217,23 @@ class NEBExplorer(QtGui.QMainWindow):
         else:
             view.hide()
 
-    def on_actionRun_triggered(self):
-        self.nebrunner.run(self.coords1, self.coords2)
+    def update(self, nebrunner):
+        self.show3d.setCoordsPath(nebrunner.path)
+        self.energies.highlight_frame(2)
         
-    def on_actionParams_triggered(self):
+    def on_actionRun_triggered(self, checked=None):
+        if checked is None:
+            return
+        self.nebrunner.continue_run()
+    
+    def on_actionReset_triggered(self, checked=None):
+        if checked is None:
+            return
+        self.nebrunner.run(self.coords1, self.coords2, run=False)
+        
+    def on_actionParams_triggered(self, checked=None):
+        if checked is None:
+            return
         if not hasattr(self, "paramsdlg"):
             self.paramsdlg = DlgParams(self.system.params.double_ended_connect.local_connect_params.NEBparams)
         self.paramsdlg.show()
@@ -184,6 +248,8 @@ class NEBExplorer(QtGui.QMainWindow):
         self.toggle_view(self.view_k, checked)
     def on_actionNimages_toggled(self, checked):
         self.toggle_view(self.view_nimages, checked)
+    def on_action3D_toggled(self, checked):
+        self.toggle_view(self.view_3d, checked)
         
 def start():
     wnd.new_neb(x1, x2)

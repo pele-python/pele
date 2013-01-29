@@ -202,16 +202,16 @@ class MyForm(QtGui.QMainWindow):
         self.nebexplorer.new_neb(coords1, coords2)
         
         # this is shit!
-        self.neb = self.nebexplorer.nebrunner.neb.neb
+#        self.neb = self.nebexplorer.nebrunner.neb.neb
         
         #self.neb = self.neb.run()
-        self.nebcoords = self.neb.coords
-        self.nebenergies = self.neb.energies
-        self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
-        self.ui.oglPath.setCoords(None, 2)
-        self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
-        if self.usepymol:
-            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
+#        self.nebcoords = self.neb.coords
+#        self.nebenergies = self.neb.energies
+#        self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
+#        self.ui.oglPath.setCoords(None, 2)
+#        self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
+#        if self.usepymol:
+#            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
 
     def showFrame(self, i):
         if hasattr(self, "nebcoords"):

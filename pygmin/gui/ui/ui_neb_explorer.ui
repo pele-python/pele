@@ -35,19 +35,26 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionRun"/>
+   <addaction name="actionReset"/>
+   <addaction name="actionParams"/>
+   <addaction name="separator"/>
    <addaction name="actionE"/>
    <addaction name="actionS"/>
    <addaction name="actionK"/>
    <addaction name="actionNimages"/>
    <addaction name="actionRms"/>
-   <addaction name="actionParams"/>
+   <addaction name="action3D"/>
   </widget>
   <action name="actionRun">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/run.png</normaloff>:/icons/icons/run.png</iconset>
+   </property>
    <property name="text">
     <string>Run</string>
    </property>
    <property name="toolTip">
-    <string>run the neb</string>
+    <string>run the neb (continue)</string>
    </property>
   </action>
   <action name="actionE">
@@ -120,11 +127,32 @@
    </property>
   </action>
   <action name="actionParams">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/preferences.png</normaloff>:/icons/icons/preferences.png</iconset>
+   </property>
    <property name="text">
     <string>params</string>
    </property>
+   <property name="toolTip">
+    <string>edit parameters</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/restart.png</normaloff>:/icons/icons/restart.png</iconset>
+   </property>
+   <property name="text">
+    <string>reset</string>
+   </property>
+   <property name="toolTip">
+    <string>start from fresh interpolation</string>
+   </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
