@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'connect_explorer_ui.ui'
 #
-# Created: Thu Jan 24 17:25:25 2013
+# Created: Tue Jan 29 11:10:43 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -85,7 +85,7 @@ class Ui_Form(object):
         self.btn_refineTS.setText(QtGui.QApplication.translate("Form", "refine transition state", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_show_neb_path.setText(QtGui.QApplication.translate("Form", "show NEB path", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_show_ts_path.setText(QtGui.QApplication.translate("Form", "show TS refinement trajectory", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_show_pushoff.setText(QtGui.QApplication.translate("Form", "show left pushoff path", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_show_pushoff.setText(QtGui.QApplication.translate("Form", "show pushoff path", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("Form", "refine all", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "Transition states found", None, QtGui.QApplication.UnicodeUTF8))
 

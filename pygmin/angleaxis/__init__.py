@@ -3,3 +3,4 @@ from pygmin.utils.rbtools import CoordsAdapter
 from aautils import *
 from rigidbody import *
 from aamindist import *
+from aasystem import *

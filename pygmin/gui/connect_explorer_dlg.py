@@ -255,7 +255,7 @@ if __name__ == "__main__":
     #setup system
     natoms = 13
     system = LJCluster(natoms)
-    system.params.double_ended_connect.local_connect_params.NEBparams.iter_density = 5.
+    system.params.double_ended_connect.local_connect_params.NEBparams.iter_density = 10.
     system.params.double_ended_connect.local_connect_params.NEBparams.image_density = 3.
 #    system.params.double_ended_connect.local_connect_params.NEBparams.adaptive_nimages = 5.
     system.params.double_ended_connect.local_connect_params.NEBparams.reinterpolate = 400

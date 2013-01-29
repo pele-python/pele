@@ -3,6 +3,7 @@ from pygmin.utils import rotations
 from pygmin.mindist import ExactMatchCluster, MinPermDistCluster, StandardClusterAlignment
 from pygmin.mindist import TransformPolicy, MeasurePolicy
 from pygmin.mindist import findrotation, find_best_permutation
+from math import sqrt
 from math import pi
 
 class TransformAngleAxisCluster(TransformPolicy):
@@ -99,7 +100,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         x1 = X1.copy()
         x2 = X2.copy()
         self.align(x1, x2)
-        return self.topology.distance_squared(x1, x2)
+        return sqrt(self.topology.distance_squared(x1, x2))
     
     def find_permutation(self, X1, X2):
         ca1 = self.topology.coords_adapter(X1)

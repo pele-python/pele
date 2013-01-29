@@ -263,6 +263,10 @@ class Database(object):
         called when a minimum is removed from the database 
     on_minimum_added : signal
         called when a new, unique, minimum is added to the database
+    on_ts_removed : signal 
+        called when a transition_state is removed from the database 
+    on_ts_added : signal
+        called when a new, unique, transition state is added to the database
     compareMinima
     
     Examples
@@ -299,6 +303,8 @@ class Database(object):
         self.accuracy=accuracy
         self.on_minimum_added = Signal()
         self.on_minimum_removed = Signal()
+        self.on_ts_added = Signal()
+        self.on_ts_removed = Signal()
         
         self.compareMinima=compareMinima
         self.lock = threading.Lock()
@@ -417,6 +423,7 @@ class Database(object):
         self.session.add(new)
         if(commit):
             self.session.commit()
+        self.on_ts_added(new)
         return new
 
     def getTransitionState(self, min1, min2):
@@ -611,6 +618,7 @@ class Database(object):
                        TransitionState.minimum2 == m))
         candidates = list(candidates)
         for ts in candidates:
+            self.on_ts_removed(ts)
             self.session.delete(ts)
         
         self.on_minimum_removed(m)

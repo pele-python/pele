@@ -15,6 +15,7 @@ from PyQt4.Qt import Qt, QWidget
 from PyQt4.QtOpenGL import *
 import numpy as np
 import pygmin.utils.rotations as rot
+from pygmin.utils.events import Signal
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -105,7 +106,6 @@ class Show3D(QGLWidget):
         '''
         Resize the GL window 
         '''
-        print "resizegl"
         glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
@@ -177,14 +177,25 @@ class Show3DWithSlider(QWidget):
         vbox.addWidget(self.oglwgt)
         vbox.addWidget(self.slider)
         self.setLayout(vbox)
-
+        
+        self.on_frame_updated = Signal()
     
 #    def __getattr__(self, name):
 #        return getattr(self.oglwgt, name)
     def setSystem(self, system):
         self.oglwgt.setSystem(system)
     
-    def setCoordsPath(self, coordspath, frame=0, labels=None):
+    def setCoordsPath(self, coordspath, frame=None, labels=None):
+        if(frame is None):
+            frame = self.slider.value()
+            
+        if labels is None:
+            self.label.hide()
+        else:
+            self.label.show()
+            
+        frame = min(frame, coordspath.shape[0]-1)
+        
         self.coordspath = coordspath
         self.messages = labels
         self.slider.setRange(0, coordspath.shape[0]-1)
@@ -194,7 +205,7 @@ class Show3DWithSlider(QWidget):
         self.oglwgt.setCoords(self.coordspath[i,:], index=1)
         if self.messages is not None:
             self.label.setText(self.messages[i])
-    
+        self.on_frame_updated(i, sender=self)
 
     def showFrame(self, i):
         if i == -1:

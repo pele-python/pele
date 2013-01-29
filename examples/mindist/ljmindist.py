@@ -6,7 +6,7 @@ import numpy as np
 
 from pygmin.potentials.lj import LJ
 from pygmin.optimize import lbfgs_py
-from pygmin.mindist import minPermDistStochastic
+from pygmin.mindist import MinPermDistAtomicCluster
 
 pot = LJ()
 
@@ -23,8 +23,8 @@ coords2 = ret2[0]
 #all the atoms are permutable
 permlist = [range(natoms)]
 
-dist, newcoords1, newcoords2 = minPermDistStochastic(coords1, coords2, 
-         niter=100, permlist=permlist, verbose=False)
+mindist = MinPermDistAtomicCluster(niter=100, permlist=permlist, verbose=False)
+dist, newcoords1, newcoords2 = mindist(coords1, coords2)
 
 print ""
 print "dist =", dist

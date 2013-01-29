@@ -8,7 +8,7 @@ import os
 from pygmin.potentials.lj import LJ
 from pygmin.optimize import lbfgs_py
 from pygmin.landscape import DoubleEndedConnect, smoothPath
-from pygmin.mindist import minPermDistStochastic, MinDistWrapper
+from pygmin.mindist import MinPermDistAtomicCluster
 from pygmin.transition_states import orthogopt
 from pygmin.storage import Database, Minimum
 from pygmin.printing import printAtomsXYZ
@@ -43,7 +43,7 @@ min2 = database.minima()[1]
 #we have to deal with global translational, global rotational,
 #and permutational symmetry.
 permlist = [range(natoms)]
-mindist = MinDistWrapper(minPermDistStochastic, permlist=permlist, niter=10)#, verbose=True)
+mindist = MinPermDistAtomicCluster(permlist=permlist, niter=10)
 
 #The transition state search needs to know what the eigenvector corresponding
 #to the lowest nonzero eigenvector is.  For this we need to know what the
@@ -54,7 +54,7 @@ mindist = MinDistWrapper(minPermDistStochastic, permlist=permlist, niter=10)#, v
 orthogZeroEigs = orthogopt
 tsSearchParams = dict()
 tsSearchParams["orthogZeroEigs"] = orthogZeroEigs
-tsSearchParams["iprint"] = 1
+tsSearchParams["iprint"] = 10
 
 
 if True:
@@ -67,16 +67,16 @@ if True:
     
     NEBquenchParams=dict()
     #NEBquenchParams["nsteps"] = 300 
-    NEBquenchParams["iprint"] = 10
+    NEBquenchParams["iprint"] = 100
     
     NEBparams = dict()
     NEBparams["k"] = 5.
+    NEBparams["image_density"] = 15
+    NEBparams["NEBquenchParams"] = NEBquenchParams
     
     local_connect_params = dict()
     local_connect_params["tsSearchParams"] = tsSearchParams
-    local_connect_params["NEBquenchParams"] = NEBquenchParams
     local_connect_params["NEBparams"] = NEBparams
-    local_connect_params["NEB_image_density"] = 15
 
 
 

@@ -78,7 +78,7 @@
        <item row="4" column="0">
         <widget class="QPushButton" name="btn_show_pushoff">
          <property name="text">
-          <string>show left pushoff path</string>
+          <string>show pushoff path</string>
          </property>
         </widget>
        </item>

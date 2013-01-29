@@ -94,9 +94,12 @@ class AMBERSystem(BaseSystem):
         
         #set NEBparams
         NEBparams = params.double_ended_connect.local_connect_params.NEBparams
+        NEBparams.NEBquenchParams = BaseParameters()
+#        NEBquenchParams = NEBparams.NEBquenchParams
+
         NEBparams.iter_density = 15.
-        NEBparams.image_density = 10.
-        NEBparams.max_images = 100.
+        NEBparams.image_density = 3.5
+        NEBparams.max_images = 50
         NEBparams.k = 100.
         NEBparams.adjustk_freq = 5
         if False: #use fire
@@ -105,14 +108,19 @@ class AMBERSystem(BaseSystem):
         else: #use lbfgs
             NEBparams.NEBquenchParams.maxErise = 100.5
             NEBparams.NEBquenchParams.maxstep = .1
-        NEBparams.NEBquenchParams.tol = 1e-2                    
+        NEBparams.NEBquenchParams.tol = 1e-2
+        
+        NEBparams.reinterpolate = 50
+        NEBparams.adaptive_niter = True
+        NEBparams.adaptive_nimages = True
+        NEBparams.adjustk_freq = 50                    
         
         #set transition state search params
         tsSearchParams = params.double_ended_connect.local_connect_params.tsSearchParams
         tsSearchParams.nsteps = 200
-        tsSearchParams.lowestEigenvectorQuenchParams.nsteps = 100
-        tsSearchParams.lowestEigenvectorQuenchParams.tol = 0.001
-        tsSearchParams.tangentSpaceQuenchParams.maxstep = .1
+        tsSearchParams.lowestEigenvectorQuenchParams["nsteps"] = 100
+        tsSearchParams.lowestEigenvectorQuenchParams["tol"] = 0.001
+        tsSearchParams.tangentSpaceQuenchParams["maxstep"] = .1
         tsSearchParams.nfail_max = 1000        
         
         tsSearchParams.nsteps_tangent1 = 5
@@ -122,9 +130,9 @@ class AMBERSystem(BaseSystem):
         #control the output
         tsSearchParams.verbosity = 0
         NEBparams.NEBquenchParams.iprint = 50
-        tsSearchParams.lowestEigenvectorQuenchParams.iprint = -50
-        tsSearchParams.tangentSpaceQuenchParams.iprint = -5
-        tsSearchParams.iprint = 10
+        tsSearchParams.lowestEigenvectorQuenchParams["iprint"] = -50
+        tsSearchParams.tangentSpaceQuenchParams["iprint"] = -5
+        tsSearchParams["iprint"] = 10
         
 #        self.params.double_ended_connect.local_connect_params.pushoff_params.verbose = True
 #        self.params.double_ended_connect.local_connect_params.pushoff_params.stepmin = 1e-3
@@ -227,6 +235,8 @@ class AMBERSystem(BaseSystem):
             GL.glPushMatrix()            
             GL.glTranslate(x[0],x[1],x[2])            
             col = elements[atomElem]['color']
+            if index == 2:
+                col = [0.5, 1.0, .5]                
             # scaling down the radius by factor of 5, else the spheres fuse into one another 
             rad = elements[atomElem]['radius']/5  
             GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, col)            

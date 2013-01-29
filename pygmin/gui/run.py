@@ -48,6 +48,18 @@ class QMinimumInList(QtGui.QListWidgetItem):
         #sort the energies in the list lowest to highest
         return self.minimum.energy > item2.minimum.energy
 
+class QTSInList(QtGui.QListWidgetItem):
+    def __init__(self, ts):
+        text="%.4f (%d)"%(ts.energy, ts._id)
+        QtGui.QListWidgetItem.__init__(self, text)
+    
+        self.coords = ts.coords
+        self.ts = ts
+        self.tsid = id(ts)
+    def __lt__(self, item2):
+        #sort the energies in the list lowest to highest
+        return self.ts.energy > item2.ts.energy
+
 class MyForm(QtGui.QMainWindow):
     def __init__(self, app, systemtype, parent=None):
         QtGui.QWidget.__init__(self)
@@ -57,7 +69,6 @@ class MyForm(QtGui.QMainWindow):
                            self.ui.listWidget,
                            self.ui.listMinima1,
                            self.ui.listMinima2,
-                           self.ui.listFrom
                            ]
         self.systemtype = systemtype
         self.NewSystem()
@@ -87,8 +98,11 @@ class MyForm(QtGui.QMainWindow):
         self.system.database = db
         self.system.database.on_minimum_added.connect(self.NewMinimum)
         self.system.database.on_minimum_removed.connect(self.RemoveMinimum)
+        self.system.database.on_ts_removed.connect(self.RemoveTS)
+        self.system.database.on_ts_added.connect(self.NewTS)
         for l in self.listMinima:
             l.clear()
+        self.ui.list_TS.clear()
             
     def edit_params(self):
         self.paramsdlg = DlgParams(self.system.params)
@@ -118,10 +132,13 @@ class MyForm(QtGui.QMainWindow):
             self.NewMinimum(minimum, sort_items=False)
         for obj in self.listMinima:
             obj.sortItems(1)
+        self.NewTS(self.system.database.transition_states())
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
         self.system.database.on_minimum_removed(self.RemoveMinimum)
-        
+        self.system.database.on_ts_added.connect(self.NewTS)
+        self.system.database.on_ts_removed.connect(self.RemoveTS)
+    
     def SelectMinimum(self, item):
         """when you click on a minimum in the basinhopping tab"""
         print "selecting minimum", item.minimum._id, item.minimum.energy
@@ -129,7 +146,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui.widget.setCoords(item.coords)
         self.ui.widget.setMinimum(item.minimum)
         self.ui.oglTS.setSystem(self.system)
-        self.ui.oglTS.setCoords(item.coords)
+        #self.ui.oglTS.setCoords(item.coords)
         if self.usepymol:
             self.pymolviewer.update_coords([item.coords], index=1, delete_all=True)
         
@@ -157,12 +174,29 @@ class MyForm(QtGui.QMainWindow):
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=2)
 
-
     def SelectMinimum2(self, item):
         """called by the ui"""
         print "selecting minimum 2", item.minimum._id, item.minimum.energy
         return self._SelectMinimum2(item.minimum)
     
+    def show_TS(self, ts):
+        """show the transition state and the associated minima in the 3d viewer"""
+        self.ui.oglTS.setSystem(self.system)
+        m1 = ts.minimum1
+        m2 = ts.minimum2
+        #  put them in best alignment
+        mindist = self.system.get_mindist()
+        dist, m1coords, tscoords = mindist(m1.coords, ts.coords)
+        dist, m2coords, tscoords = mindist(m2.coords, ts.coords)
+        self.tscoordspath = np.array([m1coords, tscoords, m2coords])
+        labels  = ["minimum: energy " + str(m1.energy)]
+        labels += ["ts: energy " + str(ts.energy)]
+        labels += ["minimum: energy " + str(m2.energy)]
+        self.ui.oglTS.setCoordsPath(self.tscoordspath, frame=1, labels=labels)
+
+    def on_select_TS(self, item):
+        self.show_TS(item.ts)
+
     
     def Invert(self):
         """invert the coordinates"""
@@ -194,37 +228,24 @@ class MyForm(QtGui.QMainWindow):
         coords2 = self.ui.oglPath.coords[2]
         min1 = self.ui.oglPath.minima[1]
         min2 = self.ui.oglPath.minima[2]
+        from neb_explorer import NEBExplorer
         
-        #use the functions in DoubleEndedConnect to set up the NEB in the proper way
-        double_ended = self.system.get_double_ended_connect(min1, min2, 
-                                                            self.system.database, 
-                                                            fresh_connect=True)
+        if not hasattr(self, "nebexplorer"):
+            self.nebexplorer = NEBExplorer(system=self.system, app=self.app)
+        self.nebexplorer.show()
+        self.nebexplorer.new_neb(coords1, coords2)
         
-
-        local_connect = double_ended._getLocalConnectObject()
-        self.neb =  local_connect.create_neb(self.system.get_potential(),
-                                          coords1, coords2,
-                                          **local_connect.NEBparams)        
+        # this is shit!
+#        self.neb = self.nebexplorer.nebrunner.neb.neb
         
-
-        follow_neb = True
-        if follow_neb:
-            if not hasattr(self, "neb_dlg"):
-                self.neb_dlg = NEBDialog()
-                self.neb_dlg.nebwgt.process_events.connect(self.processEvents)
-            self.neb_dlg.show()
-            self.neb_dlg.nebwgt.attach_to_NEB(self.neb)
-        
-        
-        
-        self.neb = self.neb.run()
-        self.nebcoords = self.neb.coords
-        self.nebenergies = self.neb.energies
-        self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
-        self.ui.oglPath.setCoords(None, 2)
-        self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
-        if self.usepymol:
-            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
+        #self.neb = self.neb.run()
+#        self.nebcoords = self.neb.coords
+#        self.nebenergies = self.neb.energies
+#        self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
+#        self.ui.oglPath.setCoords(None, 2)
+#        self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
+#        if self.usepymol:
+#            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
 
     def showFrame(self, i):
         if hasattr(self, "nebcoords"):
@@ -233,7 +254,7 @@ class MyForm(QtGui.QMainWindow):
     def show_disconnectivity_graph(self):
         """show the disconnectivity graph 
         
-        make it interactive, so that when you click on an end point
+        it is interactive, so that when you click on an end point
         that minima is selected
         """
         self.pick_count = 0
@@ -246,64 +267,18 @@ class MyForm(QtGui.QMainWindow):
             else:
                 self._SelectMinimum2(min1)
                 
-        self.minimum_selecter = minimum_selecter
 
         if not hasattr(self, "dgraph_dlg"):
+            self.minimum_selecter = minimum_selecter
             self.dgraph_dlg = DGraphDialog(self.system.database)
             self.dgraph_dlg.minimum_selected.connect(minimum_selecter)
+        else:
+            self.dgraph_dlg.rebuild_disconnectivity_graph()
 #        self.dgraph_dlg.minimum_selected=minimum_selecter
         self.dgraph_dlg.show()
         
         
         return
-    
-#        import pylab as pl
-#        pl.ion()
-#        pl.clf()
-#        ax = pl.gca()
-#        fig = pl.gcf()
-#        
-#        ax.grid(True)
-#        
-#
-#        graphwrapper = Graph(self.system.database)
-#        dg = DisconnectivityGraph(graphwrapper.graph, subgraph_size=2)
-#        dg.calculate()
-#        
-#        #draw minima as points
-#        xpos, minima = dg.get_minima_layout()
-#        energies = [m.energy for m in minima]
-#        points = ax.scatter(xpos, energies, picker=5)
-#        
-#        #draw line segments connecting minima
-#        line_segments = dg.line_segments
-#        for x, y in line_segments:
-#            ax.plot(x, y, 'k')
-#        
-#        
-#        #define what happens when a point is clicked on
-#        global pick_count
-#        pick_count = 0
-#        def on_pick(event):
-#            if event.artist != points:
-##                print "you clicked on something other than a node"
-#                return True
-#            thispoint = event.artist
-#            ind = event.ind[0]
-#            min1 = minima[ind]
-#            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-#            global pick_count
-#            #print pick_count
-#            pick_count += 1
-#            if (pick_count % 2) == 0:
-#                self._SelectMinimum1(min1)
-#            else:
-#                self._SelectMinimum2(min1)
-#        fig = pl.gcf()
-#        cid = fig.canvas.mpl_connect('pick_event', on_pick)
-#
-#        pl.show()
-        
 
     
     def show_graph(self):
@@ -452,7 +427,34 @@ class MyForm(QtGui.QMainWindow):
             for i in itms:
                 if(i.minid == minid):
                     obj.takeItem(obj.row(i))
-                        
+    
+    def NewTS(self, ts):
+        """add new transition state, or list of transition states"""
+        try:
+            len(ts)
+            is_iterable = True
+        except TypeError:
+            is_iterable = False
+        if is_iterable:   
+            tslist = ts
+        else: 
+            tslist = [ts]
+        for ts in tslist:
+            tsitem = QTSInList(ts)
+            self.ui.list_TS.addItem(tsitem)
+        self.ui.list_TS.sortItems(1)
+
+    def RemoveTS(self, ts):
+        """remove transition state"""
+        obj = self.ui.list_TSt
+        tsid = id(ts)
+        itms = self.ui.list_TS.findItems('*', QtCore.Qt.MatchWildcard)
+        for i in itms:
+            if i.tsid == tsid:
+                obj.takeItem(obj.row(i))
+
+  
+                     
     def StartBasinHopping(self):
         db = self.system.database
         self.system.database = None
