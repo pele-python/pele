@@ -63,7 +63,8 @@ class NEBDriver(object):
     
     def __init__(self, potential, coords1, coords2,
                  k = 100., max_images = 50, image_density=10, iter_density = 10,
-                 verbose=0, factor=1., NEBquenchParams=None, adjustk_freq=0, dneb=True,
+                 verbose=0, factor=1., NEBquenchParams=None, adjustk_freq=0, 
+                 adjustk_tol=0.1,adjustk_factor=1.05, dneb=True,
                  reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
                  interpolator=interpolate_linear, distance=distance_cart, parallel=False, ncores=4, **kwargs):
         
@@ -87,6 +88,9 @@ class NEBDriver(object):
         self.adaptive_niter = adaptive_niter
         
         self._kwargs["adjustk_freq"]=adjustk_freq
+        self._kwargs["adjustk_tol"]=adjustk_tol
+        self._kwargs["adjustk_factor"]=adjustk_factor
+        
         self._kwargs["dneb"]=dneb
         
         if NEBquenchParams is None:

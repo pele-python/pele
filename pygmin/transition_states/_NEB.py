@@ -75,7 +75,8 @@ class NEB(object):
     InterpolatedPathDensity : alternate interpolater
     """
     def __init__(self, path, potential, distance=distance_cart,
-                 k=100.0, adjustk_freq=0, with_springenergy=False, dneb=True,
+                 k=100.0, adjustk_freq=0, adjustk_tol=0.1,adjustk_factor=1.05,
+                 with_springenergy=False, dneb=True,
                  copy_potential=False, quenchParams=dict(), quenchRoutine=None,
                  save_energies=False, verbose=-1, events=None):
         self.distance = distance
@@ -105,7 +106,9 @@ class NEB(object):
             self.quenchParams["tol"] = 1e-4
             
         self.adjustk_freq = adjustk_freq
-
+        self.adjustk_tol=adjustk_tol
+        self.adjustk_factor=adjustk_factor
+        
         #initialize coordinate&gradient array
         self.coords = np.zeros([nimages, path[0].size])
         self.energies=np.zeros(nimages)
@@ -240,7 +243,7 @@ class NEB(object):
         #print "ENeb = ", Eneb
         self._step(coords1d)
         
-        rms = np.linalg.norm(grad)
+        rms = np.linalg.norm(grad) / np.sqrt(self.active.size)
         
         for event in self.events:
             event(coords=self.coords, energies=self.energies,
@@ -337,7 +340,7 @@ class NEB(object):
             g_spring = self.k*(norm(g_left) - norm(g_right))*t
 
         #print "spring", np.dot(g_spring, t)
-        if False:
+        if True:
             import _NEB_utils
             E, g_tot = _NEB_utils.neb_force(t,greal, g_spring, self.k, self.dneb)
             if self.with_springenergy:
@@ -386,14 +389,14 @@ class NEB(object):
             
         d = np.array(np.sqrt(d))
         average_d = np.average(d)
-        deviation = np.abs(100.*(d - average_d) / average_d)
+        deviation = np.abs((d - average_d) / average_d)
         avdev = np.average(deviation)
-        if avdev > 10:
-            self.k *=1.05
+        if avdev > self.adjustk_tol:
+            self.k *=self.adjustk_factor
             if self.verbose >= 1:
                 print "increasing DNEB force constant to", self.k
         else: 
-            self.k /=1.05
+            self.k /=self.adjustk_factor
             if self.verbose >= 1:
                 print "decreasing DNEB force constant to", self.k
         
