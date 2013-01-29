@@ -10,7 +10,6 @@ SUBROUTINE NEB_FORCE(t, greal,  gspring, k, N, dneb, E, g_tot)
    double precision gperp(N)
    double precision gs_par(N)
    double precision gs_perp(N)
-   double precision dot
         ! project out parallel part
         gperp = greal - dot_product(greal, t) * t
         ! the parallel part
@@ -25,6 +24,6 @@ SUBROUTINE NEB_FORCE(t, greal,  gspring, k, N, dneb, E, g_tot)
             g_tot = g_tot + gs_perp - dot_product(gs_perp, gperp) * gperp / dot_product(gperp, gperp)
         endif
 
-        E = 0.5d0 * dot(gspring, gspring, N) / k
+        E = 0.5d0 * dot_product(gspring, gspring) / k
         
 END SUBROUTINE NEB_FORCE
