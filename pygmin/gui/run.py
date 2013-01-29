@@ -146,7 +146,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui.widget.setCoords(item.coords)
         self.ui.widget.setMinimum(item.minimum)
         self.ui.oglTS.setSystem(self.system)
-        self.ui.oglTS.setCoords(item.coords)
+        #self.ui.oglTS.setCoords(item.coords)
         if self.usepymol:
             self.pymolviewer.update_coords([item.coords], index=1, delete_all=True)
         
