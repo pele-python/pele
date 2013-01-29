@@ -295,62 +295,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="TSTab">
        <attribute name="title">
-        <string>TS search</string>
+        <string>Transition States</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_8">
-        <item row="1" column="0">
-         <widget class="QSlider" name="sliderTS">
-          <property name="maximum">
-           <number>2</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <layout class="QGridLayout" name="gridLayout_6">
-          <property name="leftMargin">
-           <number>20</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>20</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QPushButton" name="btnTSSearch">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>100</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Find TS</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="pushButton">
-            <property name="text">
-             <string>Path</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
         <item row="0" column="0">
-         <widget class="Show3D" name="oglTS" native="true">
+         <widget class="Show3DWithSlider" name="oglTS" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -360,25 +311,9 @@
          </widget>
         </item>
         <item row="0" column="2">
-         <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0">
+         <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0">
           <item>
-           <widget class="QListWidget" name="listFrom">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>16777215</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QListWidget" name="listTo">
+           <widget class="QListWidget" name="list_TS">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -478,6 +413,12 @@
    <header>show3d.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>Show3DWithSlider</class>
+   <extends>QWidget</extends>
+   <header>show3d.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
@@ -552,8 +493,8 @@
    <slot>SelectMinimum1()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>566</x>
-     <y>94</y>
+     <x>635</x>
+     <y>105</y>
     </hint>
     <hint type="destinationlabel">
      <x>551</x>
@@ -568,8 +509,8 @@
    <slot>SelectMinimum2()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>566</x>
-     <y>287</y>
+     <x>635</x>
+     <y>259</y>
     </hint>
     <hint type="destinationlabel">
      <x>275</x>
@@ -584,7 +525,7 @@
    <slot>showFrame()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>95</x>
+     <x>111</x>
      <y>579</y>
     </hint>
     <hint type="destinationlabel">
@@ -626,77 +567,13 @@
    </hints>
   </connection>
   <connection>
-   <sender>listFrom</sender>
-   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>SelectMinimum()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>803</x>
-     <y>235</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>553</x>
-     <y>528</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnTSSearch</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>doubleEndedConnect()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>707</x>
-     <y>579</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>627</x>
-     <y>528</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>listTo</sender>
-   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>selectTransition()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>803</x>
-     <y>544</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>342</x>
-     <y>526</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>sliderTS</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>showFrameTS()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>66</x>
-     <y>580</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>172</x>
-     <y>526</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btnInvert</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>Invert()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>796</x>
+     <x>758</x>
      <y>412</y>
     </hint>
     <hint type="destinationlabel">
@@ -760,7 +637,7 @@
    <slot>show_disconnectivity_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>796</x>
+     <x>655</x>
      <y>544</y>
     </hint>
     <hint type="destinationlabel">
@@ -776,7 +653,7 @@
    <slot>doubleEndedReConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>796</x>
+     <x>758</x>
      <y>478</y>
     </hint>
     <hint type="destinationlabel">
@@ -808,7 +685,7 @@
    <slot>connect_in_optim()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>796</x>
+     <x>758</x>
      <y>511</y>
     </hint>
     <hint type="destinationlabel">
@@ -840,12 +717,28 @@
    <slot>launch_connect_explorer()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>714</x>
-     <y>565</y>
+     <x>655</x>
+     <y>577</y>
     </hint>
     <hint type="destinationlabel">
      <x>837</x>
      <y>536</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>list_TS</sender>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>on_select_TS()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>745</x>
+     <y>448</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>835</x>
+     <y>457</y>
     </hint>
    </hints>
   </connection>
@@ -877,5 +770,6 @@
   <slot>connect_in_optim()</slot>
   <slot>merge_minima()</slot>
   <slot>launch_connect_explorer()</slot>
+  <slot>on_select_TS()</slot>
  </slots>
 </ui>

@@ -48,6 +48,18 @@ class QMinimumInList(QtGui.QListWidgetItem):
         #sort the energies in the list lowest to highest
         return self.minimum.energy > item2.minimum.energy
 
+class QTSInList(QtGui.QListWidgetItem):
+    def __init__(self, ts):
+        text="%.4f (%d)"%(ts.energy, ts._id)
+        QtGui.QListWidgetItem.__init__(self, text)
+    
+        self.coords = ts.coords
+        self.ts = ts
+        self.tsid = id(ts)
+    def __lt__(self, item2):
+        #sort the energies in the list lowest to highest
+        return self.ts.energy > item2.ts.energy
+
 class MyForm(QtGui.QMainWindow):
     def __init__(self, app, systemtype, parent=None):
         QtGui.QWidget.__init__(self)
@@ -57,7 +69,6 @@ class MyForm(QtGui.QMainWindow):
                            self.ui.listWidget,
                            self.ui.listMinima1,
                            self.ui.listMinima2,
-                           self.ui.listFrom
                            ]
         self.systemtype = systemtype
         self.NewSystem()
@@ -87,8 +98,11 @@ class MyForm(QtGui.QMainWindow):
         self.system.database = db
         self.system.database.on_minimum_added.connect(self.NewMinimum)
         self.system.database.on_minimum_removed.connect(self.RemoveMinimum)
+        self.system.database.on_ts_removed.connect(self.RemoveTS)
+        self.system.database.on_ts_added.connect(self.NewTS)
         for l in self.listMinima:
             l.clear()
+        self.ui.list_TS.clear()
             
     def edit_params(self):
         self.paramsdlg = DlgParams(self.system.params)
@@ -118,10 +132,13 @@ class MyForm(QtGui.QMainWindow):
             self.NewMinimum(minimum, sort_items=False)
         for obj in self.listMinima:
             obj.sortItems(1)
+        self.NewTS(self.system.database.transition_states())
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
         self.system.database.on_minimum_removed(self.RemoveMinimum)
-        
+        self.system.database.on_ts_added.connect(self.NewTS)
+        self.system.database.on_ts_removed.connect(self.RemoveTS)
+    
     def SelectMinimum(self, item):
         """when you click on a minimum in the basinhopping tab"""
         print "selecting minimum", item.minimum._id, item.minimum.energy
@@ -157,12 +174,29 @@ class MyForm(QtGui.QMainWindow):
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=2)
 
-
     def SelectMinimum2(self, item):
         """called by the ui"""
         print "selecting minimum 2", item.minimum._id, item.minimum.energy
         return self._SelectMinimum2(item.minimum)
     
+    def show_TS(self, ts):
+        """show the transition state and the associated minima in the 3d viewer"""
+        self.ui.oglTS.setSystem(self.system)
+        m1 = ts.minimum1
+        m2 = ts.minimum2
+        #  put them in best alignment
+        mindist = self.system.get_mindist()
+        dist, m1coords, tscoords = mindist(m1.coords, ts.coords)
+        dist, m2coords, tscoords = mindist(m2.coords, ts.coords)
+        self.tscoordspath = np.array([m1coords, tscoords, m2coords])
+        labels  = ["minimum: energy " + str(m1.energy)]
+        labels += ["ts: energy " + str(ts.energy)]
+        labels += ["minimum: energy " + str(m2.energy)]
+        self.ui.oglTS.setCoordsPath(self.tscoordspath, frame=1, labels=labels)
+
+    def on_select_TS(self, item):
+        self.show_TS(item.ts)
+
     
     def Invert(self):
         """invert the coordinates"""
@@ -393,7 +427,34 @@ class MyForm(QtGui.QMainWindow):
             for i in itms:
                 if(i.minid == minid):
                     obj.takeItem(obj.row(i))
-                        
+    
+    def NewTS(self, ts):
+        """add new transition state, or list of transition states"""
+        try:
+            len(ts)
+            is_iterable = True
+        except TypeError:
+            is_iterable = False
+        if is_iterable:   
+            tslist = ts
+        else: 
+            tslist = [ts]
+        for ts in tslist:
+            tsitem = QTSInList(ts)
+            self.ui.list_TS.addItem(tsitem)
+        self.ui.list_TS.sortItems(1)
+
+    def RemoveTS(self, ts):
+        """remove transition state"""
+        obj = self.ui.list_TSt
+        tsid = id(ts)
+        itms = self.ui.list_TS.findItems('*', QtCore.Qt.MatchWildcard)
+        for i in itms:
+            if i.tsid == tsid:
+                obj.takeItem(obj.row(i))
+
+  
+                     
     def StartBasinHopping(self):
         db = self.system.database
         self.system.database = None
