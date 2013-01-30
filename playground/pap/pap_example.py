@@ -1,61 +1,75 @@
-'''
-Created on Apr 16, 2012
-
-@author: vr274
-'''
-
-'''
-Created on 13 Apr 2012
-
-@author: ruehle
-'''
-
-import pap
-import pygmin
 import numpy as np
-import basinhopping as bh
-import take_step.adaptive_step as adaptive_step
-import take_step.random_displacement as ts
-import storage.savenlowest
-        
-# initialize GMIN
-pygmin.init()
+from pygmin.potentials import GMINPotential
+import gmin_ as GMIN
+from copy import deepcopy
 
-# create PatchyParticle potential
-pot = pap.PatchyParticle()    
+from pygmin.angleaxis import RigidFragment, RBTopology
+from pygmin.angleaxis import RBTopology, RBSystem
 
-# load coords array
-tmp = np.loadtxt('coords')    
-x = tmp.reshape(tmp.size)
+from math import sin, cos, pi
+from pygmin.optimize import fire
 
-# go to reduced coordinate space
-x =pot.toReduced(x)
-
-# optional, start with random configuration
-x[0:x.size-3] = np.random.random(x.size-3)
+def create_pap():
+    pap = RigidFragment()
+    rho   = 0.3572
+    theta = 104.52/180.0*pi      
+    pap.add_atom("O", np.array([0., 0., 0.]), 1.)
+    pap.add_atom("H", np.array([-0.038490, 0.1204928, 0.3794728]), 1.)
+    pap.add_atom("C", np.array([-0.038490, -0.1204928, -0.3794728]), 1.)
+    pap.finalize_setup(shift_com=False)
     
-# use adaptive step size, 0.3 start, acceptance rate 0.5, adjust every 20
-manstep = adaptive_step.manageStepSize (0.1, 0.3, 20)    
-step = ts.takeStep( getStep=manstep.getStepSize)
+    print "inversion:\n", pap.inversion
+    print "symmetry:\n", pap.symmetries
+    pap.inversion=None
+    
+    return pap
 
-# store the lowest 10 minma
-minima = storage.savenlowest.SaveN(nsave=10)
+class PAPSystem(RBSystem):
+    def __init__(self):
+        RBSystem.__init__(self)
+        
+        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
+        self.params.double_ended_connect.local_connect_params.NEBparams.distance=self.aasystem.neb_distance
 
-# start a basin hopping run
-opt = bh.BasinHopping(x, pot,                      
-                      temperature=2.,
-                      takeStep=step.takeStep,
-                      event_after_step=[manstep.insertStepWrapper],
-                      storage = minima.insert
-                      )
+        NEBparams.max_images=200
+        NEBparams.image_density=10.
+        NEBparams.iter_density=6
+        NEBparams.quenchRoutine = fire
+        del NEBparams.NEBquenchParams["maxErise"]
+        NEBparams.NEBquenchParams["maxstep"]=0.01
+        
+        fts = self.params.double_ended_connect.local_connect_params.tsSearchParams
+        fts["tol"]=0.01
+    
+    def setup_aatopology(self):
+        GMIN.initialize()
+        pot = GMINPotential(GMIN)
+        coords = pot.getCoords()        
+        nrigid = coords.size / 6
 
-# do 100 mc steps
-opt.run(400)
+        print "I have %d PAP molecules in the system"%nrigid
+        print "The initial energy is", pot.getEnergy(coords)
 
-# save the minima
-with open("pylowest", "w") as fout:
-  for i in minima.data:
-      fout.write( str(x.size) + "\n")
-      fout.write( "Energy = " + str(i[0]) + "\n")
-      for atom in i[1].reshape(x.size/3, 3):
-          fout.write(str(atom[0]) + " " + str(atom[1]) + " " + str(atom[2]) + "\n")
+        water = create_pap()
+        
+        system = RBTopology()
+        system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+        self.potential = pot
+        self.nrigid = nrigid
+        
+        self.render_scale = 0.1
+        self.atom_types = system.get_atomtypes()
+        
+        self.draw_bonds = []
+        for i in xrange(nrigid):
+            self.draw_bonds.append((3*i, 3*i+1))
+            self.draw_bonds.append((3*i, 3*i+2))
+    
+        return system
+    
+    def get_potential(self):
+        return self.potential
+    
+if __name__ == "__main__":
+    import pygmin.gui.run as gr
+    gr.run_gui(PAPSystem, db="pap.sqlite")
