@@ -51,6 +51,7 @@ setup(name='pygmin',
                 "pygmin.potentials",
                 "pygmin.potentials.rigid_bodies",
                 "pygmin.gui",
+                "pygmin.gui.ui",
                 "pygmin.mindist",
                 "pygmin.optimize",
                 "pygmin.transition_states",
@@ -63,7 +64,8 @@ setup(name='pygmin',
                 "pygmin.storage",
                 "pygmin.potentials.fortran",
                 "pygmin.accept_tests",
-                "pygmin.systems"
+                "pygmin.systems",
+                "pygmin.angleaxis",
                 ],
       ext_modules=ext_modules
         )
