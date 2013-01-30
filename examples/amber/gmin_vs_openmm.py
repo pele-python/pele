@@ -1,3 +1,18 @@
+"""
+
+This script compares Amber energies from GMIN binding and two different ways via OpenMM.  
+
+GMIN Input files are coords.inpcrd, coords.prmtop and min.in. From Fortran code the energy is -21.7345926639 kcal/mol    
+
+One of the OpenMM calculation uses coords.inpcrd for coordinates and coords.prmtop for ff params. 
+The other OpenMM calc uses coords.pdb for coordinates and picks Amber ff params from OpenMM's own implementation.
+
+Strangely the second calculation is in better agreement with GMIN energy! 
+
+Amber system class in not used here. So this script would be a good starting point to understand how OpenMM and GMIN function calls work. 
+
+"""
+
 import ambgmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
 
@@ -9,18 +24,6 @@ from simtk.unit import picosecond
 import simtk.openmm.app.forcefield as openmmff
 #from sys import stdout
 
-#-------------------------------------------------------------------
-#
-# This script compares Amber energies from GMIN binding and two different ways via OpenMM  
-# 
-# GMIN Input files are coords.inpcrd, coords.prmtop and min.in. From Fortran code the energy is -21.7345926639 kcal/mol    
-# 
-# One of the OpenMM calculation uses coords.inpcrd for coordinates and coords.prmtop for ff params. 
-# The other OpenMM calc uses coords.pdb for coordinates and picks Amber ff params from OpenMM's own implementation.
-# 
-# Strangely the second calculation is in better agreement with GMIN energy! 
-#
-#-------------------------------------------------------------------
 
 # energy from GMIN 
 GMIN.initialize()   # reads coords.inpcrd and coords.prmtop 
