@@ -18,7 +18,7 @@ class NEBRunner(object):
         self.frq = freq
         self.app = app
     
-    def run(self, coords1, coords2, run=True):
+    def run(self, coords1, coords2, path=None, run=True):
         self.count=0
         neb = self.create_neb(coords1, coords2)
         self.neb = neb
@@ -31,7 +31,7 @@ class NEBRunner(object):
         self.distances = []
         self.rms = []
         self.neb = neb
-        neb.prepare()
+        neb.prepare(path=path)
         if(run):
             neb.run()
         
@@ -206,10 +206,11 @@ class NEBExplorer(QtGui.QMainWindow):
         self.nebrunner.on_update_gui.connect(widget.update_gui)
         return child
     
-    def new_neb(self, coords1, coords2):
+    def new_neb(self, coords1, coords2, path=None, run=True):
         self.coords1 = coords1.copy()
         self.coords2 = coords2.copy()
-        self.nebrunner.run(coords1, coords2)
+        self.initial_path=path
+        self.nebrunner.run(coords1, coords2, path=path, run=run)
         
     def toggle_view(self, view, show):
         if show:
@@ -229,7 +230,7 @@ class NEBExplorer(QtGui.QMainWindow):
     def on_actionReset_triggered(self, checked=None):
         if checked is None:
             return
-        self.nebrunner.run(self.coords1, self.coords2, run=False)
+        self.nebrunner.run(self.coords1, self.coords2, run=False, path=self.initial_path)
         
     def on_actionParams_triggered(self, checked=None):
         if checked is None:
