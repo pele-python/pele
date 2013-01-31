@@ -1,7 +1,7 @@
-from pygmin.systems.amberSystem import AMBERSystem
+from pygmin.amber import amberSystem as amb
 
 # create a new amber system and load database to be pruned 
-sys    = AMBERSystem('coords.prmtop', 'coords.inpcrd')
+sys    = amb.AMBERSystem('coords.prmtop', 'coords.inpcrd')
 dbcurr = sys.create_database(db="aladipep.db")
 
 print 'Collecting minima to delete .. '

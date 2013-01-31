@@ -1,8 +1,8 @@
-from pygmin.systems.amberSystem import AMBERSystem
+from pygmin.amber import amberSystem   
 import time  
 
 # create new amber system
-sys   = AMBERSystem('coords.prmtop', 'coords.inpcrd')        
+sys   = amberSystem.AMBERSystem('coords.prmtop', 'coords.inpcrd')        
 
 # openmm potential is ~6x slower than gmin potential 
 
