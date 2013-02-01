@@ -1,14 +1,24 @@
 import numpy as np
 from pap_example import PAPSystem
+import numpy as np
+
+
+def add(db, system, x):
+    pot = system.get_potential()
+    x = x.flatten()
+    E=pot.getEnergy(x)
+    print "minimum before quench %e"%E
+    opt = system.get_minimizer()
+    ret = opt(x)
+    E = ret[1]
+    x = ret[0]
+    m=db.addMinimum(E, x)
+    print "added minimum %d with energy %e"%(m._id, m.energy)
+    print
 
 system = PAPSystem()
-
-x1 = np.loadtxt("coords1").flatten()
 db = system.create_database("pap.sqlite")
-pot = system.get_potential()
 
-E=pot.getEnergy(x1)
-db.addMinimum(E, x1)
-x1 = np.loadtxt("coords2").flatten()
-E=pot.getEnergy(x1)
-db.addMinimum(E, x1)
+add(db, system, np.loadtxt("coords1"))
+add(db, system, np.loadtxt("coords2"))
+

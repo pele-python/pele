@@ -8,6 +8,7 @@ from pygmin.angleaxis import RBTopology, RBSystem
 
 from math import sin, cos, pi
 from pygmin.optimize import fire
+from pygmin.angleaxis.aamindist import ExactMatchAACluster, MinPermDistAACluster 
 
 def create_pap():
     pap = RigidFragment()
@@ -21,7 +22,8 @@ def create_pap():
     print "inversion:\n", pap.inversion
     print "symmetry:\n", pap.symmetries
     pap.inversion=None
-    
+    #print pap.S
+    #pap.S = 0.3*np.identity(3)
     return pap
 
 class PAPSystem(RBSystem):
@@ -37,10 +39,18 @@ class PAPSystem(RBSystem):
         NEBparams.quenchRoutine = fire
         del NEBparams.NEBquenchParams["maxErise"]
         NEBparams.NEBquenchParams["maxstep"]=0.01
-        
         fts = self.params.double_ended_connect.local_connect_params.tsSearchParams
-        fts["tol"]=0.01
-    
+        fts["iprint"] = 1
+        fts["nsteps"] = 3000
+        fts["nsteps_tangent1"] = 3
+        fts["nsteps_tangent2"] = 30
+        fts["tol"]=1e-3        
+        fts["lowestEigenvectorQuenchParams"]["nsteps"]=200
+        fts["lowestEigenvectorQuenchParams"]["tol"]=0.002
+        fts["lowestEigenvectorQuenchParams"]["iprint"]=-1
+        self.params.structural_quench_params["tol"] = 1e-7
+        self.params.structural_quench_params["nsteps"] = 1e7
+        
     def setup_aatopology(self):
         GMIN.initialize()
         pot = GMINPotential(GMIN)
@@ -66,6 +76,12 @@ class PAPSystem(RBSystem):
             self.draw_bonds.append((3*i, 3*i+2))
     
         return system
+    
+    def get_compare_exact(self, **kwargs):
+        return ExactMatchAACluster(self.aasystem, accuracy=0.1, tol=0.07, **kwargs)
+    
+    def get_mindist(self, **kwargs):
+        return MinPermDistAACluster(self.aasystem,accuracy=0.1, tol=0.07, **kwargs)
     
     def get_potential(self):
         return self.potential
