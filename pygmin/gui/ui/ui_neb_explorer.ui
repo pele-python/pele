@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -37,6 +37,8 @@
    <addaction name="actionRun"/>
    <addaction name="actionReset"/>
    <addaction name="actionParams"/>
+   <addaction name="actionSave"/>
+   <addaction name="actionLoad"/>
    <addaction name="separator"/>
    <addaction name="actionE"/>
    <addaction name="actionS"/>
@@ -148,6 +150,30 @@
    </property>
    <property name="toolTip">
     <string>start from fresh interpolation</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>save</string>
+   </property>
+   <property name="toolTip">
+    <string>save path to file</string>
+   </property>
+  </action>
+  <action name="actionLoad">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/open.png</normaloff>:/icons/icons/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>load</string>
+   </property>
+   <property name="toolTip">
+    <string>load path from file</string>
    </property>
   </action>
  </widget>

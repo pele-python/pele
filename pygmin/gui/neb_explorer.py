@@ -10,6 +10,8 @@ from pygmin.gui.ui.mplwidget import MPLWidget
 from  pygmin.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
 from dlg_params import DlgParams
 from show3d import Show3DWithSlider
+import numpy as np
+import pickle
 
 class NEBRunner(object):
     def __init__(self, app, system, freq = 30):
@@ -239,6 +241,30 @@ class NEBExplorer(QtGui.QMainWindow):
             self.paramsdlg = DlgParams(self.system.params.double_ended_connect.local_connect_params.NEBparams)
         self.paramsdlg.show()
         
+    def on_actionSave_triggered(self, checked=None):
+        if checked is None:
+            return
+        dialog = QtGui.QFileDialog(self)
+        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog.selectFile("path.pickle")
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave);
+        if(not dialog.exec_()):
+            return
+        filename = dialog.selectedFiles()[0]
+        pickle.dump(self.nebrunner.path, open(filename, "w"))
+
+    def on_actionLoad_triggered(self, checked=None):
+        if checked is None:
+            return
+        dialog = QtGui.QFileDialog(self)
+        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptOpen);
+        if(not dialog.exec_()):
+            return
+        filename = dialog.selectedFiles()[0]
+        self.initial_path = pickle.load(open(filename))
+        self.nebrunner.run(self.coords1, self.coords2, run=False, path=self.initial_path)
+
     def on_actionRms_toggled(self, checked):
         self.toggle_view(self.view_rms, checked)
     def on_actionE_toggled(self, checked):
@@ -251,7 +277,7 @@ class NEBExplorer(QtGui.QMainWindow):
         self.toggle_view(self.view_nimages, checked)
     def on_action3D_toggled(self, checked):
         self.toggle_view(self.view_3d, checked)
-        
+                
 def start():
     wnd.new_neb(x1, x2)
     
