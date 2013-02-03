@@ -207,7 +207,8 @@ class BaseSystem(object):
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
         return tsAdaptive
 
-    def get_basinhopping(self, database=None, takestep=None, coords=None, add_minimum=None, **kwargs):
+    def get_basinhopping(self, database=None, takestep=None, coords=None, add_minimum=None,
+                         quenchParameters=None, **kwargs):
         """return the basinhopping object with takestep
         and accept step already implemented
         
@@ -225,7 +226,11 @@ class BaseSystem(object):
             if database is None:
                 database = self.create_database()
             add_minimum = database.minimum_adder()
-        bh = basinhopping.BasinHopping(coords, pot, takestep, storage=add_minimum, **kwargs)
+        if quenchParameters is None:
+            quenchParameters = self.params.structural_quench_params
+        bh = basinhopping.BasinHopping(coords, pot, takestep, storage=add_minimum,
+                                       quenchParameters=self.params.structural_quench_params, 
+                                       **kwargs)
         return bh
 
     def get_mindist(self):
