@@ -2,6 +2,7 @@ from PyQt4 import QtGui, QtCore, Qt
 from PyQt4.QtGui import QDockWidget
 from pygmin.utils.events import Signal
 from copy import deepcopy
+from itertools import izip
 
 from nebdlg import NEBWidget
 from show3d import Show3D
@@ -69,8 +70,8 @@ class NEBRunner(object):
         min2 = throwaway_db.addMinimum(1., coords2)
         #use the functions in DoubleEndedConnect to set up the NEB in the proper way
         double_ended = system.get_double_ended_connect(min1, min2, 
-                                                            throwaway_db, 
-                                                            fresh_connect=True)
+                                                       throwaway_db, 
+                                                       fresh_connect=True)
         local_connect = double_ended._getLocalConnectObject()
     
         
@@ -92,7 +93,7 @@ class NEBEnergyWidget(MPLWidget):
         self.axes.set_xlabel("distance")
         self.axes.set_ylabel("energy")
         
-        for distances, energies, stepnum in zip(nebrunner.distances[-nplots:],
+        for distances, energies, stepnum in izip(nebrunner.distances[-nplots:],
                                        nebrunner.energies[-nplots:], nebrunner.stepnum[-nplots:]):
             acc_dist = [0.]
             acc=0.

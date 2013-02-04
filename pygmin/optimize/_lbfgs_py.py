@@ -318,7 +318,7 @@ class LBFGS(object):
 
             
             if iprint > 0:
-                if i % iprint == 1:
+                if i % iprint == 0:
                     print "lbfgs:", i, "E", e, "rms", rms, "funcalls", self.funcalls, "stepsize", self.stepsize
             for event in self.events:
                 event(coords=X, energy=e, rms=rms)
