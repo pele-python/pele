@@ -60,6 +60,9 @@ namespace pygmin {
 			virtual double dist(Array &x1, Array &x2) = 0;
 		};
 	};
+
+	void test_array(Array a);
+	void test_py(void);
 }
 
 #endif

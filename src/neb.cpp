@@ -48,5 +48,13 @@ void NEB::interpolate(Array &x1, Array &x2, Array &xout, double t)
 		xout[i] = t*x2[i] - (1.-t)*x1[i];
 	}
 }
+void test_array(Array a)
+{
+	std::cout << a << std::endl;
+}
 
+void test_py(void)
+{
+	std::cout << "hello world\n";
+}
 }
