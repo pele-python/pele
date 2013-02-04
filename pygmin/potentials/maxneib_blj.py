@@ -4,12 +4,12 @@ lj potential with the number of near neighbors restricted.
 import numpy as np
 
 from pygmin.potentials import BasePotential
-from pygmin.systems import LJCluster
-import fortran.maxneib_lj as fortranpot
+from pygmin.systems import BLJCluster
+import fortran.maxneib_blj as fortranpot
 
 
 
-class MaxNeibsLJ(BasePotential):
+class MaxNeibsBLJ(BasePotential):
     """
     atoms interact with lj potential, with an additional energy penalty for too many neighbors
     
@@ -39,7 +39,10 @@ class MaxNeibsLJ(BasePotential):
     
     
     """
-    def __init__(self, eps=1.0, sig=1.0, boxl=None,
+    def __init__(self, natoms, ntypeA, 
+                 epsA=1.0, sigA=1.0, 
+                 epsB=0.5, sigB=0.88, epsAB=1.5, sigAB=0.8,
+                 boxl=None,
                  max_neibs=5.,
                  neib_crossover=.4,
                  rneib=1.4,
@@ -47,8 +50,14 @@ class MaxNeibsLJ(BasePotential):
                  epsneibs=5.,
                  ):
         """ simple lennard jones potential"""
-        self.sig = sig
-        self.eps = eps
+        self.natoms = natoms
+        self.ntypeA = ntypeA
+        self.sigA = sigA
+        self.epsA = epsA
+        self.sigB = sigB
+        self.epsB = epsB
+        self.sigAB = sigAB
+        self.epsAB = epsAB
         
         if boxl is None:
             self.boxl = 1e100
@@ -65,31 +74,38 @@ class MaxNeibsLJ(BasePotential):
 
     def getEnergy(self, coords):
         E = fortranpot.maxneib_ljenergy(
-                coords, self.eps, self.sig, self.periodic, self.boxl, 
+                coords, self.ntypeA,
+                self.epsA, self.sigA, 
+                self.epsB, self.sigB, 
+                self.epsAB, self.sigAB, 
+                self.periodic, self.boxl, 
                 self.rneib, self.rneib_crossover, self.max_neibs, self.neib_crossover, 
                 self.epsneibs)
         return E
     def getEnergyGradient(self, coords):
-        if self.periodic:
-            print "boxl", self.boxl
-            coords =- np.round(coords / self.boxl) * self.boxl
         E, grad = fortranpot.maxneib_ljenergy_gradient(
-                coords, self.eps, self.sig, self.periodic, self.boxl, 
+                coords, self.ntypeA,
+                self.epsA, self.sigA, 
+                self.epsB, self.sigB, 
+                self.epsAB, self.sigAB, 
+                self.periodic, self.boxl, 
                 self.rneib, self.rneib_crossover, self.max_neibs, self.neib_crossover, 
                 self.epsneibs)
         return E, grad
 
 
-class MaxNeibsLJSystem(LJCluster):
-    def __init__(self, natoms, **potkwargs):
-        super(MaxNeibsLJSystem, self).__init__(natoms)
+class MaxNeibsBLJSystem(BLJCluster):
+    def __init__(self, natoms, ntypeA="default", **potkwargs):
+        super(MaxNeibsBLJSystem, self).__init__(natoms, ntypeA=ntypeA)
         self.potkwargs = potkwargs
         self.params.gui.basinhopping_nsteps = 300
+        self.pot = self.get_potential()
+
     def __call__(self):
         return self
     
     def get_potential(self):
-        return MaxNeibsLJ(**self.potkwargs)
+        return MaxNeibsBLJ(self.natoms, self.ntypeA, **self.potkwargs)
 
 
 def run_gui(system):
@@ -99,7 +115,7 @@ def run_gui(system):
 
 if __name__ == "__main__":
     natoms = 20
-    system = MaxNeibsLJSystem(natoms, max_neibs=3, rneib=1.7)#, boxl=6.)
+    system = MaxNeibsBLJSystem(natoms, max_neibs=3, rneib=1.7)
     
     coords = system.get_random_configuration()
     pot = system.get_potential()
@@ -109,5 +125,6 @@ if __name__ == "__main__":
     if True:
         coords = system.get_random_minimized_configuration()[0]
         pot.test_potential(coords)
+#    exit(10)
     
     run_gui(system)
