@@ -1,3 +1,4 @@
+# benchmark all interface
 from pygmin.potentials import LJ
 
 import _pygmin

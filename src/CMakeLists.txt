@@ -1,3 +1,5 @@
+# So far build is with cmake.
+# run run_cython.sh to generate all interface files
 cmake_minimum_required(VERSION 2.8)
 list( APPEND CMAKE_CXX_FLAGS "-std=c++0x" )
 find_package(PythonLibs)
