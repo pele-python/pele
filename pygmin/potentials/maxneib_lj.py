@@ -69,12 +69,19 @@ class MaxNeibsLJ(BasePotential):
                 self.rneib, self.rneib_crossover, self.max_neibs, self.neib_crossover, 
                 self.epsneibs)
         return E
+    def getEnergyGradient(self, coords):
+        E, grad = fortranpot.maxneib_ljenergy_gradient(
+                coords, self.eps, self.sig, self.periodic, self.boxl, 
+                self.rneib, self.rneib_crossover, self.max_neibs, self.neib_crossover, 
+                self.epsneibs)
+        return E, grad
 
 
 class MaxNeibsLJSystem(LJCluster):
     def __init__(self, natoms, **potkwargs):
         super(MaxNeibsLJSystem, self).__init__(natoms)
         self.potkwargs = potkwargs
+        self.params.gui.basinhopping_nsteps = 1000
     def __call__(self):
         return self
     
@@ -88,13 +95,16 @@ def run_gui(system):
 
 
 if __name__ == "__main__":
-    natoms = 30
-    system = MaxNeibsLJSystem(natoms, max_neibs=4)
+    natoms = 20
+    system = MaxNeibsLJSystem(natoms, max_neibs=3, rneib=1.7)
     
     coords = system.get_random_configuration()
     pot = system.get_potential()
     E = pot.getEnergy(coords)
     print "energy", E
-    
+    pot.test_potential(coords)
+    if True:
+        coords = system.get_random_minimized_configuration()[0]
+        pot.test_potential(coords)
     
     run_gui(system)
