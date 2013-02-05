@@ -38,6 +38,8 @@ these are potentials that exist completely within the pygmin package
     XYModel
     HeisenbergModel
     HeisenbergModelRA
+    MaxNeibsLJ
+    MaxNeibsBLJ
 
 GMIN potentials
 ---------------

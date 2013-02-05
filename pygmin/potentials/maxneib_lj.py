@@ -7,16 +7,34 @@ from pygmin.potentials import BasePotential
 from pygmin.systems import LJCluster
 import fortran.maxneib_lj as fortranpot
 
+__all__ = ["MaxNeibsLJ", "MaxNeibsLJSystem"]
 
 
 class MaxNeibsLJ(BasePotential):
     """
     atoms interact with lj potential, with an additional energy penalty for too many neighbors
     
-    use the fermi function to get a continuous measure of whether two atoms are neighbors.  this gives
-    a continuous measure of the number of neighbors of an atoms.
+    Notes
+    -----
+    in addition to the LJ energy the penalty term is::
+        
+        E = sum_i F(ni, max_neibs, neib_crossover)
+        
+    where `F` is the fermi function defined as::
     
-    use the fermi function again to calculate the energy penalty if an atom has too many neighbors.
+        F(x, mu, T) = 1. / (exp(-(x-mu)/T) + 1.)
+    
+    and `ni` is a continuous measure of the number of neighbors of the i'th
+    atom::
+    
+        ni = sum_j F(rij, rneib, rneib_crossover)
+    
+    where `rij` is the separation of atoms `i` and `j`.  The other parameters
+    above are defined in the Parameters section
+
+    The Fermi function is used in order to get a continuous measure of whether
+    two atoms are neighbors.  It is also used again to calculate the energy
+    penalty if an atom has too many neighbors.
     
     Parameters
     ----------
@@ -37,6 +55,10 @@ class MaxNeibsLJ(BasePotential):
     epsneibs : float
         energy scale of the neighbor penalty function
     
+    
+    See Also
+    --------
+    MaxNeibsBLJ
     
     """
     def __init__(self, eps=1.0, sig=1.0, boxl=None,
@@ -71,8 +93,7 @@ class MaxNeibsLJ(BasePotential):
         return E
     def getEnergyGradient(self, coords):
         if self.periodic:
-            print "boxl", self.boxl
-            coords =- np.round(coords / self.boxl) * self.boxl
+            coords -= np.round(coords / self.boxl) * self.boxl
         E, grad = fortranpot.maxneib_ljenergy_gradient(
                 coords, self.eps, self.sig, self.periodic, self.boxl, 
                 self.rneib, self.rneib_crossover, self.max_neibs, self.neib_crossover, 
@@ -98,8 +119,16 @@ def run_gui(system):
 
 
 if __name__ == "__main__":
-    natoms = 20
-    system = MaxNeibsLJSystem(natoms, max_neibs=3, rneib=1.7)#, boxl=6.)
+    periodic = True
+    natoms = 50
+    if periodic:
+        rho = 0.5
+        boxl = (float(natoms) / rho)**(1./3)
+        print boxl
+#        exit()
+    else:
+        boxl = None
+    system = MaxNeibsLJSystem(natoms, max_neibs=3, rneib=1.7, boxl=boxl, epsneibs=12.)
     
     coords = system.get_random_configuration()
     pot = system.get_potential()
@@ -109,5 +138,6 @@ if __name__ == "__main__":
     if True:
         coords = system.get_random_minimized_configuration()[0]
         pot.test_potential(coords)
+#    exit(10)
     
     run_gui(system)
