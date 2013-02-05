@@ -20,7 +20,8 @@ subroutine maxneib_ljenergy( coords, natoms, e, ntypea, &
    epsb, sigb, &
    epsab, sigab, &
    periodic, boxl, &
-   rneib, rneib_crossover, max_neibs, neib_crossover, epsneibs)
+   rneib, rneib_crossover, max_neibs, neib_crossover, epsneibs, &
+   only_AB_neibs)
 implicit none
 integer, intent(in) :: natoms, ntypea
 double precision, intent(in) :: coords(3*natoms), boxl
@@ -29,7 +30,7 @@ double precision, intent(in) :: sigb, epsb
 double precision, intent(in) :: sigab, epsab
 double precision, intent(out) :: e
 double precision dr(3), r2, ir2, ir6, ir12, iboxl
-logical, intent(in) :: periodic
+logical, intent(in) :: periodic, only_AB_neibs
 integer j1, j2
 double precision sig, eps
 double precision, intent(in) :: rneib, rneib_crossover, max_neibs
@@ -70,7 +71,17 @@ do j1 = 1,natoms
       ir6 = ir2**3
       ir12 = ir6**2
       e = e - 4.d0 * eps * (ir6 - ir12)
-      areneibs = 1.d0 - fermi(sqrt(r2), rneib, rneib_crossover)
+      if (only_AB_neibs) then
+         if (j1 .le. ntypea .and. j2 .le. ntypea) then
+            areneibs = 0.d0
+         elseif (j1 .gt. ntypea .and. j2 .gt. ntypea) then
+            areneibs = 0.d0
+         else
+            areneibs = 1.d0 - fermi(sqrt(r2), rneib, rneib_crossover)
+         endif
+      else
+         areneibs = 1.d0 - fermi(sqrt(r2), rneib, rneib_crossover)
+      endif
       nneibs(j1) = nneibs(j1)  + areneibs
       nneibs(j2) = nneibs(j2)  + areneibs
    enddo
@@ -93,7 +104,8 @@ subroutine maxneib_ljenergy_gradient( coords, natoms, e, grad, ntypea, &
    epsb, sigb, &
    epsab, sigab, &
    periodic, boxl, &
-   rneib, rneib_crossover, max_neibs, neib_crossover, epsneibs)
+   rneib, rneib_crossover, max_neibs, neib_crossover, epsneibs, &
+   only_AB_neibs)
 implicit none
 integer, intent(in) :: natoms, ntypea
 double precision, intent(in) :: coords(3*natoms), boxl
@@ -102,7 +114,7 @@ double precision, intent(in) :: sigb, epsb
 double precision, intent(in) :: sigab, epsab
 double precision, intent(out) :: e, grad(3*natoms)
 double precision dr(3), r2, ir2, ir6, ir12, iboxl
-logical, intent(in) :: periodic
+logical, intent(in) :: periodic, only_AB_neibs
 integer j1, j2, i1, i2
 double precision sig, eps
 double precision, intent(in) :: rneib, rneib_crossover, max_neibs
@@ -155,7 +167,17 @@ do j1 = 1,natoms
       grad(i1+1 : i1+3) = grad(i1+1 : i1+3) - g * dr(:)
       grad(i2+1 : i2+3) = grad(i2+1 : i2+3) + g * dr(:)
 
-      areneibs = 1.d0 - fermi(sqrt(r2), rneib, rneib_crossover)
+      if (only_AB_neibs) then
+         if (j1 .le. ntypea .and. j2 .le. ntypea) then
+            areneibs = 0.d0
+         elseif (j1 .gt. ntypea .and. j2 .gt. ntypea) then
+            areneibs = 0.d0
+         else
+            areneibs = 1.d0 - fermi(sqrt(r2), rneib, rneib_crossover)
+         endif
+      else
+         areneibs = 1.d0 - fermi(sqrt(r2), rneib, rneib_crossover)
+      endif
       !write(*,*) "areneibs", areneibs
       nneibs(j1) = nneibs(j1)  + areneibs
       nneibs(j2) = nneibs(j2)  + areneibs
@@ -171,13 +193,17 @@ do j1 = 1,natoms
       i2 = 3*(j2-1)
       if (j1 .le. ntypea .and. j2 .le. ntypea) then
          sig = siga
-         eps = epsa
       elseif (j1 .gt. ntypea .and. j2 .gt. ntypea) then
          sig = sigb
-         eps = epsb
       else
          sig = sigab
-         eps = epsab
+      endif
+      if (only_AB_neibs) then
+         if (j1 .le. ntypea .and. j2 .le. ntypea) then
+            exit
+         elseif (j1 .gt. ntypea .and. j2 .gt. ntypea) then
+            exit
+         endif
       endif
       dr(:) = coords(i1+1 : i1 + 3) - coords(i2+1 : i2 + 3)
       if (periodic)  dr(:) = dr(:) - nint( dr(:) * iboxl ) * boxl
