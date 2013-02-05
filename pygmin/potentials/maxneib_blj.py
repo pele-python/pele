@@ -61,6 +61,8 @@ class MaxNeibsBLJ(BasePotential):
         width of rneib crossover region
     epsneibs : float
         energy scale of the neighbor penalty function
+    only_AB_neibs : bool
+        if true, like particles are not considered neighbors in the energy penalty
     
     See Also
     --------
@@ -77,6 +79,7 @@ class MaxNeibsBLJ(BasePotential):
                  rneib=1.4,
                  rneib_crossover=0.08,
                  epsneibs=5.,
+                 only_AB_neibs=False,
                  ):
         self.natoms = natoms
         self.ntypeA = ntypeA
@@ -105,6 +108,7 @@ class MaxNeibsBLJ(BasePotential):
         self.max_neibs = max_neibs
         self.neib_crossover = neib_crossover
         self.epsneibs = epsneibs
+        self.only_AB_neibs = only_AB_neibs
 
     def getEnergy(self, coords):
         E = fortranpot.maxneib_ljenergy(
@@ -114,9 +118,11 @@ class MaxNeibsBLJ(BasePotential):
                 self.epsAB, self.sigAB, 
                 self.periodic, self.boxl, 
                 self.rneib, self.rneib_crossover, self.max_neibs, self.neib_crossover, 
-                self.epsneibs)
+                self.epsneibs, self.only_AB_neibs)
         return E
     def getEnergyGradient(self, coords):
+        if self.periodic:
+            coords -= np.round(coords / self.boxl) * self.boxl
         E, grad = fortranpot.maxneib_ljenergy_gradient(
                 coords, self.ntypeA,
                 self.epsA, self.sigA, 
@@ -124,7 +130,7 @@ class MaxNeibsBLJ(BasePotential):
                 self.epsAB, self.sigAB, 
                 self.periodic, self.boxl, 
                 self.rneib, self.rneib_crossover, self.max_neibs, self.neib_crossover, 
-                self.epsneibs)
+                self.epsneibs, self.only_AB_neibs)
         return E, grad
 
 
@@ -148,9 +154,22 @@ def run_gui(system):
 
 
 if __name__ == "__main__":
-    natoms = 20
+    natoms = 15
+    periodic = False
+    if periodic:
+        rho = 0.5
+        boxl = (float(natoms) / rho)**(1./3)
+        print boxl
+    else:
+        boxl=None
+
     ntypeA = natoms/2
-    system = MaxNeibsBLJSystem(natoms, ntypeA=ntypeA, max_neibs=3, rneib=1.7)
+    system = MaxNeibsBLJSystem(natoms, ntypeA=ntypeA, 
+                               max_neibs=4.8, 
+                               neib_crossover=.3,
+                               rneib=1.7,
+                               epsneibs=6., epsAB=1., epsB=0.01, epsA=0.01, sigB=1.,
+                               boxl=boxl, only_AB_neibs=True)
     
     coords = system.get_random_configuration()
     pot = system.get_potential()

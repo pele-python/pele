@@ -120,7 +120,7 @@ def run_gui(system):
 
 if __name__ == "__main__":
     periodic = True
-    natoms = 50
+    natoms = 20
     if periodic:
         rho = 0.5
         boxl = (float(natoms) / rho)**(1./3)
