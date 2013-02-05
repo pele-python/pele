@@ -52,6 +52,17 @@ For atomic cluster, specialized wrapper exist.
     ExactMatchAtomicCluster
 
 See the angleaxis module for angleaxis minpermdist routines
+
+Periodic Boundary Conditions
+----------------------------
+This is generally a much harder problem than those discussed above.  Currently
+we have no general mindist routine, but we do have a test to check if the
+strructures are identical
+
+.. autosummary::
+   :toctree: generated/
+    
+    ExactMatchPeriodic
     
 Customizing minpermdist - minpermdist policies
 ----------------------------------------------
@@ -78,5 +89,6 @@ from exact_match import *
 from minpermdist_stochastic import *
 from rmsfit import *
 from _minpermdist_policies import *
+from periodic_exact_match import ExactMatchPeriodic
 
 from _wrapper_atomiccluster import *
