@@ -20,6 +20,9 @@ from pygmin.config import config
 from pygmin.gui.ui.dgraph_dlg import DGraphDialog
 from pygmin.gui.nebdlg import NEBDialog
 from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
+from double_ended_connect_runner import DECRunner
+from connect_run_dlj import ConnectViewer
+
 
 global pick_count
 
@@ -523,12 +526,20 @@ class MyForm(QtGui.QMainWindow):
                 return
 
                 
-            
+        # make the connect viewer
         
-        from double_ended_connect_runner import DECRunner
-        decrunner = DECRunner(self.system, self.system.database, min1, min2)
-        self.double_ended_connect_runs.append(decrunner)
+        decviewer = ConnectViewer(parent=self, app=self.app)
+        decrunner = DECRunner(self.system, self.system.database, min1, min2,
+                              outstream=decviewer.textEdit_writer)
+        
+        print "starting double ended"
+        decviewer.show()
         decrunner.start()
+        
+        # store pointers
+        self.double_ended_connect_runs.append((decrunner,decviewer))
+        self.decrunner = decrunner
+        self.decviewer = decviewer
         
 #        return
 #        double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
