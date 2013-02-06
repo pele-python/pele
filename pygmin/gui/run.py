@@ -50,7 +50,7 @@ class QMinimumInList(QtGui.QListWidgetItem):
 
 class QTSInList(QtGui.QListWidgetItem):
     def __init__(self, ts):
-        text="%.4f (%d)"%(ts.energy, ts._id)
+        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
         QtGui.QListWidgetItem.__init__(self, text)
     
         self.coords = ts.coords
@@ -74,6 +74,7 @@ class MyForm(QtGui.QMainWindow):
         self.NewSystem()
         self.transition=None
         self.app = app
+        self.double_ended_connect_runs = []
         
         #try to load the pymol viewer.  
         self.usepymol = config.getboolean("gui", "use_pymol")
@@ -189,9 +190,9 @@ class MyForm(QtGui.QMainWindow):
         dist, m1coords, tscoords = mindist(m1.coords, ts.coords)
         dist, m2coords, tscoords = mindist(m2.coords, ts.coords)
         self.tscoordspath = np.array([m1coords, tscoords, m2coords])
-        labels  = ["minimum: energy " + str(m1.energy)]
+        labels  = ["minimum: energy " + str(m1.energy) + " id " + str(m1._id)]
         labels += ["ts: energy " + str(ts.energy)]
-        labels += ["minimum: energy " + str(m2.energy)]
+        labels += ["minimum: energy " + str(m2.energy) + " id " + str(m2._id)]
         self.ui.oglTS.setCoordsPath(self.tscoordspath, frame=1, labels=labels)
 
     def on_select_TS(self, item):
@@ -484,32 +485,6 @@ class MyForm(QtGui.QMainWindow):
             print "deleting minimum", min1._id, min1.energy
             self.RemoveMinimum(min1)
             self.system.database.removeMinimum(min1)
-
-
-#this is currently not used.  it may be used later though
-#    def LocalConnect(self):
-#        self.local_connect = self.system.create_local_connect()
-#        
-#        min1 = self.ui.listMinima1.selectedItems()[0].minimum
-#        min2 = self.ui.listMinima2.selectedItems()[0].minimum
-#        res = self.local_connect.connect(min1, min2)
-#        ntriplets = len(res.new_transition_states)
-#        
-#        path = []
-#        for i in range(ntriplets):
-#            tsret, m1ret, m2ret = res.new_transition_states[i]
-#            local_path = []
-#            local_path.append(m1ret[0])
-#            local_path.append(tsret.coords)
-#            local_path.append(m2ret[0])
-#            smoothpath = self.system.smooth_path(local_path)
-#            path += list(smoothpath)
-#        
-#        coords = np.array(path)
-#        self.nebcoords = coords
-#        self.ui.oglPath.setCoords(coords[0,:], 1)
-#        self.ui.oglPath.setCoords(None, 2)
-#        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
     
     def doubleEndedConnect(self):
         return self._doubleEndedConnect(reconnect=False)
@@ -518,33 +493,62 @@ class MyForm(QtGui.QMainWindow):
         return self._doubleEndedConnect(reconnect=True)
 
     def _doubleEndedConnect(self, reconnect=False, min1min2=None):
-#        min1 = self.ui.listMinima1.selectedItems()[0].minimum
-#        min2 = self.ui.listMinima2.selectedItems()[0].minimum
-#        min1 = self.ui.
+        # determine which minima to connect
         if min1min2 is None:
             min1 = self.ui.oglPath.minima[1]
             min2 = self.ui.oglPath.minima[2]
         else:
             min1, min2 = min1min2
         database = self.system.database
-        double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
-                                                                       fresh_connect=reconnect)
-        double_ended_connect.connect()
-        mints, S, energies = double_ended_connect.returnPath()
-        clist = [m.coords for m in mints]
-        print "done finding path, now just smoothing path.  This can take a while"
-        smoothpath = self.system.smooth_path(clist)
-        print "done"
+        if not reconnect:
+            # check if the minima are already connected
+            double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
+                                                   fresh_connect=False, verbosity=0)
+            if double_ended_connect.graph.areConnected(min1, min2):
+                print "minima are already connected.  loading smoothed path in viewer"
+                mints, S, energies = double_ended_connect.returnPath()
+                clist = [m.coords for m in mints]
+                smoothpath = self.system.smooth_path(clist)
+                
+                coords = np.array(smoothpath)
+                self.nebcoords = coords
+                self.nebenergies = np.array(energies)
+                self.ui.oglPath.setCoords(coords[0,:], 1)
+                self.ui.oglPath.setCoords(None, 2)
+                self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
+                
+                if self.usepymol:
+                    self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
+                
+                return
+
+                
+            
         
-        coords = np.array(smoothpath)
-        self.nebcoords = coords
-        self.nebenergies = np.array(energies)
-        self.ui.oglPath.setCoords(coords[0,:], 1)
-        self.ui.oglPath.setCoords(None, 2)
-        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
+        from double_ended_connect_runner import DECRunner
+        decrunner = DECRunner(self.system, self.system.database, min1, min2)
+        self.double_ended_connect_runs.append(decrunner)
+        decrunner.start()
         
-        if self.usepymol:
-            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
+#        return
+#        double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
+#                                                                       fresh_connect=reconnect)
+#        double_ended_connect.connect()
+#        mints, S, energies = double_ended_connect.returnPath()
+#        clist = [m.coords for m in mints]
+#        print "done finding path, now just smoothing path.  This can take a while"
+#        smoothpath = self.system.smooth_path(clist)
+#        print "done"
+#        
+#        coords = np.array(smoothpath)
+#        self.nebcoords = coords
+#        self.nebenergies = np.array(energies)
+#        self.ui.oglPath.setCoords(coords[0,:], 1)
+#        self.ui.oglPath.setCoords(None, 2)
+#        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
+#        
+#        if self.usepymol:
+#            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
      
     def connect_in_optim(self):
         """spawn an OPTIM job and retrieve the minima and transition states 
