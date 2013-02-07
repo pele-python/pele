@@ -204,7 +204,7 @@ class NEBTimeseries(MPLWidget):
         
 class NEBExplorer(QtGui.QMainWindow):
     def __init__(self, parent=None, system=None, app=None):
-        QtGui.QMainWindow.__init__(self)
+        QtGui.QMainWindow.__init__(self, parent=parent)
     
         self.ui = UI()
         self.ui.setupUi(self)

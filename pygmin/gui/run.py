@@ -235,7 +235,7 @@ class MyForm(QtGui.QMainWindow):
         from neb_explorer import NEBExplorer
         
         if not hasattr(self, "nebexplorer"):
-            self.nebexplorer = NEBExplorer(system=self.system, app=self.app)
+            self.nebexplorer = NEBExplorer(system=self.system, app=self.app, parent=self)
         self.nebexplorer.show()
         self.nebexplorer.new_neb(coords1, coords2)
         
