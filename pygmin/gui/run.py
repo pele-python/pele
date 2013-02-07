@@ -21,7 +21,7 @@ from pygmin.gui.ui.dgraph_dlg import DGraphDialog
 from pygmin.gui.nebdlg import NEBDialog
 from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
 from double_ended_connect_runner import DECRunner
-from connect_run_dlj import ConnectViewer
+from connect_run_dlg import ConnectViewer
 
 
 global pick_count
@@ -274,7 +274,7 @@ class MyForm(QtGui.QMainWindow):
 
         if not hasattr(self, "dgraph_dlg"):
             self.minimum_selecter = minimum_selecter
-            self.dgraph_dlg = DGraphDialog(self.system.database)
+            self.dgraph_dlg = DGraphDialog(self.system.database, parent=self)
             self.dgraph_dlg.minimum_selected.connect(minimum_selecter)
         else:
             self.dgraph_dlg.rebuild_disconnectivity_graph()

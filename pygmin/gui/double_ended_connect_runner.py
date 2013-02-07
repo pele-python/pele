@@ -82,7 +82,7 @@ class DECProcess(mp.Process):
         mints, S, energies = self.connect.returnPath()
         clist = [m.coords for m in mints]
         smoothpath = self.system.smooth_path(clist)
-        return smoothpath
+        return smoothpath, S, energies
     
     def test_success(self):
         return self.connect.graph.areConnected(self.m1local, self.m2local)
@@ -99,8 +99,8 @@ class DECProcess(mp.Process):
         
         if success:
             # return the smoothed path, or None if not succsessful
-            smoothpath = self.get_smoothed_path()
-            self.comm.send(("smoothed path", smoothpath))
+            pathdata = self.get_smoothed_path()
+            self.comm.send(("smoothed path", pathdata))
         
         # send signal we're done here
         self.comm.send(("finished",))
@@ -243,7 +243,8 @@ class DECRunner(QtCore.QObject):
         elif message[0] == "success":
             self.success = message[1]
         elif message[0] == "smoothed path":
-            self.smoothed_path = message[1]
+            pathdata = message[1]
+            self.smoothed_path, self.S, self.energies = pathdata
         elif message[0] == "finished":
             self.finished()
         

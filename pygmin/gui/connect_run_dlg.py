@@ -8,6 +8,8 @@ from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 from pygmin.gui.connect_run_ui import Ui_MainWindow as UI
 from pygmin.utils.events import Signal
 from pygmin.gui.double_ended_connect_runner import DECRunner
+from pygmin.gui.ui.mplwidget import MPLWidget
+
 
 
 class OutLog(object):
@@ -47,6 +49,20 @@ class OutLog(object):
     
     def flush(self):
         pass
+
+class ConnectEnergyWidget(MPLWidget):
+    def __init__(self, parent=None):
+        #QtGui.QWidget
+        MPLWidget.__init__(self, parent=parent)
+        #self.canvas = MPLWidget(self)
+
+    def update_gui(self, S, E):
+        self.axes.clear()
+        self.axes.set_xlabel("distance along the path")
+        self.axes.set_ylabel("energy")
+#        self.axes.set_title("")
+        self.axes.plot(S, E, '-o')
+        self.draw()
 
 
 class ConnectViewer(QtGui.QMainWindow):
@@ -89,6 +105,10 @@ class ConnectViewer(QtGui.QMainWindow):
         
         self.decrunner = DECRunner(system, database, min1, min2, outstream=self.textEdit_writer)
         self.decrunner.on_finished.connect(self.on_finished)
+        
+        self.wgt_energies = ConnectEnergyWidget()
+        self.view_energies = self.new_view("Energies", self.wgt_energies, QtCore.Qt.TopDockWidgetArea)
+
 
     def start(self):
         self.decrunner.start()
@@ -97,9 +117,23 @@ class ConnectViewer(QtGui.QMainWindow):
         print "success", self.decrunner.success
 #        print "success", self.decrunner.smoothed_path
         if self.decrunner.success:
+            # get the path data
             self.smoothed_path = np.array(self.decrunner.smoothed_path)
+            self.S = np.array(self.decrunner.S)
+            self.energies = np.array(self.decrunner.energies)
 #            print self.smoothed_path.shape
+
+            # show the smoothed path in the ogl viewer
             self.ogl.setCoordsPath(self.smoothed_path)
+            
+            # plot the energies
+            self.wgt_energies.update_gui(self.S, self.energies)
+
+    def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
+        child = QtGui.QDockWidget(title, self)
+        child.setWidget(widget)
+        self.addDockWidget(pos, child)
+        return child
 
         
 

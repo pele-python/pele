@@ -31,8 +31,8 @@ class _TSListItem(QListWidgetItem):
 
 
 class ConnectExplorerDialog(QDialog):
-    def __init__(self, system, app):
-        super(ConnectExplorerDialog, self).__init__()
+    def __init__(self, system, app, parent=None):
+        super(ConnectExplorerDialog, self).__init__(parent=parent)
         
         self.system = system
         self.app = app
