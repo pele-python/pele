@@ -540,7 +540,7 @@ class MyForm(QtGui.QMainWindow):
         # store pointers
         self.double_ended_connect_runs.append(decviewer)
 #        self.decrunner = decrunner
-        self.decviewer = decviewer
+#        self.decviewer = decviewer
         
 #        return
 #        double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
@@ -620,7 +620,28 @@ class MyForm(QtGui.QMainWindow):
         self.local_connect_explorer.runNEB()
 
 
+    def on_btn_close_all_clicked(self):
+        print "closing all windows"
+        for dv in self.double_ended_connect_runs:
+            dv.hide()
+#            del dv
+        self.double_ended_connect_runs = []
+
+        try:
+            self.local_connect_explorer.hide()
+            del self.local_connect_explorer
+        except AttributeError: pass
+
+        try:        
+            self.dgraph_dlg.hide()
+            del self.dgraph_dlg
+        except AttributeError: pass
         
+        try:
+            self.nebexplorer.hide()
+            del self.nebexplorer
+        except AttributeError: pass
+
         
 #def refresh_pl():
     #pl.pause(0.000001)    

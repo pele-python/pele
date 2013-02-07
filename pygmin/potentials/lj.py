@@ -30,11 +30,11 @@ class LJ(BasePotential):
         else:
 #            self.getSep = self.getSep_periodic
             self.periodic = True
-        print "using Lennard-Jones potential", self.sig, self.eps, 
-        if self.periodic: 
-            print "periodic with boxl ", self.boxl
-        else:
-            print ""
+#        print "using Lennard-Jones potential", self.sig, self.eps, 
+#        if self.periodic: 
+#            print "periodic with boxl ", self.boxl
+#        else:
+#            print ""
         
 #        self.getEnergy = self.getEnergySlow
 #        self.getEnergyGradient = self.getEnergyGradientSlow

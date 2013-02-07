@@ -5,9 +5,8 @@ incorporated back into the master database
 """
 
 import multiprocessing as mp
-import threading as th
 import sys
-import time
+import signal
 from PyQt4 import QtCore, QtGui
 import numpy as np
 
@@ -77,6 +76,8 @@ class DECProcess(mp.Process):
         self.min1, self.min2 = min1, min2
         self.pipe_stdout = pipe_stdout
         self.return_smoothed_path = return_smoothed_path
+        
+        self.finished = False
 
     def get_smoothed_path(self):
         mints, S, energies = self.connect.returnPath()
@@ -103,7 +104,14 @@ class DECProcess(mp.Process):
             self.comm.send(("smoothed path", pathdata))
         
         # send signal we're done here
+        self.finished = True
         self.comm.send(("finished",))
+    
+    def terminate_early(self):
+        sys.stderr.write("caught signal, cleaning up and exiting\n")
+        if not self.finished:
+            self.clean_up()
+        sys.exit(0)
     
     def do_double_ended_connect(self):
         db = self.system.create_database()
@@ -119,10 +127,13 @@ class DECProcess(mp.Process):
         self.connect.connect()
     
     def run(self):
+        signal.signal(signal.SIGTERM, self.terminate_early)
+        signal.signal(signal.SIGINT, self.terminate_early)
         if self.pipe_stdout:
 #            print >> sys.stderr, "stderr"
             sys.stdout = OutLog(self.comm)
 #            print >> sys.stderr, "stderr2"
+
         self.do_double_ended_connect()
         self.clean_up()
 
