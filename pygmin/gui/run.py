@@ -528,17 +528,18 @@ class MyForm(QtGui.QMainWindow):
                 
         # make the connect viewer
         
-        decviewer = ConnectViewer(parent=self, app=self.app)
-        decrunner = DECRunner(self.system, self.system.database, min1, min2,
-                              outstream=decviewer.textEdit_writer)
+        
+        decviewer = ConnectViewer(self.system, self.system.database, min1, min2, parent=self, app=self.app)
+#        decrunner = DECRunner(self.system, self.system.database, min1, min2,
+#                              outstream=decviewer.textEdit_writer)
         
         print "starting double ended"
         decviewer.show()
-        decrunner.start()
+        decviewer.start()
         
         # store pointers
-        self.double_ended_connect_runs.append((decrunner,decviewer))
-        self.decrunner = decrunner
+        self.double_ended_connect_runs.append(decviewer)
+#        self.decrunner = decrunner
         self.decviewer = decviewer
         
 #        return

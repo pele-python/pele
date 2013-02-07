@@ -11,6 +11,8 @@ import time
 from PyQt4 import QtCore, QtGui
 import numpy as np
 
+from pygmin.utils.events import Signal
+
 class UnboundMinimum(object):
     def __init__(self, minimum):
         self._id = minimum._id
@@ -29,11 +31,9 @@ class UnboundTransitionState(object):
 
 class OutLog(object):
     """for redirecting stdout or stderr
-    (edit, out=None, color=None) -> can write stdout, stderr to a
-    QTextEdit.
-    edit = QTextEdit
-    out = alternate stream ( can be the original sys.stdout )
-    color = alternate color (i.e. color stderr a different color)
+    
+    everytime something is written to this object, it is sent through
+    the pipe `conn`.  
     
     from http://www.riverbankcomputing.com/pipermail/pyqt/2009-February/022025.html
     """
@@ -41,7 +41,7 @@ class OutLog(object):
         self.conn = conn
 
     def write(self, m):
-        sys.stderr.write(":sending message:"+ m)
+#        sys.stderr.write(":sending message:"+ m)
         self.conn.send(("stdout", m))
     
     def flush(self):
@@ -51,21 +51,59 @@ class OutLog(object):
 class DECProcess(mp.Process):
     """This object will run in a separate process and will actually do the connect run
     
-    it will
+    when the run is finished the minima and transition states found will be sent
+    back through the pipe as UnboundMinimum and UnboundTransitionState objects
+    
+    Parameters
+    ----------
+    comm : pipe
+        child end of a mp.Pipe()
+    system : 
+    min1, min2 : 
+        the minima to try to connect
+    pipe_stdout : bool
+        if true log messages will be sent back through the pipe
+    return_smoothed_path : bool
+        if the run ends successfully the smoothed path will be sent
+        back through the pipe
+    
     """
-    def __init__(self, comm, system, min1, min2, pipe_stdout=True):
+    def __init__(self, comm, system, min1, min2, pipe_stdout=True,
+                  return_smoothed_path=True):
         mp.Process.__init__(self)
         #QtCore.QThread.__init__(self)
         self.comm = comm
         self.system = system
         self.min1, self.min2 = min1, min2
         self.pipe_stdout = pipe_stdout
+        self.return_smoothed_path = return_smoothed_path
+
+    def get_smoothed_path(self):
+        mints, S, energies = self.connect.returnPath()
+        clist = [m.coords for m in mints]
+        smoothpath = self.system.smooth_path(clist)
+        return smoothpath
+    
+    def test_success(self):
+        return self.connect.graph.areConnected(self.m1local, self.m2local)
     
     def clean_up(self):
         "send the lists of transition states and minima back to the parent process"
         minima = [UnboundMinimum(m) for m in self.db.minima()]
         tslist = [UnboundTransitionState(ts) for ts in self.db.transition_states()]
         self.comm.send(("new coords", minima, tslist))
+        
+        # return the success status
+        success = self.test_success()
+        self.comm.send(("success", success))
+        
+        if success:
+            # return the smoothed path, or None if not succsessful
+            smoothpath = self.get_smoothed_path()
+            self.comm.send(("smoothed path", smoothpath))
+        
+        # send signal we're done here
+        self.comm.send(("finished",))
     
     def do_double_ended_connect(self):
         db = self.system.create_database()
@@ -73,12 +111,12 @@ class DECProcess(mp.Process):
         
         # min1 and min2 are associated with the old database, we need to create
         # the minima again using the new database
-        m1 = db.addMinimum(self.min1.energy, self.min1.coords)
-        m2 = db.addMinimum(self.min2.energy, self.min2.coords)
+        self.m1local = db.addMinimum(self.min1.energy, self.min1.coords)
+        self.m2local = db.addMinimum(self.min2.energy, self.min2.coords)
         
-        connect = self.system.get_double_ended_connect(m1, m2, db,
+        self.connect = self.system.get_double_ended_connect(self.m1local, self.m2local, db,
                                                        fresh_connect=True)
-        connect.connect()
+        self.connect.connect()
     
     def run(self):
         if self.pipe_stdout:
@@ -88,96 +126,48 @@ class DECProcess(mp.Process):
         self.do_double_ended_connect()
         self.clean_up()
 
-class Runner(QtCore.QObject):
-    """this class will control spawning parallel jobs in the GUI"""
-    def __init__(self, ProcessClass, *args, **kwargs):
-        self.process_args = args
-        self.process_kwargs = kwargs
-        self.ProcessClass = ProcessClass
-        self.mysubprocess = None
-    
-    def poll(self):
-        print "polling"
-        if not self.mysubprocess.is_alive():
-            self.refresh_timer.stop()
-            return
-        if not self.parent_conn.poll():
-            return
-        
-        message = self.parent_conn.recv()
-        self.process_message(message)
-
-    def start(self):
-        if self.mysubprocess:
-            if self.mysubprocess.is_alive():
-                return
-        parent_conn, child_conn = mp.Pipe()
-        self.conn = parent_conn
-        self.parent_conn = parent_conn
-        
-        self.refresh_timer = QtCore.QTimer()
-        self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(0.)
-
-        self.mysubprocess = self.ProcessClass(child_conn, *self.process_args, **self.process_kwargs)
-        self.mysubprocess.start()
-    
-
-    def process_message(self, message):
-        raise NotImplementedError
-
-class DECRunnerNEW(Runner):
-    """this is the object that the gui creates to spawn a double ended connect run
-    
-    This will spawn a new process and deal with the communication
-    """
-    def __init__(self, system, database, min1, min2):
-        super(DECRunner, self).__init__(DECProcess, system, min1, min2)
-        self.database = database
-
-    def add_minima_transition_states(self, new_minima, new_ts):
-        print "processing new minima and ts"
-        old2new = dict()
-        for m in new_minima:
-            mnew = self.database.addMinimum(m.energy, m.coords)
-            old2new[m._id] = mnew
-        
-        for ts in new_ts:
-            m1id = ts._minimum1_id
-            m2id = ts._minimum2_id
-            m1new = old2new[m1id]
-            m2new = old2new[m2id]
-            self.database.addTransitionState(ts.energy, ts.coords, m1new, 
-                                             m2new, eigenval=ts.eigenval, 
-                                             eigenvec=ts.eigenvec)
-        nmin = len(new_minima)
-        nts = len(new_ts)
-        print "finished connect run: adding", nmin, "new minima, and", nts, "new transition states to database"
-
-    
-    def process_message(self, message):
-        new_minima, new_ts = message
-        self.add_minima_transition_states(new_minima, new_ts)
-
 
 class DECRunner(QtCore.QObject):
-    """this is the object that the gui creates to spawn a double ended connect run
-    
+    """Spawn a double ended connect run in a child process
+
     This will spawn a new process and deal with the communication
+    
+    
+    Parameters
+    ----------
+    system : 
+    database : Database
+        The minima and transition states found will be added to the 
+        database after the connect run is finished
+    min1, min2 : Munimum objects
+        the minima to try to connect
+    outstream : an object with outstream.write(mystring)
+        the log messages from the connect run will be redirected here
+    return_smoothed_path : bool
+        if True the final smoothed path will be calculated
+    
+    Attributes
+    ----------
+    on_finished : Signal
+        this signal will be called when the connect job is finished
+    
     """
-    def __init__(self, system, database, min1, min2, outstream=None):
+    def __init__(self, system, database, min1, min2, outstream=None,
+                  return_smoothed_path=True):
         QtCore.QObject.__init__(self)
         self.system = system
         self.database = database
         self.min1, self.min2 = min1, min2
+        self.return_smoothed_path = return_smoothed_path
         
         self.outstream = outstream
         
-        #child_conn = self
+        self.on_finished = Signal()
+        
         self.decprocess = None
-#        self.lock = th.Lock()
 
     def poll(self):
+        """this does the checking in the background to see if any messages have been passed"""
 #        if not self.decprocess.is_alive():
 #            self.refresh_timer.stop()
 #            return
@@ -188,6 +178,7 @@ class DECRunner(QtCore.QObject):
         self.process_message(message)
     
     def start(self):
+        """start the connect job"""
         if(self.decprocess):
             if(self.decprocess.is_alive()):
                 return
@@ -207,34 +198,53 @@ class DECRunner(QtCore.QObject):
 
 
     def add_minima_transition_states(self, new_minima, new_ts):
+        """Add the minima and transition states found to the database
+        
+        convert the UnboundMinimum and UnboundTransitionStates to ones
+        bound to self.database
+        """
         print "processing new minima and ts"
+        self.newminima = set()
+        self.newtransition_states = set()
         old2new = dict()
         for m in new_minima:
             mnew = self.database.addMinimum(m.energy, m.coords)
             old2new[m._id] = mnew
+            self.newminima.add(mnew)
         
         for ts in new_ts:
             m1id = ts._minimum1_id
             m2id = ts._minimum2_id
             m1new = old2new[m1id]
             m2new = old2new[m2id]
-            self.database.addTransitionState(ts.energy, ts.coords, m1new, 
+            tsnew = self.database.addTransitionState(ts.energy, ts.coords, m1new, 
                                              m2new, eigenval=ts.eigenval, 
                                              eigenvec=ts.eigenvec)
+            self.newtransition_states.add(tsnew)
         nmin = len(new_minima)
         nts = len(new_ts)
-        print "finished connect run: adding", nmin, "new minima, and", nts, "new transition states to database"
+        print "finished connect run: adding", nmin, "minima, and", nts, "transition states to database"
 
     
+    def finished(self):
+        """the job is finished, do some clean up"""
+        self.decprocess.join()
+        self.decprocess.terminate()
+        self.decprocess.join()
+        print "done killing job"
+        self.on_finished()
+    
     def process_message(self, message):
-        sys.stderr.write("recieved message" + message[0] + "\n")
-        if message[0] == "new coords":
+        if message[0] == "stdout":
+            self.outstream.write(message[1])
+        elif message[0] == "new coords":
             new_minima, new_ts = message[1:]
             self.add_minima_transition_states(new_minima, new_ts)
-        elif message[0] == "stdout":
-#            print "recieved stdout message"
-#            print >> sys.stderr,  "recieved stdout message (stderr)", message[1]
-            sys.stderr.write(":recieving message:" + message[1])
-            self.outstream.write(message[1])
+        elif message[0] == "success":
+            self.success = message[1]
+        elif message[0] == "smoothed path":
+            self.smoothed_path = message[1]
+        elif message[0] == "finished":
+            self.finished()
         
         
