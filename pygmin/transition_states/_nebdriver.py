@@ -151,7 +151,7 @@ class NEBDriver(object):
             
         self.update_event(path=np.array(self.path), energies=np.array(energies),
                        distances=np.array(distances), stepnum=self.steps_total,
-                       rms=1.0, k = self.last_k)
+                       rms=1.0, k = self.last_k, event="initial")
         
     def run(self):
                 #determine the number of iterations                
@@ -198,6 +198,8 @@ class NEBDriver(object):
             
                 if self.verbose >= 0:
                     print "NEB finished after %d steps, rms %e"%(res.nsteps, res.rms)
+                    
+                self._send_finish_event(res)
                 return neb
             
             distances = []
@@ -254,4 +256,14 @@ class NEBDriver(object):
     def _process_event(self, path=None, energies=None, distances=None, stepnum=None, rms=None):
         self.update_event(path=path, energies=energies,
                        distances=distances, stepnum=stepnum+self.steps_total,
-                       rms=rms, k=self.neb.k)
+                       rms=rms, k=self.neb.k, event="update")
+        
+    def _send_finish_event(self, res):
+        distances = []
+        for i in xrange(len(res.path)-1):           
+            distances.append(np.sqrt(self.distance(res.path[i], res.path[i+1])[0]))
+
+        self.update_event(path=res.path, energies=res.energy,
+                       distances=np.array(distances), stepnum=res.nsteps,
+                       rms=res.rms, k=self.neb.k, event="final")
+        

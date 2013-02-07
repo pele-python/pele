@@ -25,7 +25,6 @@ class NEBRunner(object):
         self.on_run_finished = Signal()
         
     def run(self, coords1, coords2, path=None, run=True):
-        self.count=0
         neb = self.create_neb(coords1, coords2)
         self.neb = neb
         neb.update_event.connect(self._neb_update)
@@ -54,10 +53,10 @@ class NEBRunner(object):
         self.neb.run()
         self.on_run_finished()
         
-    def _neb_update(self, energies=None, distances=None, stepnum=None, path=None, rms=None, k=None,**kwargs):
+    def _neb_update(self, energies=None, distances=None, stepnum=None, path=None, rms=None, k=None, event="", **kwargs):
         self.app.processEvents()
-        self.count += 1
-        if self.count % self.frq == 1:
+        if (stepnum % self.frq == 0 and self.frq > 0) \
+            or event == "initial" or event == "final":
             self.stepnum.append(stepnum+self.step_shift)
             self.k.append(k)
             self.rms.append(rms)
