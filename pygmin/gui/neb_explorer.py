@@ -240,7 +240,7 @@ class NEBExplorer(QtGui.QMainWindow):
         self.view_3d = QtGui.QDockWidget("NEB parameters", self)
         self.view_3d.setWidget(self.show3d)
         self.addDockWidget(QtCore.Qt.TopDockWidgetArea, self.view_3d)
-        
+
         #self.view_3d.setFloating(True)
         self.view_3d.hide()
         self.show3d.setSystem(self.system)
@@ -281,7 +281,6 @@ class NEBExplorer(QtGui.QMainWindow):
 
     def update(self, nebrunner):
         self.show3d.setCoordsPath(nebrunner.path)
-        self.energies.highlight_frame(2)
         
     def on_actionRun_triggered(self, checked=None):
         if checked is None:

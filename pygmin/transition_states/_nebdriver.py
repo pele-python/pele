@@ -251,7 +251,7 @@ class NEBDriver(object):
         newpath.append(path[-1].copy())
         return newpath
        
-    def _process_event(self, coords=None, energies=None, distances=None, stepnum=None, rms=None):
-        self.update_event(path=self.neb.coords, energies=energies,
+    def _process_event(self, path=None, energies=None, distances=None, stepnum=None, rms=None):
+        self.update_event(path=path, energies=energies,
                        distances=distances, stepnum=stepnum+self.steps_total,
                        rms=rms, k=self.neb.k)
