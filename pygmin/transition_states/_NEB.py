@@ -246,7 +246,7 @@ class NEB(object):
         rms = np.linalg.norm(grad) / np.sqrt(self.active.size)
         
         for event in self.events:
-            event(coords=self.coords, energies=self.energies,
+            event(path=tmp, energies=self.energies,
                        distances=self.distances, stepnum=self.getEnergyCount, rms=rms)
             
         return E+Eneb, grad.reshape(grad.size)
