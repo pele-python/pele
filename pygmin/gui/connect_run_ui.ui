@@ -28,7 +28,7 @@
      <x>0</x>
      <y>0</y>
      <width>764</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -111,10 +111,58 @@
       </widget>
      </item>
     </layout>
-    <zorder>ogl</zorder>
-    <zorder>ogl</zorder>
    </widget>
   </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action3D"/>
+   <addaction name="actionEnergy"/>
+   <addaction name="actionGraph"/>
+  </widget>
+  <action name="actionEnergy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Energy</string>
+   </property>
+   <property name="toolTip">
+    <string>toggle energy window</string>
+   </property>
+  </action>
+  <action name="action3D">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>3D</string>
+   </property>
+   <property name="toolTip">
+    <string>toggle 3D viewer</string>
+   </property>
+  </action>
+  <action name="actionGraph">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Graph</string>
+   </property>
+   <property name="toolTip">
+    <string>toggle graph view</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

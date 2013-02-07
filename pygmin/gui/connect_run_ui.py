@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Wed Feb  6 18:45:42 2013
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Thu Feb  7 20:41:11 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -26,7 +35,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 22))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
@@ -80,13 +89,36 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.ogl)
         self.dockWidget_3.setWidget(self.dockWidgetContents_3)
         MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(4), self.dockWidget_3)
+        self.toolBar = QtGui.QToolBar(MainWindow)
+        self.toolBar.setObjectName(_fromUtf8("toolBar"))
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        self.actionEnergy = QtGui.QAction(MainWindow)
+        self.actionEnergy.setCheckable(True)
+        self.actionEnergy.setChecked(True)
+        self.actionEnergy.setObjectName(_fromUtf8("actionEnergy"))
+        self.action3D = QtGui.QAction(MainWindow)
+        self.action3D.setCheckable(True)
+        self.action3D.setObjectName(_fromUtf8("action3D"))
+        self.actionGraph = QtGui.QAction(MainWindow)
+        self.actionGraph.setCheckable(True)
+        self.actionGraph.setObjectName(_fromUtf8("actionGraph"))
+        self.toolBar.addAction(self.action3D)
+        self.toolBar.addAction(self.actionEnergy)
+        self.toolBar.addAction(self.actionGraph)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.dockWidget_5.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Log", None, QtGui.QApplication.UnicodeUTF8))
-        self.dockWidget_3.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3D view", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        self.dockWidget_5.setWindowTitle(_translate("MainWindow", "Log", None))
+        self.dockWidget_3.setWindowTitle(_translate("MainWindow", "3D view", None))
+        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
+        self.actionEnergy.setText(_translate("MainWindow", "Energy", None))
+        self.actionEnergy.setToolTip(_translate("MainWindow", "toggle energy window", None))
+        self.action3D.setText(_translate("MainWindow", "3D", None))
+        self.action3D.setToolTip(_translate("MainWindow", "toggle 3D viewer", None))
+        self.actionGraph.setText(_translate("MainWindow", "Graph", None))
+        self.actionGraph.setToolTip(_translate("MainWindow", "toggle graph view", None))
 
 from show3d import Show3DWithSlider

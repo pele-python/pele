@@ -110,13 +110,17 @@ class ConnectViewer(QtGui.QMainWindow):
         
         self.decrunner = DECRunner(system, database, min1, min2, outstream=self.textEdit_writer)
         self.decrunner.on_finished.connect(self.on_finished)
+        self.view_3D = self.ui.dockWidget_3
+        self.ui.action3D.setChecked(True)
         
         self.wgt_energies = ConnectEnergyWidget(parent=self)
         self.view_energies = self.new_view("Energies", self.wgt_energies, QtCore.Qt.TopDockWidgetArea)
+        self.ui.actionGraph.setChecked(True)
 
         self.wgt_graphview = GraphViewWidget(parent=self, app=app)
         self.view_graphview = self.new_view("Graph View", self.wgt_graphview, QtCore.Qt.TopDockWidgetArea)
-
+        self.view_graphview.hide()
+        self.ui.actionGraph.setChecked(False)
 
     def start(self):
         self.decrunner.start()
@@ -147,7 +151,19 @@ class ConnectViewer(QtGui.QMainWindow):
         self.addDockWidget(pos, child)
         return child
 
-        
+    def toggle_view(self, view, show):
+        if show:
+            view.show()
+        else:
+            view.hide()
+
+    def on_actionEnergy_toggled(self, checked):
+        self.toggle_view(self.view_energies, checked)
+    def on_actionGraph_toggled(self, checked):
+        self.toggle_view(self.view_graphview, checked)
+    def on_action3D_toggled(self, checked):
+        self.toggle_view(self.view_3D, checked)
+
 
 #
 # only testing stuff below here
