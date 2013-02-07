@@ -78,6 +78,7 @@ class MyForm(QtGui.QMainWindow):
         self.transition=None
         self.app = app
         self.double_ended_connect_runs = []
+        self.pick_count = 0
         
         #try to load the pymol viewer.  
         self.usepymol = config.getboolean("gui", "use_pymol")
@@ -255,6 +256,13 @@ class MyForm(QtGui.QMainWindow):
         if hasattr(self, "nebcoords"):
             self.ui.oglPath.setCoords(self.nebcoords[i,:])
     
+    def on_minimum_picked(self, min1):
+        if (self.pick_count % 2) == 0:
+            self._SelectMinimum1(min1)
+        else:
+            self._SelectMinimum2(min1)
+        self.pick_count += 1
+
     def show_disconnectivity_graph(self):
         """show the disconnectivity graph 
         
@@ -291,77 +299,88 @@ class MyForm(QtGui.QMainWindow):
         make it interactive, so that when you click on a point
         that minima is selected
         """
-        import pylab as pl
-        import networkx as nx
-        pl.ion()
-        pl.clf()
-        ax = pl.gca()
-        fig = pl.gcf()
         
-        #get the graph object, eliminate nodes without edges
-        graphwrapper = Graph(self.system.database)
-        graph = graphwrapper.graph
-        degree = graph.degree()
-        nodes = [n for n, nedges in degree.items() if nedges > 0]
-        graph = graph.subgraph(nodes)
+        self.pick_count = 0
+        from pygmin.gui.graph_viewer import GraphViewDialog
+        if not hasattr(self, "graphview"):
+            self.graphview = GraphViewDialog(self.system.database, parent=self, app=self.app)
+            self.graphview.widget.on_minima_picked.connect(self.on_minimum_picked)
+        self.graphview.show()
+        self.graphview.widget.make_graph()
+        self.graphview.widget.show_graph()
+        return
         
-        #get the layout of the nodes from networkx
-        layout = nx.spring_layout(graph)
-        layoutlist = layout.items()
-        xypos = np.array([xy for n, xy in layoutlist])
-        #color the nodes by energy
-        e = np.array([m.energy for m, xy in layoutlist])
-        #plot the nodes
-        points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
-                            s=8**2, c=e, cmap=pl.cm.autumn)
-        fig.colorbar(points)
-        #label the nodes
-        ids = [n._id for n, xy in layoutlist]
-        for i in range(len(ids)):
-            ax.annotate( ids[i], xypos[i] )
-        
-        
-    
-        #plot the edges as lines
-        for u, v in graph.edges():
-            line = np.array([layout[u], layout[v]])
-            ax.plot(line[:,0], line[:,1], '-k')
-        
-        #scale the axes so the points are not cutoff
-        xmin, ymin = np.min(xypos, 0)
-        xmax, ymax = np.max(xypos, 0)
-        dx = (xmax - xmin)*.1
-        dy = (ymax - ymin)*.1
-        ax.set_xlim([xmin-dx, xmax+dx])
-        ax.set_ylim([ymin-dy, ymax+dy])
-        
-        global pick_count
-        pick_count = 0
-
-        def on_pick(event):
-            if event.artist != points:
-#                print "you clicked on something other than a node"
-                return True
-            thispoint = event.artist
-            ind = event.ind[0]
-            min1 = layoutlist[ind][0]
-            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-            global pick_count
-            #print pick_count
-            pick_count += 1
-            if (pick_count % 2) == 0:
-                self._SelectMinimum1(min1)
-            else:
-                self._SelectMinimum2(min1)
-
-        fig = pl.gcf()
-        cid = fig.canvas.mpl_connect('pick_event', on_pick)
-        
-        #ids = dict([(n, n._id) for n in nodes])
-        #nx.draw(graph, labels=ids, nodelist=nodes)
-        #ax.draw()
-#        pl.draw()
-        pl.show()
+#        import pylab as pl
+#        import networkx as nx
+#        pl.ion()
+#        pl.clf()
+#        ax = pl.gca()
+#        fig = pl.gcf()
+#        
+#        #get the graph object, eliminate nodes without edges
+#        graphwrapper = Graph(self.system.database)
+#        graph = graphwrapper.graph
+#        degree = graph.degree()
+#        nodes = [n for n, nedges in degree.items() if nedges > 0]
+#        graph = graph.subgraph(nodes)
+#        
+#        #get the layout of the nodes from networkx
+#        layout = nx.spring_layout(graph)
+#        layoutlist = layout.items()
+#        xypos = np.array([xy for n, xy in layoutlist])
+#        #color the nodes by energy
+#        e = np.array([m.energy for m, xy in layoutlist])
+#        #plot the nodes
+#        points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
+#                            s=8**2, c=e, cmap=pl.cm.autumn)
+#        fig.colorbar(points)
+#        #label the nodes
+#        ids = [n._id for n, xy in layoutlist]
+#        for i in range(len(ids)):
+#            ax.annotate( ids[i], xypos[i] )
+#        
+#        
+#    
+#        #plot the edges as lines
+#        for u, v in graph.edges():
+#            line = np.array([layout[u], layout[v]])
+#            ax.plot(line[:,0], line[:,1], '-k')
+#        
+#        #scale the axes so the points are not cutoff
+#        xmin, ymin = np.min(xypos, 0)
+#        xmax, ymax = np.max(xypos, 0)
+#        dx = (xmax - xmin)*.1
+#        dy = (ymax - ymin)*.1
+#        ax.set_xlim([xmin-dx, xmax+dx])
+#        ax.set_ylim([ymin-dy, ymax+dy])
+#        
+#        global pick_count
+#        pick_count = 0
+#
+#        def on_pick(event):
+#            if event.artist != points:
+##                print "you clicked on something other than a node"
+#                return True
+#            thispoint = event.artist
+#            ind = event.ind[0]
+#            min1 = layoutlist[ind][0]
+#            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+#            global pick_count
+#            #print pick_count
+#            pick_count += 1
+#            if (pick_count % 2) == 0:
+#                self._SelectMinimum1(min1)
+#            else:
+#                self._SelectMinimum2(min1)
+#
+#        fig = pl.gcf()
+#        cid = fig.canvas.mpl_connect('pick_event', on_pick)
+#        
+#        #ids = dict([(n, n._id) for n in nodes])
+#        #nx.draw(graph, labels=ids, nodelist=nodes)
+#        #ax.draw()
+##        pl.draw()
+#        pl.show()
         
     
     def showEnergies(self):

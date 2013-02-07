@@ -9,6 +9,7 @@ from pygmin.gui.connect_run_ui import Ui_MainWindow as UI
 from pygmin.utils.events import Signal
 from pygmin.gui.double_ended_connect_runner import DECRunner
 from pygmin.gui.ui.mplwidget import MPLWidget
+from pygmin.gui.graph_viewer import GraphViewWidget
 
 
 
@@ -95,6 +96,10 @@ class ConnectViewer(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.ui.centralwidget.hide()
         
+        self.app = app
+        self.system = system
+        self.database = database
+        
         self.ogl = self.ui.ogl
         self.ogl.setSystem(system)
 
@@ -106,8 +111,11 @@ class ConnectViewer(QtGui.QMainWindow):
         self.decrunner = DECRunner(system, database, min1, min2, outstream=self.textEdit_writer)
         self.decrunner.on_finished.connect(self.on_finished)
         
-        self.wgt_energies = ConnectEnergyWidget()
+        self.wgt_energies = ConnectEnergyWidget(parent=self)
         self.view_energies = self.new_view("Energies", self.wgt_energies, QtCore.Qt.TopDockWidgetArea)
+
+        self.wgt_graphview = GraphViewWidget(parent=self, app=app)
+        self.view_graphview = self.new_view("Graph View", self.wgt_graphview, QtCore.Qt.TopDockWidgetArea)
 
 
     def start(self):
@@ -128,6 +136,10 @@ class ConnectViewer(QtGui.QMainWindow):
             
             # plot the energies
             self.wgt_energies.update_gui(self.S, self.energies)
+            
+            # plot the graph of minima
+            self.wgt_graphview.make_graph(database=self.decrunner.database, minima=self.decrunner.newminima)
+            self.wgt_graphview.show_graph()
 
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
         child = QtGui.QDockWidget(title, self)

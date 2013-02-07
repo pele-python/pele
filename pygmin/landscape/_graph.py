@@ -90,8 +90,14 @@ class Graph(object):
         add only those minima from the list `minima` to the graph.
         Don't add any transition states
         """
+        minima = set(minima)
         for m in minima:
             self.graph.add_node(m)        
+        for ts in self.storage.transition_states():
+            m1, m2 = ts.minimum1, ts.minimum2
+            if m1 in minima:
+                if m2 in minima:
+                    self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
 
     def refresh(self):
         self.connected_components.setRebuild()
