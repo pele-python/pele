@@ -188,6 +188,56 @@
                 </property>
                </widget>
               </item>
+              <item row="3" column="1">
+               <widget class="QPushButton" name="btnReconnect">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a fresh double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Reconnect</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QPushButton" name="btnconnect_in_optim">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spawn an external OPTIM job&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Connect in OPTIM</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QPushButton" name="btnConnect">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Connect</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0" colspan="2">
+               <widget class="QPushButton" name="btnDisconnectivity_graph">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>disconnectivity graph</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QPushButton" name="btnShowGraph">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>show graph</string>
+                </property>
+               </widget>
+              </item>
               <item row="2" column="0">
                <widget class="QPushButton" name="btnEnergies">
                 <property name="toolTip">
@@ -227,63 +277,6 @@
                 </property>
                 <property name="text">
                  <string>Invert</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QPushButton" name="btnConnect">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Connect</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0" colspan="2">
-               <widget class="QPushButton" name="btnDisconnectivity_graph">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>disconnectivity graph</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QPushButton" name="btnShowGraph">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>show graph</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QPushButton" name="btnReconnect">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a fresh double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Reconnect</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QPushButton" name="btnconnect_in_optim">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spawn an external OPTIM job&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Connect in OPTIM</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0" colspan="2">
-               <widget class="QPushButton" name="btn_launch_connect_explorer">
-                <property name="text">
-                 <string>launch connect explorer</string>
                 </property>
                </widget>
               </item>
@@ -342,7 +335,7 @@
      <x>0</x>
      <y>0</y>
      <width>839</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSimulation">
@@ -408,13 +401,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Show3D</class>
+   <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
    <header>show3d.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Show3DWithSlider</class>
+   <class>Show3D</class>
    <extends>QWidget</extends>
    <header>show3d.h</header>
    <container>1</container>
@@ -707,22 +700,6 @@
     <hint type="destinationlabel">
      <x>419</x>
      <y>311</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btn_launch_connect_explorer</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>launch_connect_explorer()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>655</x>
-     <y>577</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>837</x>
-     <y>536</y>
     </hint>
    </hints>
   </connection>

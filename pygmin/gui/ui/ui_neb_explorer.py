@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_neb_explorer.ui'
+# Form implementation generated from reading ui file 'ui/ui_neb_explorer.ui'
 #
-# Created: Fri Feb  1 14:07:12 2013
+# Created: Thu Feb  7 00:13:53 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -22,7 +22,7 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 29))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         MainWindow.setMenuBar(self.menubar)
         self.toolBar = QtGui.QToolBar(MainWindow)
@@ -76,6 +76,8 @@ class Ui_MainWindow(object):
         icon4.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/open.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionLoad.setIcon(icon4)
         self.actionLoad.setObjectName(_fromUtf8("actionLoad"))
+        self.actionTS = QtGui.QAction(MainWindow)
+        self.actionTS.setObjectName(_fromUtf8("actionTS"))
         self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionReset)
         self.toolBar.addAction(self.actionParams)
@@ -88,6 +90,8 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionNimages)
         self.toolBar.addAction(self.actionRms)
         self.toolBar.addAction(self.action3D)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionTS)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -113,5 +117,7 @@ class Ui_MainWindow(object):
         self.actionSave.setToolTip(QtGui.QApplication.translate("MainWindow", "save path to file", None, QtGui.QApplication.UnicodeUTF8))
         self.actionLoad.setText(QtGui.QApplication.translate("MainWindow", "load", None, QtGui.QApplication.UnicodeUTF8))
         self.actionLoad.setToolTip(QtGui.QApplication.translate("MainWindow", "load path from file", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionTS.setText(QtGui.QApplication.translate("MainWindow", "TS refinement", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionTS.setToolTip(QtGui.QApplication.translate("MainWindow", "switch to ts refinement", None, QtGui.QApplication.UnicodeUTF8))
 
 import resources_rc

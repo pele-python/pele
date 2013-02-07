@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'connect_explorer_ui.ui'
 #
-# Created: Tue Jan 29 11:10:43 2013
+# Created: Wed Feb  6 23:35:45 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ class Ui_Form(object):
         self.verticalLayout_2 = QtGui.QVBoxLayout()
         self.verticalLayout_2.setContentsMargins(0, -1, -1, -1)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
-        self.wgt_neb = NEBWidget(Form)
+        self.wgt_neb = NEBEnergyWidget(Form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -89,5 +89,5 @@ class Ui_Form(object):
         self.pushButton.setText(QtGui.QApplication.translate("Form", "refine all", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "Transition states found", None, QtGui.QApplication.UnicodeUTF8))
 
-from nebdlg import NEBWidget
 from show3d import Show3DWithSlider
+from neb_explorer import NEBEnergyWidget

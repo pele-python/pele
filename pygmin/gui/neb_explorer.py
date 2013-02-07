@@ -13,6 +13,7 @@ from dlg_params import DlgParams
 from show3d import Show3DWithSlider
 import numpy as np
 import pickle
+from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
 
 class NEBRunner(object):
     def __init__(self, app, system, freq = 30):
@@ -20,7 +21,9 @@ class NEBRunner(object):
         self.on_update_gui = Signal()
         self.frq = freq
         self.app = app
-    
+        self.on_run_started = Signal()
+        self.on_run_finished = Signal()
+        
     def run(self, coords1, coords2, path=None, run=True):
         self.count=0
         neb = self.create_neb(coords1, coords2)
@@ -36,7 +39,9 @@ class NEBRunner(object):
         self.neb = neb
         neb.prepare(path=path)
         if(run):
+            self.on_run_started()
             neb.run()
+            self.on_run_finished()
         
     def continue_run(self):
         path = self.neb.path
@@ -45,7 +50,9 @@ class NEBRunner(object):
         neb.update_event.connect(self._neb_update)
         neb.prepare(path=path)
         self.neb = neb
+        self.on_run_started()
         self.neb.run()
+        self.on_run_finished()
         
     def _neb_update(self, energies=None, distances=None, stepnum=None, path=None, rms=None, k=None,**kwargs):
         self.app.processEvents()
@@ -74,7 +81,7 @@ class NEBRunner(object):
                                                        fresh_connect=True)
         local_connect = double_ended._getLocalConnectObject()
     
-        
+        self.local_connect = local_connect
         
         return local_connect.create_neb(system.get_potential(),
                                           coords1, coords2,
@@ -86,6 +93,16 @@ class NEBEnergyWidget(MPLWidget):
         MPLWidget.__init__(self, parent=parent)
         #self.canvas = MPLWidget(self)
         self.nplots = nplots
+        self.on_neb_pick = Signal()
+        self.mpl_connect('pick_event', self.on_pick)
+     
+    def on_pick(self, event):
+#        thisline = event.artist
+#        xdata, ydata = thisline.get_data()
+#        energy = ydata[ind]
+        ind = event.ind[0]
+        self.on_neb_pick(ind)
+        return
         
     def update_gui(self, nebrunner):
         nplots = min(self.nplots, len(nebrunner.energies))
@@ -101,7 +118,14 @@ class NEBEnergyWidget(MPLWidget):
                 acc+=d
                 acc_dist.append(acc)
             self.acc_dist = acc_dist
-            self.axes.plot(acc_dist, energies, "o-", label="step %d"%stepnum)
+            
+            kwargs = {}
+            if energies is nebrunner.energies[-1]:
+                kwargs = {"picker": 5}
+
+            self.axes.plot(acc_dist, energies, "o-", label="step %d"%stepnum, **kwargs)
+            
+        self.energies = nebrunner.energies[-1]
         self.axes.legend(loc='best')
         self.draw()
         
@@ -113,7 +137,9 @@ class NEBEnergyWidget(MPLWidget):
             return
         
         if index < 0:
-            #I would like to delete the line here, but I don't know how to do it easily
+            try: self.highlight_line.remove()
+            except: pass
+            self.draw() 
             return
         
         x = self.acc_dist[index]
@@ -126,6 +152,24 @@ class NEBEnergyWidget(MPLWidget):
         self.axes.add_line(self.highlight_line)
         self.draw()
 
+    def highlight_point(self, index):
+        from matplotlib.patches import Ellipse
+        
+        if not hasattr(self, "acc_dist"):
+            return
+        
+        x = self.acc_dist[index]
+        y = self.energies[index]
+        
+        try:
+            self.highlight_circle.remove()
+        except: pass
+        x1, y1 = self.axes.transData.inverted().transform((0, 0))
+        x2, y2 = self.axes.transData.inverted().transform((30, 30))
+        width,height= np.abs(x2-x1), np.abs(y2-y1)
+        self.highlight_circle=Ellipse((x, y), width=width, height=height, fill=False)
+        self.axes.add_patch(self.highlight_circle)
+        self.draw()
 
 class NEBDistanceWidget(MPLWidget):
     def __init__(self, parent=None):
@@ -166,12 +210,16 @@ class NEBExplorer(QtGui.QMainWindow):
         self.ui.setupUi(self)
         
         self.system = system
+        self.app = app
         self.mdi = QtGui.QMdiArea(self)
         self.setCentralWidget(self.mdi)
         
         self.nebrunner = NEBRunner(app, system)
         self.nebrunner.on_update_gui.connect(self.update)
-#        
+
+        self.nebrunner.on_run_started.connect(self.run_started)
+        self.nebrunner.on_run_finished.connect(self.run_finished)
+         
 #        from dlg_params import EditParamsWidget
 #        w = QtGui.QDockWidget("NEB parameters", self)
 #        w.setWidget(EditParamsWidget(self, 
@@ -198,6 +246,16 @@ class NEBExplorer(QtGui.QMainWindow):
         self.show3d.setSystem(self.system)
         self.show3d.on_frame_updated.connect(self.set_current_frame)
         self.centralWidget().hide()
+        
+    def run_started(self):
+        self.ui.actionRun.setEnabled(False)
+        self.ui.actionReset.setEnabled(False)
+        self.ui.actionTS.setEnabled(False)
+        
+    def run_finished(self):
+        self.ui.actionRun.setEnabled(True)
+        self.ui.actionReset.setEnabled(True)
+        self.ui.actionTS.setEnabled(True)
         
     def set_current_frame(self, index, sender=None):
         self.energies.highlight_frame(index)
@@ -279,13 +337,22 @@ class NEBExplorer(QtGui.QMainWindow):
     def on_action3D_toggled(self, checked):
         self.toggle_view(self.view_3d, checked)
                 
+    def on_actionTS_triggered(self, checked=None):
+        if checked is None:
+            return
+        if not hasattr(self, "local_connect_explorer"):
+            self.local_connect_explorer = ConnectExplorerDialog(self.system, self.app)
+        self.local_connect_explorer.show()
+        self.local_connect_explorer.set_nebrunner(self.nebrunner)
+        
 def start():
     wnd.new_neb(x1, x2)
     
 if __name__ == "__main__":
     import sys
     import pylab as pl
-    
+    from OpenGL.GLUT import glutInit
+    glutInit()
     app = QtGui.QApplication(sys.argv)
     from pygmin.systems import LJCluster
     pl.ion()

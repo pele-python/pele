@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
   </widget>
@@ -46,6 +46,8 @@
    <addaction name="actionNimages"/>
    <addaction name="actionRms"/>
    <addaction name="action3D"/>
+   <addaction name="separator"/>
+   <addaction name="actionTS"/>
   </widget>
   <action name="actionRun">
    <property name="icon">
@@ -174,6 +176,14 @@
    </property>
    <property name="toolTip">
     <string>load path from file</string>
+   </property>
+  </action>
+  <action name="actionTS">
+   <property name="text">
+    <string>TS refinement</string>
+   </property>
+   <property name="toolTip">
+    <string>switch to ts refinement</string>
    </property>
   </action>
  </widget>
