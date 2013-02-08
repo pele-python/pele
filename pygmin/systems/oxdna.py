@@ -126,6 +126,28 @@ class OXDNAReseed(takestep.TakestepInterface):
         for rot in ca.rotRigid:
             rot[:] = rotations.random_aa()
 
+# this class should generate a fully random configuration
+class OXDNAReseedRandomwalk(takestep.TakestepInterface):
+    def __init__(self, radius=3.0):
+        self.radius = radius
+    
+    def takeStep(self, coords, **kwargs):
+        # easy access to coordinates
+        ca = CoordsAdapter(nrigid=coords.size/6, coords = coords)
+        
+        backbone = np.zeros(3)
+        
+        # random rotation for angle-axis vectors
+        for pos, rot in zip(ca.posRigid, ca.rotRigid):
+            backbone = backbone + rotations.vec_random( )*0.7525            
+            
+            # choose a random rotation
+            rot[:] = rotations.random_aa()
+            
+            # calcualte center of base from backgone
+            a1 = np.dot(rotations.aa2mx(rot), np.array([1., 0., 0.]))
+            pos[:]  = backbone + 0.4 * a1                        
+
 def export_xyz(fl, coords):
     ca = CoordsAdapter(nrigid=coords.size/6, coords = coords)
     fl.write("%d\n\n"%(2*ca.nrigid))
