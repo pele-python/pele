@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Thu Feb  7 20:41:11 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Fri Feb  8 13:51:19 2013
+#      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -35,7 +26,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
@@ -94,7 +85,7 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionEnergy = QtGui.QAction(MainWindow)
         self.actionEnergy.setCheckable(True)
-        self.actionEnergy.setChecked(True)
+        self.actionEnergy.setChecked(False)
         self.actionEnergy.setObjectName(_fromUtf8("actionEnergy"))
         self.action3D = QtGui.QAction(MainWindow)
         self.action3D.setCheckable(True)
@@ -102,6 +93,14 @@ class Ui_MainWindow(object):
         self.actionGraph = QtGui.QAction(MainWindow)
         self.actionGraph.setCheckable(True)
         self.actionGraph.setObjectName(_fromUtf8("actionGraph"))
+        self.actionStop = QtGui.QAction(MainWindow)
+        self.actionStop.setCheckable(True)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/pause.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/pause.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        self.actionStop.setIcon(icon)
+        self.actionStop.setObjectName(_fromUtf8("actionStop"))
+        self.toolBar.addAction(self.actionStop)
         self.toolBar.addAction(self.action3D)
         self.toolBar.addAction(self.actionEnergy)
         self.toolBar.addAction(self.actionGraph)
@@ -110,15 +109,17 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        self.dockWidget_5.setWindowTitle(_translate("MainWindow", "Log", None))
-        self.dockWidget_3.setWindowTitle(_translate("MainWindow", "3D view", None))
-        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
-        self.actionEnergy.setText(_translate("MainWindow", "Energy", None))
-        self.actionEnergy.setToolTip(_translate("MainWindow", "toggle energy window", None))
-        self.action3D.setText(_translate("MainWindow", "3D", None))
-        self.action3D.setToolTip(_translate("MainWindow", "toggle 3D viewer", None))
-        self.actionGraph.setText(_translate("MainWindow", "Graph", None))
-        self.actionGraph.setToolTip(_translate("MainWindow", "toggle graph view", None))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.dockWidget_5.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Log", None, QtGui.QApplication.UnicodeUTF8))
+        self.dockWidget_3.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3D view", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionEnergy.setText(QtGui.QApplication.translate("MainWindow", "Energy", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionEnergy.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle energy window", None, QtGui.QApplication.UnicodeUTF8))
+        self.action3D.setText(QtGui.QApplication.translate("MainWindow", "3D", None, QtGui.QApplication.UnicodeUTF8))
+        self.action3D.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle 3D viewer", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionGraph.setText(QtGui.QApplication.translate("MainWindow", "Graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionGraph.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle graph view", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionStop.setText(QtGui.QApplication.translate("MainWindow", "stop", None, QtGui.QApplication.UnicodeUTF8))
 
-from show3d import Show3DWithSlider
+from pygmin.gui.show3d import Show3DWithSlider
+import resources_rc

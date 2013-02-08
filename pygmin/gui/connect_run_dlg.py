@@ -5,7 +5,7 @@ from PyQt4 import QtGui, QtCore, Qt
 from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 
 
-from pygmin.gui.connect_run_ui import Ui_MainWindow as UI
+from pygmin.gui.ui.connect_run_ui import Ui_MainWindow as UI
 from pygmin.utils.events import Signal
 from pygmin.gui.double_ended_connect_runner import DECRunner
 from pygmin.gui.ui.mplwidget import MPLWidget
@@ -90,7 +90,7 @@ class ConnectViewer(QtGui.QMainWindow):
     DECRunner
     
     """
-    def __init__(self, system, database, min1, min2, parent=None, app=None):
+    def __init__(self, system, database, min1=None, min2=None, parent=None, app=None):
         QtGui.QMainWindow.__init__(self, parent=parent)    
         self.ui = UI()
         self.ui.setupUi(self)
@@ -108,19 +108,23 @@ class ConnectViewer(QtGui.QMainWindow):
         self.textEdit.setReadOnly(True)
         self.textEdit_writer = OutLog(self.textEdit)
         
-        self.decrunner = DECRunner(system, database, min1, min2, outstream=self.textEdit_writer)
-        self.decrunner.on_finished.connect(self.on_finished)
+        if min1 is not None and min2 is not None:
+            self.decrunner = DECRunner(system, database, min1, min2, outstream=self.textEdit_writer)
+            self.decrunner.on_finished.connect(self.on_finished)
+
         self.view_3D = self.ui.dockWidget_3
         self.ui.action3D.setChecked(True)
         
         self.wgt_energies = ConnectEnergyWidget(parent=self)
         self.view_energies = self.new_view("Energies", self.wgt_energies, QtCore.Qt.TopDockWidgetArea)
-        self.ui.actionGraph.setChecked(True)
+        self.ui.actionEnergy.setChecked(True)
 
-        self.wgt_graphview = GraphViewWidget(parent=self, app=app)
+        self.wgt_graphview = GraphViewWidget(database=self.database, parent=self, app=app)
         self.view_graphview = self.new_view("Graph View", self.wgt_graphview, QtCore.Qt.TopDockWidgetArea)
         self.view_graphview.hide()
         self.ui.actionGraph.setChecked(False)
+        
+        self.ui.actionStop.setVisible(False)
 
     def start(self):
         self.decrunner.start()
@@ -194,7 +198,7 @@ if __name__ == "__main__":
     min2 = db.addMinimum(e2, x2)
     
     
-    wnd = ConnectViewer(system, db, min1, min2, app=app)
+    wnd = ConnectViewer(system, db, min1=min1, min2=min2, app=app)
 #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()

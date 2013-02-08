@@ -28,7 +28,7 @@
      <x>0</x>
      <y>0</y>
      <width>764</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -123,6 +123,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionStop"/>
    <addaction name="action3D"/>
    <addaction name="actionEnergy"/>
    <addaction name="actionGraph"/>
@@ -163,15 +164,30 @@
     <string>toggle graph view</string>
    </property>
   </action>
+  <action name="actionStop">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/pause.png</normaloff>
+     <normalon>:/icons/icons/pause.png</normalon>:/icons/icons/pause.png</iconset>
+   </property>
+   <property name="text">
+    <string>stop</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
    <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
-   <header>show3d.h</header>
+   <header>pygmin/gui/show3d.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

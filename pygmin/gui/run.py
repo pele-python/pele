@@ -639,7 +639,8 @@ class MyForm(QtGui.QMainWindow):
         self.local_connect_explorer.runNEB()
 
 
-    def on_btn_close_all_clicked(self):
+    def on_btn_close_all_clicked(self, checked=None):
+        if checked is None: return
         print "closing all windows"
         for dv in self.double_ended_connect_runs:
             dv.hide()
@@ -661,6 +662,17 @@ class MyForm(QtGui.QMainWindow):
             del self.nebexplorer
         except AttributeError: pass
 
+    def on_btn_connect_all_clicked(self, checked=None):
+        if checked is None: return
+        from pygmin.gui.connect_all import ConnectAllDialog
+#        if hasattr(self, "connect_all"):
+#            if not self.connect_all.isVisible():
+#                self.connect_all.show()
+#            if not self.connect_all.is_running()
+        self.connect_all = ConnectAllDialog(self.system, self.system.database, 
+                                            parent=self, app=self.app)
+        self.connect_all.show()
+        self.connect_all.start()
         
 #def refresh_pl():
     #pl.pause(0.000001)    

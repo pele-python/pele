@@ -198,26 +198,6 @@
                 </property>
                </widget>
               </item>
-              <item row="5" column="0" colspan="2">
-               <widget class="QPushButton" name="btnDisconnectivity_graph">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>disconnectivity graph</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QPushButton" name="btnShowGraph">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>show graph</string>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="1">
                <widget class="QPushButton" name="btnInvert">
                 <property name="toolTip">
@@ -260,6 +240,33 @@
                 </property>
                </widget>
               </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="btn_close_all">
+                <property name="text">
+                 <string>Close Windows</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QPushButton" name="btnShowGraph">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>show graph</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QPushButton" name="btnDisconnectivity_graph">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>disconnectivity graph</string>
+                </property>
+               </widget>
+              </item>
               <item row="4" column="1">
                <widget class="QPushButton" name="btnconnect_in_optim">
                 <property name="toolTip">
@@ -270,10 +277,10 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QPushButton" name="btn_close_all">
+              <item row="4" column="0">
+               <widget class="QPushButton" name="btn_connect_all">
                 <property name="text">
-                 <string>Close Windows</string>
+                 <string>Connect All</string>
                 </property>
                </widget>
               </item>
