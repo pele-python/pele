@@ -125,6 +125,7 @@ class ConnectViewer(QtGui.QMainWindow):
         self.ui.actionGraph.setChecked(False)
         
         self.ui.actionStop.setVisible(False)
+        self.ui.actionD_Graph.setVisible(False)
 
     def start(self):
         self.decrunner.start()

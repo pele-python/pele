@@ -10,10 +10,18 @@ from pygmin.landscape import Graph
 from pygmin.gui.graph_viewer import GraphViewWidget
 #from pygmin.gui.ui.connect_run_ui import Ui_MainWindow as UI
 from pygmin.gui.connect_run_dlg import ConnectViewer
+from pygmin.gui.ui.dgraph_dlg import DGraphWidget
 
 class ConnectAllDialog(ConnectViewer):
     def __init__(self, system, database, parent=None, app=None):
         super(ConnectAllDialog, self).__init__(system, database, app=app, parent=parent)
+
+        self.wgt_dgraph = DGraphWidget(database=self.database, parent=self)
+        self.view_dgraph = self.new_view("Graph View", self.wgt_dgraph, QtCore.Qt.TopDockWidgetArea)
+        self.view_dgraph.hide()
+        self.ui.actionD_Graph.setVisible(True)
+        self.ui.actionD_Graph.setChecked(False)
+
 
         self.ui.action3D.setChecked(False)
         self.view_3D.hide()
@@ -22,9 +30,9 @@ class ConnectAllDialog(ConnectViewer):
         self.view_energies.hide()
         
         self.ui.actionStop.setVisible(True)
+        
+        self.is_running = False
     
-    def is_running(self):
-        return not self.ui.actionStop.isChecked()
 
 
     def do_one_connection(self, min1, min2):
@@ -34,6 +42,7 @@ class ConnectAllDialog(ConnectViewer):
         self.decrunner.start()
 
     def do_next_connect(self):
+        self.is_running = True
         minima = self.database.minima()
         self.min1 = minima[0]
         graph = Graph(self.database)
@@ -44,6 +53,7 @@ class ConnectAllDialog(ConnectViewer):
                 break
         if all_connected:
             print "minima are all connected, ending"
+            self.is_running = False
             return 
         self.min2 = m2
         self.do_one_connection(self.min1, m2)
@@ -68,11 +78,15 @@ class ConnectAllDialog(ConnectViewer):
         if self.view_3D.isVisible():
             self.ogl.setCoordsPath(self.smoothed_path)
 
+    def update_dgraph_view(self):
+        if self.view_dgraph.isVisible():
+            self.wgt_dgraph.rebuild_disconnectivity_graph()
 
     def on_finished(self):
         print "finished connecting", self.min1._id, "and", self.min2._id 
         print "\n"
         if not self.isVisible():
+            self.is_running = False
             return
         if self.decrunner.success:
             # get the path data
@@ -84,8 +98,10 @@ class ConnectAllDialog(ConnectViewer):
             self.update_3D_view()
             self.update_energy_view()
             self.update_graph_view()
+            self.update_dgraph_view()
 
-        if not self.is_running():
+        if self.ui.actionStop.isChecked():
+            self.is_running = False
             return
         self.do_next_connect()
 
@@ -98,7 +114,16 @@ class ConnectAllDialog(ConnectViewer):
     def on_action3D_toggled(self, checked):
         self.toggle_view(self.view_3D, checked)
         self.update_3D_view()
+    def on_actionD_Graph_toggled(self, checked):
+        self.toggle_view(self.view_dgraph, checked)
+        self.update_dgraph_view()
 
+    def on_actionStop_toggled(self, checked):
+        if checked is None: return
+        if not checked:
+            if not self.is_running:
+                self.start()
+        
 
 #
 # only testing below here

@@ -283,9 +283,8 @@ class MyForm(QtGui.QMainWindow):
         if not hasattr(self, "dgraph_dlg"):
             self.minimum_selecter = minimum_selecter
             self.dgraph_dlg = DGraphDialog(self.system.database, parent=self)
-            self.dgraph_dlg.minimum_selected.connect(minimum_selecter)
-        else:
-            self.dgraph_dlg.rebuild_disconnectivity_graph()
+            self.dgraph_dlg.dgraph_widget.minimum_selected.connect(minimum_selecter)
+        self.dgraph_dlg.rebuild_disconnectivity_graph()
 #        self.dgraph_dlg.minimum_selected=minimum_selecter
         self.dgraph_dlg.show()
         

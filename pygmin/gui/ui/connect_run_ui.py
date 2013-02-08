@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Fri Feb  8 13:51:19 2013
+# Created: Fri Feb  8 17:17:40 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -100,10 +100,14 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/pause.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.actionStop.setIcon(icon)
         self.actionStop.setObjectName(_fromUtf8("actionStop"))
+        self.actionD_Graph = QtGui.QAction(MainWindow)
+        self.actionD_Graph.setCheckable(True)
+        self.actionD_Graph.setObjectName(_fromUtf8("actionD_Graph"))
         self.toolBar.addAction(self.actionStop)
         self.toolBar.addAction(self.action3D)
         self.toolBar.addAction(self.actionEnergy)
         self.toolBar.addAction(self.actionGraph)
+        self.toolBar.addAction(self.actionD_Graph)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -120,6 +124,8 @@ class Ui_MainWindow(object):
         self.actionGraph.setText(QtGui.QApplication.translate("MainWindow", "Graph", None, QtGui.QApplication.UnicodeUTF8))
         self.actionGraph.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle graph view", None, QtGui.QApplication.UnicodeUTF8))
         self.actionStop.setText(QtGui.QApplication.translate("MainWindow", "stop", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionD_Graph.setText(QtGui.QApplication.translate("MainWindow", "D-Graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionD_Graph.setToolTip(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
 
 from pygmin.gui.show3d import Show3DWithSlider
 import resources_rc

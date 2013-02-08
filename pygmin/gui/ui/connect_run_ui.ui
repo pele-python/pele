@@ -127,6 +127,7 @@
    <addaction name="action3D"/>
    <addaction name="actionEnergy"/>
    <addaction name="actionGraph"/>
+   <addaction name="actionD_Graph"/>
   </widget>
   <action name="actionEnergy">
    <property name="checkable">
@@ -175,6 +176,17 @@
    </property>
    <property name="text">
     <string>stop</string>
+   </property>
+  </action>
+  <action name="actionD_Graph">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>D-Graph</string>
+   </property>
+   <property name="toolTip">
+    <string>disconnectivity graph</string>
    </property>
   </action>
  </widget>
