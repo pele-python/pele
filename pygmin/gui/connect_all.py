@@ -32,6 +32,8 @@ class ConnectAllDialog(ConnectViewer):
         self.ui.actionStop.setVisible(True)
         
         self.is_running = False
+        
+        self.failed_pairs = set()
     
 
 
@@ -49,6 +51,8 @@ class ConnectAllDialog(ConnectViewer):
         all_connected = True
         for m2 in minima[1:]:
             if not graph.areConnected(self.min1, m2):
+                if (self.min1, m2) in self.failed_pairs or (m2, self.min1) in self.failed_pairs:
+                    continue
                 all_connected = False
                 break
         if all_connected:
@@ -84,7 +88,7 @@ class ConnectAllDialog(ConnectViewer):
 
     def on_finished(self):
         print "finished connecting", self.min1._id, "and", self.min2._id 
-        print "\n"
+#        print "\n"
         if not self.isVisible():
             self.is_running = False
             return
@@ -99,6 +103,9 @@ class ConnectAllDialog(ConnectViewer):
             self.update_energy_view()
             self.update_graph_view()
             self.update_dgraph_view()
+        else:
+            print "connection run failed"
+            self.failed_pairs.add( (self.min1, self.min2) )
 
         if self.ui.actionStop.isChecked():
             self.is_running = False
