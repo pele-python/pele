@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Wed Feb  6 18:45:42 2013
+# Created: Fri Feb  8 13:51:19 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -80,6 +80,30 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.ogl)
         self.dockWidget_3.setWidget(self.dockWidgetContents_3)
         MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(4), self.dockWidget_3)
+        self.toolBar = QtGui.QToolBar(MainWindow)
+        self.toolBar.setObjectName(_fromUtf8("toolBar"))
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        self.actionEnergy = QtGui.QAction(MainWindow)
+        self.actionEnergy.setCheckable(True)
+        self.actionEnergy.setChecked(False)
+        self.actionEnergy.setObjectName(_fromUtf8("actionEnergy"))
+        self.action3D = QtGui.QAction(MainWindow)
+        self.action3D.setCheckable(True)
+        self.action3D.setObjectName(_fromUtf8("action3D"))
+        self.actionGraph = QtGui.QAction(MainWindow)
+        self.actionGraph.setCheckable(True)
+        self.actionGraph.setObjectName(_fromUtf8("actionGraph"))
+        self.actionStop = QtGui.QAction(MainWindow)
+        self.actionStop.setCheckable(True)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/pause.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/pause.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        self.actionStop.setIcon(icon)
+        self.actionStop.setObjectName(_fromUtf8("actionStop"))
+        self.toolBar.addAction(self.actionStop)
+        self.toolBar.addAction(self.action3D)
+        self.toolBar.addAction(self.actionEnergy)
+        self.toolBar.addAction(self.actionGraph)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -88,5 +112,14 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
         self.dockWidget_5.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Log", None, QtGui.QApplication.UnicodeUTF8))
         self.dockWidget_3.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3D view", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionEnergy.setText(QtGui.QApplication.translate("MainWindow", "Energy", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionEnergy.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle energy window", None, QtGui.QApplication.UnicodeUTF8))
+        self.action3D.setText(QtGui.QApplication.translate("MainWindow", "3D", None, QtGui.QApplication.UnicodeUTF8))
+        self.action3D.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle 3D viewer", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionGraph.setText(QtGui.QApplication.translate("MainWindow", "Graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionGraph.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle graph view", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionStop.setText(QtGui.QApplication.translate("MainWindow", "stop", None, QtGui.QApplication.UnicodeUTF8))
 
-from show3d import Show3DWithSlider
+from pygmin.gui.show3d import Show3DWithSlider
+import resources_rc

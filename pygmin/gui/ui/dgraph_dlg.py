@@ -24,8 +24,8 @@ class DGraphDialog(QDialog):
     params : dict
         initialize the values for the disconnectivity graph
     """
-    def __init__(self, database, graph=None, params={}):
-        super(DGraphDialog, self).__init__()
+    def __init__(self, database, graph=None, params={}, parent=None):
+        super(DGraphDialog, self).__init__(parent=parent)
         
         self.database = database
         self.graph = graph

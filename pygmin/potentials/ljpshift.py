@@ -56,12 +56,12 @@ class LJpshift(BasePotential):
         else:
             self.getSep = self.getSep_periodic
             self.periodic = True
-        print "using binary Lennard-Jones potential ", self.ntypeA, self.AB.sig, self.BB.sig, self.AB.eps, self.BB.eps
-        print "    with cutoff ", rcut,
-        if self.periodic: 
-            print "periodic with boxl ", self.boxl
-        else:
-            print ""
+#        print "using binary Lennard-Jones potential ", self.ntypeA, self.AB.sig, self.BB.sig, self.AB.eps, self.BB.eps
+#        print "    with cutoff ", rcut,
+#        if self.periodic: 
+#            print "periodic with boxl ", self.boxl
+#        else:
+#            print ""
 
     def getSep_periodic(self, vec1, vec2 ):
         assert len(vec1) == 3, "get_sep: vec length not 3"

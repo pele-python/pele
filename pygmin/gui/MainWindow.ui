@@ -198,57 +198,17 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QPushButton" name="btnconnect_in_optim">
+              <item row="1" column="1">
+               <widget class="QPushButton" name="btnInvert">
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spawn an external OPTIM job&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Invert one of the structures&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
-                 <string>Connect in OPTIM</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QPushButton" name="btnConnect">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Connect</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0" colspan="2">
-               <widget class="QPushButton" name="btnDisconnectivity_graph">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>disconnectivity graph</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QPushButton" name="btnShowGraph">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>show graph</string>
+                 <string>Invert</string>
                 </property>
                </widget>
               </item>
               <item row="2" column="0">
-               <widget class="QPushButton" name="btnEnergies">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Plot the energies of the NEB or connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Energies</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
                <widget class="QPushButton" name="btnNEB">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -270,13 +230,57 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QPushButton" name="btnInvert">
+              <item row="3" column="0">
+               <widget class="QPushButton" name="btnConnect">
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Invert one of the structures&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
-                 <string>Invert</string>
+                 <string>Connect</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="btn_close_all">
+                <property name="text">
+                 <string>Close Windows</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QPushButton" name="btnShowGraph">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>show graph</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QPushButton" name="btnDisconnectivity_graph">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>disconnectivity graph</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QPushButton" name="btnconnect_in_optim">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spawn an external OPTIM job&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Connect in OPTIM</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QPushButton" name="btn_connect_all">
+                <property name="text">
+                 <string>Connect All</string>
                 </property>
                </widget>
               </item>
@@ -335,7 +339,7 @@
      <x>0</x>
      <y>0</y>
      <width>839</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSimulation">
@@ -455,7 +459,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>412</y>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -470,8 +474,8 @@
    <slot>ConnectMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>445</y>
+     <x>652</x>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -528,22 +532,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>btnEnergies</sender>
-   <signal>pressed()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>showEnergies()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>652</x>
-     <y>445</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>417</x>
-     <y>542</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionConnect</sender>
    <signal>activated()</signal>
    <receiver>MainWindow</receiver>
@@ -566,8 +554,8 @@
    <slot>Invert()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>412</y>
+     <x>796</x>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -583,7 +571,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>478</y>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>685</x>
@@ -599,7 +587,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>511</y>
+     <y>544</y>
     </hint>
     <hint type="destinationlabel">
      <x>691</x>
@@ -630,8 +618,8 @@
    <slot>show_disconnectivity_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>655</x>
-     <y>544</y>
+     <x>796</x>
+     <y>577</y>
     </hint>
     <hint type="destinationlabel">
      <x>689</x>
@@ -646,8 +634,8 @@
    <slot>doubleEndedReConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>478</y>
+     <x>796</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -678,8 +666,8 @@
    <slot>connect_in_optim()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>511</y>
+     <x>796</x>
+     <y>544</y>
     </hint>
     <hint type="destinationlabel">
      <x>833</x>

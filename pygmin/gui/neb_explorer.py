@@ -339,7 +339,7 @@ class NEBExplorer(QtGui.QMainWindow):
         if checked is None:
             return
         if not hasattr(self, "local_connect_explorer"):
-            self.local_connect_explorer = ConnectExplorerDialog(self.system, self.app)
+            self.local_connect_explorer = ConnectExplorerDialog(self.system, self.app, parent=self)
         self.local_connect_explorer.show()
         self.local_connect_explorer.set_nebrunner(self.nebrunner)
         
