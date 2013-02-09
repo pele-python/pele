@@ -61,10 +61,10 @@ class PollThread(QtCore.QThread):
 
 
 class BHRunner(QtCore.QObject):
-    def __init__(self, system, onMinimumAdded=None, onMinimumRemoved=None):
+    def __init__(self, system, onMinimumAdded=None, onMinimumRemoved=None, daemon=True):
         QtCore.QObject.__init__(self)
-        
         self.system = system
+        self.daemon = True
         
         #child_conn = self
         self.bhprocess = None
@@ -96,6 +96,7 @@ class BHRunner(QtCore.QObject):
         parent_conn, child_conn = mp.Pipe()
         
         self.bhprocess = BHProcess(self.system, child_conn)
+        self.bhprocess.daemon = self.daemon
         self.bhprocess.start()
 #        self.poll_thread = PollThread(self, parent_conn)
 #        self.connect(self.poll_thread,QtCore.SIGNAL("Activated ( PyQt_PyObject ) "), self.minimum_found)        

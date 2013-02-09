@@ -164,12 +164,13 @@ class DECRunner(QtCore.QObject):
     
     """
     def __init__(self, system, database, min1, min2, outstream=None,
-                  return_smoothed_path=True):
+                  return_smoothed_path=True, daemon=True):
         QtCore.QObject.__init__(self)
         self.system = system
         self.database = database
         self.min1, self.min2 = min1, min2
         self.return_smoothed_path = return_smoothed_path
+        self.daemon = daemon
         
         self.outstream = outstream
         
@@ -204,6 +205,7 @@ class DECRunner(QtCore.QObject):
         
         self.decprocess = DECProcess(child_conn, self.system, self.min1, self.min2,
                                      pipe_stdout=(self.outstream is not None))
+        self.decprocess.daemon = self.daemon
         self.decprocess.start()
     
 #        self.poll_thread = PollThread(self, parent_conn)
