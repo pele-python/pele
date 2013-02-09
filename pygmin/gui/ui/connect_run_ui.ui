@@ -33,7 +33,7 @@
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="dockWidget_5">
+  <widget class="QDockWidget" name="view_Log">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
      <horstretch>0</horstretch>
@@ -79,7 +79,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_3">
+  <widget class="QDockWidget" name="view_ogl">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
      <horstretch>0</horstretch>
@@ -124,6 +124,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionStop"/>
+   <addaction name="actionLog"/>
    <addaction name="action3D"/>
    <addaction name="actionEnergy"/>
    <addaction name="actionGraph"/>
@@ -199,6 +200,17 @@
    </property>
    <property name="toolTip">
     <string>display summary information</string>
+   </property>
+  </action>
+  <action name="actionLog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log</string>
+   </property>
+   <property name="toolTip">
+    <string>display log information</string>
    </property>
   </action>
  </widget>

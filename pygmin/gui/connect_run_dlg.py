@@ -107,12 +107,14 @@ class ConnectViewer(QtGui.QMainWindow):
         self.textEdit = self.ui.textEdit      
         self.textEdit.setReadOnly(True)
         self.textEdit_writer = OutLog(self.textEdit)
+        self.view_log = self.ui.view_Log
+        self.ui.actionLog.setChecked(True)
         
         if min1 is not None and min2 is not None:
             self.decrunner = DECRunner(system, database, min1, min2, outstream=self.textEdit_writer)
             self.decrunner.on_finished.connect(self.on_finished)
 
-        self.view_3D = self.ui.dockWidget_3
+        self.view_3D = self.ui.view_ogl
         self.ui.action3D.setChecked(True)
         
         self.wgt_energies = ConnectEnergyWidget(parent=self)
@@ -171,6 +173,8 @@ class ConnectViewer(QtGui.QMainWindow):
         self.toggle_view(self.view_graphview, checked)
     def on_action3D_toggled(self, checked):
         self.toggle_view(self.view_3D, checked)
+    def on_actionLog_toggled(self, checked):
+        self.toggle_view(self.view_log, checked)
 
 
 #

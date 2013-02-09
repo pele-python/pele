@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Sat Feb  9 16:41:39 2013
+# Created: Sat Feb  9 16:57:57 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -41,15 +41,15 @@ class Ui_MainWindow(object):
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
-        self.dockWidget_5 = QtGui.QDockWidget(MainWindow)
+        self.view_Log = QtGui.QDockWidget(MainWindow)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.dockWidget_5.sizePolicy().hasHeightForWidth())
-        self.dockWidget_5.setSizePolicy(sizePolicy)
-        self.dockWidget_5.setFeatures(QtGui.QDockWidget.DockWidgetFloatable|QtGui.QDockWidget.DockWidgetMovable)
-        self.dockWidget_5.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
-        self.dockWidget_5.setObjectName(_fromUtf8("dockWidget_5"))
+        sizePolicy.setHeightForWidth(self.view_Log.sizePolicy().hasHeightForWidth())
+        self.view_Log.setSizePolicy(sizePolicy)
+        self.view_Log.setFeatures(QtGui.QDockWidget.DockWidgetFloatable|QtGui.QDockWidget.DockWidgetMovable)
+        self.view_Log.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
+        self.view_Log.setObjectName(_fromUtf8("view_Log"))
         self.dockWidgetContents_5 = QtGui.QWidget()
         self.dockWidgetContents_5.setObjectName(_fromUtf8("dockWidgetContents_5"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.dockWidgetContents_5)
@@ -64,17 +64,17 @@ class Ui_MainWindow(object):
         self.textEdit.setBaseSize(QtCore.QSize(0, 500))
         self.textEdit.setObjectName(_fromUtf8("textEdit"))
         self.horizontalLayout.addWidget(self.textEdit)
-        self.dockWidget_5.setWidget(self.dockWidgetContents_5)
-        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(8), self.dockWidget_5)
-        self.dockWidget_3 = QtGui.QDockWidget(MainWindow)
+        self.view_Log.setWidget(self.dockWidgetContents_5)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(8), self.view_Log)
+        self.view_ogl = QtGui.QDockWidget(MainWindow)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.dockWidget_3.sizePolicy().hasHeightForWidth())
-        self.dockWidget_3.setSizePolicy(sizePolicy)
-        self.dockWidget_3.setFeatures(QtGui.QDockWidget.DockWidgetFloatable|QtGui.QDockWidget.DockWidgetMovable)
-        self.dockWidget_3.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
-        self.dockWidget_3.setObjectName(_fromUtf8("dockWidget_3"))
+        sizePolicy.setHeightForWidth(self.view_ogl.sizePolicy().hasHeightForWidth())
+        self.view_ogl.setSizePolicy(sizePolicy)
+        self.view_ogl.setFeatures(QtGui.QDockWidget.DockWidgetFloatable|QtGui.QDockWidget.DockWidgetMovable)
+        self.view_ogl.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
+        self.view_ogl.setObjectName(_fromUtf8("view_ogl"))
         self.dockWidgetContents_3 = QtGui.QWidget()
         self.dockWidgetContents_3.setObjectName(_fromUtf8("dockWidgetContents_3"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.dockWidgetContents_3)
@@ -87,8 +87,8 @@ class Ui_MainWindow(object):
         self.ogl.setSizePolicy(sizePolicy)
         self.ogl.setObjectName(_fromUtf8("ogl"))
         self.horizontalLayout_2.addWidget(self.ogl)
-        self.dockWidget_3.setWidget(self.dockWidgetContents_3)
-        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(4), self.dockWidget_3)
+        self.view_ogl.setWidget(self.dockWidgetContents_3)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(4), self.view_ogl)
         self.toolBar = QtGui.QToolBar(MainWindow)
         self.toolBar.setObjectName(_fromUtf8("toolBar"))
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
@@ -115,7 +115,11 @@ class Ui_MainWindow(object):
         self.actionSummary = QtGui.QAction(MainWindow)
         self.actionSummary.setCheckable(True)
         self.actionSummary.setObjectName(_fromUtf8("actionSummary"))
+        self.actionLog = QtGui.QAction(MainWindow)
+        self.actionLog.setCheckable(True)
+        self.actionLog.setObjectName(_fromUtf8("actionLog"))
         self.toolBar.addAction(self.actionStop)
+        self.toolBar.addAction(self.actionLog)
         self.toolBar.addAction(self.action3D)
         self.toolBar.addAction(self.actionEnergy)
         self.toolBar.addAction(self.actionGraph)
@@ -127,8 +131,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        self.dockWidget_5.setWindowTitle(_translate("MainWindow", "Log", None))
-        self.dockWidget_3.setWindowTitle(_translate("MainWindow", "3D view", None))
+        self.view_Log.setWindowTitle(_translate("MainWindow", "Log", None))
+        self.view_ogl.setWindowTitle(_translate("MainWindow", "3D view", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionEnergy.setText(_translate("MainWindow", "Energy", None))
         self.actionEnergy.setToolTip(_translate("MainWindow", "toggle energy window", None))
@@ -141,6 +145,8 @@ class Ui_MainWindow(object):
         self.actionD_Graph.setToolTip(_translate("MainWindow", "disconnectivity graph", None))
         self.actionSummary.setText(_translate("MainWindow", "Summary", None))
         self.actionSummary.setToolTip(_translate("MainWindow", "display summary information", None))
+        self.actionLog.setText(_translate("MainWindow", "Log", None))
+        self.actionLog.setToolTip(_translate("MainWindow", "display log information", None))
 
 from pygmin.gui.show3d import Show3DWithSlider
 import resources_rc
