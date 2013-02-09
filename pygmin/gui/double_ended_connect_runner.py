@@ -107,7 +107,7 @@ class DECProcess(mp.Process):
         self.finished = True
         self.comm.send(("finished",))
     
-    def terminate_early(self):
+    def terminate_early(self, *args, **kwargs):
         sys.stderr.write("caught signal, cleaning up and exiting\n")
         if not self.finished:
             self.clean_up()
@@ -176,6 +176,11 @@ class DECRunner(QtCore.QObject):
         self.on_finished = Signal()
         
         self.decprocess = None
+        
+        self.newminima = set()
+        self.newtransition_states = set()
+        self.success = False
+
 
     def poll(self):
         """this does the checking in the background to see if any messages have been passed"""

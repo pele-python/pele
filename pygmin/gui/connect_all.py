@@ -1,4 +1,5 @@
 import sys
+import time
 import numpy as np
 
 from PyQt4 import QtGui, QtCore, Qt
@@ -12,16 +13,63 @@ from pygmin.gui.graph_viewer import GraphViewWidget
 from pygmin.gui.connect_run_dlg import ConnectViewer
 from pygmin.gui.ui.dgraph_dlg import DGraphWidget
 
+class ConnectAttempt(object):
+    def __init__(self, min1, min2, success, minima, transition_states, elapsed_time=None):
+        self.min1 = min1
+        self.min2 = min2
+        self.success = success
+        self.minima = minima
+        self.transition_states = transition_states
+        self.time = elapsed_time
+ 
+
+class ConnectAllSummary(object):
+    def __init__(self):
+        self.attempts = []
+    
+    def add(self, min1, min2, success, minima, transition_states, **kwargs):
+        attempt = ConnectAttempt(min1, min2, success, minima, transition_states, **kwargs)
+        self.attempts.append(attempt)
+    
+    def get_summary(self):
+        summary = ""
+        summary += "%d connect attempts\n" % len(self.attempts)
+        successes = [ca for ca in self.attempts if ca.success]
+        summary += "%d successes %d failures\n" % (len(successes), len(self.attempts) - len(successes))
+        nminima = sum([len(ca.minima) for ca in self.attempts]) 
+        nts = sum([len(ca.transition_states) for ca in self.attempts])
+        summary += "%d minima and %d transition states found\n" % (nminima, nts)
+        total_time = sum([ca.time for ca in self.attempts])
+        summary += "%.2f total time\n" % total_time
+        
+        summary += "\n"
+        for ca in self.attempts:
+            if ca.success:
+                success = "success"
+            else:
+                success = "fail   " 
+            summary += "%d <--> %d: %s, time %.2f\n" % (ca.min1._id, ca.min2._id, success, ca.time)
+        return summary
+        
+
 class ConnectAllDialog(ConnectViewer):
     def __init__(self, system, database, parent=None, app=None):
         super(ConnectAllDialog, self).__init__(system, database, app=app, parent=parent)
 
         self.wgt_dgraph = DGraphWidget(database=self.database, parent=self)
-        self.view_dgraph = self.new_view("Graph View", self.wgt_dgraph, QtCore.Qt.TopDockWidgetArea)
+        self.view_dgraph = self.new_view("Disconnectivity Graph", self.wgt_dgraph, QtCore.Qt.TopDockWidgetArea)
         self.view_dgraph.hide()
         self.ui.actionD_Graph.setVisible(True)
         self.ui.actionD_Graph.setChecked(False)
 
+        self.textEdit_summary = QtGui.QTextEdit(parent=self)
+        self.textEdit_summary.setReadOnly(True)
+        self.view_summary = self.new_view("Summary", self.textEdit_summary, pos=QtCore.Qt.TopDockWidgetArea)
+        self.connect_summary = ConnectAllSummary()
+        self.ui.actionSummary.setVisible(True)
+        self.view_summary.hide()
+        self.ui.actionSummary.setChecked(False)
+        
 
         self.ui.action3D.setChecked(False)
         self.view_3D.hide()
@@ -38,9 +86,11 @@ class ConnectAllDialog(ConnectViewer):
 
 
     def do_one_connection(self, min1, min2):
+        self.textEdit_summary.insertPlainText("\nNow connecting minima %d %d\n" % (self.min1._id, self.min2._id))
         self.decrunner = DECRunner(self.system, self.database, min1, min2, outstream=self.textEdit_writer,
                                    return_smoothed_path=True)
         self.decrunner.on_finished.connect(self.on_finished)
+        self.tstart = time.clock()
         self.decrunner.start()
 
     def do_next_connect(self):
@@ -57,6 +107,7 @@ class ConnectAllDialog(ConnectViewer):
                 break
         if all_connected:
             print "minima are all connected, ending"
+            self.textEdit_summary.insertPlainText("minima are all connected, ending\n")
             self.is_running = False
             return 
         self.min2 = m2
@@ -86,9 +137,20 @@ class ConnectAllDialog(ConnectViewer):
         if self.view_dgraph.isVisible():
             self.wgt_dgraph.rebuild_disconnectivity_graph()
 
+    def update_summary_view(self):
+        self.textEdit_summary.clear()
+        summary = self.connect_summary.get_summary()
+        self.textEdit_summary.insertPlainText(summary)
+
     def on_finished(self):
         print "finished connecting", self.min1._id, "and", self.min2._id 
+        tend = time.clock()
+        elapsed_time = tend - self.tstart
 #        print "\n"
+        # add this run to the summary
+        self.connect_summary.add(self.min1, self.min2, self.decrunner.success, 
+                                 self.decrunner.newminima, self.decrunner.newtransition_states, elapsed_time=elapsed_time)
+        
         if not self.isVisible():
             self.is_running = False
             return
@@ -99,10 +161,12 @@ class ConnectAllDialog(ConnectViewer):
             self.energies = np.array(self.decrunner.energies)
 #            print self.smoothed_path.shape
 
+
             self.update_3D_view()
             self.update_energy_view()
             self.update_graph_view()
             self.update_dgraph_view()
+            self.update_summary_view()
         else:
             print "connection run failed"
             self.failed_pairs.add( (self.min1, self.min2) )
@@ -124,6 +188,8 @@ class ConnectAllDialog(ConnectViewer):
     def on_actionD_Graph_toggled(self, checked):
         self.toggle_view(self.view_dgraph, checked)
         self.update_dgraph_view()
+    def on_actionSummary_toggled(self, checked):
+        self.toggle_view(self.view_summary, checked)
 
     def on_actionStop_toggled(self, checked):
         if checked is None: return

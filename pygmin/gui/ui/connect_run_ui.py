@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Fri Feb  8 17:17:40 2013
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Sat Feb  9 16:41:39 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -26,7 +35,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 22))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
@@ -103,29 +112,35 @@ class Ui_MainWindow(object):
         self.actionD_Graph = QtGui.QAction(MainWindow)
         self.actionD_Graph.setCheckable(True)
         self.actionD_Graph.setObjectName(_fromUtf8("actionD_Graph"))
+        self.actionSummary = QtGui.QAction(MainWindow)
+        self.actionSummary.setCheckable(True)
+        self.actionSummary.setObjectName(_fromUtf8("actionSummary"))
         self.toolBar.addAction(self.actionStop)
         self.toolBar.addAction(self.action3D)
         self.toolBar.addAction(self.actionEnergy)
         self.toolBar.addAction(self.actionGraph)
         self.toolBar.addAction(self.actionD_Graph)
+        self.toolBar.addAction(self.actionSummary)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.dockWidget_5.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Log", None, QtGui.QApplication.UnicodeUTF8))
-        self.dockWidget_3.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3D view", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionEnergy.setText(QtGui.QApplication.translate("MainWindow", "Energy", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionEnergy.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle energy window", None, QtGui.QApplication.UnicodeUTF8))
-        self.action3D.setText(QtGui.QApplication.translate("MainWindow", "3D", None, QtGui.QApplication.UnicodeUTF8))
-        self.action3D.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle 3D viewer", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionGraph.setText(QtGui.QApplication.translate("MainWindow", "Graph", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionGraph.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle graph view", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionStop.setText(QtGui.QApplication.translate("MainWindow", "stop", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionD_Graph.setText(QtGui.QApplication.translate("MainWindow", "D-Graph", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionD_Graph.setToolTip(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        self.dockWidget_5.setWindowTitle(_translate("MainWindow", "Log", None))
+        self.dockWidget_3.setWindowTitle(_translate("MainWindow", "3D view", None))
+        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
+        self.actionEnergy.setText(_translate("MainWindow", "Energy", None))
+        self.actionEnergy.setToolTip(_translate("MainWindow", "toggle energy window", None))
+        self.action3D.setText(_translate("MainWindow", "3D", None))
+        self.action3D.setToolTip(_translate("MainWindow", "toggle 3D viewer", None))
+        self.actionGraph.setText(_translate("MainWindow", "Graph", None))
+        self.actionGraph.setToolTip(_translate("MainWindow", "toggle graph view", None))
+        self.actionStop.setText(_translate("MainWindow", "stop", None))
+        self.actionD_Graph.setText(_translate("MainWindow", "D-Graph", None))
+        self.actionD_Graph.setToolTip(_translate("MainWindow", "disconnectivity graph", None))
+        self.actionSummary.setText(_translate("MainWindow", "Summary", None))
+        self.actionSummary.setToolTip(_translate("MainWindow", "display summary information", None))
 
 from pygmin.gui.show3d import Show3DWithSlider
 import resources_rc

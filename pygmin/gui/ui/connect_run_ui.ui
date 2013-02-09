@@ -28,7 +28,7 @@
      <x>0</x>
      <y>0</y>
      <width>764</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -128,6 +128,7 @@
    <addaction name="actionEnergy"/>
    <addaction name="actionGraph"/>
    <addaction name="actionD_Graph"/>
+   <addaction name="actionSummary"/>
   </widget>
   <action name="actionEnergy">
    <property name="checkable">
@@ -170,7 +171,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resources.qrc">
+    <iconset>
      <normaloff>:/icons/icons/pause.png</normaloff>
      <normalon>:/icons/icons/pause.png</normalon>:/icons/icons/pause.png</iconset>
    </property>
@@ -187,6 +188,17 @@
    </property>
    <property name="toolTip">
     <string>disconnectivity graph</string>
+   </property>
+  </action>
+  <action name="actionSummary">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Summary</string>
+   </property>
+   <property name="toolTip">
+    <string>display summary information</string>
    </property>
   </action>
  </widget>
