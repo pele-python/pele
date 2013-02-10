@@ -117,6 +117,13 @@ class BaseSystem(object):
         
 #        self.params.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams.maxErise = 1e50
 
+    def __call__(self):
+        """calling a system returns itself
+        
+        this exists soley for the gui. this should be rewritten
+        """
+        return self
+
     def get_potential(self):
         """return the potential object
         

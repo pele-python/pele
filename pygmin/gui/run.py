@@ -676,10 +676,22 @@ class MyForm(QtGui.QMainWindow):
 #def refresh_pl():
     #pl.pause(0.000001)    
     
-def run_gui(systemtype, db=None):
+def run_gui(system, db=None):
+    """
+    The top level function that will launch the gui for a given system
+    
+    Parameters
+    ----------
+    system : System class
+        A pygmin system, derrived from BaseSystemClass.  All information 
+        about the system is in this class.
+    db : str, optional
+        connect to the database at this file location
+        
+    """
     app = QtGui.QApplication(sys.argv)
     
-    myapp = MyForm(app, systemtype)
+    myapp = MyForm(app, system)
     if db is not None:
         myapp.connect_db(db)
         
