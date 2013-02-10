@@ -123,7 +123,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionStop"/>
+   <addaction name="actionPause"/>
+   <addaction name="actionKill"/>
    <addaction name="actionLog"/>
    <addaction name="action3D"/>
    <addaction name="actionEnergy"/>
@@ -167,17 +168,20 @@
     <string>toggle graph view</string>
    </property>
   </action>
-  <action name="actionStop">
+  <action name="actionPause">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resources.qrc">
      <normaloff>:/icons/icons/pause.png</normaloff>
      <normalon>:/icons/icons/pause.png</normalon>:/icons/icons/pause.png</iconset>
    </property>
    <property name="text">
-    <string>stop</string>
+    <string>pause</string>
+   </property>
+   <property name="toolTip">
+    <string>pause / restart</string>
    </property>
   </action>
   <action name="actionD_Graph">
@@ -211,6 +215,18 @@
    </property>
    <property name="toolTip">
     <string>display log information</string>
+   </property>
+  </action>
+  <action name="actionKill">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/stop.png</normaloff>:/icons/icons/stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>kill</string>
+   </property>
+   <property name="toolTip">
+    <string>interrupt the connect run</string>
    </property>
   </action>
  </widget>

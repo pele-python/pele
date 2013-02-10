@@ -77,7 +77,7 @@ class ConnectAllDialog(ConnectViewer):
         self.ui.actionEnergy.setChecked(False)
         self.view_energies.hide()
         
-        self.ui.actionStop.setVisible(True)
+        self.ui.actionPause.setVisible(True)
         
         self.is_running = False
         
@@ -166,12 +166,14 @@ class ConnectAllDialog(ConnectViewer):
             self.update_energy_view()
             self.update_graph_view()
             self.update_dgraph_view()
-            self.update_summary_view()
         else:
             print "connection run failed"
-            self.failed_pairs.add( (self.min1, self.min2) )
+#            summary "connection run failed"
+            if not self.decrunner.killed_early:
+                self.failed_pairs.add( (self.min1, self.min2) )
 
-        if self.ui.actionStop.isChecked():
+        self.update_summary_view()
+        if self.ui.actionPause.isChecked():
             self.is_running = False
             return
         self.do_next_connect()
@@ -191,12 +193,18 @@ class ConnectAllDialog(ConnectViewer):
     def on_actionSummary_toggled(self, checked):
         self.toggle_view(self.view_summary, checked)
 
-    def on_actionStop_toggled(self, checked):
+    def on_actionPause_toggled(self, checked):
         if checked is None: return
         if not checked:
             if not self.is_running:
                 self.start()
-        
+    
+    def on_actionKill_triggered(self, checked=None):
+        if checked is None: return
+        self.ui.actionPause.setChecked(True)
+        self.is_running = False
+        self.decrunner.terminate_early()
+
 
 #
 # only testing below here

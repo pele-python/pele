@@ -77,6 +77,7 @@ class DECProcess(mp.Process):
         self.pipe_stdout = pipe_stdout
         self.return_smoothed_path = return_smoothed_path
         
+        self.started = False
         self.finished = False
 
     def get_smoothed_path(self):
@@ -109,8 +110,11 @@ class DECProcess(mp.Process):
     
     def terminate_early(self, *args, **kwargs):
         sys.stderr.write("caught signal, cleaning up and exiting\n")
-        if not self.finished:
+        if self.started and not self.finished:
+            sys.stderr.write("starting clean up\n")
             self.clean_up()
+            sys.stderr.write("finished clean up\n")
+        sys.stderr.write("exiting\n")
         sys.exit(0)
     
     def do_double_ended_connect(self):
@@ -122,6 +126,7 @@ class DECProcess(mp.Process):
         self.m1local = db.addMinimum(self.min1.energy, self.min1.coords)
         self.m2local = db.addMinimum(self.min2.energy, self.min2.coords)
         
+        self.started = True
         self.connect = self.system.get_double_ended_connect(self.m1local, self.m2local, db,
                                                        fresh_connect=True)
         self.connect.connect()
@@ -181,6 +186,7 @@ class DECRunner(QtCore.QObject):
         self.newminima = set()
         self.newtransition_states = set()
         self.success = False
+        self.killed_early = False
 
 
     def poll(self):
@@ -243,6 +249,13 @@ class DECRunner(QtCore.QObject):
         nts = len(new_ts)
         print "finished connect run: adding", nmin, "minima, and", nts, "transition states to database"
 
+    def terminate_early(self):
+        self.killed_early = True
+        self.decprocess.terminate()
+        print "finished terminating, waiting to join"
+#        self.decprocess.join()
+#        print "done killing job"
+#        self.on_finished()
     
     def finished(self):
         """the job is finished, do some clean up"""

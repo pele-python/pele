@@ -126,7 +126,7 @@ class ConnectViewer(QtGui.QMainWindow):
         self.view_graphview.hide()
         self.ui.actionGraph.setChecked(False)
         
-        self.ui.actionStop.setVisible(False)
+        self.ui.actionPause.setVisible(False)
         self.ui.actionD_Graph.setVisible(False)
         self.ui.actionSummary.setVisible(False)
         self.ui.actionSummary.setChecked(False)
@@ -176,7 +176,12 @@ class ConnectViewer(QtGui.QMainWindow):
     def on_actionLog_toggled(self, checked):
         self.toggle_view(self.view_log, checked)
 
-
+    def on_actionKill_triggered(self, checked=None):
+        sys.stderr.write( "kill toggled, terminating early\n")
+        if checked is None: return
+        self.decrunner.terminate_early()
+        
+        
 #
 # only testing stuff below here
 #
@@ -185,7 +190,6 @@ class ConnectViewer(QtGui.QMainWindow):
 def start():
     wnd.start()
     print >> sys.stderr, "started decrunner"
-#    wnd.finish()
 
 
 if __name__ == "__main__":
@@ -196,7 +200,7 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     from pygmin.systems import LJCluster
     pl.ion()
-    natoms = 13
+    natoms = 113
     system = LJCluster(natoms)
     system.params.double_ended_connect.local_connect_params.NEBparams.iter_density = 5.
     x1, e1 = system.get_random_minimized_configuration()[:2]
@@ -212,4 +216,5 @@ if __name__ == "__main__":
     wnd.show()
     from PyQt4.QtCore import QTimer
     QTimer.singleShot(10, start)
+
     sys.exit(app.exec_()) 

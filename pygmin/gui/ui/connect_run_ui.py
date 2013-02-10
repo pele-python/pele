@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Sat Feb  9 16:57:57 2013
+# Created: Sun Feb 10 09:54:59 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -102,13 +102,13 @@ class Ui_MainWindow(object):
         self.actionGraph = QtGui.QAction(MainWindow)
         self.actionGraph.setCheckable(True)
         self.actionGraph.setObjectName(_fromUtf8("actionGraph"))
-        self.actionStop = QtGui.QAction(MainWindow)
-        self.actionStop.setCheckable(True)
+        self.actionPause = QtGui.QAction(MainWindow)
+        self.actionPause.setCheckable(True)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/pause.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/pause.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.actionStop.setIcon(icon)
-        self.actionStop.setObjectName(_fromUtf8("actionStop"))
+        self.actionPause.setIcon(icon)
+        self.actionPause.setObjectName(_fromUtf8("actionPause"))
         self.actionD_Graph = QtGui.QAction(MainWindow)
         self.actionD_Graph.setCheckable(True)
         self.actionD_Graph.setObjectName(_fromUtf8("actionD_Graph"))
@@ -118,7 +118,13 @@ class Ui_MainWindow(object):
         self.actionLog = QtGui.QAction(MainWindow)
         self.actionLog.setCheckable(True)
         self.actionLog.setObjectName(_fromUtf8("actionLog"))
-        self.toolBar.addAction(self.actionStop)
+        self.actionKill = QtGui.QAction(MainWindow)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/stop.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionKill.setIcon(icon1)
+        self.actionKill.setObjectName(_fromUtf8("actionKill"))
+        self.toolBar.addAction(self.actionPause)
+        self.toolBar.addAction(self.actionKill)
         self.toolBar.addAction(self.actionLog)
         self.toolBar.addAction(self.action3D)
         self.toolBar.addAction(self.actionEnergy)
@@ -140,13 +146,16 @@ class Ui_MainWindow(object):
         self.action3D.setToolTip(_translate("MainWindow", "toggle 3D viewer", None))
         self.actionGraph.setText(_translate("MainWindow", "Graph", None))
         self.actionGraph.setToolTip(_translate("MainWindow", "toggle graph view", None))
-        self.actionStop.setText(_translate("MainWindow", "stop", None))
+        self.actionPause.setText(_translate("MainWindow", "pause", None))
+        self.actionPause.setToolTip(_translate("MainWindow", "pause / restart", None))
         self.actionD_Graph.setText(_translate("MainWindow", "D-Graph", None))
         self.actionD_Graph.setToolTip(_translate("MainWindow", "disconnectivity graph", None))
         self.actionSummary.setText(_translate("MainWindow", "Summary", None))
         self.actionSummary.setToolTip(_translate("MainWindow", "display summary information", None))
         self.actionLog.setText(_translate("MainWindow", "Log", None))
         self.actionLog.setToolTip(_translate("MainWindow", "display log information", None))
+        self.actionKill.setText(_translate("MainWindow", "kill", None))
+        self.actionKill.setToolTip(_translate("MainWindow", "interrupt the connect run", None))
 
 from pygmin.gui.show3d import Show3DWithSlider
 import resources_rc
