@@ -180,7 +180,10 @@ class ConnectViewer(QtGui.QMainWindow):
         sys.stderr.write( "kill toggled, terminating early\n")
         if checked is None: return
         self.decrunner.terminate_early()
-        
+    
+    def closeEvent(self, event):
+        self.on_actionKill_triggered(True)
+        super(ConnectViewer, self).closeEvent(event)
         
 #
 # only testing stuff below here
