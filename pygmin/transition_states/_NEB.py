@@ -38,11 +38,15 @@ class NEB(object):
         the potential object
     distance : callable
         distance function for the elastic band
-    k : float
-        elastic constant for band
+    k : float, optional
+        the elastic band spring constant 
     adjustk_freq : integer
         frequency to adjust k, set to zero to disable
-    dneb: boolean, optional
+    adjustk_tol : float
+        tolerance for adjusting k up or down
+    adjustk_factor : float
+        the multiplicative factor used to adjust k
+    dneb: bool, optional
         do double nudging, default True
     with_springenergy: boolean, optional
         add the spring energy to the total energy of the band, default is False

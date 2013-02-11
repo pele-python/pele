@@ -2,7 +2,7 @@
 .. currentmodule:: pygmin.transition_states
 Transition States
 =================
-this module contains functions and classes related to local transition state searches.
+This module contains functions and classes related to local transition state searches.
 Most of these algorithms will not need to be directly called by the user.  However
 it is important to know how these work because they form some of the core routines of
 :ref:`landscape exploration <landscape_module>`.  
@@ -25,15 +25,23 @@ Lowest eigenvalue search
 
     findLowestEigenVector
 
-Nudged Elastic Band
+(Doubly-) Nudged Elastic Band
 +++++++++++++++++++
+The following functions implement the Nudged Elastic Band and Doubly-Nudged Elastic Band method.
+The user should interact via the driver class:
+ 
+.. autosummary::
+    :toctree: generated/
+    
+    NEBDriver
+
+In the backend, the work is done by the following functions. 
 
 .. autosummary::
     :toctree: generated/
     
     NEB
     NEBPar
-    create_NEB
     InterpolatedPath
     InterpolatedPathDensity
 
@@ -76,3 +84,4 @@ from find_lowest_eig import *
 from transition_state_refinement import *
 from tstools import *
 from _NEB_wrapper import *
+from _nebdriver import *

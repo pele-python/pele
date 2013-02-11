@@ -144,7 +144,7 @@ class FindTransitionState(object):
     
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
-                 nfail_max=5, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
+                 nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.1,

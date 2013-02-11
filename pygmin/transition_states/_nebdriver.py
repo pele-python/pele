@@ -4,6 +4,8 @@ from pygmin.transition_states._NEB import distance_cart
 from interpolate import InterpolatedPath, interpolate_linear
 from pygmin.utils.events import Signal
 
+all = ["NEBDriver"]
+
 #def calc_neb_dist(coords, nimages, dist=True, grad=False):
 #    d_left = np.zeros(coords.shape)
 #    coords = coords.reshape([-1,nimages])
@@ -22,20 +24,28 @@ class NEBDriver(object):
     The NEBDriver wraps calls for NEB from LocalConnect. The driver class is responsible for setting
     up the initial interpolation and optimizing the band.
     
-    Parameters:
+    Parameters
     -----------
     potential :
         the potential object
-
     coords1, coords2 : array
         the structures to connect with the band
-        
+    k : float, optional
+        the elastic band spring constant 
     max_images : int
         the maximum number of NEB images
     image_density : float
         how many NEB images per unit distance to use.
     iter_density : float
         how many optimization iterations per unit distance to use.
+    adjustk_freq : integer
+        frequency to adjust k, set to zero to disable
+    adjustk_tol : float
+        tolerance for adjusting k up or down
+    adjustk_factor : float
+        the multiplicative factor used to adjust k
+    dneb : bool
+        use DNEB (Doubly-Nudged Elastic Band) rather than NEB
     reinterpolate : integer
         reinterpolate the path to achieve equidistant spacing every so many steps
     adaptive_nimages : bool
@@ -53,6 +63,10 @@ class NEBDriver(object):
         the number of cores to use.  Ignored if parallel is False
     interpolator : callable, optional
         the function used to do the path interpolation for the NEB
+    NEBquenchParams : dict
+        parameters passed to the minimizer
+    kwargs : keyword options
+        additional options are passed to the NEB class
         
     See Also
     ---------
@@ -64,7 +78,7 @@ class NEBDriver(object):
     def __init__(self, potential, coords1, coords2,
                  k = 100., max_images = 50, image_density=10, iter_density = 10,
                  verbose=0, factor=1., NEBquenchParams=None, adjustk_freq=0, 
-                 adjustk_tol=0.1,adjustk_factor=1.05, dneb=True,
+                 adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
                  reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
                  interpolator=interpolate_linear, distance=distance_cart, parallel=False, ncores=4, **kwargs):
         

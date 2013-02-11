@@ -10,7 +10,7 @@ This module contains all the necessary components for running the gui.
 
     run_gui
 
-Simply initialize your system and pass it to run_gui:
+Simply initialize your system and pass it to run_gui::
 
     from pygmin.systems import LJCluster
     from pygmin.gui import run_gui
@@ -18,7 +18,7 @@ Simply initialize your system and pass it to run_gui:
     run_gui(mysystem)
 
 if you pass a database file name it will connect to an existing database
-or create a new one at that location:
+or create a new one at that location::
 
     run_gui(mysystem, db="database.sqlite")
 
@@ -26,7 +26,7 @@ or create a new one at that location:
 Preparing my System for use in the gui
 ++++++++++++++++++++++++++++++++++++++
 If you have written your own system class and want to run it in the gui, there are
-a few additional member functions must be defined:
+a few additional member functions must be defined::
 
     mysystem.draw(coords, index)
     mysystem.smooth_path(images)

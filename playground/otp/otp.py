@@ -94,13 +94,21 @@ class OTPSystem(RBSystem):
 
 def rungui(system, db=None):
     import pygmin.gui.run as gr
+    from pygmin.storage import Database
     gr.run_gui(system, db=db)
     
 if __name__ == "__main__":
-    nmol = 20
-    system = OTPSystem(nmol, boxl=10)
+    nmol = 6
+    periodic = False
+    if periodic:
+        boxl = 10.
+        dbname = "otp_N%d_boxl%.2f.db"
+    else:
+        dbname = "otp_N%d.db" % nmol
+        boxl = None
+    system = OTPSystem(nmol, boxl=boxl)
 #    bh = system.get_basinhopping()
 #    bh.run(10)
     
-    rungui(system)
+    rungui(system, db=dbname)
     
