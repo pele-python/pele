@@ -66,8 +66,9 @@ class Parameters(BaseParameters):
 
 
 def dict_copy_update(dict1, dict2):
-    """return a new dictionary from the union of dict1 and dict2.  if there
-    are conflicts, take the value in dict2"""
+    """return a new dictionary from the union of dict1 and dict2.  
+    
+    If there are conflicts, take the value in dict2"""
     newdict = dict1.copy()
     newdict.update(dict2)
     return newdict
@@ -142,11 +143,11 @@ class BaseSystem(object):
         quencher = self.get_minimizer()
         return quencher(coords)
     
-    def get_minimizer(self):
+    def get_minimizer(self, **kwargs):
         """return a function to minimize the structure"""
         pot = self.get_potential()
-        params = self.params.structural_quench_params
-        return lambda coords: mylbfgs(coords, pot.getEnergyGradient, **params)
+        kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
+        return lambda coords: mylbfgs(coords, pot.getEnergyGradient, **kwargs)
     
     def get_compare_exact(self):
         """object that returns True if two structures are exact.

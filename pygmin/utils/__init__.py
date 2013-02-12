@@ -13,7 +13,8 @@ rotations
     :toctree: generated/
     
     pygmin.utils.vec3.invert3x3
-    
+
+
 benchmarking tool
 -----------------
 .. autosummary:: 
@@ -24,6 +25,11 @@ benchmarking tool
 Coords Adapter
 --------------    
 .. automodule:: pygmin.utils.rbtools 
+
+
+Hessian eigenvalues and eigenvectors
+-------------------------------------
+.. automodule:: pygmin.utils.hessian
 
 
 Crystal structure tools
