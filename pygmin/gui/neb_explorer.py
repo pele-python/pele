@@ -295,7 +295,7 @@ class NEBExplorer(QtGui.QMainWindow):
         if checked is None:
             return
         if not hasattr(self, "paramsdlg"):
-            self.paramsdlg = DlgParams(self.system.params.double_ended_connect.local_connect_params.NEBparams)
+            self.paramsdlg = DlgParams(self.system.params.double_ended_connect.local_connect_params.NEBparams, parent=self)
         self.paramsdlg.show()
         
     def on_actionSave_triggered(self, checked=None):
