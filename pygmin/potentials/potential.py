@@ -80,6 +80,25 @@ class BasePotential(object):
         """
         return self.getEnergyGradientListSlow(coords, ilist)
     
+    def NumericalHessian(self, coords, eps=1e-6):
+#        from numdifftools import Hessian
+        e0, g0 = self.getEnergyGradient(coords)
+        x = coords.copy()
+        ndof = len(coords)
+        hess = np.zeros([ndof, ndof])
+        for i in range(ndof):
+            xbkup = x[i]
+            x[i] += eps
+            e1, g1 = self.getEnergyGradient(x)
+            hess[i,:] = (g1 - g0) / eps
+            x[i] = xbkup
+        return hess
+            
+    def getEnergyGradientHessian(self, coords):
+        e, g = self.getEnergyGradient(coords)
+        hess = self.NumericalHessian(coords)
+        return e, g, hess
+    
     def test_potential(self, coords):
         E1 = self.getEnergy(coords)
         E2, grad = self.getEnergyGradient(coords)
