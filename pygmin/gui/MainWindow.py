@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Fri Feb  8 14:04:52 2013
+# Created: Wed Feb 13 17:31:40 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -57,6 +57,9 @@ class Ui_MainWindow(object):
         self.listWidget.setMaximumSize(QtCore.QSize(200, 16777215))
         self.listWidget.setObjectName(_fromUtf8("listWidget"))
         self.verticalLayout_3.addWidget(self.listWidget)
+        self.pushTakestepExplorer = QtGui.QPushButton(self.BHTab)
+        self.pushTakestepExplorer.setObjectName(_fromUtf8("pushTakestepExplorer"))
+        self.verticalLayout_3.addWidget(self.pushTakestepExplorer)
         self.btnRun = QtGui.QPushButton(self.BHTab)
         self.btnRun.setObjectName(_fromUtf8("btnRun"))
         self.verticalLayout_3.addWidget(self.btnRun)
@@ -244,6 +247,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Energy (id)", None, QtGui.QApplication.UnicodeUTF8))
         self.listWidget.setSortingEnabled(True)
+        self.pushTakestepExplorer.setText(QtGui.QApplication.translate("MainWindow", "Takestep explorer", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRun.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a short basinhopping run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRun.setText(QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.BHTab), QtGui.QApplication.translate("MainWindow", "Basin Hopping", None, QtGui.QApplication.UnicodeUTF8))
@@ -278,4 +282,5 @@ class Ui_MainWindow(object):
         self.actionEditParams.setText(QtGui.QApplication.translate("MainWindow", "Edit default parameters", None, QtGui.QApplication.UnicodeUTF8))
         self.actionMerge_Minima.setText(QtGui.QApplication.translate("MainWindow", "Merge Minima", None, QtGui.QApplication.UnicodeUTF8))
 
-from show3d import Show3D, Show3DWithSlider
+from show3d import Show3DWithSlider
+from pygmin.gui.show3d import Show3D

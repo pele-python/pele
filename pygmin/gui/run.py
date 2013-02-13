@@ -22,7 +22,7 @@ from pygmin.gui.nebdlg import NEBDialog
 from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
 from double_ended_connect_runner import DECRunner
 from connect_run_dlg import ConnectViewer
-
+from takestep_explorer import TakestepExplorer
 
 global pick_count
 
@@ -672,6 +672,13 @@ class MyForm(QtGui.QMainWindow):
                                             parent=self, app=self.app)
         self.connect_all.show()
         self.connect_all.start()
+        
+    def on_pushTakestepExplorer_clicked(self):
+        if not hasattr(self, "takestep_explorer"):
+            self.takestep_explorer = TakestepExplorer(parent=self, system = self.system, app = self.app,
+                                                      database = self.system.database)
+            
+        self.takestep_explorer.show()
         
 #def refresh_pl():
     #pl.pause(0.000001)    
