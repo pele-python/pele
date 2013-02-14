@@ -26,11 +26,10 @@ class TakestepExplorer(QtGui.QMainWindow):
         self.coords = None        
         self.quenched = None
         
-        self.quenched = self.database.minima()[0].coords
         self.ui.show3d.setSystem(system)
         
         self.database.on_minimum_added.connect(self.NewMinimum)
-        
+        self.read_minima()
         self.update_view()
 
     def read_minima(self):
