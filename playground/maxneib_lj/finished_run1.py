@@ -7,12 +7,10 @@ def run_gui(system, db=None):
 
 if __name__ == "__main__":
     natoms = 20
-    max_neibs=3.5
-    rneib = 1.7
-    epsneibs = 5.
-    system = MaxNeibsLJSystem(natoms, max_neibs=max_neibs, rneib=rneib, epsneibs=epsneibs)
+    max_neibs=6
+    system = MaxNeibsLJSystem(natoms, max_neibs=max_neibs, rneib=1.7, epsneibs=5.)
 
-    dbname = "lj_N%d_n%.1f_rneib%.2f_epsn%.1f.db" %(natoms, max_neibs, rneib, epsneibs)
+    dbname = "lj_N%d_n%d.db" %(natoms, max_neibs)
     print dbname
 
     

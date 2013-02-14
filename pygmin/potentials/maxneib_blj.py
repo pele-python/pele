@@ -6,6 +6,7 @@ import numpy as np
 from pygmin.potentials import BasePotential
 from pygmin.systems import BLJCluster
 import fortran.maxneib_blj as fortranpot
+from pygmin.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 
 __all__ = ["MaxNeibsBLJ", "MaxNeibsBLJSystem"]
 
@@ -109,6 +110,17 @@ class MaxNeibsBLJ(BasePotential):
         self.neib_crossover = neib_crossover
         self.epsneibs = epsneibs
         self.only_AB_neibs = only_AB_neibs
+    
+#    def __str__(self):
+#        myname = "maxneib_blj_N%d_ntypeA%d_epsA%.2f, sigA=1.0, 
+#                 epsB=0.5, sigB=0.88, epsAB="default", sigAB="default",
+#                 boxl=None,
+#                 max_neibs=5.,
+#                 neib_crossover=.4,
+#                 rneib=1.4,
+#                 rneib_crossover=0.08,
+#                 epsneibs=5.,
+#                 only_AB_neibs=False,
 
     def getEnergy(self, coords):
         E = fortranpot.maxneib_ljenergy(
@@ -138,7 +150,7 @@ class MaxNeibsBLJSystem(BLJCluster):
     def __init__(self, natoms, ntypeA="default", **potkwargs):
         super(MaxNeibsBLJSystem, self).__init__(natoms, ntypeA=ntypeA)
         self.potkwargs = potkwargs
-        self.params.gui.basinhopping_nsteps = 300
+        self.params.gui.basinhopping_nsteps = 1000
         self.pot = self.get_potential()
 
     def __call__(self):
@@ -146,6 +158,15 @@ class MaxNeibsBLJSystem(BLJCluster):
     
     def get_potential(self):
         return MaxNeibsBLJ(self.natoms, self.ntypeA, **self.potkwargs)
+    
+    def get_compare_exact(self, **kwargs):
+        if self.pot.periodic:
+            permlist = self.get_permlist()
+            boxlengths = np.ones(3) * self.pot.boxl
+            measure = MeasurePeriodic(boxlengths, permlist)
+            return ExactMatchPeriodic(measure, accuracy=.1)
+        else:
+            return BLJCluster.get_compare_exact(self, **kwargs)
 
 
 def run_gui(system):
