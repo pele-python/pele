@@ -104,7 +104,7 @@ class BHRunner(QtCore.QObject):
         self.parent_conn = parent_conn
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(0.)
+        self.refresh_timer.start(50.) # time in msec
         
         
 #    def minimum_found(self,minimum):

@@ -218,7 +218,7 @@ class DECRunner(QtCore.QObject):
 #        self.poll_thread.start()
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(0.)
+        self.refresh_timer.start(100.)
 
 
     def add_minima_transition_states(self, new_minima, new_ts):
@@ -262,8 +262,10 @@ class DECRunner(QtCore.QObject):
         self.decprocess.join()
         self.decprocess.terminate()
         self.decprocess.join()
+        self.refresh_timer.stop()
         print "done killing job"
         self.on_finished()
+        
     
     def process_message(self, message):
         if message[0] == "stdout":
