@@ -72,6 +72,12 @@ Customizing minpermdist - minpermdist policies
     TransformPolicy
     MeasurePolicy
     
+Utilities
+---------
+.. autosummary::
+   :toctree: generated/
+
+    PointGroupOrderCluster
 
 
 OBSOLETE: translational alignment
@@ -90,5 +96,5 @@ from minpermdist_stochastic import *
 from rmsfit import *
 from _minpermdist_policies import *
 from periodic_exact_match import ExactMatchPeriodic
-
+from _pointgrouporder import *
 from _wrapper_atomiccluster import *
