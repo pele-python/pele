@@ -30,7 +30,7 @@ class MeasurePeriodic(MeasurePolicy):
         return np.linalg.norm(dx.flatten())
     
     def find_permutation(self, X1, X2):
-        return find_best_permutation(X1, X2, self.permlist)
+        return find_best_permutation(X1, X2, self.permlist, box_lengths=self.boxlengths)        
 
 class TransformPeriodic(TransformPolicy):
     ''' interface for possible transformations on a set of coordinates
@@ -141,7 +141,7 @@ class TestExactMatchPeriodicLJ(unittest.TestCase):
         self.natoms = 100
         rho = .5
         boxl = (float(self.natoms) / rho)**(1./3)
-        boxlengths = np.ones(3) * boxl
+        boxlengths = np.ones(3) * boxl + np.random.rand(3)*.1
         
         self.permlist = self.get_permlist()        
         self.measure = MeasurePeriodic(boxlengths, self.permlist)
@@ -174,6 +174,11 @@ class TestExactMatchPeriodicLJ(unittest.TestCase):
         
     def test_no_exact_match(self):
         self.assertFalse(self.exact_match(self.x1, self.x2diff))
+
+    def test_exact_match_periodic(self):
+        self.x2same[:3] += self.measure.boxlengths  
+        self.assertTrue(self.exact_match(self.x1, self.x2same))
+
 
 class TestExactMatchPeriodicBLJ(TestExactMatchPeriodicLJ):        
     def get_permlist(self):

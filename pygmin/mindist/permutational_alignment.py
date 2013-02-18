@@ -162,7 +162,7 @@ def find_permutations_hungarian( X1, X2, make_cost_matrix=_make_cost_matrix ):
     dist = -1
     return dist, perm
 
-def find_permutations_OPTIM(X1, X2, boxl=None, make_cost_matrix=None):
+def find_permutations_OPTIM(X1, X2, box_lengths=None, make_cost_matrix=None):
     """
     use OPTIM's minperm() routine to calculate the optimum permutation
     """    
@@ -171,11 +171,11 @@ def find_permutations_OPTIM(X1, X2, boxl=None, make_cost_matrix=None):
         raise RuntimeError("cannot use a custom cost matrix with findBestPermutationListOPTIM")
 
     #deal with periodic boundary conditions
-    periodic = boxl is not None
+    periodic = box_lengths is not None
     if not periodic:
         #it must have a value for passing to fortran 
-        boxl = 1.
-    sx = sy = sz = boxl
+        box_lengths = [1., 1., 1.]
+    sx, sy, sz = box_lengths
         
     #run the minperm algorithm
     perm, dist, worstdist, worstradius = minperm.minperm(X1.flatten(), X2.flatten(), sx, sy, sz, periodic)
@@ -188,7 +188,9 @@ def find_permutations_OPTIM(X1, X2, boxl=None, make_cost_matrix=None):
     return dist, perm
 
 
-def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape=True, user_cost_matrix=_make_cost_matrix):
+def find_best_permutation(X1, X2, permlist=None, user_algorithm=None, 
+                            reshape=True, user_cost_matrix=_make_cost_matrix, 
+                            **kwargs):
     """
     find the permutation of the atoms which minimizes the distance |X1-X2|
     
@@ -255,9 +257,9 @@ def find_best_permutation( X1, X2, permlist = None, user_algorithm=None, reshape
     
     for atomlist in permlist:
         if user_algorithm is None:
-            dist, perm = _find_permutations( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix)
+            dist, perm = _find_permutations( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix, **kwargs)
         else:
-            dist, perm = user_algorithm( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix)
+            dist, perm = user_algorithm( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix, **kwargs)
             
         for atom,i in zip(atomlist,xrange(len(atomlist))):
             newperm[atom] = atomlist[perm[i]]
