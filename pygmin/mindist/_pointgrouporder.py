@@ -30,14 +30,14 @@ class PointGroupOrderCluster(object):
         inversion_multiplier = 1
         if self.exact_match.transform.can_invert():
             x2 = x1.copy()
-            self.exact_match.transform.invert(x2)
-            
-            inversion_multiplier = 2
+            self.exact_match.transform.invert(x2)       
+            if self.exact_match(x1, x2):
+                inversion_multiplier = 2
                 
         pgorder = 0
         for rot, invert in StandardClusterAlignment(x1, x1, 
                                 accuracy = self.exact_match.accuracy, can_invert=False):
-            if self.exact_match.check_match(x1, x2, rot, invert):
+            if self.exact_match.check_match(x1, x1, rot, invert):
                 pgorder += 1
         
         return inversion_multiplier*pgorder
