@@ -293,7 +293,7 @@ class DoubleEndedConnect(object):
         self.dist_graph.addMinimum(min2)
         self.dist_graph.setTransitionStateConnection(min1, min2)
 
-        if True:
+        if self.verbosity > 1:
             #print some information
             dse  = self.getDist(self.minend, self.minstart)
             msid = self.minstart._id
