@@ -3,7 +3,7 @@ import numpy as np
 from pygmin.systems import LJCluster
 from pygmin.mindist import ExactMatchAtomicCluster
 from pygmin.mindist import PointGroupOrderCluster
-        
+from pygmin.thermodynamics import normalmode_frequencies, logproduct_freq2
     
 beta = 1.
 system = LJCluster(13)
@@ -34,31 +34,18 @@ e, g, hess = pot.getEnergyGradientHessian(min1.coords)
 # TODO: go to reduced coordinates here 
 
 # get the eigenvalues
-freqs2 = np.linalg.eigvalsh(hess)
+freqs2 = normalmode_frequencies(hess)
 
 # analyze eigenvalues
-nzero = 0
-nnegative = 0
-Ffrq = 0.
-mulfrq = 1.
-n = 0.
-for frq in freqs2:
-    if np.abs(frq) < 1e-4:
-        nzero += 1
-        continue
-    if frq < 0:
-        nnegative += 1
-        continue
-    mulfrq *= np.sqrt(frq)
-    n+=1
+n, lnf = logproduct_freq2(freqs2, 6)
 
-Ffrq = np.log(beta ** n * mulfrq)/beta 
+Ffrq = (n*np.log(beta) + 0.5*lnf /beta) 
 
 # print a short summary
 E = pot.getEnergy(coords)
 print "point group order:", pgorder 
-print "number of zero eigenvalues:", nzero
-print "number of negative eigenvalues:", nnegative
+print "number of zero eigenvalues:", (np.abs(freqs2) < 1e-4).sum()
+print "number of negative eigenvalues:", (freqs2 < -1e-4).sum()
 print "free energy at beta=%f:"%beta, E + Ffrq + Fpg
 print "contributions from"
 print "potential energy", E
