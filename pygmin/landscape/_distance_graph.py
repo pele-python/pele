@@ -283,7 +283,7 @@ class _DistanceGraph(object):
         print "    found", naccept, "relevant minima out of", count
 
 
-    def initialize(self, minstart, minend, use_all_min=False, use_limited_min=True):
+    def initialize(self, minstart, minend, use_all_min=False, use_limited_min=True, load_no_distances=False):
         """
         set up the distance graph
         
@@ -291,24 +291,26 @@ class _DistanceGraph(object):
         minima that should be used in the connect routine.
         """
         #raw_input("Press Enter to continue:")
-        print "loading distances from database"
-        self._initializeDistances()
+        if not load_no_distances:
+            print "loading distances from database"
+            self._initializeDistances()
         #raw_input("Press Enter to continue:")
         dist = self.getDist(minstart, minend)
         self.addMinimum(minstart)
         self.addMinimum(minend)
-        if use_all_min:
-            """
-            add all minima in self.graph to self.Gdist
-            """
-            print "adding all minima to distance graph (Gdist)."
-            print "    This might take a while."
-            for m in self.graph.graph.nodes():
-                self.addMinimum(m)
-        elif use_limited_min:
-            print "adding relevant minima to distance graph (Gdist)."
-            print "    This might take a while."
-            self._addRelevantMinima(minstart, minend)
+        if not load_no_distances:
+            if use_all_min:
+                """
+                add all minima in self.graph to self.Gdist
+                """
+                print "adding all minima to distance graph (Gdist)."
+                print "    This might take a while."
+                for m in self.graph.graph.nodes():
+                    self.addMinimum(m)
+            elif use_limited_min:
+                print "adding relevant minima to distance graph (Gdist)."
+                print "    This might take a while."
+                self._addRelevantMinima(minstart, minend)
         #raw_input("Press Enter to continue:")
 
     def setTransitionStateConnection(self, min1, min2):
