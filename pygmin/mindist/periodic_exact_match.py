@@ -14,8 +14,10 @@ class MeasurePeriodic(MeasurePolicy):
     
     Parameters
     ----------
-    boxvec : array
-        vector defining the 
+    box_lengths : array
+        vector defining the box
+    permlist : list of lists
+        list of lists of identical atoms
     '''
     def __init__(self, box_lengths, permlist=None):
         self.boxlengths = np.array(box_lengths)
@@ -98,10 +100,10 @@ class ExactMatchPeriodic(object):
             atomlist = [0]
         else:
             atomlist = sorted(permlist, key=lambda a: len(a))[0]
-        
+
         iA = atomlist[0]
-        
         for iB in atomlist:
+            # overlay structures with atom iA == atom iB and check for exact match 
             x2 = x2_init.copy()
 #            print iA, iB
             are_match = self.check_match(x1, x2, iA, iB)
@@ -111,6 +113,7 @@ class ExactMatchPeriodic(object):
         return False
             
     def check_match(self, x1, x2, iA, iB):
+        """overlay structures with atom iA == atom iB and check for exact match""" 
         self.transform.translate(x2, x1[iA,:] - x2[iB,:])
         dist, perm = self.measure.find_permutation(x1, x2)
         x2 = self.transform.permute(x2, perm)
