@@ -53,9 +53,9 @@ class RigidFragment(aautils.AASiteType):
         self.S[:] = 0.
         for x in self.atom_positions:
             self.S[:] += np.outer(x, x)
-#        for x, m in zip(self.atom_positions, self.atom_masses):
-#            self.S[:] += m*np.outer(x, x)
-
+        self.Sm = np.zeros([3,3])
+        for x, m in zip(self.atom_positions, self.atom_masses):
+            self.Sm[:] += m*np.outer(x, x)
         self._determine_symmetries()
             
     def to_atomistic(self, com, p):
@@ -205,24 +205,59 @@ if __name__ == "__main__":
     water = RigidFragment()
     rho   = 0.9572
     theta = 104.52/180.0*pi      
-    water.add_atom("O", np.array([0., 0., 0.]), 16.)
-    water.add_atom("H", rho*np.array([0.0, sin(0.5*theta), cos(0.5*theta)]), 1.)
-    water.add_atom("H", rho*np.array([0.0, -sin(0.5*theta), cos(0.5*theta)]), 1.)
+    water.add_atom("O", np.array([0., -1., 0.]), 1.)
+    water.add_atom("O", np.array([0., 1., 0.]), 1.)
+    #water.add_atom("H", rho*np.array([0.0, sin(0.5*theta), cos(0.5*theta)]), 1.)
+    #water.add_atom("H", rho*np.array([0.0, -sin(0.5*theta), cos(0.5*theta)]), 1.)
     water.finalize_setup()
     # define the whole water system
     system = RBTopology()
     nrigid = 1
     system.add_sites([deepcopy(water) for i in xrange(nrigid)])
-    rbcoords = np.random.random(6*nrigid)
+    from pygmin.utils import rotations
+    rbcoords=np.zeros(6)
+    rbcoords[3:]= rotations.random_aa()
+    
     coords = system.to_atomistic(rbcoords)
     
+    print "rb coords\n", rbcoords
+    print "coords\n", coords
+    grad = (np.random.random(coords.shape) -0.5)
+    
+    v = coords[1] - coords[0]
+    v/=np.linalg.norm(v)
+    
+    grad[0] -= np.dot(grad[0], v)*v
+    grad[1] -= np.dot(grad[1], v)*v
+    
+    grad -= np.average(grad, axis=0)
+    grad /= np.linalg.norm(grad)
+    
+    print "torque", np.linalg.norm(np.cross(grad, v))
+    rbgrad = system.transform_gradient(rbcoords, grad)
+    p = rbcoords[3:]
+    x = rbcoords[0:3]
+    gp = rbgrad[3:]
+    gx = rbgrad[:3]
+    
+    from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
+    R, R1, R2, R3 = rotMatDeriv(p, True)        
+    
+    print "test1", np.linalg.norm(R1*gp[0])     
+    print "test2", np.linalg.norm(R2*gp[1])     
+    print "test3", np.linalg.norm(R3*gp[2])
+    print "test4", np.linalg.norm(R1*gp[0]) + np.linalg.norm(R2*gp[1]) + np.linalg.norm(R3*gp[2])
+         
+    dR = R1*gp[0] + R2*gp[1] + R3*gp[2]
+    print "test", np.linalg.norm(R1*gp[0] + R2*gp[1] + R3*gp[2])
+    print np.trace(np.dot(dR, dR.transpose()))
+    G = water.metric_tensor_aa(p)
+    print np.dot(p, np.dot(G, p))     
     exit()
     
-    print rbcoords
-    print coords
-    grad = np.random.random(coords.shape)
-    rbgrad = system.transform_grad(rbcoords, grad)
-    print rbgrad
+    
     gnew = system.redistribute_forces(rbcoords, rbgrad)
     print gnew
     print system.transform_grad(rbcoords, gnew)
+    
+    

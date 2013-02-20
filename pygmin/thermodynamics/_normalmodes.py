@@ -17,7 +17,7 @@ def normalmode_frequencies(hessian, metric=None):
     if metric is not None:
         A = np.dot(np.linalg.inv(metric), hessian)
    
-    return np.linalg.eigvalsh(A)
+    return np.linalg.eigvals(A)
 
 def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
     ''' calculate the log product of positive frequencies
