@@ -52,7 +52,14 @@ class AASiteType(object):
         
         self.inversion = None
         self.symmetries = []
-            
+    
+    def get_smallest_rij(self, com1, com2):
+        """return the shortest vector from com1 to com2
+        
+        overload this function for periodic systems
+        """
+        return com2 - com1
+       
     def distance_squared(self, com1, p1, com2, p2):
         '''
         distance measure between 2 angle axis bodies of same type
@@ -68,11 +75,11 @@ class AASiteType(object):
         p2:
             angle axis vector of 2nd site    
         sitetype: AASiteType, optional
-            amgle axis site type with mass and moment of inertia tensor
+            angle axis site type with mass and moment of inertia tensor
         returns:
             distance squared
         '''
-        return _aadist.sitedist(com1, p1, com2, p2, self.S, self.W, self.cog)
+        return _aadist.sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
         R1 = rotations.aa2mx(p1)
         R2 = rotations.aa2mx(p2)
@@ -106,7 +113,7 @@ class AASiteType(object):
             spring cart, spring rot
         '''
         
-        return _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
+        return _aadist.sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
         R1, R11, R12, R13 = rotMatDeriv(p1, True)
         R2 = rotations.aa2mx(p2)
         dR = R2 - R1
@@ -393,7 +400,7 @@ if __name__ == "__main__":
     print "site representation:", np.sum((x1-x2)**2)
     print "distance function:  ", site.distance_squared(X1, p1, X2, p2)
 
-    print "fortran function:  ", _aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+    print "fortran function:  ", _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
 
     coords1 = np.random.random(120)
     coords2 = np.random.random(120)
@@ -405,14 +412,14 @@ if __name__ == "__main__":
     t1 = time.time()
     print "time python", t1-t0
     for i in xrange(1000):
-        _aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+        _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
     
  #_aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
     print "time fortran", t2-t1
-    for i in xrange(1000/20):
-        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
-        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
+#    for i in xrange(1000/20):
+#        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+#        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
     print "time fortran acc", t2-t1
     
@@ -431,6 +438,6 @@ if __name__ == "__main__":
     print g_M, g_P
     xx = site.distance_squared_grad(X1, p1, X2, p2)
     print g_M/xx[0], g_P/xx[1]
-    print _aadist.sitedist_grad(X1, p1, X2, p2, site.S, site.W, cog)
+    print _aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog)
 #    print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
 

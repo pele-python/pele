@@ -104,7 +104,7 @@ class RBSystem(AASystem):
         GL.glTranslate( X1[0], X1[1], X1[2] )
         GL.glRotate( a, t[0], t[1], t[2] )
         g=GLU.gluNewQuadric()
-        GLU.gluCylinder(g, .1,0.1,r,30,30)  #I can't seem to draw a cylinder
+        GLU.gluCylinder(g, .1,0.1,r,10,10)  #I can't seem to draw a cylinder
         GL.glPopMatrix()
         
     def draw(self, rbcoords, index):
@@ -128,7 +128,7 @@ class RBSystem(AASystem):
             x=xx-com
             GL.glPushMatrix()            
             GL.glTranslate(x[0],x[1],x[2])
-            GLUT.glutSolidSphere(radius,30,30)
+            GLUT.glutSolidSphere(radius,10,10)
             GL.glPopMatrix()
        
         color = [1.0, 1.0, 1.0]

@@ -179,9 +179,9 @@ END SUBROUTINE RMDRVT
 
 
 
-function sitedist(com1, p1, com2, p2, S, W, cog) result(dist)
+function sitedist(drij, p1, p2, S, W, cog) result(dist)
     implicit none
-    double precision, intent(in) :: com1(3), com2(3), p1(3), p2(3)
+    double precision, intent(in) :: drij(3), p1(3), p2(3)
     double precision :: DR1(3,3), DR2(3,3), DR3(3,3)
     double precision, intent(in) :: S(3,3), W, cog(3)
     double precision dist
@@ -194,10 +194,10 @@ function sitedist(com1, p1, com2, p2, S, W, cog) result(dist)
 
     dR = R2 - R1
 
-    d_M = W*sum((com2-com1)**2)
+    d_M = W*sum((drij)**2)
     DR1 = matmul(dR, matmul(S, transpose(dR)))
     d_P = DR1(1,1) + DR1(2,2) + DR1(3,3)
-    d_mix = 2. * W * dot_product(com2-com1, matmul(dR, cog))
+    d_mix = 2. * W * dot_product(drij, matmul(dR, cog))
 
     dist = d_M + d_P + d_mix
 end function
@@ -209,9 +209,9 @@ function trace3(M) result(tr)
     tr = M(1,1) + M(2,2) + M(3,3)
 end function
 
-subroutine sitedist_grad(com1, p1, com2, p2, S, W, cog, g_M, g_P)
+subroutine sitedist_grad(drij, p1, p2, S, W, cog, g_M, g_P)
     implicit none
-    double precision, intent(in) :: com1(3), com2(3), p1(3), p2(3)
+    double precision, intent(in) :: drij(3), p1(3), p2(3)
     double precision :: R11(3,3), R12(3,3), R13(3,3)
     double precision, intent(in) :: S(3,3), W, cog(3)
     double precision, intent(out) :: g_M(3), g_P(3)
@@ -224,40 +224,40 @@ subroutine sitedist_grad(com1, p1, com2, p2, S, W, cog, g_M, g_P)
 
     dR = R2 - R1
 
-    g_M = -2.*W*(com2-com1)
+    g_M = -2.*W*(drij)
 
     g_P(1) = -2.*trace3(matmul(R11, matmul(S, transpose(dR))))
     g_P(2) = -2.*trace3(matmul(R12, matmul(S, transpose(dR))))
     g_P(3) = -2.*trace3(matmul(R13, matmul(S, transpose(dR))))
 
     g_M = g_M - 2.*W *  matmul(dR, cog)
-    g_P(1) = g_P(1) - 2.*W * dot_product(com2-com1, matmul(R11, cog))
-    g_P(2) = g_P(2) - 2.*W * dot_product(com2-com1, matmul(R12, cog))
-    g_P(3) = g_P(3) - 2.*W * dot_product(com2-com1, matmul(R13, cog))
+    g_P(1) = g_P(1) - 2.*W * dot_product(drij, matmul(R11, cog))
+    g_P(2) = g_P(2) - 2.*W * dot_product(drij, matmul(R12, cog))
+    g_P(3) = g_P(3) - 2.*W * dot_product(drij, matmul(R13, cog))
 end subroutine
 
-function aadist(coords1, coords2, nrigid, S, W, cog)
-    implicit none
-    double precision, intent(in) :: coords1(6*nrigid)
-    double precision, intent(in) :: coords2(6*nrigid)
-
-    double precision aadist
-    integer, intent(in) :: nrigid
-    double precision sitedist
-
-    double precision dist
-    integer i, icom, ip
-    double precision, intent(in) :: S(3,3), W, cog(3)
-    dist=0.
-
-    do i = 1,nrigid
-        icom = 3*i-2
-        ip = 3*i-2 + 3*nrigid
-
-        dist = dist + sitedist( coords1(icom:icom+3), coords1(ip:ip+3), &
-                                coords2(icom:icom+3), coords2(ip:ip+3), &
-                                S, W, cog )
-    enddo
-    aadist = dist
-end function
+!function aadist(coords1, coords2, nrigid, S, W, cog)
+!    implicit none
+!    double precision, intent(in) :: coords1(6*nrigid)
+!    double precision, intent(in) :: coords2(6*nrigid)
+!
+!    double precision aadist
+!    integer, intent(in) :: nrigid
+!    double precision sitedist
+!
+!    double precision dist
+!    integer i, icom, ip
+!    double precision, intent(in) :: S(3,3), W, cog(3)
+!    dist=0.
+!
+!    do i = 1,nrigid
+!        icom = 3*i-2
+!        ip = 3*i-2 + 3*nrigid
+!
+!        dist = dist + sitedist( coords1(icom:icom+3), coords1(ip:ip+3), &
+!                                coords2(icom:icom+3), coords2(ip:ip+3), &
+!                                S, W, cog )
+!    enddo
+!    aadist = dist
+!end function
 
