@@ -1,6 +1,6 @@
 import matplotlib
 matplotlib.use("QT4Agg")
-    
+import traceback    
 import pylab as pl    
 from PyQt4 import QtCore, QtGui
 import MainWindow 
@@ -25,6 +25,20 @@ from connect_run_dlg import ConnectViewer
 from takestep_explorer import TakestepExplorer
 
 global pick_count
+
+def excepthook(ex_type, ex_value, traceback_obj):
+    """ redirected exception handler """
+    
+    errorbox = QtGui.QMessageBox()
+    msg = "An unhandled exception occurred:\n"+str(ex_type) + "\n\n"\
+                     + str(ex_value) + "\n\nTraceback:\n----------"
+    for line in traceback.format_tb(traceback_obj):
+        msg += "\n" + line
+    errorbox.setText(msg)
+    errorbox.setStandardButtons(QtGui.QMessageBox.Ignore | QtGui.QMessageBox.Cancel)
+    errorbox.setDefaultButton(QtGui.QMessageBox.Cancel)
+    if errorbox.exec_() == QtGui.QMessageBox.Cancel:
+        exit(-1)
 
 def no_event(*args, **kwargs):
     return
@@ -698,6 +712,8 @@ def run_gui(system, db=None):
     """
     app = QtGui.QApplication(sys.argv)
     
+    sys.excepthook = excepthook
+
     myapp = MyForm(app, system)
     if db is not None:
         myapp.connect_db(db)
