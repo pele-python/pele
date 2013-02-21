@@ -332,7 +332,7 @@ class Database(object):
             conn.close()
             if _schema_version != schema:
                 raise IOError("database schema outdated, current (newest) version: "
-                              "%d (%d). Please use migrate_db.py int pygmin/scripts to update database"%(schema, _schema_version))
+                              "%d (%d). Please use migrate_db.py in pygmin/scripts to update database"%(schema, _schema_version))
             
         Session = sessionmaker(bind=self.engine)
         self.session = Session()

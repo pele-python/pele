@@ -44,7 +44,7 @@ def migrate(db):
     print "database is at newest version"
     
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 2 or "--help" in sys.argv or "-h" in sys.argv:
         print "usage:\npython migrate_db.py <database>"
         sys.exit()
     migrate(sys.argv[1])
