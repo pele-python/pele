@@ -13,9 +13,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, bindparam, case, insert
 from sqlalchemy.schema import Index
 from pygmin.utils.events import Signal
+import os
 
 __all__ = ["Minimum", "TransitionState", "Database", "Distance"]
 
+_schema_version = 1
 verbose=False
 
 Base = declarative_base()
@@ -34,7 +36,11 @@ class Minimum(Base):
     ----------
     energy : float
     coords : numpy array
-    
+    fvib : float
+        log product of squared frequencies for free energy calculation
+    pgorder : integer
+        point group order
+        
     Notes
     -----
     
@@ -51,6 +57,9 @@ class Minimum(Base):
     energy = Column(Float) 
     # deferred means the object is loaded on demand, that saves some time / memory for huge graphs
     coords = deferred(Column(PickleType))
+    fvib = Column(Float)
+    pgorder = Column(Integer)
+    
     '''coordinates'''
     
     def __init__(self, energy, coords):
@@ -95,6 +104,12 @@ class TransitionState(Base):
         lowest (single negative) eigenvalue of the saddle point
     eigenvec : numpy array, optional
         eigenvector which corresponds to the negative eigenvalue 
+    fvib : float
+        log product of squared frequencies for free energy calculation
+    pgorder : integer
+        point group order
+    
+    
     
     Attributes
     ----------
@@ -144,7 +159,9 @@ class TransitionState(Base):
 
     eigenvec = deferred(Column(PickleType))
     '''coordinates of transition state'''
-    
+
+    fvib = Column(Float)
+    pgorder = Column(Integer)    
     
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
         assert min1._id is not None
@@ -252,7 +269,9 @@ class Database(object):
     compareMinima : callable, `bool = compareMinima(min1, min2)`, optional
         called to determine if two minima are identical.  Only called
         if the energies are within `accuracy` of each other.
-
+    createdb : boolean, optional
+        create database if not exists, default is true
+        
     Attributes
     ----------
     engine : sqlalchemy database engine
@@ -293,11 +312,28 @@ class Database(object):
     connection = None
     accuracy = 1e-3
     compareMinima=None
-    
+        
     def __init__(self, db=":memory:", accuracy=1e-3, connect_string='sqlite:///%s',
-                 compareMinima=None):
+                 compareMinima=None, createdb=True):
+        global _schema_version
+        if not createdb:
+            if not os.path.isfile(db): 
+                raise IOError("database does not exist")
+            
         self.engine = create_engine(connect_string%(db), echo=verbose)
-        Base.metadata.create_all(self.engine)
+        if createdb:
+            conn = self.engine.connect()
+            if not self.engine.has_table("tbl_minima"):
+                conn.execute("PRAGMA user_version = %d;"%_schema_version)
+            Base.metadata.create_all(self.engine)
+            result=conn.execute("PRAGMA user_version;")
+            schema = result.fetchone()[0]
+            result.close()
+            conn.close()
+            if _schema_version != schema:
+                raise IOError("database schema outdated, current (newest) version: "
+                              "%d (%d). Please use migrate_db.py int pygmin/scripts to update database"%(schema, _schema_version))
+            
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         self.accuracy=accuracy
