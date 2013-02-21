@@ -86,6 +86,7 @@ class ConnectAllDialog(ConnectViewer):
 
 
     def do_one_connection(self, min1, min2):
+        self.textEdit.insertPlainText("\n\n")
         self.textEdit_summary.insertPlainText("\nNow connecting minima %d %d\n" % (self.min1._id, self.min2._id))
         self.decrunner = DECRunner(self.system, self.database, min1, min2, outstream=self.textEdit_writer,
                                    return_smoothed_path=True)

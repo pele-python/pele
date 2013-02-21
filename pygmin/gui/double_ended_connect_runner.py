@@ -38,12 +38,24 @@ class OutLog(object):
     """
     def __init__(self, conn):
         self.conn = conn
+        self.message = ""
 
     def write(self, m):
-#        sys.stderr.write(":sending message:"+ m)
-        self.conn.send(("stdout", m))
+        if len(m) > 0:
+            self.conn.send(("stdout", m))
+        return
+##        sys.stderr.write(":sending message:"+ m)
+#        self.message += m
+##        if len(self.message) > 100:
+##            self.flush()
+###            self.conn.send(("stdout", m))
+##        if len(self.mes)
+#        if self.message[-1] == "\n":
+#            self.flush()
     
     def flush(self):
+#        self.conn.send(("stdout", self.message))
+#        self.message = ""
         pass
 
 
@@ -100,7 +112,7 @@ class DECProcess(mp.Process):
         self.comm.send(("success", success))
         
         if success:
-            # return the smoothed path, or None if not succsessful
+            # return the smoothed path, or None if not successful
             pathdata = self.get_smoothed_path()
             self.comm.send(("smoothed path", pathdata))
         
@@ -128,7 +140,7 @@ class DECProcess(mp.Process):
         
         self.started = True
         self.connect = self.system.get_double_ended_connect(self.m1local, self.m2local, db,
-                                                       fresh_connect=True)
+                                                       fresh_connect=True, load_no_distances=True)
         self.connect.connect()
     
     def run(self):
@@ -218,7 +230,7 @@ class DECRunner(QtCore.QObject):
 #        self.poll_thread.start()
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(100.)
+        self.refresh_timer.start(1.)
 
 
     def add_minima_transition_states(self, new_minima, new_ts):

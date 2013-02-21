@@ -126,7 +126,24 @@ class AASiteType(object):
         g_P[2] -= 2.*self.W * np.dot((com2-com1), np.dot(R13, self.cog))
 
         return g_M, g_P
+    
+    def metric_tensor(self, p):
+        R, R1, R2, R3 = rotMatDeriv(p, True)        
+        g = np.zeros([3,3])
+                
+        g[0,0] = np.trace(np.dot(R1, np.dot(self.Sm, R1.transpose())))
+        g[0,1] = np.trace(np.dot(R1, np.dot(self.Sm, R2.transpose())))
+        g[0,2] = np.trace(np.dot(R1, np.dot(self.Sm, R3.transpose())))
+        g[1,1] = np.trace(np.dot(R2, np.dot(self.Sm, R2.transpose())))
+        g[1,2] = np.trace(np.dot(R2, np.dot(self.Sm, R3.transpose())))
+        g[2,2] = np.trace(np.dot(R3, np.dot(self.Sm, R3.transpose())))
+        
+        g[1,0] = g[0,1]
+        g[2,1] = g[1,2]
+        g[2,0] = g[0,2]
+        gx = np.identity(3)*self.M        
 
+        return gx, g
         
 class AATopology(object):
     ''' 
@@ -315,6 +332,19 @@ class AATopology(object):
         zev = zeroev.gramm_schmidt(self.zeroEV(coords))
         zeroev.orthogonalize(v, zev)
         return v
+    
+    def metric_tensor(self, coords):
+        ca = self.coords_adapter(coords=coords)
+        g = np.zeros([coords.size, coords.size])
+        offset = 3*ca.nrigid
+        # first distance for sites only
+        for i in xrange(ca.nrigid):
+            g_M, g_P = self.sites[i].metric_tensor(ca.rotRigid[i])
+            g[3*i:3*i+3, 3*i:3*i+3] = g_M
+            g[3*i+offset:3*i+3+offset, 3*i+offset:3*i+3+offset] = g_P
+            
+        return g
+       
 
 class TakestepAA(takestep.TakestepInterface):
     def __init__(self, topology, rotate=1.6, translate=0.):
