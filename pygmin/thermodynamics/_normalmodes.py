@@ -2,7 +2,7 @@ import numpy as np
 
 __all__ = ["normalmode_frequencies", "logproduct_freq2"]
 
-def normalmode_frequencies(hessian, metric=None):
+def normalmode_frequencies(hessian, metric=None, eps=1e-4):
     ''' calculate normal mode frequencies
     
     Parameters
@@ -15,9 +15,16 @@ def normalmode_frequencies(hessian, metric=None):
     '''
     A = hessian
     if metric is not None:
-        A = np.dot(np.linalg.inv(metric), hessian)
+        A = np.dot(np.linalg.pinv(metric), hessian)
    
-    return np.linalg.eigvals(A)
+    frq = np.linalg.eigvals(A)
+    
+    if(np.max(np.abs(np.imag(frq))) > eps):
+        print frq
+        raise ValueError("imaginary eigenvalue in frequency calculation"
+                         ", check hessian + metric tensor\nthe largest imaginary part is %g"%np.max(np.abs(np.imag(frq))))
+    
+    return np.sort(np.real(frq))
 
 def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
     ''' calculate the log product of positive frequencies
