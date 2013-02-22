@@ -128,72 +128,8 @@ class OTPSystem(RBSystem):
         return self
 
     def load_coords_pymol(self, coordslist, oname, index=1):
-        """load the coords into pymol
-        
-        the new object must be named oname so we can manipulate it later
-                        
-        Parameters
-        ----------
-        coordslist : list of arrays
-        oname : str
-            the new pymol object must be named oname so it can be manipulated
-            later
-        index : int
-            we can have more than one molecule on the screen at one time.  index tells
-            which one to draw.  They are viewed at the same time, so should be
-            visually distinct, e.g. different colors.  accepted values are 1 or 2
-        
-        Notes
-        -----
-        the implementation here is a bit hacky.  we create a temporary xyz file from coords
-        and load the molecule in pymol from this file.  
-        """
-        # pymol is imported here so you can do, e.g. basinhopping without installing pymol
         import pymol 
-
-        # create the temporary file
-        suffix = ".xyz"
-        f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
-        fname = f.name
-                
-        # write the coords into the xyz file
-        from pygmin.mindist import CoMToOrigin
-        for coords in coordslist:
-            if hasattr(self, "atom_types"):
-                atom_types = self.atom_types
-            else:
-                atom_types = ["O"]
-            atom_coords = self.aasystem.to_atomistic(coords)
-#            atom_coords = CoMToOrigin(coords.copy())
-            write_xyz(f, atom_coords, title=oname, atomtypes=atom_types)#["C", "N", "N"])
-        f.flush()
-                
-        # load the molecule from the temporary file
-        pymol.cmd.load(fname)
-        
-        # get name of the object just create and change it to oname
-        objects = pymol.cmd.get_object_list()
-        objectname = objects[-1]
-        pymol.cmd.set_name(objectname, oname)
-        
-        #set the representation
-        pymol.cmd.hide("everything", oname)
-        pymol.cmd.show("spheres", oname)
-        
-        
-        pymol.cmd.unbond(oname, oname)
-        
-        if hasattr(self, "draw_bonds"):
-            for i1, i2 in self.draw_bonds:
-                pymol.cmd.bond("id "+str(i1+1), "id "+str(i2+1))
-            pymol.cmd.show("lines", oname)
-
-        # set the color according to index
-        if index == 1:
-            pymol.cmd.color("red", oname)
-        else:
-            pymol.cmd.color("gray", oname)
-
+        super(OTPSystem, self).load_coords_pymol(coordslist, oname, index=index)
         pymol.cmd.set("sphere_scale", value=0.2, selection=oname)
 
 def rungui(system, db=None):
