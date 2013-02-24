@@ -1,5 +1,5 @@
-import numpy as np
 import multiprocessing as mp
+import logging
 
 #this import fixes some bugs in how multiprocessing deals with exceptions
 import pygmin.utils.fix_multiprocessing
@@ -91,7 +91,9 @@ class LocalConnectPar(LocalConnect):
             self.ncores = kwargs.pop("ncores")
         except KeyError:
             self.ncores = 4
-        return super(LocalConnectPar, self).__init__(*args, **kwargs)
+        super(LocalConnectPar, self).__init__(*args, **kwargs)
+        self.NEBparams["parallel"] = True
+        self.NEBparams["ncores"] = self.ncores
 
     def _refineTransitionStates(self, neb, climbing_images):
         """
@@ -106,8 +108,7 @@ class LocalConnectPar(LocalConnect):
         input_args = []
         for energy, i in climbing_images[:nrefine]:
             count += 1
-            print ""
-            print "refining transition state from NEB climbing image:", count, "out of", nrefine
+            logging.info("\nrefining transition state from NEB climbing image: %s %s %s", count, "out of", nrefine)
             coords = neb.coords[i,:]
             #get guess for initial eigenvector from NEB tangent
             if True:
@@ -119,7 +120,7 @@ class LocalConnectPar(LocalConnect):
             input_args.append((self.pot, coords, {"tsSearchParams":self.tsSearchParams, "eigenvec0":eigenvec0}))
 
         #do all the transition state searches in parallel using a pool of workers
-        print "refining transition states in parallel on", self.ncores, "cores"
+        logging.info("refining transition states in parallel on %s %s", self.ncores, "cores")
         mypool = mp.Pool(self.ncores)
         try:
             #there is a bug in Python so that exceptions in multiprocessing.Pool aren't
@@ -140,24 +141,25 @@ class LocalConnectPar(LocalConnect):
             #It's important to make sure the child processes are closed even
             #if when an exception is raised.  
             #Note: I'm not sure this is the right way to do it.
-            print "exception raised while running multiprocessing.Pool.map"
-            print "  terminating pool"
+            logging.error("exception raised while running multiprocessing.Pool.map")
+            logging.error("  terminating pool")
             mypool.terminate()
             mypool.join()
             raise
         mypool.close()
         mypool.join()
         
-        print "found", ngood_ts, "good transition states from", nrefine, "candidates"
+        logging.info("found %s %s %s %s", ngood_ts, "good transition states from", nrefine, "candidates")
         return ngood_ts > 0
     
-    def _getNEB(self, *args, **kwargs):
-        #this is all that need be changed to get the NEB to run in parallel.
-        return create_NEB(*args, parallel=True, ncores=self.ncores, **kwargs)
-#        return NEBPar(*args, ncores=self.ncores, **kwargs)
+#    def _getNEB(self, *args, **kwargs):
+#        #this is all that need be changed to get the NEB to run in parallel.
+#        return create_NEB(*args, parallel=True, ncores=self.ncores, **kwargs)
+##        return NEBPar(*args, ncores=self.ncores, **kwargs)
 
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     from pygmin.landscape.connect_min import test
     test(DoubleEndedConnectPar, natoms=28)

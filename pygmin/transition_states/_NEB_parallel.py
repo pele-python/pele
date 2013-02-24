@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 import multiprocessing as mp
+import logging
 
 from pygmin.transition_states import NEB
 
@@ -91,8 +92,7 @@ class _PotentialProcess(mp.Process):
                 eglist = self.getEnergyGradientMultiple(coordslist)
                 self.conn.send(eglist)
             else:
-                print "unknown message:", self.name
-                print message
+                logging.error("unknown message: %s\n%s", self.name, message)
                 
                 
 class NEBPar(NEB):
@@ -205,12 +205,12 @@ class NEBPar(NEB):
         try:
             for worker in self.workerlist:
                 worker.start()
-            print "running NEB in parallel with", self.ncores, "cores"
+            logging.info("running NEB in parallel with %s %s", self.ncores, "cores")
             ret = super(NEBPar, self).optimize(*args, **kwargs)
             self._killWorkers()
             return ret
         except:
-            print "exception raised while doing NEB in parallel, terminating child processes"
+            logging.error("exception raised while doing NEB in parallel, terminating child processes")
             for worker in self.workerlist:
                 worker.terminate()
                 worker.join()
@@ -218,6 +218,7 @@ class NEBPar(NEB):
             raise
     
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     from pygmin.transition_states._NEB import nebtest
     nebtest(NEBPar)
 
