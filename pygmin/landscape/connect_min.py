@@ -608,8 +608,7 @@ def test(Connect=DoubleEndedConnect, natoms=16):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)             
-
+    logging.basicConfig(level=logging.DEBUG)
     test(natoms=38)
 
 
