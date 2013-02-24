@@ -1,9 +1,11 @@
 import networkx as nx
 import numpy as np
+import logging
 
 from pygmin.landscape import Graph
 
 __all__ = []
+
 
 class _DistanceGraph(object):
     """
@@ -86,7 +88,7 @@ class _DistanceGraph(object):
         if not force:
             if nnewdist < self.db_update_min:
                 return
-        print "updating database with", nnewdist, "new distances"
+        logging.info("updating database with %s %s", nnewdist, "new distances")
         self.database.setDistanceBulk(self.new_distances.iteritems())
         self.new_distances = dict()
 
@@ -124,7 +126,7 @@ class _DistanceGraph(object):
             #if that fails, try to get it from the database
             dist = self.database.getDistance(min1, min2)
             if dist is not None: 
-                print "distance in database but not in distance_map"
+                logging.warning("distance in database but not in distance_map")
                 return dist
         return None
 
@@ -139,7 +141,7 @@ class _DistanceGraph(object):
         #if it's not already known we must calculate it
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
         if self.verbosity > 1:
-            print "calculated distance between", min1._id, min2._id, dist
+            logging.debug("calculated distance between %s %s %s", min1._id, min2._id, dist)
         self._setDist(min1, min2, dist)
         return dist
     
@@ -276,11 +278,11 @@ class _DistanceGraph(object):
             if d2 is None: continue
             if d2 > start_end_distance: continue
             
-            print "    accepting minimum", d1, d2, start_end_distance
+            logging.debug("    accepting minimum %s %s %s", d1, d2, start_end_distance)
             
             naccept += 1
             self.addMinimum(m)
-        print "    found", naccept, "relevant minima out of", count
+        logging.info("    found %s %s %s", naccept, "relevant minima out of", count)
 
 
     def initialize(self, minstart, minend, use_all_min=False, use_limited_min=True, load_no_distances=False):
@@ -292,7 +294,7 @@ class _DistanceGraph(object):
         """
         #raw_input("Press Enter to continue:")
         if not load_no_distances:
-            print "loading distances from database"
+            logging.info("loading distances from database")
             self._initializeDistances()
         #raw_input("Press Enter to continue:")
         dist = self.getDist(minstart, minend)
@@ -300,16 +302,14 @@ class _DistanceGraph(object):
         self.addMinimum(minend)
         if not load_no_distances:
             if use_all_min:
-                """
-                add all minima in self.graph to self.Gdist
-                """
-                print "adding all minima to distance graph (Gdist)."
-                print "    This might take a while."
+                # add all minima in self.graph to self.Gdist
+                logging.info("adding all minima to distance graph (Gdist).")
+                logging.info( "    This might take a while.")
                 for m in self.graph.graph.nodes():
                     self.addMinimum(m)
             elif use_limited_min:
-                print "adding relevant minima to distance graph (Gdist)."
-                print "    This might take a while."
+                logging.info( "adding relevant minima to distance graph (Gdist).")
+                logging.info( "    This might take a while.")
                 self._addRelevantMinima(minstart, minend)
         #raw_input("Press Enter to continue:")
 
@@ -363,7 +363,7 @@ class _DistanceGraph(object):
         make sure graph is up to date.
         and make any corrections
         """
-        print "checking Gdist"
+        logging.info( "checking Gdist")
         allok = True
         #check that all edges that are connected in self.graph
         #have zero edge weight
@@ -387,18 +387,21 @@ class _DistanceGraph(object):
                         allok = False
                         count += 1
                         dist = self.getDist(e[0], e[1])
-                        print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist, "path_weight", weight_sum, e[0]._id, e[1]._id
+                        logging.warning("    problem: are_connected %s %s %s %s %s %s %s %s %s", 
+                                        are_connected, "but weight", weights[e], "dist", dist, 
+                                        "path_weight", weight_sum, e[0]._id, e[1]._id)
                 self.setTransitionStateConnection(e[0], e[1])
                             
                      
             if not are_connected and zero_weight:
                 allok = False
                 dist = self.getDist(e[0], e[1])
-                print "    problem: are_connected", are_connected, "but weight", weights[e], "dist", dist, e[0]._id, e[1]._id
+                logging.warning("    problem: are_connected %s %s %s %s %s %s %s", 
+                                are_connected, "but weight", weights[e], "dist", dist, e[0]._id, e[1]._id)
                 w = self.distToWeight(dist)
                 self.Gdist.add_edge(e[0], e[1], {"weight":w})
         if count > 0:
-            print "    found", count, "inconsistencies in Gdist"
+            logging.info("    found %s %s", count, "inconsistencies in Gdist")
         
         return allok
 

@@ -1,12 +1,15 @@
 import numpy as np
 import networkx as nx
+import logging
 
 from pygmin.landscape import Graph, LocalConnect
 from pygmin.landscape._distance_graph import _DistanceGraph
 
 __all__ = ["DoubleEndedConnect"]
 
-                     
+
+#logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)             
 
 
 class DoubleEndedConnect(object):
@@ -172,18 +175,18 @@ class DoubleEndedConnect(object):
 
         #check if a connection exists before initializing distance Graph
         if self.graph.areConnected(self.minstart, self.minend):
-            print "minima are already connected.  not initializing distance graph"
+            logging.info("minima are already connected.  not initializing distance graph")
             return
 
         self.dist_graph.initialize(self.minstart, self.minend, use_all_min=use_all_min, load_no_distances=self.load_no_distances)
         
         if self.verbosity > 0:
-            print "************************************************************"
-            print "starting a double ended connect run between"
-            print "        minimum 1: id %d energy %f" % (self.minstart._id, self.minstart.energy)
-            print "        minimum 2: id %d energy %f" % (self.minend._id, self.minend.energy)
-            print "        dist %f" % self.getDist(self.minstart, self.minend)
-            print "************************************************************"
+            logging.info("************************************************************")
+            logging.info("starting a double ended connect run between")
+            logging.info("        minimum 1: id %d energy %f" % (self.minstart._id, self.minstart.energy))
+            logging.info("        minimum 2: id %d energy %f" % (self.minend._id, self.minend.energy))
+            logging.info("        dist %f" % self.getDist(self.minstart, self.minend))
+            logging.info("************************************************************")
         
     
 
@@ -200,13 +203,13 @@ class DoubleEndedConnect(object):
         
         debug = False
         dist = self.getDist(min1, min2)
-        print "merging minima", min1._id, min2._id, dist, "E1-E2", min1.energy - min2.energy
+        logging.info( "merging minima %s %s %s %s %s", min1._id, min2._id, dist, "E1-E2", min1.energy - min2.energy)
 
         #deal with the case where min1 and/or min2 are the same as minstart and/or minend
         #make sure the one that is deleted (min2) is not minstart or minend
         if ((min1 == self.minstart and min2 == self.minend) or 
             (min2 == self.minstart and min1 == self.minend)):
-            print "ERROR: trying to merge the start and end minima.  aborting"
+            logging.error( "ERROR: trying to merge the start and end minima.  aborting")
             return
         if min2 == self.minstart or min2 == self.minend:
             min1, min2 = min2, min1
@@ -214,7 +217,7 @@ class DoubleEndedConnect(object):
         #print "min1 min2", min1, min2
 
         if dist > self.max_dist_merge:
-            print "    minima merge aborted.  distance is too large", dist
+            logging.info( "    minima merge aborted.  distance is too large %s", dist)
             return
         
 #        if debug:
@@ -231,8 +234,8 @@ class DoubleEndedConnect(object):
         if debug:
             #testing
             if min2 in self.graph.graph.nodes():
-                print "error, min2 is still in self.graph.graph"
-            print "self.graph.graph. nnodes", self.graph.graph.number_of_nodes()
+                logging.error( "error, min2 is still in self.graph.graph")
+            logging.debug( "self.graph.graph. nnodes %s", self.graph.graph.number_of_nodes() )
 
         #merge minima in distance graph        
         self.dist_graph.mergeMinima(min1, min2)
@@ -256,9 +259,9 @@ class DoubleEndedConnect(object):
         #sanity check for the energies
         me1, me2 = min_ret1[1], min_ret2[1]
         if E < me1 or E < me2:
-            print "warning: trying to add a transition state that has energy lower than it's minima."
-            print "    TS energy", E, "minima energy", me1, me2
-            print "    aborting"
+            logging.warning("trying to add a transition state that has energy lower than its minima.")
+            logging.warning("    TS energy %s %s %s %s", E, "minima energy", me1, me2 )
+            logging.warning("    aborting" )
             return False
         
         #check the minima and transition states are valid configurations.
@@ -280,12 +283,12 @@ class DoubleEndedConnect(object):
         min1 = self.graph.addMinimum(min_ret1[1], min_ret1[0])
         min2 = self.graph.addMinimum(min_ret2[1], min_ret2[0])
         if min1 == min2:
-            print "warning: stepping off the transition state resulted in twice the same minima", min1._id
+            logging.warning( "stepping off the transition state resulted in twice the same minima %s", min1._id)
             return False
         
         
 
-        print "adding transition state", min1._id, min2._id
+        logging.info("adding transition state %s %s", min1._id, min2._id)
         #update the transition state graph
         #this also updates the database and returns a TransitionState object
         ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=eigenvec, eigenval=eigenval)
@@ -310,7 +313,7 @@ class DoubleEndedConnect(object):
                     triangle = ""
                 else: 
                     triangle = ": new minima not in between start and end"
-                print "    distances: %4d -> %4d = %f    %4d -> %4d = %f    %4d -> %4d = %f  %s" % (msid, m1id, ds, m1id, meid, de, m1id, m2id, dse, triangle)
+                logging.info("    distances: %4d -> %4d = %f    %4d -> %4d = %f    %4d -> %4d = %f  %s" % (msid, m1id, ds, m1id, meid, de, m1id, m2id, dse, triangle))
                 #print "    dist new min 1 to minstart, minend ", ds, de, dse
             if min2 != self.minstart and min2 != self.minend:
                 ds = self.getDist(min2, self.minstart)
@@ -319,7 +322,7 @@ class DoubleEndedConnect(object):
                     triangle = ""
                 else: 
                     triangle = ": new minima not in between start and end"
-                print "    distances: %4d -> %4d = %f    %4d -> %4d = %f    %4d -> %4d = %f" % (msid, m2id, ds, m2id, meid, de, m2id, m2id, dse)
+                logging.info( "    distances: %4d -> %4d = %f    %4d -> %4d = %f    %4d -> %4d = %f" % (msid, m2id, ds, m2id, meid, de, m2id, m2id, dse))
 
         
         return True
@@ -342,8 +345,8 @@ class DoubleEndedConnect(object):
         #Make sure we haven't already tried this pair and
         #record some data so we don't try it again in the future
         if self.pairsNEB.has_key((min1, min2)):
-            print "WARNING: redoing NEB for minima", min1._id, min2._id
-            print "         aborting NEB"
+            logging.warning("WARNING: redoing NEB for minima %s %s", min1._id, min2._id)
+            logging.warning("         aborting NEB")
             #self._remove_edgeGdist(min1, min2)
             self.dist_graph.removeEdge(min1, min2)
             return True
@@ -352,7 +355,7 @@ class DoubleEndedConnect(object):
         
         #Make sure they're not already connected.  sanity test
         if self.graph.areConnected(min1, min2):
-            print "in _local_connect, but minima are already connected. aborting", min1._id, min2._id, self.getDist(min1, min2)
+            logging.warning("in _local_connect, but minima are already connected. aborting %s %s %s", min1._id, min2._id, self.getDist(min1, min2))
             self.dist_graph.setTransitionStateConnection(min1, min2)
             self.dist_graph.checkGraph()
             return True
@@ -374,12 +377,12 @@ class DoubleEndedConnect(object):
         if nsuccess == 0:
             dist = self.getDist(min1, min2)
             if dist < self.max_dist_merge:
-                print "WARNING: local connect failed and the minima are close. Are the minima really the same?"
-                print "         energies:", min1.energy, min2.energy, "distance", dist 
+                logging.warning("local connect failed and the minima are close. Are the minima really the same?")
+                logging.warning("         energies: %s %s %s %s", min1.energy, min2.energy, "distance", dist) 
                 if self.merge_minima:
                     self.mergeMinima(min1, min2)
                 else:
-                    print "         set merge_minima=True to merge the minima" 
+                    logging.warning("         set merge_minima=True to merge the minima") 
                 return False   
 
 
@@ -413,14 +416,15 @@ class DoubleEndedConnect(object):
         update: find the shortest path weighted by distance squared.  This penalizes finding
         the NEB between minima that are very far away.  (Does this too much favor long paths?)
         """
-        print "finding a good pair to try to connect"
+        logging.info("finding a good pair to try to connect")
         #get the shortest path on dist_graph between minstart and minend
         if True:
-            print "Gdist has", self.dist_graph.Gdist.number_of_nodes(), "nodes and", self.dist_graph.Gdist.number_of_edges(), "edges"
+            logging.debug("Gdist has %s %s %s %s", self.dist_graph.Gdist.number_of_nodes(), 
+                          "nodes and", self.dist_graph.Gdist.number_of_edges(), "edges")
         path, weights = self.dist_graph.shortestPath(self.minstart, self.minend)
         weightsum = sum(weights)
         if path is None or weightsum >= 10e9:
-            print "Can't find any way to try to connect the minima"
+            logging.warning("Can't find any way to try to connect the minima")
             return None, None
         
         #get the weights of the path segements
@@ -436,13 +440,13 @@ class DoubleEndedConnect(object):
         
         if True:
             #print the path
-            print "best guess for path.  (dist=0.0 means the path is known)"
+            logging.info("best guess for path.  (dist=0.0 means the path is known)")
             for w, min1, min2 in weightlist:
                 if w > 1e-6:
                     dist = self.getDist(min1, min2)
                 else:
                     dist = w
-                print "    path guess", min1._id, min2._id, dist
+                logging.info("    path guess %s %s %s", min1._id, min2._id, dist)
 
         #select which minima pair to return
         if self.longest_first:
@@ -468,11 +472,11 @@ class DoubleEndedConnect(object):
             #stop if we're done
             if self.graph.areConnected(self.minstart, self.minend):
                 self.dist_graph.updateDatabase(force=True)
-                print "found connection!"
+                logging.info("found connection!")
                 return
             
-            print ""
-            print "======== starting connect cycle", i, "========"
+            logging.info("")
+            logging.info("======== starting connect cycle %s %s", i, "========")
             #get pair of minima to try to connect
             min1, min2 = self._getNextPair()
             
@@ -490,7 +494,7 @@ class DoubleEndedConnect(object):
 
 
             
-        print "failed to find connection between", self.minstart._id, self.minend._id
+        logging.info("failed to find connection between %s %s", self.minstart._id, self.minend._id)
 
     def returnPath(self):
         """return information about the path"""
@@ -522,34 +526,40 @@ class DoubleEndedConnect(object):
 #only testing stuff below here
 ###########################################################
 
-def getSetOfMinLJ(natoms = 32): #for testing purposes
-    from pygmin.potentials.lj import LJ
-    pot = LJ()
-    coords = np.random.uniform(-1,1,natoms*3)
-    from pygmin.basinhopping import BasinHopping
-    from pygmin.takestep.displace import RandomDisplacement
-    from pygmin.takestep.adaptive import AdaptiveStepsize
-    from pygmin.storage.database import Database
-    import os
-    #dbfile = "test.db"
-    #os.remove(dbfile)
-    #saveit = Database(db=dbfile)
-    saveit = Database()
-    takestep1 = RandomDisplacement()
-    takestep = AdaptiveStepsize(takestep1, frequency=15)
-    bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)
+def getSetOfMinLJ(system): #for testing purposes
+    from pygmin.systems import LJCluster
+    db = system.create_database()
+    bh = system.get_basinhopping(db, outstream=None)
     bh.run(100)
-    return pot, saveit
+    return system.get_potential(), db
+#    from pygmin.potentials.lj import LJ
+#    pot = LJ()
+#    coords = np.random.uniform(-1,1,natoms*3)
+#    from pygmin.basinhopping import BasinHopping
+#    from pygmin.takestep.displace import RandomDisplacement
+#    from pygmin.takestep.adaptive import AdaptiveStepsize
+#    from pygmin.storage.database import Database
+#    import os
+#    #dbfile = "test.db"
+#    #os.remove(dbfile)
+#    #saveit = Database(db=dbfile)
+#    saveit = Database()
+#    takestep1 = RandomDisplacement()
+#    takestep = AdaptiveStepsize(takestep1, frequency=15)
+#    bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)
+#    bh.run(100)
+#    return pot, saveit
 
 
 def test(Connect=DoubleEndedConnect, natoms=16):
-    from pygmin.landscape import Graph
-    from pygmin.mindist import minPermDistStochastic, MinDistWrapper
-    from pygmin.storage.database import Database
-    import pygmin.defaults as defaults
-    defaults.quenchParams = {"iprint": 1}
+#    from pygmin.landscape import Graph
+#    from pygmin.storage.database import Database
+#    import pygmin.defaults as defaults
+    from pygmin.systems import LJCluster
+#    defaults.quenchParams = {"iprint": -1}
     #get min1
-    pot, database = getSetOfMinLJ(natoms)
+    system = LJCluster(natoms)
+    pot, database = getSetOfMinLJ(system)
 #    from pygmin.potentials.lj import LJ
 #    pot = LJ()
 #    saveit = Database(db="test.db")
@@ -558,7 +568,8 @@ def test(Connect=DoubleEndedConnect, natoms=16):
     min2 = minima[1]
     print min1.energy, min2.energy
     
-    mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)
+    
+    mindist = system.get_mindist()
     
     if False:
         #test to see if min1 and min2 are already connected
