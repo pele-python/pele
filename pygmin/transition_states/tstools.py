@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 
 from pygmin import defaults
 from pygmin.optimize import mylbfgs
@@ -27,15 +28,15 @@ def determinePushoff(
         gpar = np.dot(grad, vec) / vnorm
         finalstep = step
         if verbose:
-            print "gpar", gpar, gpar0, abs((gpar-gpar0) / gpar0), step
+            logging.debug("gpar %s %s %s %s", gpar, gpar0, abs((gpar-gpar0) / gpar0), step)
         if abs((gpar-gpar0) / gpar0) > gdiff:
             break
         if step > stepmax:
-            print "warning: taking maximum step size from transition state", step
+            logging.debug("warning: taking maximum step size from transition state %s", step)
             break
         step *= 2.
     if verbose:
-        print "using pushoff of", finalstep
+        logging.debug( "using pushoff of %s", finalstep)
     return coords1
 
 def minima_from_ts(pot, xt, n=None,

@@ -9,7 +9,6 @@ __all__ = ["DoubleEndedConnect"]
 
 
 #logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)             
 
 
 class DoubleEndedConnect(object):
@@ -609,6 +608,8 @@ def test(Connect=DoubleEndedConnect, natoms=16):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)             
+
     test(natoms=38)
 
 

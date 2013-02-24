@@ -1,7 +1,8 @@
 import numpy as np
 import copy
-from pygmin.optimize import Result
+import logging
 
+from pygmin.optimize import Result
 from pygmin.potentials.potential import potential as basepot
 import pygmin.defaults as defaults
 from pygmin.transition_states import findLowestEigenVector
@@ -259,16 +260,16 @@ class FindTransitionState(object):
             if i == 0 or self.eigenval <= 0:
                 self._saveState(coords)
                 self.reduce_step = 0
-                if self.iprint > 0:
-                    print "    eigenvalue became positive, reducing step size"
+#                if self.iprint > 0:
+#                    logging.info("    eigenvalue became positive, reducing step size")
             else:
                 self.npositive += 1
                 if self.npositive > self.npositive_max:
-                    print "warning: positive eigenvalue found too many times. ending", self.npositive
+                    logging.warning( "positive eigenvalue found too many times. ending %s", self.npositive)
                     res.message.append( "positive eigenvalue found too many times %d" % self.npositive )
                     break
                 if self.verbosity > 2:
-                    print "the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps"
+                    logging.info("the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps")
                 coords = self._resetState(coords)
                 self.reduce_step += 1
             
@@ -297,21 +298,21 @@ class FindTransitionState(object):
                     extra += "  Tverse search: %d step %g" % (self.tangent_result.nfev, 
                                                                     self.tangent_move_step)
                     extra += "  Uphill step:%g" % (self.uphill_step_size,)
-                    print ostring, extra
+                    logging.info("%s %s", ostring, extra)
             
             if callable(self.event):
                 self.event(energy=E, coords=coords, rms=rms, eigenval=self.eigenval, stepnum=i)
             if rms < self.tol:
                 break
             if self.nfail >= self.nfail_max:
-                print "stopping findTransitionState.  too many failures in eigenvector search", self.nfail
+                logging.warning("stopping findTransitionState.  too many failures in eigenvector search %s", self.nfail)
                 res.message.append( "too many failures in eigenvector search %d" % self.nfail )
                 break
 
             if i == 0 and self.eigenval > 0.:
-                print "WARNING *** initial eigenvalue is positive - increase NEB spring constant?"
+                logging.warning("initial eigenvalue is positive - increase NEB spring constant?")
                 if self.demand_initial_negative_vec:
-                    print "            aborting transition state search"
+                    logging.warning("            aborting transition state search")
                     res.message.append( "initial eigenvalue is positive %f" % self.eigenval )
                     break
 
@@ -319,17 +320,17 @@ class FindTransitionState(object):
         self._getLowestEigenVector(coords, i)
 
         #done, print some data
-        print "findTransitionState done:", i, E, rms, "eigenvalue", self.eigenval
+        logging.info("findTransitionState done: %s %s %s %s %s", i, E, rms, "eigenvalue", self.eigenval)
     
         success = True
         #check if results make sense
         if self.eigenval >= 0.:
             if self.verbosity > 2:
-                print "warning: transition state is ending with positive eigenvalue", self.eigenval
+                logging.info( "warning: transition state is ending with positive eigenvalue %s", self.eigenval)
             success = False
         if rms > self.tol:
             if self.verbosity > 2:
-                print "warning: transition state search appears to have failed: rms", rms
+                logging.info("warning: transition state search appears to have failed: rms %s", rms)
             success = False
         if i >= self.nsteps:
             res.message.append( "maximum iterations reached %d" % i )
@@ -365,7 +366,7 @@ class FindTransitionState(object):
         if i > 0:
             overlap = np.dot(self.oldeigenvec, res.eigenvec)
             if overlap < 0.5 and self.verbosity > 2:
-                print "warning: the new eigenvector has low overlap with previous", overlap, self.eigenval
+                logging.info("warning: the new eigenvector has low overlap with previous %s %s", overlap, self.eigenval)
         else:
             overlap = 0.
 
@@ -434,7 +435,7 @@ class FindTransitionState(object):
 
         if np.abs(h) > maxstep:
             if self.verbosity >= 5:
-                print "reducing step from", h, "to", maxstep 
+                logging.debug("reducing step from %s %s %s", h, "to", maxstep) 
             h *= maxstep / abs(h)
         self.uphill_step_size = h
         coords += h * self.eigenvec
@@ -501,14 +502,17 @@ def guesstsATLJ():
 
 def guessts(coords1, coords2, pot):
     from pygmin.optimize import lbfgs_py as quench
-    from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
+#    from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
     from pygmin.transition_states import NEB
+    from pygmin.systems import LJCluster
     ret1 = quench(coords1, pot.getEnergyGradient)
     ret2 = quench(coords2, pot.getEnergyGradient)
     coords1 = ret1[0]
     coords2 = ret2[0]
     natoms = len(coords1)/3
-    dist, coords1, coords2 = mindist(coords1, coords2, permlist=[range(natoms)])
+    system = LJCluster(natoms)
+    mindist = system.get_mindist()
+    dist, coords1, coords2 = mindist(coords1, coords2) 
     print "dist", dist
     print "energy coords1", pot.getEnergy(coords1)
     print "energy coords2", pot.getEnergy(coords2)
@@ -603,7 +607,7 @@ def testpot1():
         printevent = PrintEvent(fout)
         print ""
         print "starting the transition state search"
-        ret = findTransitionState(coords, pot, event=printevent, iprint=-1)
+        ret = findTransitionState(coords, pot, iprint=-1)
         print ret
         #coords, eval, evec, e, grad, rms = ret
         e = pot.getEnergy(ret.coords)
@@ -628,4 +632,5 @@ def testpot1():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     testpot1()
