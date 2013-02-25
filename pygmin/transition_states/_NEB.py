@@ -8,6 +8,9 @@ from pygmin.transition_states import InterpolatedPath
 from pygmin.optimize import Result        
         
 __all__ = ["NEB",]
+
+logger = logging.getLogger("pygmin.connect.neb")
+
 try:
     import scipy.linalg
     blas = lambda name, ndarray: scipy.linalg.get_blas_funcs((name,), (ndarray,))[0]
@@ -399,11 +402,11 @@ class NEB(object):
         if avdev > self.adjustk_tol:
             self.k *=self.adjustk_factor
             if self.verbose >= 1:
-                logging.debug("increasing DNEB force constant to %s", self.k)
+                logger.debug("increasing DNEB force constant to %s", self.k)
         else: 
             self.k /=self.adjustk_factor
             if self.verbose >= 1:
-                logging.debug("decreasing DNEB force constant to %s", self.k)
+                logger.debug("decreasing DNEB force constant to %s", self.k)
         
     def MakeHighestImageClimbing(self):
         """
@@ -432,7 +435,7 @@ class NEB(object):
                 self.printStateFile = "neb.EofS.%04d" % (n)
                 if not os.path.isfile(self.printStateFile):
                     break
-            logging.info("NEB energies will be written to %s", self.printStateFile)
+            logger.info("NEB energies will be written to %s", self.printStateFile)
         #fname = "neb.EofS.%04d" % (self.getEnergyCount)
         #fname = "neb.EofS.all"
         with open(self.printStateFile, "a") as fout:
@@ -544,5 +547,5 @@ def nebtest(MyNEB=NEB, nimages=22):
     pl.show()
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logger.basicConfig(level=logger.DEBUG)
     nebtest()

@@ -10,6 +10,7 @@ from pygmin.transition_states import findLowestEigenVector
 
 __all__ = ["findTransitionState", "FindTransitionState"]
 
+logger = logging.getLogger("pygmin.connect.findTS")
 
 class TSRefinementPotential(basepot):
     """
@@ -261,15 +262,15 @@ class FindTransitionState(object):
                 self._saveState(coords)
                 self.reduce_step = 0
 #                if self.iprint > 0:
-#                    logging.info("    eigenvalue became positive, reducing step size")
+#                    logger.info("    eigenvalue became positive, reducing step size")
             else:
                 self.npositive += 1
                 if self.npositive > self.npositive_max:
-                    logging.warning( "positive eigenvalue found too many times. ending %s", self.npositive)
+                    logger.warning( "positive eigenvalue found too many times. ending %s", self.npositive)
                     res.message.append( "positive eigenvalue found too many times %d" % self.npositive )
                     break
                 if self.verbosity > 2:
-                    logging.info("the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps")
+                    logger.info("the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps")
                 coords = self._resetState(coords)
                 self.reduce_step += 1
             
@@ -298,21 +299,21 @@ class FindTransitionState(object):
                     extra += "  Tverse search: %d step %g" % (self.tangent_result.nfev, 
                                                                     self.tangent_move_step)
                     extra += "  Uphill step:%g" % (self.uphill_step_size,)
-                    logging.info("%s %s", ostring, extra)
+                    logger.info("%s %s", ostring, extra)
             
             if callable(self.event):
                 self.event(energy=E, coords=coords, rms=rms, eigenval=self.eigenval, stepnum=i)
             if rms < self.tol:
                 break
             if self.nfail >= self.nfail_max:
-                logging.warning("stopping findTransitionState.  too many failures in eigenvector search %s", self.nfail)
+                logger.warning("stopping findTransitionState.  too many failures in eigenvector search %s", self.nfail)
                 res.message.append( "too many failures in eigenvector search %d" % self.nfail )
                 break
 
             if i == 0 and self.eigenval > 0.:
-                logging.warning("initial eigenvalue is positive - increase NEB spring constant?")
+                logger.warning("initial eigenvalue is positive - increase NEB spring constant?")
                 if self.demand_initial_negative_vec:
-                    logging.warning("            aborting transition state search")
+                    logger.warning("            aborting transition state search")
                     res.message.append( "initial eigenvalue is positive %f" % self.eigenval )
                     break
 
@@ -320,17 +321,17 @@ class FindTransitionState(object):
         self._getLowestEigenVector(coords, i)
 
         #done, print some data
-        logging.info("findTransitionState done: %s %s %s %s %s", i, E, rms, "eigenvalue", self.eigenval)
+        logger.info("findTransitionState done: %s %s %s %s %s", i, E, rms, "eigenvalue", self.eigenval)
     
         success = True
         #check if results make sense
         if self.eigenval >= 0.:
             if self.verbosity > 2:
-                logging.info( "warning: transition state is ending with positive eigenvalue %s", self.eigenval)
+                logger.info( "warning: transition state is ending with positive eigenvalue %s", self.eigenval)
             success = False
         if rms > self.tol:
             if self.verbosity > 2:
-                logging.info("warning: transition state search appears to have failed: rms %s", rms)
+                logger.info("warning: transition state search appears to have failed: rms %s", rms)
             success = False
         if i >= self.nsteps:
             res.message.append( "maximum iterations reached %d" % i )
@@ -366,7 +367,7 @@ class FindTransitionState(object):
         if i > 0:
             overlap = np.dot(self.oldeigenvec, res.eigenvec)
             if overlap < 0.5 and self.verbosity > 2:
-                logging.info("warning: the new eigenvector has low overlap with previous %s %s", overlap, self.eigenval)
+                logger.info("warning: the new eigenvector has low overlap with previous %s %s", overlap, self.eigenval)
         else:
             overlap = 0.
 
@@ -435,7 +436,7 @@ class FindTransitionState(object):
 
         if np.abs(h) > maxstep:
             if self.verbosity >= 5:
-                logging.debug("reducing step from %s %s %s", h, "to", maxstep) 
+                logger.debug("reducing step from %s %s %s", h, "to", maxstep) 
             h *= maxstep / abs(h)
         self.uphill_step_size = h
         coords += h * self.eigenvec
@@ -632,5 +633,5 @@ def testpot1():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logger.basicConfig(level=logger.DEBUG)
     testpot1()

@@ -8,6 +8,8 @@ from pygmin.utils.events import Signal
 
 all = ["NEBDriver"]
 
+logger = logging.getLogger("pygmin.connect.neb")
+
 #def calc_neb_dist(coords, nimages, dist=True, grad=False):
 #    d_left = np.zeros(coords.shape)
 #    coords = coords.reshape([-1,nimages])
@@ -185,9 +187,9 @@ class NEBDriver(object):
         quenchParams["nsteps"] = niter    
         
         if self.verbose>=0:    
-            logging.info("    NEB: nimages   %s", self.nimages)
-            logging.info("    NEB: nsteps    %s", niter)
-            logging.info("    NEB: verbosity %s", self.verbose)
+            logger.info("    NEB: nimages   %s", self.nimages)
+            logger.info("    NEB: nsteps    %s", niter)
+            logger.info("    NEB: verbosity %s", self.verbose)
                 
         
         if self.reinterpolate > 0:
@@ -213,7 +215,7 @@ class NEBDriver(object):
                 self.path = res.path
             
                 if self.verbose >= 0:
-                    logging.info("NEB finished after %d steps, rms %e"%(res.nsteps, res.rms))
+                    logger.info("NEB finished after %d steps, rms %e"%(res.nsteps, res.rms))
                     
                 self._send_finish_event(res)
                 return neb
@@ -228,7 +230,7 @@ class NEBDriver(object):
                 if self.factor > 1. and len(path) == self.max_images and self.max_images > 0:
                     self.niter *= self.factor    
             if self.verbose >= 1:
-                logging.info("NEB reinterpolating path, %d images, niter is %d"%(len(path),self.niter))
+                logger.info("NEB reinterpolating path, %d images, niter is %d"%(len(path),self.niter))
         
         
     def generate_path(self, coords1, coords2):

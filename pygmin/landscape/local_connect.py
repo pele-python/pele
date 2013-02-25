@@ -7,6 +7,8 @@ from pygmin.transition_states import NEBDriver
 
 __all__ = ["LocalConnect"]
 
+logger = logging.getLogger("pygmin.connect")
+
 def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params=dict()):
     """
     find nearest transition state to NEB climbing image.  Then fall
@@ -22,16 +24,16 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
     #check to make sure it is a valid transition state 
     coords = ret.coords
     if not ret.success:
-        logging.info("transition state search failed")
+        logger.info("transition state search failed")
         return False, ret, None, None
         
     if ret.eigenval >= 0.:
-        logging.info("transition state has positive lowest eigenvalue, skipping: %s %s %s", ret.eigenval, ret.energy, ret.rms)
-        logging.info( "         not adding transition state")
+        logger.info("transition state has positive lowest eigenvalue, skipping: %s %s %s", ret.eigenval, ret.energy, ret.rms)
+        logger.info( "         not adding transition state")
         return False, ret, None, None
     
     #find the minima which this transition state connects
-    logging.info("falling off either side of transition state to find new minima")
+    logger.info("falling off either side of transition state to find new minima")
     ret1, ret2 = minima_from_ts(pot, coords, n = ret.eigenvec, \
         **pushoff_params)
     
@@ -118,8 +120,8 @@ class LocalConnect(object):
         success = False
         for energy, i in climbing_images[:nrefine]:
             count += 1
-            logging.info( "")
-            logging.info( "refining transition state from NEB climbing image: %s %s %s", count, "out of", nrefine)
+            logger.info( "")
+            logger.info( "refining transition state from NEB climbing image: %s %s %s", count, "out of", nrefine)
             coords = neb.coords[i,:]
             #get guess for initial eigenvector from NEB tangent
             if True:
@@ -144,18 +146,18 @@ class LocalConnect(object):
         """
         #arrange the coordinates to minimize the distance between them        
         dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords)
-        logging.info( "")
+        logger.info( "")
         
         if repetition == 0: 
             factor = 1.
         else: 
             #change parameters for second repetition
-            logging.info("running NEB a second time")
-            logging.info("    doubling the number of images")
-            logging.info("    doubling the number of steps")
+            logger.info("running NEB a second time")
+            logger.info("    doubling the number of images")
+            logger.info("    doubling the number of steps")
             factor = float(repetition + 1)
         
-        logging.info( "starting NEB run to try to connect minima %s %s %s", minNEB1._id, minNEB2._id, dist)
+        logger.info( "starting NEB run to try to connect minima %s %s %s", minNEB1._id, minNEB2._id, dist)
         
         neb = self.create_neb(self.pot, newcoords1, newcoords2, 
                          factor=factor, **self.NEBparams)
@@ -166,7 +168,7 @@ class LocalConnect(object):
         neb.MakeAllMaximaClimbing()
 
         if self.reoptimize_climbing > 0:
-            logging.info( "optimizing climbing images for a small number of steps")
+            logger.info( "optimizing climbing images for a small number of steps")
 #            NEBquenchParams["nsteps"] = self.reoptimize_climbing
 #            neb.optimize(**NEBquenchParams)
             neb.quenchParams["nsteps"] = self.reoptimize_climbing
@@ -200,7 +202,7 @@ class LocalConnect(object):
             #check results
             nclimbing = len(climbing_images)
             self.res.nclimbing = nclimbing
-            logging.info( "from NEB search found %s %s", nclimbing, "transition state candidates")
+            logger.info( "from NEB search found %s %s", nclimbing, "transition state candidates")
             if nclimbing > 0:
                 climbing_images = sorted(climbing_images, reverse=True) #highest energies first
                 #refine transition state candidates
@@ -251,5 +253,5 @@ def test():
     local_connect.connect(min1, min2)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+#    logger.basicConfig(level=logger.DEBUG)
     test()

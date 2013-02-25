@@ -7,6 +7,8 @@ from pygmin.transition_states import NEB
 
 __all__ = ["NEBPar"]
 
+logger = logging.getLogger("pygmin.connect.neb")
+
 class _PotentialProcess(mp.Process):
     """
     this class defines the worker object to be run as a separate process
@@ -92,7 +94,7 @@ class _PotentialProcess(mp.Process):
                 eglist = self.getEnergyGradientMultiple(coordslist)
                 self.conn.send(eglist)
             else:
-                logging.error("unknown message: %s\n%s", self.name, message)
+                logger.error("unknown message: %s\n%s", self.name, message)
                 
                 
 class NEBPar(NEB):
@@ -205,12 +207,12 @@ class NEBPar(NEB):
         try:
             for worker in self.workerlist:
                 worker.start()
-            logging.info("running NEB in parallel with %s %s", self.ncores, "cores")
+            logger.info("running NEB in parallel with %s %s", self.ncores, "cores")
             ret = super(NEBPar, self).optimize(*args, **kwargs)
             self._killWorkers()
             return ret
         except:
-            logging.error("exception raised while doing NEB in parallel, terminating child processes")
+            logger.error("exception raised while doing NEB in parallel, terminating child processes")
             for worker in self.workerlist:
                 worker.terminate()
                 worker.join()
@@ -218,7 +220,7 @@ class NEBPar(NEB):
             raise
     
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logger.basicConfig(level=logger.DEBUG)
     from pygmin.transition_states._NEB import nebtest
     nebtest(NEBPar)
 

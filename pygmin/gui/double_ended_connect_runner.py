@@ -152,12 +152,16 @@ class DECProcess(mp.Process):
 #            print >> sys.stderr, "stderr"
             self.mylog = OutLog(self.comm)
             sys.stdout = self.mylog
-#            logging.StreamHandler(self.mylog)
+            logger = logging.getLogger("pygmin.connect")
+            handles = logger.handlers
+            for h in handles:
+                print >> sys.stderr, "removing handler", h 
+                logger.removeHandler(h)
             sh = logging.StreamHandler(self.mylog)
-            logging.root.addHandler(sh)
+            logger.addHandler(sh)
+#            import pygmin
+#            logger.removeHandler(pygmin.h)
 #            print >> sys.stderr, "stderr2"
-            print "from stdout"
-            logging.debug("from logging")
 
         self.do_double_ended_connect()
         self.clean_up()
