@@ -203,9 +203,7 @@ class RBSystem(AASystem):
                                "id %d and %s" % (i2+1, oname))
             pymol.cmd.show("lines", oname)
 
-        # set the color according to index
-        if index == 1:
-            pymol.cmd.color("red", oname)
-        else:
+        # set the color of index 2 so they appear different
+        if index == 2:
             pymol.cmd.color("gray", oname)
 
