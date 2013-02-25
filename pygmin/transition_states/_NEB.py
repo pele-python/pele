@@ -173,6 +173,8 @@ class NEB(object):
 
         if quenchParams.has_key("iprint"):
             self.iprint = quenchParams["iprint"]
+        if not quenchParams.has_key("logger"):
+            quenchParams["logger"] = logging.getLogger("pygmin.connect.neb.quench")
 
         self.step = 0
         qres = quenchRoutine(
@@ -547,5 +549,4 @@ def nebtest(MyNEB=NEB, nimages=22):
     pl.show()
 
 if __name__ == "__main__":
-    logger.basicConfig(level=logger.DEBUG)
     nebtest()

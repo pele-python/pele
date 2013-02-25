@@ -1,9 +1,13 @@
 import numpy as np
+import logging
+
 #from bfgs import lineSearch, BFGS
 from pygmin.optimize import LBFGS
 from mylbfgs_updatestep import mylbfgs_updatestep
 
 __all__ = ["MYLBFGS"]
+
+_logger = logging.getLogger("pygmin.optimize")
 
 class MYLBFGS(LBFGS):
     """

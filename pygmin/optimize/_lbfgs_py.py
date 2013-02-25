@@ -1,9 +1,13 @@
 import numpy as np
+import logging
+
 #from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
 from pygmin.optimize import Result
 
 __all__ = ["LBFGS"]
+
+_logger = logging.getLogger("pygmin.optimize")
 
 
 class LBFGS(object):
@@ -43,6 +47,8 @@ class LBFGS(object):
         to stop the iteration
     debug : 
         print debugging information
+    logger : logger object
+        messages will be passed to this logger rather than the default
          
     Notes
     -----
@@ -65,7 +71,7 @@ class LBFGS(object):
     def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
                  rel_energy = False, H0=1., events=[],
                  alternate_stop_criterion=None, debug=False,
-                 iprint=-1, nsteps=10000, tol=1e-6):
+                 iprint=-1, nsteps=10000, tol=1e-6, logger=None):
         self.X = X
         self.pot = pot
         e, self.G = self.pot.getEnergyGradient(self.X)
@@ -77,6 +83,10 @@ class LBFGS(object):
         self.iprint = iprint
         self.nsteps = nsteps
         self.tol = tol
+        if logger is None:
+            self.logger = _logger
+        else:
+            self.logger = logger
     
         self.alternate_stop_criterion = alternate_stop_criterion
         self.debug = debug #print debug messages
@@ -98,7 +108,8 @@ class LBFGS(object):
         else:
             self.H0 = H0
         if self.H0 < 1e-10:
-            print "warning: initial guess for inverse Hessian diagonal is negative or too small", self.H0, "resetting it to 1."
+            self.logger.warning("initial guess for inverse Hessian diagonal is negative or too small %s %s", 
+                                self.H0, "resetting it to 1.")
             self.H0 = 1.
         self.rho = np.zeros(M)
         self.k = 0
@@ -143,14 +154,14 @@ class LBFGS(object):
             
             YS = np.dot(s[km1,:], y[km1,:])
             if YS == 0.:
-                print "warning: resetting YS to 1 in lbfgs", YS
+                self.logger.warning("resetting YS to 1 in lbfgs %s", YS)
                 YS = 1.            
             rho[km1] = 1. / YS
             
             #update the approximation for the diagonal inverse hessian
             YY = np.dot( y[km1,:], y[km1,:] )
             if YY == 0.:
-                print "warning: resetting YY to 1 in lbfgs", YY
+                self.logger.warning("warning: resetting YY to 1 in lbfgs %s", YY)
                 YY = 1.
             self.H0 = YS / YY
 
@@ -242,7 +253,7 @@ class LBFGS(object):
                 break
             else:
                 if self.debug:
-                    print "warning: energy increased, trying a smaller step", E, E0, f*stepsize, nincrease
+                    self.logger.info("warning: energy increased, trying a smaller step %s %s %s %s", E, E0, f*stepsize, nincrease)
                 f /= 10.
                 nincrease += 1
                 if nincrease > 10:
@@ -254,7 +265,7 @@ class LBFGS(object):
                 raise(LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
             if True:
                 #print "lbfgs: having trouble finding a good step size. dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
-                print "lbfgs: having trouble finding a good step size.", f*stepsize, stepsize
+                self.logger.warning("lbfgs: having trouble finding a good step size. %s %s", f*stepsize, stepsize)
                 #print "resetting H0"
                 #print self.H0
                 #self.nfail_reset += 1
@@ -307,9 +318,9 @@ class LBFGS(object):
             try:
                 X, e, G = self.adjustStepSize(X, e, G, stp)
             except LineSearchError:
-                print "Warning: problem with adjustStepSize, ending quench"
+                self.logger.error("problem with adjustStepSize, ending quench")
                 rms = np.linalg.norm(G) / sqrtN
-                print "    on failure: quench step", i, e, rms, self.funcalls
+                self.logger.error("    on failure: quench step %s %s %s %s", i, e, rms, self.funcalls)
                 res.message.append( "problem with adjustStepSize" )
                 break
             #e, G = self.pot.getEnergyGradient(X)
@@ -319,7 +330,8 @@ class LBFGS(object):
             
             if iprint > 0:
                 if i % iprint == 0:
-                    print "lbfgs:", i, "E", e, "rms", rms, "funcalls", self.funcalls, "stepsize", self.stepsize
+                    self.logger.info("lbfgs: %s %s %s %s %s %s %s %s %s", i, "E", e, 
+                                     "rms", rms, "funcalls", self.funcalls, "stepsize", self.stepsize)
             for event in self.events:
                 event(coords=X, energy=e, rms=rms)
       
@@ -342,7 +354,10 @@ class LBFGS(object):
         res.grad = G
         res.H0 = self.H0
         return res
-   
+
+#
+# only testing stuff below here
+#   
 
 class PrintEvent:
     def __init__(self, fname):

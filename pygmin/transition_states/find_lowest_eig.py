@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 
 from pygmin.optimize import Result
 
@@ -10,6 +11,8 @@ from pygmin.optimize import MYLBFGS
 import pygmin.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector"]
+
+#logger = logging.getLogger("pygmin.connect.findTS")
 
 class LowestEigPot(basepot):
     """
@@ -123,6 +126,10 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     #combine kwargs with defaults.lowestEigenvectorQuenchParams
     kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 
                   kwargs.items())
+    
+    if not kwargs.has_key("logger"):
+        kwargs["logger"] = logging.getLogger("pygmin.connect.findTS.leig_quench")
+
     
     if eigenvec0 is None:
         #eigenvec0 = vec_random()

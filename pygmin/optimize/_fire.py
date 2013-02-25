@@ -6,20 +6,32 @@ Created on 30 Apr 2012
 
 import numpy as np
 import math
+import logging
 
 __all__ = ["Fire"]
+
+_logger = logging.getLogger("pygmin.optimize")
 
 class Fire(object):
     '''
     The FIRE optimization algorithm
+
+    Parameters
+    ----------
+    coords : array
+        the starting configuration
+    potential : 
+        the potential
     
+    
+    Notes
+    -----
     this needs to be documented!!!
     '''
-    
     def __init__(self, coords, potential, restart=None, logfile='-', trajectory=None,
                  dt=0.1, maxmove=0.5, dtmax=1., Nmin=5, finc=1.1, fdec=0.5,
                  astart=0.1, fa=0.99, a=0.1, iprint=-1,
-                 alternate_stop_criterion = None):
+                 alternate_stop_criterion = None, logger=None):
         #Optimizer.__init__(self, atoms, restart, logfile, trajectory)
 
         self.dt = dt
@@ -38,6 +50,11 @@ class Fire(object):
         self.nsteps=0
         self.iprint = iprint
         self.alternate_stop_criterion = alternate_stop_criterion
+        if logger is None:
+            self.logger = _logger
+        else:
+            self.logger = logger
+
         
     def initialize(self):
         self.v = None
@@ -97,7 +114,8 @@ class Fire(object):
             if self.iprint > 0:
                 if step % self.iprint == 0:
                     rms = np.linalg.norm(f)/np.sqrt(len(f))
-                    print "fire:", step, E, rms
+                    self.logger.info("fire: %s E %s rms %s", step, E, rms)
+
             step += 1
                     
 
@@ -119,7 +137,7 @@ if __name__ == "__main__":
     import pygmin.potentials.lj as lj
     pot = lj.LJ()
     coords = 10.*np.random.random(300)
-    opt = Fire(coords, pot.getEnergyGradient, dtmax=0.1, dt=0.01, maxmove=0.01)
+    opt = Fire(coords, pot.getEnergyGradient, dtmax=0.1, dt=0.01, maxmove=0.01, iprint=200)
     opt.run(fmax=1e-1,steps=10000)
     print(pot.getEnergy(opt.coords))
     print opt.nsteps

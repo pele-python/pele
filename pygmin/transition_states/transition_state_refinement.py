@@ -191,6 +191,9 @@ class FindTransitionState(object):
             del self.tangent_space_quench_params["maxstep"]
         else:            
             self.maxstep_tangent = 0.1 #this should be determined in a better way
+        
+        if not self.tangent_space_quench_params.has_key("logger"):
+            self.tangent_space_quench_params["logger"] = logging.getLogger("pygmin.connect.findTS.quench")
 
 
         #set some parameters used in finding lowest eigenvector
@@ -633,5 +636,4 @@ def testpot1():
 
 
 if __name__ == "__main__":
-    logger.basicConfig(level=logger.DEBUG)
     testpot1()
