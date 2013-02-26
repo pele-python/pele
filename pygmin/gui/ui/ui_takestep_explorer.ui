@@ -28,7 +28,7 @@
        </widget>
       </item>
       <item>
-       <widget class="Show3D" name="show3d" native="true">
+       <widget class="Show3DWithSlider" name="show3d" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -100,6 +100,7 @@
    </attribute>
    <addaction name="actionDisplace"/>
    <addaction name="actionQuench"/>
+   <addaction name="actionShow_path"/>
   </widget>
   <action name="actionDisplace">
    <property name="text">
@@ -111,10 +112,24 @@
     <string>quench</string>
    </property>
   </action>
+  <action name="actionShow_path">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>show path</string>
+   </property>
+   <property name="toolTip">
+    <string>display the quench trajectory</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Show3D</class>
+   <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
    <header>pygmin/gui/show3d.h</header>
    <container>1</container>
