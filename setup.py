@@ -24,13 +24,16 @@ fmodules = ModuleList(extra_compile_args=extra_compile_args)
 fmodules.add_module("pygmin/mindist/minperm.f90")
 fmodules.add_module("pygmin/optimize/mylbfgs_fort.f90")
 fmodules.add_module("pygmin/optimize/mylbfgs_updatestep.f90")
-fmodules.add_module("pygmin/potentials/fortran/AT.f")
-fmodules.add_module("pygmin/potentials/fortran/ljpshiftfort.f")
+fmodules.add_module("pygmin/potentials/fortran/AT.f90")
+fmodules.add_module("pygmin/potentials/fortran/ljpshiftfort.f90")
 fmodules.add_module("pygmin/potentials/fortran/lj.f90")
 fmodules.add_module("pygmin/potentials/fortran/ljcut.f90")
 fmodules.add_module("pygmin/potentials/fortran/rmdrvt.f90")
 fmodules.add_module("pygmin/potentials/fortran/soft_sphere_pot.f90")
-#fmodules.add_module("pygmin/potentials/fortran/lj_hess.f")
+fmodules.add_module("pygmin/potentials/fortran/maxneib_lj.f90")
+fmodules.add_module("pygmin/potentials/fortran/maxneib_blj.f90")
+fmodules.add_module("pygmin/potentials/fortran/lj_hess.f90")
+fmodules.add_module("pygmin/potentials/fortran/magnetic_colloids.f90")
 #fmodules.add_module("pygmin/potentials/rigid_bodies/rbutils.f90")
 fmodules.add_module("pygmin/utils/_fortran_utils.f90")
 fmodules.add_module("pygmin/transition_states/_orthogoptf.f90")
@@ -51,6 +54,7 @@ setup(name='pygmin',
                 "pygmin.potentials",
                 "pygmin.potentials.rigid_bodies",
                 "pygmin.gui",
+                "pygmin.gui.ui",
                 "pygmin.mindist",
                 "pygmin.optimize",
                 "pygmin.transition_states",
@@ -63,7 +67,8 @@ setup(name='pygmin',
                 "pygmin.storage",
                 "pygmin.potentials.fortran",
                 "pygmin.accept_tests",
-                "pygmin.systems"
+                "pygmin.systems",
+                "pygmin.angleaxis",
                 ],
       ext_modules=ext_modules
         )

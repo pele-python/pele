@@ -27,7 +27,7 @@ class BasePotential(object):
     def getEnergyGradientNumerical(self, coords):
         return self.getEnergy(coords), self.NumericalDerivative(coords, 1e-8)
             
-    def NumericalDerivative(self, coords, eps):
+    def NumericalDerivative(self, coords, eps=1e-6):
         g = np.zeros(coords.size)
         x = coords.copy()
         for i in xrange(coords.size):
@@ -79,6 +79,40 @@ class BasePotential(object):
         the energy and gradient of select interactions defined in ilist
         """
         return self.getEnergyGradientListSlow(coords, ilist)
+    
+    def NumericalHessian(self, coords, eps=1e-6):
+#        from numdifftools import Hessian
+        e0, g0 = self.getEnergyGradient(coords)
+        x = coords.copy()
+        ndof = len(coords)
+        hess = np.zeros([ndof, ndof])
+        for i in range(ndof):
+            xbkup = x[i]
+            x[i] += eps
+            e1, g1 = self.getEnergyGradient(x)
+            hess[i,:] = (g1 - g0) / eps
+            x[i] = xbkup
+        return hess
+            
+    def getEnergyGradientHessian(self, coords):
+        e, g = self.getEnergyGradient(coords)
+        hess = self.NumericalHessian(coords)
+        return e, g, hess
+    
+    def test_potential(self, coords):
+        E1 = self.getEnergy(coords)
+        E2, grad = self.getEnergyGradient(coords)
+        gradnum = self.NumericalDerivative(coords)
+        print "testing energy and gradient"
+        print "energy from getEnergy        ", E1
+        print "energy from getEnergyGradient", E2
+        print "difference", np.abs(E1-E2)
+#        print "analytical gradient", grad
+#        print "numerical gradient ", gradnum
+        print "analytical rms gradient", np.linalg.norm(grad) / np.sqrt(coords.size)
+        print "numerical rms gradient ", np.linalg.norm(gradnum) / np.sqrt(coords.size)
+        print "maximum difference between analytical and numerical gradient", np.max(np.abs(grad-gradnum))
+        print "normalized by the maximum gradient", np.max(np.abs(grad-gradnum)) / np.max(np.abs(grad))
 
 class potential(BasePotential):
     """

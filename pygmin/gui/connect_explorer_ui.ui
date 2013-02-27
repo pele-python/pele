@@ -20,7 +20,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="NEBWidget" name="wgt_neb" native="true">
+      <widget class="NEBEnergyWidget" name="wgt_neb" native="true">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -107,15 +107,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NEBWidget</class>
-   <extends>QWidget</extends>
-   <header>nebdlg.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
    <header>show3d.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>NEBEnergyWidget</class>
+   <extends>QWidget</extends>
+   <header>neb_explorer.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -128,8 +128,8 @@
    <slot>show_TS_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>690</x>
-     <y>136</y>
+     <x>686</x>
+     <y>152</y>
     </hint>
     <hint type="destinationlabel">
      <x>628</x>
@@ -144,8 +144,8 @@
    <slot>show_neb_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>588</x>
-     <y>103</y>
+     <x>586</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel">
      <x>628</x>
@@ -160,8 +160,8 @@
    <slot>show_pushoff_path()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>639</x>
-     <y>169</y>
+     <x>607</x>
+     <y>189</y>
     </hint>
     <hint type="destinationlabel">
      <x>631</x>

@@ -4,6 +4,8 @@ from pygmin.transition_states._NEB import distance_cart
 from interpolate import InterpolatedPath, interpolate_linear
 from pygmin.utils.events import Signal
 
+all = ["NEBDriver"]
+
 #def calc_neb_dist(coords, nimages, dist=True, grad=False):
 #    d_left = np.zeros(coords.shape)
 #    coords = coords.reshape([-1,nimages])
@@ -22,20 +24,28 @@ class NEBDriver(object):
     The NEBDriver wraps calls for NEB from LocalConnect. The driver class is responsible for setting
     up the initial interpolation and optimizing the band.
     
-    Parameters:
+    Parameters
     -----------
     potential :
         the potential object
-
     coords1, coords2 : array
         the structures to connect with the band
-        
+    k : float, optional
+        the elastic band spring constant 
     max_images : int
         the maximum number of NEB images
     image_density : float
         how many NEB images per unit distance to use.
     iter_density : float
         how many optimization iterations per unit distance to use.
+    adjustk_freq : integer
+        frequency to adjust k, set to zero to disable
+    adjustk_tol : float
+        tolerance for adjusting k up or down
+    adjustk_factor : float
+        the multiplicative factor used to adjust k
+    dneb : bool
+        use DNEB (Doubly-Nudged Elastic Band) rather than NEB
     reinterpolate : integer
         reinterpolate the path to achieve equidistant spacing every so many steps
     adaptive_nimages : bool
@@ -53,6 +63,10 @@ class NEBDriver(object):
         the number of cores to use.  Ignored if parallel is False
     interpolator : callable, optional
         the function used to do the path interpolation for the NEB
+    NEBquenchParams : dict
+        parameters passed to the minimizer
+    kwargs : keyword options
+        additional options are passed to the NEB class
         
     See Also
     ---------
@@ -64,7 +78,7 @@ class NEBDriver(object):
     def __init__(self, potential, coords1, coords2,
                  k = 100., max_images = 50, image_density=10, iter_density = 10,
                  verbose=0, factor=1., NEBquenchParams=None, adjustk_freq=0, 
-                 adjustk_tol=0.1,adjustk_factor=1.05, dneb=True,
+                 adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
                  reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
                  interpolator=interpolate_linear, distance=distance_cart, parallel=False, ncores=4, **kwargs):
         
@@ -151,7 +165,7 @@ class NEBDriver(object):
             
         self.update_event(path=np.array(self.path), energies=np.array(energies),
                        distances=np.array(distances), stepnum=self.steps_total,
-                       rms=1.0, k = self.last_k)
+                       rms=1.0, k = self.last_k, event="initial")
         
     def run(self):
                 #determine the number of iterations                
@@ -198,6 +212,8 @@ class NEBDriver(object):
             
                 if self.verbose >= 0:
                     print "NEB finished after %d steps, rms %e"%(res.nsteps, res.rms)
+                    
+                self._send_finish_event(res)
                 return neb
             
             distances = []
@@ -251,7 +267,17 @@ class NEBDriver(object):
         newpath.append(path[-1].copy())
         return newpath
        
-    def _process_event(self, coords=None, energies=None, distances=None, stepnum=None, rms=None):
-        self.update_event(path=self.neb.coords, energies=energies,
+    def _process_event(self, path=None, energies=None, distances=None, stepnum=None, rms=None):
+        self.update_event(path=path, energies=energies,
                        distances=distances, stepnum=stepnum+self.steps_total,
-                       rms=rms, k=self.neb.k)
+                       rms=rms, k=self.neb.k, event="update")
+        
+    def _send_finish_event(self, res):
+        distances = []
+        for i in xrange(len(res.path)-1):           
+            distances.append(np.sqrt(self.distance(res.path[i], res.path[i+1])[0]))
+
+        self.update_event(path=res.path, energies=res.energy,
+                       distances=np.array(distances), stepnum=res.nsteps,
+                       rms=res.rms, k=self.neb.k, event="final")
+        

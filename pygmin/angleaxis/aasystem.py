@@ -1,4 +1,5 @@
 import numpy as np
+import tempfile
 
 from pygmin.potentials import GMINPotential
 import gmin_ as GMIN
@@ -17,6 +18,8 @@ from pygmin.angleaxis import MinPermDistAACluster, ExactMatchAACluster
 from pygmin.angleaxis.aautils import TakestepAA
 from pygmin.landscape import smoothPath
 from pygmin.utils.elements import elements
+from pygmin.utils.xyz import write_xyz
+
 
 class AASystem(BaseSystem):
     def __init__(self):
@@ -104,7 +107,7 @@ class RBSystem(AASystem):
         GL.glTranslate( X1[0], X1[1], X1[2] )
         GL.glRotate( a, t[0], t[1], t[2] )
         g=GLU.gluNewQuadric()
-        GLU.gluCylinder(g, .1,0.1,r,30,30)  #I can't seem to draw a cylinder
+        GLU.gluCylinder(g, .1,0.1,r,10,10)  #I can't seem to draw a cylinder
         GL.glPopMatrix()
         
     def draw(self, rbcoords, index):
@@ -128,7 +131,7 @@ class RBSystem(AASystem):
             x=xx-com
             GL.glPushMatrix()            
             GL.glTranslate(x[0],x[1],x[2])
-            GLUT.glutSolidSphere(radius,30,30)
+            GLUT.glutSolidSphere(radius,10,10)
             GL.glPopMatrix()
        
         color = [1.0, 1.0, 1.0]
@@ -139,3 +142,68 @@ class RBSystem(AASystem):
         if hasattr(self, "draw_bonds"):
             for i1, i2 in self.draw_bonds:
                 self.drawCylinder(coords[i1]-com, coords[i2]-com)
+
+    def load_coords_pymol(self, coordslist, oname, index=1):
+        """load the coords into pymol
+        
+        the new object must be named oname so we can manipulate it later
+                        
+        Parameters
+        ----------
+        coordslist : list of arrays
+        oname : str
+            the new pymol object must be named oname so it can be manipulated
+            later
+        index : int
+            we can have more than one molecule on the screen at one time.  index tells
+            which one to draw.  They are viewed at the same time, so should be
+            visually distinct, e.g. different colors.  accepted values are 1 or 2
+        
+        Notes
+        -----
+        the implementation here is a bit hacky.  we create a temporary xyz file from coords
+        and load the molecule in pymol from this file.  
+        """
+        # pymol is imported here so you can do, e.g. basinhopping without installing pymol
+        import pymol 
+
+        # create the temporary file
+        suffix = ".xyz"
+        f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
+        fname = f.name
+                
+        # write the atomistic coords into the xyz file
+        from pygmin.mindist import CoMToOrigin
+        for coords in coordslist:
+            if hasattr(self, "atom_types"):
+                atom_types = self.atom_types
+            else:
+                atom_types = ["O"]
+            atom_coords = self.aasystem.to_atomistic(coords)
+            write_xyz(f, atom_coords, title=oname, atomtypes=atom_types)
+        f.flush()
+                
+        # load the molecule from the temporary file into pymol
+        pymol.cmd.load(fname)
+        
+        # get name of the object just create and change it to oname
+        objects = pymol.cmd.get_object_list()
+        objectname = objects[-1]
+        pymol.cmd.set_name(objectname, oname)
+        
+        # set the representation as spheres
+        pymol.cmd.hide("everything", oname)
+        pymol.cmd.show("spheres", oname)
+
+        # draw the bonds
+        if hasattr(self, "draw_bonds"):
+            pymol.cmd.unbond(oname, oname)
+            for i1, i2 in self.draw_bonds:
+                pymol.cmd.bond("id %d and %s" % (i1+1, oname), 
+                               "id %d and %s" % (i2+1, oname))
+            pymol.cmd.show("lines", oname)
+
+        # set the color of index 2 so they appear different
+        if index == 2:
+            pymol.cmd.color("gray", oname)
+

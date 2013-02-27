@@ -52,6 +52,7 @@ Modules
    monte_carlo
    accept_tests
    utils
+   gui
 
 Indices and tables
 ==================

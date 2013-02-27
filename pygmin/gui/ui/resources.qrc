@@ -1,7 +1,11 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/stop.png</file>
+    <file>icons/open.png</file>
+    <file>icons/save.png</file>
     <file>icons/restart.png</file>
     <file>icons/run.png</file>
     <file>icons/preferences.png</file>
+    <file>icons/pause.png</file>
   </qresource>
 </RCC>

@@ -97,7 +97,10 @@ class DisconnectivityGraph(object):
         nodes may push the one containing the global minimum over to one side
     include_gmin : bool
         make sure to include the global minimum, even if it is not part of the
-        main connected region
+        main connected region        
+    energy_attribute : string, optional
+        attribute which contains energy. default is energy. This attribute can
+        be used to generate free energy disconnectivity graphs
     
     See Also
     ---------
@@ -124,7 +127,7 @@ class DisconnectivityGraph(object):
     def __init__(self, graph, minima=[], nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
                  order_by_basin_size=True,
-                 center_gmin=True, include_gmin=True):
+                 center_gmin=True, include_gmin=True, energy_attribute="energy"):
         self.graph = graph
         self.nlevels = nlevels
         self.Emax = Emax
@@ -133,18 +136,23 @@ class DisconnectivityGraph(object):
         self.order_by_energy = order_by_energy
         self.center_gmin = center_gmin 
         self.gmin0 = None
+        self.energy_attribute = energy_attribute
         if self.center_gmin:
             include_gmin = True
 
         self.min0list = minima
         if include_gmin:
             #find the minimum energy node
-            elist = [ (m.energy, m) for m in self.graph.nodes() ]
+            elist = [ (self._getEnergy(m), m) for m in self.graph.nodes() ]
             elist = sorted(elist)
             self.gmin0 = elist[0][1]
             self.min0list.append(self.gmin0)
 #            print "min0", self.min0.energy, self.min0._id
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
+    
+    def _getEnergy(self, node):
+        """ get the energy of a node """
+        return getattr(node, self.energy_attribute)
     
     def _getTS(self, min1, min2):
         """return the transition state object between two minima"""
@@ -183,7 +191,7 @@ class DisconnectivityGraph(object):
         newgraph = nx.Graph()
         newgraph.add_nodes_from(graph.nodes())
         for edge in graph.edges():
-            if self._getTS(*edge).energy < ethresh:
+            if self._getEnergy(self._getTS(*edge)) < ethresh:
                 newgraph.add_edge(*edge)
 #        return nx.connected_component_subgraphs(newgraph)
         return self._connected_component_subgraphs(newgraph)
@@ -274,7 +282,7 @@ class DisconnectivityGraph(object):
         a recursive function to find the leaf descendant in tree with the minimum energy
         """
         if tree.is_leaf():
-            energy = tree.data["minimum"].energy
+            energy = self._getEnergy(tree.data["minimum"])
             if energy < emin:
                 emin = energy
         else:
@@ -370,7 +378,7 @@ class DisconnectivityGraph(object):
             x = tree.data['x']
             yparent = tree.parent.data["ethresh"]
             if is_leaf:
-                ylow = tree.data["minimum"].energy
+                ylow = self._getEnergy(tree.data["minimum"])
             else:
                 ylow = tree.data["ethresh"]
             yhigh = max(yparent - eoffset, ylow)
@@ -411,7 +419,7 @@ class DisconnectivityGraph(object):
 
     
     def _remove_high_energy_minima(self, graph, emax):
-        rmlist = [m for m in graph.nodes() if m.energy > emax]
+        rmlist = [m for m in graph.nodes() if self._getEnergy(m) > emax]
         if len(rmlist) > 0:
             print "removing nodes with energy higher than", emax
         for m in rmlist:
@@ -460,7 +468,7 @@ class DisconnectivityGraph(object):
         energy levels will be.
         """
         #define the energy levels
-        elist = [self._getTS(*edge).energy for edge in graph.edges()]
+        elist = [self._getEnergy(self._getTS(*edge)) for edge in graph.edges()]
         if len(elist) == 0:
             raise Exception("there are no edges in the graph.  Is the global minimum connected?")
         emin = min(elist)
@@ -530,7 +538,7 @@ class DisconnectivityGraph(object):
         #draw the minima as points
         if show_minima:      
             leaves = self.tree_graph.get_leaves()
-            energies = [leaf.data["minimum"].energy for leaf in leaves]
+            energies = [self._getEnergy(leaf.data["minimum"]) for leaf in leaves]
             xpos = [leaf.data["x"] for leaf in leaves]
         
             ax.plot(xpos, energies, 'o')

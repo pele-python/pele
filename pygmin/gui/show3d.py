@@ -185,7 +185,14 @@ class Show3DWithSlider(QWidget):
     def setSystem(self, system):
         self.oglwgt.setSystem(system)
     
+    def setCoords(self, coords, index=1):
+        self.messages = None
+        self.coordspath = None
+        self.slider.hide()
+        self.oglwgt.setCoords(coords, index=index)
+    
     def setCoordsPath(self, coordspath, frame=None, labels=None):
+        self.oglwgt.setCoords(None, index=2)
         if(frame is None):
             frame = self.slider.value()
             
@@ -193,11 +200,15 @@ class Show3DWithSlider(QWidget):
             self.label.hide()
         else:
             self.label.show()
-            
-        frame = min(frame, coordspath.shape[0]-1)
+        
+        if frame < 0:
+            frame = coordspath.shape[0]-1
+        else:
+            frame = min(frame, coordspath.shape[0]-1)
         
         self.coordspath = coordspath
         self.messages = labels
+        self.slider.show()
         self.slider.setRange(0, coordspath.shape[0]-1)
         self.showFrame(frame)
 

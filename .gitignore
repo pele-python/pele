@@ -19,3 +19,5 @@ fort.8
 GMIN_out
 *.sqlite
 *.pyo
+*.db
+*.sqlite

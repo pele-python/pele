@@ -1,6 +1,6 @@
 import matplotlib
 matplotlib.use("QT4Agg")
-    
+import traceback    
 import pylab as pl    
 from PyQt4 import QtCore, QtGui
 import MainWindow 
@@ -20,8 +20,25 @@ from pygmin.config import config
 from pygmin.gui.ui.dgraph_dlg import DGraphDialog
 from pygmin.gui.nebdlg import NEBDialog
 from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
+from double_ended_connect_runner import DECRunner
+from connect_run_dlg import ConnectViewer
+from takestep_explorer import TakestepExplorer
 
 global pick_count
+
+def excepthook(ex_type, ex_value, traceback_obj):
+    """ redirected exception handler """
+    
+    errorbox = QtGui.QMessageBox()
+    msg = "An unhandled exception occurred:\n"+str(ex_type) + "\n\n"\
+                     + str(ex_value) + "\n\nTraceback:\n----------"
+    for line in traceback.format_tb(traceback_obj):
+        msg += "\n" + line
+    errorbox.setText(msg)
+    errorbox.setStandardButtons(QtGui.QMessageBox.Ignore | QtGui.QMessageBox.Cancel)
+    errorbox.setDefaultButton(QtGui.QMessageBox.Cancel)
+    if errorbox.exec_() == QtGui.QMessageBox.Cancel:
+        exit(-1)
 
 def no_event(*args, **kwargs):
     return
@@ -50,7 +67,7 @@ class QMinimumInList(QtGui.QListWidgetItem):
 
 class QTSInList(QtGui.QListWidgetItem):
     def __init__(self, ts):
-        text="%.4f (%d)"%(ts.energy, ts._id)
+        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
         QtGui.QListWidgetItem.__init__(self, text)
     
         self.coords = ts.coords
@@ -74,6 +91,8 @@ class MyForm(QtGui.QMainWindow):
         self.NewSystem()
         self.transition=None
         self.app = app
+        self.double_ended_connect_runs = []
+        self.pick_count = 0
         
         #try to load the pymol viewer.  
         self.usepymol = config.getboolean("gui", "use_pymol")
@@ -189,9 +208,9 @@ class MyForm(QtGui.QMainWindow):
         dist, m1coords, tscoords = mindist(m1.coords, ts.coords)
         dist, m2coords, tscoords = mindist(m2.coords, ts.coords)
         self.tscoordspath = np.array([m1coords, tscoords, m2coords])
-        labels  = ["minimum: energy " + str(m1.energy)]
+        labels  = ["minimum: energy " + str(m1.energy) + " id " + str(m1._id)]
         labels += ["ts: energy " + str(ts.energy)]
-        labels += ["minimum: energy " + str(m2.energy)]
+        labels += ["minimum: energy " + str(m2.energy) + " id " + str(m2._id)]
         self.ui.oglTS.setCoordsPath(self.tscoordspath, frame=1, labels=labels)
 
     def on_select_TS(self, item):
@@ -231,7 +250,7 @@ class MyForm(QtGui.QMainWindow):
         from neb_explorer import NEBExplorer
         
         if not hasattr(self, "nebexplorer"):
-            self.nebexplorer = NEBExplorer(system=self.system, app=self.app)
+            self.nebexplorer = NEBExplorer(system=self.system, app=self.app, parent=self)
         self.nebexplorer.show()
         self.nebexplorer.new_neb(coords1, coords2)
         
@@ -251,6 +270,13 @@ class MyForm(QtGui.QMainWindow):
         if hasattr(self, "nebcoords"):
             self.ui.oglPath.setCoords(self.nebcoords[i,:])
     
+    def on_minimum_picked(self, min1):
+        if (self.pick_count % 2) == 0:
+            self._SelectMinimum1(min1)
+        else:
+            self._SelectMinimum2(min1)
+        self.pick_count += 1
+
     def show_disconnectivity_graph(self):
         """show the disconnectivity graph 
         
@@ -270,10 +296,9 @@ class MyForm(QtGui.QMainWindow):
 
         if not hasattr(self, "dgraph_dlg"):
             self.minimum_selecter = minimum_selecter
-            self.dgraph_dlg = DGraphDialog(self.system.database)
-            self.dgraph_dlg.minimum_selected.connect(minimum_selecter)
-        else:
-            self.dgraph_dlg.rebuild_disconnectivity_graph()
+            self.dgraph_dlg = DGraphDialog(self.system.database, parent=self)
+            self.dgraph_dlg.dgraph_widget.minimum_selected.connect(minimum_selecter)
+        self.dgraph_dlg.rebuild_disconnectivity_graph()
 #        self.dgraph_dlg.minimum_selected=minimum_selecter
         self.dgraph_dlg.show()
         
@@ -287,77 +312,88 @@ class MyForm(QtGui.QMainWindow):
         make it interactive, so that when you click on a point
         that minima is selected
         """
-        import pylab as pl
-        import networkx as nx
-        pl.ion()
-        pl.clf()
-        ax = pl.gca()
-        fig = pl.gcf()
         
-        #get the graph object, eliminate nodes without edges
-        graphwrapper = Graph(self.system.database)
-        graph = graphwrapper.graph
-        degree = graph.degree()
-        nodes = [n for n, nedges in degree.items() if nedges > 0]
-        graph = graph.subgraph(nodes)
+        self.pick_count = 0
+        from pygmin.gui.graph_viewer import GraphViewDialog
+        if not hasattr(self, "graphview"):
+            self.graphview = GraphViewDialog(self.system.database, parent=self, app=self.app)
+            self.graphview.widget.on_minima_picked.connect(self.on_minimum_picked)
+        self.graphview.show()
+        self.graphview.widget.make_graph()
+        self.graphview.widget.show_graph()
+        return
         
-        #get the layout of the nodes from networkx
-        layout = nx.spring_layout(graph)
-        layoutlist = layout.items()
-        xypos = np.array([xy for n, xy in layoutlist])
-        #color the nodes by energy
-        e = np.array([m.energy for m, xy in layoutlist])
-        #plot the nodes
-        points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
-                            s=8**2, c=e, cmap=pl.cm.autumn)
-        fig.colorbar(points)
-        #label the nodes
-        ids = [n._id for n, xy in layoutlist]
-        for i in range(len(ids)):
-            ax.annotate( ids[i], xypos[i] )
-        
-        
-    
-        #plot the edges as lines
-        for u, v in graph.edges():
-            line = np.array([layout[u], layout[v]])
-            ax.plot(line[:,0], line[:,1], '-k')
-        
-        #scale the axes so the points are not cutoff
-        xmin, ymin = np.min(xypos, 0)
-        xmax, ymax = np.max(xypos, 0)
-        dx = (xmax - xmin)*.1
-        dy = (ymax - ymin)*.1
-        ax.set_xlim([xmin-dx, xmax+dx])
-        ax.set_ylim([ymin-dy, ymax+dy])
-        
-        global pick_count
-        pick_count = 0
-
-        def on_pick(event):
-            if event.artist != points:
-#                print "you clicked on something other than a node"
-                return True
-            thispoint = event.artist
-            ind = event.ind[0]
-            min1 = layoutlist[ind][0]
-            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-            global pick_count
-            #print pick_count
-            pick_count += 1
-            if (pick_count % 2) == 0:
-                self._SelectMinimum1(min1)
-            else:
-                self._SelectMinimum2(min1)
-
-        fig = pl.gcf()
-        cid = fig.canvas.mpl_connect('pick_event', on_pick)
-        
-        #ids = dict([(n, n._id) for n in nodes])
-        #nx.draw(graph, labels=ids, nodelist=nodes)
-        #ax.draw()
-#        pl.draw()
-        pl.show()
+#        import pylab as pl
+#        import networkx as nx
+#        pl.ion()
+#        pl.clf()
+#        ax = pl.gca()
+#        fig = pl.gcf()
+#        
+#        #get the graph object, eliminate nodes without edges
+#        graphwrapper = Graph(self.system.database)
+#        graph = graphwrapper.graph
+#        degree = graph.degree()
+#        nodes = [n for n, nedges in degree.items() if nedges > 0]
+#        graph = graph.subgraph(nodes)
+#        
+#        #get the layout of the nodes from networkx
+#        layout = nx.spring_layout(graph)
+#        layoutlist = layout.items()
+#        xypos = np.array([xy for n, xy in layoutlist])
+#        #color the nodes by energy
+#        e = np.array([m.energy for m, xy in layoutlist])
+#        #plot the nodes
+#        points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
+#                            s=8**2, c=e, cmap=pl.cm.autumn)
+#        fig.colorbar(points)
+#        #label the nodes
+#        ids = [n._id for n, xy in layoutlist]
+#        for i in range(len(ids)):
+#            ax.annotate( ids[i], xypos[i] )
+#        
+#        
+#    
+#        #plot the edges as lines
+#        for u, v in graph.edges():
+#            line = np.array([layout[u], layout[v]])
+#            ax.plot(line[:,0], line[:,1], '-k')
+#        
+#        #scale the axes so the points are not cutoff
+#        xmin, ymin = np.min(xypos, 0)
+#        xmax, ymax = np.max(xypos, 0)
+#        dx = (xmax - xmin)*.1
+#        dy = (ymax - ymin)*.1
+#        ax.set_xlim([xmin-dx, xmax+dx])
+#        ax.set_ylim([ymin-dy, ymax+dy])
+#        
+#        global pick_count
+#        pick_count = 0
+#
+#        def on_pick(event):
+#            if event.artist != points:
+##                print "you clicked on something other than a node"
+#                return True
+#            thispoint = event.artist
+#            ind = event.ind[0]
+#            min1 = layoutlist[ind][0]
+#            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+#            global pick_count
+#            #print pick_count
+#            pick_count += 1
+#            if (pick_count % 2) == 0:
+#                self._SelectMinimum1(min1)
+#            else:
+#                self._SelectMinimum2(min1)
+#
+#        fig = pl.gcf()
+#        cid = fig.canvas.mpl_connect('pick_event', on_pick)
+#        
+#        #ids = dict([(n, n._id) for n in nodes])
+#        #nx.draw(graph, labels=ids, nodelist=nodes)
+#        #ax.draw()
+##        pl.draw()
+#        pl.show()
         
     
     def showEnergies(self):
@@ -484,32 +520,6 @@ class MyForm(QtGui.QMainWindow):
             print "deleting minimum", min1._id, min1.energy
             self.RemoveMinimum(min1)
             self.system.database.removeMinimum(min1)
-
-
-#this is currently not used.  it may be used later though
-#    def LocalConnect(self):
-#        self.local_connect = self.system.create_local_connect()
-#        
-#        min1 = self.ui.listMinima1.selectedItems()[0].minimum
-#        min2 = self.ui.listMinima2.selectedItems()[0].minimum
-#        res = self.local_connect.connect(min1, min2)
-#        ntriplets = len(res.new_transition_states)
-#        
-#        path = []
-#        for i in range(ntriplets):
-#            tsret, m1ret, m2ret = res.new_transition_states[i]
-#            local_path = []
-#            local_path.append(m1ret[0])
-#            local_path.append(tsret.coords)
-#            local_path.append(m2ret[0])
-#            smoothpath = self.system.smooth_path(local_path)
-#            path += list(smoothpath)
-#        
-#        coords = np.array(path)
-#        self.nebcoords = coords
-#        self.ui.oglPath.setCoords(coords[0,:], 1)
-#        self.ui.oglPath.setCoords(None, 2)
-#        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
     
     def doubleEndedConnect(self):
         return self._doubleEndedConnect(reconnect=False)
@@ -518,33 +528,71 @@ class MyForm(QtGui.QMainWindow):
         return self._doubleEndedConnect(reconnect=True)
 
     def _doubleEndedConnect(self, reconnect=False, min1min2=None):
-#        min1 = self.ui.listMinima1.selectedItems()[0].minimum
-#        min2 = self.ui.listMinima2.selectedItems()[0].minimum
-#        min1 = self.ui.
+        # determine which minima to connect
         if min1min2 is None:
             min1 = self.ui.oglPath.minima[1]
             min2 = self.ui.oglPath.minima[2]
         else:
             min1, min2 = min1min2
         database = self.system.database
-        double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
-                                                                       fresh_connect=reconnect)
-        double_ended_connect.connect()
-        mints, S, energies = double_ended_connect.returnPath()
-        clist = [m.coords for m in mints]
-        print "done finding path, now just smoothing path.  This can take a while"
-        smoothpath = self.system.smooth_path(clist)
-        print "done"
+        if not reconnect:
+            # check if the minima are already connected
+            double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
+                                                   fresh_connect=False, verbosity=0)
+            if double_ended_connect.graph.areConnected(min1, min2):
+                print "minima are already connected.  loading smoothed path in viewer"
+                mints, S, energies = double_ended_connect.returnPath()
+                clist = [m.coords for m in mints]
+                smoothpath = self.system.smooth_path(clist)
+                
+                coords = np.array(smoothpath)
+                self.nebcoords = coords
+                self.nebenergies = np.array(energies)
+                self.ui.oglPath.setCoords(coords[0,:], 1)
+                self.ui.oglPath.setCoords(None, 2)
+                self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
+                
+                if self.usepymol:
+                    self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
+                
+                return
+
+                
+        # make the connect viewer
         
-        coords = np.array(smoothpath)
-        self.nebcoords = coords
-        self.nebenergies = np.array(energies)
-        self.ui.oglPath.setCoords(coords[0,:], 1)
-        self.ui.oglPath.setCoords(None, 2)
-        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
         
-        if self.usepymol:
-            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
+        decviewer = ConnectViewer(self.system, self.system.database, min1, min2, parent=self, app=self.app)
+#        decrunner = DECRunner(self.system, self.system.database, min1, min2,
+#                              outstream=decviewer.textEdit_writer)
+        
+        print "starting double ended"
+        decviewer.show()
+        decviewer.start()
+        
+        # store pointers
+        self.double_ended_connect_runs.append(decviewer)
+#        self.decrunner = decrunner
+#        self.decviewer = decviewer
+        
+#        return
+#        double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
+#                                                                       fresh_connect=reconnect)
+#        double_ended_connect.connect()
+#        mints, S, energies = double_ended_connect.returnPath()
+#        clist = [m.coords for m in mints]
+#        print "done finding path, now just smoothing path.  This can take a while"
+#        smoothpath = self.system.smooth_path(clist)
+#        print "done"
+#        
+#        coords = np.array(smoothpath)
+#        self.nebcoords = coords
+#        self.nebenergies = np.array(energies)
+#        self.ui.oglPath.setCoords(coords[0,:], 1)
+#        self.ui.oglPath.setCoords(None, 2)
+#        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
+#        
+#        if self.usepymol:
+#            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
      
     def connect_in_optim(self):
         """spawn an OPTIM job and retrieve the minima and transition states 
@@ -604,15 +652,69 @@ class MyForm(QtGui.QMainWindow):
         self.local_connect_explorer.runNEB()
 
 
+    def on_btn_close_all_clicked(self, checked=None):
+        if checked is None: return
+        print "closing all windows"
+        for dv in self.double_ended_connect_runs:
+            dv.hide()
+#            del dv
+        self.double_ended_connect_runs = []
+
+        try:
+            self.local_connect_explorer.hide()
+            del self.local_connect_explorer
+        except AttributeError: pass
+
+        try:        
+            self.dgraph_dlg.hide()
+            del self.dgraph_dlg
+        except AttributeError: pass
         
+        try:
+            self.nebexplorer.hide()
+            del self.nebexplorer
+        except AttributeError: pass
+
+    def on_btn_connect_all_clicked(self, checked=None):
+        if checked is None: return
+        from pygmin.gui.connect_all import ConnectAllDialog
+#        if hasattr(self, "connect_all"):
+#            if not self.connect_all.isVisible():
+#                self.connect_all.show()
+#            if not self.connect_all.is_running()
+        self.connect_all = ConnectAllDialog(self.system, self.system.database, 
+                                            parent=self, app=self.app)
+        self.connect_all.show()
+        self.connect_all.start()
+        
+    def on_pushTakestepExplorer_clicked(self):
+        if not hasattr(self, "takestep_explorer"):
+            self.takestep_explorer = TakestepExplorer(parent=self, system = self.system, app = self.app,
+                                                      database = self.system.database)
+            
+        self.takestep_explorer.show()
         
 #def refresh_pl():
     #pl.pause(0.000001)    
     
-def run_gui(systemtype, db=None):
+def run_gui(system, db=None):
+    """
+    The top level function that will launch the gui for a given system
+    
+    Parameters
+    ----------
+    system : System class
+        A pygmin system, derrived from BaseSystemClass.  All information 
+        about the system is in this class.
+    db : str, optional
+        connect to the database at this file location
+        
+    """
     app = QtGui.QApplication(sys.argv)
     
-    myapp = MyForm(app, systemtype)
+    sys.excepthook = excepthook
+
+    myapp = MyForm(app, system)
     if db is not None:
         myapp.connect_db(db)
         

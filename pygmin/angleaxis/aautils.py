@@ -52,7 +52,14 @@ class AASiteType(object):
         
         self.inversion = None
         self.symmetries = []
-            
+    
+    def get_smallest_rij(self, com1, com2):
+        """return the shortest vector from com1 to com2
+        
+        overload this function for periodic systems
+        """
+        return com2 - com1
+       
     def distance_squared(self, com1, p1, com2, p2):
         '''
         distance measure between 2 angle axis bodies of same type
@@ -68,11 +75,11 @@ class AASiteType(object):
         p2:
             angle axis vector of 2nd site    
         sitetype: AASiteType, optional
-            amgle axis site type with mass and moment of inertia tensor
+            angle axis site type with mass and moment of inertia tensor
         returns:
             distance squared
         '''
-        return _aadist.sitedist(com1, p1, com2, p2, self.S, self.W, self.cog)
+        return _aadist.sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
         R1 = rotations.aa2mx(p1)
         R2 = rotations.aa2mx(p2)
@@ -106,7 +113,7 @@ class AASiteType(object):
             spring cart, spring rot
         '''
         
-        return _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
+        return _aadist.sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
         R1, R11, R12, R13 = rotMatDeriv(p1, True)
         R2 = rotations.aa2mx(p2)
         dR = R2 - R1
@@ -126,8 +133,57 @@ class AASiteType(object):
         g_P[2] -= 2.*self.W * np.dot((com2-com1), np.dot(R13, self.cog))
 
         return g_M, g_P
-
+    
+    def metric_tensor(self, p):
+        ''' calculate the mass weighted metric tensor '''
+        R, R1, R2, R3 = rotMatDeriv(p, True)        
+        g = np.zeros([3,3])
+                
+        g[0,0] = np.trace(np.dot(R1, np.dot(self.Sm, R1.transpose())))
+        g[0,1] = np.trace(np.dot(R1, np.dot(self.Sm, R2.transpose())))
+        g[0,2] = np.trace(np.dot(R1, np.dot(self.Sm, R3.transpose())))
+        g[1,1] = np.trace(np.dot(R2, np.dot(self.Sm, R2.transpose())))
+        g[1,2] = np.trace(np.dot(R2, np.dot(self.Sm, R3.transpose())))
+        g[2,2] = np.trace(np.dot(R3, np.dot(self.Sm, R3.transpose())))
         
+        g[1,0] = g[0,1]
+        g[2,1] = g[1,2]
+        g[2,0] = g[0,2]
+        gx = np.identity(3)*self.M        
+
+        return gx, g
+        
+    def metric_tensor_cog(self, x, p):
+        ''' calculate the metric tensor when for w_i != m_i '''
+        R, R1, R2, R3 = rotMatDeriv(p, True)        
+        g = np.zeros([6,6])
+
+        # the com part
+        g[0:3,0:3] = self.W * np.identity(3)
+
+        # the rotational part        
+        g[3,3] = np.trace(np.dot(R1, np.dot(self.S, R1.transpose())))
+        g[3,4] = np.trace(np.dot(R1, np.dot(self.S, R2.transpose())))
+        g[3,5] = np.trace(np.dot(R1, np.dot(self.S, R3.transpose())))
+        g[4,4] = np.trace(np.dot(R2, np.dot(self.S, R2.transpose())))
+        g[4,5] = np.trace(np.dot(R2, np.dot(self.S, R3.transpose())))
+        g[5,5] = np.trace(np.dot(R3, np.dot(self.S, R3.transpose())))
+        
+        g[4,3] = g[3,4]
+        g[5,4] = g[4,5]
+        g[5,3] = g[3,5]
+        
+        # the mixing part
+        g[:,3] = 2.*self.W * np.dot(R1, self.cog)
+        g[:,4] = 2.*self.W * np.dot(R2, self.cog)
+        g[:,5] = 2.*self.W * np.dot(R3, self.cog)
+        
+        g[3,:] = g[:,3] 
+        g[4,:] = g[:,4] 
+        g[5,:] = g[:,5] 
+        
+        return g
+    
 class AATopology(object):
     ''' 
         Angle axis system wrapper
@@ -315,6 +371,19 @@ class AATopology(object):
         zev = zeroev.gramm_schmidt(self.zeroEV(coords))
         zeroev.orthogonalize(v, zev)
         return v
+    
+    def metric_tensor(self, coords):
+        ca = self.coords_adapter(coords=coords)
+        g = np.zeros([coords.size, coords.size])
+        offset = 3*ca.nrigid
+        # first distance for sites only
+        for i in xrange(ca.nrigid):
+            g_M, g_P = self.sites[i].metric_tensor(ca.rotRigid[i])
+            g[3*i:3*i+3, 3*i:3*i+3] = g_M
+            g[3*i+offset:3*i+3+offset, 3*i+offset:3*i+3+offset] = g_P
+            
+        return g
+       
 
 class TakestepAA(takestep.TakestepInterface):
     def __init__(self, topology, rotate=1.6, translate=0.):
@@ -363,7 +432,7 @@ if __name__ == "__main__":
     print "site representation:", np.sum((x1-x2)**2)
     print "distance function:  ", site.distance_squared(X1, p1, X2, p2)
 
-    print "fortran function:  ", _aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+    print "fortran function:  ", _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
 
     coords1 = np.random.random(120)
     coords2 = np.random.random(120)
@@ -375,14 +444,14 @@ if __name__ == "__main__":
     t1 = time.time()
     print "time python", t1-t0
     for i in xrange(1000):
-        _aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+        _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
     
  #_aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
     print "time fortran", t2-t1
-    for i in xrange(1000/20):
-        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
-        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
+#    for i in xrange(1000/20):
+#        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
+#        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
     print "time fortran acc", t2-t1
     
@@ -401,6 +470,6 @@ if __name__ == "__main__":
     print g_M, g_P
     xx = site.distance_squared_grad(X1, p1, X2, p2)
     print g_M/xx[0], g_P/xx[1]
-    print _aadist.sitedist_grad(X1, p1, X2, p2, site.S, site.W, cog)
+    print _aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog)
 #    print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
 

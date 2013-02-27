@@ -144,7 +144,7 @@ class FindTransitionState(object):
     
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
-                 nfail_max=5, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
+                 nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.1,
@@ -170,7 +170,7 @@ class FindTransitionState(object):
         self.tangent_space_quench_params = dict(defaults.tangentSpaceQuenchParams.items() +
                                                 tangentSpaceQuenchParams.items())
         self.demand_initial_negative_vec = demand_initial_negative_vec    
-        self.nnegative_max = max(10, self.nsteps / 5)
+        self.npositive_max = max(10, self.nsteps / 5)
         
         self.rmsnorm = 1./np.sqrt(float(len(coords))/3.)
         self.oldeigenvec = None
@@ -199,7 +199,7 @@ class FindTransitionState(object):
         
         self.reduce_step = 0
         self.step_factor = .1
-        self.nnegative = 0
+        self.npositive = 0
         
     @classmethod
     def params(cls, obj = None):
@@ -259,11 +259,13 @@ class FindTransitionState(object):
             if i == 0 or self.eigenval <= 0:
                 self._saveState(coords)
                 self.reduce_step = 0
+                if self.iprint > 0:
+                    print "    eigenvalue became positive, reducing step size"
             else:
-                self.nnegative += 1
-                if self.nnegative > self.nnegative_max:
-                    print "warning: negative eigenvalue found too many times. ending", self.nnegative
-                    res.message.append( "negative eigenvalue found too many times %d" % self.nnegative )
+                self.npositive += 1
+                if self.npositive > self.npositive_max:
+                    print "warning: positive eigenvalue found too many times. ending", self.npositive
+                    res.message.append( "positive eigenvalue found too many times %d" % self.npositive )
                     break
                 if self.verbosity > 2:
                     print "the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps"

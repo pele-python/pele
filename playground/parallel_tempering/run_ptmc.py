@@ -3,9 +3,9 @@ import pygmin.potentials.lj as lj
 #import potentials.ljcpp as lj
 from pygmin.mc import MonteCarlo 
 from pygmin.takestep import RandomDisplacement, AdaptiveStepsize
-from pygmin.ptmc import PTMC, getTemps
+from ptmc import PTMC, getTemps
 import copy
-from pygmin.tools.histogram import EnergyHistogram, PrintHistogram
+from pygmin.utils.histogram import EnergyHistogram, PrintHistogram
 from pygmin.optimize import mylbfgs as quench
 from pygmin.accept_tests.spherical_container import SphericalContainer
 
@@ -33,6 +33,7 @@ def runptmc(nsteps_tot = 100000):
     histograms = []
     takesteplist = []
     radius = 2.5
+    # create all the replicas which will be passed to PTMC
     for i in range(nreplicas):
         T = Tlist[i]
         potential = lj.LJ()

@@ -61,23 +61,33 @@ class PollThread(QtCore.QThread):
 
 
 class BHRunner(QtCore.QObject):
-    def __init__(self, system, onMinimumAdded=None, onMinimumRemoved=None):
+    def __init__(self, system, onMinimumAdded=None, onMinimumRemoved=None, daemon=True):
         QtCore.QObject.__init__(self)
-        
         self.system = system
+        self.daemon = True
         
         #child_conn = self
         self.bhprocess = None
-        self.lock = th.Lock()
+#        self.lock = th.Lock()
         
-    def send(self, minimum):
-        self.minimum_found(minimum)
+#    def send(self, minimum):
+#        self.minimum_found(minimum)
+#    
+#    def pause(self):
+#        pass
+#    
+#    def contiue(self):
+#        pass
     
-    def pause(self):
-        pass
-    
-    def contiue(self):
-        pass
+    def poll(self):
+        if not self.bhprocess.is_alive():
+            self.refresh_timer.stop()
+            return
+        if not self.parent_conn.poll():
+            return
+        
+        minimum = self.parent_conn.recv()
+        self.system.database.addMinimum(minimum[0],minimum[1])        
     
     def start(self):
         if(self.bhprocess):
@@ -86,15 +96,21 @@ class BHRunner(QtCore.QObject):
         parent_conn, child_conn = mp.Pipe()
         
         self.bhprocess = BHProcess(self.system, child_conn)
+        self.bhprocess.daemon = self.daemon
         self.bhprocess.start()
-        self.poll_thread = PollThread(self, parent_conn)
-        self.connect(self.poll_thread,QtCore.SIGNAL("Activated ( PyQt_PyObject ) "), self.minimum_found)        
-        self.poll_thread.start()  
+#        self.poll_thread = PollThread(self, parent_conn)
+#        self.connect(self.poll_thread,QtCore.SIGNAL("Activated ( PyQt_PyObject ) "), self.minimum_found)        
+#        self.poll_thread.start()
+        self.parent_conn = parent_conn
+        self.refresh_timer = QtCore.QTimer()
+        self.refresh_timer.timeout.connect(self.poll)
+        self.refresh_timer.start(50.) # time in msec
         
-    def minimum_found(self,minimum):
-        self.lock.acquire()
-        self.system.database.addMinimum(minimum[0],minimum[1])
-        self.lock.release()
+        
+#    def minimum_found(self,minimum):
+#        self.lock.acquire()
+#        self.system.database.addMinimum(minimum[0],minimum[1])
+#        self.lock.release()
     
 def found(m):
     print("New Minimum",m[0])

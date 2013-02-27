@@ -38,11 +38,15 @@ class NEB(object):
         the potential object
     distance : callable
         distance function for the elastic band
-    k : float
-        elastic constant for band
+    k : float, optional
+        the elastic band spring constant 
     adjustk_freq : integer
         frequency to adjust k, set to zero to disable
-    dneb: boolean, optional
+    adjustk_tol : float
+        tolerance for adjusting k up or down
+    adjustk_factor : float
+        the multiplicative factor used to adjust k
+    dneb: bool, optional
         do double nudging, default True
     with_springenergy: boolean, optional
         add the spring energy to the total energy of the band, default is False
@@ -62,6 +66,8 @@ class NEB(object):
         verbosity level
     events : list of callables
         list of callback functions called just before getEnergyGradient returns
+    use_minimizer_callback: boolean, optional
+        use the callback function of theminimizer to adjust k, it is not recommended to change this to false
 
     Notes
     -----
@@ -78,11 +84,13 @@ class NEB(object):
                  k=100.0, adjustk_freq=0, adjustk_tol=0.1,adjustk_factor=1.05,
                  with_springenergy=False, dneb=True,
                  copy_potential=False, quenchParams=dict(), quenchRoutine=None,
-                 save_energies=False, verbose=-1, events=None):
+                 save_energies=False, verbose=-1, events=None, use_minimizer_callback=True):
         self.distance = distance
         self.potential = potential
         self.k = k
         self.verbose = verbose
+        self.use_minimizer_callback = use_minimizer_callback
+        
         if events is None:
             self.events = []
         else:
@@ -161,11 +169,14 @@ class NEB(object):
         #combine default and passed params.  passed params will overwrite default 
         quenchParams = dict(defaults.NEBquenchParams.items() +
                             self.quenchParams.items() +
-                            kwargs.items() )
+                            kwargs.items())
 
         if quenchParams.has_key("iprint"):
             self.iprint = quenchParams["iprint"]
 
+        if self.use_minimizer_callback:
+            quenchParams["events"]=[self._step]
+            
         self.step = 0
         qres = quenchRoutine(
                     self.active.reshape(self.active.size), self.getEnergyGradient,
@@ -241,12 +252,13 @@ class NEB(object):
                 self.printState()
         self.getEnergyCount += 1
         #print "ENeb = ", Eneb
-        self._step(coords1d)
+        if not self.use_minimizer_callback:
+            self._step(coords1d)
         
         rms = np.linalg.norm(grad) / np.sqrt(self.active.size)
         
         for event in self.events:
-            event(coords=self.coords, energies=self.energies,
+            event(path=tmp, energies=self.energies,
                        distances=self.distances, stepnum=self.getEnergyCount, rms=rms)
             
         return E+Eneb, grad.reshape(grad.size)
@@ -372,7 +384,7 @@ class NEB(object):
             #print np.linalg.norm(gperp), np.linalg.norm(gs_par)
             return E, g_tot
 
-    def _step(self, coords):
+    def _step(self, coords=None, energy=None, rms=None):
         self.step+=1
         if(self.adjustk_freq <= 0):
             return

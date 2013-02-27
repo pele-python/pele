@@ -1,9 +1,7 @@
-from pygmin.systems.amberSystem import AMBERSystem
+from pygmin.amber import amberSystem 
 
 # create new amber system
-print '----------------------------------'
-print 'GMIN POTENTIAL' 
-sys   = AMBERSystem('coords.prmtop', 'coords.inpcrd')        
+sys   = amberSystem.AMBERSystem('coords.prmtop', 'coords.inpcrd')        
 
 #start the gui 
 from pygmin.gui import run as gr    

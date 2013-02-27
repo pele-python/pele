@@ -91,8 +91,8 @@ class EditParamsWidget(QtGui.QWidget):
             item.setText(str(dict_[attr_]))
         
 class DlgParams(QtGui.QDialog):
-    def __init__(self, params):
-        QtGui.QDialog.__init__(self)
+    def __init__(self, params, parent=None):
+        QtGui.QDialog.__init__(self, parent=parent)
         self.ui = UI()
         self.ui.setupUi(self)
         self.params = params

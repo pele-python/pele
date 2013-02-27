@@ -1,7 +1,7 @@
 from pygmin.optimize import Result
 import pygmin.defaults as defaults
 from pygmin.transition_states import NEB, InterpolatedPath, findTransitionState, minima_from_ts, create_NEB
-from pygmin.transition_states._nebdriver import NEBDriver
+from pygmin.transition_states import NEBDriver
 
 __all__ = ["LocalConnect"]
 

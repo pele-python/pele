@@ -61,6 +61,8 @@ class DoubleEndedConnect(object):
         
         If any configuration in a minimum-transition_state-minimum triplet fails
         a test then the whole triplet is rejected.
+    load_no_distances : bool, optional
+        if True, then no distances will be loaded from the database
     
     Notes
     -----
@@ -138,7 +140,7 @@ class DoubleEndedConnect(object):
                  merge_minima=False, 
                  max_dist_merge=0.1, local_connect_params=dict(),
                  fresh_connect=False, longest_first=False,
-                 niter=200, conf_checks=None
+                 niter=200, conf_checks=None, load_no_distances=False
                  ):
         self.minstart = min1
         assert min1._id == min1, "minima must compare equal with their id %d %s %s" % (min1._id, str(min1), str(min1.__hash__()))
@@ -164,6 +166,7 @@ class DoubleEndedConnect(object):
 
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
+        self.load_no_distances = load_no_distances
 
         self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
 
@@ -172,7 +175,7 @@ class DoubleEndedConnect(object):
             print "minima are already connected.  not initializing distance graph"
             return
 
-        self.dist_graph.initialize(self.minstart, self.minend, use_all_min)
+        self.dist_graph.initialize(self.minstart, self.minend, use_all_min=use_all_min, load_no_distances=self.load_no_distances)
         
         if self.verbosity > 0:
             print "************************************************************"
@@ -293,7 +296,7 @@ class DoubleEndedConnect(object):
         self.dist_graph.addMinimum(min2)
         self.dist_graph.setTransitionStateConnection(min1, min2)
 
-        if True:
+        if self.verbosity > 1:
             #print some information
             dse  = self.getDist(self.minend, self.minstart)
             msid = self.minstart._id

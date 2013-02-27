@@ -72,6 +72,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="pushTakestepExplorer">
+              <property name="text">
+               <string>Takestep explorer</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="btnRun">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a short basinhopping run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -188,17 +195,27 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
-               <widget class="QPushButton" name="btnEnergies">
+              <item row="3" column="1">
+               <widget class="QPushButton" name="btnReconnect">
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Plot the energies of the NEB or connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a fresh double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
-                 <string>Energies</string>
+                 <string>Reconnect</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item row="1" column="1">
+               <widget class="QPushButton" name="btnInvert">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Invert one of the structures&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Invert</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
                <widget class="QPushButton" name="btnNEB">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -220,16 +237,6 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QPushButton" name="btnInvert">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Invert one of the structures&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Invert</string>
-                </property>
-               </widget>
-              </item>
               <item row="3" column="0">
                <widget class="QPushButton" name="btnConnect">
                 <property name="toolTip">
@@ -240,17 +247,14 @@
                 </property>
                </widget>
               </item>
-              <item row="5" column="0" colspan="2">
-               <widget class="QPushButton" name="btnDisconnectivity_graph">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="btn_close_all">
                 <property name="text">
-                 <string>disconnectivity graph</string>
+                 <string>Close Windows</string>
                 </property>
                </widget>
               </item>
-              <item row="4" column="0">
+              <item row="5" column="0">
                <widget class="QPushButton" name="btnShowGraph">
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -260,13 +264,13 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
-               <widget class="QPushButton" name="btnReconnect">
+              <item row="5" column="1">
+               <widget class="QPushButton" name="btnDisconnectivity_graph">
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a fresh double ended connect run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
-                 <string>Reconnect</string>
+                 <string>disconnectivity graph</string>
                 </property>
                </widget>
               </item>
@@ -280,10 +284,10 @@
                 </property>
                </widget>
               </item>
-              <item row="6" column="0" colspan="2">
-               <widget class="QPushButton" name="btn_launch_connect_explorer">
+              <item row="4" column="0">
+               <widget class="QPushButton" name="btn_connect_all">
                 <property name="text">
-                 <string>launch connect explorer</string>
+                 <string>Connect All</string>
                 </property>
                </widget>
               </item>
@@ -408,15 +412,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Show3D</class>
+   <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
    <header>show3d.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Show3DWithSlider</class>
+   <class>Show3D</class>
    <extends>QWidget</extends>
-   <header>show3d.h</header>
+   <header>pygmin/gui/show3d.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -462,7 +466,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>412</y>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -477,8 +481,8 @@
    <slot>ConnectMinima()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>445</y>
+     <x>652</x>
+     <y>478</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -535,22 +539,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>btnEnergies</sender>
-   <signal>pressed()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>showEnergies()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>652</x>
-     <y>445</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>417</x>
-     <y>542</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionConnect</sender>
    <signal>activated()</signal>
    <receiver>MainWindow</receiver>
@@ -573,8 +561,8 @@
    <slot>Invert()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>412</y>
+     <x>796</x>
+     <y>445</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -590,7 +578,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>478</y>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>685</x>
@@ -606,7 +594,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>652</x>
-     <y>511</y>
+     <y>544</y>
     </hint>
     <hint type="destinationlabel">
      <x>691</x>
@@ -637,8 +625,8 @@
    <slot>show_disconnectivity_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>655</x>
-     <y>544</y>
+     <x>796</x>
+     <y>577</y>
     </hint>
     <hint type="destinationlabel">
      <x>689</x>
@@ -653,8 +641,8 @@
    <slot>doubleEndedReConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>478</y>
+     <x>796</x>
+     <y>511</y>
     </hint>
     <hint type="destinationlabel">
      <x>687</x>
@@ -685,8 +673,8 @@
    <slot>connect_in_optim()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>511</y>
+     <x>796</x>
+     <y>544</y>
     </hint>
     <hint type="destinationlabel">
      <x>833</x>
@@ -707,22 +695,6 @@
     <hint type="destinationlabel">
      <x>419</x>
      <y>311</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btn_launch_connect_explorer</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>launch_connect_explorer()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>655</x>
-     <y>577</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>837</x>
-     <y>536</y>
     </hint>
    </hints>
   </connection>

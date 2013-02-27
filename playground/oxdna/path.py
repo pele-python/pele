@@ -7,8 +7,11 @@ from pygmin.transition_states import NEB, InterpolatedPath
 from pygmin.storage import Database
 from pygmin import defaults
 from pygmin.mindist.rmsfit import findrotation_kabsch
-from pygmin.mindist import aamindist
 from math import pi
+from pygmin.angleaxis import aamindist
+from oxgui import OXDNASystem
+
+infile="path/int.2min.xyz"
 
 def map_to_aa(xyz):
     coords = np.zeros(6*13)
@@ -49,11 +52,11 @@ def export_xyz(fl, coords):
         fl.write("C %f %f %f\n"%(x_back[0], x_back[1], x_back[2]))
         fl.write("H %f %f %f\n"%(x_stack[0], x_stack[1], x_stack[2]))
         
-GMIN.initialize()    
-pot = GMINPotential(GMIN)
+system = OXDNASystem()
+pot = system.get_potential()
 
 #fin = open("test.xyz") #path/int.102min.xyz")
-fin = open("path/int.2min.xyz")
+fin = open(infile)
 
 path_xyz = []
 
@@ -71,6 +74,19 @@ while True:
 print "length of path:", len(path_xyz)
 
 path = [ map_to_aa(xyz) for xyz in path_xyz]
+
+# this block aligns the images
+transform = aamindist.TransformAngleAxisCluster(system.aasystem)
+measure = aamindist.MeasureAngleAxisCluster(system.aasystem, transform=transform)
+
+com = measure.get_com(path[0])
+transform.translate(path[0], -com)
+for i in xrange(1,len(path)):
+    com = measure.get_com(path[i])
+    transform.translate(path[i], -com)
+    dist, rot = measure.find_rotation(path[i-1], path[i])
+    transform.rotate(path[i], rot)
+
 #p#ath = [ x for x in IntterpolatedPath(db.minima[19], )]
 #path = [ x for x in InterpolatedPath(path[0].copy(), path[-1].copy(), 34) ]
 traj = open("traj.xyz", "w")
@@ -80,7 +96,12 @@ traj = open("traj.xyz", "w")
 #    #print i,pot.getEnergy(x), ret[1]
 #    
 #    # export_xyz(traj, ret[0])
+for x in path:
+    export_xyz(traj, x)
 
+import pickle
+pickle.dump(path, open("interpolate.pickle", "w"))
+exit()
 db=Database(db="oxdna.sqlite")
 path[0]=db.minima()[19].coords
 path[-1]=db.minima()[0].coords

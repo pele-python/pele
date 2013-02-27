@@ -66,8 +66,9 @@ class Parameters(BaseParameters):
 
 
 def dict_copy_update(dict1, dict2):
-    """return a new dictionary from the union of dict1 and dict2.  if there
-    are conflicts, take the value in dict2"""
+    """return a new dictionary from the union of dict1 and dict2.  
+    
+    If there are conflicts, take the value in dict2"""
     newdict = dict1.copy()
     newdict.update(dict2)
     return newdict
@@ -117,6 +118,13 @@ class BaseSystem(object):
         
 #        self.params.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams.maxErise = 1e50
 
+    def __call__(self):
+        """calling a system returns itself
+        
+        this exists soley for the gui. this should be rewritten
+        """
+        return self
+
     def get_potential(self):
         """return the potential object
         
@@ -135,11 +143,11 @@ class BaseSystem(object):
         quencher = self.get_minimizer()
         return quencher(coords)
     
-    def get_minimizer(self):
+    def get_minimizer(self, **kwargs):
         """return a function to minimize the structure"""
         pot = self.get_potential()
-        params = self.params.structural_quench_params
-        return lambda coords: mylbfgs(coords, pot.getEnergyGradient, **params)
+        kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
+        return lambda coords: mylbfgs(coords, pot.getEnergyGradient, **kwargs)
     
     def get_compare_exact(self):
         """object that returns True if two structures are exact.
@@ -207,7 +215,8 @@ class BaseSystem(object):
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
         return tsAdaptive
 
-    def get_basinhopping(self, database=None, takestep=None, coords=None, add_minimum=None, **kwargs):
+    def get_basinhopping(self, database=None, takestep=None, coords=None, add_minimum=None,
+                         quenchParameters=None, **kwargs):
         """return the basinhopping object with takestep
         and accept step already implemented
         
@@ -225,7 +234,11 @@ class BaseSystem(object):
             if database is None:
                 database = self.create_database()
             add_minimum = database.minimum_adder()
-        bh = basinhopping.BasinHopping(coords, pot, takestep, storage=add_minimum, **kwargs)
+        if quenchParameters is None:
+            quenchParameters = self.params.structural_quench_params
+        bh = basinhopping.BasinHopping(coords, pot, takestep, storage=add_minimum,
+                                       quenchParameters=self.params.structural_quench_params, 
+                                       **kwargs)
         return bh
 
     def get_mindist(self):

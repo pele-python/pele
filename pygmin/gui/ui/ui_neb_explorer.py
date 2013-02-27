@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_neb_explorer.ui'
+# Form implementation generated from reading ui file 'ui/ui_neb_explorer.ui'
 #
-# Created: Mon Jan 28 23:54:03 2013
+# Created: Thu Feb  7 00:13:53 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -66,9 +66,23 @@ class Ui_MainWindow(object):
         icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/restart.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionReset.setIcon(icon2)
         self.actionReset.setObjectName(_fromUtf8("actionReset"))
+        self.actionSave = QtGui.QAction(MainWindow)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/save.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionSave.setIcon(icon3)
+        self.actionSave.setObjectName(_fromUtf8("actionSave"))
+        self.actionLoad = QtGui.QAction(MainWindow)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/open.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionLoad.setIcon(icon4)
+        self.actionLoad.setObjectName(_fromUtf8("actionLoad"))
+        self.actionTS = QtGui.QAction(MainWindow)
+        self.actionTS.setObjectName(_fromUtf8("actionTS"))
         self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionReset)
         self.toolBar.addAction(self.actionParams)
+        self.toolBar.addAction(self.actionSave)
+        self.toolBar.addAction(self.actionLoad)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionE)
         self.toolBar.addAction(self.actionS)
@@ -76,6 +90,8 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionNimages)
         self.toolBar.addAction(self.actionRms)
         self.toolBar.addAction(self.action3D)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionTS)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -97,5 +113,11 @@ class Ui_MainWindow(object):
         self.actionParams.setToolTip(QtGui.QApplication.translate("MainWindow", "edit parameters", None, QtGui.QApplication.UnicodeUTF8))
         self.actionReset.setText(QtGui.QApplication.translate("MainWindow", "reset", None, QtGui.QApplication.UnicodeUTF8))
         self.actionReset.setToolTip(QtGui.QApplication.translate("MainWindow", "start from fresh interpolation", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "save", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setToolTip(QtGui.QApplication.translate("MainWindow", "save path to file", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionLoad.setText(QtGui.QApplication.translate("MainWindow", "load", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionLoad.setToolTip(QtGui.QApplication.translate("MainWindow", "load path from file", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionTS.setText(QtGui.QApplication.translate("MainWindow", "TS refinement", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionTS.setToolTip(QtGui.QApplication.translate("MainWindow", "switch to ts refinement", None, QtGui.QApplication.UnicodeUTF8))
 
 import resources_rc

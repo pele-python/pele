@@ -1,5 +1,6 @@
 import numpy as np
-from PyQt4.QtGui import QDialog, QApplication
+from PyQt4 import QtGui
+from PyQt4.QtGui import QDialog, QApplication, QWidget
 import dgraph_browser
 import sys
 
@@ -10,8 +11,14 @@ from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from pygmin.landscape import Graph
 from pygmin.storage import Database
 from pygmin.utils.events import Signal
+from pygmin.gui.ui.mplwidget import MPLWidgetWithToolbar
 
-class DGraphDialog(QDialog):
+
+#class DGraphWidget(MPLWidgetWithToolbar):
+#    def __init__(self):
+
+
+class DGraphWidget(QWidget):
     """
     dialog for showing and modifying the disconnectivity graph
     
@@ -24,8 +31,8 @@ class DGraphDialog(QDialog):
     params : dict
         initialize the values for the disconnectivity graph
     """
-    def __init__(self, database, graph=None, params={}):
-        super(DGraphDialog, self).__init__()
+    def __init__(self, database, graph=None, params={}, parent=None):
+        super(DGraphWidget, self).__init__(parent=parent)
         
         self.database = database
         self.graph = graph
@@ -39,10 +46,11 @@ class DGraphDialog(QDialog):
         self.input_params = params.copy()
         self.params = {}
         self.set_defaults()
-        self.rebuild_disconnectivity_graph()
         
         self.minimum_selected = Signal()
         # self.minimum_selected(minim)
+
+#        self.rebuild_disconnectivity_graph()
 
     def _set_checked(self, keyword, default):
         """utility to set the default values for check boxes
@@ -192,6 +200,21 @@ class DGraphDialog(QDialog):
         self.canvas.draw()
 
 
+class DGraphDialog(QtGui.QMainWindow):
+    def __init__(self, database, graph=None, params={}, parent=None, app=None):
+        super(DGraphDialog, self).__init__( parent=parent)
+        self.resize(754, 553)
+
+        
+        self.dgraph_widget = DGraphWidget(database, graph, params, parent=self)
+        
+        self.verticalLayout = QtGui.QVBoxLayout()#self.centralWidget)
+        self.verticalLayout.addWidget(self.dgraph_widget)
+    
+    def rebuild_disconnectivity_graph(self):
+        self.dgraph_widget.rebuild_disconnectivity_graph()
+        
+
 
 if __name__ == "__main__":
     
@@ -200,6 +223,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)        
     md = DGraphDialog(db)
     md.show()
+    md.rebuild_disconnectivity_graph()
     
     sys.exit(app.exec_()) 
         

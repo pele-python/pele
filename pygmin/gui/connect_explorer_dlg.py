@@ -3,15 +3,8 @@ from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 from PyQt4 import QtCore
 import sys
 
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from pygmin.landscape import Graph
 from pygmin.storage import Database
-from pygmin.utils.events import Signal
-from pygmin.transition_states import findTransitionState, minima_from_ts
 from pygmin.landscape.local_connect import _refineTS
-
-import connect_explorer_ui
-from nebdlg import getNEB
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -38,12 +31,14 @@ class _TSListItem(QListWidgetItem):
 
 
 class ConnectExplorerDialog(QDialog):
-    def __init__(self, system):
-        super(ConnectExplorerDialog, self).__init__()
+    def __init__(self, system, app, parent=None):
+        super(ConnectExplorerDialog, self).__init__(parent=parent)
         
         self.system = system
+        self.app = app
 #        self.database = database
-        
+        import connect_explorer_ui
+
         self.ui = connect_explorer_ui.Ui_Form()
         self.ui.setupUi(self)
         self.nebwgt = self.ui.wgt_neb
@@ -56,7 +51,8 @@ class ConnectExplorerDialog(QDialog):
         
         self.nebwgt.on_neb_pick.connect(self.on_neb_pick)
         
-        QtCore.QObject.connect(self.oglwgt.slider, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), self.highlight_neb)
+        QtCore.QObject.connect(self.oglwgt.slider, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")),
+                               self.highlight_frame)
 
         self.oglview = "None"
     
@@ -64,74 +60,31 @@ class ConnectExplorerDialog(QDialog):
         """clear everything and start again"""
         self.ts_list.clear()
     
-    def highlight_neb(self, index, style=1):
-        if style != 1:
-            self.nebwgt.highlight(index, style=style)
+    def highlight_frame(self, index):
+        if self.oglview == "neb":
+            self.nebwgt.highlight_frame(index)
         else:
-            if self.oglview == "neb":
-                self.nebwgt.highlight(index, style=style)
-            else:
-                self.nebwgt.highlight(-1)
+            self.nebwgt.highlight_frame(-1)
 
-
-    def _prepareNEB(self, coords1, coords2):
-        """setup the NEB object"""
-        system = self.system
-        throwaway_db = Database()
-        min1 = throwaway_db.addMinimum(0., coords1)
-        min2 = throwaway_db.addMinimum(1., coords2)
-        #use the functions in DoubleEndedConnect to set up the NEB in the proper way
-        self.double_ended_connect = system.get_double_ended_connect(min1, min2, 
-                                                            throwaway_db, verbosity=0,
-                                                            fresh_connect=True)
-        self.local_connect = self.double_ended_connect._getLocalConnectObject()
-    
-        
-        
-        self.neb =  self.local_connect.create_neb(system.get_potential(),
-                                          coords1, coords2,
-                                          **self.local_connect.NEBparams)        
-        
-#        return neb
-
-
-    def createNEB(self, coords1, coords2):
-        self.reset()
-        self._prepareNEB(coords1, coords2)
-        self.nebwgt.attach_to_NEB(self.neb)
-        return self.neb
-
-    def on_neb_pick(self, energy, index):
+    def on_neb_pick(self, index):
 #        print "in local_connect.  you picked E", energy, "index", index
         self.neb_chosen_index = index
         self.show_neb_path(frame=index)
+        self.ui.wgt_neb.highlight_frame(index)
 
-    def runNEB(self):
-        self.neb=self.neb.run()
-        self.neb_labels = ["NEB path: energy=%f"%(E) for E in self.neb.energies]
+    def set_nebrunner(self, nebrunner):
+        self.ui.wgt_neb.update_gui(nebrunner)
+        self.nebrunner = nebrunner
+        self.neb_labels = ["energy = %f"%e for e in nebrunner.energies[-1]]
         self.show_neb_path()
-#        wnd.oglwgt.setCoordsPath(wnd.neb.coords)
-    
-#    def showFrame(self, i):
-#        if hasattr(self, "neb"):
-#            self.ui.oglPath.setCoords(self.neb.coords[i,:])
-    
-#    def on_slider_ogl_sliderMoved(self, index):
-#        print "slider moved", index
-#        self.oglwgt.setCoords(self.neb.coords[0,:], index=index)
-
-#    def on_btn_refineTS_clicked(self):
-#        print "button clicked"
-#        self.refine_transition_state()
-
+        
     def on_refine_all_ts(self):
         print "refining all"
-        self.neb.MakeAllMaximaClimbing()
-        climbing_images = [i for i in range(self.neb.nimages) if self.neb.isclimbing[i]]
+        self.nebrunner.neb.neb.MakeAllMaximaClimbing()
+        climbing_images = [i for i in range(len(self.nebrunner.path)) if self.nebrunner.neb.neb.isclimbing[i]]
 #        print "climbing images", climbing
         for nebindex in climbing_images:
-            self.refine_transition_state(nebindex=nebindex)
-            
+            self.refine_transition_state(nebindex=nebindex)            
 
     def on_refine_transition_state(self):
         self.refine_transition_state()
@@ -144,16 +97,22 @@ class ConnectExplorerDialog(QDialog):
                 print "choose which NEB image to start from"
                 return
     #            raise Exception("choose which NEB image to start from")
-            nebindex = self.oglwgt.get_slider_index() 
-        coords = self.neb.coords[nebindex,:].copy()
-        self.highlight_neb(nebindex, style=2)
+            nebindex = self.oglwgt.get_slider_index()
+            
+        self.highlight_frame(-1)
+        coords = self.nebrunner.path[nebindex].copy()
+        self.ui.wgt_neb.highlight_point(nebindex)
+        self.app.processEvents()
+    
         tsdata = []
         tscoordslist = []
         
+        self.local_connect = self.nebrunner.local_connect
         #setup the callback function for findTransitionState
         def findTS_callback(coords=None, energy=None, rms=None, eigenval=None, **kwargs):
             tscoordslist.append(coords.copy())
             tsdata.append((energy, rms, eigenval))
+            
         tsSearchParams = self.local_connect.tsSearchParams.copy()
         tsSearchParams["event"] = findTS_callback
         
@@ -202,7 +161,7 @@ class ConnectExplorerDialog(QDialog):
     def load_ts_view(self, tsitem):
         #highlight the neb image we started from
         ts = tsitem.tsview
-        self.highlight_neb(ts.nebindex, style=2)
+        self.ui.wgt_neb.highlight_point(ts.nebindex)
         
         self.ts_coordspath = ts.ts_coordspath
         self.ts_labels = ts.ts_labels
@@ -226,8 +185,9 @@ class ConnectExplorerDialog(QDialog):
 #        self.oglview = "pushoff1"
     
     def show_neb_path(self, frame=0):
-        self.oglwgt.setCoordsPath(self.neb.coords, frame=frame, labels=self.neb_labels)
+        self.oglwgt.setCoordsPath(self.nebrunner.path, frame=frame, labels=self.neb_labels)
         self.oglview = "neb"
+        
 
     def show_TS_path(self):
         self.oglwgt.setCoordsPath(self.ts_coordspath, labels=self.ts_labels, frame=-1)
@@ -238,8 +198,10 @@ class ConnectExplorerDialog(QDialog):
 
 def start():
     print "starting  neb"
-    wnd.createNEB(x1, x2)
-    wnd.runNEB()
+    from neb_explorer import NEBRunner
+    runner = NEBRunner(app, system)
+    runner.run(x1, x2)
+    wnd.set_nebrunner(runner)
     
     
 if __name__ == "__main__":
@@ -267,10 +229,8 @@ if __name__ == "__main__":
     min2 = db.addMinimum(e2, x2)
     
     #setup neb dialog
-    wnd = ConnectExplorerDialog(system)   
+    wnd = ConnectExplorerDialog(system, app)   
     wnd.show()
-    wnd.nebwgt.process_events.connect(process_events)
-    
 
     glutInit()
 
