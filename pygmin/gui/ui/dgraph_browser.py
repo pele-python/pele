@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'dgraph_browser.ui'
 #
-# Created: Thu Feb 28 16:50:25 2013
+# Created: Thu Feb 28 17:11:36 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -75,6 +75,13 @@ class Ui_Form(object):
         self.chkbx_include_gmin = QtGui.QCheckBox(self.layoutWidget)
         self.chkbx_include_gmin.setObjectName(_fromUtf8("chkbx_include_gmin"))
         self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.chkbx_include_gmin)
+        self.lineEdit_offset = QtGui.QLineEdit(self.layoutWidget)
+        self.lineEdit_offset.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.lineEdit_offset.setObjectName(_fromUtf8("lineEdit_offset"))
+        self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.lineEdit_offset)
+        self.label_4 = QtGui.QLabel(self.layoutWidget)
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.formLayout.setWidget(6, QtGui.QFormLayout.LabelRole, self.label_4)
         self.verticalLayout_2.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
@@ -111,6 +118,7 @@ class Ui_Form(object):
         self.chkbx_order_by_energy.setText(QtGui.QApplication.translate("Form", "order_by_energy", None, QtGui.QApplication.UnicodeUTF8))
         self.chkbx_order_by_basin_size.setText(QtGui.QApplication.translate("Form", "order_by_basin_size", None, QtGui.QApplication.UnicodeUTF8))
         self.chkbx_include_gmin.setText(QtGui.QApplication.translate("Form", "include global min", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("Form", "offset", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRebuild.setText(QtGui.QApplication.translate("Form", "Rebuild Graph", None, QtGui.QApplication.UnicodeUTF8))
 
 from mplwidget import MPLWidgetWithToolbar

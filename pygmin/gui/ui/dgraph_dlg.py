@@ -112,6 +112,10 @@ class DGraphWidget(QWidget):
         if len(nlevels) > 0:
             self.params["nlevels"] = int(nlevels)
 
+        offset = self.ui.lineEdit_offset.text()
+        if len(offset) > 0:
+            params["node_offset"] = int(offset)
+
 
         params["center_gmin"] = self.ui.chkbx_center_gmin.isChecked()
         params["show_minima"] = self.ui.chkbx_show_minima.isChecked()
