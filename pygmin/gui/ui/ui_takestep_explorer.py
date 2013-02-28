@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_takestep_explorer.ui'
 #
-# Created: Wed Feb 13 17:22:09 2013
+# Created: Tue Feb 26 18:27:50 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
         self.label.setText(_fromUtf8(""))
         self.label.setObjectName(_fromUtf8("label"))
         self.verticalLayout_2.addWidget(self.label)
-        self.show3d = Show3D(self.centralwidget)
+        self.show3d = Show3DWithSlider(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -70,8 +70,13 @@ class Ui_MainWindow(object):
         self.actionDisplace.setObjectName(_fromUtf8("actionDisplace"))
         self.actionQuench = QtGui.QAction(MainWindow)
         self.actionQuench.setObjectName(_fromUtf8("actionQuench"))
+        self.actionShow_path = QtGui.QAction(MainWindow)
+        self.actionShow_path.setCheckable(True)
+        self.actionShow_path.setChecked(False)
+        self.actionShow_path.setObjectName(_fromUtf8("actionShow_path"))
         self.toolBar.addAction(self.actionDisplace)
         self.toolBar.addAction(self.actionQuench)
+        self.toolBar.addAction(self.actionShow_path)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -82,5 +87,7 @@ class Ui_MainWindow(object):
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionDisplace.setText(QtGui.QApplication.translate("MainWindow", "displace", None, QtGui.QApplication.UnicodeUTF8))
         self.actionQuench.setText(QtGui.QApplication.translate("MainWindow", "quench", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionShow_path.setText(QtGui.QApplication.translate("MainWindow", "show path", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionShow_path.setToolTip(QtGui.QApplication.translate("MainWindow", "display the quench trajectory", None, QtGui.QApplication.UnicodeUTF8))
 
-from pygmin.gui.show3d import Show3D
+from pygmin.gui.show3d import Show3DWithSlider
