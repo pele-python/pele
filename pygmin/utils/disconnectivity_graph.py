@@ -518,7 +518,7 @@ class DisconnectivityGraph(object):
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
-    def plot(self, show_minima=False):
+    def plot(self, show_minima=False, newplot=True):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
@@ -528,9 +528,12 @@ class DisconnectivityGraph(object):
         import matplotlib.pyplot as plt
         
         #set up how the figure should look
-        fig = plt.figure(figsize=(6,7))
-        fig.set_facecolor('white')
-        ax = fig.add_subplot(111, adjustable='box')
+        if newplot:
+            fig = plt.figure(figsize=(6,7))
+            fig.set_facecolor('white')
+            ax = fig.add_subplot(111, adjustable='box')
+        else:
+            ax = plt.gca()
         ax.tick_params(axis='y', direction='out')
         ax.yaxis.tick_left()
         ax.spines['left'].set_color('black')
