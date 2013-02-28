@@ -127,7 +127,7 @@ class DisconnectivityGraph(object):
     >>> plt.show()
 
     """
-    def __init__(self, graph, minima=[], nlevels=20, Emax=None,
+    def __init__(self, graph, minima=None, nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
                  order_by_basin_size=True, node_offset=0.2,
                  center_gmin=True, include_gmin=True, energy_attribute="energy"):
@@ -144,6 +144,8 @@ class DisconnectivityGraph(object):
         if self.center_gmin:
             include_gmin = True
 
+        if minima is None:
+            minima = []
         self.min0list = minima
         if include_gmin:
             #find the minimum energy node
