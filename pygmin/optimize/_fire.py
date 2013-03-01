@@ -19,7 +19,7 @@ class Fire(object):
     def __init__(self, coords, potential, restart=None, logfile='-', trajectory=None,
                  dt=0.1, maxmove=0.5, dtmax=1., Nmin=5, finc=1.1, fdec=0.5,
                  astart=0.1, fa=0.99, a=0.1, iprint=-1,
-                 alternate_stop_criterion = None):
+                 alternate_stop_criterion = None, events=None):
         #Optimizer.__init__(self, atoms, restart, logfile, trajectory)
 
         self.dt = dt
@@ -38,6 +38,10 @@ class Fire(object):
         self.nsteps=0
         self.iprint = iprint
         self.alternate_stop_criterion = alternate_stop_criterion
+        if events is None:
+            self.events = []
+        else:
+            self.events = events
         
     def initialize(self):
         self.v = None
@@ -88,16 +92,19 @@ class Fire(object):
             if self.alternate_stop_criterion is None:
                 i_am_done = self.converged(f)
             else:
-                i_am_done = self.alternate_stop_criterion(energy = E, gradient = f, 
+                i_am_done = self.alternate_stop_criterion(energy=E, gradient=f, 
                                                           tol=self.fmax)                
             if i_am_done:
                 return
             self.step(-f)
             self.nsteps += 1
+            rms = np.linalg.norm(f)/np.sqrt(len(f))
             if self.iprint > 0:
                 if step % self.iprint == 0:
-                    rms = np.linalg.norm(f)/np.sqrt(len(f))
                     print "fire:", step, E, rms
+            for event in self.events:
+                event(coords=self.coords, energy=E, rms=rms)
+
             step += 1
                     
 
@@ -114,6 +121,7 @@ class Fire(object):
         #return (forces**2).sum().max() < self.fmax**2
         #print np.linalg.norm(forces)/math.sqrt(len(forces))
         return np.linalg.norm(forces)/math.sqrt(len(forces)) < self.fmax
+
 
 if __name__ == "__main__":
     import pygmin.potentials.lj as lj
