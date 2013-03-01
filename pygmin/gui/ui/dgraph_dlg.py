@@ -114,7 +114,7 @@ class DGraphWidget(QWidget):
 
         offset = self.ui.lineEdit_offset.text()
         if len(offset) > 0:
-            params["node_offset"] = int(offset)
+            params["node_offset"] = float(offset)
 
 
         params["center_gmin"] = self.ui.chkbx_center_gmin.isChecked()
@@ -216,7 +216,9 @@ class DGraphDialog(QtGui.QMainWindow):
 
 if __name__ == "__main__":
     
-    db = Database("test.sqlite")
+    db = Database("test.db")
+    if len(db.minima()) < 2:
+        raise Exception("database has no minima")
     
     app = QApplication(sys.argv)        
     md = DGraphDialog(db)

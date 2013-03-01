@@ -99,8 +99,9 @@ class DisconnectivityGraph(object):
         make sure to include the global minimum, even if it is not part of the
         main connected region
     node_offset : float
-        offset between 0 and 1 to start drawing vertically down 0 for from current energy level,
-        1 for at next energy level        
+        offset between 0 and 1 for how to draw the angled lines.
+        0 for no angle, draw horizontally out then vertically down.  1 for 
+        angled lines all the way to the next energy level        
     energy_attribute : string, optional
         attribute which contains energy. default is energy. This attribute can
         be used to generate free energy disconnectivity graphs
@@ -112,7 +113,7 @@ class DisconnectivityGraph(object):
     pygmin.storage.Database :
         The database format in which minima and transition states are stored in pygmin
     pygmin.landscape.Graph : 
-        a wrapper to creteate a networkx Graph from a database
+        a wrapper to create a networkx Graph from a database
     
     Examples
     --------
