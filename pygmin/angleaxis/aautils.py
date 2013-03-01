@@ -135,6 +135,7 @@ class AASiteType(object):
         return g_M, g_P
     
     def metric_tensor(self, p):
+        ''' calculate the mass weighted metric tensor '''
         R, R1, R2, R3 = rotMatDeriv(p, True)        
         g = np.zeros([3,3])
                 
@@ -152,6 +153,37 @@ class AASiteType(object):
 
         return gx, g
         
+    def metric_tensor_cog(self, x, p):
+        ''' calculate the metric tensor when for w_i != m_i '''
+        R, R1, R2, R3 = rotMatDeriv(p, True)        
+        g = np.zeros([6,6])
+
+        # the com part
+        g[0:3,0:3] = self.W * np.identity(3)
+
+        # the rotational part        
+        g[3,3] = np.trace(np.dot(R1, np.dot(self.S, R1.transpose())))
+        g[3,4] = np.trace(np.dot(R1, np.dot(self.S, R2.transpose())))
+        g[3,5] = np.trace(np.dot(R1, np.dot(self.S, R3.transpose())))
+        g[4,4] = np.trace(np.dot(R2, np.dot(self.S, R2.transpose())))
+        g[4,5] = np.trace(np.dot(R2, np.dot(self.S, R3.transpose())))
+        g[5,5] = np.trace(np.dot(R3, np.dot(self.S, R3.transpose())))
+        
+        g[4,3] = g[3,4]
+        g[5,4] = g[4,5]
+        g[5,3] = g[3,5]
+        
+        # the mixing part
+        g[:,3] = 2.*self.W * np.dot(R1, self.cog)
+        g[:,4] = 2.*self.W * np.dot(R2, self.cog)
+        g[:,5] = 2.*self.W * np.dot(R3, self.cog)
+        
+        g[3,:] = g[:,3] 
+        g[4,:] = g[:,4] 
+        g[5,:] = g[:,5] 
+        
+        return g
+    
 class AATopology(object):
     ''' 
         Angle axis system wrapper

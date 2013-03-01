@@ -50,7 +50,9 @@ class Graph(object):
         the database object to represent
     minima : list of minima, optional
         if none, include all minima and transition states from the database, 
-        else include only the minima in the list and no transition states.
+        else include only the minima in the list
+    no_edges : bool, optional
+        If true include no transition states in the graph.
         This is used, for example, to try to find a new connection between 
         two minima.
     
@@ -69,11 +71,12 @@ class Graph(object):
     >>> networkx_graph = graph.graph
     '''
     
-    def __init__(self, database, minima=None):
+    def __init__(self, database, minima=None, no_edges=False):
         self.graph = nx.Graph()
         self.storage = database
         self.connected_components = _ConnectedComponents(self.graph)
         self.minima = minima
+        self.no_edges = no_edges
         self.refresh()
     
     def _build_all(self):
@@ -82,8 +85,9 @@ class Graph(object):
         """
         for m in self.storage.minima():
             self.graph.add_node(m)
-        for ts in self.storage.transition_states():
-            self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+        if not self.no_edges:
+            for ts in self.storage.transition_states():
+                self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
 
     def _build_from_list(self, minima):
         """
@@ -92,12 +96,13 @@ class Graph(object):
         """
         minima = set(minima)
         for m in minima:
-            self.graph.add_node(m)        
-        for ts in self.storage.transition_states():
-            m1, m2 = ts.minimum1, ts.minimum2
-            if m1 in minima:
-                if m2 in minima:
-                    self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+            self.graph.add_node(m)
+        if not self.no_edges:       
+            for ts in self.storage.transition_states():
+                m1, m2 = ts.minimum1, ts.minimum2
+                if m1 in minima:
+                    if m2 in minima:
+                        self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
 
     def refresh(self):
         self.connected_components.setRebuild()
@@ -214,7 +219,7 @@ class TestGraph(unittest.TestCase):
         nmin = 3
         minima = list(self.db.minima())
         minima = minima[:nmin]
-        graph = Graph(self.db, minima=minima)
+        graph = Graph(self.db, minima=minima, no_edges=True)
         ng = graph.graph.number_of_nodes()
         self.assertEqual(ng, nmin)
         
