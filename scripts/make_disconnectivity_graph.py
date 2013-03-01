@@ -183,6 +183,7 @@ def main():
         app = QApplication(sys.argv) 
         kwargs["show_minima"] = False
         md = DGraphDialog(None, graph=graph, params=kwargs)
+        md.rebuild_disconnectivity_graph()
         md.show()
         sys.exit(app.exec_())
         
