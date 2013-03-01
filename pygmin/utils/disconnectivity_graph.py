@@ -97,7 +97,10 @@ class DisconnectivityGraph(object):
         nodes may push the one containing the global minimum over to one side
     include_gmin : bool
         make sure to include the global minimum, even if it is not part of the
-        main connected region        
+        main connected region
+    node_offset : float
+        offset between 0 and 1 to start drawing vertically down 0 for from current energy level,
+        1 for at next energy level        
     energy_attribute : string, optional
         attribute which contains energy. default is energy. This attribute can
         be used to generate free energy disconnectivity graphs
@@ -124,9 +127,9 @@ class DisconnectivityGraph(object):
     >>> plt.show()
 
     """
-    def __init__(self, graph, minima=[], nlevels=20, Emax=None,
+    def __init__(self, graph, minima=None, nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
-                 order_by_basin_size=True,
+                 order_by_basin_size=True, node_offset=0.2,
                  center_gmin=True, include_gmin=True, energy_attribute="energy"):
         self.graph = graph
         self.nlevels = nlevels
@@ -137,9 +140,12 @@ class DisconnectivityGraph(object):
         self.center_gmin = center_gmin 
         self.gmin0 = None
         self.energy_attribute = energy_attribute
+        self.node_offset = node_offset
         if self.center_gmin:
             include_gmin = True
 
+        if minima is None:
+            minima = []
         self.min0list = minima
         if include_gmin:
             #find the minimum energy node
@@ -391,7 +397,7 @@ class DisconnectivityGraph(object):
             self._get_line_segment_recursive(line_segments, subtree, eoffset)
 
         
-    def _get_line_segments(self, tree, eoffset=1.):
+    def _get_line_segments(self, tree, eoffset=-1.):
         """
         get all the line segments for drawing the connection between 
         each minimum to it's parent node.
@@ -508,13 +514,13 @@ class DisconnectivityGraph(object):
         self._layout_x_axis(tree_graph)
 
         #get the line segments which will be drawn to define the graph
-        eoffset = (elevels[-1] - elevels[-2]) * 0.2  #this should be passable
+        eoffset = (elevels[-1] - elevels[-2]) * self.node_offset  #this should be passable
         line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
         
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
-    def plot(self, show_minima=False):
+    def plot(self, show_minima=False, newplot=True):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
@@ -524,9 +530,12 @@ class DisconnectivityGraph(object):
         import matplotlib.pyplot as plt
         
         #set up how the figure should look
-        fig = plt.figure(figsize=(6,7))
-        fig.set_facecolor('white')
-        ax = fig.add_subplot(111, adjustable='box')
+        if newplot:
+            fig = plt.figure(figsize=(6,7))
+            fig.set_facecolor('white')
+            ax = fig.add_subplot(111, adjustable='box')
+        else:
+            ax = plt.gca()
         ax.tick_params(axis='y', direction='out')
         ax.yaxis.tick_left()
         ax.spines['left'].set_color('black')

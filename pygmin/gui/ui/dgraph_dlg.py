@@ -112,6 +112,10 @@ class DGraphWidget(QWidget):
         if len(nlevels) > 0:
             self.params["nlevels"] = int(nlevels)
 
+        offset = self.ui.lineEdit_offset.text()
+        if len(offset) > 0:
+            params["node_offset"] = int(offset)
+
 
         params["center_gmin"] = self.ui.chkbx_center_gmin.isChecked()
         params["show_minima"] = self.ui.chkbx_show_minima.isChecked()
@@ -120,8 +124,7 @@ class DGraphWidget(QWidget):
         params["include_gmin"] = self.ui.chkbx_include_gmin.isChecked()
 
 
-    def rebuild_disconnectivity_graph(self):
-        
+    def rebuild_disconnectivity_graph(self):        
         self._get_input_parameters()
         self._build_disconnectivity_graph(**self.params)
 
@@ -203,13 +206,8 @@ class DGraphWidget(QWidget):
 class DGraphDialog(QtGui.QMainWindow):
     def __init__(self, database, graph=None, params={}, parent=None, app=None):
         super(DGraphDialog, self).__init__( parent=parent)
-        self.resize(754, 553)
-
-        
         self.dgraph_widget = DGraphWidget(database, graph, params, parent=self)
-        
-        self.verticalLayout = QtGui.QVBoxLayout()#self.centralWidget)
-        self.verticalLayout.addWidget(self.dgraph_widget)
+        self.setCentralWidget(self.dgraph_widget)
     
     def rebuild_disconnectivity_graph(self):
         self.dgraph_widget.rebuild_disconnectivity_graph()
@@ -218,7 +216,7 @@ class DGraphDialog(QtGui.QMainWindow):
 
 if __name__ == "__main__":
     
-    db = Database("test.db")
+    db = Database("test.sqlite")
     
     app = QApplication(sys.argv)        
     md = DGraphDialog(db)
