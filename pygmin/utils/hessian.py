@@ -85,13 +85,24 @@ def get_eig(hess, **kwargs):
     """ 
     return np.linalg.eigh(hess, **kwargs)
 
+def sort_eigs(evals, evecs):
+    """return the sorted eigenvalues and eigenvectors"""
+    mylist = [(evals[i], evecs[:,i]) for i in range(len(evals))]
+    sortlist = sorted(mylist, key=lambda x:x[0])
+    evals = np.array([wv[0] for wv in sortlist])
+    evecs = evecs.copy()
+    for i in range(len(evals)):
+        evecs[:,i] = sortlist[i][1]
+    return evals, evecs
+    
+
 def get_sorted_eig(hess, **kwargs):
-    """return the sorted eigenvalues and eigenvectors of a Hessian"""
+    """return the sorted eigenvalues and eigenvectors of a Hessian sorted"""
     evals, evecs = get_eig(hess, **kwargs)
     # now sort them
     try:
         mylist = [(evals[i], evecs[:,i]) for i in range(len(evals))]
-        sortlist = sorted(mylist)
+        sortlist = sorted(mylist, key=lambda x:x[0])
     except ValueError:
         import sys
         print >> sys.stderr, "evals, evecs", evals.shape, evecs.shape

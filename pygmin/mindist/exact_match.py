@@ -201,6 +201,10 @@ class ExactMatchCluster(object):
         self.transform = transform
         self.measure = measure
         
+    def standard_alignments(self, coords1, coords2):
+        return StandardClusterAlignment(coords1, coords2, accuracy = self.accuracy,
+                                   can_invert=self.transform.can_invert())
+
         
     def __call__(self, coords1, coords2):
         com1 = self.measure.get_com(coords1)
@@ -211,8 +215,7 @@ class ExactMatchCluster(object):
         x2 = coords2.copy()
         self.transform.translate(x2, -com2)
         
-        for rot, invert in StandardClusterAlignment(x1, x2, accuracy = self.accuracy,
-                                   can_invert=self.transform.can_invert()):
+        for rot, invert in self.standard_alignments(x1, x2):
             if self.check_match(x1, x2, rot, invert):
                 return True
         return False
