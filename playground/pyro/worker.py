@@ -1,3 +1,4 @@
+from pygmin.storage import Minimum, TransitionState
 import Pyro4
 
 nruns = 5
@@ -14,16 +15,20 @@ connect_manager=Pyro4.Proxy(uri)
 system = connect_manager.get_system()
 pot = system.get_potential()
 
+# global minimum id
+gid = {}
+
 # forwarding new minima to server
 def minimum_added(minimum):
     minid = connect_manager.add_minimum(minimum.energy, minimum.coords)
     # store the id of minimum on serverside for quick access later on
-    minimum.parentid = minid
-
+    gid[minimum] = minid
+    print "added minimum %d as %d"%(minimum._id, minid)
+    
 # forwarding new ts to server 
 def ts_added(ts):
-    id1 = ts.minimum1.parentid
-    id2 = ts.minimum2.parentid
+    id1 = gid[ts.minimum1]
+    id2 = gid[ts.minimum2]
     
     tsid = connect_manager.add_ts(id1, id2, ts.energy, ts.coords)
 
@@ -48,5 +53,5 @@ for i in xrange(nruns):
 
 print "finished sucessfully!"
 print "Data collected during run:"
-print db.session.qery(Minimum).count(), "minima"
-print db.session.qery(Minimum).count(), "transition states"
+print db.session.query(Minimum).count(), "minima"
+print db.session.query(TransitionState).count(), "transition states"
