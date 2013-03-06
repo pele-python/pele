@@ -54,11 +54,11 @@ def lbfgs_scipy(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
     rms = V.std()
     return newcoords, newE, rms, funcalls 
 
-def fire(coords, getEnergyGradient, tol = 1e-3, nsteps=100000, maxstep = 0.5, **kwargs):
+def fire(coords, getEnergyGradient, tol=1e-3, nsteps=100000, **kwargs):
     """
     A wrapper function for the pygmin FIRE implementation
     """
-    opt = Fire(coords, getEnergyGradient, maxmove = maxstep, **kwargs)
+    opt = Fire(coords, getEnergyGradient, **kwargs)
     opt.run(fmax=tol, steps=nsteps)
     e,g = getEnergyGradient(opt.coords)
     rms = np.linalg.norm(g)/np.sqrt(len(g))

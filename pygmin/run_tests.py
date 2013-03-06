@@ -10,5 +10,6 @@ from pygmin.potentials.ljcut import LJCutTest
 from pygmin.landscape._graph import TestGraph
 from pygmin.landscape._distance_graph import TestDistanceGraph
 from pygmin.transition_states._orthogopt import TestOrthogopt
+from pygmin.utils.hessian import TestEig
 
 unittest.main()

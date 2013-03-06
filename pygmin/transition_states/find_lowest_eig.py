@@ -76,7 +76,7 @@ class LowestEigPot(basepot):
         """
         
         #GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2
-        grad = (Gplus - Gminus) / (self.diff*vecl**2) - 2.0 * diag2 * vec / vecl**2
+        grad = (Gplus - Gminus) / (self.diff * vecl**2) - 2.0 * diag2 * vec / vecl**2
         if self.orthogZeroEigs is not None:
             grad = self.orthogZeroEigs(grad, self.coords)
         """
@@ -87,7 +87,7 @@ class LowestEigPot(basepot):
         
         return diag2, grad
 
-def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, **kwargs):
+def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, dx=1e-3, **kwargs):
     """
     find the eigenvector corresponding to the lowest eigenvalue using
     LowestEigPot and the LBFGS minimizer
@@ -133,7 +133,7 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
         eigenvec0 = rotations.vec_random_ndim(coords.shape)
     
     #set up potential for minimization    
-    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs)
+    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx)
     
     #minimize, using the last eigenvector as a starting point
     #and starting with H0 from last minimization 

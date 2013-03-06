@@ -54,12 +54,22 @@ class TakestepExplorer(QtGui.QMainWindow):
         takestep = self.system.get_takestep()
         takestep.takeStep(self.coords)
         self.update_view()
+    
+    def quench_event(self, coords=None, **kwargs):
+        self.quench_path.append(coords.copy())
         
     def on_actionQuench_triggered(self, checked=None):
         if  checked is None or self.coords is None:
             return
         
-        quencher = self.system.get_minimizer()
+        get_path = self.ui.actionShow_path.isChecked()
+        
+        if get_path:
+            events = [self.quench_event]
+        else:
+            events = []
+        self.quench_path = []
+        quencher = self.system.get_minimizer(events=events)
         ret = quencher(self.coords)
         coords = ret[0]
         E = ret[1]
@@ -68,14 +78,14 @@ class TakestepExplorer(QtGui.QMainWindow):
         self.coords = None
         
         self.database.addMinimum(E, coords)
-        self.update_view()
+        self.update_view(with_path=get_path)
         
     def on_listMinima_currentItemChanged(self, new, old):
         self.coords = None
         self.quenched = new.minimum.coords
         self.update_view()
         
-    def update_view(self):
+    def update_view(self, with_path=False):
         pot = self.system.get_potential()        
         label = ""
         if self.quenched is not None:
@@ -86,8 +96,13 @@ class TakestepExplorer(QtGui.QMainWindow):
             label += "instant: energy = %f, rms = %s"%(e, np.linalg.norm(grad)/np.sqrt(grad.size)) 
         
         self.ui.label.setText(label)
-        self.ui.show3d.setCoords(self.coords, 2)
-        self.ui.show3d.setCoords(self.quenched, 1)
+        if with_path:
+            coordspath = np.array(self.quench_path)
+            self.ui.show3d.setCoordsPath(coordspath, frame=-1)
+        else:
+            self.ui.show3d.setCoords(self.coords, index=2)
+            self.ui.show3d.setCoords(self.quenched, index=1)
+        
 
 if __name__ == "__main__":
     import sys
@@ -103,6 +118,7 @@ if __name__ == "__main__":
     x1, e1 = system.get_random_minimized_configuration()[:2]
     x2, e2 = system.get_random_minimized_configuration()[:2]
     db = system.create_database(db=":memory:")
+    system.database = db
     min1 = db.addMinimum(e1, x1)
     min2 = db.addMinimum(e2, x2)
     

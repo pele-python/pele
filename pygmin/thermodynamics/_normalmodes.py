@@ -1,23 +1,57 @@
-import numpy as np    
+import numpy as np
 
-__all__ = ["normalmode_frequencies", "logproduct_freq2"]
+from pygmin.utils.hessian import sort_eigs
 
-def normalmode_frequencies(hessian, metric=None):
-    ''' calculate normal mode frequencies
+__all__ = ["normalmode_frequencies", "normalmodes", "logproduct_freq2"]
+
+def normalmode_frequencies(hessian, metric=None, eps=1e-4):
+    '''calculate normal mode frequencies
     
     Parameters
     ----------
     hessian:
         hessian marix
-        
     metric: 
         mass weighted metric tensor
     '''
     A = hessian
     if metric is not None:
-        A = np.dot(np.linalg.inv(metric), hessian)
+        A = np.dot(np.linalg.pinv(metric), hessian)
    
-    return np.linalg.eigvals(A)
+    frq = np.linalg.eigvals(A)
+    
+    if(np.max(np.abs(np.imag(frq))) > eps):
+        print frq
+        raise ValueError("imaginary eigenvalue in frequency calculation"
+                         ", check hessian + metric tensor\nthe largest imaginary part is %g"%np.max(np.abs(np.imag(frq))))
+    
+    return np.sort(np.real(frq))
+
+def normalmodes(hessian, metric=None, eps=1e-4):
+    '''calculate and return normal mode frequencies and vectors
+    
+    Parameters
+    ----------
+    hessian:
+        hessian marix
+    metric: 
+        mass weighted metric tensor
+    '''
+    A = hessian
+    if metric is not None:
+        A = np.dot(np.linalg.pinv(metric), hessian)
+   
+    freq, evecs = np.linalg.eig(A)
+    
+    if(np.max(np.abs(np.imag(freq))) > eps):
+        print freq
+        raise ValueError("imaginary eigenvalue in frequency calculation"
+                         ", check hessian + metric tensor\nthe largest imaginary part is %g"%np.max(np.abs(np.imag(freq))))
+    
+    freq = np.real(freq)
+    freq, evecs = sort_eigs(freq, evecs)
+    return freq, evecs
+
 
 def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
     ''' calculate the log product of positive frequencies
@@ -60,4 +94,4 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
         raise ValueError("the number of negative eigenvalues differs from the expected "
                          "number (not a minimum / transition state?)")
 
-    return n, lnf 
+    return n, lnf

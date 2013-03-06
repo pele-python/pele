@@ -160,7 +160,7 @@ class DoubleEndedConnect(object):
         self.database = database
         self.fresh_connect = fresh_connect
         if self.fresh_connect:
-            self.graph = Graph(self.database, minima=[self.minstart, self.minend])
+            self.graph = Graph(self.database, minima=[self.minstart, self.minend], no_edges=True)
         else:
             self.graph = Graph(self.database)
 

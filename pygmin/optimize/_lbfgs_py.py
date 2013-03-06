@@ -55,6 +55,8 @@ class LBFGS(object):
        Reduce the step size until conditions are satisfied.
     
     3. take step
+
+    http://dx.doi.org/10.1007/BF01589116
     
     See Also
     --------
@@ -121,6 +123,9 @@ class LBFGS(object):
         LBFGS algorithm
         
         http://en.wikipedia.org/wiki/Limited-memory_BFGS
+        
+        Liu and Nocedal 1989
+        http://dx.doi.org/10.1007/BF01589116
         """
         self.G = G #saved for the line search
         
@@ -147,7 +152,12 @@ class LBFGS(object):
                 YS = 1.            
             rho[km1] = 1. / YS
             
-            #update the approximation for the diagonal inverse hessian
+            # update the approximation for the diagonal inverse hessian
+            # scale H0 according to
+            # H_k = YS/YY * H_0 
+            # this is described in Liu and Nocedal 1989 
+            # http://dx.doi.org/10.1007/BF01589116
+            # note: for this step we assume H0 is always the identity
             YY = np.dot( y[km1,:], y[km1,:] )
             if YY == 0.:
                 print "warning: resetting YY to 1 in lbfgs", YY

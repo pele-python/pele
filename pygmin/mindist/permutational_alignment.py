@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+#from munkres import make_cost_matrix
 
 __all__ = ["find_best_permutation", "optimize_permutations",
            "find_permutations_OPTIM", "find_permutations_munkres",
@@ -167,7 +168,7 @@ def find_permutations_OPTIM(X1, X2, box_lengths=None, make_cost_matrix=None):
     use OPTIM's minperm() routine to calculate the optimum permutation
     """    
     
-    if make_cost_matrix is not _make_cost_matrix:
+    if make_cost_matrix is not _make_cost_matrix and make_cost_matrix is not None:
         raise RuntimeError("cannot use a custom cost matrix with findBestPermutationListOPTIM")
 
     #deal with periodic boundary conditions
@@ -205,17 +206,19 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
         the structures to align
     permlist : a list of lists
         A list of lists of atoms which are interchangable.
-        e.g. for a 50/50 binary mixture, 
+        e.g. for a 50/50 binary mixture::
         
             permlist = [range(1,natoms/2), range(natoms/2,natoms)]
+
     user_algoriithm : None or callable
         you can optionally pass which algorithm to use.
-    
     gen_cost_matrix : None or callable
         user function to generate the cost matrix
-        
     reshape : boolean
         shall coordinate reshaping be performed.
+    box_lengths : float array
+        array of floats giving the box lengths for periodic boundary conditions.
+        Set to None for no periodic boundary conditions.
     
     Returns
     -------
@@ -256,17 +259,19 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
     dist = -1.
     
     for atomlist in permlist:
-        if user_algorithm is None:
-            dist, perm = _find_permutations( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix, **kwargs)
+        if user_algorithm is not None:
+            dist, perm = user_algorithm(X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix, **kwargs)
+        elif user_cost_matrix is not _make_cost_matrix:
+            dist, perm = find_permutations_hungarian(X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix, **kwargs)
         else:
-            dist, perm = user_algorithm( X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix, **kwargs)
+            dist, perm = _find_permutations(X1[atomlist], X2[atomlist], **kwargs)
             
         for atom,i in zip(atomlist,xrange(len(atomlist))):
             newperm[atom] = atomlist[perm[i]]
     return dist, newperm
 
-def optimize_permutations( X1, X2, permlist = None, user_algorithm=None):
-    dist, perm = find_best_permutation(X1, X2, permlist=permlist, user_algorithm=user_algorithm)
+def optimize_permutations( X1, X2, permlist = None, user_algorithm=None, **kwargs):
+    dist, perm = find_best_permutation(X1, X2, permlist=permlist, user_algorithm=user_algorithm, **kwargs)
     X2_ = X2.reshape([-1, 3])
     X2new = X2_[perm]
     
