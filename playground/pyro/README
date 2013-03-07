@@ -14,5 +14,7 @@ The provides an uri (which is also stored in pyros.uri). Clients can connect to 
 
   python worker.py
 
-
+Run on cluster / with remote workers
+------------------------------------
+start the server on a workstation (or node) which should be the master node. To allow for incoming remote connections, a hostname must be specified. Then specify the hostname to connect to in worker.py and submit as many jobs a needed.
 
