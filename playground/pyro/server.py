@@ -3,6 +3,10 @@ import Pyro4
 from pygmin.systems import LJCluster
 from pygmin.storage import Minimum
 
+manager_name = "ljconnect_example"
+hostname="localhost"
+port=11567
+
 # we need to run pyros in multiplex mode, otherwise we run into problems with 
 # SQLAlchemy. This is due to the fact that a session can only be used from one
 # thread. We really should fix this issue and allow for multiple sessions!
@@ -60,16 +64,11 @@ print "Creating new connect manager"
 connect_manager=ConnectManager(system, db)
 
 print "Starting Pyros daemon"
-daemon=Pyro4.Daemon()
+daemon=Pyro4.Daemon(host=hostname, port=port)
+
 # make the connect_manager available to Pyros childs
-uri=daemon.register(connect_manager)
-
+uri=daemon.register(connect_manager, objectId=manager_name)
 print "The connect manager can be accessed by the following uri: ", uri 
-print "This information is also stored in the file pyros.uri"
-
-fl=open("pyros.uri", "w")
-fl.write(str(uri))
-fl.close()
 
 print "Ready to accept connections"
 daemon.requestLoop() 

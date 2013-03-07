@@ -2,15 +2,16 @@ from pygmin.storage import Minimum, TransitionState
 import Pyro4
 
 nruns = 5
+
+manager_name = "ljconnect_example"
+hostname = "localhost"
+port = 11567
+
 print "I will do %d connect runs before exiting"%nruns
 
-print "reading uri to connect to pyros server"
-fl=open("pyros.uri")
-uri = fl.read()
-fl.close()
-
-print "get connect manager"
-connect_manager=Pyro4.Proxy(uri) 
+uri="PYRO:%s@%s:%d"%(manager_name,hostname,port)
+print "connecting to",uri
+connect_manager=Pyro4.Proxy(uri)
 
 system = connect_manager.get_system()
 pot = system.get_potential()
