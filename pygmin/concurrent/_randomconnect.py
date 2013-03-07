@@ -1,6 +1,7 @@
 import Pyro4
 from random import choice
 from pygmin.storage import Minimum, TransitionState
+import sqlalchemy
 
 __all__ = ["RandomConnectServer", "RandomConnectWorker"]
 
@@ -39,12 +40,19 @@ class RandomConnectServer(object):
         self.manager_name = server_name
         self.host=host
         self.port=port
+        self.Emax = None
+        
+    def set_emax(self, Emax):
+        self.Emax = None
         
     def get_connect_job(self):
         ''' get a new connect job '''
-        minima = self.db.minima()
-        min1 = choice(minima)
-        min2 = choice(minima)
+        query =  self.db.session.query(Minimum)
+        if self.Emax is not None:
+            query.filter(Minimum.energy < self.Emax)
+            
+        min1 = query.order_by(sqlalchemy.func.random()).first()
+        min2 = query.order_by(sqlalchemy.func.random()).first()
         
         print "worker requested new job, sending minima", min1._id, min2._id
         
