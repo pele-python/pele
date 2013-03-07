@@ -156,7 +156,8 @@ class DisconnectivityGraph(object):
             self.min0list.append(self.gmin0)
 #            print "min0", self.min0.energy, self.min0._id
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
-    
+        self.minimum_to_leave = dict()
+
     def _getEnergy(self, node):
         """ get the energy of a node """
         return getattr(node, self.energy_attribute)
@@ -219,6 +220,7 @@ class DisconnectivityGraph(object):
                 newtree.data["minimum"] = minimum 
                 newtree.data["ilevel"] = ilevel 
                 newtree.data["ethresh"] = ethresh 
+                self.minimum_to_leave[minimum] = newtree
 #                leaves[minimum] = newtree
             else:
                 newtree = parent_tree.make_branch()
@@ -521,7 +523,7 @@ class DisconnectivityGraph(object):
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
-    def plot(self, show_minima=False, newplot=True):
+    def plot(self, show_minima=False, newplot=True, linewidth=0.5):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
@@ -555,7 +557,7 @@ class DisconnectivityGraph(object):
         
         #draw the line segemnts
         for x, y in self.line_segments:
-            ax.plot(x, y, 'k', linewidth=0.5)
+            ax.plot(x, y, 'k', linewidth=linewidth)
 
         #remove xtics            
         plt.xticks([])
