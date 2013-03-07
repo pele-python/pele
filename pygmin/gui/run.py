@@ -38,7 +38,7 @@ def excepthook(ex_type, ex_value, traceback_obj):
     errorbox.setStandardButtons(QtGui.QMessageBox.Ignore | QtGui.QMessageBox.Cancel)
     errorbox.setDefaultButton(QtGui.QMessageBox.Cancel)
     if errorbox.exec_() == QtGui.QMessageBox.Cancel:
-        exit(-1)
+        raise
 
 def no_event(*args, **kwargs):
     return
