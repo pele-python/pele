@@ -12,6 +12,9 @@ class TakestepInterface(object):
             coordinates
         '''
         raise NotImplementedError
+    
+    def __call__(self, *args, **kwargs):
+        return self.takeStep(*args, **kwargs)
         
     def updateStep(self, accepted, **kwargs):
         '''feedback from basin hopping if last step was accepted
