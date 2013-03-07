@@ -127,10 +127,12 @@ class RandomConnectWorker(object):
             print "Obtain a new job"
             id1, coords1, id2, coords2 = self.connect_manager.get_connect_job()
             
+            print "processing connect run between minima with global id", id1, id2
+            
             print "add minima to local database"
             min1 = db.addMinimum(pot.getEnergy(coords1), coords1)
             min2 = db.addMinimum(pot.getEnergy(coords2), coords2)
-            
+            print "assigned local ids", min1._id, min2._id
             print "run double ended connect"
             connect = system.get_double_ended_connect(min1, min2, db, fresh_connect=True)
             connect.connect()
