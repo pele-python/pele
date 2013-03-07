@@ -86,11 +86,20 @@ class RandomConnectWorker(object):
         ----------
         uri : string
             uri for job server
+            
+        system : BaseSystem, optional
+            if no system class is specified, the worker obtains the system
+            class from the worker by get_system. This only works for pickleable
+            systems classes. If this is not the case, the system can be
+            created on the client side and passed as a parameter.
     '''
     
-    def __init__(self,uri):
+    def __init__(self,uri, system=None):
         print "connecting to",uri
         self.connect_manager=Pyro4.Proxy(uri)
+        if system is None:
+            system = self.connect_manager.get_system()
+        self.system = system
         
     def run(self, nruns=None):
         ''' start the client
@@ -101,7 +110,7 @@ class RandomConnectWorker(object):
                 stop after so many connect runs
         '''
         # global minimum id
-        system = self.connect_manager.get_system()
+        system = self.system
         pot = system.get_potential()
 
         self.gid = {}
