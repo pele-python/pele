@@ -430,9 +430,18 @@ class DisconnectivityGraph(object):
     def _remove_high_energy_minima(self, graph, emax):
         rmlist = [m for m in graph.nodes() if self._getEnergy(m) > emax]
         if len(rmlist) > 0:
-            print "removing nodes with energy higher than", emax
+            print "removing %d nodes with energy higher than"%len(rmlist), emax
         for m in rmlist:
             graph.remove_node(m)
+        return graph
+
+    def _remove_high_energy_transitions(self, graph, emax):
+        rmlist = [edge for edge in graph.edges() \
+                  if self._getEnergy(self._getTS(edge[0], edge[1])) > emax]
+        if len(rmlist) > 0:
+            print "removing %d edges with energy higher than"%len(rmlist), emax
+        for edge in rmlist:
+            graph.remove_edge(edge[0], edge[1])
         return graph
 
     def _reduce_graph(self, graph, min0list):
@@ -498,16 +507,23 @@ class DisconnectivityGraph(object):
         """
         do the calculations necessary to draw the diconnectivity graph
         """
+        
+        # we start with applying the energy cutoff, otherwise reduce
+        # graph does not work as intended
+        graph = self._remove_high_energy_minima(self.graph, self.Emax)
+        graph = self._remove_high_energy_transitions(graph, self.Emax)
+        
         #find a reduced graph with only those connected to min0
 #        nodes = nx.node_connected_component(self.graph, self.min0)
 #        self.graph = self.graph.subgraph(nodes)
-        graph = self._reduce_graph(self.graph, self.min0list)
-
+        graph = self._reduce_graph(graph, self.min0list)
+        
         #define the energy levels
         elevels = self._get_energy_levels(graph)
         
         #remove more nodes
         graph = self._remove_high_energy_minima(graph, elevels[-1])
+        graph = self._remove_high_energy_transitions(graph, self.Emax)
         graph = self._remove_nodes_with_few_edges(graph, 1)
         
         #make the tree graph defining the discontinuity of the minima
@@ -520,6 +536,7 @@ class DisconnectivityGraph(object):
         eoffset = (elevels[-1] - elevels[-2]) * self.node_offset  #this should be passable
         line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
         
+        self.eoffset = eoffset
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
@@ -531,6 +548,8 @@ class DisconnectivityGraph(object):
         also, you must call pyplot.show() to actually see the plot
         """
         import matplotlib.pyplot as plt
+        
+        self.line_segments = self._get_line_segments(self.tree_graph, eoffset=self.eoffset)
         
         #set up how the figure should look
         if newplot:
