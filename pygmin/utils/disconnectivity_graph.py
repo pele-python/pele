@@ -390,12 +390,19 @@ class DisconnectivityGraph(object):
                 ylow = self._getEnergy(tree.data["minimum"])
             else:
                 ylow = tree.data["ethresh"]
+            
             yhigh = max(yparent - eoffset, ylow)
-            #add vertical line segment
-            line_segments.append( ([x,x], [ylow, yhigh]) )
+                        
+            if(yparent - eoffset > ylow or tree.number_of_branches() > 0):
+                #add vertical line segment
+                line_segments.append( ([x,x], [ylow, yhigh]) )
+            else: # stop diagonal line earlier to avoid artifacts
+                x = (x-xparent)/eoffset * (yparent - ylow) + xparent
+                
             if not tree.parent.data.has_key("children_not_connected"):
                 #add angled line segment
                 line_segments.append( ([xparent, x], [yparent,yhigh]) )
+                
         for subtree in tree.get_subtrees():
             self._get_line_segment_recursive(line_segments, subtree, eoffset)
 
