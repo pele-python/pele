@@ -1,0 +1,20 @@
+This example demonstrates how to setup a connect job server using Pyros.
+
+Introduction
+------------
+The server manages the central database and decides which connections to try. Currently it just randomly connects everything with everything. An arbitrary number of workers can connect to the server and process the connect jobs
+
+Usage
+-----
+
+start the server in one terminal
+  python server.py
+
+The provides an uri (which is also stored in pyros.uri). Clients can connect to this uri and access the connect manager. To start a worker
+
+  python worker.py
+
+Run on cluster / with remote workers
+------------------------------------
+start the server on a workstation (or node) which should be the master node. To allow for incoming remote connections, a hostname must be specified. Then specify the hostname to connect to in worker.py and submit as many jobs a needed.
+
