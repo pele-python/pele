@@ -1,5 +1,6 @@
 import numpy as np
 import pygmin.exceptions as exc
+import _spherical_container as fmodule
 
 __all__ = ["SphericalContainer"]
 
@@ -19,6 +20,7 @@ class SphericalContainer(object):
     def __init__(self, radius, nocenter=False, verbose=False):
         if radius < 0:
             raise exc.SignError
+        self.radius = float(radius)
         self.radius2 = float(radius)**2
         self.count = 0
         self.nrejected = 0
@@ -28,6 +30,7 @@ class SphericalContainer(object):
     
     def accept(self, coords):
         """ perform the test"""
+        if self.nocenter: return self.accept_fortran(coords)
         self.count += 1
         #get center of mass
         natoms = len(coords)/3
@@ -43,6 +46,9 @@ class SphericalContainer(object):
             self.nrejected += 1
             print "radius> rejecting", self.nrejected, "out of", self.count
         return not reject
+    
+    def accept_fortran(self, coords):
+        return fmodule.check_sphereical_container(coords, self.radius)
     
     def acceptWrapper(self, eold, enew, coordsold, coordsnew):
         """wrapper for accept"""

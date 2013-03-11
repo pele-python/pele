@@ -30,7 +30,8 @@ class RandomDisplacement(TakestepSlice):
         TakestepSlice.__init__(self, stepsize=stepsize)
     def takeStep(self, coords, **kwargs):
         c = coords[self.srange]
-        c += self.stepsize*(np.random.random(c.shape)-0.5)*2.
+        c += np.random.uniform(low=-self.stepsize, high=self.stepsize, size=c.shape)
+
             
 class UniformDisplacement(TakestepSlice):        
     '''Displace each atom be a uniform random vector

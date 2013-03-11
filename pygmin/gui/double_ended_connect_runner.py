@@ -7,8 +7,10 @@ incorporated back into the master database
 import multiprocessing as mp
 import sys
 import signal
-from PyQt4 import QtCore, QtGui
+import logging
 import numpy as np
+
+from PyQt4 import QtCore, QtGui
 
 from pygmin.utils.events import Signal
 
@@ -148,7 +150,17 @@ class DECProcess(mp.Process):
         signal.signal(signal.SIGINT, self.terminate_early)
         if self.pipe_stdout:
 #            print >> sys.stderr, "stderr"
-            sys.stdout = OutLog(self.comm)
+            self.mylog = OutLog(self.comm)
+            sys.stdout = self.mylog
+            logger = logging.getLogger("pygmin")
+            handles = logger.handlers
+            for h in handles:
+#                print >> sys.stderr, "removing handler", h 
+                logger.removeHandler(h)
+            sh = logging.StreamHandler(self.mylog)
+            logger.addHandler(sh)
+#            import pygmin
+#            logger.removeHandler(pygmin.h)
 #            print >> sys.stderr, "stderr2"
 
         self.do_double_ended_connect()
@@ -169,7 +181,7 @@ class DECRunner(QtCore.QObject):
         database after the connect run is finished
     min1, min2 : Munimum objects
         the minima to try to connect
-    outstream : an object with outstream.write(mystring)
+    outstream : an object with attribute `outstream.write(mystring)`
         the log messages from the connect run will be redirected here
     return_smoothed_path : bool
         if True the final smoothed path will be calculated
@@ -199,6 +211,7 @@ class DECRunner(QtCore.QObject):
         self.newtransition_states = set()
         self.success = False
         self.killed_early = False
+        self.is_running = False
 
 
     def poll(self):
@@ -231,6 +244,7 @@ class DECRunner(QtCore.QObject):
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
         self.refresh_timer.start(1.)
+        self.is_running = True
 
 
     def add_minima_transition_states(self, new_minima, new_ts):
@@ -264,7 +278,8 @@ class DECRunner(QtCore.QObject):
     def terminate_early(self):
         self.killed_early = True
         self.decprocess.terminate()
-        print "finished terminating, waiting to join"
+        print "finished terminating"
+        self.is_running = False
 #        self.decprocess.join()
 #        print "done killing job"
 #        self.on_finished()
@@ -277,6 +292,7 @@ class DECRunner(QtCore.QObject):
         self.refresh_timer.stop()
         print "done killing job"
         self.on_finished()
+        self.is_running = False
         
     
     def process_message(self, message):

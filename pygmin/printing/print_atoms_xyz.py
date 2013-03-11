@@ -41,6 +41,6 @@ class PrintEvent(object):
         if self.count % self.frq == 0:
             printAtomsXYZ(self.fout, coords, str(self.count) + " " + str(e))
     
-    def __call__(self, e, coords, accepted):
+    def __call__(self, e, coords, accepted, *args, **kwargs):
         self.event(e, coords, accepted)
         
