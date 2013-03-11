@@ -173,6 +173,23 @@ class AMBERSystem(BaseSystem):
         coords = np.reshape(np.transpose(coords), 3*len(coords), 1)
         return coords 
 
+    def get_metric_tensor(self, coords):
+        """metric tensor for all masses m_i=1.0 """
+        
+        print 'amberSystem> setting up mass matrix for normal modes'
+        
+        # return np.identity(coords.size)
+        massMatrix_tmp = np.identity(coords.size) 
+        
+        # get masses from 'elements' file   
+        for i in self.potential.prmtop.topology.atoms():             
+            atomNum  = i.index
+            atomElem = i.name[0]   # assuming elements corresponding to first character of atom name       
+            m        = elements[atomElem]['mass']
+            massMatrix_tmp[atomNum][atomNum] = 1/m        
+                    
+        return massMatrix_tmp 
+   
     def get_permlist(self):
         import pdb2permlist
                 
@@ -695,6 +712,11 @@ if __name__ == "__main__":
     from pygmin.storage import Database
     dbcurr = Database(db="/home/ss2029/WORK/PyGMIN/examples/amber/aladipep.db")
                         
+    
+    coords = sysAmb.get_random_configuration()
+    aa = sysAmb.get_metric_tensor(coords)
+    
+    exit()  
     # ------- TEST gui 
     from pygmin.gui import run as gr    
     gr.run_gui(sysAmb)
