@@ -4,6 +4,7 @@ System class for biomolecules using AMBER ff.
 Set up using prmtop and inpcrd files used in Amber GMIN and Optim. 
     
 Potential parameters (e.g. non-bonded cut-offs are set in    
+
     
 TODO:   
     
