@@ -44,15 +44,14 @@ class NormalmodeBrowser(QtGui.QMainWindow):
     def _calculate_normalmodes(self):
         pot = self.system.get_potential()
         E, g, hess = pot.getEnergyGradientHessian(self.coords)
-        #hess = pot.NumericalHessian(self.coords)
-        freq, mode = normalmodes(hess)
-        mode=mode.transpose()
+        metric = self.system.get_metric_tensor(self.coords)
+        freq, mode = normalmodes(hess, metric = metric)
+        mode=np.real(mode.transpose())
         
         self.normalmodes = []
-        print freq
         #self.normalmodes.append((fre[0], m.flatten()))
         for f, m in zip(freq, mode):
-            self.normalmodes.append((f, m.flatten(), np.real(m).copy()))
+            self.normalmodes.append((f, m)) #np.dot(metric, m)))
              
     def _fill_normalmodes(self):
         for n in self.normalmodes:
