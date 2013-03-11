@@ -323,10 +323,20 @@ class MyForm(QtGui.QMainWindow):
         self.graphview.widget.show_graph()
         return
         
-    def on_pushNormalmodesMin_clicked(self):
-        self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
+    def on_pushNormalmodesMin_clicked(self, clicked=None):
+        if clicked is None: return
+        if not hasattr(self, "normalmode_explorer"):
+            self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
         min1 = self.ui.widget.minima[1]
         self.normalmode_explorer.set_coords(min1.coords)
+        self.normalmode_explorer.show()
+        
+    def on_pushNormalmodesTS_clicked(self, clicked=None):
+        if clicked is None: return
+        if not hasattr(self, "normalmode_explorer"):
+            self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
+        ts = self.ui.list_TS.selectedItems()[0]
+        self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
         
 #        import pylab as pl

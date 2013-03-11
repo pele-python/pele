@@ -5,7 +5,7 @@ import numpy as np
 
 class NormalmodeItem(QtGui.QListWidgetItem):    
     def __init__(self, normalmode):
-        text="%.6f"%normalmode[0]
+        text="%.5e"%normalmode[0]
         self.normalmode = normalmode
         
         QtGui.QListWidgetItem.__init__(self, text)
@@ -49,12 +49,9 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         mode=mode.transpose()
         
         self.normalmodes = []
-        first=True
-        from itertools import izip
-        orthogopt = self.system.get_orthogonalize_to_zero_eigenvectors()
-        
+        print freq
         #self.normalmodes.append((fre[0], m.flatten()))
-        for f, m in izip(freq, mode):
+        for f, m in zip(freq, mode):
             self.normalmodes.append((f, m.flatten(), np.real(m).copy()))
              
     def _fill_normalmodes(self):
@@ -63,13 +60,33 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         
     def on_listNormalmodes_currentItemChanged(self, newsel):
         self.currentmode = newsel.get_mode()
-        print newsel.get_freq()
         
     def on_sliderFrame_valueChanged(self, val):
         displace = self.currentmode
-        print displace
         self.ui.view3D.setCoords(self.coords + displace*val/self.ui.sliderFrame.maximum())
-
+        
+    def on_actionRun_toggled(self, checked):
+        if checked:
+            self.animate=True
+            self._animate_dir = 1
+            QtCore.QTimer.singleShot(0., self._next_frame)
+        else:
+            self.animate = False
+    
+    def _next_frame(self):
+        cur = self.ui.sliderFrame.value()
+        if cur == self.ui.sliderFrame.maximum():
+            self._animate_dir = -1
+        elif cur ==  self.ui.sliderFrame.minimum():
+            self._animate_dir = 1
+        cur +=self._animate_dir
+        self.ui.sliderFrame.setValue(cur)
+        self.on_sliderFrame_valueChanged(cur)
+        
+        if self.animate:
+            QtCore.QTimer.singleShot(0.05, self._next_frame)
+        
+        
 if __name__ == "__main__":
     from OpenGL.GLUT import glutInit
     import sys
