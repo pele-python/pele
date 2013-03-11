@@ -141,6 +141,13 @@ class RBTopology(aautils.AATopology):
             for i, atype in zip(site.indices, site.atom_types):
                 atom_types[i]=atype
         return atom_types
+
+    def get_atommasses(self):
+        masses = [None for i in xrange(self.natoms)]
+        for site in self.sites:
+            for i, mass in zip(site.indices, site.atom_masses):
+                masses[i]=mass
+        return masses
         
     def add_sites(self, sites):
         aautils.AATopology.add_sites(self, sites)
