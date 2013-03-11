@@ -49,6 +49,10 @@ class AtomicCluster(BaseSystem):
         degrees of freedom and 3 global rotational degrees of freedom"""
         return orthogopt
 
+    def get_metric_tensor(self, coords):
+        """ metric tensor for all masses m_i=1.0 """
+        return np.identity(coords.size)
+    
     #
     #below here only stuff for the gui
     #
