@@ -23,7 +23,7 @@ from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
 from double_ended_connect_runner import DECRunner
 from connect_run_dlg import ConnectViewer
 from takestep_explorer import TakestepExplorer
-
+from pygmin.gui.normalmode_browser import NormalmodeBrowser
 global pick_count
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -38,7 +38,7 @@ def excepthook(ex_type, ex_value, traceback_obj):
     errorbox.setStandardButtons(QtGui.QMessageBox.Ignore | QtGui.QMessageBox.Cancel)
     errorbox.setDefaultButton(QtGui.QMessageBox.Cancel)
     if errorbox.exec_() == QtGui.QMessageBox.Cancel:
-        exit(-1)
+        raise
 
 def no_event(*args, **kwargs):
     return
@@ -322,6 +322,22 @@ class MyForm(QtGui.QMainWindow):
         self.graphview.widget.make_graph()
         self.graphview.widget.show_graph()
         return
+        
+    def on_pushNormalmodesMin_clicked(self, clicked=None):
+        if clicked is None: return
+        if not hasattr(self, "normalmode_explorer"):
+            self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
+        min1 = self.ui.widget.minima[1]
+        self.normalmode_explorer.set_coords(min1.coords)
+        self.normalmode_explorer.show()
+        
+    def on_pushNormalmodesTS_clicked(self, clicked=None):
+        if clicked is None: return
+        if not hasattr(self, "normalmode_explorer"):
+            self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
+        ts = self.ui.list_TS.selectedItems()[0]
+        self.normalmode_explorer.set_coords(ts.coords)
+        self.normalmode_explorer.show()
         
 #        import pylab as pl
 #        import networkx as nx

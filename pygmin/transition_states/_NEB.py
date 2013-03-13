@@ -1,12 +1,16 @@
 import numpy as np
 import os.path
 import copy
+import logging
 
 import pygmin.defaults as defaults
 from pygmin.transition_states import InterpolatedPath
 from pygmin.optimize import Result        
         
 __all__ = ["NEB",]
+
+logger = logging.getLogger("pygmin.connect.neb")
+
 try:
     import scipy.linalg
     blas = lambda name, ndarray: scipy.linalg.get_blas_funcs((name,), (ndarray,))[0]
@@ -173,6 +177,8 @@ class NEB(object):
 
         if quenchParams.has_key("iprint"):
             self.iprint = quenchParams["iprint"]
+        if not quenchParams.has_key("logger"):
+            quenchParams["logger"] = logging.getLogger("pygmin.connect.neb.quench")
 
         if self.use_minimizer_callback:
             quenchParams["events"]=[self._step]
@@ -406,11 +412,11 @@ class NEB(object):
         if avdev > self.adjustk_tol:
             self.k *=self.adjustk_factor
             if self.verbose >= 1:
-                print "increasing DNEB force constant to", self.k
+                logger.debug("increasing DNEB force constant to %s", self.k)
         else: 
             self.k /=self.adjustk_factor
             if self.verbose >= 1:
-                print "decreasing DNEB force constant to", self.k
+                logger.debug("decreasing DNEB force constant to %s", self.k)
         
     def MakeHighestImageClimbing(self):
         """
@@ -439,7 +445,7 @@ class NEB(object):
                 self.printStateFile = "neb.EofS.%04d" % (n)
                 if not os.path.isfile(self.printStateFile):
                     break
-            print "NEB energies will be written to", self.printStateFile
+            logger.info("NEB energies will be written to %s", self.printStateFile)
         #fname = "neb.EofS.%04d" % (self.getEnergyCount)
         #fname = "neb.EofS.all"
         with open(self.printStateFile, "a") as fout:
@@ -482,7 +488,7 @@ def nebtest(MyNEB=NEB, nimages=22):
     from pygmin import defaults
     from pygmin.optimize import lbfgs_py
     defaults.NEBquenchRoutine = lbfgs_py
-    defaults.NEBquenchParams["iprint"]=1
+    defaults.NEBquenchParams["iprint"]=20
     defaults.NEBquenchParams["debug"]=True
     defaults.NEBquenchParams["maxErise"]=0.1
     

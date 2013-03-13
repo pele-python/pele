@@ -4,6 +4,7 @@ System class for biomolecules using AMBER ff.
 Set up using prmtop and inpcrd files used in Amber GMIN and Optim. 
     
 Potential parameters (e.g. non-bonded cut-offs are set in    
+
     
 TODO:   
     
@@ -65,8 +66,16 @@ class AMBERSystem(BaseSystem):
             print '\namberSystem> Using OpenMM amber potential ..'
             self.potential    = openmm_potential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
         
+        # check for openmm version
+        # data structures changed between openmm4 and 5
+        # crude check - todo  
+        if hasattr(self.potential.prmtop.topology._bonds,'index'):
+            self.OpenMMVer = 5
+        else:
+            self.OpenMMVer = 4                
+        
         self.set_params(self.params)
-        self.natoms = self.potential.prmtop.topology._numAtoms  
+        self.natoms = self.potential.prmtop.topology._numAtoms              
         
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.
@@ -84,7 +93,7 @@ class AMBERSystem(BaseSystem):
 
         self.params.basinhopping.insert_rejected = False 
         
-        self.sanitycheck = True  # False   # todo: this should be part of params and show up in GUI 
+        self.sanitycheck = True  # todo: this should be part of params and show up in GUI 
         
         if self.sanitycheck:
             self.params.basinhopping.confCheck = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
@@ -164,6 +173,23 @@ class AMBERSystem(BaseSystem):
         coords = np.reshape(np.transpose(coords), 3*len(coords), 1)
         return coords 
 
+    def get_metric_tensor(self, coords):
+        """metric tensor for all masses m_i=1.0 """
+        
+        print 'amberSystem> setting up mass matrix for normal modes'
+        
+        # return np.identity(coords.size)
+        massMatrix_tmp = np.identity(coords.size) 
+        
+        # get masses from 'elements' file   
+        for i in self.potential.prmtop.topology.atoms():             
+            atomNum  = i.index
+            atomElem = i.name[0]   # assuming elements corresponding to first character of atom name       
+            m        = elements[atomElem]['mass']
+            massMatrix_tmp[atomNum][atomNum] = 1/m        
+                    
+        return massMatrix_tmp 
+   
     def get_permlist(self):
         import pdb2permlist
                 
@@ -171,12 +197,12 @@ class AMBERSystem(BaseSystem):
         #return [[0, 2, 3], [11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [49,50,51]] # tetraala 
             
         if os.path.exists('coordsModTerm.pdb'):
-            print '\nconstructing perm list from coordsModTerm.pdb'
+            print '\namberSystem> constructing perm list from coordsModTerm.pdb'
             print '   (see comments in amberPDB_to_permList.py)'
 
             plist = pdb2permlist.pdb2permList('coordsModTerm.pdb')
             
-            print '\nGroups of permutable atoms (atom numbers start at 0) = '
+            print '\namberSystem> Groups of permutable atoms (atom numbers start at 0) = '
             for i in plist: 
                 print i
         
@@ -247,9 +273,14 @@ class AMBERSystem(BaseSystem):
                     
         # draw bonds  
         for atomPairs in self.potential.prmtop.topology.bonds():
-            # note that atom numbers in topology start at 0 
-            xyz1 = coords[atomPairs[0]] - com  
-            xyz2 = coords[atomPairs[1]] - com 
+            # note that atom numbers in topology start at 0
+            if self.OpenMMVer == 5: 
+                xyz1 = coords[atomPairs[0].index] - com  
+                xyz2 = coords[atomPairs[1].index] - com
+            else: 
+                xyz1 = coords[atomPairs[0]] - com  
+                xyz2 = coords[atomPairs[1]] - com
+                 
             self.drawCylinder(xyz1, xyz2)                        
         
         
@@ -355,7 +386,7 @@ class AMBERSystem(BaseSystem):
             if listofO.__contains__(i+1) and listofN.__contains__(i+2) and listofH.__contains__(i+3): 
                 self.peptideBondAtoms.append([i,i+1,i+2,i+3]) 
         
-        print '\nPeptide bond atom numbers (C,O,N,H, in order):  '
+        print '\namberSystem> Peptide bond atom numbers (C,O,N,H, in order):  '
         for i in self.peptideBondAtoms:
             print i               
 
@@ -378,24 +409,34 @@ class AMBERSystem(BaseSystem):
             if i.name == 'CB':
                 listofCB.append(i.index)  
                 
-        #print listofCA     
-        #print listofC     
-        #print listofN     
-        #print listofCB     
+        #print '---amberSystem> list of CA = ' , listofCA              
+        #print '---amberSystem> list of  C = ' , listofC              
+        #print '---amberSystem> list of  N = ' , listofN              
+        #print '---amberSystem> list of CB = ' , listofCB      
         
         # atom numbers of peptide bond 
         self.CAneighborList = [] 
         
         for i in listofCA:
             # find atoms bonded to CA 
-            neighborlist = []     
-            for b in self.potential.prmtop.topology.bonds():
-                if b[0] == i:
-                    neighborlist.append(b[1]) 
-                if b[1] == i:
-                    neighborlist.append(b[0]) 
+            neighborlist = []                        
+                 
+            for b in self.potential.prmtop.topology.bonds():                                 
+                if self.OpenMMVer == 5 : 
+                    # openmm5  
+                    if b[0].index == i:
+                        neighborlist.append(b[1].index)
+                    if b[1].index == i:
+                        neighborlist.append(b[0].index) 
+                else:   # openmm4 
+                    if b[0].index == i:
+                        neighborlist.append(b[1].index)
+                    if b[1].index == i:
+                        neighborlist.append(b[0].index) 
+                    
             
-            # print 'atoms bonded to CA ',i, ' = ', neighborlist    
+            #print '---bonds = ', b[0].index , b[1].index 
+            #print '---amberSystem> atoms bonded to CA ',i, ' = ', neighborlist    
             nn = [i] 
             # append C (=O) 
             for n in neighborlist: 
@@ -415,7 +456,7 @@ class AMBERSystem(BaseSystem):
             self.CAneighborList.append(nn) 
 
         # atoms numbers start at 0             
-        print '\nCA neighbors atom numbers (CA,C(=O),CB, N, in order):  '
+        print '\namberSystem> CA neighbors atom numbers (CA,C(=O),CB, N, in order):  '
         for i in self.CAneighborList:
             print i               
 
@@ -475,7 +516,7 @@ class AMBERSystem(BaseSystem):
         
         """
         
-#        print 'in check CA chirality'
+        # print 'in check CA chirality'
         import measure  
         m = measure.Measure() 
         
@@ -671,6 +712,11 @@ if __name__ == "__main__":
     from pygmin.storage import Database
     dbcurr = Database(db="/home/ss2029/WORK/PyGMIN/examples/amber/aladipep.db")
                         
+    
+    coords = sysAmb.get_random_configuration()
+    aa = sysAmb.get_metric_tensor(coords)
+    
+    exit()  
     # ------- TEST gui 
     from pygmin.gui import run as gr    
     gr.run_gui(sysAmb)

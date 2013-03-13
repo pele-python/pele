@@ -94,6 +94,9 @@ class AASystem(BaseSystem):
         mindist = self.get_mindist()
         return smoothPath(path, mindist, interpolator=self.aasystem.interpolate, **kwargs)
     
+    def get_metric_tensor(self, coords):
+        return self.aasystem.metric_tensor(coords)
+    
 class RBSystem(AASystem):
     def drawCylinder(self, X1, X2):
         from OpenGL import GL,GLUT, GLU

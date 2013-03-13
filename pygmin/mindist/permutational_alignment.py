@@ -1,6 +1,6 @@
 import numpy as np
 import itertools
-from munkres import make_cost_matrix
+#from munkres import make_cost_matrix
 
 __all__ = ["find_best_permutation", "optimize_permutations",
            "find_permutations_OPTIM", "find_permutations_munkres",

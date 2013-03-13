@@ -18,16 +18,19 @@ class BasePotential(object):
     
         getEnergyGradient()
     '''
-    def getEnergy(self):
+    def getEnergy(self, coords):
+        """return the energy at the given coordinates"""
         raise NotImplementedError
         
     def getEnergyGradient(self, coords):
+        """return the energy and gradient at the given coordinates"""
         return self.getEnergyGradientNumerical(coords)
 
     def getEnergyGradientNumerical(self, coords):
         return self.getEnergy(coords), self.NumericalDerivative(coords, 1e-8)
             
     def NumericalDerivative(self, coords, eps=1e-6):
+        """return the gradient calculated numerically"""
         g = np.zeros(coords.size)
         x = coords.copy()
         for i in xrange(coords.size):
@@ -40,9 +43,9 @@ class BasePotential(object):
         return g
     
     def getGradient(self, coords):
+        """return the gradient at the given coordinates"""
         e, g = self.getEnergyGradient(coords)
         return g     
-
 
     #routines involving interaction lists
     def getEnergyListSlow(self, coords, ilist):
@@ -81,25 +84,32 @@ class BasePotential(object):
         return self.getEnergyGradientListSlow(coords, ilist)
     
     def NumericalHessian(self, coords, eps=1e-6):
-#        from numdifftools import Hessian
-        e0, g0 = self.getEnergyGradient(coords)
+        """return the Hessian matrix of second derivatives computed numerically
+        
+        this takes 2*len(coords) calls to getGradient
+        """
         x = coords.copy()
-        ndof = len(coords)
+        ndof = len(x)
         hess = np.zeros([ndof, ndof])
-        for i in range(ndof):
+        for i in xrange(ndof):
             xbkup = x[i]
             x[i] += eps
-            e1, g1 = self.getEnergyGradient(x)
-            hess[i,:] = (g1 - g0) / eps
+            g1 = self.getGradient(x)
+            x[i] = xbkup - eps
+            g2 = self.getGradient(x)            
+            hess[i,:] = (g1 - g2) / (2. * eps)
             x[i] = xbkup
         return hess
+
             
     def getEnergyGradientHessian(self, coords):
+        """return the energy, gradient, and Hessian at the given coordinates"""
         e, g = self.getEnergyGradient(coords)
         hess = self.NumericalHessian(coords)
         return e, g, hess
     
     def test_potential(self, coords):
+        """print some information testing whether the analytical gradients are correct"""
         E1 = self.getEnergy(coords)
         E2, grad = self.getEnergyGradient(coords)
         gradnum = self.NumericalDerivative(coords)

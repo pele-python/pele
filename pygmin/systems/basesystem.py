@@ -304,6 +304,21 @@ class BaseSystem(object):
             return DoubleEndedConnectPar(min1, min2, pot, mindist, database, **kwargs)
         else:
             return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
+        
+    def get_metric_tensor(self, coords):
+        """return (mass-weighted) metric tensor for given coordinates
+        
+        The metric tensor is needed for normal mode analysis. In the simples case it is just the identity.
+        For atomic systems (carthesian coordinates) with masses different to 1.0, the metric tensor
+        is a diagonal matrix with 1/m_i on the diagonal.
+
+        
+        See Also
+        --------
+        pygmin.landscape.smoothPath
+        """
+        raise NotImplementedError
+        
 
     #
     #the following functions are used only for the GUI

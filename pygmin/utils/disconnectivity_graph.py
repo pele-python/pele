@@ -97,7 +97,11 @@ class DisconnectivityGraph(object):
         nodes may push the one containing the global minimum over to one side
     include_gmin : bool
         make sure to include the global minimum, even if it is not part of the
-        main connected region        
+        main connected region
+    node_offset : float
+        offset between 0 and 1 for how to draw the angled lines.
+        0 for no angle, draw horizontally out then vertically down.  1 for 
+        angled lines all the way to the next energy level        
     energy_attribute : string, optional
         attribute which contains energy. default is energy. This attribute can
         be used to generate free energy disconnectivity graphs
@@ -109,7 +113,7 @@ class DisconnectivityGraph(object):
     pygmin.storage.Database :
         The database format in which minima and transition states are stored in pygmin
     pygmin.landscape.Graph : 
-        a wrapper to creteate a networkx Graph from a database
+        a wrapper to create a networkx Graph from a database
     
     Examples
     --------
@@ -124,9 +128,9 @@ class DisconnectivityGraph(object):
     >>> plt.show()
 
     """
-    def __init__(self, graph, minima=[], nlevels=20, Emax=None,
+    def __init__(self, graph, minima=None, nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
-                 order_by_basin_size=True,
+                 order_by_basin_size=True, node_offset=0.2,
                  center_gmin=True, include_gmin=True, energy_attribute="energy"):
         self.graph = graph
         self.nlevels = nlevels
@@ -137,9 +141,12 @@ class DisconnectivityGraph(object):
         self.center_gmin = center_gmin 
         self.gmin0 = None
         self.energy_attribute = energy_attribute
+        self.node_offset = node_offset
         if self.center_gmin:
             include_gmin = True
 
+        if minima is None:
+            minima = []
         self.min0list = minima
         if include_gmin:
             #find the minimum energy node
@@ -149,7 +156,8 @@ class DisconnectivityGraph(object):
             self.min0list.append(self.gmin0)
 #            print "min0", self.min0.energy, self.min0._id
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
-    
+        self.minimum_to_leave = dict()
+
     def _getEnergy(self, node):
         """ get the energy of a node """
         return getattr(node, self.energy_attribute)
@@ -212,6 +220,7 @@ class DisconnectivityGraph(object):
                 newtree.data["minimum"] = minimum 
                 newtree.data["ilevel"] = ilevel 
                 newtree.data["ethresh"] = ethresh 
+                self.minimum_to_leave[minimum] = newtree
 #                leaves[minimum] = newtree
             else:
                 newtree = parent_tree.make_branch()
@@ -381,17 +390,24 @@ class DisconnectivityGraph(object):
                 ylow = self._getEnergy(tree.data["minimum"])
             else:
                 ylow = tree.data["ethresh"]
+            
             yhigh = max(yparent - eoffset, ylow)
-            #add vertical line segment
-            line_segments.append( ([x,x], [ylow, yhigh]) )
+                        
+            if(yparent - eoffset > ylow or tree.number_of_branches() > 0):
+                #add vertical line segment
+                line_segments.append( ([x,x], [ylow, yhigh]) )
+            else: # stop diagonal line earlier to avoid artifacts
+                x = (x-xparent)/eoffset * (yparent - ylow) + xparent
+                
             if not tree.parent.data.has_key("children_not_connected"):
                 #add angled line segment
                 line_segments.append( ([xparent, x], [yparent,yhigh]) )
+                
         for subtree in tree.get_subtrees():
             self._get_line_segment_recursive(line_segments, subtree, eoffset)
 
         
-    def _get_line_segments(self, tree, eoffset=1.):
+    def _get_line_segments(self, tree, eoffset=-1.):
         """
         get all the line segments for drawing the connection between 
         each minimum to it's parent node.
@@ -419,11 +435,22 @@ class DisconnectivityGraph(object):
 
     
     def _remove_high_energy_minima(self, graph, emax):
+        if emax is None: return graph
         rmlist = [m for m in graph.nodes() if self._getEnergy(m) > emax]
         if len(rmlist) > 0:
-            print "removing nodes with energy higher than", emax
+            print "removing %d nodes with energy higher than"%len(rmlist), emax
         for m in rmlist:
             graph.remove_node(m)
+        return graph
+
+    def _remove_high_energy_transitions(self, graph, emax):
+        if emax is None: return graph
+        rmlist = [edge for edge in graph.edges() \
+                  if self._getEnergy(self._getTS(edge[0], edge[1])) > emax]
+        if len(rmlist) > 0:
+            print "removing %d edges with energy higher than"%len(rmlist), emax
+        for edge in rmlist:
+            graph.remove_edge(edge[0], edge[1])
         return graph
 
     def _reduce_graph(self, graph, min0list):
@@ -489,18 +516,33 @@ class DisconnectivityGraph(object):
         """
         do the calculations necessary to draw the diconnectivity graph
         """
+        graph = self.graph
+        assert graph.number_of_nodes() > 0, "graph has no minima"
+        assert graph.number_of_edges() > 0, "graph has no transition states"
+        
+        # we start with applying the energy cutoff, otherwise reduce
+        # graph does not work as intended
+        graph = self._remove_high_energy_minima(graph, self.Emax)
+        graph = self._remove_high_energy_transitions(graph, self.Emax)
+        assert graph.number_of_nodes() > 0, "after applying Emax, graph has no minima"
+        assert graph.number_of_edges() > 0, "after applying Emax, graph has no minima" 
+        
         #find a reduced graph with only those connected to min0
 #        nodes = nx.node_connected_component(self.graph, self.min0)
 #        self.graph = self.graph.subgraph(nodes)
-        graph = self._reduce_graph(self.graph, self.min0list)
-
+        graph = self._reduce_graph(graph, self.min0list)
+        
         #define the energy levels
         elevels = self._get_energy_levels(graph)
         
         #remove more nodes
         graph = self._remove_high_energy_minima(graph, elevels[-1])
+        graph = self._remove_high_energy_transitions(graph, elevels[-1])
         graph = self._remove_nodes_with_few_edges(graph, 1)
         
+        assert graph.number_of_nodes() > 0, "after cleaning up the graph, graph has no minima"
+        assert graph.number_of_edges() > 0, "after cleaning up the graph, graph has no minima" 
+
         #make the tree graph defining the discontinuity of the minima
         tree_graph = self._make_tree(graph, elevels)
         
@@ -508,13 +550,14 @@ class DisconnectivityGraph(object):
         self._layout_x_axis(tree_graph)
 
         #get the line segments which will be drawn to define the graph
-        eoffset = (elevels[-1] - elevels[-2]) * 0.2  #this should be passable
+        eoffset = (elevels[-1] - elevels[-2]) * self.node_offset  #this should be passable
         line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
         
+        self.eoffset = eoffset
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
-    def plot(self, show_minima=False):
+    def plot(self, show_minima=False, newplot=True, linewidth=0.5):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
@@ -523,10 +566,15 @@ class DisconnectivityGraph(object):
         """
         import matplotlib.pyplot as plt
         
+        self.line_segments = self._get_line_segments(self.tree_graph, eoffset=self.eoffset)
+        
         #set up how the figure should look
-        fig = plt.figure(figsize=(6,7))
-        fig.set_facecolor('white')
-        ax = fig.add_subplot(111, adjustable='box')
+        if newplot:
+            fig = plt.figure(figsize=(6,7))
+            fig.set_facecolor('white')
+            ax = fig.add_subplot(111, adjustable='box')
+        else:
+            ax = plt.gca()
         ax.tick_params(axis='y', direction='out')
         ax.yaxis.tick_left()
         ax.spines['left'].set_color('black')
@@ -545,7 +593,7 @@ class DisconnectivityGraph(object):
         
         #draw the line segemnts
         for x, y in self.line_segments:
-            ax.plot(x, y, 'k', linewidth=0.5)
+            ax.plot(x, y, 'k', linewidth=linewidth)
 
         #remove xtics            
         plt.xticks([])

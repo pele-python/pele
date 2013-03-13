@@ -79,6 +79,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="pushNormalmodesMin">
+              <property name="text">
+               <string>Normalmodes</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="btnRun">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a short basinhopping run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -205,16 +212,6 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QPushButton" name="btnInvert">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Invert one of the structures&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Invert</string>
-                </property>
-               </widget>
-              </item>
               <item row="2" column="0">
                <widget class="QPushButton" name="btnNEB">
                 <property name="sizePolicy">
@@ -244,13 +241,6 @@
                 </property>
                 <property name="text">
                  <string>Connect</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QPushButton" name="btn_close_all">
-                <property name="text">
-                 <string>Close Windows</string>
                 </property>
                </widget>
               </item>
@@ -291,6 +281,13 @@
                 </property>
                </widget>
               </item>
+              <item row="1" column="1">
+               <widget class="QPushButton" name="btn_close_all">
+                <property name="text">
+                 <string>Close Windows</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -315,7 +312,7 @@
          </widget>
         </item>
         <item row="0" column="2">
-         <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0">
+         <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0">
           <item>
            <widget class="QListWidget" name="list_TS">
             <property name="sizePolicy">
@@ -329,6 +326,13 @@
               <width>200</width>
               <height>16777215</height>
              </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushNormalmodesTS">
+            <property name="text">
+             <string>Normalmodes</string>
             </property>
            </widget>
           </item>
@@ -412,15 +416,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Show3DWithSlider</class>
+   <class>Show3D</class>
    <extends>QWidget</extends>
-   <header>show3d.h</header>
+   <header>pygmin.gui.show3d.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Show3D</class>
+   <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
-   <header>pygmin/gui/show3d.h</header>
+   <header>show3d.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -551,22 +555,6 @@
     <hint type="destinationlabel">
      <x>340</x>
      <y>282</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnInvert</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>Invert()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>796</x>
-     <y>445</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>687</x>
-     <y>33</y>
     </hint>
    </hints>
   </connection>

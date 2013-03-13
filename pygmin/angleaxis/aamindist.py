@@ -141,26 +141,13 @@ class ExactMatchAACluster(ExactMatchCluster):
             measure = MeasureAngleAxisCluster(topology, transform=transform)
         
         ExactMatchCluster.__init__(self, transform=transform, measure=measure, **kwargs)
-        
-    def __call__(self, coords1, coords2):
-        x1 = coords1.copy()
-        x2 = coords2.copy()
-        
-        ca1 = self.topology.coords_adapter(x1)
-        ca2 = self.topology.coords_adapter(x2)
-        
-        com1 = self.measure.get_com(coords1)
-        self.transform.translate(x1, -com1)
-        
-        com2 = self.measure.get_com(coords2)
-        self.transform.translate(x2, -com2)
-        
-        for rot, invert in StandardClusterAlignment(ca1.posRigid, ca2.posRigid, accuracy = self.accuracy,
-                                   can_invert=self.transform.can_invert()):
-            if self.check_match(x1, x2, rot, invert):
-                return True
-        return False
-    
+
+    def standard_alignments(self, coords1, coords2):
+        ca1 = self.topology.coords_adapter(coords1)
+        ca2 = self.topology.coords_adapter(coords2)
+        return StandardClusterAlignment(ca1.posRigid, ca2.posRigid, accuracy = self.accuracy,
+                                   can_invert=self.transform.can_invert())
+            
 class MinPermDistAACluster(MinPermDistCluster):
     def __init__(self, topology, transform=None, measure=None, **kwargs):
         self.topology = topology
