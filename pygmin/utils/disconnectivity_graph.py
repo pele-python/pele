@@ -435,6 +435,7 @@ class DisconnectivityGraph(object):
 
     
     def _remove_high_energy_minima(self, graph, emax):
+        if emax is None: return graph 
         rmlist = [m for m in graph.nodes() if self._getEnergy(m) > emax]
         if len(rmlist) > 0:
             print "removing %d nodes with energy higher than"%len(rmlist), emax
@@ -443,6 +444,7 @@ class DisconnectivityGraph(object):
         return graph
 
     def _remove_high_energy_transitions(self, graph, emax):
+        if emax is None: return graph 
         rmlist = [edge for edge in graph.edges() \
                   if self._getEnergy(self._getTS(edge[0], edge[1])) > emax]
         if len(rmlist) > 0:
@@ -516,9 +518,12 @@ class DisconnectivityGraph(object):
         """
         
         # we start with applying the energy cutoff, otherwise reduce
-        # graph does not work as intended
-        graph = self._remove_high_energy_minima(self.graph, self.Emax)
+        # graph does not work as intended     
+        graph = self.graph   
+        graph = self._remove_high_energy_minima(graph, self.Emax)
         graph = self._remove_high_energy_transitions(graph, self.Emax)
+        assert graph.number_of_nodes() > 0, "after applying Emax, graph has no minima"
+        assert graph.number_of_edges() > 0, "after applying Emax, graph has no minima" 
         
         #find a reduced graph with only those connected to min0
 #        nodes = nx.node_connected_component(self.graph, self.min0)
@@ -530,9 +535,12 @@ class DisconnectivityGraph(object):
         
         #remove more nodes
         graph = self._remove_high_energy_minima(graph, elevels[-1])
-        graph = self._remove_high_energy_transitions(graph, self.Emax)
+        graph = self._remove_high_energy_transitions(graph, elevels[-1])
         graph = self._remove_nodes_with_few_edges(graph, 1)
         
+        assert graph.number_of_nodes() > 0, "after cleaning up the graph, graph has no minima"
+        assert graph.number_of_edges() > 0, "after cleaning up the graph, graph has no minima" 
+
         #make the tree graph defining the discontinuity of the minima
         tree_graph = self._make_tree(graph, elevels)
         
