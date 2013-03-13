@@ -435,7 +435,7 @@ class DisconnectivityGraph(object):
 
     
     def _remove_high_energy_minima(self, graph, emax):
-        if emax is None: return graph 
+        if emax is None: return graph
         rmlist = [m for m in graph.nodes() if self._getEnergy(m) > emax]
         if len(rmlist) > 0:
             print "removing %d nodes with energy higher than"%len(rmlist), emax
@@ -444,7 +444,7 @@ class DisconnectivityGraph(object):
         return graph
 
     def _remove_high_energy_transitions(self, graph, emax):
-        if emax is None: return graph 
+        if emax is None: return graph
         rmlist = [edge for edge in graph.edges() \
                   if self._getEnergy(self._getTS(edge[0], edge[1])) > emax]
         if len(rmlist) > 0:
@@ -516,10 +516,12 @@ class DisconnectivityGraph(object):
         """
         do the calculations necessary to draw the diconnectivity graph
         """
+        graph = self.graph
+        assert graph.number_of_nodes() > 0, "graph has no minima"
+        assert graph.number_of_edges() > 0, "graph has no transition states"
         
         # we start with applying the energy cutoff, otherwise reduce
-        # graph does not work as intended     
-        graph = self.graph   
+        # graph does not work as intended
         graph = self._remove_high_energy_minima(graph, self.Emax)
         graph = self._remove_high_energy_transitions(graph, self.Emax)
         assert graph.number_of_nodes() > 0, "after applying Emax, graph has no minima"
