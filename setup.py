@@ -70,6 +70,7 @@ setup(name='pygmin',
                 "pygmin.accept_tests",
                 "pygmin.systems",
                 "pygmin.angleaxis",
+                "pygmin.thermodynamics",
                 ],
       ext_modules=ext_modules
         )
