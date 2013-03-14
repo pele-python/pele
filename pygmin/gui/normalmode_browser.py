@@ -2,6 +2,7 @@ from PyQt4 import QtGui, QtCore, Qt
 from  ui.ui_normalmode_explorer import Ui_MainWindow as UI
 from pygmin.thermodynamics import normalmodes 
 import numpy as np
+import pickle
 
 class NormalmodeItem(QtGui.QListWidgetItem):    
     def __init__(self, normalmode):
@@ -71,6 +72,23 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             QtCore.QTimer.singleShot(0., self._next_frame)
         else:
             self.animate = False
+            
+    def on_actionSave_triggered(self, checked=None):
+        if checked is None:
+            return
+        dialog = QtGui.QFileDialog(self)
+        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog.selectFile("mode.pickle")
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave);
+        if(not dialog.exec_()):
+            return
+        filename = dialog.selectedFiles()[0]
+        path = []
+        for i in xrange(100):
+            t = np.sin(i/100.*2.*np.pi)
+            path.append(self.coords + t*self.currentmode)
+        pickle.dump(path, open(filename, "w"))
+
     
     def _next_frame(self):
         cur = self.ui.sliderFrame.value()
