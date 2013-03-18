@@ -36,6 +36,8 @@ python packages::
 
   hungarian (optional, use pip/easy_install to get newest version with bugfixes!)
      for min dist routines
+  scikits.sparse (optional, for use of sparse Cholesky decomposition methods when
+     calculating rates)
      
 All the above packages can be installed via the python package managers pip or
 easy_install.  However, some of the packages (numpy, scipy) have additional
