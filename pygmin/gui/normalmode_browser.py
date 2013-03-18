@@ -55,15 +55,21 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             self.normalmodes.append((f, m)) #np.dot(metric, m)))
              
     def _fill_normalmodes(self):
+        self.ui.listNormalmodes.clear()
         for n in self.normalmodes:
             self.ui.listNormalmodes.addItem(NormalmodeItem(n))
         
     def on_listNormalmodes_currentItemChanged(self, newsel):
+        if newsel is None:
+            self.currentmode = None
+            return
         self.currentmode = newsel.get_mode()
         
     def on_sliderFrame_valueChanged(self, val):
+        if self.currentmode is None:
+            return
         displace = self.currentmode
-        self.ui.view3D.setCoords(self.coords + displace*val/self.ui.sliderFrame.maximum())
+        self.ui.view3D.setCoords(self.coords + 1.*displace*val/self.ui.sliderFrame.maximum())
         
     def on_actionRun_toggled(self, checked):
         if checked:
@@ -86,7 +92,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         path = []
         for i in xrange(100):
             t = np.sin(i/100.*2.*np.pi)
-            path.append(self.coords + t*self.currentmode)
+            path.append(self.coords + 1.*t*self.currentmode)
         pickle.dump(path, open(filename, "w"))
 
     
