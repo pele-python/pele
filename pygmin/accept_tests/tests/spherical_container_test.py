@@ -1,18 +1,23 @@
 import unittest
 import math
-import random
+import numpy as np
 import pygmin.exceptions as exc
 from pygmin.accept_tests.spherical_container import SphericalContainer as sphere
 
 class TestSphericalContainer(unittest.TestCase):
 
     def setUp(self):
-        # create a set of coordinates to pass/fail a spherical container test
-        self.coords = [random.uniform(-1.0,1.0)/math.sqrt(3) for _ in range(30)]
+        """
+        creates a set of coordinates which pass/fail a spherical container test
+        and corresponding spherical container tests
+        """
+        # Coordinates
+        self.coords = [np.random.uniform(-1.0,1.0)/math.sqrt(3) for _ in range(30)]
         self.coords_0_1 = [x * 0.1 for x in self.coords]
         self.coords_10 = [x * 10 for x in self.coords]
         self.coords_20 = [x * 20 for x in self.coords]
         self.coords_100 = [x * 100 for x in self.coords]
+        # Containers
         self.sphere_0 = sphere(0)
         self.sphere_0_1 = sphere(0.1)
         self.sphere_1 = sphere(1.0)
