@@ -162,6 +162,10 @@ class DisconnectivityGraph(object):
         """ get the energy of a node """
         return getattr(node, self.energy_attribute)
     
+    def set_energy_levels(self, elevels):
+        ''' manually set the energy levels '''
+        self.elevels = elevels
+        
     def _getTS(self, min1, min2):
         """return the transition state object between two minima"""
         try:
@@ -494,6 +498,10 @@ class DisconnectivityGraph(object):
         combine input and the graph data to determine what the 
         energy levels will be.
         """
+        
+        if hasattr(self, "elevels"):
+            return self.elevels
+        
         #define the energy levels
         elist = [self._getEnergy(self._getTS(*edge)) for edge in graph.edges()]
         if len(elist) == 0:
