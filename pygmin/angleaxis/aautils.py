@@ -162,25 +162,26 @@ class AASiteType(object):
         g[0:3,0:3] = self.W * np.identity(3)
 
         # the rotational part        
-        g[3,3] = np.trace(np.dot(R1, np.dot(self.S, R1.transpose())))
-        g[3,4] = np.trace(np.dot(R1, np.dot(self.S, R2.transpose())))
-        g[3,5] = np.trace(np.dot(R1, np.dot(self.S, R3.transpose())))
-        g[4,4] = np.trace(np.dot(R2, np.dot(self.S, R2.transpose())))
-        g[4,5] = np.trace(np.dot(R2, np.dot(self.S, R3.transpose())))
-        g[5,5] = np.trace(np.dot(R3, np.dot(self.S, R3.transpose())))
+        g[3,3] = np.trace(np.dot(R1, np.dot(self.Sm, R1.transpose())))
+        g[3,4] = np.trace(np.dot(R1, np.dot(self.Sm, R2.transpose())))
+        g[3,5] = np.trace(np.dot(R1, np.dot(self.Sm, R3.transpose())))
+        g[4,4] = np.trace(np.dot(R2, np.dot(self.Sm, R2.transpose())))
+        g[4,5] = np.trace(np.dot(R2, np.dot(self.Sm, R3.transpose())))
+        g[5,5] = np.trace(np.dot(R3, np.dot(self.Sm, R3.transpose())))
         
         g[4,3] = g[3,4]
         g[5,4] = g[4,5]
         g[5,3] = g[3,5]
         
         # the mixing part
-        g[:,3] = 2.*self.W * np.dot(R1, self.cog)
-        g[:,4] = 2.*self.W * np.dot(R2, self.cog)
-        g[:,5] = 2.*self.W * np.dot(R3, self.cog)
-        
-        g[3,:] = g[:,3] 
-        g[4,:] = g[:,4] 
-        g[5,:] = g[:,5] 
+#        g[0:3,3] = 2.*self.W * np.dot(R1, self.cog)
+#        g[0:3,4] = 2.*self.W * np.dot(R2, self.cog)
+#        g[0:3,5] = 2.*self.W * np.dot(R3, self.cog)
+#        #g[0:3,3:] = g[0:3,3:].transpose() 
+#        
+#        g[3,0:3] = g[0:3,3] 
+#        g[4,0:3] = g[0:3,4] 
+#        g[5,0:3] = g[0:3,5] 
         
         return g
     
