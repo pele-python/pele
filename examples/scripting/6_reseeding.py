@@ -1,14 +1,11 @@
-# -*- coding: iso-8859-1 -*-
-############################################################
-#Example 5: Adding a custom takestep routine.  This example
-#takes 100 monte carlo steps as one basin hopping step
-############################################################
-import numpy as np
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
-from pygmin.takestep import group
+"""
+Example 5: if the energy doesn't improve after 20 basinhopping steps
+then do a short monte carlo run at a very high temperature.
+"""
+from pygmin.systems import LJCluster
+from pygmin.takestep import RandomDisplacement, Reseeding
 from pygmin.mc import MonteCarlo
+ 
 
 class TakeStepMonteCarlo:
     def __init__(self, pot, T = 10., nsteps = 100, stepsize=0.1):
@@ -16,7 +13,7 @@ class TakeStepMonteCarlo:
         self.T =  T
         self.nsteps = nsteps
         
-        self.mcstep = displace.RandomDisplacement(stepsize=stepsize)
+        self.mcstep = RandomDisplacement(stepsize=stepsize)
     
     def takeStep(self, coords, **kwargs):
         #make a new monte carlo class
@@ -27,27 +24,22 @@ class TakeStepMonteCarlo:
     
     def updateStep(self, acc, **kwargs):
         pass
-        
 
 
 natoms = 12
+niter = 100
+system = LJCluster(natoms)
 
-# random initial coordinates
-coords=np.random.random(3*natoms)
-potential = lj.LJ()
-
+# define a custom takestep routine
+potential = system.get_potential()
 reseed = TakeStepMonteCarlo(potential, T=100, nsteps=1000)
-takestep = displace.RandomDisplacement(stepsize=0.5)
+takestep = system.get_takestep()
+stepGroup = Reseeding(takestep, reseed, maxnoimprove=20)
 
-stepGroup = group.Reseeding(takestep, reseed, maxnoimprove=20)
+db = system.create_database()
+bh = system.get_basinhopping(database=db, takestep=stepGroup)
+bh.run(niter)
+print "the lowest energy found after", niter, " basinhopping steps is", db.minima()[0].energy
+print ""
 
-opt = bh.BasinHopping(coords, potential, takeStep=stepGroup)
-opt.run(100)
 
-# some visualization
-try: 
-    import pygmin.utils.pymolwrapper as pym
-    pym.start()
-    pym.draw_spheres(opt.coords, "A", 1)
-except:
-    print "Could not draw using pymol, skipping this step"

@@ -1,28 +1,22 @@
-# -*- coding: iso-8859-1 -*-
-############################################################
-#Example 1: Simple basin hopping using defaults
-############################################################
-import numpy as np
-
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
+"""
+Example 1: Simple basin hopping using defaults
+"""
+from pygmin.systems import LJCluster
 
 natoms = 12
+niter = 100
+system = LJCluster(natoms)
 
-# random initial coordinates
-coords=np.random.random(3*natoms)
-potential = lj.LJ()
-
-step = displace.RandomDisplacement(stepsize=0.5)
-
-opt = bh.BasinHopping(coords, potential, takeStep=step)
-opt.run(100)
+db = system.create_database()
+bh = system.get_basinhopping(database=db)
+bh.run(niter)
+print "the lowest energy found after", niter, " basinhopping steps is", db.minima()[0].energy
+print ""
 
 # some visualization
 try: 
     import pygmin.utils.pymolwrapper as pym
     pym.start()
-    pym.draw_spheres(opt.coords, "A", 1)
+    pym.draw_spheres(bh.coords, "A", 1)
 except:
     print "Could not draw using pymol, skipping this step"

@@ -1,19 +1,8 @@
-This example demonstrates how to run minGMIN using python style scripts,
-completely bypassing data files and keywords.  A simple Lennard-Jones potential
-is used.  By default the fast cpp implimentation of LJ is used which must be
-compliled, but you can use the slow python implimentation by recommenting which
-potential is imported
+These examples demonstrate how to run pygmin using python scripts.  A simple
+Lennard-Jones potential is used.  
 
-In order to run, python must know how to find the modules it imports (e.g.
-basinhopping.py). To this end you must add the directory which holds
-basinhopping.py to your PYTHONPATH environment variable.
-
-PYTHONPATH="mydirectory:$PYTHONPATH"
-export PYTHONPATH
-
-The above commands can be added to your .bashrc file.
-
-
-finall, run
-
-python ljscript.py
+All of these scripts use the existing Lennard-Jones system class LJCluster.
+This hides a lot of the underlying calls.  For more detail and to see what's
+going on under the hood these examples are also written in another folder
+without the use of the system class.  Also, see the system class documentation
+for more information.

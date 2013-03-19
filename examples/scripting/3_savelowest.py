@@ -1,29 +1,21 @@
-############################################################
-#Example 3: Saving the coordinates as an xyz file
-############################################################
-import numpy as np
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
-from pygmin.storage.savenlowest import SaveN as saveit
-
+"""
+Example 3: Saving all minima found to an xyz file
+"""
+from pygmin.systems import LJCluster
+from pygmin.utils.xyz import write_xyz
 
 natoms = 12
-coords=np.random.random(3*natoms)
+niter = 100
+system = LJCluster(natoms)
 
-potential = lj.LJ()
-step = displace.RandomDisplacement(stepsize=0.5)
-
-storage = saveit(nsave=10)
-opt = bh.BasinHopping(coords, potential, step, storage=storage.insert)
-opt.run(100)
+db = system.create_database()
+bh = system.get_basinhopping(database=db)
+bh.run(niter)
 
 with open("lowest", "w") as fout:
-  fout.write( str(natoms) + "\n")
-  fout.write( str(storage.data[0].energy) + "\n")  
-  atoms=storage.data[0].coords.reshape(natoms, 3)  
-  for a in atoms: 
-      fout.write( "LA "+ str(a[0])+ " " +  str(a[1]) + " " + str(a[2]) + "\n" )
+    for minimum in db.minima():
+        title = "energy = ", str(minimum.energy)
+        write_xyz(fout, minimum.coords, title)
            
 ############################################################
 # some visualization
@@ -32,10 +24,8 @@ try:
     import pygmin.utils.pymolwrapper as pym
     pym.start()
     frame=1  
-    print storage.data
-    for minimum in storage.data:        
-        coords=minimum.coords.reshape(natoms, 3)
-        pym.draw_spheres(coords, "A", frame)
+    for minimum in db.minima():        
+        pym.draw_spheres(minimum.coords.reshape(-1, 3), "A", frame)
         frame=frame+1
 except:
     print "Could not draw using pymol, skipping this step" 

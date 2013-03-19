@@ -1,0 +1,5 @@
+These examples demonstrate how to run pygmin using python scripts.
+A simple Lennard-Jones potential is used.  
+
+All of these scripts can be rewritten in a simpler format if a pygmin system
+class is used.  See the relevant examples folder for how to do this.

@@ -1,18 +1,19 @@
-# -*- coding: iso-8859-1 -*-
-############################################################
-#Example 2: reading coords from file
-############################################################
+"""
+Example 2: reading coords from file
+"""
 import numpy as np
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
 
-coords=np.loadtxt('coords')
-coords = coords.reshape(coords.size)
+from pygmin.systems import LJCluster
 
-potential = lj.LJ()
+natoms = 12
+niter = 100
+system = LJCluster(natoms)
 
-step = displace.RandomDisplacement( stepsize=0.5)
-opt = bh.BasinHopping(coords, potential, takeStep=step)
+coords = np.loadtxt('coords')
+coords = coords.reshape(-1)
 
-opt.run(100)
+db = system.create_database()
+bh = system.get_basinhopping(database=db)
+bh.run(niter)
+print "the lowest energy found after", niter, " basinhopping steps is", db.minima()[0].energy
+print ""

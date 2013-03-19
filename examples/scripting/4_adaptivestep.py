@@ -1,20 +1,23 @@
-# -*- coding: iso-8859-1 -*-
-############################################################
-#Example 4: adaptive step size
-############################################################
-import numpy as np
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
-from pygmin.takestep import adaptive
+"""
+Example 4: modify the parameters of the adaptive stepsize
+note that the system class uses adaptive stepsize by default, 
+so the previous examples also use adaptive stepsize
+"""
+from pygmin.systems import LJCluster
+from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 
 natoms = 12
+niter = 100
+system = LJCluster(natoms)
 
-# random initial coordinates
-coords=np.random.random(3*natoms)
-potential = lj.LJ()
+db = system.create_database()
 
-takeStep = displace.RandomDisplacement( stepsize=0.3 )
-tsAdaptive = adaptive.AdaptiveStepsize(takeStep, acc_ratio = 0.5, frequency = 100)
-opt = bh.BasinHopping(coords, potential, takeStep=tsAdaptive)
-opt.run(1000)
+# create takestep routine manually
+step = RandomDisplacement(stepsize=0.3)
+# wrap it in the class which will adaptively improve the stepsize
+wrapped_step = AdaptiveStepsizeTemperature(step, interval=30)
+
+bh = system.get_basinhopping(database=db, takestep=wrapped_step)
+bh.run(niter)
+print "the lowest energy found after", niter, " basinhopping steps is", db.minima()[0].energy
+print ""
