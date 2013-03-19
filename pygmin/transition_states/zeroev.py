@@ -23,6 +23,12 @@ def zeroEV_translation(coords):
 def zeroEV_rotation(coords):
     """
     return the set of zero eigenvalue vectors corresponding to global rotation
+    
+    note that these are not necessarily orthogonal.  use `gramm_schmidt` to make them orthogonal
+    
+    See Also
+    --------
+    gramm_schmidt
     """
     # translational eigenvectors
     Rx = np.array([[ 0.,  0.,  0.],
@@ -67,6 +73,15 @@ def gramm_schmidt(v):
     return u
 
 def orthogonalize(v, ozev):
+    """make vector v orthogonal to all vectors in list ozev
+    
+    Parameters
+    ----------
+    v : array
+        vector to orthogonalize
+    ozev : list of arrays
+        v will be made orthogonal to all of these vectors. 
+    """
     for u in ozev:
         v-=np.dot(v,u)*u
     return v
