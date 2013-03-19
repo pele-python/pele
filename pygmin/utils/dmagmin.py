@@ -110,15 +110,19 @@ class GenRandomCrystal(takestep.TakestepInterface):
         raise Exception("GenRandomCrystal: failed to generate a non-overlapping configuration")
             
 # special quencher for crystals
-def quenchCrystal(coords, pot, **kwargs):
+def quenchCrystal(coords, pot, lattice_reduction=True, **kwargs):
     ''' Special quench routine for crystals which makes sure that the final structure is a reduced cell '''
-    coords, E, rms, calls = mylbfgs(coords, pot, **kwargs)
+    ret1 = mylbfgs(coords, pot, **kwargs)
+    ncalls = ret1[3]
     #while(GMIN.reduceCell(coords)):
-    if(GMIN.reduceCell(coords)):
-        #print "Reduced cell, redo minimization"
-        coords, E, rms, callsn = mylbfgs(coords, pot, **kwargs)
-        calls+=callsn
-    return coords, E, rms, calls
+    if lattice_reduction:
+        if(GMIN.reduceCell(coords)):
+            #print "Reduced cell, redo minimization"
+            ret2 = mylbfgs(coords, pot, **kwargs)
+            ncalls = ret2[3] + ret1[3]
+            ret1 = ret2
+    return ret1[0], ret1[1], ret1[2], ncalls, ret1[4]
+
 
 class TakestepDMAGMIN(takestep.TakestepInterface):
     def __init__(self, expand=1.0, rotate=1.6, translate=0., nmols=None, overlap_cutoff=None, max_volume=None):
