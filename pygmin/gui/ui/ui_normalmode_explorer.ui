@@ -71,7 +71,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -88,6 +88,7 @@
    </attribute>
    <addaction name="actionRun"/>
    <addaction name="actionSave"/>
+   <addaction name="actionParameters"/>
   </widget>
   <action name="actionRun">
    <property name="checkable">
@@ -110,6 +111,15 @@
    </property>
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actionParameters">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/preferences.png</normaloff>:/icons/icons/preferences.png</iconset>
+   </property>
+   <property name="text">
+    <string>Parameters</string>
    </property>
   </action>
  </widget>

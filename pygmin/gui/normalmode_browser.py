@@ -3,6 +3,7 @@ from  ui.ui_normalmode_explorer import Ui_MainWindow as UI
 from pygmin.thermodynamics import normalmodes 
 import numpy as np
 import pickle
+from dlg_params import DlgParams
 
 class NormalmodeItem(QtGui.QListWidgetItem):    
     def __init__(self, normalmode):
@@ -30,7 +31,11 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         
         self.ui.view3D.setSystem(system)
         self.system = system
-        
+        self._params = dict()
+        self._params["amplitude"]=1.0
+        export = self._params["export"] = dict()
+        export["nframes"]=100
+         
     def set_coords(self, coords, normalmodes=None):
         self.coords = coords
         self.normalmodes = normalmodes        
@@ -55,15 +60,21 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             self.normalmodes.append((f, m)) #np.dot(metric, m)))
              
     def _fill_normalmodes(self):
+        self.ui.listNormalmodes.clear()
         for n in self.normalmodes:
             self.ui.listNormalmodes.addItem(NormalmodeItem(n))
         
     def on_listNormalmodes_currentItemChanged(self, newsel):
+        if newsel is None:
+            self.currentmode = None
+            return
         self.currentmode = newsel.get_mode()
         
     def on_sliderFrame_valueChanged(self, val):
+        if self.currentmode is None:
+            return
         displace = self.currentmode
-        self.ui.view3D.setCoords(self.coords + displace*val/self.ui.sliderFrame.maximum())
+        self.ui.view3D.setCoords(self.coords + self._params["amplitude"]*displace*val/self.ui.sliderFrame.maximum())
         
     def on_actionRun_toggled(self, checked):
         if checked:
@@ -84,11 +95,18 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             return
         filename = dialog.selectedFiles()[0]
         path = []
-        for i in xrange(100):
-            t = np.sin(i/100.*2.*np.pi)
-            path.append(self.coords + t*self.currentmode)
+        nframes = self._params["export"]["nframes"]
+        for i in xrange(nframes):
+            t = np.sin(i/float(nframes)*2.*np.pi)
+            path.append(self.coords + self._params["amplitude"]*t*self.currentmode)
         pickle.dump(path, open(filename, "w"))
 
+    def on_actionParameters_triggered(self, checked=None):
+        if checked is None:
+            return
+        if not hasattr(self, "_paramsdlg"):
+            self._paramsdlg = DlgParams(self._params, parent=self)
+        self._paramsdlg.show()            
     
     def _next_frame(self):
         cur = self.ui.sliderFrame.value()

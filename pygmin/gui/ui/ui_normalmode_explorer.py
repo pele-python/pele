@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_normalmode_explorer.ui'
 #
-# Created: Thu Mar 14 14:02:56 2013
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Mon Mar 18 23:51:55 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -56,7 +65,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.splitter)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 21))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
@@ -78,20 +87,27 @@ class Ui_MainWindow(object):
         icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/save.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionSave.setIcon(icon1)
         self.actionSave.setObjectName(_fromUtf8("actionSave"))
+        self.actionParameters = QtGui.QAction(MainWindow)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/preferences.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionParameters.setIcon(icon2)
+        self.actionParameters.setObjectName(_fromUtf8("actionParameters"))
         self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionSave)
+        self.toolBar.addAction(self.actionParameters)
 
         self.retranslateUi(MainWindow)
         QtCore.QObject.connect(self.pushClose, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.close)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("MainWindow", "Normalmodes", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushClose.setText(QtGui.QApplication.translate("MainWindow", "Close", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionRun.setText(QtGui.QApplication.translate("MainWindow", "Play", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        self.label.setText(_translate("MainWindow", "Normalmodes", None))
+        self.pushClose.setText(_translate("MainWindow", "Close", None))
+        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
+        self.actionRun.setText(_translate("MainWindow", "Play", None))
+        self.actionSave.setText(_translate("MainWindow", "Save", None))
+        self.actionParameters.setText(_translate("MainWindow", "Parameters", None))
 
 from pygmin.gui.show3d import Show3D
 import resources_rc
