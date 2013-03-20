@@ -1,7 +1,14 @@
 import networkx as nx
 from collections import deque
+from pygmin.landscape import Graph
 
-#from pygmin.landscape import Graph
+__all__ = ["DisconnectivityGraph", "database2graph"]
+
+def database2graph(database):
+    """create a networkx graph from a pygmin database"""
+    graph_wrapper = Graph(database)
+    return graph_wrapper.graph
+    
 
 class Tree(object):
     """
