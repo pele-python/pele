@@ -3,6 +3,12 @@
 Energy Landscape Exploration
 ============================
 
+This is an attempt at describing the methods used in the double ended connect
+algorithm.  For instructions on how to use it see the :ref:`module
+<landscape_module>` documention and the documentation of functions therin.
+Also, there are examples in the examples/ folder describing how to use these
+routines.
+
 
 Double ended transition state search
 ++++++++++++++++++++++++++++++++++++

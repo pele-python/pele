@@ -40,6 +40,8 @@ dictionaries to DoubleEndedConnect
     LocalConnect
     LocalConnectPar
 
+More core routines can be found in the documentation for the 
+:ref:`transition_states <transition_states_module>` module
 """
 
 
