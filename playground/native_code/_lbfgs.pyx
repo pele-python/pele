@@ -25,6 +25,8 @@ cdef class LBFGS:
         
     def run(self, np.ndarray[double, ndim=1, mode="c"] x not None):
         ret = self.thisptr.run(_pygmin.Array(<double*> x.data, x.size))
+        if ret != 0:
+            raise RuntimeError("lbfgs failed, return code %d"%ret)
         e, g = self.pot.get_energy_gradient(x)
         return x, e, np.linalg.norm(g) / np.sqrt(g.size), -1
         
