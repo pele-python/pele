@@ -1,6 +1,6 @@
-#import numpy as np
+import numpy as np
 cimport numpy as np
-import _pygmin
+from playground.native_code import _pygmin
 cimport _pygmin
 
 
@@ -25,5 +25,6 @@ cdef class LBFGS:
         
     def run(self, np.ndarray[double, ndim=1, mode="c"] x not None):
         ret = self.thisptr.run(_pygmin.Array(<double*> x.data, x.size))
-        return x, self.pot.get_energy(x)
+        e, g = self.pot.get_energy_gradient(x)
+        return x, e, np.linalg.norm(g) / np.sqrt(g.size), -1
         

@@ -1,4 +1,4 @@
-cimport _pygmin
+from playground.native_code cimport _pygmin
 
 # use external c++ class
 cdef extern from "lj.h" namespace "pygmin":
@@ -7,5 +7,5 @@ cdef extern from "lj.h" namespace "pygmin":
 
 # we just need to set a different c++ class instance
 cdef class LJ(_pygmin.Potential):
-    def __cinit__(self, C6=1.0, C12=1.0):
-        self.thisptr = <_pygmin.cPotential*>new cLJ(C6, C12)
+    def __cinit__(self, eps=1.0, sigma=1.0):
+        self.thisptr = <_pygmin.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)

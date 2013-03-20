@@ -27,7 +27,7 @@ namespace pygmin {
 			double ir6 = ir2*ir2*ir2;
 			double ir12 = ir6*ir6;
 
-			return -(_C6*ir6 + _C12*ir12);
+			return -_C6*ir6 + _C12*ir12;
 		}
 
 		/* calculate energy and gradient from distance squared, gradient is in g/|rij| */
@@ -37,7 +37,7 @@ namespace pygmin {
 			double ir12 = ir6*ir6;
 
 			*gij = (12.0 * _C12 * ir12 -  6.0 * _C6 * ir6) * ir2;
-			return -(_C6*ir6 - _C12*ir12);
+			return -_C6*ir6 + _C12*ir12;
 		}
 
 	};
