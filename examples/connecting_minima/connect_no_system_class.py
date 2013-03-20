@@ -1,5 +1,11 @@
 """
-example for how to run a double ended connect routine
+example for how to run a double ended connect routine without using the system class.
+We strongly recommend not doing it this way and setting up a system class first.  It
+will be much easier for you.
+
+We will do the connections for a cluster of 38 Lennard-Jones atoms.
+We will load two sets of coordinates from a file, minimize them, and try to find
+a connected set of minima and transition states betweeen them.
 """
 
 import numpy as np
