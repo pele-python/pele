@@ -1,6 +1,6 @@
 """
-Utilities 
-+++++++++
+Utilities (`pygmin.utils`)
++++++++++++++++++++++++++++
 Helper functions
 ================
 

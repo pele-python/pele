@@ -1,8 +1,8 @@
 """
 .. currentmodule:: pygmin.potentials
 
-Potentials
-==========
+Potentials (`pygmin.potentials`)
+=================================
 
 This module contains all the potentials that are included in pygmin.
 The list is not very long because we have made it very easy for you

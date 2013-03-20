@@ -1,8 +1,8 @@
 """
 .. currentmodule:: pygmin.storage
 
-Database storage
-================
+Database storage (`pygmin.storage`)
+===================================
 
 This module contains all the objects related to the Database class.
 The database is the preferred method for storing minima and transition

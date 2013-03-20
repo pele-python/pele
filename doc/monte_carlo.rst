@@ -1,7 +1,7 @@
 .. _monte_carlo:
 .. currentmodule:: pygmin.mc
-Monte Carlo
-===========
+Monte Carlo (`pygmin.mc`)
+===========================
 
 .. autosummary::
     :toctree: generated/

@@ -1,8 +1,8 @@
 """
 .. currentmodule:: pygmin.systems
 
-System Class
-============
+System Class (`pygmin.systems`)
+==================================
 
 The system class is a convenience wrapper for easily defining all the necessary
 information about a given system in one place.  It also makes using the tools in
