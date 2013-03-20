@@ -1,5 +1,5 @@
-#ifndef PYGMIN_POTENTIAL_H
-#define PYGMIN_POTENTIAL_H
+#ifndef PYGMIN_ARRAY_H
+#define PYGMIN_ARRAY_H
 
 #include <vector>
 #include <stdexcept>
@@ -68,46 +68,6 @@ namespace pygmin {
 			out << a(i);
 		}
 		out << " ]";
-	}
-
-	/***
-	 * basic potential interface for native potentials
-	 */
-	class Potential {
-	public:
-		virtual ~Potential() {}
-
-		virtual double get_energy(Array &x) {} ;
-		virtual double get_energy_gradient(Array &x, Array &grad) {} ;
-	};
-
-	class PotentialFunction : public Potential {
-	public:
-		typedef double fkt_energy(double *x, int N, void *userdata);
-		typedef double fkt_energy_gradient(double *x, double *grad, int N, void *userdata);
-
-	protected:
-			fkt_energy *_energy;
-			fkt_energy_gradient *_energy_gradient;
-			void *_userdata;
-	public:
-		PotentialFunction(fkt_energy *energy, fkt_energy_gradient energy_gradient, void *userdata)
-			: _energy(energy), _energy_gradient(energy_gradient), _userdata(userdata) {}
-
-		double get_energy(Array &x) {
-			return (*_energy)(x.data(), x.size(), _userdata);
-		}
-
-		double get_energy_gradient(Array &x, Array &grad) {
-			return (*_energy_gradient)(x.data(), grad.data(), x.size(), _userdata);
-		}
-
-	};
-
-	inline void call_pot(Potential *pot, Array &x, Array &grad, int n) {
-		for(int i=0; i<n; ++i) {
-			pot->get_energy_gradient(x, grad);
-		}
 	}
 }
 
