@@ -8,6 +8,8 @@ import numpy as np
 import math
 import logging
 
+from pygmin.optimize import Result
+
 __all__ = ["Fire"]
 
 _logger = logging.getLogger("pygmin.optimize")
@@ -103,7 +105,7 @@ class Fire(object):
         self.fa = fa
         self.a = a
         self.coords = coords
-        self.potential=potential
+        self.potential = potential
         self.v = None
         self.nsteps=0
         self.iprint = iprint
@@ -159,8 +161,10 @@ class Fire(object):
 
         self.fmax = fmax
         step = 0
+        res = Result()
+        res.success = False
         while step < steps:
-            E,f = self.potential(self.coords)
+            E, f = self.potential.getEnergyGradient(self.coords)
             #self.call_observers()
             #print E
             if self.alternate_stop_criterion is None:
@@ -169,7 +173,8 @@ class Fire(object):
                 i_am_done = self.alternate_stop_criterion(energy=E, gradient=f, 
                                                           tol=self.fmax)                
             if i_am_done:
-                return
+                res.success = True
+                break
             self.step(-f)
             self.nsteps += 1
             rms = np.linalg.norm(f)/np.sqrt(len(f))
@@ -180,6 +185,16 @@ class Fire(object):
                 event(coords=self.coords, energy=E, rms=rms)
 
             step += 1
+            
+        res.nsteps = step
+        res.nfev = step
+        res.coords = self.coords
+        res.energy = E
+        res.grad = -f
+        res.rms = np.linalg.norm(res.grad)/np.sqrt(len(res.grad))
+        self.result = res
+        return res
+
                     
 
     def converged(self, forces=None):
