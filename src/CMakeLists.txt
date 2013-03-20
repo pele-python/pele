@@ -17,3 +17,8 @@ set_target_properties(_lj PROPERTIES PREFIX "")
 
 add_library(_pygmin SHARED _pygmin.cpp ${sources} ${PYTHON_LIBS})
 set_target_properties(_pygmin PROPERTIES PREFIX "")
+
+include_directories(lbfgs)
+
+add_library(_lbfgs SHARED _lbfgs.cpp lbfgs_wrapper.cpp lbfgs/lbfgs.c ${PYTHON_LIBS})
+set_target_properties(_lbfgs PROPERTIES PREFIX "")
