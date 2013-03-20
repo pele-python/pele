@@ -33,6 +33,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         self.system = system
         self._params = dict()
         self._params["amplitude"]=1.0
+        self._params["remove_known_zeroev"]=True
         export = self._params["export"] = dict()
         export["nframes"]=100
          
@@ -68,7 +69,12 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         if newsel is None:
             self.currentmode = None
             return
-        self.currentmode = newsel.get_mode()
+        orthogopt = self.system.get_orthogonalize_to_zero_eigenvectors()
+        mode = newsel.get_mode().copy()
+        if self._params["remove_known_zeroev"]:
+            mode = orthogopt(mode, self.coords)
+         
+        self.currentmode = mode
         
     def on_sliderFrame_valueChanged(self, val):
         if self.currentmode is None:
