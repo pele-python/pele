@@ -9,7 +9,7 @@ import _lj
 import _lbfgs
 from pygmin import optimize
 N=10 # int(sys.argv[2])
-natoms=13 #int(sys.argv[1])
+natoms=38 #int(sys.argv[1])
 
 print "benchmarking lennard jones potential, %d atoms, %d calls", natoms, N
 pot_old = LJ()
@@ -19,7 +19,7 @@ clbfgs = _lbfgs.LBFGS(pot)
 
 t0 = time.time()
 for i in xrange(100):
-    x = 1.*np.random.random(3*natoms)
+    x = 1.*(np.random.random(3*natoms) - 0.5)
     ret = clbfgs.run(x)
     #print ret
     #print ret[0]
