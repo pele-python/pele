@@ -1,7 +1,7 @@
 """
 .. currentmodule:: pygmin.landscape
-Landscape Exploration
-=====================
+Landscape Exploration (`pygmin.landscape`)
+============================================
 
 This module implements routines for exploring the energy landscape.  This
 primarily consists of using DoubleEndedConnect to find connected pathways
@@ -40,6 +40,8 @@ dictionaries to DoubleEndedConnect
     LocalConnect
     LocalConnectPar
 
+More core routines can be found in the documentation for the 
+:ref:`transition_states <transition_states_module>` module
 """
 
 

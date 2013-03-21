@@ -5,10 +5,11 @@
 import numpy as np
 cimport numpy as np 
 
-cdef extern from "potential.h" namespace "pygmin":
+cdef extern from "array.h" namespace "pygmin":
     cdef cppclass Array :
         Array(double*, int n) except +
 
+cdef extern from "potential.h" namespace "pygmin":
     cdef cppclass  cPotential "pygmin::Potential":
         cPotential() except +
         double get_energy(Array &x)

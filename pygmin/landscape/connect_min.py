@@ -495,10 +495,25 @@ class DoubleEndedConnect(object):
             
         logger.info("failed to find connection between %s %s", self.minstart._id, self.minend._id)
 
+    def success(self):
+        return self.graph.areConnected(self.minstart, self.minend)
+
     def returnPath(self):
-        """return information about the path"""
+        """return information about the path
+        
+        Returns
+        -------
+        If the minima are not connected, return (None, None, None)
+        mints : list of Minimum and TransitionStates
+            a list of Minimum, TransitionState, Minimum objects that make up
+            the path
+        S : list of float 
+            numpy array of the distance along the path.   len(S) == len(mints)
+        energies : list of float
+            numpy array of the energies along the path
+        """
         if not self.graph.areConnected(self.minstart, self.minend):
-            return
+            return None, None, None
         minima = nx.shortest_path(self.graph.graph, self.minstart, self.minend)
         transition_states = []
         mints = [minima[0]]

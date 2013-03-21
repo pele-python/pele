@@ -1,7 +1,7 @@
 """
 .. currentmodule:: pygmin.thermodynamics
-Thermodynamics
-=====================
+Thermodynamics (`pygmin.thermodynamics`)
+=========================================
 
 This module implements routines to calculate thermodynamic properties within
 the harmonic apprixiamtion and superposition principle. 

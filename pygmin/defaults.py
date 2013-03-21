@@ -2,6 +2,7 @@ import pygmin.optimize._quench as quench
 #import pygmin.transition_states
 
 """
+WARNING: these functions are obsolete!
 These are an easy way to change the default parameters of the various features of PyGMIN. 
 
 to change the default quenchRoutine to FIRE, simply run

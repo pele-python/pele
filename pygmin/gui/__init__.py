@@ -1,8 +1,8 @@
 """
 .. currentmodu:: pygmin.gui
 
-pygmin GUI
-----------
+pygmin GUI (`pygmin.gui`)
+--------------------------
 This module contains all the necessary components for running the gui.  
 
 .. autosummary::

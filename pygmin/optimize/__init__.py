@@ -1,8 +1,8 @@
 """ 
 .. currentmodule:: pygmin.optimize
 
-Optimizers
-==========
+Optimizers (`pygmin.optimize`)
+================================
 This module contains all of the optimizers available in pygmin.  There are so 
 many available for testing purposes and because sometimes different optimizers are
 more appropriate in different circumstances.  These optimizers are all local.  That
@@ -11,11 +11,11 @@ optimization <global_optimization>`.
 
 In our experience, we have found that the best minizers are lbfgs and fire.  
 lbfgs seems to be by far the fastest, however there are some circumstances
-where the use of lbfgs is inapropriate, and we suggest fire instead.  These cases
+where the better stability of fire might be useful.  These cases
 include where it is important to clearly define the boundary between basins of 
 attraction.  LBFGS can also fail in non-Hamiltonian situations where you have
-gradient information, but no potential function.  This is the case in the Nudged 
-elastic band, where the NEB force doesn't correspond to any NEB energy.
+forces, but no potential function.  This is the case in the Nudged elastic band, 
+where the NEB force doesn't correspond to any NEB energy.
 
 .. note::
     we use the words "optimize", "quench", and "minimize" interchangeably

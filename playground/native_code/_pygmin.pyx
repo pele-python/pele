@@ -31,11 +31,15 @@ cdef class Potential:
         e = self.thisptr.get_energy_gradient(Array(<double*> x.data, x.size),
                                              Array(<double*> grad.data, grad.size))
         return e, grad
-        
+    
+    def get_energy(self, np.ndarray[double, ndim=1] x not None):
+        # redirect the call to the c++ class
+        return self.thisptr.get_energy(Array(<double*> x.data, x.size))
+                
 # This is a little test function to benchmark potential evaluation in a loop
 # in native code    
-def call_pot(Potential pot, np.ndarray[double, ndim=1, mode="c"] x not None,
-              np.ndarray[double, ndim=1, mode="c"] grad not None,
-              int N):
-    _call_pot(pot.thisptr, Array(<double*> x.data, x.size),
-             Array(<double*> grad.data, grad.size), N)
+#def call_pot(Potential pot, np.ndarray[double, ndim=1, mode="c"] x not None,
+#              np.ndarray[double, ndim=1, mode="c"] grad not None,
+#              int N):
+#    _call_pot(pot.thisptr, Array(<double*> x.data, x.size),
+#             Array(<double*> grad.data, grad.size), N)

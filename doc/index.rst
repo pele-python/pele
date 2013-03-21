@@ -10,12 +10,24 @@ The source code repository can be found at `<https://github.com/js850/PyGMIN>`_
 
 The documentation is hosted at `<http://js850.github.com/PyGMIN/>`_
 
-Tutorial
---------
+pygmin is a package of tools for exploring energy landscapes.  The core
+routines are broken into two parts: :ref:`Basinhopping <global_optimization>`,
+for finding the global minimum of an energy landscape, and for building up
+databases of minima.  And :ref:`DoubleEndedConnect <landscape_module>`, for
+finding minimum energy paths on the energy landscape between two minima.  This
+means paths that go through the geometric transition states.
+
+Note that we use the language "energy landscape" because it's the language most
+natural for our fields of physics and chemistry, but most of these tools are
+equally applicable for working with any smooth scalar function in N dimensions.
+
+Tutorials
+-----------
 .. toctree::
    :maxdepth: 3
 
-   tutorial
+   tutorial_potential
+   system_class_tutorial
 
 
 Reference

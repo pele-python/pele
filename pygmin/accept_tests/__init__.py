@@ -1,7 +1,7 @@
 """
 .. currentmodule:: pygmin.accept_tests
-Acceptance Tests
-----------------
+Acceptance Tests (`pygmin.accept_tests`)
+-----------------------------------------
 This module contains the acceptance tests for MonteCarlo and BasinHopping
 
 .. autosummary::

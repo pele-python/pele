@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 import sys
 from pygmin.mc import MonteCarlo
-import pygmin.defaults as defaults
+from pygmin.optimize import mylbfgs
 
 class BasinHopping(MonteCarlo):
     """
@@ -10,10 +10,8 @@ class BasinHopping(MonteCarlo):
     Parameters
     ----------
     All required and optional parameters from base class MonteCarlo :
-    quenchRoutine : callable, optional
-        Use this non-default quench routine.
-    quenchParameters : dict(), optional
-        parameters passed to the quench routine
+    quench : callable, optional
+        Use this quencher as default
     insert_rejected : bool
         insert the rejected structure into the storage class
     
@@ -28,8 +26,7 @@ class BasinHopping(MonteCarlo):
     def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
             acceptTest=None,  \
             temperature=1.0, \
-            quenchRoutine = defaults.quenchRoutine, \
-            quenchParameters = defaults.quenchParams, \
+            quench = None, \
             confCheck = [], \
             outstream = sys.stdout,
             insert_rejected = False
@@ -45,15 +42,16 @@ class BasinHopping(MonteCarlo):
                             confCheck = confCheck, \
                             outstream=outstream,store_initial=False)
 
-        self.quenchRoutine = quenchRoutine
-        self.quenchParameters = quenchParameters
-        
+        self.quench = quench
+        if quench is None:
+            quench = lambda coords : mylbfgs(coords, self.potential.getEnergyGradient)
+                
         #########################################################################
         #do initial quench
         #########################################################################
         self.markovE_old = self.markovE
-        res = \
-            self.quenchRoutine(self.coords, self.potential.getEnergyGradient, **self.quenchParameters)
+        res = self.quench(self.coords)
+        
         newcoords, Equench, self.rms, self.funcalls = res[:4]
         self.coords = newcoords
         self.markovE = Equench
@@ -84,8 +82,7 @@ class BasinHopping(MonteCarlo):
         #########################################################################
         #quench
         #########################################################################
-        ret = self.quenchRoutine(self.coords_after_step, \
-                                 self.potential.getEnergyGradient, **self.quenchParameters)
+        ret = self.quench(self.coords_after_step)
         self.trial_coords = ret[0]
         self.trial_energy = ret[1] 
         self.rms = ret[2]

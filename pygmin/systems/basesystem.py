@@ -216,7 +216,7 @@ class BaseSystem(object):
         return tsAdaptive
 
     def get_basinhopping(self, database=None, takestep=None, coords=None, add_minimum=None,
-                         quenchParameters=None, **kwargs):
+                         **kwargs):
         """return the basinhopping object with takestep
         and accept step already implemented
         
@@ -234,10 +234,8 @@ class BaseSystem(object):
             if database is None:
                 database = self.create_database()
             add_minimum = database.minimum_adder()
-        if quenchParameters is None:
-            quenchParameters = self.params.structural_quench_params
-        bh = basinhopping.BasinHopping(coords, pot, takestep, storage=add_minimum,
-                                       quenchParameters=self.params.structural_quench_params, 
+        bh = basinhopping.BasinHopping(coords, pot, takestep, quench=self.get_minimizer(),
+                                       storage=add_minimum,
                                        **kwargs)
         return bh
 

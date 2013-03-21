@@ -1,8 +1,8 @@
 """
 .. currentmodule:: pygmin.takestep
 
-Step Taking
-===========
+Step Taking (`pygmin.takestep`)
+===============================
 
 The performance of the basin hopping critically depends on the step taking algorithm. 
 Pygmin comes with a set of basic takestep routines. For anything non-standard, the user is encouraged

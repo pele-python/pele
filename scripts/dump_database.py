@@ -61,12 +61,16 @@ def writeDPS(db):
     for m in db.minima():
         minindex[m]=i
         i+=1
-        out.write("%f 0.0 1 0.0 0.0 0.0\n"%(m.energy))
+        if m.fvib is None:
+            print "no frequency information available for minimum", m._id
+        if m.pgorder is None:
+            print "no pgorder information available for minimum", m._id
+        out.write("%f %f %d 0.0 0.0 0.0\n"%(m.energy, m.fvib, m.pgorder))
     out = open("ts.data", "w")
     ti=0
     for ts in db.transition_states():
         ti+=1
-        out.write("%f 0.0 1 %d %d 0.0 0.0 0.0\n"%(ts.energy, minindex[ts.minimum1], minindex[ts.minimum2]))
+        out.write("%f %f %d %d %d 0.0 0.0 0.0\n"%(ts.energy, ts.fvib, ts.pgorder, minindex[ts.minimum1], minindex[ts.minimum2]))
     print "Written %d minima and %d transition states"%(i, ti)
 
 if __name__ == "__main__":

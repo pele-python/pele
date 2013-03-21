@@ -17,7 +17,7 @@ class OXDNAAnglePotential(GMINPotential):
         self.theta0 = theta0
         self.k = k
         print "theta0 is", theta0
-        use_torsion = use_torsion 
+        self.use_torsion = use_torsion 
         
     def getEnergy(self, coords):
         E = GMINPotential.getEnergy(self, coords)
