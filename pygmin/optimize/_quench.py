@@ -36,6 +36,7 @@ def lbfgs_scipy(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
     import scipy.optimize
     newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(getEnergyGradient, 
             coords, iprint=iprint, pgtol=tol, maxfun=nsteps)
+    newE, V = getEnergyGradient(newcoords)
     V = dictionary["grad"]
     funcalls = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
@@ -50,7 +51,7 @@ def lbfgs_scipy(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
     if True:
         maxV = np.max( np.abs(V) )
         if maxV > tol:
-            print "warning: scipy lbfgs quench seems to have failed. max(V)", maxV, "tol", tol
+            print "warning: gradient seems too large", maxV, "tol =", tol, ". This is a known, but not understood issue of scipy_lbfgs"
     rms = V.std()
     return newcoords, newE, rms, funcalls 
 
@@ -235,4 +236,46 @@ def mylbfgs(coords, getEnergyGradient, **kwargs):
 #    ret = _mylbfgs_callback(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep)
 #    return ret
 
+
+import unittest
+class TestMinimizers(unittest.TestCase):
+    def setUp(self):
+        from pygmin.systems import LJCluster
+        natoms = 31
+        self.system = LJCluster(natoms)
+        self.pot = self.system.get_potential()
+        
+        # get a partially minimized structure
+        x0 = self.system.get_random_configuration()
+        ret = lbfgs_py(x0, self.pot.getEnergyGradient, tol=1.e-1)
+        self.x0 = ret[0]
+        self.E0 = ret[1]
+        
+        ret = lbfgs_py(self.x0, self.pot.getEnergyGradient, tol=1e-7)
+        self.x = ret[0]
+        self.E = ret[1]
+    
+    def test_lbfgs_py(self):
+        res = lbfgs_py(self.x0, self.pot.getEnergyGradient)
+        self.assertAlmostEqual(self.E, res[1], 4)
+        
+    def test_mylbfgs(self):
+        res = mylbfgs(self.x0, self.pot.getEnergyGradient)
+        self.assertAlmostEqual(self.E, res[1], 4)
+    
+    def test_fire(self):
+        res = fire(self.x0, self.pot.getEnergyGradient, tol=1e-7)
+        self.assertAlmostEqual(self.E, res[1], 4)
+    
+    def test_lbfgs_scipy(self):
+        res = lbfgs_scipy(self.x0, self.pot.getEnergyGradient, tol=1e-7)
+        self.assertAlmostEqual(self.E, res[1], 4)
+    
+    def test_bfgs_scipy(self):
+        res = bfgs(self.x0, self.pot.getEnergyGradient, tol=1e-7)
+        self.assertAlmostEqual(self.E, res[1], 4)
+        
+        
+if __name__ == "__main__":
+    unittest.main()
 

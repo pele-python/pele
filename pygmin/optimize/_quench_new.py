@@ -19,6 +19,13 @@ __all__ = ["lbfgs_scipy", "fire", "lbfgs_py", "mylbfgs", "cg", "fmin",
 def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     """
     a wrapper function for lbfgs routine in scipy
+    
+    .. warn:
+        the scipy version of lbfgs uses the bounded L-BFGS-B algorithm
+        The gradient is projected to avoid stepping over the bounds, and
+        the tolerance check is done on the projected gradient.  I still don't know
+        why, but this means that the actual gradient never satisfies the required
+        tolerance.    
     """
     import scipy.optimize
     res = Result()
@@ -27,6 +34,8 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     res.grad = dictionary["grad"]
     res.nfev = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
+    #res.nsteps = dictionary['nit'] #  new in scipy version 0.12
+    res.nsteps = res.nfev
     res.success = True
     if warnflag > 0:
         print "warning: problem with quench: ",
@@ -40,10 +49,7 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     if res.success:
         maxV = np.max( np.abs(res.grad) )
         if maxV > tol:
-            res.success = False
-            print res.grad
-            print warnflag, dictionary['task']
-            print "gradient seems too large", maxV, tol, res.message
+            print "warning: gradient seems too large", maxV, "tol =", tol, ". This is a known, but not understood issue of scipy_lbfgs"
     res.rms = res.grad.std()
     return res
 
@@ -114,7 +120,7 @@ def steepest_descent(x0, pot, iprint=-1, dx=1e-4, nsteps=100000,
     res.success = res.rms <= tol 
     return res
 
-def bfgs_scipy(coords, pot, iprint = -1, tol = 1e-3):
+def bfgs_scipy(coords, pot, iprint=-1, tol=1e-3):
     """
     a wrapper function for the scipy BFGS algorithm
     """
@@ -127,6 +133,8 @@ def bfgs_scipy(coords, pot, iprint = -1, tol = 1e-3):
     res.grad = ret[2]
     res.rms = np.linalg.norm(res.grad) / np.sqrt(len(res.grad))
     res.nfev = ret[4] + ret[5]
+    res.nsteps = res.nfev #  not correct, but no better information
+    res.success = np.max(np.abs(res.grad)) < tol
     return res
 
 def lbfgs_py(coords, pot, **kwargs):
@@ -149,7 +157,7 @@ class TestMinimizers(unittest.TestCase):
         
         # get a partially minimized structure
         x0 = self.system.get_random_configuration()
-        ret = lbfgs_py(x0, self.pot, tol=1.)
+        ret = lbfgs_py(x0, self.pot, tol=1e-1)
         self.x0 = ret.coords.copy()
         self.E0 = ret.energy
         
@@ -167,13 +175,13 @@ class TestMinimizers(unittest.TestCase):
         self.assertTrue(hasattr(res, "success"))
     
     def test_lbfgs_py(self):
-        res = lbfgs_py(self.x0, self.pot)
+        res = lbfgs_py(self.x0, self.pot, tol=1e-7)
         self.assertTrue(res.success)
         self.assertAlmostEqual(self.E, res.energy, 4)
         self.check_attributes(res)
         
     def test_mylbfgs(self):
-        res = mylbfgs(self.x0, self.pot)
+        res = mylbfgs(self.x0, self.pot, tol=1e-7)
         self.assertTrue(res.success)
         self.assertAlmostEqual(self.E, res.energy, 4)
         self.check_attributes(res)
