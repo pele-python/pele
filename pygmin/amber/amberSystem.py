@@ -155,15 +155,7 @@ class AMBERSystem(BaseSystem):
     
     def get_potential(self):
         return self.potential 
-    
-    def get_takestep(self):
-        from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
         
-        # todo: hardcoded stepsize etc 
-        takeStepRnd   = RandomDisplacement( **self.params.takestep_random_displacement )
-        tsAdaptive = AdaptiveStepsizeTemperature(takeStepRnd, interval=50, verbose=False)
-        return tsAdaptive     
-    
     def get_random_configuration(self):
         """a starting point for basinhopping, etc."""
         from simtk.openmm.app import pdbfile as openmmpdbReader
@@ -218,10 +210,10 @@ class AMBERSystem(BaseSystem):
         return MinPermDistAtomicCluster(permlist=permlist, niter=10, can_invert=False)
 
 
-    def createNEB(self, coords1, coords2):
-        pot = self.get_potential()
-        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
-        return create_NEB(pot, coords1, coords2, verbose=True, **NEBparams)
+#    def createNEB(self, coords1, coords2):
+#        pot = self.get_potential()
+#        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
+#        return create_NEB(pot, coords1, coords2, verbose=True, **NEBparams)
 
     def get_orthogonalize_to_zero_eigenvectors(self):
         return orthogopt
@@ -421,18 +413,24 @@ class AMBERSystem(BaseSystem):
             # find atoms bonded to CA 
             neighborlist = []                        
                  
-            for b in self.potential.prmtop.topology.bonds():                                 
-                if self.OpenMMVer == 5 : 
-                    # openmm5  
-                    if b[0].index == i:
-                        neighborlist.append(b[1].index)
-                    if b[1].index == i:
-                        neighborlist.append(b[0].index) 
-                else:   # openmm4 
-                    if b[0].index == i:
-                        neighborlist.append(b[1].index)
-                    if b[1].index == i:
-                        neighborlist.append(b[0].index) 
+            for b in self.potential.prmtop.topology.bonds(): 
+                print b                                
+                if b[0] == i:
+                    neighborlist.append(b[1])
+                if b[1] == i:
+                    neighborlist.append(b[0])
+# Commented, since this stuff doesn't seem to work at the moment...
+#                if self.OpenMMVer == 5 : 
+#                    # openmm5  
+#                    if b[0].index == i:
+#                        neighborlist.append(b[1].index)
+#                    if b[1].index == i:
+#                        neighborlist.append(b[0].index) 
+#                else:   # openmm4 
+#                    if b[0].index == i:
+#                        neighborlist.append(b[1].index)
+#                    if b[1].index == i:
+#                        neighborlist.append(b[0].index) 
                     
             
             #print '---bonds = ', b[0].index , b[1].index 

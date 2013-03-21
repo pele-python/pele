@@ -10,12 +10,13 @@ Tools for manipulating the Hessian.  In particular, for finding eigenvalues and 
     get_eigvals
     get_sorted_eig
     get_smallest_eig
+    make_sparse
 
 """
 import numpy as np 
 from pygmin.potentials.lj import LJ
 
-__all__ = ["get_eig", "get_eigvals", "get_sorted_eig", "get_smallest_eig"]
+__all__ = ["get_eig", "get_eigvals", "get_sorted_eig", "get_smallest_eig", "make_sparse"]
 
 def get_eigvals(hess, **kwargs):
     """return the eigenvalues of a Hessian (symmetric)
@@ -164,6 +165,22 @@ def get_smallest_eig_nohess(coords, system, **kwargs):
     from pygmin.transition_states import findLowestEigenVector
     ret = findLowestEigenVector(coords, system.get_potential(), orthogZeroEigs=system.get_orthogonalize_to_zero_eigenvectors(), **kwargs)
     return ret.eigenval, ret.eigenvec
+
+def make_sparse(hess, **kwargs):
+    """return a sparse form of the hessian using scipy.sparse
+    
+    this function returns the hessian in compressed sparse column (CSC) form
+    
+    Advantages of the CSC format:
+        - efficient arithmetic operations CSC + CSC, CSC * CSC, etc.
+        - efficient column slicing
+        - fast matrix vector products (CSR, BSR may be faster)
+    Disadvantages of the CSC format:
+        - slow row slicing operations (consider CSR)
+        - changes to the sparsity structure are expensive (consider LIL or DOK)
+    """
+    import scipy.sparse as sparse
+    return sparse.csc_matrix(hess)
 
 #
 # only testing stuff below here
