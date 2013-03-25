@@ -6,6 +6,11 @@ find_package(PythonLibs)
 
 #file(GLOB sources _pygmin.cpp _lj.cpp)
 
+if(NOT CMAKE_BUILD_TYPE)
+  #Release comes with -O3 by default
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
 message("sources ${sources}")
 
 include_directories(include ${PYTHON_INCLUDE_PATH})
@@ -17,3 +22,8 @@ set_target_properties(_lj PROPERTIES PREFIX "")
 
 add_library(_pygmin SHARED _pygmin.cpp ${sources} ${PYTHON_LIBS})
 set_target_properties(_pygmin PROPERTIES PREFIX "")
+
+include_directories(lbfgs)
+
+add_library(_lbfgs SHARED _lbfgs.cpp lbfgs_wrapper.cpp lbfgs/lbfgs.c ${PYTHON_LIBS})
+set_target_properties(_lbfgs PROPERTIES PREFIX "")
