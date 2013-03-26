@@ -34,7 +34,7 @@ class BlockMoves(TakestepInterface):
     '''block based step taking
     
     This class is a wrapper for takestep objects to group several takestep
-    objects into one and perform takestep moves block wise, changine the takestep
+    objects into one and perform takestep moves block wise, changing the takestep
     mechanism after a given amount of steps.
     
     Takestep objects can be added with addBlock
@@ -54,17 +54,17 @@ class BlockMoves(TakestepInterface):
         self._current = 0
         self._counter = 0
 
-    '''add a takestep object
-        
-    Parameters
-    ----------
-    nsteps: integer
-        number of steps to perform this type of step
-    takestep: takestep object
-        takestep object to call for this block
-        
-    '''
     def addBlock(self, nsteps, takestep):
+        '''add a takestep object
+            
+        Parameters
+        ----------
+        nsteps: integer
+            number of steps to perform this type of step
+        takestep: takestep object
+            takestep object to call for this block
+            
+        '''
         self._steptakers.append([nsteps, takestep])
       
     def takeStep(self, coords, **kwargs):

@@ -17,6 +17,7 @@ Basic steptaking
     RandomDisplacement
     UniformDisplacement
     RotationalDisplacement
+    ParticleExchange
     
 Grouping moves + adaptive steptaking
 ++++++++++++++++++++++++++++++++++++
@@ -78,3 +79,4 @@ from group import *
 from adaptive import *
 from displace import *
 from adaptive_step_temperature import *
+from particle_exchange import *
