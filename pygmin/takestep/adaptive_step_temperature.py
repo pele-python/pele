@@ -87,8 +87,8 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
         trial_coords = driver.trial_coords
         if self.energy is None:
             #first time called. Save energy and coords
-            self.energy = trial_energy
-            self.coords = np.copy(trial_coords)
+            self.energy = driver.markovE
+            self.coords = driver.coords.copy()
             return
         
         self.nattempts += 1
@@ -103,9 +103,9 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
             self.nsame += 1
         
         #print abs(self.energy - trial_energy), np.std(self.coords - trial_coords), np.max(np.abs(self.coords - trial_coords))
-        if not same:
-            self.energy = trial_energy
-            self.coords = np.copy(trial_coords)
+        if not same and accepted:
+                self.energy = driver.markovE
+                self.coords = driver.coords.copy()
        
         if self.nattempts % self.interval == 0:
 #            if self.verbose:
