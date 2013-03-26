@@ -228,7 +228,7 @@ def test(natoms = 40, boxl=4.):
     pot = makeBLJNeighborListPotFreeze(natoms, freezelist, ntypeA=ntypeA, rcut=rcut, boxl=boxl)
     #pot = FreezePot(NLpot, freezelist)
     
-
+    
     
     eblj = blj.getEnergy(coords)
     print "blj energy", eblj
@@ -237,6 +237,8 @@ def test(natoms = 40, boxl=4.):
     print "mcpot energy", epot
     
     print "difference", (epot - eblj)/eblj
+    pot.test_potential(coords)
+    print "\n"
     
     ret1 = defaults.quenchRoutine(coords, blj.getEnergyGradient, iprint=-11)
     np.savetxt("out.coords", ret1[0])
