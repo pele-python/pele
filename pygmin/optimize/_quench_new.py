@@ -20,22 +20,31 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     """
     a wrapper function for lbfgs routine in scipy
     
-    .. warn:
-        the scipy version of lbfgs uses the bounded L-BFGS-B algorithm
-        The gradient is projected to avoid stepping over the bounds, and
-        the tolerance check is done on the projected gradient.  I still don't know
-        why, but this means that the actual gradient never satisfies the required
-        tolerance.    
+    .. warn::
+        the scipy version of lbfgs uses linesearch based only on energy
+        which can make the minimization stop early.  When the step size
+        is so small that the energy doesn't change to within machine precision (times the
+        parameter `factr`) the routine declares success and stops.  This sounds fine, but
+        if the gradient is analytical the gradient can still be not converged.  This is
+        because in the vicinity of the minimum the gradient changes much more rapidly then
+        the energy.  Thus we want to make factr as small as possible.  Unfortunately,
+        if we make it too small the routine realizes that the linesearch routine
+        isn't working and declares failure and exits.
+        
+        So long story short, if your tolerance is very small (< 1e-6) this routine
+        will probably stop before truly reaching that tolerance.  If you reduce `factr` 
+        too much to mitigate this lbfgs will stop anyway, but declare failure misleadingly.  
     """
     import scipy.optimize
     res = Result()
     res.coords, res.energy, dictionary = scipy.optimize.fmin_l_bfgs_b(pot.getEnergyGradient, 
-            coords, iprint=iprint, pgtol=tol, maxfun=nsteps)
+            coords, iprint=iprint, pgtol=tol, maxfun=nsteps, factr=10.)
     res.grad = dictionary["grad"]
     res.nfev = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
     #res.nsteps = dictionary['nit'] #  new in scipy version 0.12
     res.nsteps = res.nfev
+    res.message = dictionary['task']
     res.success = True
     if warnflag > 0:
         print "warning: problem with quench: ",
@@ -44,12 +53,15 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
             res.message = "too many function evaluations"
         else:
             res.message = str(dictionary['task'])
+        print res.message
     #note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
     #tolerance exactly
-    if res.success:
-        maxV = np.max( np.abs(res.grad) )
-        if maxV > tol:
-            print "warning: gradient seems too large", maxV, "tol =", tol, ". This is a known, but not understood issue of scipy_lbfgs"
+    if False:
+        if res.success:
+            maxV = np.max( np.abs(res.grad) )
+            if maxV > tol:
+                print "warning: gradient seems too large", maxV, "tol =", tol, ". This is a known, but not understood issue of scipy_lbfgs"
+                print res.message
     res.rms = res.grad.std()
     return res
 
