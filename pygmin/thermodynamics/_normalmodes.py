@@ -9,9 +9,9 @@ def normalmode_frequencies(hessian, metric=None, eps=1e-4):
     
     Parameters
     ----------
-    hessian:
-        hessian marix
-    metric: 
+    hessian: 2d array
+        hessian matrix
+    metric: 2d array
         mass weighted metric tensor
     '''
     A = hessian
@@ -72,7 +72,7 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
         
     Returns
     -------
-    touple of number of conisdered frequences and log product of frequencies
+    tuple of number of considered frequencies and log product of frequencies
     '''
     inegative = 0
     izero = 0

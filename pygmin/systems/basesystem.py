@@ -8,6 +8,7 @@ from pygmin.utils.xyz import write_xyz
 from pygmin.optimize import mylbfgs
 from pygmin.transition_states._nebdriver import NEBDriver
 from pygmin.transition_states import FindTransitionState
+from pygmin.thermodynamics import logproduct_freq2, normalmodes
 
 __all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
@@ -97,12 +98,16 @@ class BaseSystem(object):
     #. get_orthogonalize_to_zero_eigenvectors : required
     #. get_compare_exact : optional, recommended
     
+    thermodynamics::
+    1. get_metric_tensor
+    
     GUI::
         
     1. all of the above functions are required, plus
     #. draw : required
     #. smooth_path : required
     #. load_coords_pymol : recommended
+    
 
     additionally, it's a very good idea to specify the accuracy in the 
     database using self.params.database.accuracy
@@ -302,13 +307,20 @@ class BaseSystem(object):
             return DoubleEndedConnectPar(min1, min2, pot, mindist, database, **kwargs)
         else:
             return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
-        
+    
+    #
+    # the following functions used for getting thermodynamic information about the minima 
+    #
+    
     def get_metric_tensor(self, coords):
         """return (mass-weighted) metric tensor for given coordinates
         
-        The metric tensor is needed for normal mode analysis. In the simples case it is just the identity.
-        For atomic systems (carthesian coordinates) with masses different to 1.0, the metric tensor
+        Notes
+        -----
+        The metric tensor is needed for normal mode analysis. In the simplest case it is just the identity.
+        For atomic systems (cartesian coordinates) with masses different to 1.0, the metric tensor
         is a diagonal matrix with 1/m_i on the diagonal.
+        For curvilinear coordinates like angle axis coordinates it is more complicated.
 
         
         See Also
@@ -316,7 +328,54 @@ class BaseSystem(object):
         pygmin.landscape.smoothPath
         """
         raise NotImplementedError
+    
+    def get_nzero_modes(self):
+        """return the number of vibration modes with zero frequency
         
+        Notes
+        -----
+        Zero modes can come from a number of different sources.  You will have one
+        zero mode for every symmetry in the Hamiltonian.  e.g. 3 zero modes for 
+        translational invariance and 3 zero modes for rotational invariance.  If 
+        you have extra degrees of freedom, from say frozen particles they will
+        contribute zero modes.
+        
+        Harmonic modes are necessary to calculate the free energy of a minimum in
+        the harmonic approximation.  The density of states is inversly proportional
+        to the product of the frequencies.  If the zero modes are not accounted for 
+        correctly then the product will be trivially zero and the free energy will
+        be completely wrong.
+        """
+        raise NotImplementedError
+    
+    def get_normalmodes(self, coords):
+        """return the normal mode frequencies and eigenvectors
+        """
+        mt = self.get_metric_tensor(coords)
+        pot = self.get_potential()
+        hess = pot.getHessian(coords)
+        freqs, vecs = normalmodes(hess, mt)
+        return freqs, vecs
+        
+         
+    
+    def get_log_product_normalmode_freq(self, coords, nnegative=0):
+        """return the log product of the normal mode frequencies
+        
+        Parameters
+        ----------
+        coords : array
+        nnegative : int, optional
+            number of expected negative eigenvalues
+        
+        Notes
+        -----
+        this is necessary to calculate the free energy contribution of a minimum
+        """
+        nzero = self.get_nzero_modes()
+        freqs, vecs = self.get_normalmodes(coords)
+        n, lprod = logproduct_freq2(freqs, nzero, nnegative=nnegative)
+        return lprod
 
     #
     #the following functions are used only for the GUI

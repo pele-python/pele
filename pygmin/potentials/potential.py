@@ -108,6 +108,11 @@ class BasePotential(object):
         hess = self.NumericalHessian(coords)
         return e, g, hess
     
+    def getHessian(self, coords):
+        """return the hessian"""
+        e, g, h = self.getEnergyGradientHessian(coords)
+        return h
+    
     def test_potential(self, coords, eps=1e-6):
         """print some information testing whether the analytical gradients are correct"""
         E1 = self.getEnergy(coords)
