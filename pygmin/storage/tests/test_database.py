@@ -84,7 +84,33 @@ class TestDB(unittest.TestCase):
     
     def test_number_of_transition_states(self):
         self.assertEqual(self.nts, self.db.number_of_transition_states())
+    
+    def test_highest_energy_minimum(self):
+        m1 = self.db._highest_energy_minimum()
+        m2 = self.db.minima()[-1]
+        self.assertEqual(m1, m2)
+    
+    def test_maximum_number_of_minima(self):
+        m = self.db.addMinimum(-1., [-1.], max_n_minima=self.nminima)
+        self.assertEqual(self.nminima, self.db.number_of_minima())
+        self.assertIn(m, self.db.minima())
+
+    def test_maximum_number_of_minima_largestE(self):
+        e = float(self.nminima + 1)
+        m = self.db.addMinimum(e, [e], max_n_minima=self.nminima)
+        self.assertEqual(self.nminima, self.db.number_of_minima())
+        self.assertIsNone(m)
         
+        #ensure the highest energy minimum is still in the database
+        mmax = self.db._highest_energy_minimum()
+        self.assertEqual(mmax.energy, float(self.nminima-1))
+        
+    def test_maximum_number_of_minima_minima_adder(self):
+        ma = self.db.minimum_adder(max_n_minima=self.nminima)
+        m = ma(-1., [-1.])
+        self.assertEqual(self.nminima, self.db.number_of_minima())
+        self.assertIn(m, self.db.minima())
+
 
 def benchmark_number_of_minima():
     import time, sys
