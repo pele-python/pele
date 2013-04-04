@@ -68,9 +68,44 @@ class TestDB(unittest.TestCase):
         self.assertEqual(len(self.db.minima()), self.nminima-1)
         # transition states shouldn't be deleted
         self.assertEqual(len(self.db.transition_states()), self.nts)
+    
+    def test_number_of_minima(self):
+        self.assertEqual(self.nminima, self.db.number_of_minima())
+    
+    def test_number_of_transition_states(self):
+        self.assertEqual(self.nts, self.db.number_of_transition_states())
         
 
+def benchmark_number_of_minima():
+    import time, sys
+    import numpy as np
+    db = Database("test.large.db")
+    
+    if True:
+        istart = np.random.randint(0, sys.maxint)
+        for i in xrange(istart,istart+10000):
+            e = float(i)
+            db.addMinimum(e, [e], commit=False)
+        db.session.commit()
+    else:
+        i=1
+    
+    t1 = time.clock()
+    print db.number_of_minima()
+    print "time", t1 - time.clock(); t1 = time.clock()
+    print db.number_of_minima()
+    print "time", t1 - time.clock(); t1 = time.clock()
+    print db.number_of_minima()
+    print "time", t1 - time.clock(); t1 = time.clock()
+    e = float(i+1)
+    db.addMinimum(e, [e], commit=False)
+    t1 = time.clock()
+    print db.number_of_minima()
+    print "time", t1 - time.clock(); t1 = time.clock()
 
+    print len(db.minima())
+    print "time", t1 - time.clock(); t1 = time.clock()
 
 if __name__ == "__main__":
+#    benchmark_number_of_minima()
     unittest.main()

@@ -703,6 +703,30 @@ class Database(object):
         
         self.session.delete(min2)
         self.session.commit()
+    
+    def number_of_minima(self):
+        """return the number of minima in the database
+        
+        Notes
+        -----
+        This is much faster than len(database.minima()), but is is not instantaneous.  
+        It takes a longer time for larger databases.  The first call to number_of_minima() 
+        can be much faster than subsequent calls.  
+        """
+        return self.session.query(Minimum).count()
+
+    def number_of_transition_states(self):
+        """return the number of transition states in the database
+        
+        Notes
+        -----
+        see notes for number_of_minima()
+        
+        See Also
+        --------
+        number_of_minima
+        """
+        return self.session.query(TransitionState).count()
 
 
 if __name__ == "__main__":    
