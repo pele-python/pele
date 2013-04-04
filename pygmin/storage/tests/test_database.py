@@ -45,6 +45,16 @@ class TestDB(unittest.TestCase):
         # m should have 2 minima.  both of those should be gone
         self.assertEqual(len(self.db.transition_states()), self.nts-2)
 
+    def test_remove_ts(self):
+        ts = self.db.transition_states()[0]
+        self.db.remove_transition_state(ts)
+        self.assertEqual(self.db.number_of_transition_states(), self.nts-1)
+        self.assertNotIn(ts, self.db.transition_states())
+        
+        # m should have 2 minima.  both of those should be gone
+        self.assertEqual(self.db.number_of_minima(), self.nminima)
+
+
     def test_getTransitionState(self):
         m1 = self.db.minima()[0]
         m2 = self.db.minima()[1]

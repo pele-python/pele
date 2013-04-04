@@ -703,7 +703,15 @@ class Database(object):
         
         self.session.delete(min2)
         self.session.commit()
-    
+
+    def remove_transition_state(self, ts, commit=True):
+        """remove a transition states from the database
+        """
+        self.on_ts_removed(ts)
+        self.session.delete(ts)
+        if commit:
+            self.session.commit()
+
     def number_of_minima(self):
         """return the number of minima in the database
         
