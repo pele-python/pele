@@ -5,7 +5,7 @@ from pygmin.utils.hessian import sort_eigs
 __all__ = ["normalmode_frequencies", "normalmodes", "logproduct_freq2"]
 
 def normalmode_frequencies(hessian, metric=None, eps=1e-4):
-    '''calculate normal mode frequencies
+    '''calculate (squared) normal mode frequencies
     
     Parameters
     ----------
@@ -13,6 +13,11 @@ def normalmode_frequencies(hessian, metric=None, eps=1e-4):
         hessian matrix
     metric: 2d array
         mass weighted metric tensor
+        
+    Returns
+    -------
+    sorted array of normal mode frequencies
+    
     '''
     A = hessian
     if metric is not None:
@@ -28,7 +33,7 @@ def normalmode_frequencies(hessian, metric=None, eps=1e-4):
     return np.sort(np.real(frq))
 
 def normalmodes(hessian, metric=None, eps=1e-4):
-    '''calculate and return normal mode frequencies and vectors
+    '''calculate (squared) normal mode frequencies and normal mode vectors
     
     Parameters
     ----------
@@ -36,6 +41,11 @@ def normalmodes(hessian, metric=None, eps=1e-4):
         hessian marix
     metric: 
         mass weighted metric tensor
+        
+    Returns
+    -------
+    freq, evecs tuple array of squared frequencies and normal modes
+    
     '''
     A = hessian
     if metric is not None:
@@ -54,7 +64,7 @@ def normalmodes(hessian, metric=None, eps=1e-4):
 
 
 def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
-    ''' calculate the log product of positive frequencies
+    ''' calculate the log product of positive (squared) frequencies
     
     calculates
     log(product_i f_i^2)
