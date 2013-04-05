@@ -9,7 +9,7 @@ from pygmin.transition_states import zeroev
 from pygmin.angleaxis.aamindist import TransformAngleAxisCluster
 import _aadist
 
-__all__ = ["AASiteType", "AATopology", "interpolate_angleaxis"]
+__all__ = ["AASiteType", "AATopology", "interpolate_angleaxis", "TakestepAA"]
 
 def interpolate_angleaxis(initial, final, t):
     ''' interpolate between 2 arrays of angle axis coordinates
@@ -35,13 +35,27 @@ class AASiteType(object):
     '''
     Definition of a angle axis site
     
+    Each angle axis site is fully characterized by a tensor of gyration S for the shape,
+    and the center of geometry, which can differ from the center of mass.
+    TODO: see paper to be published
+    
     Parameters
     ----------
     
     M : float
         total mass of the angle axis site
+    W : float
+        sum of all weights
     S : 3x3 array
         weighted tensor of gyration S_ij = \sum m_i x_i x_j 
+    cog : 3 dim np.array
+        center of gravity
+    inversion : 3x3 np.array
+        matrix which defines on how to perform an inversion which doesn't
+        affect the coordinates. None if no inversion can be performed
+    symmetries : list of 3x3 np.arrays
+        list of all symmetry operations which can be performed on the angle axis site
+        excluding an inversion
         
     '''
     def __init__(self, M=1., S=np.identity(3, dtype="float64"), cog=np.zeros(3), W = 1.0):
@@ -187,7 +201,13 @@ class AASiteType(object):
     
 class AATopology(object):
     ''' 
-        Angle axis system wrapper
+        Angle axis topology
+        
+        An angle axis topology stores all topology information for an angle axis 
+        system. The AATopology is composed of several angle axis sites (AASiteType),
+        which describe the shape of the angle axis site and each site carries a 
+        position and orientation. Therefore, the length of the coordinate array
+        must be 6*number_of_sites.
         
         Parameters
         ----------
@@ -206,7 +226,7 @@ class AATopology(object):
         
     def add_sites(self, sites):
         '''
-            Add sites to the system
+            Add a site to the topolgy
             
             Paramters
             ---------
@@ -216,16 +236,7 @@ class AATopology(object):
         self.sites += sites
         
     def coords_adapter(self, coords=None):
-        '''
-        Create a coords adapter to easy access coordinate array
-        
-        Parameters
-        ----------
-        
-        coords : ndarray, optional
-            coords array to wrap
-            
-        '''
+        ''' Create a coords adapter to easy access coordinate array '''
         return CoordsAdapter(nrigid=len(self.sites), coords=coords)
     
 
@@ -261,6 +272,7 @@ class AATopology(object):
         return spring.coords
     
     def neb_distance(self, coords1, coords2, distance=True, grad=True):
+        ''' wrapper function called by neb to get distance between 2 images '''
         d=None
         if distance:
             d = self.distance_squared(coords1, coords2)
@@ -270,6 +282,16 @@ class AATopology(object):
         return d, g
     
     def interpolate(self, initial, final, t):
+        ''' 
+        interpolate between 2 sets of angle axis configurations 
+        
+        initial : np.array
+            initial configuration
+        final : np.array
+            final configuration
+        t : float
+            interpolation parameters [0,1]
+        '''
         cinitial = self.coords_adapter(initial)
         cfinal = self.coords_adapter(final)
         
@@ -280,6 +302,15 @@ class AATopology(object):
         return cnew.coords
   
     def align_coords(self, x1, x2):
+        ''' align the angle axis coordinates to minimize |p2 - p1|
+        
+            The angle axis vectors are perodic, this function changes the definition
+            of the angle axis vectors in x2 to match closest the ones in x1. This can
+            be useful if simple distances are used on angle axis vectors. However,
+            using the difference in angle axis vectors should be avoided, instead
+            the angle axis distance function should be used which properly takes care
+            of the rotatational degrees of freedoms
+        '''
         c2 = self.coords_adapter(x1)
         c1 = self.coords_adapter(x2)
         for p1, p2 in zip(c1.rotRigid,c2.rotRigid):
@@ -302,7 +333,7 @@ class AATopology(object):
                     break
                 p2[:]=p2n 
     
-    def align_path(self, path):
+    def align_path(self, path): 
         for i in xrange(1, len(path)):
             c2 = self.coords_adapter(path[i])
             c1 = self.coords_adapter(path[i-1])
@@ -374,6 +405,7 @@ class AATopology(object):
         return v
     
     def metric_tensor(self, coords):
+        ''' get the metric tensor for a current configuration '''
         ca = self.coords_adapter(coords=coords)
         g = np.zeros([coords.size, coords.size])
         offset = 3*ca.nrigid

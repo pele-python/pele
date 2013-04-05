@@ -15,7 +15,7 @@ from pygmin import defaults
 
 from pygmin.angleaxis.aamindist import *
 from pygmin.angleaxis import MinPermDistAACluster, ExactMatchAACluster
-from pygmin.angleaxis.aautils import TakestepAA
+from pygmin.angleaxis import TakestepAA
 from pygmin.landscape import smoothPath
 from pygmin.utils.elements import elements
 from pygmin.utils.xyz import write_xyz

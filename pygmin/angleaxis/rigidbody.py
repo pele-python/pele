@@ -1,16 +1,16 @@
 import numpy as np
-import aautils
+import aatopology
 from pygmin.potentials.potential import potential
 from pygmin.mindist import StandardClusterAlignment, optimize_permutations
 
-class RigidFragment(aautils.AASiteType):
+class RigidFragment(aatopology.AASiteType):
     ''' defines a single rigid fragment 
     
     In the most simple case, this is just a whole molecule
     '''
     
     def __init__(self):
-        aautils.AASiteType.__init__(self)
+        aatopology.AASiteType.__init__(self)
         self.atom_positions = []
         self.atom_types = []
         self.atom_masses = []
@@ -59,12 +59,12 @@ class RigidFragment(aautils.AASiteType):
         self._determine_symmetries()
             
     def to_atomistic(self, com, p):
-        R, R1, R2, R3 = aautils.rotMatDeriv(p, False)
+        R, R1, R2, R3 = aatopology.rotMatDeriv(p, False)
         return com + np.dot(R, np.transpose(self.atom_positions)).transpose()
             
     def transform_grad(self, p, g):
         g_com = np.sum(g, axis=0)
-        R, R1, R2, R3 = aautils.rotMatDeriv(p, True)
+        R, R1, R2, R3 = aatopology.rotMatDeriv(p, True)
         g_p = np.zeros_like(g_com)
         for ga, x in zip(g, self.atom_positions):
             g_p[0] += np.dot(ga, np.dot(R1, x))
@@ -84,7 +84,7 @@ class RigidFragment(aautils.AASiteType):
         return g_com, g_p
 
     def redistribute_forces(self, p, grad_com, grad_p):
-        R, R1, R2, R3 = aautils.rotMatDeriv(p, True)
+        R, R1, R2, R3 = aatopology.rotMatDeriv(p, True)
         grad = np.dot(R1, np.transpose(self.atom_positions)).transpose()*grad_p[0]
         grad += np.dot(R2, np.transpose(self.atom_positions)).transpose()*grad_p[1]
         grad += np.dot(R3, np.transpose(self.atom_positions)).transpose()*grad_p[2]
@@ -129,9 +129,9 @@ class RigidFragment(aautils.AASiteType):
         self._determine_inversion(permlist)
         self._determine_rotational_symmetry(permlist)
                     
-class RBTopology(aautils.AATopology):
+class RBTopology(aatopology.AATopology):
     def __init__(self):
-        aautils.AATopology.__init__(self)
+        aatopology.AATopology.__init__(self)
         self.indices=[]
         self.natoms=0
         
@@ -150,7 +150,7 @@ class RBTopology(aautils.AATopology):
         return masses
         
     def add_sites(self, sites):
-        aautils.AATopology.add_sites(self, sites)
+        aatopology.AATopology.add_sites(self, sites)
         for site in sites:
             nsite_atoms = len(site.atom_positions)
             if not hasattr(site, "atom_indices"):
