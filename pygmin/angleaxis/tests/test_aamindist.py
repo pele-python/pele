@@ -1,55 +1,48 @@
 import numpy as np
 from copy import deepcopy
 from pygmin.angleaxis.molecules import create_water
-from pygmin.angleaxis import RBSystem
+from pygmin.angleaxis import RBTopology
 import pygmin.angleaxis.aamindist as am
-import time
 import gmin_ as GMIN
 from pygmin.potentials import GMINPotential
+import unittest
 
-GMIN.initialize()
-pot = GMINPotential(GMIN)
-nrigid = 10
-water = create_water()
-system = RBSystem()
-system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+class TestAAMindist(unittest.TestCase):
+    def setUp(self):
+        #GMIN.initialize()
+#        self.pot = GMINPotential(GMIN)
+        self.nrigid = 10
+        self.water = create_water()
+        self.topology = RBTopology()
+        self.topology.add_sites([deepcopy(self.water) for i in xrange(self.nrigid)])    
 
-x = pot.getCoords()
-zev = system.zeroEV(x)
+#    def test_zeroev(self):
+#        x = self.pot.getCoords()
+#        zev = self.topology.zeroEV(x)
+#        
+#        eps = 1e-5
+#        for dx in zev:    
+#            print "ev test", (self.pot.getEnergy(x) - self.pot.getEnergy(x + eps*dx))/eps  
+#        
+#        dx = np.random.random(x.shape)
+#        dx/=np.linalg.norm(dx)
+#        print "ev test", (self.pot.getEnergy(x) - self.pot.getEnergy(x + eps*dx))/eps
+        
+    def test_distance(self):  
+        for i in xrange(100):
+            coords1 = np.random.random(6*self.nrigid)*4
+            coords2 = np.random.random(6*self.nrigid)*4
+            
+            coords1[:3*self.nrigid]=0
+            coords2[:3*self.nrigid]=0
+            
+            measure1 = am.MeasureAngleAxisCluster(self.topology)
+            measure2 = am.MeasureRigidBodyCluster(self.topology)
+            
+            #print 
+            self.assertAlmostEqual(measure1.get_dist(coords1, coords2),
+                                   measure2.get_dist(coords1, coords2))
 
-eps = 1e-5
-for dx in zev:    
-    print "ev test", (pot.getEnergy(x) - pot.getEnergy(x + eps*dx))/eps  
-
-dx = np.random.random(x.shape)
-dx/=np.linalg.norm(dx)
-print "ev test", (pot.getEnergy(x) - pot.getEnergy(x + eps*dx))/eps  
-
-
-t0 = time.time()
-for i in xrange(1000):
-    coords1 = np.random.random(6*nrigid)*4
-    coords2 = np.random.random(6*nrigid)*4
     
-    coords1[:3*nrigid]=0
-    coords2[:3*nrigid]=0
-    
-    measure1 = am.MeasureAngleAxisCluster(system)
-    measure2 = am.MeasureRigidBodyCluster(system)
-    
-    #print 
-    measure1.get_dist(coords1, coords2)
-
-t1 = time.time()
-for i in xrange(1000):
-    coords1 = np.random.random(6*nrigid)*4
-    coords2 = np.random.random(6*nrigid)*4
-    
-    coords1[:3*nrigid]=0
-    coords2[:3*nrigid]=0
-    
-    measure1 = am.MeasureAngleAxisCluster(system)
-    measure2 = am.MeasureRigidBodyCluster(system)
-    measure2.get_dist(coords1, coords2)
-t2 = time.time()
-print t1-t0, t2-t1
+if __name__ == '__main__':
+    unittest.main()
