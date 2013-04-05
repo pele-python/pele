@@ -262,9 +262,9 @@ class BaseSystem(object):
         raise NotImplementedError
     
     def get_orthogonalize_to_zero_eigenvectors(self):
-        """return a which makes a vector orthogonal to the known zero
+        """return a function which makes a vector orthogonal to the known zero
         eigenvectors (the eigenvectors with zero eigenvalues.  It should
-        be callable with the form
+        be callable with the form::
         
             vec = orthogVec(vec, coords)
         
