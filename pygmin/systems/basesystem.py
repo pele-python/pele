@@ -349,7 +349,7 @@ class BaseSystem(object):
         raise NotImplementedError
     
     def get_normalmodes(self, coords):
-        """return the normal mode frequencies and eigenvectors
+        """return the squared normal mode frequencies and eigenvectors
         """
         mt = self.get_metric_tensor(coords)
         pot = self.get_potential()
@@ -360,7 +360,7 @@ class BaseSystem(object):
          
     
     def get_log_product_normalmode_freq(self, coords, nnegative=0):
-        """return the log product of the normal mode frequencies
+        """return the log product of the squared normal mode frequencies
         
         Parameters
         ----------

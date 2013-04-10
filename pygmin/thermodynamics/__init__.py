@@ -16,6 +16,21 @@ normal mode analysis
 
     normalmode_frequencies
     logproduct_freq2
+
+Heat Capacity
++++++++++++++
+Heat capacity and other quantities can be calculated from 
+a database of minima once the normal mode frequencies and the
+point group order are known.  
+
+.. autosummary::
+   :toctree: generated/
+
+    dos_to_cv
+    minima_to_cv
+    
+
 """
 
 from _normalmodes import *
+from heat_capacity import *
