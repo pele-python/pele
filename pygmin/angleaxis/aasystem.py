@@ -113,10 +113,14 @@ class RBSystem(AASystem):
         GLU.gluCylinder(g, .1,0.1,r,10,10)  #I can't seem to draw a cylinder
         GL.glPopMatrix()
         
-    def draw(self, rbcoords, index):
+    def draw(self, rbcoords, index, shift_com=True):
         from OpenGL import GL, GLUT    
         coords = self.aasystem.to_atomistic(rbcoords)
-        com=np.mean(coords, axis=0)
+        if shift_com:
+            com=np.mean(coords, axis=0)
+        else:
+            com = np.zeros(3)
+            
         self.aasystem.sites
         i=0                  
         for atom_type, xx in zip(self.atom_types, coords):
