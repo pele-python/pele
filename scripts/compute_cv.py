@@ -4,7 +4,7 @@ a script to calculate Cv from the Harmonic Superposition Approximation
 
 import argparse
 import numpy as np
-from pygmin.thermodynamics.heat_capacity import minima_to_cv
+from pygmin.thermodynamics import minima_to_cv
 from pygmin.storage import Database
 
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     k = args.k
     
     dbfname = args.fname
-    db = Database(dbfname)
+    db = Database(dbfname, createdb=False)
 
     Tmin = args.Tmin
     Tmax = args.Tmax

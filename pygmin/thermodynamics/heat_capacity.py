@@ -19,6 +19,7 @@ def dos_to_cv(energies, ldos, T, K=1.):
     beta = np.array(1./T)
 
     lZ =  ldos[np.newaxis,:] - beta[:,np.newaxis] * energies[np.newaxis,:]
+    assert lZ.shape == (len(beta), len(ldos))
     
     # subtract out the smallest value to avoid overflow issues when lZ is exponentiated
     lZmax = np.max(lZ,axis=1) #  maximum lZ for each temperature
@@ -35,8 +36,9 @@ def dos_to_cv(energies, ldos, T, K=1.):
     # compute Cv from the energy fluctuations
     Cv = float(K)/2 + (U2 - U**2) * beta**2 # this is not quite right
     
-    Z *= np.exp(lZmax)
-    return Z, U, U2, Cv
+    lZ = np.log(Z) + lZmax
+
+    return lZ, U, U2, Cv
 
 def minima_to_cv(minima, T, k):
     """compute the heat capacity and other thermodynamic quantities from a list of minima using the harmonic approximation
@@ -58,21 +60,29 @@ def minima_to_cv(minima, T, k):
     """
     beta = np.array(1./T)
     k = float(k)
-    Emin = min([m.energy for m in minima])
-    Z = 0.
-    U = 0.
-    U2 = 0.
-    for m in minima:
-        E = m.energy
-        lZpref = -beta * (E - Emin) - m.fvib/2. - np.log(m.pgorder)
-        Zpref = np.exp(lZpref)
-        
-        Z += Zpref
-        U += Zpref * E
-        U2 += Zpref * E**2
+    energies = np.array([m.energy for m in minima])
     
+    # compute the log of the terms in the partition function
+    lZterms = np.array([-beta * m.energy - m.fvib/2. - np.log(m.pgorder) for m in minima])
+    lZterms = lZterms.transpose()
+    assert lZterms.shape == (len(beta), len(minima))
+    
+    # subtract out the smallest value to avoid overflow issues when lZterms is exponentiated
+    lZmax = np.max(lZterms, axis=1) #  maximum lZ for each temperature
+    lZterms -= lZmax[:,np.newaxis]
+
+    # compute Z, <E> and <E**2>
+    Zpref = np.exp(lZterms)
+    Z  = np.sum(Zpref, axis=1 )
+    U  = np.sum(Zpref * energies[np.newaxis,:], axis=1 )
+    U2 = np.sum(Zpref * energies[np.newaxis,:]**2, axis=1 )
     U /= Z
     U2 /= Z
-    Cv = k + (U2 - U**2) * beta**2   # this is not completely correct
-    Z *= np.exp(beta * Emin) / beta**k
-    return Z, U, U2, Cv
+    
+    
+    # compute the heat capacity  
+    Cv = k + (U2 - U**2) * beta**2
+
+    lZ = np.log(Z) + lZmax
+    
+    return lZ, U, U2, Cv
