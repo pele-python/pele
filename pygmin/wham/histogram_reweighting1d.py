@@ -22,7 +22,7 @@ class wham1d:
     Tlist # Tlist[k] is the temperature of the simulation in filenames[k] 
 
     binenergy = zeros(nebins, float64) #lower edge of bin energy
-    visits1d =  zeros([nebins,nrep], integer) #1d histograms of data
+    visits1d =  zeros([nrep,nebins], integer) #1d histograms of data
     """
     #=============================================================================================
     # Constructor.

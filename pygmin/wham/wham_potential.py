@@ -1,7 +1,7 @@
 import numpy as np
-from pygmin.potentials.potential import potential
+from pygmin.potentials.potential import BasePotential
 
-class WhamPotential(potential):
+class WhamPotential(BasePotential):
     """
     #############################################################################
     # the idea behind this minimization procedure is as follows: 

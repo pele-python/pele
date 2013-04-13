@@ -14,7 +14,7 @@ from wham_utils import logSum, logSum1
 
 
 
-class wham2d:
+class wham2d(object):
     """ class to combine 2d histograms of energy E and order parameter q at
     multiple temperatures into one best estimate for the histogram
   
@@ -24,7 +24,7 @@ class wham2d:
   
     binenergy = zeros(nebins, float64) #lower edge of bin energy
     binq =      zeros(nqbins, float64) #lower edge of q bins
-    visits2d =  zeros([nebins,nqbins,nrep], integer) #2d histogram of data
+    visits2d =  zeros([nrep,nebins,nqbins], integer) #2d histogram of data
     """
     #=============================================================================================
     # Constructor.
@@ -53,11 +53,13 @@ class wham2d:
         nbins = self.nebins * self.nqbins
         #visits = np.zeros([nreps, nebins, nqbins], np.integer)
         reduced_energy = np.zeros([nreps, nebins, nqbins])
-        for k in range(self.nrep):
-            for j in range(self.nqbins):
-                for i in range(self.nebins):
-                    #visits[k,i,j] = self.visits2d[i,j,k]
-                    reduced_energy[k,i,j] = self.binenergy[i] / (self.Tlist[k]*self.k_B)
+#        for k in range(self.nrep):
+#            for j in range(self.nqbins):
+#                for i in range(self.nebins):
+#                    #visits[k,i,j] = self.visits2d[i,j,k]
+#                    reduced_energy[k,i,j] = self.binenergy[i] / (self.Tlist[k]*self.k_B)
+        for j in range(self.nqbins):
+            reduced_energy[:,:,j] = self.binenergy[np.newaxis,:] / (self.Tlist[:,np.newaxis]*self.k_B)
                     
         visits = self.visits2d
         visits = np.reshape( visits, [nreps, nbins ]) 
@@ -73,7 +75,7 @@ class wham2d:
         print "initial energy", whampot.getEnergy(X)
         try: 
             from pygmin.optimize import mylbfgs as quench
-            ret = quench(X, whampot.getEnergyGradient, iprint=-1, maxstep = 1e4)
+            ret = quench(X, whampot.getEnergyGradient, iprint=10, maxstep = 1e4)
         except ImportError:
             from pygmin.optimize import lbfgs_scipy as quench
             ret = quench(X, whampot.getEnergyGradient)            
