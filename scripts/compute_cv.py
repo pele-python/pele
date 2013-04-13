@@ -6,6 +6,7 @@ import argparse
 import numpy as np
 from pygmin.thermodynamics import minima_to_cv
 from pygmin.storage import Database
+from pygmin.utils.optim_compatibility import read_min_data
 
 
         
@@ -23,12 +24,21 @@ if __name__ == "__main__":
     parser.add_argument("--Tmin", type=float, help="Minimum temperature for the calculation.", default=0.02)
     parser.add_argument("--Tmax", type=float, help="Minimum temperature for the calculation.", default=1.0)
     parser.add_argument("--Tcount", type=int, help="Number of temperature points for the calculation.", default=300)
+    parser.add_argument("--OPTIM", action="store_true", help="read data from a min.data file instead."
+                        "fname should be the filename of the min.data file")
     args = parser.parse_args()
     print args.fname
+    print args
     k = args.k
     
-    dbfname = args.fname
-    db = Database(dbfname, createdb=False)
+    # get the list of minima
+    if args.OPTIM:
+        # fname is a min.data file
+        minima = read_min_data(args.fname)
+    else:
+        dbfname = args.fname
+        db = Database(dbfname, createdb=False)
+        minima = db.minima()
 
     Tmin = args.Tmin
     Tmax = args.Tmax
@@ -36,7 +46,7 @@ if __name__ == "__main__":
     dT = (Tmax-Tmin) / nT
     
     T = np.array([Tmin + dT*i for i in range(nT)])
-    Z, U, U2, Cv = minima_to_cv(db.minima(), T, k)
+    Z, U, U2, Cv = minima_to_cv(minima, T, k)
     
     with open(args.o, "w") as fout:
         fout.write("#T Cv <E> <E**2>\n")
