@@ -63,7 +63,13 @@ def minima_to_cv(minima, T, k):
     energies = np.array([m.energy for m in minima])
     
     # compute the log of the terms in the partition function
-    lZterms = np.array([-beta * m.energy - m.fvib/2. - np.log(m.pgorder) for m in minima])
+    try:
+        lZterms = np.array([-beta * m.energy - m.fvib/2. - np.log(m.pgorder) for m in minima])
+    except TypeError or AttributeError:
+        print "Error reading thermodynamic data from minima.  Have you computed the normal mode"\
+              " frequencies and point group order for all the minima?  See pygmin.thermodynamics "\
+              " for more information"
+        raise 
     lZterms = lZterms.transpose()
     assert lZterms.shape == (len(beta), len(minima))
     

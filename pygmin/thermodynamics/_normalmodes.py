@@ -99,7 +99,7 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
         n+=1
         
     if nzero != izero:
-        raise ValueError("the number of zero eigenvalues differs from the expected value")
+        raise ValueError("the number of zero eigenvalues (%d) differs from the expected value (%d)" % (izero, nzero))
     if nnegative != inegative:
         raise ValueError("the number of negative eigenvalues differs from the expected "
                          "number (not a minimum / transition state?)")

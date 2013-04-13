@@ -28,9 +28,20 @@ point group order are known.
 
     dos_to_cv
     minima_to_cv
+
+Utilities
+---------
+These are functions which you may find useful.
+
+.. autosummary::
+   :toctree: generated/
+
+    get_thermodynamic_information
+
     
 
 """
 
 from _normalmodes import *
 from heat_capacity import *
+from _utils import *

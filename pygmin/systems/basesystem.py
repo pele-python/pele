@@ -312,6 +312,23 @@ class BaseSystem(object):
     # the following functions used for getting thermodynamic information about the minima 
     #
     
+    def get_pgorder(self, coords):
+        """return the point group order of the configuration
+        
+        Notes
+        -----
+        This is a measure of the symmetry of a configuration.  It is used in 
+        calculating the thermodynamic weight of a minimum.  Most configurations
+        will have pgorder 1, but some highly symmetric minima will have higher orders.
+        Routines to compute the point group order are in module `mindist`.
+        
+        See Also
+        --------
+        pygmin.mindist
+        
+        """
+        raise NotImplementedError
+    
     def get_metric_tensor(self, coords):
         """return (mass-weighted) metric tensor for given coordinates
         
@@ -376,6 +393,7 @@ class BaseSystem(object):
         freqs, vecs = self.get_normalmodes(coords)
         n, lprod = logproduct_freq2(freqs, nzero, nnegative=nnegative)
         return lprod
+    
 
     #
     #the following functions are used only for the GUI
