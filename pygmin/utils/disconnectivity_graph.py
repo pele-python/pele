@@ -571,7 +571,7 @@ class DisconnectivityGraph(object):
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
-    def plot(self, show_minima=False, newplot=True, linewidth=0.5):
+    def plot(self, show_minima=False, linewidth=0.5, axes=None):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
@@ -585,12 +585,13 @@ class DisconnectivityGraph(object):
         self.line_segments = self._get_line_segments(self.tree_graph, eoffset=self.eoffset)
         
         #set up how the figure should look
-        if newplot:
+        if axes is not None:
+            ax = axes
+        else:
             fig = plt.figure(figsize=(6,7))
             fig.set_facecolor('white')
             ax = fig.add_subplot(111, adjustable='box')
-        else:
-            ax = plt.gca()
+
         ax.tick_params(axis='y', direction='out')
         ax.yaxis.tick_left()
         ax.spines['left'].set_color('black')
@@ -598,7 +599,7 @@ class DisconnectivityGraph(object):
         ax.spines['top'].set_color('none')
         ax.spines['bottom'].set_color('none')
         ax.spines['right'].set_color('none')
-        plt.box(on=True)
+#        plt.box(on=True)
         
         #draw the minima as points
         if show_minima:      
@@ -620,7 +621,7 @@ class DisconnectivityGraph(object):
         ax.autoscale_view(scalex=True, scaley=True, tight=None)
 
         #remove xtics            
-        plt.xticks([])        
+        ax.set_xticks([])        
         
         
     
