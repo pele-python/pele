@@ -1,8 +1,6 @@
 import numpy as np
 import tempfile
 
-from pygmin.potentials import GMINPotential
-import gmin_ as GMIN
 from pygmin.angleaxis import RBTopology
 from copy import deepcopy
 from pygmin.utils import rotations
