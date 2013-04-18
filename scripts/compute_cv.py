@@ -8,6 +8,10 @@ from pygmin.thermodynamics import minima_to_cv
 from pygmin.storage import Database
 from pygmin.utils.optim_compatibility import read_min_data
 
+import matplotlib as mpl
+mpl.use("Agg") # so we can use it without an X server
+import matplotlib.pyplot as plt
+
 
         
 if __name__ == "__main__":
@@ -38,7 +42,13 @@ if __name__ == "__main__":
     else:
         dbfname = args.fname
         db = Database(dbfname, createdb=False)
-        minima = db.minima()
+        minima = [m for m in db.minima() if m.fvib is not None and m.pgorder is not None]
+        if len(minima) == 0:
+            print "There are not minima with the necessary thermodynamic information in the database.  Have you computed the normal mode"\
+                  " frequencies and point group order for all the minima?  See pygmin.thermodynamics "\
+                  " for more information"
+            exit(1)
+    print "computing heat capacity from", len(minima), "minima"
 
     Tmin = args.Tmin
     Tmax = args.Tmax
@@ -53,9 +63,8 @@ if __name__ == "__main__":
         for vals in zip(T, Cv, U, U2):
             fout.write("%g %g %g %g\n" % vals)
     
-    import pylab as pl
-    pl.plot(T, Cv, '-')
-    pl.xlabel("T")
-    pl.ylabel("Cv")
-    pl.savefig(args.o + ".pdf")
+    plt.plot(T, Cv, '-')
+    plt.xlabel("T")
+    plt.ylabel("Cv")
+    plt.savefig(args.o + ".pdf")
         

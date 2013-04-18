@@ -19,12 +19,14 @@ class LJCut(BasePotentialAtomistic):
             self.boxl = 100000.
         else:
             self.periodic = True
-        print "using Lennard-Jones potential", self.sig, self.eps, 
-        print "with cutoff", self.rcut,
-        if self.periodic: 
-            print "periodic with boxl ", self.boxl
-        else:
-            print ""
+        
+        if False:
+            print "using Lennard-Jones potential", self.sig, self.eps, 
+            print "with cutoff", self.rcut,
+            if self.periodic: 
+                print "periodic with boxl ", self.boxl
+            else:
+                print ""
         
     def getEnergy(self, coords):
         natoms = len(coords) / 3

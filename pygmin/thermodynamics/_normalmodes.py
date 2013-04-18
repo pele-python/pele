@@ -32,26 +32,35 @@ def normalmode_frequencies(hessian, metric=None, eps=1e-4):
     
     return np.sort(np.real(frq))
 
-def normalmodes(hessian, metric=None, eps=1e-4):
+def normalmodes(hessian, metric=None, eps=1e-4, symmetric=False):
     '''calculate (squared) normal mode frequencies and normal mode vectors
     
     Parameters
     ----------
-    hessian:
+    hessian: array
         hessian marix
-    metric: 
+    metric: array
         mass weighted metric tensor
+    symmetric: bool
+        If true, the Hessian times the metric tensor is assumed to be symmetric.  This is
+        not usually the case, even if the metric tensor is symmetric.  It is
+        true if the metric tensor is the identity.  
         
     Returns
     -------
     freq, evecs tuple array of squared frequencies and normal modes
     
     '''
-    A = hessian
-    if metric is not None:
+    if metric is None:
+        A = hessian
+        symmetric = True
+    else:
         A = np.dot(np.linalg.pinv(metric), hessian)
-   
-    freq, evecs = np.linalg.eig(A)
+
+    if symmetric:
+        freq, evecs = np.linalg.eigh(A)
+    else:
+        freq, evecs = np.linalg.eig(A)
     
     if(np.max(np.abs(np.imag(freq))) > eps):
         print freq
