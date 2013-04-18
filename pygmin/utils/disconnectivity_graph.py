@@ -597,35 +597,13 @@ class DisconnectivityGraph(object):
         ax.spines['top'].set_color('none')
         ax.spines['bottom'].set_color('none')
         ax.spines['right'].set_color('none')
-                        
-        import os 
+        
         #draw the minima as points
         if show_minima:      
-            minIdShow = [] # list of ID of minima to be marked by dots        
-            if os.path.exists('mintoshow.dat') :
-                fp = open('mintoshow.dat','r')
-                for line in fp.readlines():
-                    minIdShow.append(int(line))
-             
-                print 'disconnGraph> Minima to be marked by dots: '
-                print minIdShow     
-
-                # pick minima to show 
-                leaves = self.tree_graph.get_leaves()
-                energies = [] 
-                xpos     = [] 
-                for leaf in leaves:
-                    if leaf.data["minimum"]._id in minIdShow: 
-                        energies.append(self._getEnergy(leaf.data["minimum"]))
-                        xpos.append(leaf.data["x"])                    
-            else:                
-                # mark all minima 
-                leaves = self.tree_graph.get_leaves()
-                energies = [self._getEnergy(leaf.data["minimum"]) for leaf in leaves]
-                xpos = [leaf.data["x"] for leaf in leaves]
-                
-                
-            # finally, plot!                
+            leaves = self.tree_graph.get_leaves()
+            energies = [self._getEnergy(leaf.data["minimum"]) for leaf in leaves]
+            xpos = [leaf.data["x"] for leaf in leaves]
+        
             ax.plot(xpos, energies, 'o')
         
         #draw the line segemnts
