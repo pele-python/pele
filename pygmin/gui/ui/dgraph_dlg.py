@@ -5,6 +5,7 @@ import dgraph_browser
 import sys
 
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+from matplotlib.collections import LineCollection
 
 
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
@@ -175,27 +176,34 @@ class DGraphWidget(QWidget):
                 print "you clicked on minimum with id", min1._id, "and energy", min1.energy
                 self.minimum_selected(min1)
             self.canvas.mpl_connect('pick_event', on_pick)
+        
+        
+        # draw the line segments 
+        # use LineCollection because it's much faster than drawing the lines individually
+        linewidth = 0.5 #  todo: this should be able to be set in the gui
+        line_segments = dg.line_segments
+        linecollection = LineCollection([ [(x[0],y[0]), (x[1],y[1])] for x,y in line_segments])
+        linecollection.set_linewidth(linewidth)
+        linecollection.set_color("k")
+        ax.add_collection(linecollection)
+        
+        # scale the axes appropriately
+        ax.relim()
+        ax.autoscale_view(scalex=True, scaley=True, tight=None)
 
         
-        
-        
-        #draw line segments connecting minima
-        line_segments = dg.line_segments
-        for x, y in line_segments:
-            ax.plot(x, y, 'k')
-        
-        #adjust the limits of the graph.  this might be slow
-        ymax = max(max(y) for x, y in line_segments)
-        ymin = min(min(y) for x, y in line_segments)
-        xmax = max(max(x) for x, y in line_segments)
-        xmin = min(min(x) for x, y in line_segments)
-        d = .2
-        xmax += d
-        xmin -= d
-        ymax += d
-        ymin -= d*4.
-        self.canvas.axes.set_xlim(xmin, xmax)
-        self.canvas.axes.set_ylim(ymin, ymax)
+#        #adjust the limits of the graph.  this might be slow
+#        ymax = max(max(y) for x, y in line_segments)
+#        ymin = min(min(y) for x, y in line_segments)
+#        xmax = max(max(x) for x, y in line_segments)
+#        xmin = min(min(x) for x, y in line_segments)
+#        d = .2
+#        xmax += d
+#        xmin -= d
+#        ymax += d
+#        ymin -= d*4.
+#        self.canvas.axes.set_xlim(xmin, xmax)
+#        self.canvas.axes.set_ylim(ymin, ymax)
         
         
         ax.set_xticks([])
