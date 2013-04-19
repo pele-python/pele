@@ -218,7 +218,7 @@ class DisconnectivityGraph(object):
 
     def _recursive_new_tree(self, parent_tree, graph, energy_levels, ilevel):
         """the recursive function called by `_make_tree` to build the disconnectivity Tree"""
-        if ilevel < 0: return
+        if ilevel < 0: return #  this the past the lowest level.  We're done
         ethresh = energy_levels[ilevel]
 #        if graph.number_of_edges() == 0: return
         
@@ -226,6 +226,8 @@ class DisconnectivityGraph(object):
         subgraphs = self._split_graph(graph, ethresh)
         for g in subgraphs:
             if nx.number_of_nodes(g) == 1:
+                #  There's only one mimimum in this graph.  Attach the minimum
+                #  object to the tree node.
                 for minimum in g.nodes(): break
                 newtree = parent_tree.make_branch()
                 newtree.data["minimum"] = minimum 
@@ -234,6 +236,7 @@ class DisconnectivityGraph(object):
                 self.minimum_to_leave[minimum] = newtree
 #                leaves[minimum] = newtree
             else:
+                #  subdivide this graph at the next energy level down.
                 newtree = parent_tree.make_branch()
                 newtree.data["ilevel"] = ilevel 
                 newtree.data["ethresh"] = ethresh                 
@@ -299,23 +302,16 @@ class DisconnectivityGraph(object):
 
     def _tree_get_minimum_energy(self, tree, emin=1e100):
         """
-        a recursive function to find the leaf descendant in tree with the minimum energy
+        return the minimum energy of all the leaves in the tree
         """
-        if tree.is_leaf():
-            energy = self._getEnergy(tree.data["minimum"])
-            if energy < emin:
-                emin = energy
-        else:
-            for subtree in tree.get_subtrees():
-                emin = self._tree_get_minimum_energy(subtree, emin)
-        return emin
+        return min([leaf.data["minimum"].energy for leaf in tree.get_leaves()])
 
     def _order_trees(self, trees):
         """
         order a list of trees for printing
         
-        This is the highest level function for ordering trees.  This 
-        and functions called by this will account for all the user options 
+        This is the highest level function for ordering trees.  This, 
+        and functions called by this, will account for all the user options 
         like center_gmin and order by energy
         """
         if self.order_by_energy:
@@ -347,6 +343,8 @@ class DisconnectivityGraph(object):
         return list(neworder)
 
     def _ensure_gmin_is_center(self, tree_value_list):
+        """ensure that the tree containing the global minimum has the lowest value
+        """
         if self.gmin0 is None: return
         min0index = None
         for i in range(len(tree_value_list)):
@@ -358,7 +356,7 @@ class DisconnectivityGraph(object):
             minvalue = min([v for v, tree in tree_value_list])
             #replace the value with a lower one
             #for the tree containing min0
-            newvalue = minvalue - 1 #this won't word for non number values
+            newvalue = minvalue - 1 #this won't work for non number values
             tree_value_list[i] = (newvalue, tree_value_list[i][1]) 
         return tree_value_list 
 
@@ -366,6 +364,7 @@ class DisconnectivityGraph(object):
         
 
     def _order_trees_by_most_leaves(self, trees):
+        """order list of trees by the number of leaves"""
 #        if self.center_gmin:
 #            return self._order_trees_by_most_leaves_and_global_min(trees)
         mylist = [ (tree.number_of_leaves(), tree) for tree in trees]
@@ -572,24 +571,27 @@ class DisconnectivityGraph(object):
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
-    def plot(self, show_minima=False, newplot=True, linewidth=0.5):
+    def plot(self, show_minima=False, linewidth=0.5, axes=None):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
         
         also, you must call pyplot.show() to actually see the plot
         """
+        import matplotlib as mpl
+        from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         
         self.line_segments = self._get_line_segments(self.tree_graph, eoffset=self.eoffset)
         
         #set up how the figure should look
-        if newplot:
+        if axes is not None:
+            ax = axes
+        else:
             fig = plt.figure(figsize=(6,7))
             fig.set_facecolor('white')
             ax = fig.add_subplot(111, adjustable='box')
-        else:
-            ax = plt.gca()
+
         ax.tick_params(axis='y', direction='out')
         ax.yaxis.tick_left()
         ax.spines['left'].set_color('black')
@@ -597,56 +599,29 @@ class DisconnectivityGraph(object):
         ax.spines['top'].set_color('none')
         ax.spines['bottom'].set_color('none')
         ax.spines['right'].set_color('none')
-                        
-        import os 
+#        plt.box(on=True)
+        
         #draw the minima as points
         if show_minima:      
-            minIdShow = [] # list of ID of minima to be marked by dots        
-            if os.path.exists('mintoshow.dat') :
-                fp = open('mintoshow.dat','r')
-                for line in fp.readlines():
-                    minIdShow.append(int(line))
-             
-                print 'disconnGraph> Minima to be marked by dots: '
-                print minIdShow     
-
-                # pick minima to show 
-                leaves = self.tree_graph.get_leaves()
-                energies = [] 
-                xpos     = [] 
-                for leaf in leaves:
-                    if leaf.data["minimum"]._id in minIdShow: 
-                        energies.append(self._getEnergy(leaf.data["minimum"]))
-                        xpos.append(leaf.data["x"])                    
-            else:                
-                # mark all minima 
-                leaves = self.tree_graph.get_leaves()
-                energies = [self._getEnergy(leaf.data["minimum"]) for leaf in leaves]
-                xpos = [leaf.data["x"] for leaf in leaves]
-                
-                
-            # finally, plot!                
+            leaves = self.tree_graph.get_leaves()
+            energies = [self._getEnergy(leaf.data["minimum"]) for leaf in leaves]
+            xpos = [leaf.data["x"] for leaf in leaves]
+        
             ax.plot(xpos, energies, 'o')
         
-        #draw the line segemnts
-        for x, y in self.line_segments:
-            ax.plot(x, y, 'k', linewidth=linewidth)
+        # draw the line segments 
+        # use LineCollection because it's much faster than drawing the lines individually 
+        linecollection = LineCollection([ [(x[0],y[0]), (x[1],y[1])] for x,y in self.line_segments])
+        linecollection.set_linewidth(linewidth)
+        linecollection.set_color("k")
+        ax.add_collection(linecollection)
+        
+        # scale the axes appropriately
+        ax.relim()
+        ax.autoscale_view(scalex=True, scaley=True, tight=None)
 
         #remove xtics            
-        plt.xticks([])
-        plt.box(on=True)
-
-        
-    
-        
-#        import pylab as pl
-#        pl.ioff()
-##        nx.draw(self.graph, with_labels=False)
-##        pl.show()
-#        nx.draw(tree_graph, with_labels=False)
-#        pl.show()
-#        print "done drawing"
-        
+        ax.set_xticks([])        
         
         
     

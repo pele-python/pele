@@ -160,7 +160,7 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA = None, rcut = 2.5, 
     mcpot = MultiComponentSystemFreeze([mobile_pot], potlist_frozen)
     
     #finally, wrap it once more in a class that will zero the gradients of the frozen atoms
-    frozenpot = FreezePot(mcpot, frozenlist)
+    frozenpot = FreezePot(mcpot, frozenlist, natoms)
     return frozenpot
 
 
@@ -177,16 +177,27 @@ class FreezePot(basepot):
     frozen : 
         a list of frozen particles
     """
-    def __init__(self, pot, frozen):
+    def __init__(self, pot, frozen, natoms):
         self.pot = pot
+        self.natoms = natoms
         self.frozen_atoms = frozen  #a list of frozen atoms
-        self.frozen1d = np.zeros(len(self.frozen_atoms)*3, np.integer) # a list of frozen coordinates (x,y,z) for each atom
-        j = 0
-        for i in self.frozen_atoms:
-            self.frozen1d[j] = i*3
-            self.frozen1d[j+1] = i*3 + 1
-            self.frozen1d[j+2] = i*3 + 2
-            j+=3
+        self.frozen1d = self.get_1d_indices(self.frozen_atoms)
+#        self.frozen1d = np.zeros(len(self.frozen_atoms)*3, np.integer) # a list of frozen coordinates (x,y,z) for each atom
+#        j = 0
+#        for i in self.frozen_atoms:
+#            self.frozen1d[j] = i*3
+#            self.frozen1d[j+1] = i*3 + 1
+#            self.frozen1d[j+2] = i*3 + 2
+#            j+=3
+
+        self.mobile_atoms = np.array([i for i in range(natoms) if i not in self.frozen_atoms])
+        self.mobile1d = self.get_1d_indices(self.mobile_atoms)
+
+    def get_1d_indices(self, atomlist):
+        indices = np.array([range(3*i,3*i+3) for i in atomlist])
+        indices = np.sort(indices.flatten())
+        return indices
+
 
     def getEnergy(self, coords):
         return self.pot.getEnergy(coords)
@@ -203,6 +214,39 @@ class FreezePot(basepot):
         e, grad = self.pot.getEnergyGradient(coords)
         grad[self.frozen1d] = 0.
         return e, grad
+    
+    def NumericalDerivative(self, coords, eps=1e-6):
+        """return the gradient calculated numerically"""
+        g = np.zeros(coords.size)
+        x = coords.copy()
+        for i in self.mobile1d:
+            x[i] += eps
+            g[i] = self.getEnergy(x)
+            x[i] -= 2. * eps
+            g[i] -= self.getEnergy(x)
+            g[i] /= 2. * eps
+            x[i] += eps
+        return g
+    
+    def NumericalHessian(self, coords, eps=1e-6):
+        """return the Hessian matrix of second derivatives computed numerically
+        
+        this takes 2*len(coords) calls to getGradient
+        """
+        x = coords.copy()
+        ndof = len(x)
+        hess = np.zeros([ndof, ndof])
+        for i in self.mobile1d:
+            xbkup = x[i]
+            x[i] += eps
+            g1 = self.getGradient(x)
+            x[i] = xbkup - eps
+            g2 = self.getGradient(x)            
+            hess[i,:] = (g1 - g2) / (2. * eps)
+            x[i] = xbkup
+        return hess
+
+
 
 
 #########################################################
@@ -223,12 +267,12 @@ def test(natoms = 40, boxl=4.):
     
     
     NLblj = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
-    blj = FreezePot(NLblj, freezelist)
+    blj = FreezePot(NLblj, freezelist, natoms)
 
     pot = makeBLJNeighborListPotFreeze(natoms, freezelist, ntypeA=ntypeA, rcut=rcut, boxl=boxl)
     #pot = FreezePot(NLpot, freezelist)
     
-
+    
     
     eblj = blj.getEnergy(coords)
     print "blj energy", eblj
@@ -237,6 +281,8 @@ def test(natoms = 40, boxl=4.):
     print "mcpot energy", epot
     
     print "difference", (epot - eblj)/eblj
+    pot.test_potential(coords)
+    print "\n"
     
     ret1 = defaults.quenchRoutine(coords, blj.getEnergyGradient, iprint=-11)
     np.savetxt("out.coords", ret1[0])

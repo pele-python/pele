@@ -3,7 +3,8 @@ import numpy as np
 from pygmin.systems import BaseSystem
 from pygmin.potentials import LJ
 from pygmin.transition_states import orthogopt
-from pygmin.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster
+from pygmin.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster, \
+    PointGroupOrderCluster
 from pygmin.landscape import smoothPath
 from pygmin.transition_states import create_NEB
 
@@ -52,6 +53,11 @@ class AtomicCluster(BaseSystem):
     def get_metric_tensor(self, coords):
         """ metric tensor for all masses m_i=1.0 """
         return np.identity(coords.size)
+    
+    def get_pgorder(self, coords):
+        calculator = PointGroupOrderCluster(self.get_compare_exact())
+        return calculator(coords)
+
     
     #
     #below here only stuff for the gui

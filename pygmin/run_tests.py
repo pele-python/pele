@@ -11,5 +11,7 @@ from pygmin.landscape._graph import TestGraph
 from pygmin.landscape._distance_graph import TestDistanceGraph
 from pygmin.transition_states._orthogopt import TestOrthogopt
 from pygmin.utils.hessian import TestEig
+from pygmin.accept_tests.tests import *
+from pygmin.storage.tests import *
 
 unittest.main()

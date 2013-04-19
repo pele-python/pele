@@ -49,10 +49,11 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         self.ui.view3D.setCoords(coords)
         
     def _calculate_normalmodes(self):
-        pot = self.system.get_potential()
-        E, g, hess = pot.getEnergyGradientHessian(self.coords)
-        metric = self.system.get_metric_tensor(self.coords)
-        freq, mode = normalmodes(hess, metric = metric)
+#        pot = self.system.get_potential()
+#        E, g, hess = pot.getEnergyGradientHessian(self.coords)
+#        metric = self.system.get_metric_tensor(self.coords)
+#        freq, mode = normalmodes(hess, metric = metric)
+        freq, mode = self.system.get_normalmodes(self.coords)
         mode=np.real(mode.transpose())
         
         self.normalmodes = []

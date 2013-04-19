@@ -1,16 +1,16 @@
 import numpy as np
-import aautils
+import aatopology
 from pygmin.potentials.potential import potential
 from pygmin.mindist import StandardClusterAlignment, optimize_permutations
 
-class RigidFragment(aautils.AASiteType):
+class RigidFragment(aatopology.AASiteType):
     ''' defines a single rigid fragment 
     
     In the most simple case, this is just a whole molecule
     '''
     
     def __init__(self):
-        aautils.AASiteType.__init__(self)
+        aatopology.AASiteType.__init__(self)
         self.atom_positions = []
         self.atom_types = []
         self.atom_masses = []
@@ -59,12 +59,12 @@ class RigidFragment(aautils.AASiteType):
         self._determine_symmetries()
             
     def to_atomistic(self, com, p):
-        R, R1, R2, R3 = aautils.rotMatDeriv(p, False)
+        R, R1, R2, R3 = aatopology.rotMatDeriv(p, False)
         return com + np.dot(R, np.transpose(self.atom_positions)).transpose()
             
     def transform_grad(self, p, g):
         g_com = np.sum(g, axis=0)
-        R, R1, R2, R3 = aautils.rotMatDeriv(p, True)
+        R, R1, R2, R3 = aatopology.rotMatDeriv(p, True)
         g_p = np.zeros_like(g_com)
         for ga, x in zip(g, self.atom_positions):
             g_p[0] += np.dot(ga, np.dot(R1, x))
@@ -84,7 +84,7 @@ class RigidFragment(aautils.AASiteType):
         return g_com, g_p
 
     def redistribute_forces(self, p, grad_com, grad_p):
-        R, R1, R2, R3 = aautils.rotMatDeriv(p, True)
+        R, R1, R2, R3 = aatopology.rotMatDeriv(p, True)
         grad = np.dot(R1, np.transpose(self.atom_positions)).transpose()*grad_p[0]
         grad += np.dot(R2, np.transpose(self.atom_positions)).transpose()*grad_p[1]
         grad += np.dot(R3, np.transpose(self.atom_positions)).transpose()*grad_p[2]
@@ -129,32 +129,31 @@ class RigidFragment(aautils.AASiteType):
         self._determine_inversion(permlist)
         self._determine_rotational_symmetry(permlist)
                     
-class RBTopology(aautils.AATopology):
+class RBTopology(aatopology.AATopology):
     def __init__(self):
-        aautils.AATopology.__init__(self)
-        self.indices=[]
+        aatopology.AATopology.__init__(self)
         self.natoms=0
         
     def get_atomtypes(self):
         atom_types = [None for i in xrange(self.natoms)]
         for site in self.sites:
-            for i, atype in zip(site.indices, site.atom_types):
+            for i, atype in zip(site.atom_indices, site.atom_types):
                 atom_types[i]=atype
         return atom_types
 
     def get_atommasses(self):
         masses = [None for i in xrange(self.natoms)]
         for site in self.sites:
-            for i, mass in zip(site.indices, site.atom_masses):
+            for i, mass in zip(site.atom_indices, site.atom_masses):
                 masses[i]=mass
         return masses
         
     def add_sites(self, sites):
-        aautils.AATopology.add_sites(self, sites)
+        aatopology.AATopology.add_sites(self, sites)
         for site in sites:
             nsite_atoms = len(site.atom_positions)
             if not hasattr(site, "atom_indices"):
-                site.indices = range(self.natoms, self.natoms+nsite_atoms)
+                site.atom_indices = range(self.natoms, self.natoms+nsite_atoms)
             self.natoms += nsite_atoms
             
     def get_atom_labels(self):
@@ -169,7 +168,7 @@ class RBTopology(aautils.AATopology):
         atomistic = np.zeros([self.natoms,3])
         for site, com, p in zip(self.sites, ca.posRigid, ca.rotRigid):
             atoms = site.to_atomistic(com, p)
-            for i,x in zip(site.indices, atoms):
+            for i,x in zip(site.atom_indices, atoms):
                 atomistic[i]=x
         return atomistic
 
@@ -178,7 +177,7 @@ class RBTopology(aautils.AATopology):
         rbgrad = self.coords_adapter(np.zeros_like(rbcoords))
         for site, p, g_com, g_p in zip(self.sites, ca.rotRigid,
                                        rbgrad.posRigid,rbgrad.rotRigid):
-            g_com[:], g_p[:] = site.transform_grad(p, grad.reshape(-1,3)[site.indices])
+            g_com[:], g_p[:] = site.transform_grad(p, grad.reshape(-1,3)[site.atom_indices])
         return rbgrad.coords
                 
     def redistribute_gradient(self, rbcoords, rbgrad):
@@ -187,7 +186,7 @@ class RBTopology(aautils.AATopology):
         grad = np.zeros([self.natoms,3])
         for site, p, g_com, g_p in zip(self.sites, ca.rotRigid, cg.posRigid, cg.rotRigid):
             gatom = site.redistribute_forces(p, g_com, g_p)
-            for i,x in zip(site.indices, gatom):
+            for i,x in zip(site.atom_indices, gatom):
                 grad[i]=x
         return grad
     

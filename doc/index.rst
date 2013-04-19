@@ -53,18 +53,19 @@ Modules
 .. toctree::
    :maxdepth: 1
 
-   system_class
-   quenching
-   potentials
-   database
-   structure_alignment
-   step_taking
-   transition_states_module
-   landscape_module
-   monte_carlo
    accept_tests
-   utils
+   angleaxis_module
+   database
    gui
+   landscape_module
+   potentials
+   monte_carlo
+   quenching
+   step_taking
+   structure_alignment
+   system_class
+   transition_states_module
+   utils
 
 Indices and tables
 ==================

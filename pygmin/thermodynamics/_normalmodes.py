@@ -5,14 +5,19 @@ from pygmin.utils.hessian import sort_eigs
 __all__ = ["normalmode_frequencies", "normalmodes", "logproduct_freq2"]
 
 def normalmode_frequencies(hessian, metric=None, eps=1e-4):
-    '''calculate normal mode frequencies
+    '''calculate (squared) normal mode frequencies
     
     Parameters
     ----------
-    hessian:
-        hessian marix
-    metric: 
+    hessian: 2d array
+        hessian matrix
+    metric: 2d array
         mass weighted metric tensor
+        
+    Returns
+    -------
+    sorted array of normal mode frequencies
+    
     '''
     A = hessian
     if metric is not None:
@@ -27,21 +32,35 @@ def normalmode_frequencies(hessian, metric=None, eps=1e-4):
     
     return np.sort(np.real(frq))
 
-def normalmodes(hessian, metric=None, eps=1e-4):
-    '''calculate and return normal mode frequencies and vectors
+def normalmodes(hessian, metric=None, eps=1e-4, symmetric=False):
+    '''calculate (squared) normal mode frequencies and normal mode vectors
     
     Parameters
     ----------
-    hessian:
+    hessian: array
         hessian marix
-    metric: 
+    metric: array
         mass weighted metric tensor
+    symmetric: bool
+        If true, the Hessian times the metric tensor is assumed to be symmetric.  This is
+        not usually the case, even if the metric tensor is symmetric.  It is
+        true if the metric tensor is the identity.  
+        
+    Returns
+    -------
+    freq, evecs tuple array of squared frequencies and normal modes
+    
     '''
-    A = hessian
-    if metric is not None:
+    if metric is None:
+        A = hessian
+        symmetric = True
+    else:
         A = np.dot(np.linalg.pinv(metric), hessian)
-   
-    freq, evecs = np.linalg.eig(A)
+
+    if symmetric:
+        freq, evecs = np.linalg.eigh(A)
+    else:
+        freq, evecs = np.linalg.eig(A)
     
     if(np.max(np.abs(np.imag(freq))) > eps):
         print freq
@@ -54,7 +73,7 @@ def normalmodes(hessian, metric=None, eps=1e-4):
 
 
 def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
-    ''' calculate the log product of positive frequencies
+    ''' calculate the log product of positive (squared) frequencies
     
     calculates
     log(product_i f_i^2)
@@ -72,7 +91,7 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
         
     Returns
     -------
-    touple of number of conisdered frequences and log product of frequencies
+    tuple of number of considered frequencies and log product of frequencies
     '''
     inegative = 0
     izero = 0
@@ -89,7 +108,7 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
         n+=1
         
     if nzero != izero:
-        raise ValueError("the number of zero eigenvalues differs from the expected value")
+        raise ValueError("the number of zero eigenvalues (%d) differs from the expected value (%d)" % (izero, nzero))
     if nnegative != inegative:
         raise ValueError("the number of negative eigenvalues differs from the expected "
                          "number (not a minimum / transition state?)")

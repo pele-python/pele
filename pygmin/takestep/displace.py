@@ -29,8 +29,11 @@ class RandomDisplacement(TakestepSlice):
     def __init__(self, stepsize=1.0):
         TakestepSlice.__init__(self, stepsize=stepsize)
     def takeStep(self, coords, **kwargs):
-        c = coords[self.srange]
-        c += np.random.uniform(low=-self.stepsize, high=self.stepsize, size=c.shape)
+        coords[self.srange] += np.random.uniform(low=-self.stepsize, high=self.stepsize, size=coords[self.srange].shape)
+    
+#    def takeStep_srange(self, ):
+#        for i in self.srange:
+#            coords[i] += 
 
             
 class UniformDisplacement(TakestepSlice):        

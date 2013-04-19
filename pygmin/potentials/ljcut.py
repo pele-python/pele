@@ -1,12 +1,12 @@
 import numpy as np
 
 import fortran.ljcut as _ljcut
-from pygmin.potentials import BasePotential
+from pygmin.potentials import BasePotentialAtomistic
 
 __all__ = ["LJCut"]
 
-class LJCut(BasePotential):
-    """ 
+class LJCut(BasePotentialAtomistic):
+    """
     lennard jones potential with a cutoff that is continuous and smooth
     """
     def __init__(self, eps=1.0, sig=1.0, rcut = 2.5, boxl=None):
@@ -19,12 +19,14 @@ class LJCut(BasePotential):
             self.boxl = 100000.
         else:
             self.periodic = True
-        print "using Lennard-Jones potential", self.sig, self.eps, 
-        print "with cutoff", self.rcut,
-        if self.periodic: 
-            print "periodic with boxl ", self.boxl
-        else:
-            print ""
+        
+        if False:
+            print "using Lennard-Jones potential", self.sig, self.eps, 
+            print "with cutoff", self.rcut,
+            if self.periodic: 
+                print "periodic with boxl ", self.boxl
+            else:
+                print ""
         
     def getEnergy(self, coords):
         natoms = len(coords) / 3

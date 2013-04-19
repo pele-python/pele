@@ -32,13 +32,6 @@ Hessian eigenvalues and eigenvectors
 .. automodule:: pygmin.utils.hessian
 
 
-Crystal structure tools
-=======================
-
-.. automodule:: pygmin.utils.lattice 
-
-.. automodule:: pygmin.utils.crystals
-
 NeighborLists
 =============
 .. automodule:: pygmin.utils.neighbor_list
@@ -70,9 +63,6 @@ Wrapper / helper functions for external programs
       :members:
       :undoc-members:
 
-.. automodule:: pygmin.utils.dmagmin 
-      :members:
-      :undoc-members:
 """
 
 
@@ -80,10 +70,7 @@ Wrapper / helper functions for external programs
 #from disconnectivity_graph import *
 #from amber import *
 #from benchmark import *
-#from crystals import *
-##from dmagmin import *
 #from histogram import *
-#from lattice import *
 #from neighbor_list import *
 ##from pymolwrapper import *
 #from rbtools import *

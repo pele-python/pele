@@ -66,7 +66,8 @@ class MonteCarlo(object):
             acceptTest=None,
             temperature=1.0,
             confCheck=[],
-            outstream = sys.stdout, store_initial=True
+            outstream = sys.stdout, store_initial=True,
+            iprint=1,
             ):
         #note: make a local copy of lists of events so that an inputted list is not modified.
         self.coords = np.copy(coords)
@@ -78,7 +79,7 @@ class MonteCarlo(object):
         self.naccepted = 0
         
         self.outstream = outstream
-        self.printfrq = 1 #controls how often printing is done
+        self.printfrq = iprint #controls how often printing is done
         self.confCheck = confCheck
     
         if acceptTest:

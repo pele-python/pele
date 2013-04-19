@@ -40,6 +40,7 @@ fmodules.add_module("pygmin/transition_states/_orthogoptf.f90")
 fmodules.add_module("pygmin/transition_states/_NEB_utils.f90")
 fmodules.add_module("pygmin/angleaxis/_aadist.f90")
 fmodules.add_module("pygmin/accept_tests/_spherical_container.f90")
+fmodules.add_module("pygmin/wham/_wham_utils.f90")
 
 cxx_modules = [ ]
 
@@ -53,7 +54,6 @@ setup(name='pygmin',
       packages=["pygmin",
                 "pygmin.application",
                 "pygmin.potentials",
-                "pygmin.potentials.rigid_bodies",
                 "pygmin.gui",
                 "pygmin.gui.ui",
                 "pygmin.mindist",
@@ -76,54 +76,60 @@ setup(name='pygmin',
         )
 
 
-###########################################################
-"""
-programming note:  f2py and cython are not mutually compatible with distutils.
-To use f2py, we must use numpy.distutils, but numpy.distutils doesn't support
-cython.  There are several ways around this, but all of them are hacky.
+#
+# we have no cython files any more.  so the following is commented
+#
+have_cython = False
+if have_cython:
 
-1   Use numpy.distutils to compile the fortran extension modules and use
-    distutils to compile the .pyx files.  This seems like an optimal solution,
-    but it fails when you pass a flag to numpy.distutils that distutils doesn't
-    understand, e.g. --fcompiler.  A possible solution is to check for the
-    known incompatible flags and remove them when passing to distutils.  
+    ###########################################################
+    """
+    programming note:  f2py and cython are not mutually compatible with distutils.
+    To use f2py, we must use numpy.distutils, but numpy.distutils doesn't support
+    cython.  There are several ways around this, but all of them are hacky.
 
-2.  Compile cython .pyx files into .c files by hand and use numpy.distils
-    to include the .c as source files.  This is the way scipy does it.
-    We could also have setup.py accept a flag --cython which does this for
-    all .pyx files.
+    1   Use numpy.distutils to compile the fortran extension modules and use
+        distutils to compile the .pyx files.  This seems like an optimal solution,
+        but it fails when you pass a flag to numpy.distutils that distutils doesn't
+        understand, e.g. --fcompiler.  A possible solution is to check for the
+        known incompatible flags and remove them when passing to distutils.  
 
-Currently we are using method 1.
-"""
-###########################################################
+    2.  Compile cython .pyx files into .c files by hand and use numpy.distils
+        to include the .c as source files.  This is the way scipy does it.
+        We could also have setup.py accept a flag --cython which does this for
+        all .pyx files.
 
-import sys
-#remove any flag incompatible with non-numpy distutils.
-flag = "--fcompiler"
-rmlist = []
-for arg in sys.argv:
-    if flag in arg:
-        rmlist.append(arg)
-for arg in rmlist:
-    sys.argv.remove(arg)
+    Currently we are using method 1.
+    """
+    ###########################################################
+
+    import sys
+    #remove any flag incompatible with non-numpy distutils.
+    flag = "--fcompiler"
+    rmlist = []
+    for arg in sys.argv:
+        if flag in arg:
+            rmlist.append(arg)
+    for arg in rmlist:
+        sys.argv.remove(arg)
 
 
-#now build the cython modules
-#we have to do this separately because cython isn't supported by numpy.distutils
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-import numpy as np
+    #now build the cython modules
+    #we have to do this separately because cython isn't supported by numpy.distutils
+    from distutils.core import setup
+    from distutils.extension import Extension
+    from Cython.Distutils import build_ext
+    import numpy as np
 
-cython_modules = [
-                  Extension("pygmin.potentials.rigid_bodies._rbutils_cython",
-                            ["pygmin/potentials/rigid_bodies/_rbutils_cython.pyx"])
-                  ]
+    cython_modules = [
+                      Extension("pygmin.potentials.rigid_bodies._rbutils_cython",
+                                ["pygmin/potentials/rigid_bodies/_rbutils_cython.pyx"])
+                      ]
 
-setup(
-  ext_modules = cython_modules,
-  cmdclass = {'build_ext': build_ext},
-  include_dirs = [np.get_include()],
-#  script_args = ['build_ext', '--inplace'],
-)
+    setup(
+      ext_modules = cython_modules,
+      cmdclass = {'build_ext': build_ext},
+      include_dirs = [np.get_include()],
+    #  script_args = ['build_ext', '--inplace'],
+    )
 

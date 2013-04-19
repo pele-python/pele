@@ -1,11 +1,9 @@
-'''
-Created on 13 Apr 2012
-
-@author: ruehle
-'''
+"""
+this module holds the base classes for potentials
+"""
 import numpy as np
 
-__all__ = ["BasePotential"]
+__all__ = ["BasePotential", "BasePotentialAtomistic"]
 
 
 class BasePotential(object):
@@ -47,42 +45,6 @@ class BasePotential(object):
         e, g = self.getEnergyGradient(coords)
         return g     
 
-    #routines involving interaction lists
-    def getEnergyListSlow(self, coords, ilist):
-        coords2 = np.zeros(6)
-        E = 0.
-        for i,j  in ilist:
-            coords2[:3] = coords[i*3:i*3+3]
-            coords2[3:] = coords[j*3:j*3+3]
-            E += self.getEnergy( coords2 )
-        return E
-
-    def getEnergyList(self, coords, ilist):
-        """
-        the energy of select interactions defined in ilist
-        """
-        return self.getEnergyListSlow(coords, ilist)
-
-    def getEnergyGradientListSlow(self, coords, ilist):
-        """you really don't want to be using this..."""
-        coords2 = np.zeros(6)
-        E = 0.
-        g = np.zeros( len(coords) )
-        for i,j  in ilist:
-            coords2[:3] = coords[i*3:i*3+3]
-            coords2[3:] = coords[j*3:j*3+3]
-            de, dg = self.getEnergyGradient( coords2 )
-            E += de
-            g[i*3:i*3+3] += dg[:3]
-            g[j*3:j*3+3] += dg[3:]
-        return E, g
-
-    def getEnergyGradientList(self, coords, ilist):
-        """
-        the energy and gradient of select interactions defined in ilist
-        """
-        return self.getEnergyGradientListSlow(coords, ilist)
-    
     def NumericalHessian(self, coords, eps=1e-6):
         """return the Hessian matrix of second derivatives computed numerically
         
@@ -101,18 +63,22 @@ class BasePotential(object):
             x[i] = xbkup
         return hess
 
-            
     def getEnergyGradientHessian(self, coords):
         """return the energy, gradient, and Hessian at the given coordinates"""
         e, g = self.getEnergyGradient(coords)
         hess = self.NumericalHessian(coords)
         return e, g, hess
     
-    def test_potential(self, coords):
+    def getHessian(self, coords):
+        """return the hessian"""
+        e, g, h = self.getEnergyGradientHessian(coords)
+        return h
+    
+    def test_potential(self, coords, eps=1e-6):
         """print some information testing whether the analytical gradients are correct"""
         E1 = self.getEnergy(coords)
         E2, grad = self.getEnergyGradient(coords)
-        gradnum = self.NumericalDerivative(coords)
+        gradnum = self.NumericalDerivative(coords, eps=eps)
         print "testing energy and gradient"
         print "energy from getEnergy        ", E1
         print "energy from getEnergyGradient", E2
@@ -129,4 +95,36 @@ class potential(BasePotential):
     for backward compatibility
     """
     pass
+
+
+class BasePotentialAtomistic(object):
+    '''
+    Base class for all potentials that can use interaction lists
+    
+    See Also
+    --------
+    BasePotential
+    '''
+    def getEnergyList(self, coords, ilist):
+        """the energy of select interactions defined in ilist
+        
+        Parameters
+        ----------
+        coords : array
+        ilist : array, shape (*,2)
+            a numpy array containing pairs of atoms (ilist[i,:]).  
+        """
+        return NotImplementedError
+
+    def getEnergyGradientList(self, coords, ilist):
+        """return the energy and gradient of select interactions defined in ilist
+
+        Parameters
+        ----------
+        coords : array
+        ilist : array, shape (*,2)
+            a numpy array containing pairs of atoms (ilist[i,:]).  
+        """
+        return NotImplementedError
+    
 

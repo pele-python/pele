@@ -367,18 +367,27 @@ class Database(object):
         #self._sql_set_dist_upd = Distance.__table__.update().where(and_(tbl._minimum1_id==bindparam("id1"),tbl._minimum2_id==bindparam("id2"))).values(dist=bindparam("dist"))
         #self._sql_set_dist_ins = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
         
+    def _highest_energy_minimum(self):
+        """return the minimum with the highest energy"""
+        candidates = self.session.query(Minimum).order_by(Minimum.energy.desc()).limit(1).all()
+        return candidates[0]
     
-    def addMinimum(self, E, coords, commit=True):
+    def addMinimum(self, E, coords, commit=True, max_n_minima=-1):
         """add a new minimum to database
         
         Parameters
         ----------
-        energy : float
+        E : float
         coords : numpy.array
             coordinates of the minimum
         commit : bool, optional
             commit changes to database
-        
+        max_n_minima : int, optional
+            keep only the max_n_minima with the lowest energies. If E is greater
+            than the minimum with the highest energy in the database, then don't add
+            this minimum and return None.  Else add this minimum and delete the minimum
+            with the highest energy.  if max_n_minima < 0 then it is ignored.
+
         Returns
         -------
         minimum : Minimum
@@ -398,13 +407,26 @@ class Database(object):
                     continue
             self.lock.release() 
             return m
+        if max_n_minima > 0:
+            if self.number_of_minima() >= max_n_minima:
+                mmax = self._highest_energy_minimum()
+                if E >= mmax.energy:
+                    #don't add the minimum
+                    self.lock.release() 
+                    return None
+                else:
+                    #remove the minimum with the highest energy and continue
+                    self.removeMinimum(mmax, commit=commit)
+                    
         self.session.add(new)
         if(commit):
             self.session.commit()
+        
         self.lock.release()
+        
         self.on_minimum_added(new)
         return new
-    
+        
     def getMinimum(self, id):
         """return the minimum with a given id"""
         return self.session.query(Minimum).get(id)
@@ -606,7 +628,7 @@ class Database(object):
         '''
         return self.session.query(TransitionState).all()
     
-    def minimum_adder(self, Ecut=None):
+    def minimum_adder(self, Ecut=None, max_n_minima=-1):
         '''wrapper class to add minima
         
         Since pickle cannot handle pointer to member functions, this class wraps the call to
@@ -616,25 +638,32 @@ class Database(object):
         ----------
         Ecut: float, optional
              energy cutoff, don't add minima which are higher in energy
+        max_n_minima : int, optional
+            keep only the max_n_minima with the lowest energies. If E is greater
+            than the minimum with the highest energy in the database, then don't add
+            this minimum and return None.  Else add this minimum and delete the minimum
+            with the highest energy.  if max_n_minima < 0 then it is ignored.
         
         Returns
         -------
         handler: minimum_adder class
             minimum handler to add minima
+
             
         '''
         class minimum_adder:
-            def __init__(self, db, Ecut):
+            def __init__(self, db, Ecut, max_n_minima):
                 self.db = db
                 self.Ecut = Ecut
+                self.max_n_minima = max_n_minima
             def __call__(self, E, coords):
-                if(not self.Ecut is None):
-                    if(E > self.Ecut):
+                if self.Ecut is not None:
+                    if E > self.Ecut:
                         return None
-                self.db.addMinimum(E, coords)
-        return minimum_adder(self, Ecut)
+                return self.db.addMinimum(E, coords, max_n_minima=self.max_n_minima)
+        return minimum_adder(self, Ecut, max_n_minima)
     
-    def removeMinimum(self, m):
+    def removeMinimum(self, m, commit=True):
         """remove a minimum from the database
         
         Remove a minimum and any objects (TransitionState or Distance) 
@@ -660,7 +689,8 @@ class Database(object):
         self.on_minimum_removed(m)
         #delete the minimum
         self.session.delete(m)
-        self.session.commit()
+        if commit:
+            self.session.commit()
 
     
     def mergeMinima(self, min1, min2):
@@ -704,6 +734,38 @@ class Database(object):
         self.session.delete(min2)
         self.session.commit()
 
+    def remove_transition_state(self, ts, commit=True):
+        """remove a transition states from the database
+        """
+        self.on_ts_removed(ts)
+        self.session.delete(ts)
+        if commit:
+            self.session.commit()
+
+    def number_of_minima(self):
+        """return the number of minima in the database
+        
+        Notes
+        -----
+        This is much faster than len(database.minima()), but is is not instantaneous.  
+        It takes a longer time for larger databases.  The first call to number_of_minima() 
+        can be much faster than subsequent calls.  
+        """
+        return self.session.query(Minimum).count()
+
+    def number_of_transition_states(self):
+        """return the number of transition states in the database
+        
+        Notes
+        -----
+        see notes for number_of_minima()
+        
+        See Also
+        --------
+        number_of_minima
+        """
+        return self.session.query(TransitionState).count()
+
 
 if __name__ == "__main__":    
     db = Database()
@@ -731,3 +793,5 @@ if __name__ == "__main__":
         print m._id, m.energy
     #for i in db.transition_states():
     #    print i, i.energy, i.eigenval, i.eigenvec
+    
+    print "largest_energy_minimum", db._highest_energy_minimum().energy

@@ -5,6 +5,7 @@ import dgraph_browser
 import sys
 
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+from matplotlib.collections import LineCollection
 
 
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
@@ -142,28 +143,13 @@ class DGraphWidget(QWidget):
         
         ax = self.canvas.axes
         ax.clear()
-        ax.hold(True)
-        
-        #make the plot look prettier
-        ax.tick_params(axis='y', direction='out')
-        ax.yaxis.tick_left()
-        ax.spines['left'].set_color('black')
-        ax.spines['left'].set_linewidth(0.5)
-        ax.spines['top'].set_color('none')
-        ax.spines['bottom'].set_color('none')
-        ax.spines['right'].set_color('none')
+        ax.hold(True)        
 
-        
-        
-        
-        
-        
-        #draw minima as points
+        #draw minima as points and make them interactive
         if show_minima:
             xpos, minima = dg.get_minima_layout()
             energies = [m.energy for m in minima]
-            points = ax.scatter(xpos, energies, picker=5)
-        
+            points = ax.scatter(xpos, energies, picker=5)        
             
             def on_pick(event):
                 if event.artist != points:
@@ -175,31 +161,9 @@ class DGraphWidget(QWidget):
                 print "you clicked on minimum with id", min1._id, "and energy", min1.energy
                 self.minimum_selected(min1)
             self.canvas.mpl_connect('pick_event', on_pick)
-
         
-        
-        
-        #draw line segments connecting minima
-        line_segments = dg.line_segments
-        for x, y in line_segments:
-            ax.plot(x, y, 'k')
-        
-        #adjust the limits of the graph.  this might be slow
-        ymax = max(max(y) for x, y in line_segments)
-        ymin = min(min(y) for x, y in line_segments)
-        xmax = max(max(x) for x, y in line_segments)
-        xmin = min(min(x) for x, y in line_segments)
-        d = .2
-        xmax += d
-        xmin -= d
-        ymax += d
-        ymin -= d*4.
-        self.canvas.axes.set_xlim(xmin, xmax)
-        self.canvas.axes.set_ylim(ymin, ymax)
-        
-        
-        ax.set_xticks([])
-
+        # plot the lines and set up the rest of the plot using the built in function 
+        dg.plot(axes=ax, show_minima=False)
         self.canvas.draw()
 
 

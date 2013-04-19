@@ -69,6 +69,7 @@ class LJpshift(BasePotential):
                 [self.natoms])
         return E, V
 
+
 if __name__ == "__main__":
     import pygmin.potentials.ljpshift as ljpshift
     import pygmin.defaults as defaults
@@ -97,16 +98,29 @@ if __name__ == "__main__":
     print "blj energy slow", ebljslow
     eblj = blj.getEnergy(coords)
     print "blj energy     ", eblj
+    blj.test_potential(coords)
+    print ""
     
-    print "quenching coords"
-    ret1 = defaults.quenchRoutine(coords, blj.getEnergyGradient, iprint=-11)
+    print "partially quenching coords"
+    ret1 = defaults.quenchRoutine(coords, blj.getEnergyGradient, iprint=-11, tol=1.)
     coords = ret1[0]
-    
     ebljslow = bljslow.getEnergy(coords)
     print "blj energy slow", ebljslow
     eblj = blj.getEnergy(coords)
     print "blj energy     ", eblj
+    blj.test_potential(coords, eps=1e-6)
+    print ""
 
+
+    
+    print "quenching coords"
+    ret1 = defaults.quenchRoutine(coords, blj.getEnergyGradient, iprint=-11)
+    coords = ret1[0]
+    ebljslow = bljslow.getEnergy(coords)
+    print "blj energy slow", ebljslow
+    eblj = blj.getEnergy(coords)
+    print "blj energy     ", eblj
+    blj.test_potential(coords, eps=1e-6)
 
 
     

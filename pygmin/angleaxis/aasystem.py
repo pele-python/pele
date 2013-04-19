@@ -1,8 +1,6 @@
 import numpy as np
 import tempfile
 
-from pygmin.potentials import GMINPotential
-import gmin_ as GMIN
 from pygmin.angleaxis import RBTopology
 from copy import deepcopy
 from pygmin.utils import rotations
@@ -15,7 +13,7 @@ from pygmin import defaults
 
 from pygmin.angleaxis.aamindist import *
 from pygmin.angleaxis import MinPermDistAACluster, ExactMatchAACluster
-from pygmin.angleaxis.aautils import TakestepAA
+from pygmin.angleaxis import TakestepAA
 from pygmin.landscape import smoothPath
 from pygmin.utils.elements import elements
 from pygmin.utils.xyz import write_xyz
@@ -113,10 +111,14 @@ class RBSystem(AASystem):
         GLU.gluCylinder(g, .1,0.1,r,10,10)  #I can't seem to draw a cylinder
         GL.glPopMatrix()
         
-    def draw(self, rbcoords, index):
+    def draw(self, rbcoords, index, shift_com=True):
         from OpenGL import GL, GLUT    
         coords = self.aasystem.to_atomistic(rbcoords)
-        com=np.mean(coords, axis=0)
+        if shift_com:
+            com=np.mean(coords, axis=0)
+        else:
+            com = np.zeros(3)
+            
         self.aasystem.sites
         i=0                  
         for atom_type, xx in zip(self.atom_types, coords):
