@@ -51,7 +51,7 @@ class LowestEigPot(basepot):
     
     def getEnergyGradient(self, vec_in):
         """
-        vec_in: 
+        vec_in : array 
             A guess for the lowest eigenvector.  It should be normalized
         """
         vecl = 1.
@@ -132,11 +132,7 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
 
     
     if eigenvec0 is None:
-        #eigenvec0 = vec_random()
         #this random vector should be distributed uniformly on a hypersphere.
-        #it is not
-        #eigenvec0 = np.random.uniform(-1, 1, coords.shape)
-        #eigenvec0 /= np.linalg.norm(eigenvec0)
         eigenvec0 = rotations.vec_random_ndim(coords.shape)
     
     #set up potential for minimization    
@@ -154,7 +150,6 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     delattr(res, "energy")
     delattr(res, "coords")
     res.H0 = quencher.H0
-    #res.rms = ret[2]
     #res.success = res.rms <= tol
     return res
 

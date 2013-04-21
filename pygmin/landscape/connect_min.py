@@ -255,8 +255,14 @@ class DoubleEndedConnect(object):
         add a transition state to the database, the transition state graph and
         the distance graph
         """
+        if isinstance(min_ret1, tuple): # for compatability with old and new quenchers
+            min_ret1 = min_ret1[4]
+        if isinstance(min_ret2, tuple): # for compatability with old and new quenchers
+            min_ret2 = min_ret2[4]
+
+        
         #sanity check for the energies
-        me1, me2 = min_ret1[1], min_ret2[1]
+        me1, me2 = min_ret1.energy, min_ret2.energy
         if E < me1 or E < me2:
             logger.warning("trying to add a transition state that has energy lower than its minima.")
             logger.warning("    TS energy %s %s %s %s", E, "minima energy", me1, me2 )
@@ -266,7 +272,9 @@ class DoubleEndedConnect(object):
         #check the minima and transition states are valid configurations.
         #if any fail, then don't add anything.  
         configs_ok = True
-        for xtrial, etrial in [ min_ret1[:2], min_ret2[:2], (coords, E) ]:
+        for xtrial, etrial in [ (min_ret1.coords, min_ret1.energy), 
+                                (min_ret2.coords, min_ret2.energy), 
+                                (coords, E) ]:
             for check in self.conf_checks:
                 if not check(energy=etrial, coords=xtrial):
                     configs_ok = False
@@ -279,8 +287,8 @@ class DoubleEndedConnect(object):
         
         #add the minima to the transition state graph.  
         #This step is important to do first because it returns a Database Minimum object.
-        min1 = self.graph.addMinimum(min_ret1[1], min_ret1[0])
-        min2 = self.graph.addMinimum(min_ret2[1], min_ret2[0])
+        min1 = self.graph.addMinimum(min_ret1.energy, min_ret1.coords)
+        min2 = self.graph.addMinimum(min_ret2.energy, min_ret2.coords)
         if min1 == min2:
             logger.warning( "stepping off the transition state resulted in twice the same minima %s", min1._id)
             return False

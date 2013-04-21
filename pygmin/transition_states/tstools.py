@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 
-from pygmin.optimize import mylbfgs
+from pygmin.optimize._quench_new import mylbfgs
 
 __all__ = ["minima_from_ts"]
 
@@ -87,8 +87,8 @@ def minima_from_ts(pot, xt, n=None,
     #e1,g1 = getEnergyGradient(x1)
     #e2,g2 = getEnergyGradient(x2)
     #print np.dot(g1,g2)
-    minimum1 = quenchRoutine(x1, pot.getEnergyGradient, **quenchParams)
-    minimum2 = quenchRoutine(x2, pot.getEnergyGradient, **quenchParams)
+    minimum1 = quenchRoutine(x1, pot, **quenchParams)
+    minimum2 = quenchRoutine(x2, pot, **quenchParams)
     return minimum1, minimum2
 
     

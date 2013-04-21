@@ -33,6 +33,10 @@ def lbfgs_scipy(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
     """
     a wrapper function for lbfgs routine in scipy
     """
+    if hasattr(getEnergyGradient, "getEnergyGradient"):
+        # this is to aid compatibility between old and new quenchers.
+        # This function will now accept a potential object
+        getEnergyGradient = getEnergyGradient.getEnergyGradient
     import scipy.optimize
     newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(getEnergyGradient, 
             coords, iprint=iprint, pgtol=tol, maxfun=nsteps)
@@ -59,6 +63,10 @@ def fire(coords, getEnergyGradient, tol=1e-3, nsteps=100000, **kwargs):
     """
     A wrapper function for the pygmin FIRE implementation
     """
+    if hasattr(getEnergyGradient, "getEnergyGradient"):
+        # this is to aid compatibility between old and new quenchers.
+        # This function will now accept a potential object
+        getEnergyGradient = getEnergyGradient.getEnergyGradient
     pot = getEnergyGradientWrapper(getEnergyGradient)
     opt = Fire(coords, pot, **kwargs)
     opt.run(fmax=tol, steps=nsteps)
@@ -70,6 +78,10 @@ def cg(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     """
     a wrapper function for conjugate gradient routine in scipy
     """
+    if hasattr(getEnergyGradient, "getEnergyGradient"):
+        # this is to aid compatibility between old and new quenchers.
+        # This function will now accept a potential object
+        getEnergyGradient = getEnergyGradient.getEnergyGradient
     import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output=True, disp=iprint>0)
@@ -94,6 +106,10 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     
     This algorithm only uses function values, not derivatives or second derivatives.
     """
+    if hasattr(getEnergyGradient, "getEnergyGradient"):
+        # this is to aid compatibility between old and new quenchers.
+        # This function will now accept a potential object
+        getEnergyGradient = getEnergyGradient.getEnergyGradient
     import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)  #this is really stupid
     ret = scipy.optimize.fmin(pot.getEnergy, coords, ftol=tol, full_output = True)
@@ -122,6 +138,10 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
 
 def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, \
                       gtol = 1e-3, maxstep = -1., event=None):
+    if hasattr(getEnergyGradient, "getEnergyGradient"):
+        # this is to aid compatibility between old and new quenchers.
+        # This function will now accept a potential object
+        getEnergyGradient = getEnergyGradient.getEnergyGradient
     N = len(x0)
     x=x0.copy()
     E, V = getEnergyGradient(x)
@@ -155,6 +175,10 @@ def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
     """
     a wrapper function for the scipy BFGS algorithm
     """
+    if hasattr(getEnergyGradient, "getEnergyGradient"):
+        # this is to aid compatibility between old and new quenchers.
+        # This function will now accept a potential object
+        getEnergyGradient = getEnergyGradient.getEnergyGradient
     import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol = tol, full_output = True, disp=iprint>0)
@@ -186,6 +210,10 @@ def lbfgs_py(coords, getEnergyGradient, **kwargs):
     --------
     LBFGS  
     """
+    if hasattr(getEnergyGradient, "getEnergyGradient"):
+        # this is to aid compatibility between old and new quenchers.
+        # This function will now accept a potential object
+        getEnergyGradient = getEnergyGradient.getEnergyGradient
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = _lbfgs_py(coords, pot, **kwargs)
     return ret
@@ -213,6 +241,10 @@ def mylbfgs(coords, getEnergyGradient, **kwargs):
     --------
     MYLBFGS  
     """
+    if hasattr(getEnergyGradient, "getEnergyGradient"):
+        # this is to aid compatibility between old and new quenchers.
+        # This function will now accept a potential object
+        getEnergyGradient = getEnergyGradient.getEnergyGradient
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = _mylbfgs(coords, pot, **kwargs)
     return ret
