@@ -2,7 +2,8 @@ import numpy as np
 import copy
 import logging
 
-from pygmin.optimize import Result, mylbfgs
+from pygmin.optimize import Result
+from pygmin.optimize._quench_new import mylbfgs
 from pygmin.potentials.potential import potential as basepot
 from pygmin.transition_states import findLowestEigenVector
 
@@ -409,15 +410,15 @@ class FindTransitionState(object):
 
         tspot = TSRefinementPotential(self.pot, self.eigenvec)
         coords1 = np.copy(coords)
-        ret = self.tangent_space_quencher(coords, tspot.getEnergyGradient, 
+        ret = self.tangent_space_quencher(coords, tspot, 
                                           nsteps=nstepsperp, tol=self.tol_tangent,
                                           maxstep=maxstep,
                                           H0 = self.H0_transverse,
                                           **self.tangent_space_quench_params)
-        coords = ret[0]
+        coords = ret.coords
         self.tangent_move_step = np.linalg.norm(coords - coords1)
-        rms = ret[2]
-        self.tangent_result = ret[4]
+        rms = ret.rms
+        self.tangent_result = ret
         self.H0_transverse = self.tangent_result.H0
         return coords, rms
 

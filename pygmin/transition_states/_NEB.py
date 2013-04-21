@@ -5,7 +5,8 @@ import logging
 
 
 from pygmin.transition_states import InterpolatedPath
-from pygmin.optimize import Result, mylbfgs
+from pygmin.optimize import Result
+from pygmin.optimize._quench_new import mylbfgs
         
 __all__ = ["NEB",]
 
@@ -185,11 +186,12 @@ class NEB(object):
             
         self.step = 0
         qres = quenchRoutine(
-                    self.active.reshape(self.active.size), self.getEnergyGradient,
+                    self.active.reshape(self.active.size), self,
                     **quenchParams)
-        tmp,E,rms,nsteps = qres[:4]
+        if isinstance(qres, tuple): # for compatability with old and new quenchers
+            qres = qres[4]
         
-        self.active[:,:] = tmp.reshape(self.active.shape)
+        self.active[:,:] = qres.coords.reshape(self.active.shape)
         if self.copy_potential:
             for i in xrange(0,self.nimages):
                 pot = self.potential_list[i]
@@ -200,11 +202,11 @@ class NEB(object):
         
         res = Result()
         res.path = self.coords 
-        res.nsteps = nsteps
+        res.nsteps = qres.nsteps
         res.energy = self.energies
-        res.rms = rms
+        res.rms = qres.rms
         res.success = False
-        if rms<quenchParams["tol"]:
+        if qres.rms < quenchParams["tol"]:
             res.success = True
             
         return res
@@ -221,6 +223,11 @@ class NEB(object):
             for i in xrange(1, self.nimages-1):
                 self.energies[i], realgrad[i,:] = self.potential.getEnergyGradient(coordsall[i,:])
         return realgrad
+
+    def getEnergy(self, coords):
+        """this is a very dumb way of getting the energy.  it should be replaced"""
+        e, g = self.getEnergyGradient(coords)
+        return e
 
     def getEnergyGradient(self, coords1d):
         """
