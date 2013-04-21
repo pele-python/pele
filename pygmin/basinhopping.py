@@ -42,9 +42,9 @@ class BasinHopping(MonteCarlo):
                             confCheck = confCheck, \
                             outstream=outstream,store_initial=False)
 
-        self.quench = quench
         if quench is None:
             quench = lambda coords : mylbfgs(coords, self.potential.getEnergyGradient)
+        self.quench = quench
                 
         #########################################################################
         #do initial quench
