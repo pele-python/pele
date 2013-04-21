@@ -1,6 +1,6 @@
 import ambgmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
-from pygmin.optimize import lbfgs_scipy, cg , fire 
+from pygmin.optimize._quench_new import fire 
 
 import numpy as np
 from copy import copy
@@ -119,12 +119,12 @@ if __name__ == "__main__":
     # runtime error -- ValueError: The truth value of an array with more than ...
     
     # fire   
-    retOpmm = fire( coordsVec, pot.getEnergyGradient, tol = 1e-3, nsteps=1000) 
+    retOpmm = fire( coordsVec, pot, tol = 1e-3, nsteps=1000) 
     # works but quenched energy is higher! 
     
-    print "quenched energy ", retOpmm[1]
-    print "rms gradient", retOpmm[2]
-    print "number of function calls", retOpmm[3]    
+    print "quenched energy ", retOpmm.energy
+    print "rms gradient", retOpmm.rms
+    print "number of function calls", retOpmm.nfev
         
     # -------- GMIN 
     print "\n\nCompare with GMIN"    
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     enerGmin = pot.getEnergy(coords)
     egmin,gminEGrad = pot.getEnergyGradient(coords)
     
-    retGmin = fire( coords, pot.getEnergyGradient, tol = 1e-3, nsteps=1000)
+    retGmin = fire( coords, pot, tol = 1e-3, nsteps=1000)
 
     print " -- pre-quench --" 
     print "E       gmin : ", egmin 
@@ -145,8 +145,8 @@ if __name__ == "__main__":
     print "       openmm: ", go[0:3]/41.84
 
     print " -- post-quench --" 
-    print "E       gmin : ", retGmin[1]
-    print "       openmm: ", retOpmm[1]/4.184     
+    print "E       gmin : ", retGmin.energy
+    print "       openmm: ", retOpmm.energy/4.184     
 
     print "end"
 

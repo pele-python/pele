@@ -49,11 +49,11 @@ e = pot.getEnergy(coords)
 print "energy ", e
 
 print "try a quench"
-from pygmin.optimize import mylbfgs
-ret = mylbfgs(coords, pot.getEnergyGradient)
+from pygmin.optimize._quench_new import mylbfgs
+ret = mylbfgs(coords, pot)
 
-print "quenched e = ", ret[1], "funcalls", ret[3]
-print ret[0]
+print "quenched e = ", ret.energy, "funcalls", ret.nfev
+print ret.coords
 
 m = getm( ret[0] )
 print "magnetization after quench", m

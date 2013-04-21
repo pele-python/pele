@@ -210,8 +210,8 @@ def test_LJ(natoms = 12, **kwargs):
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     #quench X1
-    ret = quench( X1, lj.getEnergyGradient)
-    X1 = ret[0]
+    ret = quench( X1, lj)
+    X1 = ret.coords
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     #make X2 a rotation of X1
     print "testing with", natoms, "atoms, with X2 a rotated and permuted isomer of X1"
@@ -240,8 +240,8 @@ def test_LJ(natoms = 12, **kwargs):
     print "testing normal LJ  non isomer"
     print "******************************"
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
-    ret = quench( X2, lj.getEnergyGradient)
-    X2 = ret[0]
+    ret = quench( X2, lj)
+    X2 = ret.coords
     
     Y = X1.reshape([-1,3])
     Y+=np.random.random(3)

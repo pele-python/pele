@@ -37,11 +37,10 @@ print "energy ", e
 
 #try a quench
 if False:
-    from pygmin.optimize import mylbfgs
-    ret = mylbfgs(angles, pot.getEnergyGradient)
+    from pygmin.optimize._quench_new import mylbfgs
+    ret = mylbfgs(angles, pot)
     
-    print "quenched e = ", ret[1]
-    print ret[0]
+    print ret
 
 
 #set up and run basin hopping

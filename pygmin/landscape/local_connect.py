@@ -1,6 +1,6 @@
 import logging
 
-from pygmin.optimize import Result, mylbfgs
+from pygmin.optimize import Result
 from pygmin.transition_states import findTransitionState, minima_from_ts
 from pygmin.transition_states import NEBDriver
 
@@ -220,18 +220,11 @@ class LocalConnect(object):
 #####
 #####
 
-def getRandomCoords(pot, natoms):
-    import numpy as np
-    coords = np.random.uniform(-1,1,natoms*3)*natoms**(1./3)*1.5
-    ret = mylbfgs(coords, pot.getEnergyGradient)
-    return ret
-
 def getPairLJ(natoms=38):
     from pygmin.systems import LJCluster
     system = LJCluster(natoms)
     ret1 = system.get_random_minimized_configuration()
     ret2 = system.get_random_minimized_configuration()
-#    ret2 = getRandomCoords(lj, natoms)
     coords1, coords2 = ret1[0], ret2[0]
     E1, E2 = ret1[1], ret2[1]
     

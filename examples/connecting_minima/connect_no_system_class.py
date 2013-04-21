@@ -12,7 +12,7 @@ import numpy as np
 import os
 
 from pygmin.potentials.lj import LJ
-from pygmin.optimize import lbfgs_py
+from pygmin.optimize._quench_new import lbfgs_py
 from pygmin.landscape import DoubleEndedConnect, smoothPath
 from pygmin.mindist import MinPermDistAtomicCluster
 from pygmin.transition_states import orthogopt
@@ -26,12 +26,12 @@ pot = LJ()
 #import the starting and ending points and quench them, 
 coords1 = np.genfromtxt("coords.A")
 coords2 = np.genfromtxt("coords.B")
-res1 = lbfgs_py(coords1.reshape(-1), pot.getEnergyGradient)
-res2 = lbfgs_py(coords2.reshape(-1), pot.getEnergyGradient)
-coords1 = res1[0]
-coords2 = res2[0]
-E1 = res1[1]
-E2 = res2[1]
+res1 = lbfgs_py(coords1.reshape(-1), pot)
+res2 = lbfgs_py(coords2.reshape(-1), pot)
+coords1 = res1.coords
+coords2 = res2.coords
+E1 = res1.energy
+E2 = res2.energy
 natoms = len(coords1)/3
 
 #add the minima to a database

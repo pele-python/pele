@@ -7,7 +7,6 @@ import pygmin.basinhopping as bh
 from pygmin.storage import savenlowest
 from pygmin.NEB import NEB
 from pygmin.utils.rbtools import *
-from pygmin.optimize import quench
 from pygmin.takestep import generic
 from pygmin.takestep import displace
 

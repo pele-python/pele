@@ -403,14 +403,14 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     print "done", ret
     
     print "now do the same with scipy lbfgs"
-    from pygmin.optimize import lbfgs_scipy as quench
-    ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
+    from pygmin.optimize._quench_new import lbfgs_scipy as quench
+    ret = quench(Xinit, pot, tol = tol)
     print ret 
     
     if False:
         print "now do the same with scipy bfgs"
-        from pygmin.optimize.quench import bfgs as oldbfgs
-        ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
+        from pygmin.optimize._quench_new import bfgs as oldbfgs
+        ret = oldbfgs(Xinit, pot, tol = tol)
         print ret    
     
     if False:
@@ -422,17 +422,19 @@ def runtest(X, pot, natoms = 100, iprint=-1):
             
     if False:
         print "calling from wrapper function"
-        from pygmin.optimize import lbfgs_py
-        ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
+        from pygmin.optimize._quench_new import lbfgs_py
+        ret = lbfgs_py(Xinit, pot, tol = tol)
         print ret
 
 
-    if True:
+    try:
         import pygmin.utils.pymolwrapper as pym
         pym.start()
         for n, coords in enumerate(printevent.coordslist):
             coords=coords.reshape(natoms, 3)
             pym.draw_spheres(coords, "A", n)
+    except ImportError:
+        print "error loading pymol"
 
         
 if __name__ == "__main__":

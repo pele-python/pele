@@ -16,10 +16,10 @@ print pot.getEnergy(coords)
 a,b = pot.getEnergyGradient(coords) 
 print type(a) 
 
-from pygmin.optimize import lbfgs_scipy, cg , fire 
+from pygmin.optimize._quench_new import lbfgs_scipy, cg , fire 
 
 # lbfgs 
-ret = lbfgs_scipy( coords, pot.getEnergyGradient, iprint=-1 , tol = 1e-3, nsteps=100) 
+ret = lbfgs_scipy( coords, pot, iprint=-1 , tol = 1e-3, nsteps=100) 
      # core dump! 
 
 # cg  
@@ -31,7 +31,7 @@ ret = lbfgs_scipy( coords, pot.getEnergyGradient, iprint=-1 , tol = 1e-3, nsteps
 # ValueError: The truth value of an array with more than ...
     # works but after 1000 iterations gives an energy of -90.9378267921 higher than initial energy of -90.9364375726!
     
-print "energy ", ret[1]
-print "rms gradient", ret[2]
-print "number of function calls", ret[3]    
+print "energy ", ret.energy
+print "rms gradient", ret.rms
+print "number of function calls", ret.nfev
 

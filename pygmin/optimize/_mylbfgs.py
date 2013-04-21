@@ -122,45 +122,47 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     
     print ""
     print "now do the same with scipy lbfgs"
-    from pygmin.optimize import lbfgs_scipy as quench
-    ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
+    from pygmin.optimize._quench_new import lbfgs_scipy as quench
+    ret = quench(Xinit, pot, tol = tol)
     print ret
     #print ret[1], ret[2], ret[3]    
     
     if False:
         print "now do the same with scipy bfgs"
-        from pygmin.optimize.quench import bfgs as oldbfgs
-        ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
-        print ret[1], ret[2], ret[3]    
+        from pygmin.optimize._quench_new import bfgs as oldbfgs
+        ret = oldbfgs(Xinit, pot, tol = tol)
+        print ret
     
     if False:
         print "now do the same with gradient + linesearch"
         import _bfgs
         gpl = _bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
         ret = gpl.run(1000, tol = 1e-6)
-        print ret[1], ret[2], ret[3]    
+        print ret
             
     if False:
         print "calling from wrapper function"
-        from pygmin.optimize import lbfgs_py
-        ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
-        print ret[1], ret[2], ret[3]    
+        from pygmin.optimize._quench_new import lbfgs_py
+        ret = lbfgs_py(Xinit, pot, tol = tol)
+        print ret
         
     if True:
         print ""
         print "now do the same with lbfgs_py"
-        from pygmin.optimize import lbfgs_py
-        ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
-        print ret[1], ret[2], ret[3]    
+        from pygmin.optimize._quench_new import lbfgs_py
+        ret = lbfgs_py(Xinit, pot, tol = tol)
+        print ret
 
 
 
-    if True:
+    try:
         import pygmin.utils.pymolwrapper as pym
         pym.start()
         for n, coords in enumerate(printevent.coordslist):
             coords=coords.reshape(natoms, 3)
             pym.draw_spheres(coords, "A", n)
+    except ImportError:
+        print "error loading pymol"
 
         
 if __name__ == "__main__":
