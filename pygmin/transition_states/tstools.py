@@ -1,7 +1,6 @@
 import numpy as np
 import logging
 
-from pygmin import defaults
 from pygmin.optimize import mylbfgs
 
 __all__ = ["minima_from_ts"]
@@ -73,11 +72,9 @@ def minima_from_ts(pot, xt, n=None,
         # TODO: replace by better algorithm with uniform sampling
         n = np.random.random(xt.shape)-0.5
     
-    quenchParams = dict(defaults.quenchParams.items() + 
-                            quenchParams.items())
+    quenchParams = dict(quenchParams.items())
     if quenchRoutine is None:
         quenchRoutine = mylbfgs
-        #quenchRoutine = defaults.quenchRoutine
         #js850> this should be done more carefully
         quenchParams = dict(quenchParams.items() +
                                 [("M",1)])

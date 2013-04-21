@@ -3,9 +3,9 @@ import os.path
 import copy
 import logging
 
-import pygmin.defaults as defaults
+
 from pygmin.transition_states import InterpolatedPath
-from pygmin.optimize import Result        
+from pygmin.optimize import Result, mylbfgs
         
 __all__ = ["NEB",]
 
@@ -167,11 +167,11 @@ class NEB(object):
         :quenchParams: parameters for the quench """ 
         if quenchRoutine is None:
             if self.quenchRoutine is None:
-                quenchRoutine = defaults.NEBquenchRoutine
+                quenchRoutine = mylbfgs
             else:
                 quenchRoutine = self.quenchRoutine  
         #combine default and passed params.  passed params will overwrite default 
-        quenchParams = dict(defaults.NEBquenchParams.items() +
+        quenchParams = dict([("nsteps", 300)] +
                             self.quenchParams.items() +
                             kwargs.items())
 
@@ -485,12 +485,11 @@ import nebtesting as test
 def nebtest(MyNEB=NEB, nimages=22):
     import pylab as pl
     from interpolate import InterpolatedPath
-    from pygmin import defaults
     from pygmin.optimize import lbfgs_py
-    defaults.NEBquenchRoutine = lbfgs_py
-    defaults.NEBquenchParams["iprint"]=20
-    defaults.NEBquenchParams["debug"]=True
-    defaults.NEBquenchParams["maxErise"]=0.1
+    NEBquenchParams = dict()
+    NEBquenchParams["iprint"]=20
+    NEBquenchParams["debug"]=True
+    NEBquenchParams["maxErise"]=0.1
     
     x = np.arange(.5, 5., .05)
     y = np.arange(.5, 5., .05)
@@ -518,7 +517,7 @@ def nebtest(MyNEB=NEB, nimages=22):
     #print "Final: ", final
     #pl.imshow(z)
 
-    neb = MyNEB(InterpolatedPath(initial, final, nimages) ,potential, k=1000, dneb=False)
+    neb = MyNEB(InterpolatedPath(initial, final, nimages) ,potential, k=1000, dneb=False, quenchParams=NEBquenchParams)
     tmp = neb.coords
     energies_interpolate = neb.energies.copy()
     pl.figure()

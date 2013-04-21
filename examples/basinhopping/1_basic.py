@@ -1,5 +1,5 @@
 """
-Example 1: Simple basin hopping using defaults
+Example 1: Simple basin hopping
 """
 from pygmin.systems import LJCluster
 

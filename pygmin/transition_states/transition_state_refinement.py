@@ -2,9 +2,8 @@ import numpy as np
 import copy
 import logging
 
-from pygmin.optimize import Result
+from pygmin.optimize import Result, mylbfgs
 from pygmin.potentials.potential import potential as basepot
-import pygmin.defaults as defaults
 from pygmin.transition_states import findLowestEigenVector
 
 
@@ -127,14 +126,14 @@ class FindTransitionState(object):
         probably only maxstep
     
     params for lowest eigenvector search : 
-        should be passable and loaded from defaults.
+        should be passable
         important params : 
             max steps 
             what to do if a negative eigenvector is found
             what to do if small overlap with previous eigenvector
     
     params for tangent space search : 
-        should be passable and loaded from defaults.
+        should be passable
         
 
     todo:
@@ -168,9 +167,8 @@ class FindTransitionState(object):
         self.lowestEigenvectorQuenchParams = lowestEigenvectorQuenchParams
         self.max_uphill_step = max_uphill_step
         self.verbosity = verbosity
-        self.tangent_space_quencher = defaults.tangentSpaceQuenchRoutine
-        self.tangent_space_quench_params = dict(defaults.tangentSpaceQuenchParams.items() +
-                                                tangentSpaceQuenchParams.items())
+        self.tangent_space_quencher = mylbfgs #  should make this passable
+        self.tangent_space_quench_params = dict(tangentSpaceQuenchParams.items())
         self.demand_initial_negative_vec = demand_initial_negative_vec    
         self.npositive_max = max(10, self.nsteps / 5)
         
@@ -604,9 +602,6 @@ def testpot1():
         e = pot.getEnergy(coords)
         printxyz(fout, coords, line2=str(e))
 
-        defaults.quenchParams["iprint"] = 1
-        #defaults.lowestEigenvectorQuenchParams["iprint"] = 1
-        defaults.tsSearchParams["iprint"] = 1
         
         printevent = PrintEvent(fout)
         print ""

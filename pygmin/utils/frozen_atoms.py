@@ -255,7 +255,7 @@ class FreezePot(basepot):
 
 def test(natoms = 40, boxl=4.):
     import pygmin.potentials.ljpshiftfast as ljpshift
-    import pygmin.defaults as defaults
+    from pygmin.optimize import mylbfgs
     from pygmin.utils.neighbor_list import makeBLJNeighborListPot
     ntypeA = int(natoms*0.8)
     ntypeB = natoms - ntypeA
@@ -284,10 +284,10 @@ def test(natoms = 40, boxl=4.):
     pot.test_potential(coords)
     print "\n"
     
-    ret1 = defaults.quenchRoutine(coords, blj.getEnergyGradient, iprint=-11)
+    ret1 = mylbfgs(coords, blj.getEnergyGradient, iprint=-11)
     np.savetxt("out.coords", ret1[0])
     print "energy from quench1", ret1[1]
-    ret2 = defaults.quenchRoutine(coords, pot.getEnergyGradient, iprint=-1)
+    ret2 = mylbfgs(coords, pot.getEnergyGradient, iprint=-1)
     print "energy from quench2", ret2[1]
     
     print "ret1 evaluated in both potentials", pot.getEnergy(ret1[0]), blj.getEnergy(ret1[0])

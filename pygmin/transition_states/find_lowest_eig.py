@@ -5,7 +5,6 @@ from pygmin.optimize import Result
 
 from pygmin.transition_states import orthogopt
 from pygmin.potentials.potential import potential as basepot
-import pygmin.defaults as defaults
 #from pygmin.optimize.lbfgs_py import LBFGS
 from pygmin.optimize import MYLBFGS
 import pygmin.utils.rotations as rotations
@@ -124,7 +123,7 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     FindTransitionState : uses this class
     """
     #combine kwargs with defaults.lowestEigenvectorQuenchParams
-    kwargs = dict(defaults.lowestEigenvectorQuenchParams.items() + 
+    kwargs = dict([("iprint",400), ("tol",1e-6), ("nsteps", 500)] + 
                   kwargs.items())
     
     if not kwargs.has_key("logger"):

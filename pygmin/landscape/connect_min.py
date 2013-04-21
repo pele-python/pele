@@ -568,9 +568,7 @@ def getSetOfMinLJ(system): #for testing purposes
 def test(Connect=DoubleEndedConnect, natoms=16):
 #    from pygmin.landscape import Graph
 #    from pygmin.storage.database import Database
-#    import pygmin.defaults as defaults
     from pygmin.systems import LJCluster
-#    defaults.quenchParams = {"iprint": -1}
     #get min1
     system = LJCluster(natoms)
     pot, database = getSetOfMinLJ(system)

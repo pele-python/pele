@@ -5,7 +5,6 @@ import oxdnagmin_ as GMIN
 from pygmin.potentials import GMINPotential
 from pygmin.transition_states import NEB, InterpolatedPath
 from pygmin.storage import Database
-from pygmin import defaults
 from pygmin.mindist.rmsfit import findrotation_kabsch
 from math import pi
 from pygmin.angleaxis import aamindist
@@ -143,12 +142,13 @@ for i in xrange(1):
                     break
                 p2[:]=p2n  
             
-    defaults.NEBquenchParams["nsteps"]=2000
-    defaults.NEBquenchParams["maxErise"]=1e-1
-    defaults.NEBquenchParams["tol"]=1e-5
-    defaults.NEBquenchParams["iprint"]=1
-    defaults.NEBquenchParams["maxstep"]=.1
-    neb = NEB(path, pot, k=10., dneb=True, with_springenergy=True)
+    NEBquenchParams = dict()
+    NEBquenchParams["nsteps"]=2000
+    NEBquenchParams["maxErise"]=1e-1
+    NEBquenchParams["tol"]=1e-5
+    NEBquenchParams["iprint"]=1
+    NEBquenchParams["maxstep"]=.1
+    neb = NEB(path, pot, k=10., dneb=True, with_springenergy=True, quenchParams=NEBquenchParams)
     neb.optimize()
 
     path = neb.coords

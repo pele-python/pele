@@ -9,7 +9,6 @@ from pygmin.systems import BaseSystem, dict_copy_update, BaseParameters
 from pygmin.transition_states import NEB, InterpolatedPathDensity
 
 from pygmin.optimize import fire, mylbfgs
-from pygmin import defaults
 
 from pygmin.angleaxis.aamindist import *
 from pygmin.angleaxis import MinPermDistAACluster, ExactMatchAACluster

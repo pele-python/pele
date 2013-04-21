@@ -1,7 +1,6 @@
 import time
 import numpy as np
 from pygmin.application import AppBasinHopping
-from pygmin import defaults
 from pygmin.potentials import GMINPotential
 import oxdnagmin_ as GMIN
 from pygmin import takestep
@@ -9,7 +8,6 @@ from math import pi
 from pygmin.utils.rbtools import CoordsAdapter
 from pygmin.utils import rotations
 from pygmin.systems.oxdna import *
-from pygmin import defaults
 from pygmin.optimize import mylbfgs 
 
 EDIFF=0.01
@@ -23,7 +21,7 @@ class AppOXDNA(AppBasinHopping):
     
     def __init__(self, *args, **kwargs):
         AppBasinHopping.__init__(self, *args, **kwargs)
-        self.quenchRoutine = defaults.quenchRoutine
+        self.quenchRoutine = mylbfgs
         self.potential = GMINPotential(GMIN)
         
         self.quenchParameters["tol"]=1e-4

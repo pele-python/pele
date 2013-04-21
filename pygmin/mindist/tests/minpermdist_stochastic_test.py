@@ -3,11 +3,11 @@ import numpy as np
 from testmindist import TestMinDist
 from pygmin.mindist.minpermdist_stochastic import MinPermDistCluster
 from pygmin.mindist._minpermdist_policies import MeasureAtomicCluster
+from pygmin.optimize import mylbfgs
 
 class TestMinPermDistStochastic_BLJ(TestMinDist):
     def setUp(self):
         from pygmin.potentials.ljpshiftfast import LJpshift as BLJ
-        from pygmin import defaults
         
         self.natoms = 25
         self.ntypeA = int(self.natoms * .8)
@@ -17,17 +17,16 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         self.X1 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
         #run a quench so the structure is not crazy
-        ret = defaults.quenchRoutine(self.X1, self.pot.getEnergyGradient, **defaults.quenchParams)
+        ret = mylbfgs(self.X1, self.pot.getEnergyGradient)
         self.X1 = ret[0]
         
 
     def testBLJ(self):
-        import pygmin.defaults
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
         #run a quench so the structure is not crazy
-        ret = pygmin.defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
+        ret = mylbfgs(X2, self.pot.getEnergyGradient)
         X2 = ret[0]
 
         self.runtest(X1, X2, MinPermDistCluster(measure=MeasureAtomicCluster(permlist=self.permlist)))

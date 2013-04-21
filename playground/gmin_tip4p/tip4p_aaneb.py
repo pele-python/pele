@@ -4,7 +4,6 @@ import gmin_ as GMIN
 from pygmin.utils import rotations
 from pygmin.takestep import buildingblocks
 from pygmin.transition_states import NEB
-from pygmin import defaults
 import pylab as pl
 from copy import deepcopy, copy
 from pygmin.optimize import mylbfgs, fire
@@ -41,12 +40,19 @@ coords1 = np.loadtxt("coords1.txt")
 coords2 = np.loadtxt("coords2.txt")
 print pot.getEnergy(coords1), pot.getEnergy(coords2)
 
-defaults.NEBquenchParams["nsteps"] = 200
-defaults.NEBquenchParams["iprint"] = 1
-defaults.NEBquenchParams["maxstep"] = 0.1
-defaults.NEBquenchParams["maxErise"] = 0.1
-defaults.NEBquenchParams["tol"] = 1e-6
-defaults.NEBquenchRoutine = mylbfgs
+NEBquenchParams = dict()
+NEBquenchParams["nsteps"] = 200
+NEBquenchParams["iprint"] = 1
+NEBquenchParams["maxstep"] = 0.1
+NEBquenchParams["maxErise"] = 0.1
+NEBquenchParams["tol"] = 1e-6
+NEBquenchRoutine = mylbfgs
+decp = dict()
+decp["local_connect_params"] = dict()
+decp["local_connect_params"]["NEBparams"] = dict()
+decp["local_connect_params"]["NEBparams"]["NEBquenchParams"] = NEBquenchParams
+decp["local_connect_params"]["NEBparams"]["NEBquenchRoutine"] = NEBquenchRoutine
+
 k = 10.
 nimages=50
 dneb=True
@@ -77,7 +83,7 @@ aaneb_2 = aaneb
 dump_path("aaneb2.xyz", system, aaneb_2.coords)
 
 fig = pl.figure()
-nebsteps = defaults.NEBquenchParams["nsteps"] 
+nebsteps = NEBquenchParams["nsteps"] 
 pl.plot(path_energy, "k", label="interpolation")
 pl.plot(neb_1.energies, "b-", label="NEB - %d quenches"%(nebsteps))
 pl.plot(neb_2.energies, "b--", label="NEB - %d quenches"%(2*nebsteps))

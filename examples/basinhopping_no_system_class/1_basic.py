@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 ############################################################
-#Example 1: Simple basin hopping using defaults
+#Example 1: Simple basin hopping
 ############################################################
 import numpy as np
 

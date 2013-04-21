@@ -201,12 +201,12 @@ def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
             
 def test_LJ(natoms = 12, **kwargs):
     from pygmin.potentials.lj import LJ
-    import pygmin.defaults
+    from pygmin.optimize import mylbfgs
     import pygmin.utils.rotations as rot
     from pygmin.mindist.permutational_alignment import permuteArray
     import random
     
-    quench = pygmin.defaults.quenchRoutine
+    quench = mylbfgs
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     #quench X1

@@ -1,7 +1,6 @@
 import logging
 
-from pygmin.optimize import Result
-import pygmin.defaults as defaults
+from pygmin.optimize import Result, mylbfgs
 from pygmin.transition_states import findTransitionState, minima_from_ts
 from pygmin.transition_states import NEBDriver
 
@@ -18,7 +17,7 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
     to make it more easily parallelizable.      
     """
     #run ts search algorithm
-    kwargs = dict(defaults.tsSearchParams.items() + tsSearchParams.items())
+    kwargs = dict(tsSearchParams.items())
     ret = findTransitionState(coords, pot, eigenvec0=eigenvec0, **kwargs)
     
     #check to make sure it is a valid transition state 
@@ -224,7 +223,7 @@ class LocalConnect(object):
 def getRandomCoords(pot, natoms):
     import numpy as np
     coords = np.random.uniform(-1,1,natoms*3)*natoms**(1./3)*1.5
-    ret = defaults.quenchRoutine(coords, pot.getEnergyGradient)
+    ret = mylbfgs(coords, pot.getEnergyGradient)
     return ret
 
 def getPairLJ(natoms=38):
