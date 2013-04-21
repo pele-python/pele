@@ -255,7 +255,7 @@ class FreezePot(basepot):
 
 def test(natoms = 40, boxl=4.):
     import pygmin.potentials.ljpshiftfast as ljpshift
-    from pygmin.optimize import mylbfgs
+    from pygmin.optimize._quench_new import mylbfgs
     from pygmin.utils.neighbor_list import makeBLJNeighborListPot
     ntypeA = int(natoms*0.8)
     ntypeB = natoms - ntypeA
@@ -284,16 +284,16 @@ def test(natoms = 40, boxl=4.):
     pot.test_potential(coords)
     print "\n"
     
-    ret1 = mylbfgs(coords, blj.getEnergyGradient, iprint=-11)
-    np.savetxt("out.coords", ret1[0])
-    print "energy from quench1", ret1[1]
-    ret2 = mylbfgs(coords, pot.getEnergyGradient, iprint=-1)
-    print "energy from quench2", ret2[1]
+    ret1 = mylbfgs(coords, blj, iprint=-11)
+    np.savetxt("out.coords", ret1.coords)
+    print "energy from quench1", ret1.energy
+    ret2 = mylbfgs(coords, pot, iprint=-1)
+    print "energy from quench2", ret2.energy
     
-    print "ret1 evaluated in both potentials", pot.getEnergy(ret1[0]), blj.getEnergy(ret1[0])
-    print "ret2 evaluated in both potentials", pot.getEnergy(ret2[0]), blj.getEnergy(ret2[0])
+    print "ret1 evaluated in both potentials", pot.getEnergy(ret1.coords), blj.getEnergy(ret1.coords)
+    print "ret2 evaluated in both potentials", pot.getEnergy(ret2.coords), blj.getEnergy(ret2.coords)
     
-    coords = ret1[0]
+    coords = ret1.coords
     e1, g1 = blj.getEnergyGradient(coords)
     e2, g2 = pot.getEnergyGradient(coords)
     print "energy difference from getEnergyGradient", (e2 - e1)
@@ -310,8 +310,8 @@ def test(natoms = 40, boxl=4.):
             import pygmin.utils.pymolwrapper as pym
             pym.start()
             pym.draw_spheres(np.reshape(coords,[-1,3]), "A", 1)
-            pym.draw_spheres(np.reshape(ret1[0],[-1,3]), "A", 2)
-            pym.draw_spheres(np.reshape(ret2[0],[-1,3]), "A", 3)
+            pym.draw_spheres(np.reshape(ret1.coords,[-1,3]), "A", 2)
+            pym.draw_spheres(np.reshape(ret2.coords,[-1,3]), "A", 3)
         except ImportError:
             print "Could not draw using pymol, skipping this step" 
 

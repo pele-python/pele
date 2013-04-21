@@ -162,13 +162,13 @@ def test():
             #print cos(coords)
     
     print "try a quench"
-    from pygmin.optimize.quench import mylbfgs
-    ret = mylbfgs(coords, pot.getEnergyGradient)
+    from pygmin.optimize._quench_new import mylbfgs
+    ret = mylbfgs(coords, pot)
     
-    print "quenched e = ", ret[1], "funcalls", ret[3]
-    print ret[0]
+    print "quenched e = ", ret.energy, "funcalls", ret.nfev
+    print ret.coords
     with open("out.spins", "w") as fout:
-        s = coords2ToCoords3( ret[0] )
+        s = coords2ToCoords3( ret.coords )
         h = pot.fields
         c = coords2ToCoords3( coordsinit )
         for node in pot.G.nodes():
@@ -176,7 +176,7 @@ def test():
             fout.write( "%g %g %g %g %g %g %g %g %g %g %g\n" % (node[0], node[1], \
                 s[i,0], s[i,1], s[i,2], h[i,0], h[i,1], h[i,2], c[i,0], c[i,1], c[i,2] ) )
     
-    coords3 = coords2ToCoords3( ret[0] )
+    coords3 = coords2ToCoords3( ret.coords )
     m = np.linalg.norm( coords3.sum(0) ) / nspins
     print "magnetization after quench", m
     

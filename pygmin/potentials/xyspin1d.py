@@ -94,11 +94,11 @@ def test():
     
     
     #try a quench
-    from pygmin.optimize.quench import mylbfgs
-    ret = mylbfgs(angles, pot.getEnergyGradient)
+    from pygmin.optimize._quench_new import mylbfgs
+    ret = mylbfgs(angles, pot)
     
-    print "quenched e = ", ret[1]
-    print ret[0]
+    print "quenched e = ", ret.energy
+    print ret.coords
     
     test_basin_hopping(pot, angles)
 

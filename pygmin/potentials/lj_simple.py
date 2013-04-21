@@ -61,12 +61,12 @@ def main():
     print V
 
     print "try a quench"
-    from pygmin.optimize import mylbfgs as quench
-    ret = quench( coords, lj.getEnergyGradient, iprint=-1 )
+    from pygmin.optimize._quench_new import mylbfgs as quench
+    ret = quench( coords, lj, iprint=-1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
-    print "energy ", ret[1]
-    print "rms gradient", ret[2]
-    print "number of function calls", ret[3]
+    print "energy ", ret.energy
+    print "rms gradient", ret.rms
+    print "number of function calls", ret.nfev
         
 
 if __name__ == "__main__":

@@ -577,7 +577,7 @@ def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
 
 def test(natoms = 40, boxl=None):
     import pygmin.potentials.ljpshiftfast as ljpshift
-    from pygmin.optimize import mylbfgs
+    from pygmin.optimize._quench_new import mylbfgs
     ntypeA = int(natoms*0.8)
     rcut = 2.5
     coords = np.random.uniform(-1,1,natoms*3)*(natoms)**(1./3)/2
@@ -596,16 +596,16 @@ def test(natoms = 40, boxl=None):
     
     print "difference", (epot - eblj)/eblj
     
-    ret1 = mylbfgs(coords, blj.getEnergyGradient, iprint=-11)
-    np.savetxt("out.coords", ret1[0])
-    print "energy from quench1", ret1[1]
-    ret2 = mylbfgs(coords, pot.getEnergyGradient, iprint=-1)
-    print "energy from quench2", ret2[1]
+    ret1 = mylbfgs(coords, blj, iprint=-11)
+    np.savetxt("out.coords", ret1.coords)
+    print "energy from quench1", ret1.energy
+    ret2 = mylbfgs(coords, pot, iprint=-1)
+    print "energy from quench2", ret2.energy
     
-    print "ret1 evaluated in both potentials", pot.getEnergy(ret1[0]), blj.getEnergy(ret1[0])
-    print "ret2 evaluated in both potentials", pot.getEnergy(ret2[0]), blj.getEnergy(ret2[0])
+    print "ret1 evaluated in both potentials", pot.getEnergy(ret1.coords), blj.getEnergy(ret1.coords)
+    print "ret2 evaluated in both potentials", pot.getEnergy(ret2.coords), blj.getEnergy(ret2.coords)
     
-    coords = ret1[0]
+    coords = ret1.coords
     e1, g1 = blj.getEnergyGradient(coords)
     e2, g2 = pot.getEnergyGradient(coords)
     print "energy difference from getEnergyGradient", (e2 - e1)
@@ -622,15 +622,15 @@ def test(natoms = 40, boxl=None):
             import pygmin.utils.pymolwrapper as pym
             pym.start()
             pym.draw_spheres(np.reshape(coords,[-1,3]), "A", 1)
-            pym.draw_spheres(np.reshape(ret1[0],[-1,3]), "A", 2)
-            pym.draw_spheres(np.reshape(ret2[0],[-1,3]), "A", 3)
+            pym.draw_spheres(np.reshape(ret1.coords,[-1,3]), "A", 2)
+            pym.draw_spheres(np.reshape(ret2.coords,[-1,3]), "A", 3)
         except ImportError:
             print "Could not draw using pymol, skipping this step" 
     
 def test2():
     import pygmin.potentials.ljpshiftfast as ljpshiftfast
     import pygmin.potentials.ljpshift as ljpshift
-    from pygmin.optimize import mylbfgs
+    from pygmin.optimize._quench_new import mylbfgs
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench"
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords"
     #fname = "out.coords"
@@ -670,24 +670,24 @@ def test2():
     
     if False:
         print "quenching"
-        ret1 = mylbfgs(coords, blj.getEnergyGradient, iprint=-11)
-        np.savetxt("out.coords", ret1[0])
-        print "energy from quench1", ret1[1]
-        ret2 = mylbfgs(coords, pot.getEnergyGradient, iprint=-1)
-        print "energy from quench2", ret2[1]
+        ret1 = mylbfgs(coords, blj, iprint=-11)
+        np.savetxt("out.coords", ret1.coords)
+        print "energy from quench1", ret1.energy
+        ret2 = mylbfgs(coords, pot, iprint=-1)
+        print "energy from quench2", ret2.energy
         print "max, min quenched coords", coords.max(), coords.min()
 
 
-        print "ret1 evaluated in both potentials", pot.getEnergy(ret1[0]), blj.getEnergy(ret1[0])
-        print "ret2 evaluated in both potentials", pot.getEnergy(ret2[0]), blj.getEnergy(ret2[0])
+        print "ret1 evaluated in both potentials", pot.getEnergy(ret1.coords), blj.getEnergy(ret1.coords)
+        print "ret2 evaluated in both potentials", pot.getEnergy(ret2.coords), blj.getEnergy(ret2.coords)
     elif True:
         print "quenching"
-        ret2 = mylbfgs(coords, pot.getEnergyGradient, iprint=-1)
-        print "energy from quench2", ret2[1]
-        print "max, min quenched coords", ret2[0].max(), ret2[0].min()
+        ret2 = mylbfgs(coords, pot, iprint=-1)
+        print "energy from quench2", ret2.energy
+        print "max, min quenched coords", ret2.coords.max(), ret2.coords.min()
 
-        print "ret2 evaluated in both potentials", pot.getEnergy(ret2[0]), blj.getEnergy(ret2[0])
-        print "and in blj fast                  ", bljfast.getEnergy(ret2[0])
+        print "ret2 evaluated in both potentials", pot.getEnergy(ret2.coords), blj.getEnergy(ret2.coords)
+        print "and in blj fast                  ", bljfast.getEnergy(ret2.coords)
 
         
 

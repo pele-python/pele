@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 import sys
 from pygmin.mc import MonteCarlo
-from pygmin.optimize import mylbfgs
+from pygmin.optimize._quench_new import mylbfgs
 
 class BasinHopping(MonteCarlo):
     """
@@ -43,7 +43,7 @@ class BasinHopping(MonteCarlo):
                             outstream=outstream,store_initial=False)
 
         if quench is None:
-            quench = lambda coords : mylbfgs(coords, self.potential.getEnergyGradient)
+            quench = lambda coords : mylbfgs(coords, self.potential)
         self.quench = quench
                 
         #########################################################################
@@ -51,10 +51,13 @@ class BasinHopping(MonteCarlo):
         #########################################################################
         self.markovE_old = self.markovE
         res = self.quench(self.coords)
+        if isinstance(res, tuple): # for compatability with old and new quenchers
+            res = res[4]
         
-        newcoords, Equench, self.rms, self.funcalls = res[:4]
-        self.coords = newcoords
-        self.markovE = Equench
+        self.coords = res.coords
+        self.markovE = res.energy
+        self.rms = res.rms
+        self.funcalls = res.nfev
 
         self.insert_rejected = insert_rejected
         
@@ -82,11 +85,13 @@ class BasinHopping(MonteCarlo):
         #########################################################################
         #quench
         #########################################################################
-        ret = self.quench(self.coords_after_step)
-        self.trial_coords = ret[0]
-        self.trial_energy = ret[1] 
-        self.rms = ret[2]
-        self.funcalls = ret[3]
+        res = self.quench(self.coords_after_step)
+        if isinstance(res, tuple): # for compatability with old and new quenchers
+            res = res[4]
+        self.trial_coords = res.coords
+        self.trial_energy = res.energy
+        self.rms = res.rms
+        self.funcalls = res.nfev
 
         #########################################################################
         # check if step is a valid configuration, otherwise reject

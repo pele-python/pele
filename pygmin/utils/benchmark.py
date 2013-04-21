@@ -55,10 +55,10 @@ class QuenchBenchmark(object):
             
             E,grad = self.potential.getEnergyGradient(coords)
             #self.potential.energies.append(E)
-            x, E, tmp, tmp = minimizer[1](coords, self.potential.getEnergyGradient)
-            minimizer[2] = E
+            res = minimizer[1](coords, self.potential)
+            minimizer[2] = res.energy
             minimizer[3] = np.array(self.potential.energies).copy()-Emin
-            print "Minimizer " + minimizer[0] + ": " + str(E)
+            print "Minimizer " + minimizer[0] + ": " + str(res.energy)
             
     def plot(self):
         import pylab as pl
@@ -74,26 +74,27 @@ class QuenchBenchmark(object):
 if __name__ == "__main__":
     import pygmin.potentials.lj as lj
     import scipy.optimize
-    from pygmin.optimize import _quench as quench
+    from pygmin.optimize import _quench_new as quench
     print "Running benchmark with lennard jones potential"
     pot = lj.LJ()
     
     natoms = 36
     
     coords = np.random.random(3*natoms)*10.0
-    coords, E, tmp, tmp=quench.lbfgs_scipy(coords, pot.getEnergyGradient, tol=1e-3)
-    
+    res = quench.lbfgs_scipy(coords, pot, tol=1e-3)
+    coords = res.coords
     coords = coords + np.random.random(coords.shape)*0.1
-    tmp, Emin, tmp, tmp = quench.lbfgs_scipy(coords, pot.getEnergyGradient, tol=1e-3)
+    res = quench.lbfgs_scipy(coords, pot, tol=1e-3)
+    Emin = res.energy
     
     bench = QuenchBenchmark(pot)
     bench.addMinimizer("lbfgs", quench.lbfgs_scipy)
     bench.addMinimizer("mylbfgs", quench.mylbfgs)
     bench.addMinimizer("lbfgs_py", quench.lbfgs_py)
-    bench.addMinimizer("lbfgs_ase", quench.lbfgs_ase)
+    #bench.addMinimizer("lbfgs_ase", quench.lbfgs_ase)
     bench.addMinimizer("cg", quench.cg)
     bench.addMinimizer("fire", quench.fire)
-    bench.addMinimizer("bfgs", quench.bfgs)
+    bench.addMinimizer("bfgs_scipy", quench.bfgs_scipy)
     #bench.addMinimizer("fmin", quench.fmin)
     #bench.addMinimizer("steep", quench.steepest_descent)
     

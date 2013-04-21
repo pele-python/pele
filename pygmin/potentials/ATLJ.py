@@ -141,10 +141,10 @@ class TestATLJ(unittest.TestCase):
         natoms = 10
         coords = np.random.uniform(-1,1,natoms*3)*2
         
-        from pygmin.optimize import mylbfgs as quench
+        from pygmin.optimize._quench_new import mylbfgs as quench
         lj = LJ()
-        ret = quench(coords, lj.getEnergyGradient)
-        coords = ret[0]
+        ret = quench(coords, lj)
+        coords = ret.coords
         
         
         atlj = ATLJ(Z=3.)
@@ -163,10 +163,7 @@ class TestATLJ(unittest.TestCase):
         natoms = 10
         coords = np.random.uniform(-1,1,natoms*3)*2
         
-        from pygmin.optimize import mylbfgs as quench
         lj = LJ()
-        #ret = quench(coords, lj.getEnergyGradient)
-        #coords = ret[0]
         
         
         atlj = ATLJ(Z=3.)
@@ -200,15 +197,15 @@ def main():
     print V
 
     print "try a quench"
-    from pygmin.optimize import mylbfgs as quench
-    ret = quench( coords, lj.getEnergyGradient, iprint=-1 )
+    from pygmin.optimize._quench_new import mylbfgs as quench
+    ret = quench( coords, lj, iprint=-1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
-    print "energy ", ret[1]
-    print "rms gradient", ret[2]
-    print "number of function calls", ret[3]
+    print "energy ", ret.energy
+    print "rms gradient", ret.rms
+    print "number of function calls", ret.nfev
 
     from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
-    coords = ret[0]
+    coords = ret.coords
 
     printlist = []
     for i in range(100):
@@ -216,7 +213,7 @@ def main():
         #coords = np.array([0,0,1., 0,0,0, 0,0,2])
         #coords[6:] += np.random.uniform(-1,1,3)*0.1
         ret = quench( coords, lj.getEnergyGradient, iprint=-1 )
-        coords = ret[0]
+        coords = ret.coords
         X = np.reshape(coords, [natoms,3])
         com = X.sum(0) / natoms
         X[:,:] -= com[np.newaxis,:]

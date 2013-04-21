@@ -72,7 +72,7 @@ class LJpshift(BasePotential):
 
 if __name__ == "__main__":
     import pygmin.potentials.ljpshift as ljpshift
-    from pygmin.optimize import mylbfgs
+    from pygmin.optimize._quench_new import mylbfgs
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench"
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords"
     #fname = "out.coords"
@@ -102,8 +102,8 @@ if __name__ == "__main__":
     print ""
     
     print "partially quenching coords"
-    ret1 = mylbfgs(coords, blj.getEnergyGradient, iprint=-11, tol=1.)
-    coords = ret1[0]
+    ret1 = mylbfgs(coords, blj, iprint=-11, tol=1.)
+    coords = ret1.coords
     ebljslow = bljslow.getEnergy(coords)
     print "blj energy slow", ebljslow
     eblj = blj.getEnergy(coords)
@@ -114,8 +114,8 @@ if __name__ == "__main__":
 
     
     print "quenching coords"
-    ret1 = mylbfgs(coords, blj.getEnergyGradient, iprint=-11)
-    coords = ret1[0]
+    ret1 = mylbfgs(coords, blj, iprint=-11)
+    coords = ret1.coords
     ebljslow = bljslow.getEnergy(coords)
     print "blj energy slow", ebljslow
     eblj = blj.getEnergy(coords)
