@@ -20,22 +20,23 @@ class LowestEigPot(basepot):
     
     here the energy corresponds to the eigenvalue, and the coordinates to be
     optimized is the eigenvector
+
+    Parameters
+    -----------
+    coords : array
+        The point in space where we want to compute the lowest eigenvector
+    pot : potential object
+        The potential of the system.  i.e. pot.getEnergyGradient(coords)
+        gives the energy and gradient
+    
+    orthogZeroEigs : callable
+        The function which makes a vector orthogonal to the known
+        eigenvectors with zero eigenvalues.  The default assumes global
+        translational and rotational symmetry
+    dx : float
+        the local curvature is approximated using 3 points separated by dx
     """
     def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-3):
-        """
-        coords : 
-            The point in space where we want to compute the lowest eigenvector
-        pot :
-            The potential of the system.  i.e. pot.getEnergyGradient(coords)
-            gives the energy and gradient
-        
-        orthogZeroEigs: 
-            The function which makes a vector orthogonal to the known
-            eigenvectors with zero eigenvalues.  The default assumes global
-            translational and rotational symmetry
-        dx: float
-            the local curvature is approximated using 3 points separated by dx
-        """
         self.coords = np.copy(coords)
         self.pot = pot
         self.E, self.G = self.pot.getEnergyGradient(self.coords)
