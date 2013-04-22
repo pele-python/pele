@@ -6,7 +6,7 @@ from pygmin.takestep import RandomDisplacement, AdaptiveStepsize
 from ptmc import PTMC, getTemps
 import copy
 from pygmin.utils.histogram import EnergyHistogram, PrintHistogram
-from pygmin.optimize import mylbfgs as quench
+from pygmin.optimize._quench_new import mylbfgs as quench
 from pygmin.accept_tests.spherical_container import SphericalContainer
 
 def runptmc(nsteps_tot = 100000):
@@ -23,8 +23,8 @@ def runptmc(nsteps_tot = 100000):
     coords=np.random.random(3*natoms)
     #quench the coords so we start from a reasonable location
     mypot = lj.LJ()
-    ret = quench(coords, mypot.getEnergyGradient)
-    coords = ret[0]
+    ret = quench(coords, mypot)
+    coords = ret.coords
     
     
     Tlist = getTemps(Tmin, Tmax, nreplicas)

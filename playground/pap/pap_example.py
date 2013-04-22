@@ -7,7 +7,7 @@ from pygmin.angleaxis import RigidFragment, RBTopology
 from pygmin.angleaxis import RBTopology, RBSystem
 
 from math import sin, cos, pi
-from pygmin.optimize import fire
+from pygmin.optimize._quench_new import fire
 from pygmin.angleaxis.aamindist import ExactMatchAACluster, MinPermDistAACluster 
 
 def create_pap():

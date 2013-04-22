@@ -7,7 +7,7 @@ import time
 import sys
 import _lj
 import _lbfgs
-from pygmin import optimize
+from pygmin.optimize._quench_new import mylbfgs
 N=10 # int(sys.argv[2])
 natoms=38 #int(sys.argv[1])
 
@@ -30,7 +30,7 @@ for i in xrange(100):
 t1 = time.time()
 for i in xrange(100):
     x = 1.*np.random.random(3*natoms)
-    ret = optimize.mylbfgs(x, pot_old.getEnergyGradient, tol=1e-5)
+    ret = mylbfgs(x, pot_old, tol=1e-5)
     print "PY:", np.linalg.norm(pot_old.getEnergyGradient(ret[0])[1])
 
 print time.time()-t1, t1-t0
