@@ -8,7 +8,7 @@ from math import pi
 from pygmin.utils.rbtools import CoordsAdapter
 from pygmin.utils import rotations
 from pygmin.systems.oxdna import *
-from pygmin.optimize import mylbfgs 
+from pygmin.optimize._quench_new import mylbfgs 
 
 EDIFF=0.01
 t0=time.clock()

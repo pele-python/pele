@@ -7,7 +7,7 @@ import time
 import sys
 import _lj
 import _lbfgs
-from pygmin import optimize
+from pygmin.optimize._quench_new import mylbfgs
 N=100
 natoms=[10, 13, 20, 30, 31, 38, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
 
@@ -28,7 +28,7 @@ for na in natoms:
     t1 = time.time()
     for i in xrange(N):
         x = np.random.random(3*na) - 0.5
-        ret = optimize.mylbfgs(x, pot_old.getEnergyGradient, tol=1e-5)
+        ret = mylbfgs(x, pot_old, tol=1e-5)
     res.write("%d %f %f\n"%(na, t1-t0, time.time()-t1))
     print "%d %f %f\n"%(na, t1-t0, time.time()-t1)
 
