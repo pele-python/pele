@@ -513,22 +513,11 @@
  </connections>
  <slots>
   <slot>SelectMinimum()</slot>
-  <slot>StartBasinHopping()</slot>
-  <slot>NewSystem()</slot>
   <slot>SelectMinimum1()</slot>
   <slot>SelectMinimum2()</slot>
   <slot>showFrame()</slot>
   <slot>save()</slot>
   <slot>load()</slot>
-  <slot>tsSearch()</slot>
-  <slot>selectTransition()</slot>
-  <slot>showFrameTS()</slot>
-  <slot>LocalConnect()</slot>
-  <slot>doubleEndedConnect()</slot>
-  <slot>delete_minimum()</slot>
-  <slot>edit_params()</slot>
-  <slot>merge_minima()</slot>
-  <slot>launch_connect_explorer()</slot>
   <slot>on_select_TS()</slot>
  </slots>
 </ui>
