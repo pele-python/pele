@@ -74,7 +74,7 @@ def fire(coords, getEnergyGradient, tol=1e-3, nsteps=100000, **kwargs):
     rms = np.linalg.norm(g)/np.sqrt(len(g))
     return opt.coords, e, rms, opt.nsteps
 
-def cg(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+def cg(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     """
     a wrapper function for conjugate gradient routine in scipy
     """
@@ -84,7 +84,7 @@ def cg(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
         getEnergyGradient = getEnergyGradient.getEnergyGradient
     import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output=True, disp=iprint>0)
+    ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output=True, disp=iprint>0, maxiter=nsteps, **kwargs)
     newcoords = ret[0]
     #e = ret[1]
     funcalls = ret[2]
@@ -171,7 +171,7 @@ def steepest_descent(coords, getEnergyGradient, iprint = -1, tol = 1e-3, **kwarg
     """
     return _steepest_descent(coords, getEnergyGradient, iprint = iprint, gtol = tol, **kwargs)
 
-def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
+def bfgs(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     """
     a wrapper function for the scipy BFGS algorithm
     """
@@ -181,7 +181,8 @@ def bfgs(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
         getEnergyGradient = getEnergyGradient.getEnergyGradient
     import scipy.optimize
     pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol = tol, full_output = True, disp=iprint>0)
+    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol=tol, full_output=True, disp=iprint>0,
+                                   maxiter=nsteps, **kwargs)
     x = ret[0]
     E = ret[1]
     g = ret[2]

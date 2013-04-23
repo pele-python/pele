@@ -73,12 +73,14 @@ def fire(coords, pot, tol=1e-3, nsteps=100000, **kwargs):
     res = opt.run(fmax=tol, steps=nsteps)
     return res
 
-def cg(coords, pot, iprint = -1, tol = 1e-3):
+def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     """
     a wrapper function for conjugate gradient routine in scipy
     """
     import scipy.optimize
-    ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output=True, disp=iprint>0)
+    ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, 
+                                 gtol=tol, full_output=True, disp=iprint>0, 
+                                 maxiter=nsteps, **kwargs)
     res = Result()
     res.coords = ret[0]
     #e = ret[1]
@@ -132,13 +134,14 @@ def steepest_descent(x0, pot, iprint=-1, dx=1e-4, nsteps=100000,
     res.success = res.rms <= tol 
     return res
 
-def bfgs_scipy(coords, pot, iprint=-1, tol=1e-3):
+def bfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     """
     a wrapper function for the scipy BFGS algorithm
     """
     import scipy.optimize
-    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime=pot.getGradient, 
-                                   gtol=tol, full_output=True, disp=iprint>0)
+    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime=pot.getGradient,
+                                   gtol=tol, full_output=True, disp=iprint>0, 
+                                   maxiter=nsteps, **kwargs)
     res = Result()
     res.coords = ret[0]
     res.energy = ret[1]
