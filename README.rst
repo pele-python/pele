@@ -1,14 +1,18 @@
-PyGMIN, a python version of GMIN, OPTIM, and PATHSAMPLE.  GMIN was originally
-written by David Wales and is designed to find the global energy minimum for
-molecular systems.
+PyGMIN: tools for global optimization and energy landscape exploration.
+
+PyGMIN is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
+programs written by David Wales and collaborators.
 
 The code is hosted at
+
 https://github.com/js850/PyGMIN
 
 for documentation, see
+
 http://js850.github.com/PyGMIN/
 
 The code project upon which this python package is based can be found at
+
 http://www-wales.ch.cam.ac.uk/software.html
 
 
@@ -18,97 +22,106 @@ INSTALLATION
 Required packages
 -----------------
 
-for compilation::
-  cython
-  f2py (comes bundled with numpy, see below)
+for compilation:
 
-python packages::
+  1. fortran compiler
 
-  numpy (with f2py)
-  scipy
-  networkx
-     https://networkx.lanl.gov
-     for graph functionality
-  SQLAlchemy 0.7 
-     http://www.sqlalchemy.org/
-     for managing database of stationary points 
+  #. c compiler
+
+python packages:
+
+  1. numpy: 
+       We use numpy everywhere for doing numerical work.  It also installs f2py which
+       is used to compile fortran code into modules callable by python.
+
+  #. scipy
+
+  #. networkx: 
+       For graph functionality. https://networkx.lanl.gov
+
+  #. matplotlib:
+
+  #. SQLAlchemy 0.7: 
+       For managing database of stationary points.  http://www.sqlalchemy.org/
 
 
-  hungarian (optional, use pip/easy_install to get newest version with bugfixes!)
-     for min dist routines
-  scikits.sparse (optional, for use of sparse Cholesky decomposition methods when
-     calculating rates)
+  #. hungarian: 
+       For permutational alignment
+
+  #. scikits.sparse: optional 
+       for use of sparse Cholesky decomposition methods when calculating rates
      
-All the above packages can be installed via the python package managers pip or
-easy_install.  However, some of the packages (numpy, scipy) have additional
+  #. pymol: optional
+       for viewing molecular structures
+
+
+All the above packages can be installed via the python package manager pip (or
+easy_install).  However, some of the packages (numpy, scipy) have additional
 dependencies and it can be more convenient to use the linux package manager
 (apt, yum, ...).
 
-If you want to use the gui you need:
-  matplotlib 
-  qt4 python bindings
-  opengl python bindings
+If you want to use the gui you will additionally need:
 
-The Ubuntu packages are (apt-get)::
+  1. qt4 and qt4 python bindings
 
-  python-qt4
-  python-opengl 
-  python-qt4-gl
+  #. opengl python bindings
 
-  pymol (optional)
+  The Ubuntu packages (apt-get) for these are: python-qt4, python-opengl, and python-qt4-gl
 
-Or Fedora (yum)::
-   PyQt4
-   PyOpenGl
+  In fedora Fedora (yum) you will want the packages: PyQt4, and PyOpenGl
 
 
-installing prerequisites on Ubuntu
-----------------------
+Installing prerequisites on Ubuntu
+----------------------------------
 if you're running ubuntu, you can get all the prerequisites with the following
-  commands
+commands::
 
-$ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip cython pymol
-$ pip install --user networkx sqlalchemy hungarian
+  $ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip cython pymol
+  $ pip install --user networkx sqlalchemy hungarian
+
 (in the above, the flag --user will install localy.)
 
 
 Compilation
 -----------
 
-Compilation is required for use of the fast potentials, those written in C++
+Compilation is required for use of the fast potentials, those written in C
 and/or fortran).  Theoretically you should be able to use any fortran compiler,
-but we mostly use gfortran, so it's the least likely to have problems.  The
+but we mostly use gfortran, so it's the least likely to have problems.  This
 package uses the standard python setup utility (distutils).  There are lots of
 options for how and where to install. For more information::
   
-  python setup.py --help 
-  python setup.py --help-commands
+  $ python setup.py --help 
+  $ python setup.py --help-commands
 
 Developers probably want to install "in-place", i.e. build the extension
 modules in their current directories::
 
-  python setup.py build_ext -i --fcompiler=gfortran
+  $ python setup.py build_ext -i --fcompiler=gfortran
 
 Users can install pygmin in the standard python package location::
 
-  python setup.py build --fcompiler=gfortran
-  python setup.py install [--user]
+  $ python setup.py build --fcompiler=gfortran
+  $ python setup.py install [--user]
 
 where --user installs it in $HOME/.local/
 
 
 PYTHONPATH  
 ----------
-make sure to add the install directory to your PYTHONPATH environment variable.
-This is not necessary if you install to a standard location.
+If you do an in-place install, make sure to add the install directory to your
+PYTHONPATH environment variable.  This is not necessary if you install to a
+standard location.
 
 
 Installing on Mac
 -----------------
+
 When I used macports, everything installed very easily.  However, at least on
-my machine the OpenGL / Qt implementation was broken and I could never get it
-to work.  So I aborted using macports and installed everything by hand.  I
-eventually got (almost) everything working.  Here are a few hints
+my machine the OpenGL / Qt implementation (necessary for the gui) was broken
+and I could never get it to work.  So I aborted using macports and installed
+everything by hand.  I eventually got (almost) everything working.  Here are a
+few hints
 
 use the Enthought python distribution instead of the prepackaged one.  This
 seems to be standard, plus it includes numpy and scipy
@@ -128,11 +141,12 @@ Installing pymol was easy with macports, but since I've abandoned macports
 I haven't gotten it installed and running (I haven't tried the pay version) 
 
 
-=== Running ===
-The documentation can be found at
+Running
+=======
+
+You can find examples of how to run pygmin in the examples folder.  More information
+can be found in the documentation at
 
 http://js850.github.com/PyGMIN/
 
-Alternatively the documentation can be compiled using sphinx ( in doc/ run $ make html ).
 
-Also, see the examples in the examples folder.
