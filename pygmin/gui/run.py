@@ -40,15 +40,12 @@ def excepthook(ex_type, ex_value, traceback_obj):
     if errorbox.exec_() == QtGui.QMessageBox.Cancel:
         raise
 
-def no_event(*args, **kwargs):
-    return
-
-class pick_event(object):
-    """
-    define a matplotlib pick_event event
-    """
-    def __init__(self, artist):
-        pass
+class MySelection(object):
+    def __init__(self):
+        self.minimum1 = None
+        self.minimum1 = None
+        self.coords1 = None
+        self.coords1 = None
 
 class QMinimumInList(QtGui.QListWidgetItem):
     
@@ -103,6 +100,8 @@ class MyForm(QtGui.QMainWindow):
         self.app = app
         self.double_ended_connect_runs = []
         self.pick_count = 0
+        
+        self.minima_selection = MySelection()
         
         #try to load the pymol viewer.  
         self.usepymol = config.getboolean("gui", "use_pymol")
@@ -192,7 +191,9 @@ class MyForm(QtGui.QMainWindow):
         """by minimum"""
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=1)
-        self.ui.oglPath.setMinimum(minimum, index=1)
+#        self.ui.oglPath.setMinimum(minimum, index=1)
+        self.minima_selection.minimum1 = minimum
+        self.minima_selection.coords1 = minimum.coords
         self.neb = None
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=1)
@@ -209,7 +210,10 @@ class MyForm(QtGui.QMainWindow):
         """by minimum"""
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=2)
-        self.ui.oglPath.setMinimum(minimum, index=2)
+#        self.ui.oglPath.setMinimum(minimum, index=2)
+        self.minima_selection.minimum2 = minimum
+        self.minima_selection.coords2 = minimum.coords
+
         self.neb = None
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=2)
@@ -223,8 +227,9 @@ class MyForm(QtGui.QMainWindow):
     
     def get_selected_minima(self):
         """return the two minima that have been chosen in the gui"""
-        m1 = self.ui.oglPath.getMinimum(index=1)
-        m2 = self.ui.oglPath.getMinimum(index=2)
+        m1, m2 = self.minima_selection.minimum1, self.minima_selection.minimum2
+        if m1 is None or m2 is None:
+            raise Exception("you must select two minima first")
         return m1, m2
  
     def get_selected_coords(self):
@@ -233,10 +238,11 @@ class MyForm(QtGui.QMainWindow):
         note, that these may not be the same as what is stored in the minimum.  E.g. they
         may be the aligned structures
         """
-        coords1 = self.ui.oglPath.getCoords(index=1)
-        coords2 = self.ui.oglPath.getCoords(index=2)
+        coords1, coords2 = self.minima_selection.coords1, self.minima_selection.coords2
+        if coords1 is None or coords2 is None:
+            raise Exception("you must select two minima first")
         return coords1, coords2
-    
+
     def show_TS(self, ts):
         """
         show the transition state and the associated minima in the 3d viewer
@@ -269,9 +275,11 @@ class MyForm(QtGui.QMainWindow):
         print "energy before alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
         dist, coords1, coords2 = align(coords1, coords2)
         print "energy after alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
+        print "best alignment distance", dist
         self.ui.oglPath.setCoords(coords1, index=1)
         self.ui.oglPath.setCoords(coords2, index=2)
-        print "best alignment distance", dist
+        self.minima_selection.coords1 = coords1
+        self.minima_selection.coords2 = coords2
         if self.usepymol:
             self.pymolviewer.update_coords([coords1], index=1)
             self.pymolviewer.update_coords([coords2], index=2)

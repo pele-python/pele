@@ -25,15 +25,15 @@ except AttributeError:
 
 class Show3D(QGLWidget):
     '''
-    Widget for drawing two spirals.
+    widget for displaying OpenGL.  This exists only for legacy support.  use Show3DWithSlider instead
     '''
     
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
         self.setMinimumSize(200, 200)
 #        glutInit()#sys.argv)
-        self.coords = {}
-        self.minima = {}
+        self.coords = {1:None, 2:None}
+        self.minima = {1:None, 2:None}
         self.last_mouse_pos = QtCore.QPointF(0., 0.)
         self.rotation = rot.aa2mx(np.array([0.,0.,0.])) # np.array([0., 0.])
         self.zoom = 1.0
@@ -157,6 +157,12 @@ class Show3D(QGLWidget):
         return QtCore.QSize(10, 10)
 
 class Show3DWithSlider(QWidget):
+    """
+    The main OpenGL viewer for pygmin
+    
+    This viewer can display a single structure, two structures
+    overlaid, or a pathway of structures (with a slider) 
+    """
     def __init__(self, *args, **kwargs):
         super(Show3DWithSlider, self).__init__(*args, **kwargs)
          
@@ -183,9 +189,27 @@ class Show3DWithSlider(QWidget):
 #    def __getattr__(self, name):
 #        return getattr(self.oglwgt, name)
     def setSystem(self, system):
+        """
+        set the system which has information about how to draw the structures.
+        
+        it should have a function:
+        
+            system.draw(coords)
+        """
         self.oglwgt.setSystem(system)
         
     def setCoords(self, coords, index=1):
+        """
+        display a structure (not a path) in the ogl viewer
+        
+        Parameters
+        ----------
+        coords : 1d array
+            the structure to display
+        index : 1 or 2
+            the viewer can display two structures overlayed.  This specifies
+            whether this structure should be in slot 1 or slot 2
+        """
         if index not in (1, 2):
             raise ValueError("index must be either 1 or 2")
         self.messages = None
@@ -194,22 +218,34 @@ class Show3DWithSlider(QWidget):
         self.oglwgt.setCoords(coords, index=index)
         self.label.setText("")
 
-    def getCoords(self, index=1):
-        if index not in (1, 2):
-            raise ValueError("index must be either 1 or 2")
-        return self.oglwgt.coords[index]
-    
-    def setMinimum(self, m, index=1):
-        if index not in (1, 2):
-            raise ValueError("index must be either 1 or 2")
-        self.oglwgt.minima[index] = m
-
-    def getMinimum(self, index=1):
-        if index not in (1, 2):
-            raise ValueError("index must be either 1 or 2")
-        return self.oglwgt.minima[index]
+#    def getCoords(self, index=1):
+#        if index not in (1, 2):
+#            raise ValueError("index must be either 1 or 2")
+#        return self.oglwgt.coords[index]
+#    
+#    def setMinimum(self, m, index=1):
+#        if index not in (1, 2):
+#            raise ValueError("index must be either 1 or 2")
+#        self.oglwgt.minima[index] = m
+#
+#    def getMinimum(self, index=1):
+#        if index not in (1, 2):
+#            raise ValueError("index must be either 1 or 2")
+#        return self.oglwgt.minima[index]
     
     def setCoordsPath(self, coordspath, frame=None, labels=None):
+        """
+        show a path in the viewer
+        
+        Parameters
+        ----------
+        coordspath : 2d numpy array
+            coordspath[i,j] is the coordinates of the j'th degree of freedom of the i'th structure
+        frame : int
+            frame number to show initially
+        labels : list of strings
+            labels for the structures that will be shown above the ogl viewer
+        """
         self.oglwgt.setCoords(None, index=2)
         if(frame is None):
             frame = self.slider.value()
