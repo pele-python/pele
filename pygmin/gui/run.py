@@ -93,7 +93,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui = MainWindow.Ui_MainWindow()
         self.ui.setupUi(self)
         self.listMinima = [
-                           self.ui.listWidget,
+                           self.ui.list_minima_main,
                            self.ui.listMinima1,
                            self.ui.listMinima2,
                            ]
@@ -136,7 +136,8 @@ class MyForm(QtGui.QMainWindow):
             l.clear()
         self.ui.list_TS.clear()
             
-    def edit_params(self):
+    def on_action_edit_params_triggered(self, checked=None):
+        if checked is None: return
         self.paramsdlg = DlgParams(self.system.params)
         self.paramsdlg.show()
         
@@ -149,10 +150,11 @@ class MyForm(QtGui.QMainWindow):
     def processEvents(self):
         self.app.processEvents()
      
-    def connect(self):
+    def on_action_db_connect_triggered(self, checked=None):
         """
         launch a file browser to connect to an existing database
         """
+        if checked is None: return
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Open File', '.')
         self.connect_db(filename)
 
@@ -547,7 +549,8 @@ class MyForm(QtGui.QMainWindow):
     def selectTransition(self):
         pass
 
-    def delete_minimum(self):
+    def on_action_delete_minimum_triggered(self, checked=None):
+        if checked is None: return
         min1 = self.ui.widget.minima[1]
         ret = QtGui.QMessageBox.question(self, "Deleting minima", 
                                    "Do you want to delete minima %d with energy %g"%(min1._id, min1.energy), 
@@ -673,7 +676,8 @@ class MyForm(QtGui.QMainWindow):
             self.system.database.mergeMinima(m1, m2)
             self.RemoveMinimum(m2)
 
-    def merge_minima(self):
+    def on_action_merge_minima_triggered(self, checked=None):
+        if checked is None: return
         min1 = self.ui.oglPath.minima[1]
         min2 = self.ui.oglPath.minima[2]
         self._merge_minima(min1, min2)

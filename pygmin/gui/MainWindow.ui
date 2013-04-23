@@ -53,7 +53,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QListWidget" name="listWidget">
+             <widget class="QListWidget" name="list_minima_main">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -357,7 +357,7 @@
     <property name="title">
      <string>Database</string>
     </property>
-    <addaction name="actionConnect"/>
+    <addaction name="action_db_connect"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -369,9 +369,9 @@
     <property name="title">
      <string>Actions</string>
     </property>
-    <addaction name="actionDelete_Minimum"/>
-    <addaction name="actionMerge_Minima"/>
-    <addaction name="actionEditParams"/>
+    <addaction name="action_delete_minimum"/>
+    <addaction name="action_merge_minima"/>
+    <addaction name="action_edit_params"/>
    </widget>
    <addaction name="menuSimulation"/>
    <addaction name="menuHelp"/>
@@ -388,7 +388,7 @@
     <string>Clear Database</string>
    </property>
   </action>
-  <action name="actionConnect">
+  <action name="action_db_connect">
    <property name="text">
     <string>Connect to Database</string>
    </property>
@@ -398,17 +398,17 @@
     <string>About</string>
    </property>
   </action>
-  <action name="actionDelete_Minimum">
+  <action name="action_delete_minimum">
    <property name="text">
     <string>Delete Minimum</string>
    </property>
   </action>
-  <action name="actionEditParams">
+  <action name="action_edit_params">
    <property name="text">
     <string>Edit default parameters</string>
    </property>
   </action>
-  <action name="actionMerge_Minima">
+  <action name="action_merge_minima">
    <property name="text">
     <string>Merge Minima</string>
    </property>
@@ -431,7 +431,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>listWidget</sender>
+   <sender>list_minima_main</sender>
    <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
    <receiver>MainWindow</receiver>
    <slot>SelectMinimum()</slot>
@@ -491,70 +491,6 @@
     <hint type="destinationlabel">
      <x>74</x>
      <y>537</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionConnect</sender>
-   <signal>activated()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>connect()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>282</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionDelete_Minimum</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>delete_minimum()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>345</x>
-     <y>277</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionEditParams</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>edit_params()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>345</x>
-     <y>277</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionMerge_Minima</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>merge_minima()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>419</x>
-     <y>311</y>
     </hint>
    </hints>
   </connection>
