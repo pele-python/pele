@@ -86,7 +86,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="btnRun">
+             <widget class="QPushButton" name="btn_start_basinhopping">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a short basinhopping run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -265,7 +265,7 @@
                </widget>
               </item>
               <item row="4" column="1">
-               <widget class="QPushButton" name="btnconnect_in_optim">
+               <widget class="QPushButton" name="btn_connect_in_optim">
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spawn an external OPTIM job&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
@@ -447,54 +447,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>btnRun</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>StartBasinHopping()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>816</x>
-     <y>578</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>432</x>
-     <y>188</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnAlign</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>AlignMinima()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>652</x>
-     <y>445</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>367</x>
-     <y>30</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnNEB</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>ConnectMinima()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>652</x>
-     <y>478</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>526</x>
-     <y>26</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>listMinima1</sender>
    <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
    <receiver>MainWindow</receiver>
@@ -559,38 +511,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>btnConnect</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>doubleEndedConnect()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>652</x>
-     <y>511</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>685</x>
-     <y>507</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnShowGraph</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>show_graph()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>652</x>
-     <y>544</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>691</x>
-     <y>476</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionDelete_Minimum</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -607,38 +527,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>btnDisconnectivity_graph</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>show_disconnectivity_graph()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>796</x>
-     <y>577</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>689</x>
-     <y>437</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnReconnect</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>doubleEndedReConnect()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>796</x>
-     <y>511</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>687</x>
-     <y>402</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionEditParams</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -651,22 +539,6 @@
     <hint type="destinationlabel">
      <x>345</x>
      <y>277</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnconnect_in_optim</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>connect_in_optim()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>796</x>
-     <y>544</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>833</x>
-     <y>565</y>
     </hint>
    </hints>
   </connection>
@@ -693,8 +565,8 @@
    <slot>on_select_TS()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>745</x>
-     <y>448</y>
+     <x>717</x>
+     <y>104</y>
     </hint>
     <hint type="destinationlabel">
      <x>835</x>
@@ -709,25 +581,16 @@
   <slot>NewSystem()</slot>
   <slot>SelectMinimum1()</slot>
   <slot>SelectMinimum2()</slot>
-  <slot>AlignMinima()</slot>
-  <slot>ConnectMinima()</slot>
   <slot>showFrame()</slot>
-  <slot>showEnergies()</slot>
   <slot>save()</slot>
   <slot>load()</slot>
   <slot>tsSearch()</slot>
   <slot>selectTransition()</slot>
   <slot>showFrameTS()</slot>
-  <slot>connect()</slot>
-  <slot>Invert()</slot>
   <slot>LocalConnect()</slot>
   <slot>doubleEndedConnect()</slot>
-  <slot>show_graph()</slot>
   <slot>delete_minimum()</slot>
-  <slot>show_disconnectivity_graph()</slot>
-  <slot>doubleEndedReConnect()</slot>
   <slot>edit_params()</slot>
-  <slot>connect_in_optim()</slot>
   <slot>merge_minima()</slot>
   <slot>launch_connect_explorer()</slot>
   <slot>on_select_TS()</slot>

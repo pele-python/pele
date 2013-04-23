@@ -78,6 +78,16 @@ class QTSInList(QtGui.QListWidgetItem):
         return self.ts.energy > item2.ts.energy
 
 class MyForm(QtGui.QMainWindow):
+    """
+    this is the main class for the pygmin gui
+    
+    Parameters
+    ----------
+    app : 
+        the application object returned by QtGui.QApplication()
+    systemtype : system class object
+        the system class
+    """
     def __init__(self, app, systemtype, parent=None):
         QtGui.QWidget.__init__(self)
         self.ui = MainWindow.Ui_MainWindow()
@@ -112,6 +122,9 @@ class MyForm(QtGui.QMainWindow):
             glutInit()
         
     def NewSystem(self):
+        """
+        this is called to initialize the system with a database
+        """
         self.system = self.systemtype()
         db = self.system.create_database()
         self.system.database = db
@@ -138,12 +151,15 @@ class MyForm(QtGui.QMainWindow):
      
     def connect(self):
         """
-        connect to an existing database
+        launch a file browser to connect to an existing database
         """
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Open File', '.')
         self.connect_db(filename)
 
     def connect_db(self, filename):
+        """
+        connect to an existing database at location filename
+        """
         db = self.system.create_database(db=filename)
         self.system.database = db
         #add minima to listWidged.  do sorting after all minima are added
@@ -159,7 +175,8 @@ class MyForm(QtGui.QMainWindow):
         self.system.database.on_ts_removed.connect(self.RemoveTS)
     
     def SelectMinimum(self, item):
-        """when you click on a minimum in the basinhopping tab"""
+        """when you click on a minimum in the basinhopping tab
+        """
         print "selecting minimum", item.minimum._id, item.minimum.energy
         self.ui.widget.setSystem(self.system)
         self.ui.widget.setCoords(item.coords)
@@ -180,7 +197,9 @@ class MyForm(QtGui.QMainWindow):
 
 
     def SelectMinimum1(self, item):
-        """called by the ui"""
+        """
+        called when a minimum in the first list in the connect tab is selected
+        """
         print "selecting minimum 1", item.minimum._id, item.minimum.energy
         return self._SelectMinimum1(item.minimum)
  
@@ -194,12 +213,16 @@ class MyForm(QtGui.QMainWindow):
             self.pymolviewer.update_coords([minimum.coords], index=2)
 
     def SelectMinimum2(self, item):
-        """called by the ui"""
+        """
+        called when a minimum in the second list in the connect tab is selected
+        """
         print "selecting minimum 2", item.minimum._id, item.minimum.energy
         return self._SelectMinimum2(item.minimum)
     
     def show_TS(self, ts):
-        """show the transition state and the associated minima in the 3d viewer"""
+        """
+        show the transition state and the associated minima in the 3d viewer
+        """
         self.ui.oglTS.setSystem(self.system)
         m1 = ts.minimum1
         m2 = ts.minimum2
@@ -216,17 +239,12 @@ class MyForm(QtGui.QMainWindow):
     def on_select_TS(self, item):
         self.show_TS(item.ts)
 
-    
-    def Invert(self):
-        """invert the coordinates"""
-        coords2 = self.ui.oglPath.coords[2]
-        self.ui.oglPath.setCoords(-coords2, 2)
-        if self.usepymol:
-            self.pymolviewer.update_coords([-coords2], index=2)
-
-    
-    def AlignMinima(self):
-        """use mindist to align the minima"""
+    def on_btnAlign_clicked(self, clicked=None):
+        """use mindist to align the minima.
+        
+        called when the align button is pressed
+        """
+        if clicked is None: return
         coords1 = self.ui.oglPath.coords[1]
         coords2 = self.ui.oglPath.coords[2]
         align = self.system.get_mindist()
@@ -241,8 +259,9 @@ class MyForm(QtGui.QMainWindow):
             self.pymolviewer.update_coords([coords1], index=1)
             self.pymolviewer.update_coords([coords2], index=2)
     
-    def ConnectMinima(self):
+    def on_btnNEB_clicked(self, clicked=None):
         """do an NEB run (not a connect run).  Don't find best alignment first"""
+        if clicked is None: return
         coords1 = self.ui.oglPath.coords[1]
         coords2 = self.ui.oglPath.coords[2]
         min1 = self.ui.oglPath.minima[1]
@@ -277,12 +296,13 @@ class MyForm(QtGui.QMainWindow):
             self._SelectMinimum2(min1)
         self.pick_count += 1
 
-    def show_disconnectivity_graph(self):
+    def on_btnDisconnectivity_graph_clicked(self, clicked=None):
         """show the disconnectivity graph 
         
         it is interactive, so that when you click on an end point
         that minima is selected
         """
+        if clicked is None: return
         self.pick_count = 0
 #        pick_count = 0
         def minimum_selecter(min1):
@@ -306,13 +326,13 @@ class MyForm(QtGui.QMainWindow):
         return
 
     
-    def show_graph(self):
+    def on_btnShowGraph_clicked(self, clicked=None):
         """ show the graph of minima and transition states 
         
         make it interactive, so that when you click on a point
         that minima is selected
         """
-        
+        if clicked is None: return
         self.pick_count = 0
         from pygmin.gui.graph_viewer import GraphViewDialog
         if not hasattr(self, "graphview"):
@@ -507,7 +527,8 @@ class MyForm(QtGui.QMainWindow):
 
   
                      
-    def StartBasinHopping(self):
+    def on_btn_start_basinhopping_clicked(self, clicked=None):
+        if clicked is None: return
         db = self.system.database
         self.system.database = None
         self.bhrunner = bhrunner.BHRunner(self.system)
@@ -537,10 +558,12 @@ class MyForm(QtGui.QMainWindow):
             self.RemoveMinimum(min1)
             self.system.database.removeMinimum(min1)
     
-    def doubleEndedConnect(self):
+    def on_btnConnect_clicked(self, clicked=None):
+        if clicked is None: return
         return self._doubleEndedConnect(reconnect=False)
 
-    def doubleEndedReConnect(self):
+    def on_btnReconnect_clicked(self, clicked=None):
+        if clicked is None: return
         return self._doubleEndedConnect(reconnect=True)
 
     def _doubleEndedConnect(self, reconnect=False, min1min2=None):
@@ -610,9 +633,10 @@ class MyForm(QtGui.QMainWindow):
 #        if self.usepymol:
 #            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
      
-    def connect_in_optim(self):
+    def on_btn_connect_in_optim_clicked(self, clicked=None):
         """spawn an OPTIM job and retrieve the minima and transition states 
         it finds"""
+        if clicked is None: return
         min1 = self.ui.oglPath.minima[1]
         min2 = self.ui.oglPath.minima[2]
         existing_minima = set(self.system.database.minima())
