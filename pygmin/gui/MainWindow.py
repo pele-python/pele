@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Tue Apr 23 16:55:49 2013
+# Created: Tue Apr 23 17:00:00 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -35,14 +35,14 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
-        self.widget = Show3D(self.BHTab)
+        self.ogl_main = Show3D(self.BHTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
-        self.widget.setSizePolicy(sizePolicy)
-        self.widget.setObjectName(_fromUtf8("widget"))
-        self.horizontalLayout_3.addWidget(self.widget)
+        sizePolicy.setHeightForWidth(self.ogl_main.sizePolicy().hasHeightForWidth())
+        self.ogl_main.setSizePolicy(sizePolicy)
+        self.ogl_main.setObjectName(_fromUtf8("ogl_main"))
+        self.horizontalLayout_3.addWidget(self.ogl_main)
         self.verticalLayout_3 = QtGui.QVBoxLayout()
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.label_2 = QtGui.QLabel(self.BHTab)
@@ -76,7 +76,7 @@ class Ui_MainWindow(object):
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setContentsMargins(5, -1, -1, -1)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.oglPath = Show3D(self.NEBTab)
+        self.oglPath = Show3DWithSlider(self.NEBTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -84,10 +84,6 @@ class Ui_MainWindow(object):
         self.oglPath.setSizePolicy(sizePolicy)
         self.oglPath.setObjectName(_fromUtf8("oglPath"))
         self.verticalLayout.addWidget(self.oglPath)
-        self.sliderFrame = QtGui.QSlider(self.NEBTab)
-        self.sliderFrame.setOrientation(QtCore.Qt.Horizontal)
-        self.sliderFrame.setObjectName(_fromUtf8("sliderFrame"))
-        self.verticalLayout.addWidget(self.sliderFrame)
         self.horizontalLayout.addLayout(self.verticalLayout)
         self.verticalLayout_2 = QtGui.QVBoxLayout()
         self.verticalLayout_2.setContentsMargins(6, -1, -1, -1)
@@ -229,7 +225,6 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.list_minima_main, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum)
         QtCore.QObject.connect(self.listMinima1, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum1)
         QtCore.QObject.connect(self.listMinima2, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum2)
-        QtCore.QObject.connect(self.sliderFrame, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), MainWindow.showFrame)
         QtCore.QObject.connect(self.list_TS, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.on_select_TS)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 

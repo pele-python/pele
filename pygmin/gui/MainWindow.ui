@@ -34,7 +34,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="Show3D" name="widget" native="true">
+           <widget class="Show3D" name="ogl_main" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -112,19 +112,12 @@
            <number>5</number>
           </property>
           <item>
-           <widget class="Show3D" name="oglPath" native="true">
+           <widget class="Show3DWithSlider" name="oglPath" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="sliderFrame">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -475,22 +468,6 @@
     <hint type="destinationlabel">
      <x>275</x>
      <y>536</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>sliderFrame</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>showFrame()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>111</x>
-     <y>579</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>74</x>
-     <y>537</y>
     </hint>
    </hints>
   </connection>

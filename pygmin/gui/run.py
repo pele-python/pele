@@ -180,9 +180,9 @@ class MyForm(QtGui.QMainWindow):
         """when you click on a minimum in the basinhopping tab
         """
         print "selecting minimum", item.minimum._id, item.minimum.energy
-        self.ui.widget.setSystem(self.system)
-        self.ui.widget.setCoords(item.coords)
-        self.ui.widget.setMinimum(item.minimum)
+        self.ui.ogl_main.setSystem(self.system)
+        self.ui.ogl_main.setCoords(item.coords)
+        self.ui.ogl_main.setMinimum(item.minimum)
         self.ui.oglTS.setSystem(self.system)
         #self.ui.oglTS.setCoords(item.coords)
         if self.usepymol:
@@ -221,6 +221,22 @@ class MyForm(QtGui.QMainWindow):
         print "selecting minimum 2", item.minimum._id, item.minimum.energy
         return self._SelectMinimum2(item.minimum)
     
+    def get_selected_minima(self):
+        """return the two minima that have been chosen in the gui"""
+        m1 = self.ui.oglPath.getMinimum(index=1)
+        m2 = self.ui.oglPath.getMinimum(index=2)
+        return m1, m2
+ 
+    def get_selected_coords(self):
+        """return the two sets of coordinates that have been chosen in the gui
+        
+        note, that these may not be the same as what is stored in the minimum.  E.g. they
+        may be the aligned structures
+        """
+        coords1 = self.ui.oglPath.getCoords(index=1)
+        coords2 = self.ui.oglPath.getCoords(index=2)
+        return coords1, coords2
+    
     def show_TS(self, ts):
         """
         show the transition state and the associated minima in the 3d viewer
@@ -247,15 +263,14 @@ class MyForm(QtGui.QMainWindow):
         called when the align button is pressed
         """
         if clicked is None: return
-        coords1 = self.ui.oglPath.coords[1]
-        coords2 = self.ui.oglPath.coords[2]
+        coords1, coords2 = self.get_selected_coords()
         align = self.system.get_mindist()
         pot = self.system.get_potential()
         print "energy before alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
         dist, coords1, coords2 = align(coords1, coords2)
         print "energy after alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
-        self.ui.oglPath.setCoords(coords1, 1)
-        self.ui.oglPath.setCoords(coords2, 2)
+        self.ui.oglPath.setCoords(coords1, index=1)
+        self.ui.oglPath.setCoords(coords2, index=2)
         print "best alignment distance", dist
         if self.usepymol:
             self.pymolviewer.update_coords([coords1], index=1)
@@ -264,10 +279,7 @@ class MyForm(QtGui.QMainWindow):
     def on_btnNEB_clicked(self, clicked=None):
         """do an NEB run (not a connect run).  Don't find best alignment first"""
         if clicked is None: return
-        coords1 = self.ui.oglPath.coords[1]
-        coords2 = self.ui.oglPath.coords[2]
-        min1 = self.ui.oglPath.minima[1]
-        min2 = self.ui.oglPath.minima[2]
+        coords1, coords2 = self.get_selected_coords()
         from neb_explorer import NEBExplorer
         
         if not hasattr(self, "nebexplorer"):
@@ -275,21 +287,9 @@ class MyForm(QtGui.QMainWindow):
         self.nebexplorer.show()
         self.nebexplorer.new_neb(coords1, coords2)
         
-        # this is shit!
-#        self.neb = self.nebexplorer.nebrunner.neb.neb
-        
-        #self.neb = self.neb.run()
-#        self.nebcoords = self.neb.coords
-#        self.nebenergies = self.neb.energies
-#        self.ui.oglPath.setCoords(self.neb.coords[0,:], 1)
-#        self.ui.oglPath.setCoords(None, 2)
-#        self.ui.sliderFrame.setRange(0,self.neb.coords.shape[0]-1)
-#        if self.usepymol:
-#            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
-
-    def showFrame(self, i):
-        if hasattr(self, "nebcoords"):
-            self.ui.oglPath.setCoords(self.nebcoords[i,:])
+#    def showFrame(self, i):
+#        if hasattr(self, "nebcoords"):
+#            self.ui.oglPath.setCoords(self.nebcoords[i,:])
     
     def on_minimum_picked(self, min1):
         if (self.pick_count % 2) == 0:
@@ -349,7 +349,7 @@ class MyForm(QtGui.QMainWindow):
         if clicked is None: return
         if not hasattr(self, "normalmode_explorer"):
             self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
-        min1 = self.ui.widget.minima[1]
+        min1 = self.ui.ogl_main.minima[1]
         self.normalmode_explorer.set_coords(min1.coords)
         self.normalmode_explorer.show()
         
@@ -551,7 +551,7 @@ class MyForm(QtGui.QMainWindow):
 
     def on_action_delete_minimum_triggered(self, checked=None):
         if checked is None: return
-        min1 = self.ui.widget.minima[1]
+        min1 = self.ui.ogl_main.minima[1]
         ret = QtGui.QMessageBox.question(self, "Deleting minima", 
                                    "Do you want to delete minima %d with energy %g"%(min1._id, min1.energy), 
                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
@@ -572,8 +572,7 @@ class MyForm(QtGui.QMainWindow):
     def _doubleEndedConnect(self, reconnect=False, min1min2=None):
         # determine which minima to connect
         if min1min2 is None:
-            min1 = self.ui.oglPath.minima[1]
-            min2 = self.ui.oglPath.minima[2]
+            min1, min2 = self.get_selected_minima()
         else:
             min1, min2 = min1min2
         database = self.system.database
@@ -590,9 +589,11 @@ class MyForm(QtGui.QMainWindow):
                 coords = np.array(smoothpath)
                 self.nebcoords = coords
                 self.nebenergies = np.array(energies)
-                self.ui.oglPath.setCoords(coords[0,:], 1)
-                self.ui.oglPath.setCoords(None, 2)
-                self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
+                print "setting path in oglPath"
+                self.ui.oglPath.setCoordsPath(coords)#, labels)
+#                self.ui.oglPath.setCoords(coords[0,:], 1)
+#                self.ui.oglPath.setCoords(None, 2)
+#                self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
                 
                 if self.usepymol:
                     self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
@@ -604,8 +605,6 @@ class MyForm(QtGui.QMainWindow):
         
         
         decviewer = ConnectViewer(self.system, self.system.database, min1, min2, parent=self, app=self.app)
-#        decrunner = DECRunner(self.system, self.system.database, min1, min2,
-#                              outstream=decviewer.textEdit_writer)
         
         print "starting double ended"
         decviewer.show()
@@ -613,36 +612,13 @@ class MyForm(QtGui.QMainWindow):
         
         # store pointers
         self.double_ended_connect_runs.append(decviewer)
-#        self.decrunner = decrunner
-#        self.decviewer = decviewer
-        
-#        return
-#        double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
-#                                                                       fresh_connect=reconnect)
-#        double_ended_connect.connect()
-#        mints, S, energies = double_ended_connect.returnPath()
-#        clist = [m.coords for m in mints]
-#        print "done finding path, now just smoothing path.  This can take a while"
-#        smoothpath = self.system.smooth_path(clist)
-#        print "done"
-#        
-#        coords = np.array(smoothpath)
-#        self.nebcoords = coords
-#        self.nebenergies = np.array(energies)
-#        self.ui.oglPath.setCoords(coords[0,:], 1)
-#        self.ui.oglPath.setCoords(None, 2)
-#        self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
-#        
-#        if self.usepymol:
-#            self.pymolviewer.update_coords(self.nebcoords, index=1, delete_all=True)
      
     def on_btn_connect_in_optim_clicked(self, clicked=None):
         """spawn an OPTIM job and retrieve the minima and transition states 
         it finds"""
         if clicked is None: return
-        min1 = self.ui.oglPath.minima[1]
-        min2 = self.ui.oglPath.minima[2]
-        existing_minima = set(self.system.database.minima())
+        min1, min2 = self.get_selected_minima()
+#        existing_minima = set(self.system.database.minima())
         spawner = self.system.get_optim_spawner(min1.coords, min2.coords)
         spawner.run()
         db = self.system.database
@@ -678,15 +654,13 @@ class MyForm(QtGui.QMainWindow):
 
     def on_action_merge_minima_triggered(self, checked=None):
         if checked is None: return
-        min1 = self.ui.oglPath.minima[1]
-        min2 = self.ui.oglPath.minima[2]
+        min1, min2 = self.get_selected_minima()
         self._merge_minima(min1, min2)
 
 
 
     def launch_connect_explorer(self):
-        coords1 = self.ui.oglPath.coords[1]
-        coords2 = self.ui.oglPath.coords[2]
+        coords1, coords2 = self.get_selected_coords()
 
         if not hasattr(self, "local_connect_explorer"):
             self.local_connect_explorer = ConnectExplorerDialog(self.system)

@@ -186,12 +186,28 @@ class Show3DWithSlider(QWidget):
         self.oglwgt.setSystem(system)
         
     def setCoords(self, coords, index=1):
+        if index not in (1, 2):
+            raise ValueError("index must be either 1 or 2")
         self.messages = None
         self.coordspath = None
         self.slider.hide()
         self.oglwgt.setCoords(coords, index=index)
         self.label.setText("")
 
+    def getCoords(self, index=1):
+        if index not in (1, 2):
+            raise ValueError("index must be either 1 or 2")
+        return self.oglwgt.coords[index]
+    
+    def setMinimum(self, m, index=1):
+        if index not in (1, 2):
+            raise ValueError("index must be either 1 or 2")
+        self.oglwgt.minima[index] = m
+
+    def getMinimum(self, index=1):
+        if index not in (1, 2):
+            raise ValueError("index must be either 1 or 2")
+        return self.oglwgt.minima[index]
     
     def setCoordsPath(self, coordspath, frame=None, labels=None):
         self.oglwgt.setCoords(None, index=2)
