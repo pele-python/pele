@@ -34,12 +34,14 @@ python packages:
        We use numpy everywhere for doing numerical work.  It also installs f2py which
        is used to compile fortran code into modules callable by python.
 
-  #. scipy
+  #. scipy:
+       For some of the optimizers and various scientific tools
 
   #. networkx: 
        For graph functionality. https://networkx.lanl.gov
 
   #. matplotlib:
+       For making plots (e.g. disconnectivity graphs)
 
   #. SQLAlchemy 0.7: 
        For managing database of stationary points.  http://www.sqlalchemy.org/
