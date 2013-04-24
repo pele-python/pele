@@ -16,11 +16,21 @@ from PyQt4.QtOpenGL import *
 import numpy as np
 import pygmin.utils.rotations as rot
 from pygmin.utils.events import Signal
+from PyQt4.QtCore import pyqtSlot
+#from pygmin.gui.ui.show3d_with_slider_ui import Ui_Form
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
     _fromUtf8 = lambda s: s
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
 
 
 class Show3D(QGLWidget):
@@ -165,6 +175,9 @@ class Show3DWithSlider(QWidget):
     """
     def __init__(self, *args, **kwargs):
         super(Show3DWithSlider, self).__init__(*args, **kwargs)
+        
+#        self.ui = Ui_Form()
+#        self.ui.setupUi(self)
          
         self.label = QtGui.QLabel(parent=self)
         self.label.setObjectName(_fromUtf8("label"))
@@ -175,8 +188,8 @@ class Show3DWithSlider(QWidget):
         
         self.slider = QtGui.QSlider(parent=self)
         self.slider.setOrientation(QtCore.Qt.Horizontal)
-        self.slider.setObjectName(_fromUtf8("myslider"))
-        QtCore.QObject.connect(self.slider, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")), self._showFrame)
+        self.slider.setObjectName(_fromUtf8("slider"))
+        QtCore.QObject.connect(self.slider, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.on_slider_valueChanged)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(self.label)
@@ -185,6 +198,9 @@ class Show3DWithSlider(QWidget):
         self.setLayout(vbox)
         
         self.on_frame_updated = Signal()
+
+        self.animate = False
+        self._animate_dir = 1
     
 #    def __getattr__(self, name):
 #        return getattr(self.oglwgt, name)
@@ -212,6 +228,7 @@ class Show3DWithSlider(QWidget):
         """
         if index not in (1, 2):
             raise ValueError("index must be either 1 or 2")
+        self.animate = False
         self.messages = None
         self.coordspath = None
         self.slider.hide()
@@ -265,6 +282,11 @@ class Show3DWithSlider(QWidget):
         self.slider.show()
         self.slider.setRange(0, coordspath.shape[0]-1)
         self.showFrame(frame)
+    
+    @pyqtSlot(int)
+    def on_slider_valueChanged(self, i):
+        print i
+        return self._showFrame(i)
 
     def _showFrame(self, i):
         self.oglwgt.setCoords(self.coordspath[i,:], index=1)
@@ -286,4 +308,28 @@ class Show3DWithSlider(QWidget):
 #    def on_myslider_sliderMoved(self, index):
 #        print "slider moved", index
 ##        self.oglwgt.setCoords(self.neb.coords[0,:], index=index)
+
+
+    def start_animation(self):
+        self.animate=True
+        self._animate_dir = 1
+        QtCore.QTimer.singleShot(0., self._next_frame)
+    
+    def stop_animation(self):
+        self.animate = False
+    
+    def _next_frame(self):
+        if not self.animate: return
+        cur = self.slider.value()
+        if cur == self.slider.maximum():
+            self._animate_dir = -1
+        elif cur ==  self.slider.minimum():
+            self._animate_dir = 1
+        cur += self._animate_dir
+#        self.slider.setValue(cur)
+        self.showFrame(cur)
+        
+        if self.animate:
+            frames_per_second = 10.
+            QtCore.QTimer.singleShot(1000. / frames_per_second, self._next_frame)
 
