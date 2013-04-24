@@ -340,7 +340,7 @@
      <x>0</x>
      <y>0</y>
      <width>839</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSimulation">
@@ -406,44 +406,22 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Show3D</class>
-   <extends>QWidget</extends>
-   <header>pygmin.gui.show3d.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
    <header>show3d_with_slider.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>Show3D</class>
+   <extends>QWidget</extends>
+   <header>pygmin.gui.show3d.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>list_TS</sender>
-   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>on_select_TS()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>717</x>
-     <y>104</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>835</x>
-     <y>457</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
-  <slot>SelectMinimum()</slot>
-  <slot>SelectMinimum1()</slot>
-  <slot>SelectMinimum2()</slot>
-  <slot>showFrame()</slot>
   <slot>save()</slot>
   <slot>load()</slot>
-  <slot>on_select_TS()</slot>
  </slots>
 </ui>

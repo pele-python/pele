@@ -1,11 +1,11 @@
 from PyQt4 import QtGui, QtCore, Qt
-from PyQt4.QtGui import QDockWidget
+#from PyQt4.QtGui import QDockWidget
 from pygmin.utils.events import Signal
 from copy import deepcopy
 from itertools import izip
 
 from nebdlg import NEBWidget
-from show3d import Show3D
+#from show3d import Show3D
 from pygmin.storage import Database
 from pygmin.gui.ui.mplwidget import MPLWidget
 from  pygmin.gui.ui.ui_neb_explorer import Ui_MainWindow as UI

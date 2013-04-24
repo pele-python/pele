@@ -4,14 +4,14 @@ import traceback
 #import pylab as pl    
 from PyQt4 import QtCore, QtGui, Qt
 import MainWindow 
-from collections import deque
+#from collections import deque
 import sys
 import bhrunner
 import copy
 import numpy as np
 #import matplotlib.pyplot as plt
 
-from pygmin.storage import Database
+#from pygmin.storage import Database
 from pygmin.landscape import Graph
 #from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from dlg_params import DlgParams
@@ -269,6 +269,9 @@ class MyForm(QtGui.QMainWindow):
             raise Exception("you must select two minima first")
         return coords1, coords2
 
+    def on_list_TS_currentItemChanged(self, item):
+        self.show_TS(item.ts)
+
     def show_TS(self, ts):
         """
         show the transition state and the associated minima in the 3d viewer
@@ -285,9 +288,6 @@ class MyForm(QtGui.QMainWindow):
         labels += ["ts: energy " + str(ts.energy)]
         labels += ["minimum: energy " + str(m2.energy) + " id " + str(m2._id)]
         self.ui.oglTS.setCoordsPath(self.tscoordspath, frame=1, labels=labels)
-
-    def on_select_TS(self, item):
-        self.show_TS(item.ts)
 
     def on_btnAlign_clicked(self, clicked=None):
         """use mindist to align the minima.
@@ -326,6 +326,7 @@ class MyForm(QtGui.QMainWindow):
 #            self.ui.oglPath.setCoords(self.nebcoords[i,:])
     
     def on_minimum_picked(self, min1):
+        """called when a minimimum is clicked on in the graph or disconnectivity graph"""
         if (self.pick_count % 2) == 0:
             self._SelectMinimum1(min1)
         else:
@@ -339,23 +340,11 @@ class MyForm(QtGui.QMainWindow):
         that minima is selected
         """
         if clicked is None: return
-        self.pick_count = 0
-#        pick_count = 0
-        def minimum_selecter(min1):
-            self.pick_count += 1
-            print "pick_count", self.pick_count
-            if (self.pick_count % 2) == 0:
-                self._SelectMinimum1(min1)
-            else:
-                self._SelectMinimum2(min1)
-                
 
         if not hasattr(self, "dgraph_dlg"):
-            self.minimum_selecter = minimum_selecter
             self.dgraph_dlg = DGraphDialog(self.system.database, parent=self)
-            self.dgraph_dlg.dgraph_widget.minimum_selected.connect(minimum_selecter)
+            self.dgraph_dlg.dgraph_widget.minimum_selected.connect(self.on_minimum_picked)
         self.dgraph_dlg.rebuild_disconnectivity_graph()
-#        self.dgraph_dlg.minimum_selected=minimum_selecter
         self.dgraph_dlg.show()
         
         
@@ -394,56 +383,6 @@ class MyForm(QtGui.QMainWindow):
         ts = self.ui.list_TS.selectedItems()[0]
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
-        
-        
-    
-#    def showEnergies(self):
-#        """plot the energies from NEB or connect
-#        
-#        don't clear the previous plot so we can overlay multiple plots
-#        """
-#        #note: this breaks if pylab isn't a local import.  I don't know why
-#        import pylab as pl
-#        pl.ion()
-#        ax = pl.gca()
-#        ax.plot(self.nebenergies, "-")
-#        points = ax.scatter(range(len(self.nebenergies)), self.nebenergies, picker=5, label="energies")
-#        
-#        if False:
-#            #start to make the energies interactive.  I would like it to be such that
-#            #when you click on a point, that structure gets selected. But the structures
-#            #in the NEB are not Minimum objects, so they can't be selected using the current
-#            #setup
-#            def on_pick(event):
-#                if event.artist != points:
-#                    print "you clicked on something other than a node"
-#                    return True
-#                ind = event.ind[0]
-#            #    min1 = layoutlist[ind][0]
-#                yvalue = self.nebenergies[ind]
-#                print "you clicked on a configuration with energy", yvalue
-#
-#            
-#            fig = pl.gcf()
-#            cid = fig.canvas.mpl_connect('pick_event', on_pick)
-#
-#
-#        
-#        if False: #show climbing images
-#            neb = self.neb
-#            cl=[]
-#            en=[]
-#            for i in xrange(len(neb.energies)):
-#                if(neb.isclimbing[i]):
-#                    print "climbing image :", i, neb.energies[i]
-#                    cl.append(i)
-#                    en.append(neb.energies[i])
-#                    
-#            pl.plot(cl, en, "s", label="climbing images", markersize=10, markerfacecolor="none", markeredgewidth=2)
-#        
-#        pl.legend(loc='best')
-#        pl.show()
-    
     
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
@@ -456,9 +395,9 @@ class MyForm(QtGui.QMainWindow):
         minid = minimum._id
         items = self.minima_list_model.findItems('*', QtCore.Qt.MatchWildcard)
         for i in items:
-            print "item", i.minimum._id, minid, minimum._id
+#            print "item", i.minimum._id, minid, minimum._id
             if i.minimum._id == minid:
-                print "taking item", i.minimum._id
+#                print "taking item", i.minimum._id
                 self.minima_list_model.takeRow(i.row())
                 break
     
@@ -497,17 +436,13 @@ class MyForm(QtGui.QMainWindow):
         self.bhrunner.start()
         self.system.database = db
         
-    def tsSearch(self):
-        import numpy as np
-        ts = self.system.findTS(self.ui.oglTS.coords[1])
-        self.transition = [ts[1][0], ts[0][0], ts[2][0]]
+#    def tsSearch(self):
+#        ts = self.system.findTS(self.ui.oglTS.coords[1])
+#        self.transition = [ts[1][0], ts[0][0], ts[2][0]]
 
-    def showFrameTS(self, i):
-        if(self.transition):
-            self.ui.oglTS.setCoords(self.transition[i])
-
-    def selectTransition(self):
-        pass
+#    def showFrameTS(self, i):
+#        if self.transition:
+#            self.ui.oglTS.setCoords(self.transition[i])
 
     def on_action_delete_minimum_triggered(self, checked=None):
         if checked is None: return
@@ -619,15 +554,15 @@ class MyForm(QtGui.QMainWindow):
 
 
 
-    def launch_connect_explorer(self):
-        coords1, coords2 = self.get_selected_coords()
-
-        if not hasattr(self, "local_connect_explorer"):
-            self.local_connect_explorer = ConnectExplorerDialog(self.system)
-            self.local_connect_explorer.nebwgt.process_events.connect(self.processEvents)
-        self.local_connect_explorer.show()
-        self.local_connect_explorer.createNEB(coords1, coords2)
-        self.local_connect_explorer.runNEB()
+#    def launch_connect_explorer(self):
+#        coords1, coords2 = self.get_selected_coords()
+#
+#        if not hasattr(self, "local_connect_explorer"):
+#            self.local_connect_explorer = ConnectExplorerDialog(self.system)
+#            self.local_connect_explorer.nebwgt.process_events.connect(self.processEvents)
+#        self.local_connect_explorer.show()
+#        self.local_connect_explorer.createNEB(coords1, coords2)
+#        self.local_connect_explorer.runNEB()
 
 
     def on_btn_close_all_clicked(self, checked=None):
