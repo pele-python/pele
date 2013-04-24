@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_normalmode_explorer.ui'
 #
-# Created: Wed Apr 24 11:11:17 2013
+# Created: Wed Apr 24 11:48:11 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -30,15 +30,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_2.setMargin(0)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
-        self.view3D = Show3D(self.verticalLayoutWidget_2)
+        self.view3D = Show3DWithSlider(self.verticalLayoutWidget_2)
         self.view3D.setObjectName(_fromUtf8("view3D"))
         self.verticalLayout_2.addWidget(self.view3D)
-        self.sliderFrame = QtGui.QSlider(self.verticalLayoutWidget_2)
-        self.sliderFrame.setMinimum(-20)
-        self.sliderFrame.setMaximum(20)
-        self.sliderFrame.setOrientation(QtCore.Qt.Horizontal)
-        self.sliderFrame.setObjectName(_fromUtf8("sliderFrame"))
-        self.verticalLayout_2.addWidget(self.sliderFrame)
         self.verticalLayoutWidget = QtGui.QWidget(self.splitter)
         self.verticalLayoutWidget.setObjectName(_fromUtf8("verticalLayoutWidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget)
@@ -56,7 +50,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.splitter)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
@@ -100,5 +94,5 @@ class Ui_MainWindow(object):
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.actionParameters.setText(QtGui.QApplication.translate("MainWindow", "Parameters", None, QtGui.QApplication.UnicodeUTF8))
 
-from pygmin.gui.show3d import Show3D
+from pygmin.gui.show3d_with_slider import Show3DWithSlider
 import resources_rc

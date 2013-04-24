@@ -23,20 +23,7 @@
       <widget class="QWidget" name="verticalLayoutWidget_2">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="Show3D" name="view3D" native="true"/>
-        </item>
-        <item>
-         <widget class="QSlider" name="sliderFrame">
-          <property name="minimum">
-           <number>-20</number>
-          </property>
-          <property name="maximum">
-           <number>20</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
+         <widget class="Show3DWithSlider" name="view3D" native="true"/>
         </item>
        </layout>
       </widget>
@@ -71,7 +58,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -125,9 +112,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Show3D</class>
+   <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
-   <header>pygmin.gui.show3d.h</header>
+   <header>pygmin.gui.show3d_with_slider.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

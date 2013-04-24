@@ -36,6 +36,8 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         self._params["remove_known_zeroev"]=True
         export = self._params["export"] = dict()
         export["nframes"]=100
+        
+        self._params["nframes"] = 30
          
     def set_coords(self, coords, normalmodes=None):
         self.coords = coords
@@ -77,20 +79,28 @@ class NormalmodeBrowser(QtGui.QMainWindow):
          
         self.currentmode = mode
         
-    def on_sliderFrame_valueChanged(self, val):
-        if self.currentmode is None:
-            return
-        displace = self.currentmode
-        self.ui.view3D.setCoords(self.coords + self._params["amplitude"]*displace*val/self.ui.sliderFrame.maximum())
+        # generate the configurations from the normal mode
+        amp = self._params["amplitude"]
+        vector = self.currentmode
+        nframes = self._params["nframes"]
+        coordspath = [self.coords + amp * vector * float(i) / nframes 
+                      for i in xrange(nframes)]
+        coordspath = np.array(coordspath)
+
+        # get the energies of the configurations for the labels
+        pot = self.system.get_potential()
+        labels = ["energy="+str(pot.getEnergy(coords)) for coords in coordspath]
         
-    def on_actionRun_toggled(self, checked):
+        self.ui.view3D.setCoordsPath(coordspath, labels=labels)
+        self.ui.view3D.ui.btn_animate.hide()
+        
+    def on_actionRun_toggled(self, checked=None):
+        if checked is None: return
         if checked:
-            self.animate=True
-            self._animate_dir = 1
-            QtCore.QTimer.singleShot(0., self._next_frame)
+            self.ui.view3D.start_animation()
         else:
-            self.animate = False
-            
+            self.ui.view3D.stop_animation()
+
     def on_actionSave_triggered(self, checked=None):
         if checked is None:
             return
@@ -115,19 +125,6 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             self._paramsdlg = DlgParams(self._params, parent=self)
         self._paramsdlg.show()            
     
-    def _next_frame(self):
-        cur = self.ui.sliderFrame.value()
-        if cur == self.ui.sliderFrame.maximum():
-            self._animate_dir = -1
-        elif cur ==  self.ui.sliderFrame.minimum():
-            self._animate_dir = 1
-        cur +=self._animate_dir
-        self.ui.sliderFrame.setValue(cur)
-        self.on_sliderFrame_valueChanged(cur)
-        
-        if self.animate:
-            QtCore.QTimer.singleShot(0.05, self._next_frame)
-        
         
 if __name__ == "__main__":
     from OpenGL.GLUT import glutInit
