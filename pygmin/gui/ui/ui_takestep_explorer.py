@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_takestep_explorer.ui'
 #
-# Created: Tue Feb 26 18:27:50 2013
+# Created: Wed Apr 24 11:11:57 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -90,4 +90,4 @@ class Ui_MainWindow(object):
         self.actionShow_path.setText(QtGui.QApplication.translate("MainWindow", "show path", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShow_path.setToolTip(QtGui.QApplication.translate("MainWindow", "display the quench trajectory", None, QtGui.QApplication.UnicodeUTF8))
 
-from pygmin.gui.show3d import Show3DWithSlider
+from pygmin.gui.show3d_with_slider import Show3DWithSlider

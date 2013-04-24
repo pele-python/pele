@@ -109,7 +109,7 @@
   <customwidget>
    <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
-   <header>show3d.h</header>
+   <header>show3d_with_slider.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

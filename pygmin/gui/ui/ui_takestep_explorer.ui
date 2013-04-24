@@ -131,7 +131,7 @@
   <customwidget>
    <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
-   <header>pygmin/gui/show3d.h</header>
+   <header>pygmin/gui/show3d_with_slider.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

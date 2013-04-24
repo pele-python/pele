@@ -599,6 +599,7 @@ class MyForm(QtGui.QMainWindow):
                 self.nebenergies = np.array(energies)
                 print "setting path in oglPath"
                 self.ui.oglPath.setCoordsPath(coords)#, labels)
+#                self.ui.oglPath.start_animation()
 #                self.ui.oglPath.setCoords(coords[0,:], 1)
 #                self.ui.oglPath.setCoords(None, 2)
 #                self.ui.sliderFrame.setRange(0, coords.shape[0]-1)

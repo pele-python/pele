@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Sun Feb 10 09:54:59 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Wed Apr 24 11:14:17 2013
+#      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -35,7 +26,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
@@ -136,26 +127,26 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        self.view_Log.setWindowTitle(_translate("MainWindow", "Log", None))
-        self.view_ogl.setWindowTitle(_translate("MainWindow", "3D view", None))
-        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
-        self.actionEnergy.setText(_translate("MainWindow", "Energy", None))
-        self.actionEnergy.setToolTip(_translate("MainWindow", "toggle energy window", None))
-        self.action3D.setText(_translate("MainWindow", "3D", None))
-        self.action3D.setToolTip(_translate("MainWindow", "toggle 3D viewer", None))
-        self.actionGraph.setText(_translate("MainWindow", "Graph", None))
-        self.actionGraph.setToolTip(_translate("MainWindow", "toggle graph view", None))
-        self.actionPause.setText(_translate("MainWindow", "pause", None))
-        self.actionPause.setToolTip(_translate("MainWindow", "pause / restart", None))
-        self.actionD_Graph.setText(_translate("MainWindow", "D-Graph", None))
-        self.actionD_Graph.setToolTip(_translate("MainWindow", "disconnectivity graph", None))
-        self.actionSummary.setText(_translate("MainWindow", "Summary", None))
-        self.actionSummary.setToolTip(_translate("MainWindow", "display summary information", None))
-        self.actionLog.setText(_translate("MainWindow", "Log", None))
-        self.actionLog.setToolTip(_translate("MainWindow", "display log information", None))
-        self.actionKill.setText(_translate("MainWindow", "kill", None))
-        self.actionKill.setToolTip(_translate("MainWindow", "interrupt the connect run", None))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.view_Log.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Log", None, QtGui.QApplication.UnicodeUTF8))
+        self.view_ogl.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3D view", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionEnergy.setText(QtGui.QApplication.translate("MainWindow", "Energy", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionEnergy.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle energy window", None, QtGui.QApplication.UnicodeUTF8))
+        self.action3D.setText(QtGui.QApplication.translate("MainWindow", "3D", None, QtGui.QApplication.UnicodeUTF8))
+        self.action3D.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle 3D viewer", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionGraph.setText(QtGui.QApplication.translate("MainWindow", "Graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionGraph.setToolTip(QtGui.QApplication.translate("MainWindow", "toggle graph view", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPause.setText(QtGui.QApplication.translate("MainWindow", "pause", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPause.setToolTip(QtGui.QApplication.translate("MainWindow", "pause / restart", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionD_Graph.setText(QtGui.QApplication.translate("MainWindow", "D-Graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionD_Graph.setToolTip(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSummary.setText(QtGui.QApplication.translate("MainWindow", "Summary", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSummary.setToolTip(QtGui.QApplication.translate("MainWindow", "display summary information", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionLog.setText(QtGui.QApplication.translate("MainWindow", "Log", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionLog.setToolTip(QtGui.QApplication.translate("MainWindow", "display log information", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionKill.setText(QtGui.QApplication.translate("MainWindow", "kill", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionKill.setToolTip(QtGui.QApplication.translate("MainWindow", "interrupt the connect run", None, QtGui.QApplication.UnicodeUTF8))
 
-from pygmin.gui.show3d import Show3DWithSlider
+from pygmin.gui.show3d_with_slider import Show3DWithSlider
 import resources_rc

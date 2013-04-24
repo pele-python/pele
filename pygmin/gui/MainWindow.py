@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Tue Apr 23 17:00:00 2013
+# Created: Wed Apr 24 11:07:31 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -221,7 +221,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuActions.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QObject.connect(self.list_minima_main, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum)
         QtCore.QObject.connect(self.listMinima1, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum1)
         QtCore.QObject.connect(self.listMinima2, QtCore.SIGNAL(_fromUtf8("currentItemChanged(QListWidgetItem*,QListWidgetItem*)")), MainWindow.SelectMinimum2)
@@ -267,5 +267,5 @@ class Ui_MainWindow(object):
         self.action_edit_params.setText(QtGui.QApplication.translate("MainWindow", "Edit default parameters", None, QtGui.QApplication.UnicodeUTF8))
         self.action_merge_minima.setText(QtGui.QApplication.translate("MainWindow", "Merge Minima", None, QtGui.QApplication.UnicodeUTF8))
 
-from show3d import Show3DWithSlider
+from show3d_with_slider import Show3DWithSlider
 from pygmin.gui.show3d import Show3D

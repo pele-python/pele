@@ -28,7 +28,7 @@
      <x>0</x>
      <y>0</y>
      <width>764</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -234,7 +234,7 @@
   <customwidget>
    <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
-   <header>pygmin/gui/show3d.h</header>
+   <header>pygmin/gui/show3d_with_slider.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

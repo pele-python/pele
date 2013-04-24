@@ -10,7 +10,7 @@ from pygmin.storage import Database
 from pygmin.gui.ui.mplwidget import MPLWidget
 from  pygmin.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
 from dlg_params import DlgParams
-from show3d import Show3DWithSlider
+from show3d_with_slider import Show3DWithSlider
 import numpy as np
 import pickle
 from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog

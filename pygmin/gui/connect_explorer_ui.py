@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'connect_explorer_ui.ui'
 #
-# Created: Wed Feb  6 23:35:45 2013
+# Created: Wed Apr 24 11:08:44 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -89,5 +89,5 @@ class Ui_Form(object):
         self.pushButton.setText(QtGui.QApplication.translate("Form", "refine all", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "Transition states found", None, QtGui.QApplication.UnicodeUTF8))
 
-from show3d import Show3DWithSlider
+from show3d_with_slider import Show3DWithSlider
 from neb_explorer import NEBEnergyWidget
