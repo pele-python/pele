@@ -1,8 +1,8 @@
 import matplotlib
 matplotlib.use("QT4Agg")
 import traceback    
-import pylab as pl    
-from PyQt4 import QtCore, QtGui
+#import pylab as pl    
+from PyQt4 import QtCore, QtGui, Qt
 import MainWindow 
 from collections import deque
 import sys
@@ -13,14 +13,14 @@ import numpy as np
 
 from pygmin.storage import Database
 from pygmin.landscape import Graph
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
+#from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from dlg_params import DlgParams
 from pygmin.config import config
 #import ui.dgraph_browser
 from pygmin.gui.ui.dgraph_dlg import DGraphDialog
-from pygmin.gui.nebdlg import NEBDialog
+#from pygmin.gui.nebdlg import NEBDialog
 from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
-from double_ended_connect_runner import DECRunner
+#from double_ended_connect_runner import DECRunner
 from connect_run_dlg import ConnectViewer
 from takestep_explorer import TakestepExplorer
 from pygmin.gui.normalmode_browser import NormalmodeBrowser
@@ -41,26 +41,13 @@ def excepthook(ex_type, ex_value, traceback_obj):
         raise
 
 class MySelection(object):
+    """keep track of which minima have been selected and whether those coordinates have been modified
+    """
     def __init__(self):
         self.minimum1 = None
         self.minimum1 = None
         self.coords1 = None
         self.coords1 = None
-
-class QMinimumInList(QtGui.QListWidgetItem):
-    
-    def __init__(self, minimum):
-        text="%.4f (%d)"%(minimum.energy, minimum._id)
-        QtGui.QListWidgetItem.__init__(self, text)
-        
-    def setCoords(self, coords):
-        self.coords = coords
-    def setMinimum(self, minimum):
-        self.minid = id(minimum)
-        self.minimum = minimum
-    def __lt__(self, item2):
-        #sort the energies in the list lowest to highest
-        return self.minimum.energy > item2.minimum.energy
 
 class QTSInList(QtGui.QListWidgetItem):
     def __init__(self, ts):
@@ -73,6 +60,48 @@ class QTSInList(QtGui.QListWidgetItem):
     def __lt__(self, item2):
         #sort the energies in the list lowest to highest
         return self.ts.energy > item2.ts.energy
+
+class MinimumStandardItemModel(Qt.QStandardItem):
+    def __init__(self, minimum):
+        text="%.4f (%d)"%(minimum.energy, minimum._id)
+        super(MinimumStandardItemModel, self).__init__(text)
+        self.minimum = minimum
+    def __lt__(self, item2):
+        #sort the energies in the list lowest to highest
+        return self.minimum.energy < item2.minimum.energy
+
+
+#class MinimaListModel(QtCore.QAbstractListModel):
+#    def __init__(self):
+#        super(MinimaListModel, self).__init__()
+#        self.minima = []
+#    
+#    def minimum2text(self, m):
+#        return "%.4f (%d)" % (m.energy, m._id)
+#    
+#    def add_minimum(self, m):
+#        print "adding minimum"
+#        self.beginInsertRows()
+#        self.minima.append(m)
+#        self.endInsertRows()
+##    def remove_minimum(self):
+#        
+#    def sort_minima(self):
+#        self.minima.sort(key=lambda m: m.energy)
+#
+#    def data(self, index, role):
+#        print "in data", index, role
+##        if role == Qt.DisplayRole:
+##            pass
+#        m = self.minima[index.row()]
+#        return self.minimum2text(m)
+#    
+#    def rowCount(self, *args):
+#        print "in rowCount", len(self.minima)
+#        return len(self.minima)
+            
+        
+
 
 class MyForm(QtGui.QMainWindow):
     """
@@ -89,13 +118,7 @@ class MyForm(QtGui.QMainWindow):
         QtGui.QWidget.__init__(self)
         self.ui = MainWindow.Ui_MainWindow()
         self.ui.setupUi(self)
-        self.listMinima = [
-                           self.ui.list_minima_main,
-                           self.ui.listMinima1,
-                           self.ui.listMinima2,
-                           ]
         self.systemtype = systemtype
-        self.NewSystem()
         self.transition=None
         self.app = app
         self.double_ended_connect_runs = []
@@ -103,6 +126,15 @@ class MyForm(QtGui.QMainWindow):
         
         self.minima_selection = MySelection()
         
+#        self.minima_list_model = MinimaListModel()
+        self.minima_list_model = Qt.QStandardItemModel()
+        self.ui.list_minima_main.setModel(self.minima_list_model)
+#        self.ui.list_minima_main.show()
+        self.ui.listMinima1.setModel(self.minima_list_model)
+        self.ui.listMinima2.setModel(self.minima_list_model)
+        
+        self.NewSystem()
+
         #try to load the pymol viewer.  
         self.usepymol = config.getboolean("gui", "use_pymol")
         if self.usepymol:
@@ -131,8 +163,7 @@ class MyForm(QtGui.QMainWindow):
         self.system.database.on_minimum_removed.connect(self.RemoveMinimum)
         self.system.database.on_ts_removed.connect(self.RemoveTS)
         self.system.database.on_ts_added.connect(self.NewTS)
-        for l in self.listMinima:
-            l.clear()
+        self.minima_list_model.clear()
         self.ui.list_TS.clear()
             
     def on_action_edit_params_triggered(self, checked=None):
@@ -140,12 +171,6 @@ class MyForm(QtGui.QMainWindow):
         self.paramsdlg = DlgParams(self.system.params)
         self.paramsdlg.show()
         
-    #def save(self):
-    #    import pickle
-    #    filename = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '.')
-    #    output = open(filename, "w")
-    #    pickle.dump(self.system.storage, output)
-    
     def processEvents(self):
         self.app.processEvents()
      
@@ -166,8 +191,7 @@ class MyForm(QtGui.QMainWindow):
         #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
-        for obj in self.listMinima:
-            obj.sortItems(1)
+        self.minima_list_model.sort(0)
         self.NewTS(self.system.database.transition_states())
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
@@ -175,20 +199,36 @@ class MyForm(QtGui.QMainWindow):
         self.system.database.on_ts_added.connect(self.NewTS)
         self.system.database.on_ts_removed.connect(self.RemoveTS)
     
-    def SelectMinimum(self, item):
+    def on_list_minima_main_clicked(self, index):
+        item = self.minima_list_model.item(index.row())
+        minimum = item.minimum
+        self.SelectMinimum(minimum)
+
+    def SelectMinimum(self, minimum):
         """when you click on a minimum in the basinhopping tab
         """
-        print "selecting minimum", item.minimum._id, item.minimum.energy
+        print "selecting minimum", minimum._id, minimum.energy
         self.ui.ogl_main.setSystem(self.system)
-        self.ui.ogl_main.setCoords(item.coords)
-        self.ui.ogl_main.setMinimum(item.minimum)
+        self.ui.ogl_main.setCoords(minimum.coords)
+        self.ui.ogl_main.setMinimum(minimum)
         self.ui.oglTS.setSystem(self.system)
         #self.ui.oglTS.setCoords(item.coords)
         if self.usepymol:
-            self.pymolviewer.update_coords([item.coords], index=1, delete_all=True)
-        
+            self.pymolviewer.update_coords([minimum.coords], index=1, delete_all=True)
+
+    def on_listMinima1_clicked(self, index):
+        item = self.minima_list_model.item(index.row())
+        minimum = item.minimum
+        self._SelectMinimum1(minimum)
+
+    def on_listMinima2_clicked(self, index):
+        item = self.minima_list_model.item(index.row())
+        minimum = item.minimum
+        self._SelectMinimum2(minimum)
+
     def _SelectMinimum1(self, minimum):
         """by minimum"""
+        print "selecting minimum 1", minimum._id, minimum.energy
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=1)
 #        self.ui.oglPath.setMinimum(minimum, index=1)
@@ -198,16 +238,9 @@ class MyForm(QtGui.QMainWindow):
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=1)
 
-
-    def SelectMinimum1(self, item):
-        """
-        called when a minimum in the first list in the connect tab is selected
-        """
-        print "selecting minimum 1", item.minimum._id, item.minimum.energy
-        return self._SelectMinimum1(item.minimum)
- 
     def _SelectMinimum2(self, minimum):
         """by minimum"""
+        print "selecting minimum 2", minimum._id, minimum.energy
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=2)
 #        self.ui.oglPath.setMinimum(minimum, index=2)
@@ -217,13 +250,6 @@ class MyForm(QtGui.QMainWindow):
         self.neb = None
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=2)
-
-    def SelectMinimum2(self, item):
-        """
-        called when a minimum in the second list in the connect tab is selected
-        """
-        print "selecting minimum 2", item.minimum._id, item.minimum.energy
-        return self._SelectMinimum2(item.minimum)
     
     def get_selected_minima(self):
         """return the two minima that have been chosen in the gui"""
@@ -369,146 +395,72 @@ class MyForm(QtGui.QMainWindow):
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
         
-#        import pylab as pl
-#        import networkx as nx
-#        pl.ion()
-#        pl.clf()
-#        ax = pl.gca()
-#        fig = pl.gcf()
-#        
-#        #get the graph object, eliminate nodes without edges
-#        graphwrapper = Graph(self.system.database)
-#        graph = graphwrapper.graph
-#        degree = graph.degree()
-#        nodes = [n for n, nedges in degree.items() if nedges > 0]
-#        graph = graph.subgraph(nodes)
-#        
-#        #get the layout of the nodes from networkx
-#        layout = nx.spring_layout(graph)
-#        layoutlist = layout.items()
-#        xypos = np.array([xy for n, xy in layoutlist])
-#        #color the nodes by energy
-#        e = np.array([m.energy for m, xy in layoutlist])
-#        #plot the nodes
-#        points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
-#                            s=8**2, c=e, cmap=pl.cm.autumn)
-#        fig.colorbar(points)
-#        #label the nodes
-#        ids = [n._id for n, xy in layoutlist]
-#        for i in range(len(ids)):
-#            ax.annotate( ids[i], xypos[i] )
-#        
-#        
-#    
-#        #plot the edges as lines
-#        for u, v in graph.edges():
-#            line = np.array([layout[u], layout[v]])
-#            ax.plot(line[:,0], line[:,1], '-k')
-#        
-#        #scale the axes so the points are not cutoff
-#        xmin, ymin = np.min(xypos, 0)
-#        xmax, ymax = np.max(xypos, 0)
-#        dx = (xmax - xmin)*.1
-#        dy = (ymax - ymin)*.1
-#        ax.set_xlim([xmin-dx, xmax+dx])
-#        ax.set_ylim([ymin-dy, ymax+dy])
-#        
-#        global pick_count
-#        pick_count = 0
-#
-#        def on_pick(event):
-#            if event.artist != points:
-##                print "you clicked on something other than a node"
-#                return True
-#            thispoint = event.artist
-#            ind = event.ind[0]
-#            min1 = layoutlist[ind][0]
-#            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-#            global pick_count
-#            #print pick_count
-#            pick_count += 1
-#            if (pick_count % 2) == 0:
-#                self._SelectMinimum1(min1)
-#            else:
-#                self._SelectMinimum2(min1)
-#
-#        fig = pl.gcf()
-#        cid = fig.canvas.mpl_connect('pick_event', on_pick)
-#        
-#        #ids = dict([(n, n._id) for n in nodes])
-#        #nx.draw(graph, labels=ids, nodelist=nodes)
-#        #ax.draw()
-##        pl.draw()
-#        pl.show()
         
     
-    def showEnergies(self):
-        """plot the energies from NEB or connect
-        
-        don't clear the previous plot so we can overlay multiple plots
-        """
-        #note: this breaks if pylab isn't a local import.  I don't know why
-        import pylab as pl
-        pl.ion()
-        ax = pl.gca()
-        ax.plot(self.nebenergies, "-")
-        points = ax.scatter(range(len(self.nebenergies)), self.nebenergies, picker=5, label="energies")
-        
-        if False:
-            #start to make the energies interactive.  I would like it to be such that
-            #when you click on a point, that structure gets selected. But the structures
-            #in the NEB are not Minimum objects, so they can't be selected using the current
-            #setup
-            def on_pick(event):
-                if event.artist != points:
-                    print "you clicked on something other than a node"
-                    return True
-                ind = event.ind[0]
-            #    min1 = layoutlist[ind][0]
-                yvalue = self.nebenergies[ind]
-                print "you clicked on a configuration with energy", yvalue
-
-            
-            fig = pl.gcf()
-            cid = fig.canvas.mpl_connect('pick_event', on_pick)
-
-
-        
-        if False: #show climbing images
-            neb = self.neb
-            cl=[]
-            en=[]
-            for i in xrange(len(neb.energies)):
-                if(neb.isclimbing[i]):
-                    print "climbing image :", i, neb.energies[i]
-                    cl.append(i)
-                    en.append(neb.energies[i])
-                    
-            pl.plot(cl, en, "s", label="climbing images", markersize=10, markerfacecolor="none", markeredgewidth=2)
-        
-        pl.legend(loc='best')
-        pl.show()
-     
+#    def showEnergies(self):
+#        """plot the energies from NEB or connect
+#        
+#        don't clear the previous plot so we can overlay multiple plots
+#        """
+#        #note: this breaks if pylab isn't a local import.  I don't know why
+#        import pylab as pl
+#        pl.ion()
+#        ax = pl.gca()
+#        ax.plot(self.nebenergies, "-")
+#        points = ax.scatter(range(len(self.nebenergies)), self.nebenergies, picker=5, label="energies")
+#        
+#        if False:
+#            #start to make the energies interactive.  I would like it to be such that
+#            #when you click on a point, that structure gets selected. But the structures
+#            #in the NEB are not Minimum objects, so they can't be selected using the current
+#            #setup
+#            def on_pick(event):
+#                if event.artist != points:
+#                    print "you clicked on something other than a node"
+#                    return True
+#                ind = event.ind[0]
+#            #    min1 = layoutlist[ind][0]
+#                yvalue = self.nebenergies[ind]
+#                print "you clicked on a configuration with energy", yvalue
+#
+#            
+#            fig = pl.gcf()
+#            cid = fig.canvas.mpl_connect('pick_event', on_pick)
+#
+#
+#        
+#        if False: #show climbing images
+#            neb = self.neb
+#            cl=[]
+#            en=[]
+#            for i in xrange(len(neb.energies)):
+#                if(neb.isclimbing[i]):
+#                    print "climbing image :", i, neb.energies[i]
+#                    cl.append(i)
+#                    en.append(neb.energies[i])
+#                    
+#            pl.plot(cl, en, "s", label="climbing images", markersize=10, markerfacecolor="none", markeredgewidth=2)
+#        
+#        pl.legend(loc='best')
+#        pl.show()
+    
+    
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
-        E=minimum.energy
-        minid=id(minimum)
-        coords=minimum.coords
-        for obj in self.listMinima:
-            item = QMinimumInList(minimum)
-            item.setCoords(coords)
-            item.setMinimum(minimum)
-            obj.addItem(item)    
-            if sort_items:
-                obj.sortItems(1)
+        self.minima_list_model.appendRow(MinimumStandardItemModel(minimum))
+        if sort_items:
+            self.minima_list_model.sort(0)
                 
     def RemoveMinimum(self, minimum):
-        minid = id(minimum)
-        for obj in self.listMinima:
-            itms = obj.findItems('*', QtCore.Qt.MatchWildcard)
-            for i in itms:
-                if(i.minid == minid):
-                    obj.takeItem(obj.row(i))
+        """remove a minimum from self.minima_list_model"""
+        minid = minimum._id
+        items = self.minima_list_model.findItems('*', QtCore.Qt.MatchWildcard)
+        for i in items:
+            print "item", i.minimum._id, minid, minimum._id
+            if i.minimum._id == minid:
+                print "taking item", i.minimum._id
+                self.minima_list_model.takeRow(i.row())
+                break
     
     def NewTS(self, ts):
         """add new transition state, or list of transition states"""
@@ -528,7 +480,7 @@ class MyForm(QtGui.QMainWindow):
 
     def RemoveTS(self, ts):
         """remove transition state"""
-        obj = self.ui.list_TSt
+        obj = self.ui.list_TS
         tsid = id(ts)
         itms = self.ui.list_TS.findItems('*', QtCore.Qt.MatchWildcard)
         for i in itms:

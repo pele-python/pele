@@ -53,7 +53,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QListWidget" name="list_minima_main">
+             <widget class="QListView" name="list_minima_main">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -65,9 +65,6 @@
                 <width>200</width>
                 <height>16777215</height>
                </size>
-              </property>
-              <property name="sortingEnabled">
-               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -131,7 +128,7 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,0,0">
             <item>
-             <widget class="QListWidget" name="listMinima1">
+             <widget class="QListView" name="listMinima1">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -147,7 +144,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QListWidget" name="listMinima2">
+             <widget class="QListView" name="listMinima2">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -423,54 +420,6 @@
  </customwidgets>
  <resources/>
  <connections>
-  <connection>
-   <sender>list_minima_main</sender>
-   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>SelectMinimum()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>816</x>
-     <y>284</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>7</x>
-     <y>26</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>listMinima1</sender>
-   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>SelectMinimum1()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>635</x>
-     <y>105</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>551</x>
-     <y>29</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>listMinima2</sender>
-   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>SelectMinimum2()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>635</x>
-     <y>259</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>275</x>
-     <y>536</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>list_TS</sender>
    <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
