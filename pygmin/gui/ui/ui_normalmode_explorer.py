@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_normalmode_explorer.ui'
 #
-# Created: Wed Apr 24 13:36:33 2013
+# Created: Wed Apr 24 13:53:16 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -31,12 +31,13 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setMargin(0)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.mplwidget = MPLWidget(self.verticalLayoutWidget_2)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.mplwidget.sizePolicy().hasHeightForWidth())
         self.mplwidget.setSizePolicy(sizePolicy)
-        self.mplwidget.setMinimumSize(QtCore.QSize(0, 150))
+        self.mplwidget.setMinimumSize(QtCore.QSize(0, 0))
+        self.mplwidget.setMaximumSize(QtCore.QSize(16777215, 300))
         self.mplwidget.setObjectName(_fromUtf8("mplwidget"))
         self.verticalLayout_2.addWidget(self.mplwidget)
         self.view3D = Show3DWithSlider(self.verticalLayoutWidget_2)
