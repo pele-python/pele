@@ -23,7 +23,36 @@
       <widget class="QWidget" name="verticalLayoutWidget_2">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="Show3DWithSlider" name="view3D" native="true"/>
+         <widget class="MPLWidget" name="mplwidget" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>150</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Show3DWithSlider" name="view3D" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>200</height>
+           </size>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -76,6 +105,7 @@
    <addaction name="actionRun"/>
    <addaction name="actionSave"/>
    <addaction name="actionParameters"/>
+   <addaction name="actionShow_energies"/>
   </widget>
   <action name="actionRun">
    <property name="checkable">
@@ -109,12 +139,29 @@
     <string>Parameters</string>
    </property>
   </action>
+  <action name="actionShow_energies">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>show energies</string>
+   </property>
+   <property name="toolTip">
+    <string>show a plot of the energies</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
    <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
    <header>pygmin.gui.show3d_with_slider.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MPLWidget</class>
+   <extends>QWidget</extends>
+   <header>pygmin/gui/ui/mplwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

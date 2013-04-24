@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_normalmode_explorer.ui'
 #
-# Created: Wed Apr 24 11:48:11 2013
+# Created: Wed Apr 24 13:36:33 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -30,7 +30,22 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_2.setMargin(0)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.mplwidget = MPLWidget(self.verticalLayoutWidget_2)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.mplwidget.sizePolicy().hasHeightForWidth())
+        self.mplwidget.setSizePolicy(sizePolicy)
+        self.mplwidget.setMinimumSize(QtCore.QSize(0, 150))
+        self.mplwidget.setObjectName(_fromUtf8("mplwidget"))
+        self.verticalLayout_2.addWidget(self.mplwidget)
         self.view3D = Show3DWithSlider(self.verticalLayoutWidget_2)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.view3D.sizePolicy().hasHeightForWidth())
+        self.view3D.setSizePolicy(sizePolicy)
+        self.view3D.setMinimumSize(QtCore.QSize(200, 200))
         self.view3D.setObjectName(_fromUtf8("view3D"))
         self.verticalLayout_2.addWidget(self.view3D)
         self.verticalLayoutWidget = QtGui.QWidget(self.splitter)
@@ -77,9 +92,13 @@ class Ui_MainWindow(object):
         icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/preferences.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionParameters.setIcon(icon2)
         self.actionParameters.setObjectName(_fromUtf8("actionParameters"))
+        self.actionShow_energies = QtGui.QAction(MainWindow)
+        self.actionShow_energies.setCheckable(True)
+        self.actionShow_energies.setObjectName(_fromUtf8("actionShow_energies"))
         self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionSave)
         self.toolBar.addAction(self.actionParameters)
+        self.toolBar.addAction(self.actionShow_energies)
 
         self.retranslateUi(MainWindow)
         QtCore.QObject.connect(self.pushClose, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.close)
@@ -93,6 +112,9 @@ class Ui_MainWindow(object):
         self.actionRun.setText(QtGui.QApplication.translate("MainWindow", "Play", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.actionParameters.setText(QtGui.QApplication.translate("MainWindow", "Parameters", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionShow_energies.setText(QtGui.QApplication.translate("MainWindow", "show energies", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionShow_energies.setToolTip(QtGui.QApplication.translate("MainWindow", "show a plot of the energies", None, QtGui.QApplication.UnicodeUTF8))
 
+from pygmin.gui.ui.mplwidget import MPLWidget
 from pygmin.gui.show3d_with_slider import Show3DWithSlider
 import resources_rc

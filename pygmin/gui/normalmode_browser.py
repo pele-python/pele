@@ -23,6 +23,9 @@ class NormalmodeItem(QtGui.QListWidgetItem):
         return self.normalmode[0] < item2.normalmode[0]
     
 class NormalmodeBrowser(QtGui.QMainWindow):
+    """
+    the GUI for exploring normal modes
+    """
     def __init__(self, parent=None, system=None, app=None):
         QtGui.QMainWindow.__init__(self, parent=parent)
         
@@ -38,8 +41,19 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         export["nframes"]=100
         
         self._params["nframes"] = 30
+        
+        self.app = app
+        self.current_selection = None
+        
+        self.ui.actionShow_energies.setChecked(False)
+        self.ui.mplwidget.hide()
+        
+        self.ui.actionRun.setVisible(False)
          
     def set_coords(self, coords, normalmodes=None):
+        """
+        set the coordinates for which the normal modes will be computed
+        """
         self.coords = coords
         self.normalmodes = normalmodes        
         
@@ -51,6 +65,9 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         self.ui.view3D.setCoords(coords)
         
     def _calculate_normalmodes(self):
+        """
+        compute the normal modes
+        """
 #        pot = self.system.get_potential()
 #        E, g, hess = pot.getEnergyGradientHessian(self.coords)
 #        metric = self.system.get_metric_tensor(self.coords)
@@ -64,11 +81,17 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             self.normalmodes.append((f, m)) #np.dot(metric, m)))
              
     def _fill_normalmodes(self):
+        """
+        populate the list of normal modes
+        """
         self.ui.listNormalmodes.clear()
         for n in self.normalmodes:
             self.ui.listNormalmodes.addItem(NormalmodeItem(n))
         
     def on_listNormalmodes_currentItemChanged(self, newsel):
+        """
+        change which normal mode we're looking at
+        """
         if newsel is None:
             self.currentmode = None
             return
@@ -78,21 +101,51 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             mode = orthogopt(mode, self.coords)
          
         self.currentmode = mode
+        self.current_selection = newsel
         
         # generate the configurations from the normal mode
         amp = self._params["amplitude"]
         vector = self.currentmode
         nframes = self._params["nframes"]
-        coordspath = [self.coords + amp * vector * float(i) / nframes 
-                      for i in xrange(nframes)]
+        dxlist = [amp * float(i) / nframes for i in xrange(-nframes/2,nframes/2)]
+        coordspath = [self.coords + dx * vector for dx in dxlist] 
         coordspath = np.array(coordspath)
-
-        # get the energies of the configurations for the labels
-        pot = self.system.get_potential()
-        labels = ["energy="+str(pot.getEnergy(coords)) for coords in coordspath]
         
-        self.ui.view3D.setCoordsPath(coordspath, labels=labels)
-        self.ui.view3D.ui.btn_animate.hide()
+        self.dxlist = dxlist
+        self.coordspath = coordspath
+        
+        self.ui.view3D.setCoordsPath(coordspath)#, labels=labels)
+#        self.ui.view3D.ui.btn_animate.hide()
+
+        if self.ui.actionShow_energies.isChecked():
+            self.draw_energy_plot()
+    
+    def draw_energy_plot(self):
+        """
+        make a plot of the energies and the energies from the harmonic approximation
+        """
+        if self.current_selection is None: return
+        dxlist = self.dxlist
+        coordspath = self.coordspath
+        
+        # get the energies of the configurations
+        pot = self.system.get_potential()
+        energies = [pot.getEnergy(coords) for coords in coordspath]
+        
+        # get the energies of the harmonic approximation
+        freq = self.current_selection.get_freq()
+        expected_energies = np.array([ 0.5*(freq)*(dx)**2 for dx in dxlist])
+        expected_energies += pot.getEnergy(self.coords)
+        
+        # make the plot
+        ax = self.ui.mplwidget.axes
+        ax.clear()
+        ax.plot(dxlist, energies, label="energy")
+        ax.plot(dxlist, expected_energies, label="harmonic approximation")
+        ax.legend(loc='best')
+        ax.set_xlabel("displacement")
+        self.ui.mplwidget.draw()
+            
         
     def on_actionRun_toggled(self, checked=None):
         if checked is None: return
@@ -100,8 +153,19 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             self.ui.view3D.start_animation()
         else:
             self.ui.view3D.stop_animation()
+    
+    def on_actionShow_energies_toggled(self, checked=None):
+        if checked is None: return
+        if checked:
+            self.ui.mplwidget.show()
+            self.draw_energy_plot()
+        else:
+            self.ui.mplwidget.hide()
 
     def on_actionSave_triggered(self, checked=None):
+        """
+        save the normal modes to disk
+        """
         if checked is None:
             return
         dialog = QtGui.QFileDialog(self)
@@ -119,6 +183,9 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         pickle.dump(path, open(filename, "w"))
 
     def on_actionParameters_triggered(self, checked=None):
+        """
+        open a dialog box to change the parameters
+        """
         if checked is None:
             return
         if not hasattr(self, "_paramsdlg"):
