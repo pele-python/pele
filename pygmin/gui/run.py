@@ -66,8 +66,33 @@ class MinimumStandardItem(Qt.QStandardItem):
         self.minimum = minimum
     def __lt__(self, item2):
         #sort the energies in the list lowest to highest
-        return self.minimum.energy < item2.minimum.energy        
+        return self.minimum.energy < item2.minimum.energy
+    
+class MinimumStandardItemModel(Qt.QStandardItemModel):
+    """a class to manage the list of minima for display in the gui"""
+    def __init__(self, nmax=None, **kwargs):
+        super(MinimumStandardItemModel, self).__init__(**kwargs)
+        self.nmax = nmax # the maximum number of minima
+        self.issued_warning = False
 
+    def set_nmax(self, nmax):
+        self.nmax = nmax
+          
+    def appendRow(self, item, *args, **kwargs):
+        Qt.QStandardItemModel.appendRow(self, item, *args, **kwargs)
+        if self.nmax is not None:
+            nrows = self.rowCount()
+            if nrows > self.nmax:
+                if not self.issued_warning:
+                    print "warning: limiting the number of minima displayed in the gui to", self.nmax
+                    self.issued_warning = True
+                # choose an item to remove from the list.  we can't usume it's totally sorted
+                # because it might have been a while since it was last sorted
+                candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-10,nrows)]
+                toremove = max(candidates)
+                self.takeRow(toremove[1])
+                
+                
 
 class MainGUI(QtGui.QMainWindow):
     """
@@ -90,6 +115,7 @@ class MainGUI(QtGui.QMainWindow):
         self.double_ended_connect_runs = []
         self.pick_count = 0
         
+
         # set up the sorting of minima
         self.need_sorting = False
         self._sort_timer = QtCore.QTimer()
@@ -97,14 +123,20 @@ class MainGUI(QtGui.QMainWindow):
         
         self.minima_selection = MySelection()
         
-#        self.minima_list_model = MinimaListModel()
-        self.minima_list_model = Qt.QStandardItemModel()
+        self.minima_list_model = MinimumStandardItemModel()
         self.ui.list_minima_main.setModel(self.minima_list_model)
 #        self.ui.list_minima_main.show()
         self.ui.listMinima1.setModel(self.minima_list_model)
         self.ui.listMinima2.setModel(self.minima_list_model)
         
         self.NewSystem()
+
+        # determine the maximum number of minima to keep in the lists.
+        try:
+            nmax = self.system.params.gui.list_nmax
+            self.minima_list_model.set_nmax(nmax)
+        except AttributeError:
+            pass
 
         #try to load the pymol viewer.
         try:
@@ -131,14 +163,15 @@ class MainGUI(QtGui.QMainWindow):
         this is called to initialize the system with a database
         """
         self.system = self.systemtype()
-        db = self.system.create_database()
-        self.system.database = db
-        self.system.database.on_minimum_added.connect(self.NewMinimum)
-        self.system.database.on_minimum_removed.connect(self.RemoveMinimum)
-        self.system.database.on_ts_removed.connect(self.RemoveTS)
-        self.system.database.on_ts_added.connect(self.NewTS)
-        self.minima_list_model.clear()
-        self.ui.list_TS.clear()
+        self.connect_db()
+#        db = self.system.create_database()
+#        self.system.database = db
+#        self.system.database.on_minimum_added.connect(self.NewMinimum)
+#        self.system.database.on_minimum_removed.connect(self.RemoveMinimum)
+#        self.system.database.on_ts_removed.connect(self.RemoveTS)
+#        self.system.database.on_ts_added.connect(self.NewTS)
+#        self.minima_list_model.clear()
+#        self.ui.list_TS.clear()
             
     def on_action_edit_params_triggered(self, checked=None):
         if checked is None: return
@@ -156,10 +189,13 @@ class MainGUI(QtGui.QMainWindow):
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Open File', '.')
         self.connect_db(filename)
 
-    def connect_db(self, filename):
+    def connect_db(self, filename=":memory:"):
         """
         connect to an existing database at location filename
         """
+        self.minima_list_model.clear()
+        self.ui.list_TS.clear()
+
         db = self.system.create_database(db=filename)
         self.system.database = db
         #add minima to listWidged.  do sorting after all minima are added
@@ -638,7 +674,7 @@ def run_gui(system, db=None):
     Parameters
     ----------
     system : System class
-        A pygmin system, derrived from BaseSystemClass.  All information 
+        A pygmin system, derived from BaseSystem.  All information 
         about the system is in this class.
     db : str, optional
         connect to the database at this file location
