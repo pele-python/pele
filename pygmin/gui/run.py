@@ -89,6 +89,7 @@ class MainGUI(QtGui.QMainWindow):
         self.app = app
         self.double_ended_connect_runs = []
         self.pick_count = 0
+        self.need_sorting = False
         
         self.minima_selection = MySelection()
         
@@ -104,7 +105,7 @@ class MainGUI(QtGui.QMainWindow):
         #try to load the pymol viewer.
         try:
             self.usepymol = self.system.params.gui.use_pymol
-        except (KeyError or AttributeError):
+        except (KeyError, AttributeError):
             self.usepymol = config.getboolean("gui", "use_pymol")
         if self.usepymol:
             try:
@@ -160,7 +161,7 @@ class MainGUI(QtGui.QMainWindow):
         #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
-        self.minima_list_model.sort(0)
+        self._sort_lists()
         self.NewTS(self.system.database.transition_states())
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
@@ -353,11 +354,48 @@ class MainGUI(QtGui.QMainWindow):
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
     
+    def _sort_lists(self):
+        """calling this function indicates that the lists need sorting
+        
+        since sorting can be a *huge* bottleneck for large lists we try to do it
+        as infrequently as possible.  Here we wait several seconds too see
+        if more minima are added before sorting the lists
+        """
+        self.need_sorting = True
+        QtCore.QTimer.singleShot(2000, self._delayed_sort)
+
+    def _delayed_sort(self):
+        if not self.need_sorting:
+            return
+        try:
+            # the system params flag flag gui._sort_lists can optionally
+            # be set to False to indicate not to sort the lists.  This is
+            # useful if many minima are added at once, e.g. at the end of
+            # a connect run.  The flag should be set to True when all the
+            # minima are added. 
+            s = self.system.params.gui._sort_lists
+#            print "self.system.params.gui._sort_lists", s
+            if not s:
+                # wait a few seconds and call this function again
+                QtCore.QTimer.singleShot(2000, self._delayed_sort)
+                print "delaying sort"
+                return
+        except AttributeError:
+            pass
+        
+#        print "sorting lists"
+        self.minima_list_model.sort(0)
+        self.need_sorting = False
+#        print "done sorting lists"
+        
+                    
+    
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
+            
         self.minima_list_model.appendRow(MinimumStandardItem(minimum))
         if sort_items:
-            self.minima_list_model.sort(0)
+            self._sort_lists()
                 
     def RemoveMinimum(self, minimum):
         """remove a minimum from self.minima_list_model"""

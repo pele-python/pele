@@ -257,6 +257,7 @@ class DECRunner(QtCore.QObject):
         self.newminima = set()
         self.newtransition_states = set()
         old2new = dict()
+        self.system.params.gui._sort_lists = False
         for m in new_minima:
             mnew = self.database.addMinimum(m.energy, m.coords)
             old2new[m._id] = mnew
@@ -274,6 +275,7 @@ class DECRunner(QtCore.QObject):
         nmin = len(new_minima)
         nts = len(new_ts)
         print "finished connect run: adding", nmin, "minima, and", nts, "transition states to database"
+        self.system.params.gui._sort_lists = True
 
     def terminate_early(self):
         self.killed_early = True
@@ -290,7 +292,7 @@ class DECRunner(QtCore.QObject):
         self.decprocess.terminate()
         self.decprocess.join()
         self.refresh_timer.stop()
-        print "done killing job"
+#        print "done killing job"
         self.on_finished()
         self.is_running = False
         

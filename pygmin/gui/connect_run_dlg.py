@@ -130,6 +130,8 @@ class ConnectViewer(QtGui.QMainWindow):
         self.ui.actionD_Graph.setVisible(False)
         self.ui.actionSummary.setVisible(False)
         self.ui.actionSummary.setChecked(False)
+        
+        self.smoothed_path = None
 
 
     def start(self):
@@ -146,14 +148,28 @@ class ConnectViewer(QtGui.QMainWindow):
 #            print self.smoothed_path.shape
 
             # show the smoothed path in the ogl viewer
-            self.ogl.setCoordsPath(self.smoothed_path)
+            self.show_path()
             
             # plot the energies
-            self.wgt_energies.update_gui(self.S, self.energies)
-            
+            self.make_energy_plot()
+
             # plot the graph of minima
+            self.make_graph()
+
+    def make_energy_plot(self):
+        if self.wgt_energies.isVisible() and self.decrunner.success:
+            self.wgt_energies.update_gui(self.S, self.energies)
+
+    def show_path(self):
+        if self.ogl.isVisible() and self.smoothed_path is not None:
+            self.ogl.setCoordsPath(self.smoothed_path)
+
+
+    def make_graph(self):
+        if self.wgt_graphview.isVisible() and self.decrunner.success:
             self.wgt_graphview.make_graph(database=self.decrunner.database, minima=self.decrunner.newminima)
             self.wgt_graphview.show_graph()
+        
 
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
         child = QtGui.QDockWidget(title, self)
@@ -169,10 +185,13 @@ class ConnectViewer(QtGui.QMainWindow):
 
     def on_actionEnergy_toggled(self, checked):
         self.toggle_view(self.view_energies, checked)
+        self.make_energy_plot()
     def on_actionGraph_toggled(self, checked):
         self.toggle_view(self.view_graphview, checked)
+        self.make_graph()
     def on_action3D_toggled(self, checked):
         self.toggle_view(self.view_3D, checked)
+        self.show_path()
     def on_actionLog_toggled(self, checked):
         self.toggle_view(self.view_log, checked)
 
