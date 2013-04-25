@@ -1,30 +1,23 @@
 import matplotlib
 matplotlib.use("QT4Agg")
 import traceback    
-#import pylab as pl    
-from PyQt4 import QtCore, QtGui, Qt
-import MainWindow 
-#from collections import deque
 import sys
-import bhrunner
 import copy
 import numpy as np
-#import matplotlib.pyplot as plt
 
-#from pygmin.storage import Database
+from PyQt4 import QtCore, QtGui, Qt
+
+from pygmin.gui.MainWindow import Ui_MainWindow 
+from pygmin.gui.bhrunner import BHRunner
 from pygmin.landscape import Graph
-#from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from dlg_params import DlgParams
+from pygmin.gui.dlg_params import DlgParams
 from pygmin.config import config
-#import ui.dgraph_browser
 from pygmin.gui.ui.dgraph_dlg import DGraphDialog
-#from pygmin.gui.nebdlg import NEBDialog
-from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
-#from double_ended_connect_runner import DECRunner
-from connect_run_dlg import ConnectViewer
-from takestep_explorer import TakestepExplorer
+#from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
+from pygmin.gui.connect_run_dlg import ConnectViewer
+from pygmin.gui.takestep_explorer import TakestepExplorer
 from pygmin.gui.normalmode_browser import NormalmodeBrowser
-global pick_count
+
 
 def excepthook(ex_type, ex_value, traceback_obj):
     """ redirected exception handler """
@@ -61,49 +54,22 @@ class QTSInList(QtGui.QListWidgetItem):
         #sort the energies in the list lowest to highest
         return self.ts.energy > item2.ts.energy
 
-class MinimumStandardItemModel(Qt.QStandardItem):
+class MinimumStandardItem(Qt.QStandardItem):
+    """defines an item to populate the lists of minima in the GUI
+    
+    These items will be collected in a QStandardItemModel and viewed using
+    QListView
+    """
     def __init__(self, minimum):
         text="%.4f (%d)"%(minimum.energy, minimum._id)
-        super(MinimumStandardItemModel, self).__init__(text)
+        super(MinimumStandardItem, self).__init__(text)
         self.minimum = minimum
     def __lt__(self, item2):
         #sort the energies in the list lowest to highest
-        return self.minimum.energy < item2.minimum.energy
+        return self.minimum.energy < item2.minimum.energy        
 
 
-#class MinimaListModel(QtCore.QAbstractListModel):
-#    def __init__(self):
-#        super(MinimaListModel, self).__init__()
-#        self.minima = []
-#    
-#    def minimum2text(self, m):
-#        return "%.4f (%d)" % (m.energy, m._id)
-#    
-#    def add_minimum(self, m):
-#        print "adding minimum"
-#        self.beginInsertRows()
-#        self.minima.append(m)
-#        self.endInsertRows()
-##    def remove_minimum(self):
-#        
-#    def sort_minima(self):
-#        self.minima.sort(key=lambda m: m.energy)
-#
-#    def data(self, index, role):
-#        print "in data", index, role
-##        if role == Qt.DisplayRole:
-##            pass
-#        m = self.minima[index.row()]
-#        return self.minimum2text(m)
-#    
-#    def rowCount(self, *args):
-#        print "in rowCount", len(self.minima)
-#        return len(self.minima)
-            
-        
-
-
-class MyForm(QtGui.QMainWindow):
+class MainGUI(QtGui.QMainWindow):
     """
     this is the main class for the pygmin gui
     
@@ -116,7 +82,7 @@ class MyForm(QtGui.QMainWindow):
     """
     def __init__(self, app, systemtype, parent=None):
         QtGui.QWidget.__init__(self)
-        self.ui = MainWindow.Ui_MainWindow()
+        self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.systemtype = systemtype
         self.transition=None
@@ -135,8 +101,11 @@ class MyForm(QtGui.QMainWindow):
         
         self.NewSystem()
 
-        #try to load the pymol viewer.  
-        self.usepymol = config.getboolean("gui", "use_pymol")
+        #try to load the pymol viewer.
+        try:
+            self.usepymol = self.system.params.gui.use_pymol
+        except (KeyError or AttributeError):
+            self.usepymol = config.getboolean("gui", "use_pymol")
         if self.usepymol:
             try:
                 from pymol_viewer import PymolViewer
@@ -288,6 +257,9 @@ class MyForm(QtGui.QMainWindow):
         labels += ["ts: energy " + str(ts.energy)]
         labels += ["minimum: energy " + str(m2.energy) + " id " + str(m2._id)]
         self.ui.oglTS.setCoordsPath(self.tscoordspath, frame=1, labels=labels)
+        if self.usepymol:
+            self.pymolviewer.update_coords(self.tscoordspath, index=1, delete_all=True)
+
 
     def on_btnAlign_clicked(self, clicked=None):
         """use mindist to align the minima.
@@ -346,9 +318,6 @@ class MyForm(QtGui.QMainWindow):
             self.dgraph_dlg.dgraph_widget.minimum_selected.connect(self.on_minimum_picked)
         self.dgraph_dlg.rebuild_disconnectivity_graph()
         self.dgraph_dlg.show()
-        
-        
-        return
 
     
     def on_btnShowGraph_clicked(self, clicked=None):
@@ -386,7 +355,7 @@ class MyForm(QtGui.QMainWindow):
     
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
-        self.minima_list_model.appendRow(MinimumStandardItemModel(minimum))
+        self.minima_list_model.appendRow(MinimumStandardItem(minimum))
         if sort_items:
             self.minima_list_model.sort(0)
                 
@@ -432,7 +401,7 @@ class MyForm(QtGui.QMainWindow):
         if clicked is None: return
         db = self.system.database
         self.system.database = None
-        self.bhrunner = bhrunner.BHRunner(self.system)
+        self.bhrunner = BHRunner(self.system)
         self.bhrunner.start()
         self.system.database = db
         
@@ -465,6 +434,12 @@ class MyForm(QtGui.QMainWindow):
         return self._doubleEndedConnect(reconnect=True)
 
     def _doubleEndedConnect(self, reconnect=False, min1min2=None):
+        """
+        launch a double ended connect run to connect the two selected minima.
+
+        If the minima are not connected, or reconnect is True, launch a connect browser
+        in  a separate window.  Else just show the path in the OGL viewer
+        """
         # determine which minima to connect
         if min1min2 is None:
             min1, min2 = self.get_selected_minima()
@@ -627,7 +602,7 @@ def run_gui(system, db=None):
     
     sys.excepthook = excepthook
 
-    myapp = MyForm(app, system)
+    myapp = MainGUI(app, system)
     if db is not None:
         myapp.connect_db(db)
         
@@ -640,7 +615,7 @@ def run_gui(system, db=None):
 #def run_gui(systemtype):
 #    app = QtGui.QApplication(sys.argv)
 #    import pylab as pl
-#    myapp = MyForm(systemtype)
+#    myapp = MainGUI(systemtype)
 #    refresh_timer = QtCore.QTimer()
 #    refresh_timer.timeout.connect(refresh_pl)
 #    refresh_timer.start(0.)
