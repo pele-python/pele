@@ -89,7 +89,11 @@ class MainGUI(QtGui.QMainWindow):
         self.app = app
         self.double_ended_connect_runs = []
         self.pick_count = 0
+        
+        # set up the sorting of minima
         self.need_sorting = False
+        self._sort_timer = QtCore.QTimer()
+        self._sort_timer.timeout.connect(self._delayed_sort)
         
         self.minima_selection = MySelection()
         
@@ -362,10 +366,12 @@ class MainGUI(QtGui.QMainWindow):
         if more minima are added before sorting the lists
         """
         self.need_sorting = True
-        QtCore.QTimer.singleShot(2000, self._delayed_sort)
+        if not self._sort_timer.isActive():
+            self._sort_timer.start(2000)
 
     def _delayed_sort(self):
         if not self.need_sorting:
+            print "sorting not needed"
             return
         try:
             # the system params flag flag gui._sort_lists can optionally
@@ -377,7 +383,8 @@ class MainGUI(QtGui.QMainWindow):
 #            print "self.system.params.gui._sort_lists", s
             if not s:
                 # wait a few seconds and call this function again
-                QtCore.QTimer.singleShot(2000, self._delayed_sort)
+                if not self._sort_timer.isActive():
+                    self._sort_timer.start(2000)
                 print "delaying sort"
                 return
         except AttributeError:
@@ -386,6 +393,7 @@ class MainGUI(QtGui.QMainWindow):
 #        print "sorting lists"
         self.minima_list_model.sort(0)
         self.need_sorting = False
+        self._sort_timer.stop()
 #        print "done sorting lists"
         
                     
