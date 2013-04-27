@@ -442,6 +442,14 @@ class TestDistanceGraph(unittest.TestCase):
         self.db = db
         self.natoms = natoms
     
+    def make_result(self, coords, energy):
+        from pygmin.optimize import Result
+        res = Result()
+        res.coords = coords
+        res.energy = energy
+        return res
+
+    
     def test_merge_minima(self):
         """merge two minima and make sure the distance graph is still ok"""
         min3, min4 = list(self.db.minima())[2:4]
@@ -463,6 +471,7 @@ class TestDistanceGraph(unittest.TestCase):
         self.assertTrue(allok, "merging broke the distance graph")
         
     def test_add_TS_existing_minima(self):
+        from pygmin.optimize import Result
         min3, min4 = list(self.db.minima())[4:6]
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "the distance graph is broken at the start")
@@ -473,8 +482,8 @@ class TestDistanceGraph(unittest.TestCase):
         
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min4.energy)
-        min_ret1 = [min3.coords, min3.energy]
-        min_ret2 = [min4.coords, min4.energy]
+        min_ret1 = self.make_result(min3.coords, min3.energy)
+        min_ret2 = self.make_result(min4.coords, min4.energy)
         
         eigenvec = coords.copy()
         eigenval = -1.
@@ -496,13 +505,16 @@ class TestDistanceGraph(unittest.TestCase):
         #create new minimum from thin air
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = np.random.rand()*10.
-        min_ret2 = [coords, E]
-        min_ret1 = [min3.coords, min3.energy]
+        min_ret1 = self.make_result(min3.coords, min3.energy)
+        min_ret2 = self.make_result(coords, E)
+
+#        min_ret2 = [coords, E]
+#        min_ret1 = [min3.coords, min3.energy]
 
 
         #create new TS from thin air        
         coords = np.random.uniform(-1,1,self.natoms*3)
-        E = float(min3.energy + min_ret2[1])
+        E = float(min3.energy + min_ret2.energy)
         
         eigenvec = coords.copy()
         eigenval = -1.
@@ -523,8 +535,11 @@ class TestDistanceGraph(unittest.TestCase):
         
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min4.energy)
-        min_ret1 = [min3.coords, min3.energy]
-        min_ret2 = [min4.coords, min4.energy]
+        min_ret1 = self.make_result(min3.coords, min3.energy)
+        min_ret2 = self.make_result(min4.coords, min4.energy)
+
+#        min_ret1 = [min3.coords, min3.energy]
+#        min_ret2 = [min4.coords, min4.energy]
         
         eigenvec = coords.copy()
         eigenval = -1.

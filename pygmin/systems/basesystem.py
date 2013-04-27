@@ -152,7 +152,7 @@ class BaseSystem(object):
         """return a function to minimize the structure"""
         pot = self.get_potential()
         kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
-        return lambda coords: mylbfgs(coords, pot.getEnergyGradient, **kwargs)
+        return lambda coords: mylbfgs(coords, pot, **kwargs)
     
     def get_compare_exact(self):
         """object that returns True if two structures are exact.

@@ -188,8 +188,8 @@ class NEB(object):
         qres = quenchRoutine(
                     self.active.reshape(self.active.size), self,
                     **quenchParams)
-        if isinstance(qres, tuple): # for compatability with old and new quenchers
-            qres = qres[4]
+#        if isinstance(qres, tuple): # for compatability with old and new quenchers
+#            qres = qres[4]
         
         self.active[:,:] = qres.coords.reshape(self.active.shape)
         if self.copy_potential:

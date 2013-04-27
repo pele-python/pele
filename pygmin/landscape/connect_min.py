@@ -255,11 +255,11 @@ class DoubleEndedConnect(object):
         add a transition state to the database, the transition state graph and
         the distance graph
         """
-        if isinstance(min_ret1, tuple): # for compatability with old and new quenchers
-            min_ret1 = min_ret1[4]
-        if isinstance(min_ret2, tuple): # for compatability with old and new quenchers
-            min_ret2 = min_ret2[4]
-
+#        if isinstance(min_ret1, tuple): # for compatability with old and new quenchers
+#            min_ret1 = min_ret1[4]
+#        if isinstance(min_ret2, tuple): # for compatability with old and new quenchers
+#            min_ret2 = min_ret2[4]
+#        if isinstance(min1_ret)
         
         #sanity check for the energies
         me1, me2 = min_ret1.energy, min_ret2.energy

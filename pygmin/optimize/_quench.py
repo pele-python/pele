@@ -1,150 +1,139 @@
 """
 wrappers for the various optimizers.
 
-The options for the optimizers differ, so you'll have to write 
-your own wrapper if want fine grained control
+warning: we've tried to make the most common options the same but there are still differences 
 
-we should make this consistent with scipy
+we should make this consistent with scipy.
 scipy.minimize would do a similar thing
 """
 
 import numpy as np
 
-from pygmin.optimize import LBFGS, MYLBFGS, Fire
+from pygmin.optimize import LBFGS, MYLBFGS, Fire, Result
+from pygmin.potentials import BasePotential
 
-__all__ = ["lbfgs_scipy", "fire", "lbfgs_py", "mylbfgs", "cg", "fmin", 
-           "steepest_descent", "bfgs"]
+__all__ = ["lbfgs_scipy", "fire", "lbfgs_py", "mylbfgs", "cg", 
+           "steepest_descent", "bfgs_scipy"]
 
-class getEnergyGradientWrapper:
+class _getEnergyGradientWrapper(BasePotential):
     """
-    return either the energy or gradient, not both.  This is quite wasteful
+    create a potential object from getEnergyGradient.  This is quite wasteful
     """
     def __init__(self, getEnergyGradient):
-        self.getEnergyGradient = getEnergyGradient
+        self.get_e_g = getEnergyGradient
+#        print "warning: the minimizer usage has changed, please pass a potential object not the function getEnergyGradient"
     def getEnergy(self, coords):
-        ret = self.getEnergyGradient(coords)
-        return ret[0]
-    def getGradient( self, coords ):
-        ret = self.getEnergyGradient(coords)
-        return ret[1]
+        e, g = self.get_e_g(coords)
+        return e
+    def getEnergyGradient(self, coords):
+        return self.get_e_g(coords)
 
-
-def lbfgs_scipy(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
+def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     """
     a wrapper function for lbfgs routine in scipy
+    
+    .. warn::
+        the scipy version of lbfgs uses linesearch based only on energy
+        which can make the minimization stop early.  When the step size
+        is so small that the energy doesn't change to within machine precision (times the
+        parameter `factr`) the routine declares success and stops.  This sounds fine, but
+        if the gradient is analytical the gradient can still be not converged.  This is
+        because in the vicinity of the minimum the gradient changes much more rapidly then
+        the energy.  Thus we want to make factr as small as possible.  Unfortunately,
+        if we make it too small the routine realizes that the linesearch routine
+        isn't working and declares failure and exits.
+        
+        So long story short, if your tolerance is very small (< 1e-6) this routine
+        will probably stop before truly reaching that tolerance.  If you reduce `factr` 
+        too much to mitigate this lbfgs will stop anyway, but declare failure misleadingly.  
     """
-    if hasattr(getEnergyGradient, "getEnergyGradient"):
-        # this is to aid compatibility between old and new quenchers.
-        # This function will now accept a potential object
-        getEnergyGradient = getEnergyGradient.getEnergyGradient
+    if not hasattr(pot, "getEnergyGradient"):
+        # for compatibility with old quenchers.
+        # assume pot is a getEnergyGradient function
+        pot = _getEnergyGradientWrapper(pot)
     import scipy.optimize
-    newcoords, newE, dictionary = scipy.optimize.fmin_l_bfgs_b(getEnergyGradient, 
-            coords, iprint=iprint, pgtol=tol, maxfun=nsteps)
-    newE, V = getEnergyGradient(newcoords)
-    V = dictionary["grad"]
-    funcalls = dictionary["funcalls"]
+    res = Result()
+    res.coords, res.energy, dictionary = scipy.optimize.fmin_l_bfgs_b(pot.getEnergyGradient, 
+            coords, iprint=iprint, pgtol=tol, maxfun=nsteps, factr=10.)
+    res.grad = dictionary["grad"]
+    res.nfev = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
+    #res.nsteps = dictionary['nit'] #  new in scipy version 0.12
+    res.nsteps = res.nfev
+    res.message = dictionary['task']
+    res.success = True
     if warnflag > 0:
         print "warning: problem with quench: ",
+        res.success = False
         if warnflag == 1:
-            print "too many function evaluations"
+            res.message = "too many function evaluations"
         else:
-            print dictionary['task']
+            res.message = str(dictionary['task'])
+        print res.message
     #note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
     #tolerance exactly
-    if True:
-        maxV = np.max( np.abs(V) )
-        if maxV > tol:
-            print "warning: gradient seems too large", maxV, "tol =", tol, ". This is a known, but not understood issue of scipy_lbfgs"
-    rms = V.std()
-    return newcoords, newE, rms, funcalls 
+    if False:
+        if res.success:
+            maxV = np.max( np.abs(res.grad) )
+            if maxV > tol:
+                print "warning: gradient seems too large", maxV, "tol =", tol, ". This is a known, but not understood issue of scipy_lbfgs"
+                print res.message
+    res.rms = res.grad.std()
+    return res
 
-def fire(coords, getEnergyGradient, tol=1e-3, nsteps=100000, **kwargs):
+def fire(coords, pot, tol=1e-3, nsteps=100000, **kwargs):
     """
     A wrapper function for the pygmin FIRE implementation
     """
-    if hasattr(getEnergyGradient, "getEnergyGradient"):
-        # this is to aid compatibility between old and new quenchers.
-        # This function will now accept a potential object
-        getEnergyGradient = getEnergyGradient.getEnergyGradient
-    pot = getEnergyGradientWrapper(getEnergyGradient)
+    if not hasattr(pot, "getEnergyGradient"):
+        # for compatibility with old quenchers.
+        # assume pot is a getEnergyGradient function
+        pot = _getEnergyGradientWrapper(pot)
     opt = Fire(coords, pot, **kwargs)
-    opt.run(fmax=tol, steps=nsteps)
-    e,g = getEnergyGradient(opt.coords)
-    rms = np.linalg.norm(g)/np.sqrt(len(g))
-    return opt.coords, e, rms, opt.nsteps
+    res = opt.run(fmax=tol, steps=nsteps)
+    return res
 
-def cg(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
+def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     """
     a wrapper function for conjugate gradient routine in scipy
     """
-    if hasattr(getEnergyGradient, "getEnergyGradient"):
-        # this is to aid compatibility between old and new quenchers.
-        # This function will now accept a potential object
-        getEnergyGradient = getEnergyGradient.getEnergyGradient
+    if not hasattr(pot, "getEnergyGradient"):
+        # for compatibility with old quenchers.
+        # assume pot is a getEnergyGradient function
+        pot = _getEnergyGradientWrapper(pot)
     import scipy.optimize
-    pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output=True, disp=iprint>0, maxiter=nsteps, **kwargs)
-    newcoords = ret[0]
+    ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, 
+                                 gtol=tol, full_output=True, disp=iprint>0, 
+                                 maxiter=nsteps, **kwargs)
+    res = Result()
+    res.coords = ret[0]
     #e = ret[1]
-    funcalls = ret[2]
-    funcalls += ret[3] #calls to gradient
+    res.nfev = ret[2]
+    res.nfev += ret[3] #calls to gradient
+    res.success = True
     warnflag = ret[4]
     if warnflag > 0:
-        print "warning: problem with quench: ",
+#        print "warning: problem with quench: ",
+        res.success = False
         if warnflag == 1:
-            print "Maximum number of iterations exceeded"
+            res.message = "Maximum number of iterations exceeded"
         if warnflag == 2:
             print "Gradient and/or function calls not changing"
-    e,g = getEnergyGradient(newcoords)
-    rms = np.linalg.norm(g)/np.sqrt(len(g))
-    return newcoords, e, rms, funcalls 
-
-def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
-    """
-    a wrapper function for fmin routine in scipy
-    
-    This algorithm only uses function values, not derivatives or second derivatives.
-    """
-    if hasattr(getEnergyGradient, "getEnergyGradient"):
-        # this is to aid compatibility between old and new quenchers.
-        # This function will now accept a potential object
-        getEnergyGradient = getEnergyGradient.getEnergyGradient
-    import scipy.optimize
-    pot = getEnergyGradientWrapper(getEnergyGradient)  #this is really stupid
-    ret = scipy.optimize.fmin(pot.getEnergy, coords, ftol=tol, full_output = True)
-    newcoords = ret[0]
-    #e = ret[1]
-    funcalls = ret[2]
-    warnflag = ret[4]
-    if warnflag > 0:
-        print "warning: problem with quench: ",
-        if warnflag == 1:
-            print "Maximum number of function evaluations made."
-        if warnflag == 2:
-            print "Maximum number of iterations reached."
-    e,g = getEnergyGradient(newcoords)  #should I use gradient here?  It seems kind of dumb
-    rms = np.linalg.norm(g)/np.sqrt(len(g))
-    return newcoords, e, rms, funcalls 
-
-#def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
-#    import fire as fire
-#    opt = fire.Fire(coords, getEnergyGradient)
-#    opt.run()
-#    e,g = getEnergyGradient(opt.coords)
-#    rms = np.linalg.norm(g)/np.sqrt(len(g))
-#    return opt.coords, e, rms, opt.nsteps
+    res.energy, res.grad = pot.getEnergyGradient(res.coords)
+    g = res.grad
+    res.rms = np.linalg.norm(g)/np.sqrt(len(g))
+    return res 
 
 
-def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, \
-                      gtol = 1e-3, maxstep = -1., event=None):
-    if hasattr(getEnergyGradient, "getEnergyGradient"):
-        # this is to aid compatibility between old and new quenchers.
-        # This function will now accept a potential object
-        getEnergyGradient = getEnergyGradient.getEnergyGradient
+def steepest_descent(x0, pot, iprint=-1, dx=1e-4, nsteps=100000,
+                      tol=1e-3, maxstep=-1., event=None):
+    if not hasattr(pot, "getEnergyGradient"):
+        # for compatibility with old quenchers.
+        # assume pot is a getEnergyGradient function
+        pot = _getEnergyGradientWrapper(pot)
     N = len(x0)
     x=x0.copy()
-    E, V = getEnergyGradient(x)
+    E, V = pot.getEnergyGradient(x)
     funcalls = 1
     for k in xrange(nsteps):
         stp = -V * dx
@@ -153,7 +142,7 @@ def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 10
             if stpsize > maxstep:
                 stp *= maxstep / stpsize                
         x += stp
-        E, V = getEnergyGradient(x)
+        E, V = pot.getEnergyGradient(x)
         funcalls += 1
         rms = np.linalg.norm(V)/np.sqrt(N)
         if iprint > 0:
@@ -161,113 +150,55 @@ def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 10
                 print "step %8d energy %20.12g rms gradient %20.12g" % (funcalls, E, rms)
         if event != None:
             event(E, x, rms)
-        if rms < gtol:
+        if rms < tol:
             break
-    return x, E, rms, funcalls
+    res = Result()
+    res.coords = x
+    res.energy = E
+    res.rms = rms
+    res.grad = V
+    res.nfev = funcalls
+    res.nsteps = k
+    res.success = res.rms <= tol 
+    return res
 
-def steepest_descent(coords, getEnergyGradient, iprint = -1, tol = 1e-3, **kwargs):
-    """
-    a wrapper function for steepest descent minimization
-    """
-    return _steepest_descent(coords, getEnergyGradient, iprint = iprint, gtol = tol, **kwargs)
-
-def bfgs(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
+def bfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     """
     a wrapper function for the scipy BFGS algorithm
     """
-    if hasattr(getEnergyGradient, "getEnergyGradient"):
-        # this is to aid compatibility between old and new quenchers.
-        # This function will now accept a potential object
-        getEnergyGradient = getEnergyGradient.getEnergyGradient
+    if not hasattr(pot, "getEnergyGradient"):
+        # for compatibility with old quenchers.
+        # assume pot is a getEnergyGradient function
+        pot = _getEnergyGradientWrapper(pot)
     import scipy.optimize
-    pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime = pot.getGradient, gtol=tol, full_output=True, disp=iprint>0,
+    ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime=pot.getGradient,
+                                   gtol=tol, full_output=True, disp=iprint>0, 
                                    maxiter=nsteps, **kwargs)
-    x = ret[0]
-    E = ret[1]
-    g = ret[2]
-    rms = np.linalg.norm(g)/np.sqrt(len(g))
-    funcalls = ret[4] + ret[5]
-    return x, E, rms, funcalls
+    res = Result()
+    res.coords = ret[0]
+    res.energy = ret[1]
+    res.grad = ret[2]
+    res.rms = np.linalg.norm(res.grad) / np.sqrt(len(res.grad))
+    res.nfev = ret[4] + ret[5]
+    res.nsteps = res.nfev #  not correct, but no better information
+    res.success = np.max(np.abs(res.grad)) < tol
+    return res
 
+def lbfgs_py(coords, pot, **kwargs):
+    if not hasattr(pot, "getEnergyGradient"):
+        # for compatibility with old quenchers.
+        # assume pot is a getEnergyGradient function
+        pot = _getEnergyGradientWrapper(pot)
+    lbfgs = LBFGS(coords, pot, **kwargs)    
+    return lbfgs.run()
 
-def _lbfgs_py(coords, pot, **kwargs):
-    lbfgs = LBFGS(coords, pot, **kwargs)
-    
-    ret = lbfgs.run()
-    coords = ret.coords
-    e = ret.energy
-    rms = ret.rms
-    funcalls = ret.nfev
-    return coords, e, rms, funcalls, ret
-
-def lbfgs_py(coords, getEnergyGradient, **kwargs):
-    """
-    A wrapper function for the python implementation of LBFGS without linesearch.
-    
-    This is designed to be as similar as possible to GMIN's LBFGS algorithm
-
-    See Also
-    --------
-    LBFGS  
-    """
-    if hasattr(getEnergyGradient, "getEnergyGradient"):
-        # this is to aid compatibility between old and new quenchers.
-        # This function will now accept a potential object
-        getEnergyGradient = getEnergyGradient.getEnergyGradient
-    pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = _lbfgs_py(coords, pot, **kwargs)
-    return ret
-
-def _mylbfgs(coords, pot, **kwargs):
+def mylbfgs(coords, pot, **kwargs):
+    if not hasattr(pot, "getEnergyGradient"):
+        # for compatibility with old quenchers.
+        # assume pot is a getEnergyGradient function
+        pot = _getEnergyGradientWrapper(pot)
     lbfgs = MYLBFGS(coords, pot, **kwargs)
-    
-    ret = lbfgs.run()
-    
-    coords = ret.coords
-    e = ret.energy
-    rms = ret.rms
-    funcalls = ret.nfev
-    return coords, e, rms, funcalls, ret
-
-def mylbfgs(coords, getEnergyGradient, **kwargs):
-    """
-    A wrapper function for MYLBFGS.  
-    
-    This version uses 
-    the GMIN fortran code to update the Hessian approximation and generate 
-    a trial step.   The actual step taking algorithm is the same as lbfgs_py.
-    
-    See Also
-    --------
-    MYLBFGS  
-    """
-    if hasattr(getEnergyGradient, "getEnergyGradient"):
-        # this is to aid compatibility between old and new quenchers.
-        # This function will now accept a potential object
-        getEnergyGradient = getEnergyGradient.getEnergyGradient
-    pot = getEnergyGradientWrapper(getEnergyGradient)
-    ret = _mylbfgs(coords, pot, **kwargs)
-    return ret
-
-#def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
-#    """
-#    js850> I think this might not be working but I can't remember
-#    """
-#    from mylbfgs_callback import LBFGS
-#    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
-#    
-#    ret = lbfgs.run(nsteps, tol, iprint)
-#    coords = ret[0]
-#    e = ret[1]
-#    rms = ret[2]
-#    funcalls = ret[3]
-#    return coords, e, rms, funcalls
-
-#def mylbfgs_callback(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1):
-#    pot = getEnergyGradientWrapper(getEnergyGradient)
-#    ret = _mylbfgs_callback(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep)
-#    return ret
+    return lbfgs.run()
 
 
 import unittest
@@ -280,35 +211,62 @@ class TestMinimizers(unittest.TestCase):
         
         # get a partially minimized structure
         x0 = self.system.get_random_configuration()
-        ret = lbfgs_py(x0, self.pot.getEnergyGradient, tol=1.e-1)
-        self.x0 = ret[0]
-        self.E0 = ret[1]
+        ret = lbfgs_py(x0, self.pot, tol=1e-1)
+        self.x0 = ret.coords.copy()
+        self.E0 = ret.energy
         
-        ret = lbfgs_py(self.x0, self.pot.getEnergyGradient, tol=1e-7)
-        self.x = ret[0]
-        self.E = ret[1]
+        ret = lbfgs_py(self.x0, self.pot, tol=1e-7)
+        self.x = ret.coords.copy()
+        self.E = ret.energy
+    
+    def check_attributes(self, res):
+        self.assertTrue(hasattr(res, "energy"))
+        self.assertTrue(hasattr(res, "coords"))
+        self.assertTrue(hasattr(res, "nsteps"))
+        self.assertTrue(hasattr(res, "nfev"))
+        self.assertTrue(hasattr(res, "rms"))
+        self.assertTrue(hasattr(res, "grad"))
+        self.assertTrue(hasattr(res, "success"))
     
     def test_lbfgs_py(self):
-        res = lbfgs_py(self.x0, self.pot.getEnergyGradient)
-        self.assertAlmostEqual(self.E, res[1], 4)
+        res = lbfgs_py(self.x0, self.pot, tol=1e-7)
+        self.assertTrue(res.success)
+        self.assertAlmostEqual(self.E, res.energy, 4)
+        self.check_attributes(res)
         
     def test_mylbfgs(self):
-        res = mylbfgs(self.x0, self.pot.getEnergyGradient)
-        self.assertAlmostEqual(self.E, res[1], 4)
+        res = mylbfgs(self.x0, self.pot, tol=1e-7)
+        self.assertTrue(res.success)
+        self.assertAlmostEqual(self.E, res.energy, 4)
+        self.check_attributes(res)
     
     def test_fire(self):
-        res = fire(self.x0, self.pot.getEnergyGradient, tol=1e-7)
-        self.assertAlmostEqual(self.E, res[1], 4)
+        res = fire(self.x0, self.pot, tol=1e-7)
+        self.assertTrue(res.success)
+        self.assertAlmostEqual(self.E, res.energy, 4)
+        self.check_attributes(res)
     
     def test_lbfgs_scipy(self):
-        res = lbfgs_scipy(self.x0, self.pot.getEnergyGradient, tol=1e-7)
-        self.assertAlmostEqual(self.E, res[1], 4)
+        res = lbfgs_scipy(self.x0, self.pot, tol=1e-7)
+        self.assertTrue(res.success)
+        self.assertAlmostEqual(self.E, res.energy, 4)
+        self.check_attributes(res)
     
     def test_bfgs_scipy(self):
-        res = bfgs(self.x0, self.pot.getEnergyGradient, tol=1e-7)
-        self.assertAlmostEqual(self.E, res[1], 4)
+        res = bfgs_scipy(self.x0, self.pot, tol=1e-7)
+        self.assertTrue(res.success)
+        self.assertAlmostEqual(self.E, res.energy, 4)
+        self.check_attributes(res)
         
         
 if __name__ == "__main__":
     unittest.main()
-
+#    from pygmin.systems import LJCluster
+#    system = LJCluster(13)
+#    pot = system.get_potential()
+#    coords = system.get_random_configuration()
+#    res = lbfgs_scipy(coords, pot)
+#    res = lbfgs_scipy(coords, pot.getEnergyGradient)
+#    x, e, rms, nfev, res = lbfgs_scipy(coords, pot)
+#    print "quench success", res.success
+        
