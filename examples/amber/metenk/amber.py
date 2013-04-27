@@ -2,7 +2,7 @@ import ambgmin_ as GMIN
 import pygmin.potentials.gminpotential as gminpot
 import numpy as np
 import pygmin.basinhopping as bh
-from pygmin.optimize import _quench_new as quench
+from pygmin.optimize import _quench as quench
 from pygmin.takestep import displace
 
 # export PYTHONPATH=/home/ss2029/svn/GMIN/bin:$PWD/../..

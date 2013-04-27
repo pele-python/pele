@@ -3,7 +3,7 @@ import copy
 import logging
 
 from pygmin.optimize import Result
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
 from pygmin.potentials.potential import potential as basepot
 from pygmin.transition_states import findLowestEigenVector
 

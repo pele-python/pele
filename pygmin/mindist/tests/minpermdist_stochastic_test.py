@@ -3,7 +3,7 @@ import numpy as np
 from testmindist import TestMinDist
 from pygmin.mindist.minpermdist_stochastic import MinPermDistCluster
 from pygmin.mindist._minpermdist_policies import MeasureAtomicCluster
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
 
 class TestMinPermDistStochastic_BLJ(TestMinDist):
     def setUp(self):

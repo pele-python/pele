@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
 
 __all__ = ["minima_from_ts"]
 

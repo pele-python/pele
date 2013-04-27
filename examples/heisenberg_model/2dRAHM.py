@@ -49,7 +49,7 @@ e = pot.getEnergy(coords)
 print "energy ", e
 
 print "try a quench"
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
 ret = mylbfgs(coords, pot)
 
 print "quenched e = ", ret.energy, "funcalls", ret.nfev

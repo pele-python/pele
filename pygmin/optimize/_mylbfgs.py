@@ -122,14 +122,14 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     
     print ""
     print "now do the same with scipy lbfgs"
-    from pygmin.optimize._quench_new import lbfgs_scipy as quench
+    from pygmin.optimize import lbfgs_scipy as quench
     ret = quench(Xinit, pot, tol = tol)
     print ret
     #print ret[1], ret[2], ret[3]    
     
     if False:
         print "now do the same with scipy bfgs"
-        from pygmin.optimize._quench_new import bfgs as oldbfgs
+        from pygmin.optimize import bfgs as oldbfgs
         ret = oldbfgs(Xinit, pot, tol = tol)
         print ret
     
@@ -142,14 +142,14 @@ def runtest(X, pot, natoms = 100, iprint=-1):
             
     if False:
         print "calling from wrapper function"
-        from pygmin.optimize._quench_new import lbfgs_py
+        from pygmin.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot, tol = tol)
         print ret
         
     if True:
         print ""
         print "now do the same with lbfgs_py"
-        from pygmin.optimize._quench_new import lbfgs_py
+        from pygmin.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot, tol = tol)
         print ret
 

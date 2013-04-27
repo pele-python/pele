@@ -55,10 +55,10 @@ class wham1d:
         
         print "quenching"
         try: 
-            from pygmin.optimize._quench_new import mylbfgs as quench
+            from pygmin.optimize import mylbfgs as quench
             ret = quench(X, self.whampot, iprint=-1, maxstep = 1e4)
         except ImportError:
-            from pygmin.optimize._quench_new import lbfgs_scipy as quench
+            from pygmin.optimize import lbfgs_scipy as quench
             ret = quench(X, self.whampot)            
         print "quench energy", ret.energy
         X = ret.coords
@@ -86,7 +86,7 @@ class wham1d:
         print "energy", E 
         
         print "quenching"
-        from pygmin.optimize._quench_new import lbfgs_scipy as quench
+        from pygmin.optimize import lbfgs_scipy as quench
         ret = quench(X, self.whampot)
         print "quench energy", ret.energy
         

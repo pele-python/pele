@@ -16,7 +16,7 @@ print pot.getEnergy(coords)
 a,b = pot.getEnergyGradient(coords) 
 print type(a) 
 
-from pygmin.optimize._quench_new import lbfgs_scipy, cg , fire 
+from pygmin.optimize import lbfgs_scipy, cg , fire 
 
 # lbfgs 
 ret = lbfgs_scipy( coords, pot, iprint=-1 , tol = 1e-3, nsteps=100) 

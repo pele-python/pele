@@ -255,7 +255,7 @@ class FreezePot(basepot):
 
 def test(natoms = 40, boxl=4.):
     import pygmin.potentials.ljpshiftfast as ljpshift
-    from pygmin.optimize._quench_new import mylbfgs
+    from pygmin.optimize import mylbfgs
     from pygmin.utils.neighbor_list import makeBLJNeighborListPot
     ntypeA = int(natoms*0.8)
     ntypeB = natoms - ntypeA

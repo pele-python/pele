@@ -74,10 +74,10 @@ class wham2d(object):
         X = np.random.rand(nvar)
         print "initial energy", whampot.getEnergy(X)
         try: 
-            from pygmin.optimize._quench_new import mylbfgs as quench
+            from pygmin.optimize import mylbfgs as quench
             ret = quench(X, whampot, iprint=10, maxstep = 1e4)
         except ImportError:
-            from pygmin.optimize._quench_new import lbfgs_scipy as quench
+            from pygmin.optimize import lbfgs_scipy as quench
             ret = quench(X, whampot)            
 
         print "quenched energy", ret.energy

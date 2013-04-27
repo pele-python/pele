@@ -12,7 +12,7 @@ import numpy as np
 import os
 
 from pygmin.potentials.lj import LJ
-from pygmin.optimize._quench_new import lbfgs_py
+from pygmin.optimize import lbfgs_py
 from pygmin.landscape import DoubleEndedConnect, smoothPath
 from pygmin.mindist import MinPermDistAtomicCluster
 from pygmin.transition_states import orthogopt

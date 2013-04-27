@@ -74,7 +74,7 @@ class QuenchBenchmark(object):
 if __name__ == "__main__":
     import pygmin.potentials.lj as lj
     import scipy.optimize
-    from pygmin.optimize import _quench_new as quench
+    from pygmin.optimize import _quench as quench
     print "Running benchmark with lennard jones potential"
     pot = lj.LJ()
     

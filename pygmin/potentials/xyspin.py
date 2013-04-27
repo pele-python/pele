@@ -135,7 +135,7 @@ def test():
 
     
     #try a quench
-    from pygmin.optimize._quench_new import mylbfgs
+    from pygmin.optimize import mylbfgs
     ret = mylbfgs(angles, pot)
     
     print "quenched e = ", ret.energy

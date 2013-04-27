@@ -72,7 +72,7 @@ class LJpshift(BasePotential):
 
 if __name__ == "__main__":
     import pygmin.potentials.ljpshift as ljpshift
-    from pygmin.optimize._quench_new import mylbfgs
+    from pygmin.optimize import mylbfgs
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench"
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords"
     #fname = "out.coords"

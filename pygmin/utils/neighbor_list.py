@@ -577,7 +577,7 @@ def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
 
 def test(natoms = 40, boxl=None):
     import pygmin.potentials.ljpshiftfast as ljpshift
-    from pygmin.optimize._quench_new import mylbfgs
+    from pygmin.optimize import mylbfgs
     ntypeA = int(natoms*0.8)
     rcut = 2.5
     coords = np.random.uniform(-1,1,natoms*3)*(natoms)**(1./3)/2
@@ -630,7 +630,7 @@ def test(natoms = 40, boxl=None):
 def test2():
     import pygmin.potentials.ljpshiftfast as ljpshiftfast
     import pygmin.potentials.ljpshift as ljpshift
-    from pygmin.optimize._quench_new import mylbfgs
+    from pygmin.optimize import mylbfgs
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench"
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords"
     #fname = "out.coords"

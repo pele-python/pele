@@ -37,7 +37,7 @@ print "energy ", e
 
 #try a quench
 if False:
-    from pygmin.optimize._quench_new import mylbfgs
+    from pygmin.optimize import mylbfgs
     ret = mylbfgs(angles, pot)
     
     print ret

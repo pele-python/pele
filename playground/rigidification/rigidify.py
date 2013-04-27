@@ -2,7 +2,7 @@ import numpy as np
 from pygmin.potentials import LJ
 from pygmin.utils import xyz
 from pygmin.angleaxis import rigidbody
-from pygmin.optimize._quench_new import lbfgs_py
+from pygmin.optimize import lbfgs_py
 
 # read in coordinates from xyz file
 ref = xyz.read_xyz(open("water.xyz"))

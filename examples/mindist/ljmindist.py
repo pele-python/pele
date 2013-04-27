@@ -5,7 +5,7 @@ between two lennard jones clusters
 import numpy as np
 
 from pygmin.potentials.lj import LJ
-from pygmin.optimize._quench_new import lbfgs_py
+from pygmin.optimize import lbfgs_py
 from pygmin.mindist import MinPermDistAtomicCluster
 
 pot = LJ()

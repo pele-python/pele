@@ -6,7 +6,7 @@ from pygmin.takestep import buildingblocks
 from pygmin.transition_states import NEB
 import pylab as pl
 from copy import deepcopy, copy
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
 from pygmin.angleaxis import RigidFragment, RBSystem
 import tip4p
 from tip4p import dump_path

@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 import sys
 from pygmin.mc import MonteCarlo
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
 
 class BasinHopping(MonteCarlo):
     """

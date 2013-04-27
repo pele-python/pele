@@ -6,7 +6,7 @@ import logging
 
 from pygmin.transition_states import InterpolatedPath
 from pygmin.optimize import Result
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
         
 __all__ = ["NEB",]
 

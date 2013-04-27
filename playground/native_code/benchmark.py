@@ -7,7 +7,7 @@ import time
 import sys
 import _lj
 import _lbfgs
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
 N=100
 natoms=[10, 13, 20, 30, 31, 38, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
 

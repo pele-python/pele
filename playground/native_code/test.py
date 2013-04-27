@@ -7,7 +7,7 @@ import time
 import sys
 import _lj
 import _lbfgs
-from pygmin.optimize._quench_new import mylbfgs
+from pygmin.optimize import mylbfgs
 N=10 # int(sys.argv[2])
 natoms=38 #int(sys.argv[1])
 

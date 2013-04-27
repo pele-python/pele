@@ -59,7 +59,7 @@ def test_soft_sphere(natoms = 9):
     printlist.append((coords.copy(), "intial coords"))
     
     #test a quench with default lbfgs
-    from pygmin.optimize._quench_new import mylbfgs as quench
+    from pygmin.optimize import mylbfgs as quench
     res = quench(coords, pot, iprint=-1)
     printlist.append((res.coords.copy(), "intial coords"))
     print "energy post quench", pot.getEnergy(coords)
