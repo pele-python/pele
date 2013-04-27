@@ -51,8 +51,6 @@ class BasinHopping(MonteCarlo):
         #########################################################################
         self.markovE_old = self.markovE
         res = self.quench(self.coords)
-#        if isinstance(res, tuple): # for compatability with old and new quenchers
-#            res = res[4]
         
         self.coords = res.coords
         self.markovE = res.energy
@@ -68,6 +66,9 @@ class BasinHopping(MonteCarlo):
         self.acceptstep = True
         self.trial_energy = self.markovE
         self.printStep()
+        
+        self.result.energy = self.markovE
+        self.result.coords = self.coords.copy()
 
 
     def _mcStep(self):

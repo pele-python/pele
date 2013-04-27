@@ -148,10 +148,10 @@ class TestATLJ(unittest.TestCase):
         
         
         atlj = ATLJ(Z=3.)
-        e1 = atlj.getEnergyWeave(coords)
         e2 = atlj.getEnergySlow(coords)
-        #print "%g - %g = %g" % (e1, e2, e1-e2)
-        self.assertTrue( abs(e1 - e2) < 1e-12, "ATLJ: two energy methods give different results: %g - %g = %g" % (e1, e2, e1-e2) )
+#        e1 = atlj.getEnergyWeave(coords)
+#        #print "%g - %g = %g" % (e1, e2, e1-e2)
+#        self.assertTrue( abs(e1 - e2) < 1e-12, "ATLJ: two energy methods give different results: %g - %g = %g" % (e1, e2, e1-e2) )
 
         
         e1 = atlj.getEnergyFortran(coords)

@@ -3,6 +3,7 @@ import sys
 import accept_tests.metropolis as metropolis
 import copy
 import numpy as np
+from pygmin.optimize import Result
 
 
 class MonteCarlo(object):
@@ -97,6 +98,11 @@ class MonteCarlo(object):
             self.storage(energy, self.coords)
           
         self.markovE = energy
+        
+        self.result = Result()
+        self.result.energy = self.markovE
+        self.result.coords = self.coords.copy()
+
     
     def setPrinting(self, ostream="default", frq=None):
         """change how the printing is done
@@ -181,6 +187,11 @@ class MonteCarlo(object):
             self.coords = newcoords
             self.markovE = newE
             self.naccepted += 1
+            
+            if self.markovE < self.result.energy:
+                self.result.energy = self.markovE
+                self.result.coords = self.coords.copy()
+
         self.takeStep.updateStep(acceptstep, driver=self)
         for event in self.event_after_step:
             event(self.markovE, self.coords, acceptstep)

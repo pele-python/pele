@@ -13,5 +13,6 @@ from pygmin.transition_states._orthogopt import TestOrthogopt
 from pygmin.utils.hessian import TestEig
 from pygmin.accept_tests.tests import *
 from pygmin.storage.tests import *
+from pygmin._test_basinhopping import TestBasinhopping
 
 unittest.main()
