@@ -24,29 +24,21 @@ class RandomDisplacement(TakestepSlice):
         magnitue of random displacement
         
     '''
-    
-      
     def __init__(self, stepsize=1.0):
         TakestepSlice.__init__(self, stepsize=stepsize)
     def takeStep(self, coords, **kwargs):
         coords[self.srange] += np.random.uniform(low=-self.stepsize, high=self.stepsize, size=coords[self.srange].shape)
-    
-#    def takeStep_srange(self, ):
-#        for i in self.srange:
-#            coords[i] += 
-
             
 class UniformDisplacement(TakestepSlice):        
     '''Displace each atom be a uniform random vector
     
     The routine generates a proper uniform random unitvector to displace
     atoms.
-        
     '''
     def takeStep(self, coords, **kwargs):
         c = coords[self.srange]        
         for x in c.reshape(c.size/3,3):
-            x += self.stepsize*rotations.vec_random()
+            x += self.stepsize * rotations.vector_random_uniform_hypersphere(3)
 
 class RotationalDisplacement(TakestepSlice):
     '''Random rotation for angle axis vector
@@ -61,7 +53,7 @@ class RotationalDisplacement(TakestepSlice):
         """
         c = coords[self.srange]        
         for x in c.reshape(c.size/3,3):
-            rotations.takestep_aa( x, self.stepsize )
+            rotations.takestep_aa(x, self.stepsize)
             
 class RandomCluster(TakestepInterface):
     '''Generate a random configuration
@@ -70,5 +62,5 @@ class RandomCluster(TakestepInterface):
         self.volume = volume
     
     def takeStep(self, coords, **kwargs):
-            coords[:] = np.random.random(coords.shape)*(self.volume**(1./3.))
+            coords[:] = np.random.random(coords.shape) * (self.volume**(1./3.))
     

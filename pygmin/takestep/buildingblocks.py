@@ -16,11 +16,11 @@ def uniform_displace(stepsize, coords, indices=None):
     '''
     if(indices):
         for i in indices:
-            coords[i] += np.random.random()*stepsize*rotations.vec_random()
+            coords[i] += stepsize * rotations.vector_random_uniform_hypersphere(3)
         return
     
     for x in coords:
-        x += stepsize*rotations.vec_random()
+        x += stepsize * rotations.vector_random_uniform_hypersphere(3)
         
 def rotate(stepsize, coords, indices=None):
     '''uniform random rotation of angle axis vector
@@ -55,10 +55,10 @@ def reduced_coordinates_displace(stepsize, lattice_matrix, coords, indices=None)
     ilattice = vec3.invert3x3(lattice_matrix) # inverse_lattice
     if(indices):
         for i in indices:
-            coords[i] += np.dot(ilattice, stepsize*rotations.vec_random())
+            coords[i] += np.dot(ilattice, stepsize * rotations.vector_random_uniform_hypersphere(3))
         return
             
     for x in coords:
-        x += np.dot(ilattice, stepsize*rotations.vec_random())
+        x += np.dot(ilattice, stepsize * rotations.vector_random_uniform_hypersphere(3))
    
     
