@@ -137,7 +137,7 @@ class DisconnectivityGraph(object):
     """
     def __init__(self, graph, minima=None, nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
-                 order_by_basin_size=True, node_offset=0.2,
+                 order_by_basin_size=True, node_offset=1.0,
                  center_gmin=True, include_gmin=True, energy_attribute="energy"):
         self.graph = graph
         self.nlevels = nlevels
@@ -164,6 +164,7 @@ class DisconnectivityGraph(object):
 #            print "min0", self.min0.energy, self.min0._id
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
         self.minimum_to_leave = dict()
+        self.tree_list = [[] for x in range(self.nlevels)]
 
     def _getEnergy(self, node):
         """ get the energy of a node """
@@ -278,6 +279,29 @@ class DisconnectivityGraph(object):
     #functions for determining the x position of the branches
     #and leaves
     ##########################################################
+    
+    def _recursive_assign_id(self, tree):#, id_lst):
+        subtrees = tree.get_subtrees()
+        for subtree in subtrees:
+            if subtree.number_of_branches() >= 2:
+                self.tree_list[subtree.data['ilevel']].append(subtree)
+#                 id_lst[subtree.data['ilevel']] += 1
+                subtree.data['id'] = len(self.tree_list[subtree.data['ilevel']])
+#                 subtree.data['id'] = id_lst[subtree.data['ilevel']]
+            self._recursive_assign_id(subtree)#, id_lst)
+#             id_lst[subtree.data['ilevel']] += 1
+#             subtree.data['id'] = id_lst[subtree.data['ilevel']]
+            
+    def _assign_id(self, tree):
+        """
+        Determining the id of the branches and leaves
+        for selection purposes
+        """
+#         id_list = [0] * self.nlevels
+        self._recursive_assign_id(tree)#, id_list)
+        print map(len,self.tree_list)
+#         print id_list
+            
 
     def _recursive_layout_x_axis(self, tree, xmin, dx_per_min):
 #        nbranches = tree.number_of_branches()
@@ -498,7 +522,38 @@ class DisconnectivityGraph(object):
         minima = [leaf.data["minimum"] for leaf in leaves]
         xpos = [leaf.data["x"] for leaf in leaves]
         return xpos, minima
-
+    
+#     def _recursive_get_tree_layout(self, tree, x_pos, energies, id_list, ilevel_list):
+#         '''
+#         
+#         '''
+#         subtrees = tree.get_subtrees()
+#         for subtree in subtrees:
+#             self._recursive_get_tree_layout(subtree, x_pos, energies, id_list, ilevel_list)
+#             x_pos.append(subtree.data['x'])
+#             energies.append(subtree.data['ethresh'])
+#             id_list.append(subtree.data['id'])
+#             ilevel_list.append(subtree.data['ilevel'])
+#             
+#         return x_pos, energies, id_list, ilevel_list
+    
+    def get_tree_layout(self):
+        '''
+        Returns the x position of the trees
+        ''' 
+        id = []
+        x_pos = []
+        energies = []
+#         id_list = []
+#         ilevel_list = []
+#         return self._recursive_get_tree_layout(self.tree_graph, x_pos, energies, id_list, ilevel_list)
+        for l in range(len(self.tree_list)):
+            id += [tuple([l,i]) for i in range(len(self.tree_list[l]))]
+        x_pos = [self.tree_list[l][i].data['x'] for l, i in id] 
+        energies = [self.tree_list[l][i].data['ethresh'] for l, i in id]
+#         return x_pos, energies, id_list
+        return id, x_pos, energies
+        
     def _get_energy_levels(self, graph):
         """
         combine input and the graph data to determine what the 
@@ -560,6 +615,9 @@ class DisconnectivityGraph(object):
         #make the tree graph defining the discontinuity of the minima
         tree_graph = self._make_tree(graph, elevels)
         
+        #assign id to trees
+        self._assign_id(tree_graph)
+        
         #layout the x positions of the minima and the nodes
         self._layout_x_axis(tree_graph)
 
@@ -571,7 +629,7 @@ class DisconnectivityGraph(object):
         self.tree_graph = tree_graph
         self.line_segments = line_segments
     
-    def plot(self, show_minima=False, linewidth=0.5, axes=None):
+    def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
@@ -600,6 +658,9 @@ class DisconnectivityGraph(object):
         ax.spines['bottom'].set_color('none')
         ax.spines['right'].set_color('none')
 #        plt.box(on=True)
+
+        if show_trees:
+            trees = self.tree_graph.get_subtrees()
         
         #draw the minima as points
         if show_minima:      

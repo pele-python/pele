@@ -6,14 +6,15 @@ import sys
 
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.collections import LineCollection
-
+import matplotlib.colors as colors
+import matplotlib.cm as cm
 
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from pygmin.landscape import Graph
-from pygmin.storage import Database
+from pygmin.storage import Database, TransitionState
 from pygmin.utils.events import Signal
 from pygmin.gui.ui.mplwidget import MPLWidgetWithToolbar
-
+import networkx as nx
 
 #class DGraphWidget(MPLWidgetWithToolbar):
 #    def __init__(self):
@@ -136,8 +137,11 @@ class DGraphWidget(QWidget):
             graph = self.graph
         else:
             db = self.database
-            graphwrapper = Graph(db)
-            graph = graphwrapper.graph
+            if self.params.has_key('Emax'):
+                graph = reduced_db2graph(db, params['Emax'])
+            else:
+                graphwrapper = Graph(db)
+                graph = graphwrapper.graph
         dg = DisconnectivityGraph(graph, **params)
         dg.calculate()
         
@@ -161,7 +165,25 @@ class DGraphWidget(QWidget):
                 print "you clicked on minimum with id", min1._id, "and energy", min1.energy
                 self.minimum_selected(min1)
             self.canvas.mpl_connect('pick_event', on_pick)
-        
+            
+        if True:#show_trees:
+            id, x_pos, energies = dg.get_tree_layout()
+
+            points = ax.scatter(x_pos, energies, picker=5)
+
+            def on_pick(event):
+                if event.artist != points:
+    #                print "you clicked on something other than a node"
+                    return True
+                thispoint = event.artist
+                ind = event.ind[0]
+
+                i = id[ind]
+
+                print "you clicked on basin ", i[1]," at level", i[0]
+#                 self.minimum_selected(min1)
+            self.canvas.mpl_connect('pick_event', on_pick)
+
         # plot the lines and set up the rest of the plot using the built in function 
         dg.plot(axes=ax, show_minima=False)
         self.canvas.draw()
@@ -176,6 +198,19 @@ class DGraphDialog(QtGui.QMainWindow):
     def rebuild_disconnectivity_graph(self):
         self.dgraph_widget.rebuild_disconnectivity_graph()
         
+
+def reduced_db2graph(db,Emax):
+    '''
+    Removes minima and ts with energy > Emax before calculating calculating the networkx graph
+    '''
+    
+    g = nx.Graph()
+
+    ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax).all()
+
+    for t in ts: g.add_edge(t.minimum1, t.minimum2, ts=t)
+    
+    return g
 
 
 if __name__ == "__main__":
