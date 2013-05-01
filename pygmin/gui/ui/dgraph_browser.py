@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'dgraph_browser.ui'
 #
-# Created: Thu Feb 28 17:11:36 2013
+# Created: Wed May  1 08:55:41 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -82,6 +82,9 @@ class Ui_Form(object):
         self.label_4 = QtGui.QLabel(self.layoutWidget)
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.formLayout.setWidget(6, QtGui.QFormLayout.LabelRole, self.label_4)
+        self.chkbx_show_basins = QtGui.QCheckBox(self.layoutWidget)
+        self.chkbx_show_basins.setObjectName(_fromUtf8("chkbx_show_basins"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.chkbx_show_basins)
         self.verticalLayout_2.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
@@ -115,10 +118,11 @@ class Ui_Form(object):
         self.label_2.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>change the minimum size of a disconnected region to be included in the graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Form", "Minimum subgraph size", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Form", "nlevels", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_order_by_energy.setText(QtGui.QApplication.translate("Form", "order_by_energy", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_order_by_basin_size.setText(QtGui.QApplication.translate("Form", "order_by_basin_size", None, QtGui.QApplication.UnicodeUTF8))
+        self.chkbx_order_by_energy.setText(QtGui.QApplication.translate("Form", "order by energy", None, QtGui.QApplication.UnicodeUTF8))
+        self.chkbx_order_by_basin_size.setText(QtGui.QApplication.translate("Form", "order by basin size", None, QtGui.QApplication.UnicodeUTF8))
         self.chkbx_include_gmin.setText(QtGui.QApplication.translate("Form", "include global min", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Form", "offset", None, QtGui.QApplication.UnicodeUTF8))
+        self.chkbx_show_basins.setText(QtGui.QApplication.translate("Form", "show basins", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRebuild.setText(QtGui.QApplication.translate("Form", "Rebuild Graph", None, QtGui.QApplication.UnicodeUTF8))
 
 from mplwidget import MPLWidgetWithToolbar

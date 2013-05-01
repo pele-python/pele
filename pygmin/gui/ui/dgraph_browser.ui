@@ -117,14 +117,14 @@
          <item row="1" column="0">
           <widget class="QCheckBox" name="chkbx_order_by_energy">
            <property name="text">
-            <string>order_by_energy</string>
+            <string>order by energy</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
           <widget class="QCheckBox" name="chkbx_order_by_basin_size">
            <property name="text">
-            <string>order_by_basin_size</string>
+            <string>order by basin size</string>
            </property>
           </widget>
          </item>
@@ -149,6 +149,13 @@
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>offset</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="chkbx_show_basins">
+           <property name="text">
+            <string>show basins</string>
            </property>
           </widget>
          </item>

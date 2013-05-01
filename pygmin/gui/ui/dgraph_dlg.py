@@ -88,6 +88,7 @@ class DGraphWidget(QWidget):
         self._set_checked("order_by_energy", False)
         self._set_checked("order_by_basin_size", True)
         self._set_checked("include_gmin", True)
+        self._set_checked("show_trees", False)
 #        self.ui.chkbx_show_minima.setChecked(True)
 #        self.ui.chkbx_order_by_energy.setChecked(False)
 #        self.ui.chkbx_order_by_basin_size.setChecked(True)
@@ -124,7 +125,7 @@ class DGraphWidget(QWidget):
         params["order_by_energy"] = self.ui.chkbx_order_by_energy.isChecked()
         params["order_by_basin_size"] = self.ui.chkbx_order_by_basin_size.isChecked()
         params["include_gmin"] = self.ui.chkbx_include_gmin.isChecked()
-
+        params["show_trees"] = self.ui.chkbx_show_minima.isChecked()
 
     def rebuild_disconnectivity_graph(self):        
         self._get_input_parameters()
