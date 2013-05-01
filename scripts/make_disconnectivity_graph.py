@@ -6,9 +6,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 import pygmin.utils.disconnectivity_graph as dg
-from pygmin.storage import Database, Minimum, TransitionState
-from pygmin.landscape import Graph
-import time
+from pygmin.storage import Database
+
 
 try:
     from PyQt4.QtGui import QApplication

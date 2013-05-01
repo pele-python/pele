@@ -131,7 +131,7 @@ class DGraphWidget(QWidget):
         self._build_disconnectivity_graph(**self.params)
 
 
-    def _build_disconnectivity_graph(self, show_minima=True, **params):
+    def _build_disconnectivity_graph(self, show_minima=True, show_trees=False, **params):
         #this should be somewhere else
         if self.database is None:
             graph = self.graph
@@ -155,7 +155,7 @@ class DGraphWidget(QWidget):
             energies = [m.energy for m in minima]
             points = ax.scatter(xpos, energies, picker=5)        
             
-            def on_pick(event):
+            def on_pick_min(event):
                 if event.artist != points:
     #                print "you clicked on something other than a node"
                     return True
@@ -164,14 +164,15 @@ class DGraphWidget(QWidget):
                 min1 = minima[ind]
                 print "you clicked on minimum with id", min1._id, "and energy", min1.energy
                 self.minimum_selected(min1)
-            self.canvas.mpl_connect('pick_event', on_pick)
+            self.canvas.mpl_connect('pick_event', on_pick_min)
             
-        if True:#show_trees:
+        if show_trees:
+            print 'hello'
             id, x_pos, energies = dg.get_tree_layout()
 
             points = ax.scatter(x_pos, energies, picker=5)
 
-            def on_pick(event):
+            def on_pick_tree(event):
                 if event.artist != points:
     #                print "you clicked on something other than a node"
                     return True
@@ -182,7 +183,7 @@ class DGraphWidget(QWidget):
 
                 print "you clicked on basin ", i[1]," at level", i[0]
 #                 self.minimum_selected(min1)
-            self.canvas.mpl_connect('pick_event', on_pick)
+            self.canvas.mpl_connect('pick_event', on_pick_tree)
 
         # plot the lines and set up the rest of the plot using the built in function 
         dg.plot(axes=ax, show_minima=False)
