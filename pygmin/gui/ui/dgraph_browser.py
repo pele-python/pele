@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'dgraph_browser.ui'
 #
-# Created: Wed May  1 08:55:41 2013
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Wed May  1 11:05:32 2013
+#      by: PyQt4 UI code generator 4.9.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
-        Form.resize(834, 572)
+        Form.resize(835, 572)
         self.horizontalLayout = QtGui.QHBoxLayout(Form)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.splitter = QtGui.QSplitter(Form)
@@ -82,9 +82,9 @@ class Ui_Form(object):
         self.label_4 = QtGui.QLabel(self.layoutWidget)
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.formLayout.setWidget(6, QtGui.QFormLayout.LabelRole, self.label_4)
-        self.chkbx_show_basins = QtGui.QCheckBox(self.layoutWidget)
-        self.chkbx_show_basins.setObjectName(_fromUtf8("chkbx_show_basins"))
-        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.chkbx_show_basins)
+        self.chkbx_show_trees = QtGui.QCheckBox(self.layoutWidget)
+        self.chkbx_show_trees.setObjectName(_fromUtf8("chkbx_show_trees"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.chkbx_show_trees)
         self.verticalLayout_2.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
@@ -122,7 +122,17 @@ class Ui_Form(object):
         self.chkbx_order_by_basin_size.setText(QtGui.QApplication.translate("Form", "order by basin size", None, QtGui.QApplication.UnicodeUTF8))
         self.chkbx_include_gmin.setText(QtGui.QApplication.translate("Form", "include global min", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Form", "offset", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_show_basins.setText(QtGui.QApplication.translate("Form", "show basins", None, QtGui.QApplication.UnicodeUTF8))
+        self.chkbx_show_trees.setText(QtGui.QApplication.translate("Form", "show basins", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRebuild.setText(QtGui.QApplication.translate("Form", "Rebuild Graph", None, QtGui.QApplication.UnicodeUTF8))
 
 from mplwidget import MPLWidgetWithToolbar
+
+if __name__ == "__main__":
+    import sys
+    app = QtGui.QApplication(sys.argv)
+    Form = QtGui.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())
+

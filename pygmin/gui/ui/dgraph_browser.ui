@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>834</width>
+    <width>835</width>
     <height>572</height>
    </rect>
   </property>
@@ -153,7 +153,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QCheckBox" name="chkbx_show_basins">
+          <widget class="QCheckBox" name="chkbx_show_trees">
            <property name="text">
             <string>show basins</string>
            </property>
@@ -226,8 +226,8 @@
    <slot>rebuild_disconnectivity_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>485</x>
-     <y>493</y>
+     <x>615</x>
+     <y>560</y>
     </hint>
     <hint type="destinationlabel">
      <x>58</x>

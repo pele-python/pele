@@ -298,8 +298,20 @@ class DisconnectivityGraph(object):
         """
 
         self._recursive_assign_id(tree)
+        
+    def _set_colour(self,i,colour_dict):
+        '''
+        
+        '''
+        self.tree_list[i[0]][i[1]].data['colour'] = colour_dict[i]
 
-
+    def assign_colour(self, tree, colour_dict=[]):
+        '''
+        Colour trees according to `colour_dict`, a dictionay with 
+        (level, tree_index) tuples as keys and RGB colours as values
+        '''
+        for i in colour_dict: self._set_colour(i,colour_dict)
+            
             
 
     def _recursive_layout_x_axis(self, tree, xmin, dx_per_min):
@@ -410,7 +422,7 @@ class DisconnectivityGraph(object):
     #functions which return the line segments that make up the visual graph
     #######################################################################
 
-    def _get_line_segment_recursive(self, line_segments, tree, eoffset):
+    def _get_line_segment_recursive(self, line_segments,line_colours, tree, eoffset):
         """
         add the line segment connecting this tree to it's parent
         """
@@ -419,6 +431,10 @@ class DisconnectivityGraph(object):
             xparent = tree.parent.data['x']
             x = tree.data['x']
             yparent = tree.parent.data["ethresh"]
+            
+            try: line_colours.append(tree.parent.data['colour'])
+            except KeyError: line_colours.append((0.0,0.0,0.0))
+                     
             if is_leaf:
                 ylow = self._getEnergy(tree.data["minimum"])
             else:
@@ -437,7 +453,7 @@ class DisconnectivityGraph(object):
                 line_segments.append( ([xparent, x], [yparent,yhigh]) )
                 
         for subtree in tree.get_subtrees():
-            self._get_line_segment_recursive(line_segments, subtree, eoffset)
+            self._get_line_segment_recursive(line_segments, line_colours, subtree, eoffset)
 
         
     def _get_line_segments(self, tree, eoffset=-1.):
@@ -446,8 +462,9 @@ class DisconnectivityGraph(object):
         each minimum to it's parent node.
         """
         line_segments = []
-        self._get_line_segment_recursive(line_segments, tree, eoffset)
-        return line_segments
+        line_colours = []
+        self._get_line_segment_recursive(line_segments, line_colours, tree, eoffset)
+        return line_segments, line_colours
     
     
     ##########################################################################
@@ -599,6 +616,9 @@ class DisconnectivityGraph(object):
         #assign id to trees
         self._assign_id(tree_graph)
         
+        #assign colour to trees
+        self.assign_colour(tree_graph)#, colour_list)
+        
         #layout the x positions of the minima and the nodes
         self._layout_x_axis(tree_graph)
 
@@ -621,7 +641,7 @@ class DisconnectivityGraph(object):
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         
-        self.line_segments = self._get_line_segments(self.tree_graph, eoffset=self.eoffset)
+        self.line_segments, self.line_colours = self._get_line_segments(self.tree_graph, eoffset=self.eoffset)
         
         #set up how the figure should look
         if axes is not None:
@@ -655,7 +675,7 @@ class DisconnectivityGraph(object):
         # use LineCollection because it's much faster than drawing the lines individually 
         linecollection = LineCollection([ [(x[0],y[0]), (x[1],y[1])] for x,y in self.line_segments])
         linecollection.set_linewidth(linewidth)
-        linecollection.set_color("k")
+        linecollection.set_color(self.line_colours)
         ax.add_collection(linecollection)
         
         # scale the axes appropriately

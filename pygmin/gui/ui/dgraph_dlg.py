@@ -125,7 +125,7 @@ class DGraphWidget(QWidget):
         params["order_by_energy"] = self.ui.chkbx_order_by_energy.isChecked()
         params["order_by_basin_size"] = self.ui.chkbx_order_by_basin_size.isChecked()
         params["include_gmin"] = self.ui.chkbx_include_gmin.isChecked()
-        params["show_trees"] = self.ui.chkbx_show_minima.isChecked()
+        params["show_trees"] = self.ui.chkbx_show_trees.isChecked()
 
     def rebuild_disconnectivity_graph(self):        
         self._get_input_parameters()
@@ -168,7 +168,6 @@ class DGraphWidget(QWidget):
             self.canvas.mpl_connect('pick_event', on_pick_min)
             
         if show_trees:
-            print 'hello'
             id, x_pos, energies = dg.get_tree_layout()
 
             points = ax.scatter(x_pos, energies, picker=5)
