@@ -287,7 +287,8 @@ class DisconnectivityGraph(object):
                 self.tree_list[subtree.data['ilevel']].append(subtree)
 
                 subtree.data['id'] = len(self.tree_list[subtree.data['ilevel']])
-
+#                 print subtree.data.items()
+#                 subtree.data['colour'] = tuple(np.random.random(3))
             self._recursive_assign_id(subtree)
 
             
@@ -305,12 +306,27 @@ class DisconnectivityGraph(object):
         '''
         self.tree_list[i[0]][i[1]].data['colour'] = colour_dict[i]
 
-    def assign_colour(self, tree, colour_dict=[]):
+    def assign_colour(self, tree, colour):#colour_dict=[]):
         '''
         Colour trees according to `colour_dict`, a dictionay with 
         (level, tree_index) tuples as keys and RGB colours as values
         '''
-        for i in colour_dict: self._set_colour(i,colour_dict)
+#         for i in colour_dict: self._set_colour(i,colour_dict)
+        tree.data['colour'] = colour
+#         print tree, tree.__dict__#.data.items()
+#         print 'recursive'
+        self._recursive_colour_trees(tree, colour)
+            
+        
+    def _recursive_colour_trees(self, tree, colour):
+        '''
+        
+        '''
+        for s in tree.get_subtrees():
+#             print tree, tree.__dict__
+            s.data['colour'] = colour #= s.parent.data['colour']
+#             print s.parent.data['colour'], s.data['colour'], s.data['ilevel'], s.data['id']
+            self._recursive_colour_trees(s, colour)
             
             
 
@@ -431,9 +447,7 @@ class DisconnectivityGraph(object):
             xparent = tree.parent.data['x']
             x = tree.data['x']
             yparent = tree.parent.data["ethresh"]
-            
-            try: line_colours.append(tree.parent.data['colour'])
-            except KeyError: line_colours.append((0.0,0.0,0.0))
+
                      
             if is_leaf:
                 ylow = self._getEnergy(tree.data["minimum"])
@@ -445,12 +459,21 @@ class DisconnectivityGraph(object):
             if(yparent - eoffset > ylow or tree.number_of_branches() > 0):
                 #add vertical line segment
                 line_segments.append( ([x,x], [ylow, yhigh]) )
+                
+                try: line_colours.append(tree.parent.data['colour'])
+                except KeyError: line_colours.append((0.0,0.0,0.0))
+
+                
             else: # stop diagonal line earlier to avoid artifacts
                 x = (x-xparent)/eoffset * (yparent - ylow) + xparent
                 
             if not tree.parent.data.has_key("children_not_connected"):
                 #add angled line segment
                 line_segments.append( ([xparent, x], [yparent,yhigh]) )
+                
+                try: line_colours.append(tree.parent.data['colour'])
+                except KeyError: line_colours.append((0.0,0.0,0.0))
+
                 
         for subtree in tree.get_subtrees():
             self._get_line_segment_recursive(line_segments, line_colours, subtree, eoffset)
@@ -616,9 +639,6 @@ class DisconnectivityGraph(object):
         #assign id to trees
         self._assign_id(tree_graph)
         
-        #assign colour to trees
-        self.assign_colour(tree_graph)#, colour_list)
-        
         #layout the x positions of the minima and the nodes
         self._layout_x_axis(tree_graph)
 
@@ -681,7 +701,7 @@ class DisconnectivityGraph(object):
         # scale the axes appropriately
         ax.relim()
         ax.autoscale_view(scalex=True, scaley=True, tight=None)
-
+        ax.set_ylim(top=self.Emax)
         #remove xtics            
         ax.set_xticks([])        
         

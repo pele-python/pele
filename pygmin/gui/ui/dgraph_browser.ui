@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>835</width>
+    <width>834</width>
     <height>572</height>
    </rect>
   </property>
@@ -37,6 +37,9 @@
          <property name="sizeConstraint">
           <enum>QLayout::SetDefaultConstraint</enum>
          </property>
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+         </property>
          <item row="0" column="0">
           <widget class="QCheckBox" name="chkbx_center_gmin">
            <property name="toolTip">
@@ -47,26 +50,6 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
-          <widget class="QLineEdit" name="lineEdit_Emax">
-           <property name="maximumSize">
-            <size>
-             <width>200</width>
-             <height>16777215</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;set the maximum energy level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Emax</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="1">
           <widget class="QCheckBox" name="chkbx_show_minima">
            <property name="toolTip">
@@ -74,43 +57,6 @@
            </property>
            <property name="text">
             <string>show minima</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QLineEdit" name="lineEdit_subgraph_size">
-           <property name="maximumSize">
-            <size>
-             <width>200</width>
-             <height>16777215</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;change the minimum size of a disconnected region to be included in the graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Minimum subgraph size</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>nlevels</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
-          <widget class="QLineEdit" name="lineEdit_nlevels">
-           <property name="maximumSize">
-            <size>
-             <width>200</width>
-             <height>16777215</height>
-            </size>
            </property>
           </widget>
          </item>
@@ -135,8 +81,65 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
-          <widget class="QLineEdit" name="lineEdit_offset">
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="chkbx_show_trees">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>colour basins</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;set the maximum energy level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Emax</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="lineEdit_Emax">
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;change the minimum size of a disconnected region to be included in the graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Minimum subgraph size</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="lineEdit_subgraph_size">
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>nlevels</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="lineEdit_nlevels">
            <property name="maximumSize">
             <size>
              <width>200</width>
@@ -152,10 +155,23 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QCheckBox" name="chkbx_show_trees">
+         <item row="6" column="1">
+          <widget class="QLineEdit" name="lineEdit_offset">
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QComboBox" name="comboBox_colour"/>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_5">
            <property name="text">
-            <string>show basins</string>
+            <string>colour</string>
            </property>
           </widget>
          </item>
@@ -226,8 +242,8 @@
    <slot>rebuild_disconnectivity_graph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>615</x>
-     <y>560</y>
+     <x>485</x>
+     <y>493</y>
     </hint>
     <hint type="destinationlabel">
      <x>58</x>
