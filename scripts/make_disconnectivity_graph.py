@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 
 import pygmin.utils.disconnectivity_graph as dg
 from pygmin.storage import Database
-from pygmin.landscape import Graph
+
 
 try:
     from PyQt4.QtGui import QApplication
-    from pygmin.gui.ui.dgraph_dlg import DGraphDialog
+    from pygmin.gui.ui.dgraph_dlg import DGraphDialog, reduced_db2graph
     use_gui = True
 except ImportError:
     use_gui = False
@@ -176,17 +176,16 @@ def main():
             exit()
         
         db = Database(dbfile)
-        graphwrapper = Graph(db)
-        graph = graphwrapper.graph
-    
+        
     if outfile is None and use_gui:
         app = QApplication(sys.argv) 
         kwargs["show_minima"] = False
-        md = DGraphDialog(None, graph=graph, params=kwargs)
+        md = DGraphDialog(db, params=kwargs)
         md.rebuild_disconnectivity_graph()
         md.show()
         sys.exit(app.exec_())
         
+    if not OPTIM: graph = reduced_db2graph(db, kwargs['Emax'])
     mydg = dg.DisconnectivityGraph(graph, **kwargs)
     mydg.calculate()
     print "number of minima:", mydg.tree_graph.number_of_leaves()
@@ -196,6 +195,7 @@ def main():
         plt.show()
     else:
         plt.savefig(outfile)
+        
     
 
 if __name__ == "__main__":

@@ -37,6 +37,9 @@
          <property name="sizeConstraint">
           <enum>QLayout::SetDefaultConstraint</enum>
          </property>
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+         </property>
          <item row="0" column="0">
           <widget class="QCheckBox" name="chkbx_center_gmin">
            <property name="toolTip">
@@ -44,26 +47,6 @@
            </property>
            <property name="text">
             <string>center global min</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QLineEdit" name="lineEdit_Emax">
-           <property name="maximumSize">
-            <size>
-             <width>200</width>
-             <height>16777215</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;set the maximum energy level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Emax</string>
            </property>
           </widget>
          </item>
@@ -77,8 +60,49 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="QLineEdit" name="lineEdit_subgraph_size">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="chkbx_order_by_energy">
+           <property name="text">
+            <string>order by energy</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="chkbx_order_by_basin_size">
+           <property name="text">
+            <string>order by basin size</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="chkbx_include_gmin">
+           <property name="text">
+            <string>include global min</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="chkbx_show_trees">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>colour basins</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;set the maximum energy level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Emax</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="lineEdit_Emax">
            <property name="maximumSize">
             <size>
              <width>200</width>
@@ -94,6 +118,16 @@
            </property>
            <property name="text">
             <string>Minimum subgraph size</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="lineEdit_subgraph_size">
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>16777215</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -114,24 +148,10 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="chkbx_order_by_energy">
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>order_by_energy</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="chkbx_order_by_basin_size">
-           <property name="text">
-            <string>order_by_basin_size</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="chkbx_include_gmin">
-           <property name="text">
-            <string>include global min</string>
+            <string>offset</string>
            </property>
           </widget>
          </item>
@@ -145,10 +165,13 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
-          <widget class="QLabel" name="label_4">
+         <item row="7" column="1">
+          <widget class="QComboBox" name="comboBox_colour"/>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_5">
            <property name="text">
-            <string>offset</string>
+            <string>colour</string>
            </property>
           </widget>
          </item>
