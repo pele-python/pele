@@ -321,8 +321,6 @@ class NEB(object):
 
         # special interpolation treatment for maxima/minima
         if (central >= left and central >= right) or (central <= left and central <= right):
-            if(central <= left):
-                vmax, vmin = vmin, vmax
             if(left > right):
                 t = vmax * tleft + vmin*tright
             else:
@@ -359,34 +357,29 @@ class NEB(object):
         if(isclimbing):
             return greal - 2.*np.dot(greal, t) * t
 
-        if self.dneb:
-            g_spring = self.k*(g_left + g_right)
-        else:
-            g_spring = self.k*(norm(g_left) - norm(g_right))*t
-
         #print "spring", np.dot(g_spring, t)
         if True:
             import _NEB_utils
-            E, g_tot = _NEB_utils.neb_force(t,greal, g_spring, self.k, self.dneb)
+            E, g_tot = _NEB_utils.neb_force(t,greal, d_left, g_left, d_right, g_right, self.k, self.dneb)
             if self.with_springenergy:
                 return E, g_tot
             else:
                 return 0., g_tot
         else:
-    
+            
             # project out parallel part
             gperp = greal - np.dot(greal, t) * t
-            # calculate parallel spring force and energy
-            #gspring = -self.k * (np.linalg.norm(d2) - np.linalg.norm(d1)) * t
-            # this is the spring
-            # the parallel part
-            gs_par = np.dot(g_spring,t)*t
-                                    
+            
+            # parallel part of spring force
+            gs_par = self.k*(d_left - d_right)*t
+                        
             g_tot = gperp + gs_par
     
             if(self.dneb):
+                g_spring = self.k*(g_left + g_right)
+            
                 # perpendicular part of spring
-                gs_perp = g_spring - gs_par            
+                gs_perp = g_spring - np.dot(g_spring,t)*t            
                 # double nudging
                 g_tot += gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
             
