@@ -4,9 +4,19 @@ import argparse
 
 def read_points_min_ts(fname, natoms=None, endianness="="):
     """
-    the files were written with fortran WRITE options 
+    read coords from a points.min or a points.ts file
     
-    ACCESS='DIRECT',FORM='UNFORMATTED',STATUS='UNKNOWN',RECL=NDUMMY
+    Notes
+    -----
+    the files were written with fortran code that looks something like this::
+    
+        NOPT = 3 * NATOMS
+        INQUIRE(IOLENGTH=NDUMMY) COORDS(1:NOPT)
+        OPEN(13,FILE='points.min,ACCESS='DIRECT',FORM='UNFORMATTED',STATUS='UNKNOWN',RECL=NDUMMY)
+        DO J1=1,NMIN
+            WRITE(13,REC=J1) COORDS(1:NOPT)
+        ENDDO
+        CLOSE(13) 
     
     This means the data is stored without any header information.  
     It is just a long list of double precision floating point numbers.
@@ -34,7 +44,7 @@ def read_points_min_ts(fname, natoms=None, endianness="="):
         if len(coords) % natoms != 0:
                 raise Exception("number of double precision variables read from %s is not divisible by natoms (%d)" % 
                                 (fname, natoms) )
-    print coords
+#    print coords
     return coords.flatten()
 
 class Convert(object):
@@ -123,10 +133,6 @@ class Convert(object):
         
         self.read_points_ts()
         self.ReadTSdata()
-        
-    def getDatabase(self):
-        
-        return self.db
     
 
     
@@ -140,7 +146,8 @@ convert an OPTIM database to a pygmin sqlite database.  Four files are needed.  
     points.ts  : the coordinates of the transition states
     min.ts     : additional information about transition states (like which minima they connect)
 
-Other file names can optionally be passed.
+Other file names can optionally be passed.  Some fortran compilers use non-standard endianness to save the
+binary data.  If your coordinates are garbage, try changing the endianness.
     """, formatter_class=argparse.RawDescriptionHelpFormatter)
     
     parser.add_argument('natoms', help='Number of atoms in system', type = int)
@@ -149,7 +156,7 @@ Other file names can optionally be passed.
     parser.add_argument('--Tsdata','-t', help = 'Name of ts.data file', type = str, default="ts.data")
     parser.add_argument('--Pointsmin','-p', help = 'Name of points.min file', type = str, default="points.min")
     parser.add_argument('--Pointsts','-q', help = 'Name of points.ts file', type = str, default="points.ts")
-    parser.add_argument('--endianness', help = 'set the endianness of the binary data.  Can be "<" for little or ">" for big-endian', type = str, default="=")
+    parser.add_argument('--endianness', help = 'set the endianness of the binary data.  Can be "<" for little-endian or ">" for big-endian', type = str, default="=")
     args = parser.parse_args()
     
     cv = Convert(args.natoms, db_name=args.Database, mindata=args.Mindata, 
