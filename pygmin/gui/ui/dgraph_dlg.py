@@ -6,14 +6,15 @@ import sys
 
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.collections import LineCollection
-
+import matplotlib.colors as col
+import matplotlib.cm as cm
 
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from pygmin.landscape import Graph
-from pygmin.storage import Database
+from pygmin.storage import Database, TransitionState
 from pygmin.utils.events import Signal
 from pygmin.gui.ui.mplwidget import MPLWidgetWithToolbar
-
+import networkx as nx
 
 #class DGraphWidget(MPLWidgetWithToolbar):
 #    def __init__(self):
@@ -52,6 +53,8 @@ class DGraphWidget(QWidget):
         # self.minimum_selected(minim)
 
 #        self.rebuild_disconnectivity_graph()
+        self.colour_tree = []
+        self.tree_selected = None
 
     def _set_checked(self, keyword, default):
         """utility to set the default values for check boxes
@@ -87,6 +90,7 @@ class DGraphWidget(QWidget):
         self._set_checked("order_by_energy", False)
         self._set_checked("order_by_basin_size", True)
         self._set_checked("include_gmin", True)
+        self._set_checked("show_trees", False)
 #        self.ui.chkbx_show_minima.setChecked(True)
 #        self.ui.chkbx_order_by_energy.setChecked(False)
 #        self.ui.chkbx_order_by_basin_size.setChecked(True)
@@ -96,6 +100,7 @@ class DGraphWidget(QWidget):
         self._set_lineEdit("subgraph_size")
         self._set_lineEdit("nlevels")
 
+        [self.ui.comboBox_colour.addItem(s) for s in col.cnames]
 
     def _get_input_parameters(self):
         self.params = {}
@@ -123,27 +128,49 @@ class DGraphWidget(QWidget):
         params["order_by_energy"] = self.ui.chkbx_order_by_energy.isChecked()
         params["order_by_basin_size"] = self.ui.chkbx_order_by_basin_size.isChecked()
         params["include_gmin"] = self.ui.chkbx_include_gmin.isChecked()
+        params["show_trees"] = self.ui.chkbx_show_trees.isChecked()
+        
+        self.ui.comboBox_colour.activated[str].connect(self.setTreeColourDict)
+    
+    def setTreeColourDict(self, colour):
+        c = col.hex2color(col.cnames[str(colour)])
 
+        if self.tree_selected: 
+            self.colour_tree.append([self.tree_selected, c])
+            print 'basin %d at level %d will be coloured %s'%(self.tree_selected[1],
+                                                              self.tree_selected[0],
+                                                              str(colour))
+            self.tree_selected = None
+            
 
     def rebuild_disconnectivity_graph(self):        
         self._get_input_parameters()
         self._build_disconnectivity_graph(**self.params)
 
 
-    def _build_disconnectivity_graph(self, show_minima=True, **params):
+    def _build_disconnectivity_graph(self, show_minima=True, show_trees=False, **params):
         #this should be somewhere else
         if self.database is None:
             graph = self.graph
         else:
             db = self.database
-            graphwrapper = Graph(db)
-            graph = graphwrapper.graph
+            if self.params.has_key('Emax'):
+                graph = reduced_db2graph(db, params['Emax'])
+            else:
+                graphwrapper = Graph(db)
+                graph = graphwrapper.graph
         dg = DisconnectivityGraph(graph, **params)
         dg.calculate()
         
         ax = self.canvas.axes
         ax.clear()
         ax.hold(True)        
+        
+        for i in self.colour_tree:
+            t , c = i
+            tree = dg.tree_list[t[0]][t[1]]
+            dg.assign_colour(tree, c)
+            
 
         #draw minima as points and make them interactive
         if show_minima:
@@ -151,7 +178,7 @@ class DGraphWidget(QWidget):
             energies = [m.energy for m in minima]
             points = ax.scatter(xpos, energies, picker=5)        
             
-            def on_pick(event):
+            def on_pick_min(event):
                 if event.artist != points:
     #                print "you clicked on something other than a node"
                     return True
@@ -160,8 +187,27 @@ class DGraphWidget(QWidget):
                 min1 = minima[ind]
                 print "you clicked on minimum with id", min1._id, "and energy", min1.energy
                 self.minimum_selected(min1)
-            self.canvas.mpl_connect('pick_event', on_pick)
-        
+            self.canvas.mpl_connect('pick_event', on_pick_min)
+            
+        if show_trees:
+            id, x_pos, energies = dg.get_tree_layout()
+
+            points = ax.scatter(x_pos, energies, picker=5, color = 'red', alpha=0.5)
+
+            def on_pick_tree(event):
+                if event.artist != points:
+    #                print "you clicked on something other than a node"
+                    return True
+                thispoint = event.artist
+                ind = event.ind[0]
+
+                i = id[ind]
+
+                print "you clicked on basin ", i[1]," at level", i[0]
+                self.tree_selected = i
+
+            self.canvas.mpl_connect('pick_event', on_pick_tree)
+
         # plot the lines and set up the rest of the plot using the built in function 
         dg.plot(axes=ax, show_minima=False)
         self.canvas.draw()
@@ -176,6 +222,19 @@ class DGraphDialog(QtGui.QMainWindow):
     def rebuild_disconnectivity_graph(self):
         self.dgraph_widget.rebuild_disconnectivity_graph()
         
+
+def reduced_db2graph(db,Emax):
+    '''
+    Removes minima and ts with energy > Emax before calculating calculating the networkx graph
+    '''
+    
+    g = nx.Graph()
+
+    ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax).all()
+
+    for t in ts: g.add_edge(t.minimum1, t.minimum2, ts=t)
+    
+    return g
 
 
 if __name__ == "__main__":
