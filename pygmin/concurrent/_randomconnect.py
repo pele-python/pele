@@ -12,26 +12,23 @@ Pyro4.config.SERVERTYPE = "multiplex"
 
 
 class RandomConnectServer(object):
-    ''' Manager which decides which connect jobs to run 
+    ''' 
+    Manager which decides which connect jobs to run 
     
-        Parameters
-        ----------
-        system : pygmin.system.BaseSystem
-            system class to process
-            
-        database : pygmin.storage.Database
-            working database
-            
-        server_name : string, optional
-            Unique name for clients to connect to this server on current host 
-            (objid for pyros). None for random
-            
-        host : string, optional
-            host to setup server. default is localhost which does not allow connections
-            from remote machines
-            
-        port : integer, optional
-            port to listen for connections
+    Parameters
+    ----------
+    system : pygmin.system.BaseSystem
+        system class to process
+    database : pygmin.storage.Database
+        working database
+    server_name : string, optional
+        Unique name for clients to connect to this server on current host 
+        (objid for pyros). None for random
+    host : string, optional
+        host to setup server. default is localhost which does not allow connections
+        from remote machines
+    port : integer, optional
+        port to listen for connections
     '''
     
     def __init__(self, system, database, server_name=None, host=None, port=0):
@@ -88,18 +85,18 @@ class RandomConnectServer(object):
         daemon.requestLoop() 
         
 class RandomConnectWorker(object):
-    ''' worker class to execute connect runs 
+    ''' 
+    worker class to execute connect runs 
     
-        Parameters
-        ----------
-        uri : string
-            uri for job server
-            
-        system : BaseSystem, optional
-            if no system class is specified, the worker obtains the system
-            class from the worker by get_system. This only works for pickleable
-            systems classes. If this is not the case, the system can be
-            created on the client side and passed as a parameter.
+    Parameters
+    ----------
+    uri : string
+        uri for job server
+    system : BaseSystem, optional
+        if no system class is specified, the worker obtains the system
+        class from the worker by get_system. This only works for pickleable
+        systems classes. If this is not the case, the system can be
+        created on the client side and passed as a parameter.
     '''
     
     def __init__(self,uri, system=None):
@@ -114,8 +111,8 @@ class RandomConnectWorker(object):
         
         Parameters
         ----------
-            nruns : integer, optional
-                stop after so many connect runs
+        nruns : integer, optional
+            stop after so many connect runs
         '''
         # global minimum id
         system = self.system
