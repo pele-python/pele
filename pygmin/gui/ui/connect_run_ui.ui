@@ -131,6 +131,7 @@
    <addaction name="actionGraph"/>
    <addaction name="actionD_Graph"/>
    <addaction name="actionSummary"/>
+   <addaction name="actionRandom_connect"/>
   </widget>
   <action name="actionEnergy">
    <property name="checkable">
@@ -227,6 +228,17 @@
    </property>
    <property name="toolTip">
     <string>interrupt the connect run</string>
+   </property>
+  </action>
+  <action name="actionRandom_connect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>random connect</string>
+   </property>
+   <property name="toolTip">
+    <string>connect random minima</string>
    </property>
   </action>
  </widget>

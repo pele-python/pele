@@ -1,6 +1,7 @@
 import sys
 import time
 import numpy as np
+import sqlalchemy
 
 from PyQt4 import QtGui, QtCore, Qt
 from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
@@ -12,6 +13,7 @@ from pygmin.gui.graph_viewer import GraphViewWidget
 #from pygmin.gui.ui.connect_run_ui import Ui_MainWindow as UI
 from pygmin.gui.connect_run_dlg import ConnectViewer
 from pygmin.gui.ui.dgraph_dlg import DGraphWidget
+from pygmin.storage import Minimum
 
 class ConnectAttempt(object):
     def __init__(self, min1, min2, success, minima, transition_states, elapsed_time=None):
@@ -69,6 +71,9 @@ class ConnectAllDialog(ConnectViewer):
         self.ui.actionSummary.setVisible(True)
         self.view_summary.hide()
         self.ui.actionSummary.setChecked(False)
+        self.ui.actionRandom_connect.setVisible(True)
+        self.ui.actionRandom_connect.setChecked(False)
+
         
 
         self.ui.action3D.setChecked(False)
@@ -94,25 +99,49 @@ class ConnectAllDialog(ConnectViewer):
         self.tstart = time.clock()
         self.decrunner.start()
 
-    def do_next_connect(self):
-        self.is_running = True
+    def get_next_pair_gmin(self):
         minima = self.database.minima()
-        self.min1 = minima[0]
+        min1 = minima[0]
         graph = Graph(self.database)
         all_connected = True
         for m2 in minima[1:]:
-            if not graph.areConnected(self.min1, m2):
-                if (self.min1, m2) in self.failed_pairs or (m2, self.min1) in self.failed_pairs:
+            if not graph.areConnected(min1, m2):
+                if (min1, m2) in self.failed_pairs or (m2, min1) in self.failed_pairs:
                     continue
                 all_connected = False
                 break
         if all_connected:
             print "minima are all connected, ending"
             self.textEdit_summary.insertPlainText("minima are all connected, ending\n")
+            return None, None
+        return min1, m2
+
+    def get_next_pair_random(self):
+        ''' get a new connect job '''
+        query =  self.database.session.query(Minimum)
+#        if self.Emax is not None:
+#            query.filter(Minimum.energy < self.Emax)
+        
+        while True:
+            min1 = query.order_by(sqlalchemy.func.random()).first()
+            min2 = query.order_by(sqlalchemy.func.random()).first()
+            if (min1, min2) not in self.failed_pairs and (min2, min1) not in self.failed_pairs:
+                return min1, min2
+        
+        
+
+
+    def do_next_connect(self):
+        self.is_running = True
+        if self.ui.actionRandom_connect.isChecked():
+            self.min1, self.min2 = self.get_next_pair_random()
+        else:
+            self.min1, self.min2 = self.get_next_pair_gmin()
+        
+        if self.min1 is None or self.min2 is None:
             self.is_running = False
-            return 
-        self.min2 = m2
-        self.do_one_connection(self.min1, m2)
+            return
+        self.do_one_connection(self.min1, self.min2)
         
 
     def start(self):
