@@ -67,7 +67,27 @@ class MinimumStandardItem(Qt.QStandardItem):
     def __lt__(self, item2):
         #sort the energies in the list lowest to highest
         return self.minimum.energy < item2.minimum.energy
+
+class TransitionStateStandardItem(Qt.QStandardItem):
+    """defines an item to populate the lists of minima in the GUI
     
+    These items will be collected in a QStandardItemModel and viewed using
+    QListView
+    """
+    def __init__(self, ts):
+        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
+        super(TransitionStateStandardItem, self).__init__(text)
+        self.ts = ts
+    def __lt__(self, item2):
+        #sort the energies in the list lowest to highest
+        return self.ts.energy < item2.ts.energy
+
+    def __getattr__(self, name):
+        """return the transition state if the minimum is asked for"""
+        if name == "minimum":
+            return self.ts
+        return super(TransitionStateStandardItem, self).__getattr__(name)
+
 class MinimumStandardItemModel(Qt.QStandardItemModel):
     """a class to manage the list of minima for display in the gui"""
     def __init__(self, nmax=None, **kwargs):
@@ -122,19 +142,27 @@ class MainGUI(QtGui.QMainWindow):
         self._sort_timer.timeout.connect(self._delayed_sort)
         
         self.minima_selection = MySelection()
+        self.ts_selected = None
         
+        # set up the lists of minima in the gui 
         self.minima_list_model = MinimumStandardItemModel()
         self.ui.list_minima_main.setModel(self.minima_list_model)
 #        self.ui.list_minima_main.show()
         self.ui.listMinima1.setModel(self.minima_list_model)
         self.ui.listMinima2.setModel(self.minima_list_model)
         
+        # set up the list of transition states in the gui
+        self.ts_list_model = MinimumStandardItemModel()
+        self.ui.list_TS.setModel(self.ts_list_model)
+        
         self.NewSystem()
 
         # determine the maximum number of minima to keep in the lists.
+        # this must be done after NewSystem() is called
         try:
             nmax = self.system.params.gui.list_nmax
             self.minima_list_model.set_nmax(nmax)
+            self.ts_list_model.set_nmax(nmax)
         except AttributeError:
             pass
 
@@ -194,7 +222,7 @@ class MainGUI(QtGui.QMainWindow):
         connect to an existing database at location filename
         """
         self.minima_list_model.clear()
-        self.ui.list_TS.clear()
+        self.ts_list_model.clear()
 
         db = self.system.create_database(db=filename)
         self.system.database = db
@@ -279,8 +307,13 @@ class MainGUI(QtGui.QMainWindow):
             raise Exception("you must select two minima first")
         return coords1, coords2
 
-    def on_list_TS_currentItemChanged(self, item):
-        self.show_TS(item.ts)
+#    def on_list_TS_currentItemChanged(self, item):
+#        self.show_TS(item.ts)
+    def on_list_TS_clicked(self, index):
+        item = self.ts_list_model.item(index.row())
+        ts = item.ts
+        self.ts_selected = ts
+        self.show_TS(ts)
 
     def show_TS(self, ts):
         """
@@ -385,12 +418,18 @@ class MainGUI(QtGui.QMainWindow):
         min1 = self.ui.ogl_main.minima[1]
         self.normalmode_explorer.set_coords(min1.coords)
         self.normalmode_explorer.show()
-        
+    
+    def get_selected_ts(self):
+        ts = self.ts_selected
+        if ts is None:
+            raise Exception("you must select a transition state first")
+        return ts
+    
     def on_pushNormalmodesTS_clicked(self, clicked=None):
         if clicked is None: return
         if not hasattr(self, "normalmode_explorer"):
             self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
-        ts = self.ui.list_TS.selectedItems()[0]
+        ts = self.get_selected_ts()
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
     
@@ -451,8 +490,8 @@ class MainGUI(QtGui.QMainWindow):
 #                print "taking item", i.minimum._id
                 self.minima_list_model.takeRow(i.row())
                 break
-    
-    def NewTS(self, ts):
+
+    def NewTS(self, ts, sort=True):
         """add new transition state, or list of transition states"""
         try:
             len(ts)
@@ -464,12 +503,14 @@ class MainGUI(QtGui.QMainWindow):
         else: 
             tslist = [ts]
         for ts in tslist:
-            tsitem = QTSInList(ts)
-            self.ui.list_TS.addItem(tsitem)
-        self.ui.list_TS.sortItems(1)
+            tsitem = TransitionStateStandardItem(ts)
+            self.ts_list_model.appendRow(tsitem)
+        if sort:
+            self.ts_list_model.sort(0)
 
     def RemoveTS(self, ts):
         """remove transition state"""
+        raise Exception("removing transition states not implemented yet")
         obj = self.ui.list_TS
         tsid = id(ts)
         itms = self.ui.list_TS.findItems('*', QtCore.Qt.MatchWildcard)
