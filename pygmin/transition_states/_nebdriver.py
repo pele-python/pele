@@ -178,14 +178,14 @@ class NEBDriver(object):
                        rms=1.0, k = self.last_k, event="initial")
         
     def run(self):
-                #determine the number of iterations                
+        # determine the number of iterations                
         if not self.prepared:
             self.prepare()
             
         quenchParams = self.quenchParams.copy()
         nimages = len(self.path)
-        #if nimages is already max_images then increasing the number
-        #of images with factor will have no effect.  so double the number of steps instead
+        # if nimages is already max_images then increasing the number
+        # of images with factor will have no effect.  so double the number of steps instead
         niter = int(self.iter_density * self.nimages)
         if self.factor > 1. and self.nimages == self.max_images and self.max_images > 0:
             niter *= self.factor
@@ -204,40 +204,49 @@ class NEBDriver(object):
         self.niter = niter
         k = self.last_k
         while True:       
+            # set up the NEB 
             k = self.last_k
             neb = self._nebclass(self.path, self.potential, k=k,
                       quenchParams=quenchParams, verbose=self.verbose,
                       distance=self.distance, **self._kwargs)
             self.neb = neb
-            
             neb.events.append(self._process_event)
+
+            # optimize the NEB            
             res = neb.optimize()
             self.last_k=neb.k
             
-            self.path = neb.coords.copy()
+#            self.path = neb.coords.copy() #js850> is this copy necessary?
             
+            # check if we're finished
             self.steps_total += res.nsteps
             if res.success or self.steps_total >= self.niter:
                 res.nsteps = self.steps_total
                 self.path = res.path
             
                 if self.verbose >= 0:
-                    logger.info("NEB finished after %d steps, rms %e"%(res.nsteps, res.rms))
+                    logger.info("NEB finished after %d steps, rms %e" % (res.nsteps, res.rms))
                     
                 self._send_finish_event(res)
                 return neb
             
+            # get the distances between each of the images
             distances = []
             for i in xrange(len(res.path)-1):           
                 distances.append(np.sqrt(self.distance(res.path[i], res.path[i+1])[0]))
+            
+            # reinterplate the path based on the distances
             path = self._reinterpolate(res.path, distances)
             self.path = path
+            
+            # update the number of iterations if required
             if self.adaptive_niter:
                 self.niter = int(self.iter_density * len(path))
                 if self.factor > 1. and len(path) == self.max_images and self.max_images > 0:
-                    self.niter *= self.factor    
+                    self.niter *= self.factor 
+   
             if self.verbose >= 1:
-                logger.info("NEB reinterpolating path, %d images, niter is %d"%(len(path),self.niter))
+                logger.info("NEB reinterpolating path, %d images, niter is %d" % (len(path), self.niter))
         
         
     def generate_path(self, coords1, coords2):

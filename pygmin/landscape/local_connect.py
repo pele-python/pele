@@ -39,7 +39,11 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
     
     return True, ret, ret1, ret2
 
-
+#class NEBResult(Result):
+#    def __init__(self):
+#        self.nts_candidates = 0
+#        self.new_transition_states = []
+        
 
 class LocalConnect(object):
     """
@@ -73,7 +77,9 @@ class LocalConnect(object):
     Notes
     -----
     this class takes two minima as input, does an NEB run to find transition state
-    candidates, then refines those candidates into transition states.
+    candidates, then refines those candidates into transition states.  Finally, 
+    we fall off either side of the transition states to fine the minima on either
+    side.
     
     This is the core routine of DoubleEndedConnect.  It is separated out in order
     to make parallelization easier.  This class intentionally has no knowledge of the
@@ -196,16 +202,19 @@ class LocalConnect(object):
         """
         self.NEBattempts = 2
         for repetition in range(self.NEBattempts):
-            #do NEB run
+            # do NEB run
             climbing_images, neb = self._doNEB(min1, min2, repetition)
+            self.neb = neb
             
-            #check results
+            # check results
             nclimbing = len(climbing_images)
             self.res.nclimbing = nclimbing
             logger.info( "from NEB search found %s %s", nclimbing, "transition state candidates")
+            
+            # if the NEB path has maxima, refine those into transition states
             if nclimbing > 0:
                 climbing_images = sorted(climbing_images, reverse=True) #highest energies first
-                #refine transition state candidates
+                # refine transition state candidates
                 self.res.success = self._refineTransitionStates(neb, climbing_images)
             else :
                 self.res.success = False

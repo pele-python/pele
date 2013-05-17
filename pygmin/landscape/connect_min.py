@@ -250,7 +250,7 @@ class DoubleEndedConnect(object):
         """
         return self.dist_graph.getDist(min1, min2)
 
-    def _addTransitionState(self, E, coords, min_ret1, min_ret2, eigenvec, eigenval):
+    def _addTransitionState(self, ts_ret, min_ret1, min_ret2):
         """
         add a transition state to the database, the transition state graph and
         the distance graph
@@ -261,22 +261,20 @@ class DoubleEndedConnect(object):
 #            min_ret2 = min_ret2[4]
 #        if isinstance(min1_ret)
         
-        #sanity check for the energies
+        # sanity check for the energies
         me1, me2 = min_ret1.energy, min_ret2.energy
-        if E < me1 or E < me2:
+        if ts_ret.energy < me1 or ts_ret.energy < me2:
             logger.warning("trying to add a transition state that has energy lower than its minima.")
-            logger.warning("    TS energy %s %s %s %s", E, "minima energy", me1, me2 )
+            logger.warning("    TS energy %s %s %s %s", ts_ret.energy, "minima energy", me1, me2 )
             logger.warning("    aborting" )
             return False
         
-        #check the minima and transition states are valid configurations.
-        #if any fail, then don't add anything.  
+        # check the minima and transition states are valid configurations.
+        # if any fail, then don't add anything.  
         configs_ok = True
-        for xtrial, etrial in [ (min_ret1.coords, min_ret1.energy), 
-                                (min_ret2.coords, min_ret2.energy), 
-                                (coords, E) ]:
+        for ret in [ min_ret1, min_ret2, ts_ret ]:
             for check in self.conf_checks:
-                if not check(energy=etrial, coords=xtrial):
+                if not check(energy=ret.energy, coords=ret.coords):
                     configs_ok = False
                     break
             if not configs_ok:
@@ -285,20 +283,18 @@ class DoubleEndedConnect(object):
             return False
                 
         
-        #add the minima to the transition state graph.  
-        #This step is important to do first because it returns a Database Minimum object.
+        # add the minima to the transition state graph.  
+        # This step is important to do first because it returns a Database Minimum object.
         min1 = self.graph.addMinimum(min_ret1.energy, min_ret1.coords)
         min2 = self.graph.addMinimum(min_ret2.energy, min_ret2.coords)
         if min1 == min2:
             logger.warning( "stepping off the transition state resulted in twice the same minima %s", min1._id)
             return False
-        
-        
 
         logger.info("adding transition state %s %s", min1._id, min2._id)
-        #update the transition state graph
-        #this also updates the database and returns a TransitionState object
-        ts = self.graph.addTransitionState(E, coords, min1, min2, eigenvec=eigenvec, eigenval=eigenval)
+        # update the transition state graph
+        # this also updates the database and returns a TransitionState object
+        ts = self.graph.addTransitionState(ts_ret.energy, ts_ret.coords, min1, min2, eigenvec=ts_ret.eigenvec, eigenval=ts_ret.eigenval)
 #        self.graph.refresh()
 
         #update the distance graph
@@ -339,6 +335,10 @@ class DoubleEndedConnect(object):
 
     def _localConnect(self, min1, min2):
         """
+        do a local connect run between min1 and min2
+        
+        Notes
+        -----
         1) NEB to find transition state candidates.  
         
         for each transition state candidate:
@@ -374,7 +374,7 @@ class DoubleEndedConnect(object):
         #now add each new transition state to the graph and database.
         nsuccess = 0
         for tsret, m1ret, m2ret in res.new_transition_states:
-            goodts = self._addTransitionState(tsret.energy, tsret.coords, m1ret, m2ret, tsret.eigenvec, tsret.eigenval)
+            goodts = self._addTransitionState(tsret, m1ret, m2ret)
             if goodts:
                 nsuccess += 1
  
@@ -394,7 +394,6 @@ class DoubleEndedConnect(object):
 
 
         #remove this edge from Gdist so we don't try this pair again again
-        #self._remove_edgeGdist(min1, min2)
         self.dist_graph.removeEdge(min1, min2)
         
         return nsuccess > 0            
@@ -402,6 +401,10 @@ class DoubleEndedConnect(object):
                 
     def _getNextPair(self):
         """
+        return a pair of minima to attempt to connect
+        
+        Notes
+        -----
         this is the function which attempts to find a clever pair of minima to try to 
         connect with the ultimate goal of connecting minstart and minend
         
@@ -511,7 +514,6 @@ class DoubleEndedConnect(object):
         
         Returns
         -------
-        If the minima are not connected, return (None, None, None)
         mints : list of Minimum and TransitionStates
             a list of Minimum, TransitionState, Minimum objects that make up
             the path
@@ -519,6 +521,8 @@ class DoubleEndedConnect(object):
             numpy array of the distance along the path.   len(S) == len(mints)
         energies : list of float
             numpy array of the energies along the path
+
+        If the minima are not connected, return (None, None, None)
         """
         if not self.graph.areConnected(self.minstart, self.minend):
             return None, None, None

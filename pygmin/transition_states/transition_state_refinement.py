@@ -112,38 +112,15 @@ class FindTransitionState(object):
         2) Step uphill in the direction of the lowest eigenvector
         
         3) minimize in the space tangent to the lowest eigenvector
+        
+    The tolerances for the various steps of this algorithm must be correlated.
+    if the tol for tangent space search is lower than the total tol, then it will never finish
     
     See Also
     --------
     findTransitionState : function wrapper for this class
     findLowestEigenVector : a core algorithm
     pygmin.landscape.LocalConnect : the class which most often calls this routine
-     
-    """
-    """
-    implementation notes: this class needs to deal with
-    
-    params for stepUphill : 
-        probably only maxstep
-    
-    params for lowest eigenvector search : 
-        should be passable
-        important params : 
-            max steps 
-            what to do if a negative eigenvector is found
-            what to do if small overlap with previous eigenvector
-    
-    params for tangent space search : 
-        should be passable
-        
-
-    todo:
-        if the eigenvalue sign goes from positive to negative,
-        go back to where it was negative and take a smaller step
-        
-        The tolerances for the various steps of this algorithm must be correlated.
-        if the tol for tangent space search is lower than the total tol, then it will never finish
-    
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
                  nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
@@ -255,16 +232,14 @@ class FindTransitionState(object):
         res.message = []
         for i in xrange(self.nsteps):
             
-            #get the lowest eigenvalue and eigenvector
+            # get the lowest eigenvalue and eigenvector
             self.overlap = self._getLowestEigenVector(coords, i)
             overlap = self.overlap
             
-            #check to make sure the eigenvector is ok
+            # check to make sure the eigenvector is ok
             if i == 0 or self.eigenval <= 0:
                 self._saveState(coords)
                 self.reduce_step = 0
-#                if self.iprint > 0:
-#                    logger.info("    eigenvalue became positive, reducing step size")
             else:
                 self.npositive += 1
                 if self.npositive > self.npositive_max:
@@ -276,19 +251,19 @@ class FindTransitionState(object):
                 coords = self._resetState(coords)
                 self.reduce_step += 1
             
-            #step uphill along the direction of the lowest eigenvector
+            # step uphill along the direction of the lowest eigenvector
             coords = self._stepUphill(coords)
 
             if False:
-                #maybe we want to update the lowest eigenvector now that we've moved?
-                #david thinks this is a bad idea
+                # maybe we want to update the lowest eigenvector now that we've moved?
+                # david thinks this is a bad idea
                 overlap = self._getLowestEigenVector(coords, i)
 
-            #minimize the coordinates in the space perpendicular to the lowest eigenvector
+            # minimize the coordinates in the space perpendicular to the lowest eigenvector
             coords, tangentrms = self._minimizeTangentSpace(coords)
 
 
-            #check if we are done and print some stuff
+            # check if we are done and print some stuff
             E, grad = self.pot.getEnergyGradient(coords)
             rms = np.linalg.norm(grad) * self.rmsnorm
             gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
@@ -319,14 +294,14 @@ class FindTransitionState(object):
                     res.message.append( "initial eigenvalue is positive %f" % self.eigenval )
                     break
 
-        #done.  do one last eigenvector search because coords may have changed
+        # done.  do one last eigenvector search because coords may have changed
         self._getLowestEigenVector(coords, i)
 
-        #done, print some data
+        # print some data
         logger.info("findTransitionState done: %s %s %s %s %s", i, E, rms, "eigenvalue", self.eigenval)
     
         success = True
-        #check if results make sense
+        # check if results make sense
         if self.eigenval >= 0.:
             if self.verbosity > 2:
                 logger.info( "warning: transition state is ending with positive eigenvalue %s", self.eigenval)
