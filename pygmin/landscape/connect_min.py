@@ -494,7 +494,7 @@ class DoubleEndedConnect(object):
             #try to connect those minima            
             local_success = self._localConnect(min1, min2)
             
-            if True and i % 10 == 0:
+            if False and i % 10 == 0:
                 #do some sanity checks
                 self.dist_graph.checkGraph()
 

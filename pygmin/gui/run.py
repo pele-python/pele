@@ -138,6 +138,8 @@ class MainGUI(QtGui.QMainWindow):
 
         # set up the sorting of minima
         self.need_sorting = False
+        self.need_sorting_minima = False
+        self.need_sorting_ts = False
         self._sort_timer = QtCore.QTimer()
         self._sort_timer.timeout.connect(self._delayed_sort)
         
@@ -229,7 +231,7 @@ class MainGUI(QtGui.QMainWindow):
         #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
-        self._sort_lists()
+        self._sort_minima()
         self.NewTS(self.system.database.transition_states())
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
@@ -433,6 +435,14 @@ class MainGUI(QtGui.QMainWindow):
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
     
+    def _sort_ts(self):
+        self.need_sorting_ts = True
+        self._sort_lists()
+    
+    def _sort_minima(self):
+        self.need_sorting_minima = True
+        self._sort_lists()
+    
     def _sort_lists(self):
         """calling this function indicates that the lists need sorting
         
@@ -446,6 +456,8 @@ class MainGUI(QtGui.QMainWindow):
 
     def _delayed_sort(self):
         if not self.need_sorting:
+            self.need_sorting_minima = False
+            self.need_sorting_ts = False
             print "sorting not needed"
             return
         try:
@@ -466,8 +478,13 @@ class MainGUI(QtGui.QMainWindow):
             pass
         
 #        print "sorting lists"
-        self.minima_list_model.sort(0)
+        if self.need_sorting_minima:
+            self.minima_list_model.sort(0)
+        if self.need_sorting_ts:
+            self.ts_list_model.sort(0)
         self.need_sorting = False
+        self.need_sorting_minima = False
+        self.need_sorting_ts = False
         self._sort_timer.stop()
 #        print "done sorting lists"
         
@@ -478,7 +495,7 @@ class MainGUI(QtGui.QMainWindow):
             
         self.minima_list_model.appendRow(MinimumStandardItem(minimum))
         if sort_items:
-            self._sort_lists()
+            self._sort_minima()
                 
     def RemoveMinimum(self, minimum):
         """remove a minimum from self.minima_list_model"""
@@ -506,7 +523,7 @@ class MainGUI(QtGui.QMainWindow):
             tsitem = TransitionStateStandardItem(ts)
             self.ts_list_model.appendRow(tsitem)
         if sort:
-            self.ts_list_model.sort(0)
+            self._sort_ts()
 
     def RemoveTS(self, ts):
         """remove transition state"""
