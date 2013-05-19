@@ -130,6 +130,8 @@ class ConnectViewer(QtGui.QMainWindow):
         self.ui.actionD_Graph.setVisible(False)
         self.ui.actionSummary.setVisible(False)
         self.ui.actionSummary.setChecked(False)
+        self.ui.actionRandom_connect.setChecked(False)
+        self.ui.actionRandom_connect.setVisible(False)
         
         self.smoothed_path = None
 

@@ -1,48 +1,51 @@
-from optparse import OptionParser
+import argparse
+
+from pygmin.storage.database import Database
 
 def main():
-    # add some program options
-    parser = OptionParser(usage = "usage: %prog [options] storage")
+    parser = argparse.ArgumentParser(description="print information about the database")
+
+    parser.add_argument("database", type=str, help="Database file name")
     
-    from pygmin.storage.database import Database
-    
-    parser.add_option("--write-disconnect",
+    parser.add_argument("--write-disconnect",
                       dest="writeDPS", action="store_true",
                       help="generate min.dat and ts.dat to use with disconnectDPS")
-    parser.add_option("-m",
+    parser.add_argument("-m",
                       dest="writeMinima", action="store_true",
                       help="dump minima to screen")
-    parser.add_option("-t",
+    parser.add_argument("-t",
                       dest="writeTS", action="store_true",
                       help="dump transition states to screen")
-    parser.add_option("-d",
+    parser.add_argument("-d",
                       dest="write_distances", action="store_true",
                       help="dump distances to screen")
+    parser.add_argument("-s",
+                      dest="summary", action="store_true",
+                      help="print summary")
+    args = parser.parse_args()
     
-    (options, args) = parser.parse_args()
-    
-    # print help if no input file is given
-    if(len(args) != 1):
-        parser.print_help()
-        exit(-1)
         
-    db = Database(db=args[0])
+    db = Database(db=args.database)
 
-    if(options.writeMinima):
+    if args.summary:
+        print "number of minima:", db.number_of_minima()
+        print "number of transition states:", db.number_of_transition_states()
+
+    if(args.writeMinima):
         print "List of minima:"
         print "---------------"
         for m in db.minima():
             print "%f\t\tid %d"%(m.energy, m._id)
         print "END\n"
     
-    if(options.writeTS):
+    if(args.writeTS):
         print "List of transition states:"
         print "--------------------------"
         for ts in db.transition_states():
             print "%d\t<->\t%d\tid %d\tenergies %f %f %f"%\
                 (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
         print "END\n"
-    if(options.write_distances):
+    if(args.write_distances):
         print "List of distances:"
         print "--------------------------"
         for d in db.distances():
@@ -50,7 +53,7 @@ def main():
                 (d._minimum1_id, d._minimum2_id, d._id, d.dist)
         print "END\n"
 
-    if(options.writeDPS):
+    if(args.writeDPS):
         writeDPS(db)
         
 
