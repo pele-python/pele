@@ -1,6 +1,35 @@
 import argparse
 
+import networkx as nx
+
 from pygmin.storage.database import Database
+from pygmin.landscape import Graph
+
+def long_summary(db):
+    nts = db.number_of_transition_states()
+    if nts == 0:
+        print "long summary not applicable: no transition states"
+        return
+    graph = Graph(db).graph
+    
+    cclist = nx.connected_components(graph)
+    
+#    print "number of connected components", len(cclist)
+    counts = dict()
+    for cc in cclist:
+        nc = len(cc)
+        try:
+            counts[nc] += 1
+        except KeyError:
+            counts[nc] = 1
+    counts = counts.items()
+    counts.sort(key=lambda x:-x[0])
+    print "Connectivity of the database:"
+    for n, count in counts:
+        if n == 1:
+            print "%7d unconnected minima" % count
+        else:
+            print "%7d connected clusters of size %7d" % (count, n) 
 
 def main():
     parser = argparse.ArgumentParser(description="print information about the database")
@@ -22,15 +51,24 @@ def main():
     parser.add_argument("-s",
                       dest="summary", action="store_true",
                       help="print summary")
+    parser.add_argument("-S",
+                      dest="summary_long", action="store_true",
+                      help="print long summary")
     args = parser.parse_args()
     
+    if args.summary_long:
+        args.summary = True
+    
         
-    db = Database(db=args.database)
+    db = Database(db=args.database, createdb=False)
 
     if args.summary:
         print "number of minima:", db.number_of_minima()
         print "number of transition states:", db.number_of_transition_states()
-
+  
+    if args.summary_long:
+        long_summary(db)
+        
     if(args.writeMinima):
         print "List of minima:"
         print "---------------"
