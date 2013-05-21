@@ -16,7 +16,46 @@ from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 
 __all__ = ["ConnectManager", "ConnectManagerCombine", "ConnectManagerRandom"]
 
-class ConnectManagerUntrap(object):
+class BaseConnectManager(object):
+    _is_good_pair = lambda self, m1, m2: True
+    
+    def set_good_pair_test(self, test):
+        self._is_good_pair = test
+        
+    def is_good_pair(self, min1, min2):
+        return self._is_good_pair(min1, min2)
+    
+    def get_connect_job(self):
+        if len(self.minpairs) == 0:
+            self._build_list()
+        if len(self.minpairs) == 0:
+            # this method has run out of options.  The next list_len jobs will be (None, None)
+            self.minpairs = deque([(None, None)] * self.list_len)
+            return None, None
+        
+        min1, min2 = self.minpairs.popleft()
+        return min1, min2
+
+
+class ConnectManagerUntrap(BaseConnectManager):
+    """class to select double ended connect jobs using the untrap strategy
+    
+    Notes
+    ------
+    the untrap strategy selects minima with the goal of eliminating artificially high
+    energy barriers.  Each minima is weighted by the energy barrier to get to the global
+    minimum divided by the energy difference with the global minimum.  This weight determines
+    the order with in the minima are selected for a double ended connect run.
+    
+    Parameters
+    ----------
+    database : pygmin Database object
+    list_len : int
+        the class will create a list of minima pairs of length
+        list_len.  When this list is empty the list will be rebuilt.
+        Essentially this parameter indicates how often to rebuild the list
+        of minima pairs to connect
+    """
     def __init__(self, database, list_len=10):
         self.database = database
         self.list_len = list_len
@@ -30,11 +69,11 @@ class ConnectManagerUntrap(object):
             if subtree.contains_minimum(min1):
                 self._recursive_label(subtree, min1, energy_barriers)
             else:
-                energy_barrier = tree.data["ethresh"] - min1.energy
+                energy_barrier = tree.data["ethresh"]
                 for min2 in subtree.get_minima():
                     assert min2 != min1
 #                    print "minimum", min2._id, "has energy barrier", energy_barrier
-                    energy_barriers[min2] = energy_barrier
+                    energy_barriers[min2] = energy_barrier - min2.energy
                 
     def _compute_barriers(self, graph, min1):
         """for each minimum graph compute the (approximate) energy barrier to min1"""
@@ -70,31 +109,33 @@ class ConnectManagerUntrap(object):
         weights = [(m, np.abs(barrier) / np.abs(m.energy - min1.energy)) 
                    for (m, barrier) in energy_barriers.iteritems()]
         weights.sort(key=lambda v: 1. / v[1])
+
+        self.minpairs = deque()    
+        for min2, w in weights:
+            if len(self.minpairs) > self.list_len:
+                break
+            
+            if not self.is_good_pair(min1, min2):
+                continue
+            
+            self.minpairs.append((min1, min2))
+            if True:
+                # print some stuff
+                print "    untrap analysis: minimum", min2._id, "with energy", min2.energy, "barrier", energy_barriers[min2], "untrap weight", w
         
-        # shorten the list to list_len (if necessary)
-        maxlen = min(len(weights), self.list_len)
-        weights = weights[:maxlen]
-        
-        if True:
-            # print some stuff
-            for m, weight in weights:
-                print "    untrap analysis: minimum", m._id, "with energy", m.energy, "barrier", energy_barriers[m], "untrap weight", weight
-        
-        # store the minima pairs as a deque
-        self.minpairs = deque([(min1, m) for m, val in weights])
     
-    def get_connect_job(self):
-        if len(self.minpairs) == 0:
-            self._build_list()
-        if len(self.minpairs) == 0:
-            return None, None
-        
-        min1, min2 = self.minpairs.popleft()
-        return min1, min2
+#    def get_connect_job(self):
+#        if len(self.minpairs) == 0:
+#            self._build_list()
+#        if len(self.minpairs) == 0:
+#            return None, None
+#        
+#        min1, min2 = self.minpairs.popleft()
+#        return min1, min2
         
 
 
-class ConnectManagerCombine(object):
+class ConnectManagerCombine(BaseConnectManager):
     """a class to organize choosing minima in order to combine disconnected clusters of minima
     
     Parameters
@@ -115,7 +156,7 @@ class ConnectManagerCombine(object):
         
         self.minpairs = deque()
     
-    def _generate_list(self):
+    def _build_list(self):
         """make a list of minima pairs to try to connect"""
         print "analyzing the database to find minima to connect"
         self.minpairs = deque()
@@ -158,21 +199,24 @@ class ConnectManagerCombine(object):
             # (this can probably be done in a more intelligent way)
             min2 = group2[0]
 
-            self.minpairs.append((min1, min2))
+            if self.is_good_pair(min1, min2):
+                self.minpairs.append((min1, min2))
         
         return self.minpairs
         
 
-    def get_connect_job(self):
-        if len(self.minpairs) == 0:
-            self._generate_list()
-        if len(self.minpairs) == 0:
-            return None, None
-        
-        min1, min2 = self.minpairs.popleft()
-        return min1, min2
+#    def get_connect_job(self):
+#        if len(self.minpairs) == 0:
+#            self._generate_list()
+#        if len(self.minpairs) == 0:
+#            # this method has run out of options.  The next list_len jobs will be (None, None)
+#            self.minpairs = deque([None, None] * self.list_len)
+#            return None, None
+#        
+#        min1, min2 = self.minpairs.popleft()
+#        return min1, min2
 
-class ConnectManagerRandom(object):
+class ConnectManagerRandom(BaseConnectManager):
     """manager to return random minima to connect"""
     def __init__(self, database, Emax=None):
         self.database = database
@@ -183,13 +227,20 @@ class ConnectManagerRandom(object):
         query =  self.database.session.query(Minimum)
         if self.Emax is not None:
             query.filter(Minimum.energy < self.Emax)
+        
+        itermax = self.database.number_of_minima() # so we don't iterate forever
+        for i in xrange(itermax):
+            min1 = query.order_by(sqlalchemy.func.random()).first()
+            min2 = query.order_by(sqlalchemy.func.random()).first()
             
-        min1 = query.order_by(sqlalchemy.func.random()).first()
-        min2 = query.order_by(sqlalchemy.func.random()).first()
+            if min1 == min2: continue
+            if self.is_good_pair(min1, min2):
+                return min1, min2
         
 #        print "worker requested new job, sending minima", min1._id, min2._id
         
-        return min1, min2
+        print "warning: couldn't find any random minima pair to connect"
+        return None, None
 
 
 class ConnectManager(object):
@@ -217,6 +268,26 @@ class ConnectManager(object):
         self._check_strategy(self.backup_strategy)
         self._check_strategy(self.default_strategy)
         
+        self.attempted_list = set()
+        
+        self.manager_combine.set_good_pair_test(self.untried)
+        self.manager_random.set_good_pair_test(self.untried)
+        self.manager_untrap.set_good_pair_test(self.untried)
+    
+    def already_tried(self, min1, min2):
+        if (min1, min2) in self.attempted_list:
+            return True
+        elif (min2, min1) in self.attempted_list:
+            return True
+        else:
+            return False
+    
+    def untried(self, min1, min2):
+        return not self.already_tried(min1, min2)
+        
+    def _register_pair(self, min1, min2):
+        self.attempted_list.add((min1, min2))
+        self.attempted_list.add((min2, min1))
     
     def _check_strategy(self, strategy):
         if strategy not in self.possible_strategies:
@@ -232,23 +303,28 @@ class ConnectManager(object):
         if strategy == "untrap":
             min1, min2 = self.manager_untrap.get_connect_job()
             if min1 is None or min2 is None:
+                print "couldn't find any minima to untrap.  Doing", self.backup_strategy, "strategy instead"
                 strategy = self.backup_strategy
             else:
-                print "returning an untrap connect job"
+                print "sending an untrap connect job", min1._id, min2._id
 
         if strategy == "combine":
             min1, min2 = self.manager_combine.get_connect_job()
             if min1 is None or min2 is None:
+                print "couldn't find any minima clusters to combine.  Doing", self.backup_strategy, "strategy instead"
                 strategy = self.backup_strategy
             else:
-                print "returning a connect job to combine two disconnected clusters"
+                print "sending a connect job to combine two disconnected clusters", min1._id, min2._id
         if strategy == "random":
             min1, min2 = self.manager_random.get_connect_job()
-            print "returning a random connect job"
+            if min1 is None or min2 is None:
+                raise Exception("couldn't find any random minima pair to connect.  Have we tried all pairs?")
+            print "sending a random connect job", min1._id, min2._id
         
+        self._register_pair(min1, min2)
         return min1, min2
 
-        
+    
         
 #
 # only testing stuff below here
@@ -273,15 +349,15 @@ def test():
         connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)
         connect.connect()
     
-    print ""
-    for i in range(1):
+    print "\n\ntesting untrap"
+    for i in range(10):
         min1, min2 = manager.get_connect_job(strategy="untrap")
-        print min1, min2
+        print min1._id, min2._id
     
-#    print ""
-#    for i in range(3):
-#        min1, min2 = manager.get_connect_job(strategy="combine")
-#        print min1, min2
+    print "\n\ntesting combine"
+    for i in range(50):
+        min1, min2 = manager.get_connect_job(strategy="combine")
+        print min1._id, min2._id
     
     
     
