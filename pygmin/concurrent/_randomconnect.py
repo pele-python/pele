@@ -1,7 +1,13 @@
-import Pyro4
 from random import choice
-from pygmin.storage import Minimum, TransitionState
+from collections import deque
+
+import Pyro4
 import sqlalchemy
+import networkx as nx
+
+from pygmin.storage import Minimum, TransitionState
+from pygmin.landscape import Graph
+
 
 __all__ = ["RandomConnectServer", "RandomConnectWorker"]
 
@@ -11,9 +17,92 @@ __all__ = ["RandomConnectServer", "RandomConnectWorker"]
 Pyro4.config.SERVERTYPE = "multiplex"
 
 
+
+class MinimaChooserCombine(object):
+    """a class to organize which minima to try to connect
+    
+    Parameters
+    ----------
+    database : Database object
+    list_len : int
+        the class will create a list of minima pairs of length
+        list_len.  When this list is empty the list will be rebuilt.
+        Essentially this parameter indicates how often to rebuild the list
+        of minima pairs to connect
+    clust_min : int
+        Clusters of minima below this size will be ignored.
+    """
+    def __init__(self, database, list_len=20, clust_min=4):
+        self.db = database
+        self.list_len = list_len
+        self.clust_min = clust_min
+        
+        self.minpairs = deque()
+    
+    def _generate_list_combine(self):
+        """make a list of minima pairs to try to connect"""
+        print "analyzing the database to find minima to connect"
+        self.minpairs = deque()
+        
+        graph = Graph(self.db).graph
+        cclist = nx.connected_components(graph)
+
+        # remove clusters with fewer than clust_min
+        cclist = [cc for cc in cclist if len(cc) >= self.clust_min]
+        
+        if len(cclist) == 0:
+            print "all minima are connected"
+            return self.minpairs
+        
+        # get the group that all other groups will be connected to
+        group1 = cclist[0]
+        min1 = sorted(group1, key=lambda m: m.energy)[0]
+        if True:
+            # make sure that the global minimum is in group1
+            global_min = self.db.minima()[0]
+            if not global_min in group1:
+                print "warning, the global minimum is not the in the largest cluster.  Will try to connect them"
+                self.minpairs.append((min1, global_min))
+                
+
+        # remove group1 from cclist
+        cclist.remove(group1)
+
+        # get a minima from each of the other groups
+        for group2 in cclist:
+            if len(self.minpairs) > self.list_len:
+                break
+
+            print "adding groups of size", len(group1), "and", len(group2), "to the connect list"
+            
+            # sort the groups by energy
+            group2.sort(key = lambda m:m.energy)
+    
+            # select the lowest energy minima in the groups
+            # (this can probably be done in a more intelligent way)
+            min2 = group2[0]
+
+            self.minpairs.append((min1, min2))
+        
+        return self.minpairs
+        
+
+    def get_connect_job(self):
+        if len(self.minpairs) == 0:
+            self._generate_list_combine()
+        if len(self.minpairs) == 0:
+            return None, None
+        
+        min1, min2 = self.minpairs.popleft()
+        return min1, min2
+
+
 class RandomConnectServer(object):
     ''' 
     Manager which decides which connect jobs to run 
+    
+    The manager also receives minima and transition states from the workers
+    and adds them to the database. 
     
     Parameters
     ----------
@@ -39,11 +128,16 @@ class RandomConnectServer(object):
         self.port=port
         self.Emax = None
         
+        self.list_len = 100
+        
+        self.minima_chooser_combine = MinimaChooserCombine(self.db)
+        
+        
     def set_emax(self, Emax):
         self.Emax = None
-        
-    def get_connect_job(self):
-        ''' get a new connect job '''
+            
+    def get_connect_job_random(self):
+        """select two minima randomly"""
         query =  self.db.session.query(Minimum)
         if self.Emax is not None:
             query.filter(Minimum.energy < self.Emax)
@@ -52,6 +146,23 @@ class RandomConnectServer(object):
         min2 = query.order_by(sqlalchemy.func.random()).first()
         
         print "worker requested new job, sending minima", min1._id, min2._id
+        
+        return min1, min2
+
+    def get_connect_job(self, type="random"):
+        ''' get a new connect job '''
+        possible_types = ["random", "combine"]
+        if type not in ["random", "combine"]:
+            raise Exception("type must be from %s" % (str(possible_types)))
+        if type == "combine":
+            min1, min2 = self.minima_chooser_combine.get_connect_job()
+            if min1 is None or min2 is None:
+                type = "random"
+            else:
+                print "returning a connect job to combine two disconnected clusters"
+        if type == "random":
+            min1, min2 = self.get_connect_job_random()
+            print "returning a random connect job"
         
         return min1._id, min1.coords, min2._id, min2.coords
 
@@ -86,7 +197,9 @@ class RandomConnectServer(object):
         
 class RandomConnectWorker(object):
     ''' 
-    worker class to execute connect runs 
+    worker class to execute connect runs.
+    
+    The worker will return all minima and transiton states found to the server
     
     Parameters
     ----------
@@ -94,17 +207,19 @@ class RandomConnectWorker(object):
         uri for job server
     system : BaseSystem, optional
         if no system class is specified, the worker obtains the system
-        class from the worker by get_system. This only works for pickleable
-        systems classes. If this is not the case, the system can be
+        class from the Manager by get_system. This only works for pickleable
+        systems classes. If this is not the case, the system class can be
         created on the client side and passed as a parameter.
     '''
     
-    def __init__(self,uri, system=None):
+    def __init__(self,uri, system=None, type="random"):
         print "connecting to",uri
         self.connect_manager=Pyro4.Proxy(uri)
         if system is None:
             system = self.connect_manager.get_system()
         self.system = system
+        
+        self.type = type
         
     def run(self, nruns=None):
         ''' start the client
@@ -130,7 +245,7 @@ class RandomConnectWorker(object):
     
         while True:
             print "Obtain a new job"
-            id1, coords1, id2, coords2 = self.connect_manager.get_connect_job()
+            id1, coords1, id2, coords2 = self.connect_manager.get_connect_job(self.type)
             
             print "processing connect run between minima with global id", id1, id2
             
