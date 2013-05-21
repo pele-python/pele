@@ -18,7 +18,7 @@ Pyro4.config.SERVERTYPE = "multiplex"
 
 
 
-class MinimaChooserCombine(object):
+class ConnectManagerCombine(object):
     """a class to organize which minima to try to connect
     
     Parameters
@@ -118,28 +118,28 @@ class ConnectManagerRandom(object):
 class ConnectManager(object):
     """class to manage which minima to try to connect
     """
-    def __init__(self, database, type="random", list_len=20, clust_min=4, Emax=None):
+    def __init__(self, database, strategy="random", list_len=20, clust_min=4, Emax=None):
         self.database = database
-        self.default_type = type
+        self.default_strategy = strategy
         
         self.manager_random = ConnectManagerRandom(self.database, Emax)
-        self.manager_combine = MinimaChooserCombine(self.database, list_len=list_len, clust_min=4)
+        self.manager_combine = ConnectManagerCombine(self.database, list_len=list_len, clust_min=4)
 
-    def get_connect_job(self, type=None):
-        if type is None:
-            type = self.default_type
+    def get_connect_job(self, strategy=None):
+        if strategy is None:
+            strategy = self.default_strategy
         
-        possible_types = ["random", "combine"]
-        backup_type = "random"
-        if type not in possible_types:
-            raise Exception("type must be from %s" % (str(possible_types)))
-        if type == "combine":
+        possible_strategies = ["random", "combine"]
+        backup_strategy = "random"
+        if strategy not in possible_strategies:
+            raise Exception("strategy must be from %s" % (str(possible_strategies)))
+        if strategy == "combine":
             min1, min2 = self.manager_combine.get_connect_job()
             if min1 is None or min2 is None:
-                type = backup_type
+                strategy = backup_strategy
             else:
                 print "returning a connect job to combine two disconnected clusters"
-        if type == "random":
+        if strategy == "random":
             min1, min2 = self.manager_random.get_connect_job()
             print "returning a random connect job"
         
@@ -187,23 +187,10 @@ class RandomConnectServer(object):
     def set_emax(self, Emax):
         raise Exception("set_emax is not implemented yet in the new ConnectManager scheme")
         self.Emax = None
-            
-#    def get_connect_job_random(self):
-#        """select two minima randomly"""
-#        query =  self.db.session.query(Minimum)
-#        if self.Emax is not None:
-#            query.filter(Minimum.energy < self.Emax)
-#            
-#        min1 = query.order_by(sqlalchemy.func.random()).first()
-#        min2 = query.order_by(sqlalchemy.func.random()).first()
-#        
-#        print "worker requested new job, sending minima", min1._id, min2._id
-#        
-#        return min1, min2
 
-    def get_connect_job(self, type="random"):
+    def get_connect_job(self, strategy="random"):
         ''' get a new connect job '''
-        min1, min2 = self.connect_manager.get_connect_job(type)
+        min1, min2 = self.connect_manager.get_connect_job(strategy)
         return min1._id, min1.coords, min2._id, min2.coords
 
     def get_system(self):
@@ -252,14 +239,14 @@ class RandomConnectWorker(object):
         created on the client side and passed as a parameter.
     '''
     
-    def __init__(self,uri, system=None, type="random"):
+    def __init__(self,uri, system=None, strategy="random"):
         print "connecting to",uri
         self.connect_manager=Pyro4.Proxy(uri)
         if system is None:
             system = self.connect_manager.get_system()
         self.system = system
         
-        self.type = type
+        self.strategy = strategy
         
     def run(self, nruns=None):
         ''' start the client
@@ -285,7 +272,7 @@ class RandomConnectWorker(object):
     
         while True:
             print "Obtain a new job"
-            id1, coords1, id2, coords2 = self.connect_manager.get_connect_job(self.type)
+            id1, coords1, id2, coords2 = self.connect_manager.get_connect_job(self.strategy)
             
             print "processing connect run between minima with global id", id1, id2
             

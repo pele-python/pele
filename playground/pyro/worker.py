@@ -1,13 +1,17 @@
 from pygmin.concurrent import RandomConnectWorker
+from pygmin.systems import LJCluster
 
 nruns = 5
 manager_name = "ljconnect_example"
 hostname = "localhost"
-port = 11567
+port = 11568
 
 print "I will do %d connect runs before exiting"%nruns
 
 uri="PYRO:%s@%s:%d"%(manager_name,hostname,port)
 
-worker = RandomConnectWorker(uri)
+system = LJCluster(38)
+
+
+worker = RandomConnectWorker(uri, system=system, strategy="combine")
 worker.run()

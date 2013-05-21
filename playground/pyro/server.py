@@ -5,7 +5,7 @@ from pygmin.concurrent import RandomConnectServer
 
 server_name = "ljconnect_example"
 hostname="localhost"
-port=11567
+port=11568
 
 print "setting up LJ38 with database lj38.sqlite"
 system = LJCluster(38)
