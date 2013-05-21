@@ -119,12 +119,12 @@ class Convert(object):
     def read_points_min(self):
         print "reading from", self.pointsmin
         coords = read_points_min_ts(self.pointsmin, self.natoms, endianness=self.endianness)
-        self.pointsmin_data = coords.reshape([-1, self.natoms])
+        self.pointsmin_data = coords.reshape([-1, 3*self.natoms])
 
     def read_points_ts(self):
         print "reading from", self.pointsts
         coords = read_points_min_ts(self.pointsts, self.natoms, endianness=self.endianness)
-        self.pointsts_data = coords.reshape([-1, self.natoms])
+        self.pointsts_data = coords.reshape([-1, 3*self.natoms])
                   
         
     def Convert(self):
