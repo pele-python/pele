@@ -96,6 +96,57 @@ class MinimaChooserCombine(object):
         min1, min2 = self.minpairs.popleft()
         return min1, min2
 
+class ConnectManagerRandom(object):
+    def __init__(self, database, Emax=None):
+        self.database = database
+        self.Emax = Emax
+    
+    def get_connect_job(self):
+        """select two minima randomly"""
+        query =  self.database.session.query(Minimum)
+        if self.Emax is not None:
+            query.filter(Minimum.energy < self.Emax)
+            
+        min1 = query.order_by(sqlalchemy.func.random()).first()
+        min2 = query.order_by(sqlalchemy.func.random()).first()
+        
+        print "worker requested new job, sending minima", min1._id, min2._id
+        
+        return min1, min2
+
+
+class ConnectManager(object):
+    """class to manage which minima to try to connect
+    """
+    def __init__(self, database, type="random", list_len=20, clust_min=4, Emax=None):
+        self.database = database
+        self.default_type = type
+        
+        self.manager_random = ConnectManagerRandom(self.database, Emax)
+        self.manager_combine = MinimaChooserCombine(self.database, list_len=list_len, clust_min=4)
+
+    def get_connect_job(self, type=None):
+        if type is None:
+            type = self.default_type
+        
+        possible_types = ["random", "combine"]
+        backup_type = "random"
+        if type not in possible_types:
+            raise Exception("type must be from %s" % (str(possible_types)))
+        if type == "combine":
+            min1, min2 = self.manager_combine.get_connect_job()
+            if min1 is None or min2 is None:
+                type = backup_type
+            else:
+                print "returning a connect job to combine two disconnected clusters"
+        if type == "random":
+            min1, min2 = self.manager_random.get_connect_job()
+            print "returning a random connect job"
+        
+        return min1, min2
+
+        
+        
 
 class RandomConnectServer(object):
     ''' 
@@ -130,40 +181,29 @@ class RandomConnectServer(object):
         
         self.list_len = 100
         
-        self.minima_chooser_combine = MinimaChooserCombine(self.db)
+        self.connect_manager = ConnectManager(self.db, Emax=self.Emax)
         
         
     def set_emax(self, Emax):
+        raise Exception("set_emax is not implemented yet in the new ConnectManager scheme")
         self.Emax = None
             
-    def get_connect_job_random(self):
-        """select two minima randomly"""
-        query =  self.db.session.query(Minimum)
-        if self.Emax is not None:
-            query.filter(Minimum.energy < self.Emax)
-            
-        min1 = query.order_by(sqlalchemy.func.random()).first()
-        min2 = query.order_by(sqlalchemy.func.random()).first()
-        
-        print "worker requested new job, sending minima", min1._id, min2._id
-        
-        return min1, min2
+#    def get_connect_job_random(self):
+#        """select two minima randomly"""
+#        query =  self.db.session.query(Minimum)
+#        if self.Emax is not None:
+#            query.filter(Minimum.energy < self.Emax)
+#            
+#        min1 = query.order_by(sqlalchemy.func.random()).first()
+#        min2 = query.order_by(sqlalchemy.func.random()).first()
+#        
+#        print "worker requested new job, sending minima", min1._id, min2._id
+#        
+#        return min1, min2
 
     def get_connect_job(self, type="random"):
         ''' get a new connect job '''
-        possible_types = ["random", "combine"]
-        if type not in ["random", "combine"]:
-            raise Exception("type must be from %s" % (str(possible_types)))
-        if type == "combine":
-            min1, min2 = self.minima_chooser_combine.get_connect_job()
-            if min1 is None or min2 is None:
-                type = "random"
-            else:
-                print "returning a connect job to combine two disconnected clusters"
-        if type == "random":
-            min1, min2 = self.get_connect_job_random()
-            print "returning a random connect job"
-        
+        min1, min2 = self.connect_manager.get_connect_job(type)
         return min1._id, min1.coords, min2._id, min2.coords
 
     def get_system(self):
