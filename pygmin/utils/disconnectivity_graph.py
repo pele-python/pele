@@ -27,7 +27,7 @@ class Tree(object):
     
     def make_branch(self):
         """return a new Tree which is a child of this Tree"""
-        newtree = Tree(parent=self)
+        newtree = self.__class__(parent=self)
         self.subtrees.append(newtree)
         return newtree
     
@@ -60,7 +60,16 @@ class Tree(object):
                 leaves += tree.get_leaves()
         return leaves
 
-                
+class DGTree(Tree):
+    """add a few functions to Tree to make it specific to disconnectivity graph"""
+    def contains_minimum(self, min1):
+        for leaf in self.get_leaves():
+            if leaf.data["minimum"] == min1:
+                return True
+        return False
+    
+    def get_minima(self):
+        return [leaf.data["minimum"] for leaf in self.get_leaves()]          
 
 class DisconnectivityGraph(object):
     """
@@ -252,7 +261,7 @@ class DisconnectivityGraph(object):
         Recursively repeat the process for each of those subgraphs in order to 
         build the disconnectivity graph.
         """
-        tree_graph = Tree()
+        tree_graph = DGTree()
 #        print tree_graph
         tree_graph.data["ilevel"] = len(energy_levels)-1
         de = energy_levels[-1] - energy_levels[-2]

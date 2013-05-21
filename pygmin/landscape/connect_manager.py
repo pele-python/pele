@@ -5,14 +5,93 @@ choose for a double ended connect run.
 
 from collections import deque
 
+import numpy as np
 import sqlalchemy
 import networkx as nx
 
 from pygmin.storage import Minimum
 from pygmin.landscape import Graph
+from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 
 
 __all__ = ["ConnectManager", "ConnectManagerCombine", "ConnectManagerRandom"]
+
+class ConnectManagerUntrap(object):
+    def __init__(self, database, list_len=10):
+        self.database = database
+        self.list_len = list_len
+        
+        self.minpairs = deque()
+    
+    def _recursive_label(self, tree, min1, energy_barriers):
+        if tree.is_leaf(): return
+
+        for subtree in tree.subtrees:
+            if subtree.contains_minimum(min1):
+                self._recursive_label(subtree, min1, energy_barriers)
+            else:
+                energy_barrier = tree.data["ethresh"] - min1.energy
+                for min2 in subtree.get_minima():
+                    assert min2 != min1
+#                    print "minimum", min2._id, "has energy barrier", energy_barrier
+                    energy_barriers[min2] = energy_barrier
+                
+    def _compute_barriers(self, graph, min1):
+        """for each minimum graph compute the (approximate) energy barrier to min1"""
+        dgraph = DisconnectivityGraph(graph)
+        dgraph.calculate()
+        tree = dgraph.tree_graph
+        
+        energy_barriers = dict()
+        self._recursive_label(tree, min1, energy_barriers)
+        return energy_barriers
+        
+        
+    
+    def _build_list(self):
+        print "using disconnectivity analysis to find minima to untrap"
+        self.minpairs = deque()
+        
+        graph = Graph(self.database).graph
+        cclist = nx.connected_components(graph)
+        
+        # get the largest cluster
+        group1 = cclist[0]
+        min1 = sorted(group1, key=lambda m: m.energy)[0]
+        if not min1 == self.database.minima()[0]:
+            # make sure that the global minimum is in group1
+            print "warning, the global minimum is not the in the largest cluster."
+
+        # compute the energy barriers for all minima in the cluster        
+        subgraph = nx.subgraph(graph, group1)
+        energy_barriers = self._compute_barriers(subgraph, min1)
+        
+        # sort the minima by the barrier height divided by the energy difference
+        weights = [(m, np.abs(barrier) / np.abs(m.energy - min1.energy)) 
+                   for (m, barrier) in energy_barriers.iteritems()]
+        weights.sort(key=lambda v: 1. / v[1])
+        
+        # shorten the list to list_len (if necessary)
+        maxlen = min(len(weights), self.list_len)
+        weights = weights[:maxlen]
+        
+        if True:
+            # print some stuff
+            for m, weight in weights:
+                print "    untrap analysis: minimum", m._id, "with energy", m.energy, "barrier", energy_barriers[m], "untrap weight", weight
+        
+        # store the minima pairs as a deque
+        self.minpairs = deque([(min1, m) for m, val in weights])
+    
+    def get_connect_job(self):
+        if len(self.minpairs) == 0:
+            self._build_list()
+        if len(self.minpairs) == 0:
+            return None, None
+        
+        min1, min2 = self.minpairs.popleft()
+        return min1, min2
+        
 
 
 class ConnectManagerCombine(object):
@@ -30,18 +109,18 @@ class ConnectManagerCombine(object):
         Clusters of minima below this size will be ignored.
     """
     def __init__(self, database, list_len=20, clust_min=4):
-        self.db = database
+        self.database = database
         self.list_len = list_len
         self.clust_min = clust_min
         
         self.minpairs = deque()
     
-    def _generate_list_combine(self):
+    def _generate_list(self):
         """make a list of minima pairs to try to connect"""
         print "analyzing the database to find minima to connect"
         self.minpairs = deque()
         
-        graph = Graph(self.db).graph
+        graph = Graph(self.database).graph
         cclist = nx.connected_components(graph)
 
         # remove clusters with fewer than clust_min
@@ -56,7 +135,7 @@ class ConnectManagerCombine(object):
         min1 = sorted(group1, key=lambda m: m.energy)[0]
         if True:
             # make sure that the global minimum is in group1
-            global_min = self.db.minima()[0]
+            global_min = self.database.minima()[0]
             if not global_min in group1:
                 print "warning, the global minimum is not the in the largest cluster.  Will try to connect them"
                 self.minpairs.append((min1, global_min))
@@ -86,7 +165,7 @@ class ConnectManagerCombine(object):
 
     def get_connect_job(self):
         if len(self.minpairs) == 0:
-            self._generate_list_combine()
+            self._generate_list()
         if len(self.minpairs) == 0:
             return None, None
         
@@ -108,7 +187,7 @@ class ConnectManagerRandom(object):
         min1 = query.order_by(sqlalchemy.func.random()).first()
         min2 = query.order_by(sqlalchemy.func.random()).first()
         
-        print "worker requested new job, sending minima", min1._id, min2._id
+#        print "worker requested new job, sending minima", min1._id, min2._id
         
         return min1, min2
 
@@ -132,10 +211,12 @@ class ConnectManager(object):
         
         self.manager_random = ConnectManagerRandom(self.database, Emax)
         self.manager_combine = ConnectManagerCombine(self.database, list_len=list_len, clust_min=4)
-        self.possible_strategies = ["random", "combine"]
+        self.manager_untrap = ConnectManagerUntrap(database, list_len=list_len)
+        self.possible_strategies = ["random", "combine", "untrap"]
         self.backup_strategy = "random"
         self._check_strategy(self.backup_strategy)
         self._check_strategy(self.default_strategy)
+        
     
     def _check_strategy(self, strategy):
         if strategy not in self.possible_strategies:
@@ -147,6 +228,14 @@ class ConnectManager(object):
             strategy = self.default_strategy
         
         self._check_strategy(strategy)
+        
+        if strategy == "untrap":
+            min1, min2 = self.manager_untrap.get_connect_job()
+            if min1 is None or min2 is None:
+                strategy = self.backup_strategy
+            else:
+                print "returning an untrap connect job"
+
         if strategy == "combine":
             min1, min2 = self.manager_combine.get_connect_job()
             if min1 is None or min2 is None:
@@ -161,4 +250,41 @@ class ConnectManager(object):
 
         
         
+#
+# only testing stuff below here
+#
 
+def test():
+    from pygmin.systems import LJCluster
+    natoms = 13
+    system = LJCluster(natoms)
+    
+    db = system.create_database()
+    
+    # get some minima
+    bh = system.get_basinhopping(database=db, outstream=None)
+    bh.run(100)
+    
+    manager = ConnectManager(db, clust_min=2)
+    
+    for i in range(4):
+        min1, min2 = manager.get_connect_job(strategy="random")
+        print "connecting", min1._id, min2._id
+        connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)
+        connect.connect()
+    
+    print ""
+    for i in range(1):
+        min1, min2 = manager.get_connect_job(strategy="untrap")
+        print min1, min2
+    
+#    print ""
+#    for i in range(3):
+#        min1, min2 = manager.get_connect_job(strategy="combine")
+#        print min1, min2
+    
+    
+    
+
+if __name__ == "__main__":
+    test()
