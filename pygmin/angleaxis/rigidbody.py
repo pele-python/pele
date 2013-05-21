@@ -1,7 +1,7 @@
 import numpy as np
 import aatopology
 from pygmin.potentials.potential import potential
-from pygmin.mindist import StandardClusterAlignment, optimize_permutations
+from pygmin.mindist import StandardClusterAlignment, optimize_permutations, ExactMatchAtomicCluster
 
 class RigidFragment(aatopology.AASiteType):
     ''' defines a single rigid fragment 
@@ -98,22 +98,32 @@ class RigidFragment(aatopology.AASiteType):
     def _determine_inversion(self, permlist):
         x = np.array(self.atom_positions)
         xi = -x
-        for rot, invert in StandardClusterAlignment(-x, x, can_invert=False):
-            xn = np.dot(rot, x.transpose()).transpose()
-            if np.linalg.norm(xn-xi) < 1e-6:
-                self.inversion = rot
-                return
+        exact = ExactMatchAtomicCluster(permlist=permlist, can_invert=False)
+        
+        for rot, invert in exact.standard_alignments(x, xi):
+            if exact.check_match(x, xi, rot, invert):
+                self.inversion = exact._last_checked_rotation
+                return 
 
     def _determine_rotational_symmetry(self, permlist):
         x = np.array(self.atom_positions)
-        for rot, invert in StandardClusterAlignment(x, x, can_invert=False):
-            xn = np.dot(rot, x.transpose()).transpose()
-            dist, tmp, xn = optimize_permutations(x, xn, permlist=permlist)
-            if np.linalg.norm(xn.flatten()-x.flatten()) < 1e-6:
-                self.symmetries.append(rot)
+        exact = ExactMatchAtomicCluster(permlist=permlist, can_invert=False)
+        for rot, invert in exact.standard_alignments(x, x):
+            if exact.check_match(x, x, rot, invert):
+                rot = exact._last_checked_rotation
+                exists=False
+                for rot2 in self.symmetries:
+                    if np.linalg.norm(rot2 - rot) < 1e-6:
+                        exists=True
+                        break
+                if not exists:
+                    self.symmetries.append(rot)
                 
         
     def _determine_symmetries(self):
+        self.symmetries = []
+        self.inversion = None
+        
         perm_dict = dict()
         for t in self.atom_types:
             perm_dict[t] = []
