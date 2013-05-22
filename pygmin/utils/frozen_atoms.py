@@ -73,7 +73,7 @@ class MultiComponentSystemFreeze(basepot):
 
 
 
-def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA = None, rcut = 2.5, boxl=None):
+def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl=None):
     """
     create the potential object for the kob andersen binary lennard jones with frozeen particles
     
