@@ -447,6 +447,8 @@ class TestDistanceGraph(unittest.TestCase):
         res = Result()
         res.coords = coords
         res.energy = energy
+        res.eigenval = 1.
+        res.eigenvec = coords.copy()
         return res
 
     
@@ -482,13 +484,12 @@ class TestDistanceGraph(unittest.TestCase):
         
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min4.energy)
+        tsres = self.make_result(coords, E)
         min_ret1 = self.make_result(min3.coords, min3.energy)
         min_ret2 = self.make_result(min4.coords, min4.energy)
         
-        eigenvec = coords.copy()
-        eigenval = -1.
-        
-        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+       
+        self.connect._addTransitionState(tsres, min_ret1, min_ret2)
 
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "adding a transition state broke the distance graph")
@@ -515,11 +516,9 @@ class TestDistanceGraph(unittest.TestCase):
         #create new TS from thin air        
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min_ret2.energy)
+        tsres = self.make_result(coords, E)
         
-        eigenvec = coords.copy()
-        eigenval = -1.
-        
-        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+        self.connect._addTransitionState(tsres, min_ret1, min_ret2)
 
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "adding a transition state broke the distance graph")
@@ -535,16 +534,14 @@ class TestDistanceGraph(unittest.TestCase):
         
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min4.energy)
+        tsres = self.make_result(coords, E)
         min_ret1 = self.make_result(min3.coords, min3.energy)
         min_ret2 = self.make_result(min4.coords, min4.energy)
 
 #        min_ret1 = [min3.coords, min3.energy]
 #        min_ret2 = [min4.coords, min4.energy]
         
-        eigenvec = coords.copy()
-        eigenval = -1.
-        
-        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+        self.connect._addTransitionState(tsres, min_ret1, min_ret2)
 
         if not nocheck:
             allok = self.connect.dist_graph.checkGraph()

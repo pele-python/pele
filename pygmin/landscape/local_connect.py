@@ -35,7 +35,7 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
     logger.info("falling off either side of transition state to find new minima")
     ret1, ret2 = minima_from_ts(pot, coords, n = ret.eigenvec, \
         **pushoff_params)
-    print "testing", ret1.energy
+#    print "testing", ret1.energy
     
     return True, ret, ret1, ret2
 
