@@ -69,14 +69,14 @@ class RandomConnectServer(object):
         print "a client found a minimum", E
         return self.db.addMinimum(E, coords)._id
     
-    def add_ts(self, id1, id2, E, coords):
+    def add_ts(self, id1, id2, E, coords, eigenval=None, eigenvec=None):
         ''' called by worker if a new transition state is found '''
         
         print "a client found a transition state", E
         min1 = self.db.session.query(Minimum).filter(Minimum._id == id1).one()
         min2 = self.db.session.query(Minimum).filter(Minimum._id == id2).one()
         
-        return self.db.addTransitionState(E, coords, min1, min2)._id
+        return self.db.addTransitionState(E, coords, min1, min2, eigenval=eigenval, eigenvec=eigenvec)._id
 
     def run(self):
         ''' start the server and listen for incoming connections '''
@@ -164,11 +164,11 @@ class RandomConnectWorker(object):
         minid = self.connect_manager.add_minimum(minimum.energy, minimum.coords)
         # store the id of minimum on serverside for quick access later on
         self.gid[minimum] = minid
-        print "added minimum %d as %d"%(minimum._id, minid)
+#        print "added minimum %d as %d"%(minimum._id, minid)
         
     # forwarding new ts to server 
     def _ts_added(self, ts):
         id1 = self.gid[ts.minimum1]
         id2 = self.gid[ts.minimum2]
         
-        self.connect_manager.add_ts(id1, id2, ts.energy, ts.coords)
+        self.connect_manager.add_ts(id1, id2, ts.energy, ts.coords, eigenval=ts.eigenval, eigenvec=ts.eigenvec)
