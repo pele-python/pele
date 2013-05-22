@@ -37,6 +37,32 @@ class BaseConnectManager(object):
         return min1, min2
 
 
+class ConnectManagerGMin(BaseConnectManager):
+    """
+    return connect jobs in order to connect everything to the global minimum
+    """
+    def __init__(self, database, list_len=10):
+        self.database = database
+        self.list_len = list_len
+        
+        self.minpairs = deque()
+
+    def _build_list(self):
+        print "populating list of minima not connected to the global minimum"
+        self.minpairs = deque()
+        
+        gmin = self.database.minima()[0]
+        
+        graph = Graph(self.database)
+        
+        for m in self.database.minima()[1:]:
+            if not graph.areConnected(gmin, m):
+                if self.is_good_pair(gmin, m):
+                    self.minpairs.append((gmin, m))
+                    
+
+
+
 class ConnectManagerUntrap(BaseConnectManager):
     """class to select double ended connect jobs using the untrap strategy
     
@@ -263,7 +289,9 @@ class ConnectManager(object):
         self.manager_random = ConnectManagerRandom(self.database, Emax)
         self.manager_combine = ConnectManagerCombine(self.database, list_len=list_len, clust_min=4)
         self.manager_untrap = ConnectManagerUntrap(database, list_len=list_len)
-        self.possible_strategies = ["random", "combine", "untrap"]
+        self.manager_gmin = ConnectManagerGMin(database, list_len=list_len)
+        
+        self.possible_strategies = ["random", "combine", "untrap", "gmin"]
         self.backup_strategy = "random"
         self._check_strategy(self.backup_strategy)
         self._check_strategy(self.default_strategy)
@@ -273,6 +301,7 @@ class ConnectManager(object):
         self.manager_combine.set_good_pair_test(self.untried)
         self.manager_random.set_good_pair_test(self.untried)
         self.manager_untrap.set_good_pair_test(self.untried)
+        self.manager_gmin.set_good_pair_test(self.untried)
     
     def already_tried(self, min1, min2):
         if (min1, min2) in self.attempted_list:
@@ -315,6 +344,15 @@ class ConnectManager(object):
                 strategy = self.backup_strategy
             else:
                 print "sending a connect job to combine two disconnected clusters", min1._id, min2._id
+        
+        if strategy == "gmin":
+            min1, min2 = self.manager_gmin.get_connect_job()
+            if min1 is None or min2 is None:
+                print "couldn't find any minima not connected to the global minimum.  Doing", self.backup_strategy, "strategy instead"
+                strategy = self.backup_strategy
+            else:
+                print "sending a connect job to connect all minima with the global minimum", min1._id, min2._id
+
         if strategy == "random":
             min1, min2 = self.manager_random.get_connect_job()
             if min1 is None or min2 is None:
@@ -355,10 +393,14 @@ def test():
         print min1._id, min2._id
     
     print "\n\ntesting combine"
-    for i in range(50):
+    for i in range(5):
         min1, min2 = manager.get_connect_job(strategy="combine")
         print min1._id, min2._id
     
+    print "\n\ntesting gmin"
+    for i in range(5):
+        min1, min2 = manager.get_connect_job(strategy="gmin")
+        print min1._id, min2._id
     
     
 
