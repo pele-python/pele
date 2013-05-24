@@ -245,7 +245,7 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
     
     in addition we have wrapped the OPTIM version for use in pygmin.  It uses the sparse 
     version of the Jonker-Volgenant algorithm.  Furthermore the cost matrix calculated in 
-    a compiled language for an additional speed boost. It scales roughtly like natoms**2
+    a compiled language for an additional speed boost. It scales roughly like natoms**2
 
     """
     if reshape:
@@ -270,11 +270,48 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
             newperm[atom] = atomlist[perm[i]]
     return dist, newperm
 
-def optimize_permutations( X1, X2, permlist = None, user_algorithm=None, **kwargs):
+def optimize_permutations( X1, X2, permlist=None, user_algorithm=None, **kwargs):
+    """return the best alignment of the structures X1 and X2 after optimizing permutations
+    
+    Parameters
+    ----------
+    X1, X2 : 
+        the structures to align.  X1 will be left unchanged.
+    permlist : a list of lists
+        A list of lists of atoms which are interchangable.
+        e.g. for a 50/50 binary mixture::
+        
+            permlist = [range(1,natoms/2), range(natoms/2,natoms)]
+
+    user_algoriithm : None or callable
+        you can optionally pass which algorithm to use to optimize the permutations the structures
+    gen_cost_matrix : None or callable
+        user function to generate the cost matrix
+    reshape : boolean
+        shall coordinate reshaping be performed.
+    box_lengths : float array
+        array of floats giving the box lengths for periodic boundary conditions.
+        Set to None for no periodic boundary conditions.
+    
+    Returns
+    -------
+    dist : float
+        the minimum distance
+    X1, X2new:
+        the optimized coordinates
+
+    See Also
+    --------
+    find_best_permutation : 
+        use this function to find the optimized permutation without changing the coordinates.
+    """
     dist, perm = find_best_permutation(X1, X2, permlist=permlist, user_algorithm=user_algorithm, **kwargs)
     X2_ = X2.reshape([-1, 3])
-    X2new = X2_[perm]
+    X2new = X2_[perm].flatten()
     
-    return dist, X1, X2new.flatten()
+    # Recalculate the distance.  We can't trust the returned value
+    dist = np.linalg.norm(X1 - X2new)
+    
+    return dist, X1, X2new
 
 

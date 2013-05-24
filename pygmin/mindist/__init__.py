@@ -7,8 +7,8 @@ Tools for finding the best alignment between two structures.
 (a.k.a. minimum distance routines, mindist, minpermdist, etc.) When trying to
 find path between two minima it is importatnt to ensure that the starting
 points are as close together as possible given the symmetries of the system.
-Common symmetries that need to be accounted for are global rotational
-invariance, global inversion symmetry, global translational invariance, and
+Common symmetries that need to be accounted for are global translational 
+invariance, global rotational invariance, global inversion symmetry, and
 permutational invariance.
 
 Translation and inversion symmetries are trivial to deal with.
@@ -19,7 +19,7 @@ Instead we solve it approximately and stochastically.
 
 
 
-rotational alignment
+Rotational alignment
 ------------------------------------
 Find the optimal rotation for two sets of coordinates (i.e. perform a rms fit)
 
@@ -30,22 +30,19 @@ Find the optimal rotation for two sets of coordinates (i.e. perform a rms fit)
     findrotation_kabsch
     findrotation_kearsley
 
-permutational aligment
+Permutational aligment
 ----------------------
 Finding the best alignment can be mapped onto the Assignment Problem and solved
-very quickly using the Hungarian algorithm (aka munkres) or shortest augmenting path
+very quickly using the Hungarian (shortest augmenting path) algorithm.
 
 .. autosummary::
    :toctree: generated/
 
     optimize_permutations
     find_best_permutation
-    find_permutations_munkres
-    find_permutations_hungarian
-    find_permutations_OPTIM
     
 
-rotational + permutational alignment
+Rotational + permutational alignment
 ------------------------------------
 This cannot be solved exactly in a reasonable amount of time (The time scales as
 natoms factorial).  Instead it's solved iteratively by iterating random rotation -> 
@@ -73,7 +70,7 @@ Periodic Boundary Conditions
 ----------------------------
 This is generally a much harder problem than those discussed above.  Currently
 we have no general mindist routine, but we do have a test to check if the
-strructures are identical
+structures are identical
 
 .. autosummary::
    :toctree: generated/
