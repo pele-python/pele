@@ -1,7 +1,7 @@
 from pygmin.concurrent import ConnectWorker
 from pygmin.systems import LJCluster
 
-from server import create_system, port, hostname, server_name
+from start_server import create_system, port, hostname, server_name
 
 def main():
 
