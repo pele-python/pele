@@ -87,7 +87,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         self.ui.listNormalmodes.clear()
         for n in self.normalmodes:
             self.ui.listNormalmodes.addItem(NormalmodeItem(n))
-        
+
     def on_listNormalmodes_currentItemChanged(self, newsel):
         """
         change which normal mode we're looking at
@@ -97,7 +97,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             return
         orthogopt = self.system.get_orthogonalize_to_zero_eigenvectors()
         mode = newsel.get_mode().copy()
-        if self._params["remove_known_zeroev"]:
+        if self._params["remove_known_zeroev"] and orthogopt is not None:
             mode = orthogopt(mode, self.coords)
          
         self.currentmode = mode
