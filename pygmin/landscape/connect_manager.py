@@ -14,7 +14,7 @@ from pygmin.landscape import Graph
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 
 
-__all__ = ["ConnectManager", "ConnectManagerCombine", "ConnectManagerRandom"]
+__all__ = ["ConnectManager"]
 
 class BaseConnectManager(object):
     _is_good_pair = lambda self, m1, m2: True
@@ -272,15 +272,26 @@ class ConnectManagerRandom(BaseConnectManager):
 class ConnectManager(object):
     """class to manage which minima to try to connect
     
+    Notes
+    -----
     Organize which minima pairs to submit for double ended connect jobs.
-    This class simply chooses between the different selection strategies.  
-    The actual strategies are implemented ind separate classes  
+    This class chooses between the different selection strategies.  
+    The actual strategies are implemented in separate classes.
+
+    Selection strategies:
+    
+        1. "random" : choose two minima randomly
+        #. "gmin" : connect all minima to the global minimum
+        #. "combine" : try to connect disconnected clusters of minima.
+        #. "untrap" : try to eliminate non-physical barriers to the global minimum 
+    
     
     Parameters
     ----------
     database : pygmin Database object
     strategy : string
-        define the default strategy for the connect runs.  Can be in ["random", "combine"] 
+        define the default strategy for the connect runs.  Can be one of 
+        ["random", "combine", "untrap", "gmin"] 
     """
     def __init__(self, database, strategy="random", list_len=20, clust_min=4, Emax=None):
         self.database = database
@@ -303,7 +314,8 @@ class ConnectManager(object):
         self.manager_untrap.set_good_pair_test(self.untried)
         self.manager_gmin.set_good_pair_test(self.untried)
     
-    def already_tried(self, min1, min2):
+    def _already_tried(self, min1, min2):
+        
         if (min1, min2) in self.attempted_list:
             return True
         elif (min2, min1) in self.attempted_list:
@@ -312,7 +324,8 @@ class ConnectManager(object):
             return False
     
     def untried(self, min1, min2):
-        return not self.already_tried(min1, min2)
+        """return true if this minima pair have not been tried yet"""
+        return not self._already_tried(min1, min2)
         
     def _register_pair(self, min1, min2):
         self.attempted_list.add((min1, min2))
@@ -324,6 +337,7 @@ class ConnectManager(object):
             
 
     def get_connect_job(self, strategy=None):
+        """return the next connect job according to the chosen strategy"""
         if strategy is None:
             strategy = self.default_strategy
         

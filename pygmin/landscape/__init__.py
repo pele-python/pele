@@ -17,7 +17,17 @@ series of minima and transition states between two end point minima.
    :toctree: generated/
 
     DoubleEndedConnect
-    DoubleEndedConnectPar
+
+Connect manager
+++++++++++++++++++++++++++++
+The connect manager is a tool to organize which minima from a database 
+are selected for double ended connect jobs.  
+
+.. autosummary::
+   :toctree: generated/
+
+    ConnectManager
+
 
 Other utilities
 ++++++++++++++++++++++++++++++++++++

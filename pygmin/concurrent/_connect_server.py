@@ -55,9 +55,9 @@ class ConnectServer(object):
         """
         self.connect_manager = connect_manager
         
-    def set_emax(self, Emax):
-        raise Exception("set_emax is not implemented yet in the new ConnectManager scheme")
-        self.Emax = None
+#    def set_emax(self, Emax):
+#        raise Exception("set_emax is not implemented yet in the new ConnectManager scheme")
+#        self.Emax = None
 
     def get_connect_job(self, strategy="random"):
         ''' get a new connect job '''
