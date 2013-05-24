@@ -1,8 +1,8 @@
 import numpy as np
-from pygmin.storage import Database
+from pygmin.storage import Database, Minimum, TransitionState
 import argparse
 
-def read_points_min_ts(fname, natoms=None, endianness="="):
+def read_points_min_ts(fname, ndof=None, endianness="="):
     """
     read coords from a points.min or a points.ts file
     
@@ -32,18 +32,18 @@ def read_points_min_ts(fname, natoms=None, endianness="="):
     ----------
     fname : str
         filenname to read from
-    natoms : int, optional
-        for testing to make sure the number of floats read is a multiple of natoms
+    ndof : int, optional
+        for testing to make sure the number of floats read is a multiple of ndof
     endianness : str
         define the endianness of the data. can be "=", "<", ">" 
      
     """
     with open(fname, "rb") as fin:
         coords = np.fromfile(fin, dtype=np.dtype(endianness+"d"))
-    if natoms is not None:
-        if len(coords) % natoms != 0:
-                raise Exception("number of double precision variables read from %s is not divisible by natoms (%d)" % 
-                                (fname, natoms) )
+    if ndof is not None:
+        if len(coords) % ndof != 0:
+                raise Exception("number of double precision variables read from %s is not divisible by ndof (%d)" % 
+                                (fname, ndof) )
 #    print coords
     return coords.flatten()
 
@@ -51,10 +51,10 @@ class Convert(object):
     '''
     Converts old OPTIM to pygmin database
     '''
-    def __init__(self, natoms, db_name="Database.db", mindata="min.data", 
+    def __init__(self, ndof, db_name="Database.db", mindata="min.data", 
                   tsdata="ts.data", pointsmin="points.min", pointsts="points.ts",
                   endianness="="):
-        self.natoms = natoms
+        self.ndof = ndof
         self.db_name = db_name
         self.mindata = mindata
         self.tsdata = tsdata
@@ -83,13 +83,19 @@ class Convert(object):
             pg = int(sline[2]) # point group order
             
             # create the minimum object and attach the data
-            min1 = self.db.addMinimum(e, coords, commit=False) 
+            # must add minima like this.  If you use db.addMinimum()
+            # some minima with similar energy might be assumed to be duplicates
+            min1 = Minimum(e, coords)
+
             min1.fvib = fvib
             min1.pgorder = pg
             
             self.index2min[indx] = min1
 
             indx += 1
+            self.db.session.add(min1)
+            if indx % 500 == 0:
+                self.db.session.commit()
 
     def ReadTSdata(self):
         print "reading from", self.tsdata
@@ -109,30 +115,37 @@ class Convert(object):
             min1 = self.index2min[m1indx - 1] # minus 1 for fortran indexing
             min2 = self.index2min[m2indx - 1] # minus 1 for fortran indexing
 
-            trans = self.db.addTransitionState(e, coords, min1, min2, commit=False)
+            # must add transition states like this.  If you use db.addtransitionState()
+            # some transition states might be assumed to be duplicates
+            trans = TransitionState(e, coords, min1, min2)
             
             trans.fvib = fvib
             trans.pgorder = pg
             
             indx += 1
+            self.db.session.add(trans)
+            if indx % 500 == 0:
+                self.db.session.commit()
         
     def read_points_min(self):
         print "reading from", self.pointsmin
-        coords = read_points_min_ts(self.pointsmin, self.natoms, endianness=self.endianness)
-        self.pointsmin_data = coords.reshape([-1, 3*self.natoms])
+        coords = read_points_min_ts(self.pointsmin, self.ndof, endianness=self.endianness)
+        self.pointsmin_data = coords.reshape([-1, self.ndof])
 
     def read_points_ts(self):
         print "reading from", self.pointsts
-        coords = read_points_min_ts(self.pointsts, self.natoms, endianness=self.endianness)
-        self.pointsts_data = coords.reshape([-1, 3*self.natoms])
+        coords = read_points_min_ts(self.pointsts, self.ndof, endianness=self.endianness)
+        self.pointsts_data = coords.reshape([-1, self.ndof])
                   
         
     def Convert(self):
         self.read_points_min()
         self.ReadMindata()
+        self.db.session.commit()
         
         self.read_points_ts()
         self.ReadTSdata()
+        self.db.session.commit()
     
 
     
@@ -150,7 +163,7 @@ Other file names can optionally be passed.  Some fortran compilers use non-stand
 binary data.  If your coordinates are garbage, try changing the endianness.
     """, formatter_class=argparse.RawDescriptionHelpFormatter)
     
-    parser.add_argument('natoms', help='Number of atoms in system', type = int)
+    parser.add_argument('ndof', help='Number of degrees of freedom (e.g. 3*number of atoms)', type = int)
     parser.add_argument('--Database','-d', help = 'Name of database to write into', type = str, default="optimdb.sqlite")
     parser.add_argument('--Mindata','-m', help = 'Name of min.data file', type = str, default="min.data")
     parser.add_argument('--Tsdata','-t', help = 'Name of ts.data file', type = str, default="ts.data")
@@ -159,7 +172,7 @@ binary data.  If your coordinates are garbage, try changing the endianness.
     parser.add_argument('--endianness', help = 'set the endianness of the binary data.  Can be "<" for little-endian or ">" for big-endian', type = str, default="=")
     args = parser.parse_args()
     
-    cv = Convert(args.natoms, db_name=args.Database, mindata=args.Mindata, 
+    cv = Convert(args.ndof, db_name=args.Database, mindata=args.Mindata, 
                  tsdata=args.Tsdata, pointsmin=args.Pointsmin, pointsts=args.Pointsts,
                  endianness=args.endianness)
 
