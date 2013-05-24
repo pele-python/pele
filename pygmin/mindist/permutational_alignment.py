@@ -190,7 +190,7 @@ def find_permutations_OPTIM(X1, X2, box_lengths=None, make_cost_matrix=None):
 
 
 def find_best_permutation(X1, X2, permlist=None, user_algorithm=None, 
-                            reshape=True, user_cost_matrix=_make_cost_matrix, 
+                            reshape=True, user_cost_matrix=_make_cost_matrix,
                             **kwargs):
     """
     find the permutation of the atoms which minimizes the distance |X1-X2|
@@ -256,7 +256,7 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
         permlist = [range(len(X1))]
     
     newperm = range(len(X1))
-    dist = -1.
+    disttot = 0.
     
     for atomlist in permlist:
         if user_algorithm is not None:
@@ -265,12 +265,34 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
             dist, perm = find_permutations_hungarian(X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix, **kwargs)
         else:
             dist, perm = _find_permutations(X1[atomlist], X2[atomlist], **kwargs)
-            
-        for atom,i in zip(atomlist,xrange(len(atomlist))):
+        
+        disttot += dist**2
+        for atom, i in zip(atomlist,xrange(len(atomlist))):
             newperm[atom] = atomlist[perm[i]]
+    dist = np.sqrt(disttot)
     return dist, newperm
 
-def optimize_permutations( X1, X2, permlist=None, user_algorithm=None, **kwargs):
+def _cartesian_distance_periodic(x1, x2, box_lengths):
+    dim = len(box_lengths)
+    dx = x2 - x1
+    dx = dx.reshape([-1,dim])
+    dx -= box_lengths * np.round(dx / box_lengths[np.newaxis, :])
+    dx = dx.flatten()
+    dist = np.linalg.norm(dx)
+    return dist
+
+
+def _cartesian_distance(x1, x2, box_lengths=None):
+    if box_lengths is None:
+        return np.linalg.norm(x2-x1)
+    else:
+        return _cartesian_distance_periodic(x1, x2, box_lengths)
+        
+
+def optimize_permutations(X1, X2, permlist=None, user_algorithm=None,
+                           recalculate_distance=_cartesian_distance,
+                           box_lengths=None,
+                           **kwargs):
     """return the best alignment of the structures X1 and X2 after optimizing permutations
     
     Parameters
@@ -287,6 +309,9 @@ def optimize_permutations( X1, X2, permlist=None, user_algorithm=None, **kwargs)
         you can optionally pass which algorithm to use to optimize the permutations the structures
     gen_cost_matrix : None or callable
         user function to generate the cost matrix
+    recalculate_distance : callable
+        function to compute the distance of the optimized coords.  If None is passed
+        then the distance is not recalculated and the returned distance is unreliable.
     reshape : boolean
         shall coordinate reshaping be performed.
     box_lengths : float array
@@ -305,12 +330,16 @@ def optimize_permutations( X1, X2, permlist=None, user_algorithm=None, **kwargs)
     find_best_permutation : 
         use this function to find the optimized permutation without changing the coordinates.
     """
-    dist, perm = find_best_permutation(X1, X2, permlist=permlist, user_algorithm=user_algorithm, **kwargs)
+    if box_lengths is not None:
+        kwargs["box_lengths"] = box_lengths
+    dist, perm = find_best_permutation(X1, X2, permlist=permlist, 
+                    user_algorithm=user_algorithm, **kwargs)
     X2_ = X2.reshape([-1, 3])
     X2new = X2_[perm].flatten()
     
-    # Recalculate the distance.  We can't trust the returned value
-    dist = np.linalg.norm(X1 - X2new)
+    if recalculate_distance is not None:
+        # Recalculate the distance.  We can't trust the returned value
+        dist = _cartesian_distance(X1, X2, box_lengths)
     
     return dist, X1, X2new
 
