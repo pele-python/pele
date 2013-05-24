@@ -392,6 +392,7 @@ class MainGUI(QtGui.QMainWindow):
         if not hasattr(self, "dgraph_dlg"):
             self.dgraph_dlg = DGraphDialog(self.system.database, parent=self)
             self.dgraph_dlg.dgraph_widget.minimum_selected.connect(self.on_minimum_picked)
+            self.dgraph_dlg.dgraph_widget.minimum_selected.connect(self.SelectMinimum)
         self.dgraph_dlg.rebuild_disconnectivity_graph()
         self.dgraph_dlg.show()
 
