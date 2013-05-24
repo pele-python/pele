@@ -1,4 +1,4 @@
-from pygmin.concurrent import RandomConnectWorker
+from pygmin.concurrent import ConnectWorker
 from pygmin.systems import LJCluster
 
 nruns = 5
@@ -13,5 +13,5 @@ uri="PYRO:%s@%s:%d"%(manager_name,hostname,port)
 system = LJCluster(38)
 
 
-worker = RandomConnectWorker(uri, system=system, strategy="combine")
+worker = ConnectWorker(uri, system=system, strategy="combine")
 worker.run()

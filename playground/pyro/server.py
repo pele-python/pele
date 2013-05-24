@@ -1,7 +1,7 @@
 from random import choice
 from pygmin.systems import LJCluster
 from pygmin.storage import Minimum
-from pygmin.concurrent import RandomConnectServer
+from pygmin.concurrent import ConnectServer
 
 server_name = "ljconnect_example"
 hostname="localhost"
@@ -21,7 +21,7 @@ print "Working on %d minima"%db.session.query(Minimum).count()
 print "Running basinhopping to generate initial database"
         
 print "Creating new connect manager"
-connect_manager=RandomConnectServer(system, db, server_name=server_name,
+connect_manager=ConnectServer(system, db, server_name=server_name,
                                      host=hostname, port=port)
 
 connect_manager.run()

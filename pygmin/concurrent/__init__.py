@@ -4,4 +4,4 @@
     layout
 '''
 
-from _randomconnect import *
+from _connect_server import *

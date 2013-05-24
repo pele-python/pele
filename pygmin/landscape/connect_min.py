@@ -141,7 +141,7 @@ class DoubleEndedConnect(object):
                  use_all_min=False, verbosity=1,
                  merge_minima=False, 
                  max_dist_merge=0.1, local_connect_params=dict(),
-                 fresh_connect=False, longest_first=False,
+                 fresh_connect=False, longest_first=True,
                  niter=200, conf_checks=None, load_no_distances=False
                  ):
         self.minstart = min1
