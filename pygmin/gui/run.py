@@ -94,12 +94,18 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
         super(MinimumStandardItemModel, self).__init__(**kwargs)
         self.nmax = nmax # the maximum number of minima
         self.issued_warning = False
+        self._minimum_to_item = dict()
 
     def set_nmax(self, nmax):
         self.nmax = nmax
+    
+    def item_from_minimum(self, minimum):
+        return self._minimum_to_item[minimum]
           
     def appendRow(self, item, *args, **kwargs):
+        self._minimum_to_item[item.minimum] = item
         Qt.QStandardItemModel.appendRow(self, item, *args, **kwargs)
+        look_back = min(10, self.nmax)
         if self.nmax is not None:
             nrows = self.rowCount()
             if nrows > self.nmax:
@@ -108,7 +114,7 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
                     self.issued_warning = True
                 # choose an item to remove from the list.  we can't usume it's totally sorted
                 # because it might have been a while since it was last sorted
-                candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-10,nrows)]
+                candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-look_back,nrows)]
                 toremove = max(candidates)
                 self.takeRow(toremove[1])
                 
@@ -239,15 +245,23 @@ class MainGUI(QtGui.QMainWindow):
         self.system.database.on_ts_added.connect(self.NewTS)
         self.system.database.on_ts_removed.connect(self.RemoveTS)
     
+#    def _get_index(self, item, model):
+    
     def on_list_minima_main_clicked(self, index):
-        item = self.minima_list_model.item(index.row())
+        item = self.minima_list_model.itemFromIndex(index)
         minimum = item.minimum
-        self.SelectMinimum(minimum)
+        self.SelectMinimum(minimum, set_selected=False)
 
-    def SelectMinimum(self, minimum):
+    def SelectMinimum(self, minimum, set_selected=True):
         """when you click on a minimum in the basinhopping tab
         """
-        print "selecting minimum", minimum._id, minimum.energy
+#        print "selecting minimum", minimum._id, minimum.energy
+        if set_selected:
+            # I'm surprised we don't need to catch exceptions if the minimum is not in the 
+            # model (e.g. if the maximum list length is exceeded)
+            item = self.minima_list_model.item_from_minimum(minimum)
+            index = self.minima_list_model.indexFromItem(item)
+            self.ui.list_minima_main.setCurrentIndex(index)
         self.ui.ogl_main.setSystem(self.system)
         self.ui.ogl_main.setCoords(minimum.coords)
         self.ui.ogl_main.setMinimum(minimum)
@@ -257,18 +271,22 @@ class MainGUI(QtGui.QMainWindow):
             self.pymolviewer.update_coords([minimum.coords], index=1, delete_all=True)
 
     def on_listMinima1_clicked(self, index):
-        item = self.minima_list_model.item(index.row())
+        item = self.minima_list_model.itemFromIndex(index)
         minimum = item.minimum
-        self._SelectMinimum1(minimum)
+        self._SelectMinimum1(minimum, set_selected=False)
 
     def on_listMinima2_clicked(self, index):
-        item = self.minima_list_model.item(index.row())
+        item = self.minima_list_model.itemFromIndex(index)
         minimum = item.minimum
-        self._SelectMinimum2(minimum)
+        self._SelectMinimum2(minimum, set_selected=False)
 
-    def _SelectMinimum1(self, minimum):
+    def _SelectMinimum1(self, minimum, set_selected=True):
         """by minimum"""
         print "selecting minimum 1", minimum._id, minimum.energy
+        if set_selected:
+            item = self.minima_list_model.item_from_minimum(minimum)
+            index = self.minima_list_model.indexFromItem(item)
+            self.ui.listMinima1.setCurrentIndex(index)
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=1)
 #        self.ui.oglPath.setMinimum(minimum, index=1)
@@ -278,9 +296,13 @@ class MainGUI(QtGui.QMainWindow):
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=1)
 
-    def _SelectMinimum2(self, minimum):
+    def _SelectMinimum2(self, minimum, set_selected=True):
         """by minimum"""
         print "selecting minimum 2", minimum._id, minimum.energy
+        if set_selected:
+            item = self.minima_list_model.item_from_minimum(minimum)
+            index = self.minima_list_model.indexFromItem(item)
+            self.ui.listMinima2.setCurrentIndex(index)
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=2)
 #        self.ui.oglPath.setMinimum(minimum, index=2)
