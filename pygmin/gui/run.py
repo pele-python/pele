@@ -152,16 +152,24 @@ class MainGUI(QtGui.QMainWindow):
         self.minima_selection = MySelection()
         self.ts_selected = None
         
-        # set up the lists of minima in the gui 
+        # keep track of minima using a QStandardItemModel 
         self.minima_list_model = MinimumStandardItemModel()
+        # use QListView objects to view the lists of minima in the gui
         self.ui.list_minima_main.setModel(self.minima_list_model)
-#        self.ui.list_minima_main.show()
+#        self.ui.list_minima_main.set
         self.ui.listMinima1.setModel(self.minima_list_model)
         self.ui.listMinima2.setModel(self.minima_list_model)
+
+        # connect to the signals of the QSelectionModel objects of the list view's   
+        self.ui.list_minima_main.selectionModel().selectionChanged.connect(self.on_list_minima_main_selectionChanged)
+        self.ui.listMinima1.selectionModel().selectionChanged.connect(self.on_listMinima1_selectionChanged)
+        self.ui.listMinima2.selectionModel().selectionChanged.connect(self.on_listMinima2_selectionChanged)
         
         # set up the list of transition states in the gui
         self.ts_list_model = MinimumStandardItemModel()
         self.ui.list_TS.setModel(self.ts_list_model)
+        self.ui.list_TS.selectionModel().selectionChanged.connect(self.on_list_TS_selectionChanged)
+
         
         self.NewSystem()
 
@@ -200,14 +208,6 @@ class MainGUI(QtGui.QMainWindow):
         """
         self.system = self.systemtype()
         self.connect_db()
-#        db = self.system.create_database()
-#        self.system.database = db
-#        self.system.database.on_minimum_added.connect(self.NewMinimum)
-#        self.system.database.on_minimum_removed.connect(self.RemoveMinimum)
-#        self.system.database.on_ts_removed.connect(self.RemoveTS)
-#        self.system.database.on_ts_added.connect(self.NewTS)
-#        self.minima_list_model.clear()
-#        self.ui.list_TS.clear()
             
     def on_action_edit_params_triggered(self, checked=None):
         if checked is None: return
@@ -245,9 +245,8 @@ class MainGUI(QtGui.QMainWindow):
         self.system.database.on_ts_added.connect(self.NewTS)
         self.system.database.on_ts_removed.connect(self.RemoveTS)
     
-#    def _get_index(self, item, model):
-    
-    def on_list_minima_main_clicked(self, index):
+    def on_list_minima_main_selectionChanged(self, new, old):
+        index = new.indexes()[0]
         item = self.minima_list_model.itemFromIndex(index)
         minimum = item.minimum
         self.SelectMinimum(minimum, set_selected=False)
@@ -266,22 +265,25 @@ class MainGUI(QtGui.QMainWindow):
         self.ui.ogl_main.setCoords(minimum.coords)
         self.ui.ogl_main.setMinimum(minimum)
         self.ui.oglTS.setSystem(self.system)
-        #self.ui.oglTS.setCoords(item.coords)
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=1, delete_all=True)
 
-    def on_listMinima1_clicked(self, index):
+    def on_listMinima1_selectionChanged(self, new, old):
+        """when an item in the first list in the connect tab is selected"""
+        index = new.indexes()[0]
         item = self.minima_list_model.itemFromIndex(index)
         minimum = item.minimum
         self._SelectMinimum1(minimum, set_selected=False)
 
-    def on_listMinima2_clicked(self, index):
+    def on_listMinima2_selectionChanged(self, new, old):
+        """when an item in the second list in the connect tab is selected"""
+        index = new.indexes()[0]
         item = self.minima_list_model.itemFromIndex(index)
         minimum = item.minimum
         self._SelectMinimum2(minimum, set_selected=False)
 
     def _SelectMinimum1(self, minimum, set_selected=True):
-        """by minimum"""
+        """set the first minimum displayed in the connect tab"""
         print "selecting minimum 1", minimum._id, minimum.energy
         if set_selected:
             item = self.minima_list_model.item_from_minimum(minimum)
@@ -297,7 +299,7 @@ class MainGUI(QtGui.QMainWindow):
             self.pymolviewer.update_coords([minimum.coords], index=1)
 
     def _SelectMinimum2(self, minimum, set_selected=True):
-        """by minimum"""
+        """set the second minimum displayed in the connect tab"""
         print "selecting minimum 2", minimum._id, minimum.energy
         if set_selected:
             item = self.minima_list_model.item_from_minimum(minimum)
@@ -331,9 +333,8 @@ class MainGUI(QtGui.QMainWindow):
             raise Exception("you must select two minima first")
         return coords1, coords2
 
-#    def on_list_TS_currentItemChanged(self, item):
-#        self.show_TS(item.ts)
-    def on_list_TS_clicked(self, index):
+    def on_list_TS_selectionChanged(self, new, old):
+        index = new.indexes()[0]
         item = self.ts_list_model.item(index.row())
         ts = item.ts
         self.ts_selected = ts
@@ -431,6 +432,7 @@ class MainGUI(QtGui.QMainWindow):
         if not hasattr(self, "graphview"):
             self.graphview = GraphViewDialog(self.system.database, parent=self, app=self.app)
             self.graphview.widget.on_minima_picked.connect(self.on_minimum_picked)
+            self.graphview.widget.on_minima_picked.connect(self.SelectMinimum)
         self.graphview.show()
         self.graphview.widget.make_graph()
         self.graphview.widget.show_graph()
