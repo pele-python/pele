@@ -17,6 +17,7 @@ from pygmin.gui.ui.dgraph_dlg import DGraphDialog
 from pygmin.gui.connect_run_dlg import ConnectViewer
 from pygmin.gui.takestep_explorer import TakestepExplorer
 from pygmin.gui.normalmode_browser import NormalmodeBrowser
+from pygmin.gui._list_views import ListViewManager
 
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -42,83 +43,6 @@ class MySelection(object):
         self.coords1 = None
         self.coords1 = None
 
-class QTSInList(QtGui.QListWidgetItem):
-    def __init__(self, ts):
-        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
-        QtGui.QListWidgetItem.__init__(self, text)
-    
-        self.coords = ts.coords
-        self.ts = ts
-        self.tsid = id(ts)
-    def __lt__(self, item2):
-        #sort the energies in the list lowest to highest
-        return self.ts.energy > item2.ts.energy
-
-class MinimumStandardItem(Qt.QStandardItem):
-    """defines an item to populate the lists of minima in the GUI
-    
-    These items will be collected in a QStandardItemModel and viewed using
-    QListView
-    """
-    def __init__(self, minimum):
-        text="%.4f (%d)"%(minimum.energy, minimum._id)
-        super(MinimumStandardItem, self).__init__(text)
-        self.minimum = minimum
-    def __lt__(self, item2):
-        #sort the energies in the list lowest to highest
-        return self.minimum.energy < item2.minimum.energy
-
-class TransitionStateStandardItem(Qt.QStandardItem):
-    """defines an item to populate the lists of minima in the GUI
-    
-    These items will be collected in a QStandardItemModel and viewed using
-    QListView
-    """
-    def __init__(self, ts):
-        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
-        super(TransitionStateStandardItem, self).__init__(text)
-        self.ts = ts
-    def __lt__(self, item2):
-        #sort the energies in the list lowest to highest
-        return self.ts.energy < item2.ts.energy
-
-    def __getattr__(self, name):
-        """return the transition state if the minimum is asked for"""
-        if name == "minimum":
-            return self.ts
-        return super(TransitionStateStandardItem, self).__getattr__(name)
-
-class MinimumStandardItemModel(Qt.QStandardItemModel):
-    """a class to manage the list of minima for display in the gui"""
-    def __init__(self, nmax=None, **kwargs):
-        super(MinimumStandardItemModel, self).__init__(**kwargs)
-        self.nmax = nmax # the maximum number of minima
-        self.issued_warning = False
-        self._minimum_to_item = dict()
-
-    def set_nmax(self, nmax):
-        self.nmax = nmax
-    
-    def item_from_minimum(self, minimum):
-        return self._minimum_to_item[minimum]
-          
-    def appendRow(self, item, *args, **kwargs):
-        self._minimum_to_item[item.minimum] = item
-        Qt.QStandardItemModel.appendRow(self, item, *args, **kwargs)
-        look_back = min(10, self.nmax)
-        if self.nmax is not None:
-            nrows = self.rowCount()
-            if nrows > self.nmax:
-                if not self.issued_warning:
-                    print "warning: limiting the number of minima displayed in the gui to", self.nmax
-                    self.issued_warning = True
-                # choose an item to remove from the list.  we can't usume it's totally sorted
-                # because it might have been a while since it was last sorted
-                candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-look_back,nrows)]
-                toremove = max(candidates)
-                self.takeRow(toremove[1])
-                
-
 
 class MainGUI(QtGui.QMainWindow):
     """
@@ -140,52 +64,17 @@ class MainGUI(QtGui.QMainWindow):
         self.app = app
         self.double_ended_connect_runs = []
         self.pick_count = 0
-        
 
-        # set up the sorting of minima
-        self.need_sorting = False
-        self.need_sorting_minima = False
-        self.need_sorting_ts = False
-        self._sort_timer = QtCore.QTimer()
-        self._sort_timer.timeout.connect(self._delayed_sort)
-        
         self.minima_selection = MySelection()
-        self.ts_selected = None
+ 
+        # set up the list manager
+        self.list_manager = ListViewManager(self)
         
-        # keep track of minima using a QStandardItemModel 
-        self.minima_list_model = MinimumStandardItemModel()
-        # use QListView objects to view the lists of minima in the gui
-        self.ui.list_minima_main.setModel(self.minima_list_model)
-#        self.ui.list_minima_main.set
-        self.ui.listMinima1.setModel(self.minima_list_model)
-        self.ui.listMinima2.setModel(self.minima_list_model)
-
-        # connect to the signals of the QSelectionModel objects of the list view's   
-        self.ui.list_minima_main.selectionModel().selectionChanged.connect(self.on_list_minima_main_selectionChanged)
-        self.ui.listMinima1.selectionModel().selectionChanged.connect(self.on_listMinima1_selectionChanged)
-        self.ui.listMinima2.selectionModel().selectionChanged.connect(self.on_listMinima2_selectionChanged)
-        
-        # set up the list of transition states in the gui
-        self.ts_list_model = MinimumStandardItemModel()
-        self.ui.list_TS.setModel(self.ts_list_model)
-        self.ui.list_TS.selectionModel().selectionChanged.connect(self.on_list_TS_selectionChanged)
-
-        # add actions
-        self.ui.list_minima_main.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.ui.list_minima_main.connect(self.ui.list_minima_main, 
-                                         QtCore.SIGNAL("customContextMenuRequested(QPoint)"), 
-                                                       self.list_view_on_context)
-                
+        # define the system
         self.NewSystem()
 
-        # determine the maximum number of minima to keep in the lists.
-        # this must be done after NewSystem() is called
-        try:
-            nmax = self.system.params.gui.list_nmax
-            self.minima_list_model.set_nmax(nmax)
-            self.ts_list_model.set_nmax(nmax)
-        except AttributeError:
-            pass
+        # finish setting up the list manager (this must be done after NewSystem() is called)
+        self.list_manager.finish_setup()
 
         #try to load the pymol viewer.
         try:
@@ -235,15 +124,14 @@ class MainGUI(QtGui.QMainWindow):
         """
         connect to an existing database at location filename
         """
-        self.minima_list_model.clear()
-        self.ts_list_model.clear()
+        self.list_manager.clear()
 
         db = self.system.create_database(db=filename)
         self.system.database = db
         #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
-        self._sort_minima()
+        self.list_manager._sort_minima()
         self.NewTS(self.system.database.transition_states())
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
@@ -251,49 +139,14 @@ class MainGUI(QtGui.QMainWindow):
         self.system.database.on_ts_added.connect(self.NewTS)
         self.system.database.on_ts_removed.connect(self.RemoveTS)
     
-    def list_view_on_context(self, point):
-        view = self.ui.list_minima_main
-        index = view.indexAt(point)
-        item = self.minima_list_model.itemFromIndex(index)
-        minimum = item.minimum
-        
-        # create the menu
-        menu = QtGui.QMenu("list menu", self)
-        
-        def save_coords(val):
-            filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file name', '.')
-            if len(filename) > 0:
-                print "saving coords to file", filename
-                with open(filename, "w") as fout:
-                    fout.write("# id " + str(minimum._id) + " energy " + str(minimum.energy) + "\n")
-                    for x in minimum.coords:
-                        fout.write( str(x) + "\n")
-                
-        
-        action1 = QtGui.QAction("save coords", self)
-        action1.triggered.connect(save_coords)
-        menu.addAction(action1)
-#        self.ui.list_minima_main.map
-#        menu.a
-        # show the context menu
-        menu.exec_(view.mapToGlobal(point))
-    
-    def on_list_minima_main_selectionChanged(self, new, old):
-        index = new.indexes()[0]
-        item = self.minima_list_model.itemFromIndex(index)
-        minimum = item.minimum
-        self.SelectMinimum(minimum, set_selected=False)
+
 
     def SelectMinimum(self, minimum, set_selected=True):
         """when you click on a minimum in the basinhopping tab
         """
 #        print "selecting minimum", minimum._id, minimum.energy
         if set_selected:
-            # I'm surprised we don't need to catch exceptions if the minimum is not in the 
-            # model (e.g. if the maximum list length is exceeded)
-            item = self.minima_list_model.item_from_minimum(minimum)
-            index = self.minima_list_model.indexFromItem(item)
-            self.ui.list_minima_main.setCurrentIndex(index)
+            self.list_manager._select_main(minimum)
         self.ui.ogl_main.setSystem(self.system)
         self.ui.ogl_main.setCoords(minimum.coords)
         self.ui.ogl_main.setMinimum(minimum)
@@ -301,27 +154,11 @@ class MainGUI(QtGui.QMainWindow):
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=1, delete_all=True)
 
-    def on_listMinima1_selectionChanged(self, new, old):
-        """when an item in the first list in the connect tab is selected"""
-        index = new.indexes()[0]
-        item = self.minima_list_model.itemFromIndex(index)
-        minimum = item.minimum
-        self._SelectMinimum1(minimum, set_selected=False)
-
-    def on_listMinima2_selectionChanged(self, new, old):
-        """when an item in the second list in the connect tab is selected"""
-        index = new.indexes()[0]
-        item = self.minima_list_model.itemFromIndex(index)
-        minimum = item.minimum
-        self._SelectMinimum2(minimum, set_selected=False)
-
     def _SelectMinimum1(self, minimum, set_selected=True):
         """set the first minimum displayed in the connect tab"""
         print "selecting minimum 1", minimum._id, minimum.energy
         if set_selected:
-            item = self.minima_list_model.item_from_minimum(minimum)
-            index = self.minima_list_model.indexFromItem(item)
-            self.ui.listMinima1.setCurrentIndex(index)
+            self.list_manager._select1(minimum)
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=1)
 #        self.ui.oglPath.setMinimum(minimum, index=1)
@@ -335,9 +172,7 @@ class MainGUI(QtGui.QMainWindow):
         """set the second minimum displayed in the connect tab"""
         print "selecting minimum 2", minimum._id, minimum.energy
         if set_selected:
-            item = self.minima_list_model.item_from_minimum(minimum)
-            index = self.minima_list_model.indexFromItem(item)
-            self.ui.listMinima2.setCurrentIndex(index)
+            self.list_manager._select2(minimum)
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=2)
 #        self.ui.oglPath.setMinimum(minimum, index=2)
@@ -365,13 +200,6 @@ class MainGUI(QtGui.QMainWindow):
         if coords1 is None or coords2 is None:
             raise Exception("you must select two minima first")
         return coords1, coords2
-
-    def on_list_TS_selectionChanged(self, new, old):
-        index = new.indexes()[0]
-        item = self.ts_list_model.item(index.row())
-        ts = item.ts
-        self.ts_selected = ts
-        self.show_TS(ts)
 
     def show_TS(self, ts):
         """
@@ -493,95 +321,20 @@ class MainGUI(QtGui.QMainWindow):
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
     
-    def _sort_ts(self):
-        self.need_sorting_ts = True
-        self._sort_lists()
-    
-    def _sort_minima(self):
-        self.need_sorting_minima = True
-        self._sort_lists()
-    
-    def _sort_lists(self):
-        """calling this function indicates that the lists need sorting
-        
-        since sorting can be a *huge* bottleneck for large lists we try to do it
-        as infrequently as possible.  Here we wait several seconds too see
-        if more minima are added before sorting the lists
-        """
-        self.need_sorting = True
-        if not self._sort_timer.isActive():
-            self._sort_timer.start(2000)
-
-    def _delayed_sort(self):
-        if not self.need_sorting:
-            self.need_sorting_minima = False
-            self.need_sorting_ts = False
-            print "sorting not needed"
-            return
-        try:
-            # the system params flag flag gui._sort_lists can optionally
-            # be set to False to indicate not to sort the lists.  This is
-            # useful if many minima are added at once, e.g. at the end of
-            # a connect run.  The flag should be set to True when all the
-            # minima are added. 
-            s = self.system.params.gui._sort_lists
-#            print "self.system.params.gui._sort_lists", s
-            if not s:
-                # wait a few seconds and call this function again
-                if not self._sort_timer.isActive():
-                    self._sort_timer.start(2000)
-                print "delaying sort"
-                return
-        except AttributeError:
-            pass
-        
-#        print "sorting lists"
-        if self.need_sorting_minima:
-            self.minima_list_model.sort(0)
-        if self.need_sorting_ts:
-            self.ts_list_model.sort(0)
-        self.need_sorting = False
-        self.need_sorting_minima = False
-        self.need_sorting_ts = False
-        self._sort_timer.stop()
-#        print "done sorting lists"
         
                     
     
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
-            
-        self.minima_list_model.appendRow(MinimumStandardItem(minimum))
-        if sort_items:
-            self._sort_minima()
+        self.list_manager.NewMinimum(minimum, sort_items=sort_items)
                 
     def RemoveMinimum(self, minimum):
         """remove a minimum from self.minima_list_model"""
-        minid = minimum._id
-        items = self.minima_list_model.findItems('*', QtCore.Qt.MatchWildcard)
-        for i in items:
-#            print "item", i.minimum._id, minid, minimum._id
-            if i.minimum._id == minid:
-#                print "taking item", i.minimum._id
-                self.minima_list_model.takeRow(i.row())
-                break
+        self.list_manager.RemoveMinimum(minimum)
 
     def NewTS(self, ts, sort=True):
         """add new transition state, or list of transition states"""
-        try:
-            len(ts)
-            is_iterable = True
-        except TypeError:
-            is_iterable = False
-        if is_iterable:   
-            tslist = ts
-        else: 
-            tslist = [ts]
-        for ts in tslist:
-            tsitem = TransitionStateStandardItem(ts)
-            self.ts_list_model.appendRow(tsitem)
-        if sort:
-            self._sort_ts()
+        self.list_manager.NewTS(ts, sort=sort)
 
     def RemoveTS(self, ts):
         """remove transition state"""
