@@ -339,7 +339,7 @@ def optimize_permutations(X1, X2, permlist=None, user_algorithm=None,
     
     if recalculate_distance is not None:
         # Recalculate the distance.  We can't trust the returned value
-        dist = _cartesian_distance(X1, X2, box_lengths)
+        dist = _cartesian_distance(X1, X2new, box_lengths)
     
     return dist, X1, X2new
 
