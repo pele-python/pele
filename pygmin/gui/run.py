@@ -118,7 +118,7 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
                 toremove = max(candidates)
                 self.takeRow(toremove[1])
                 
-                
+
 
 class MainGUI(QtGui.QMainWindow):
     """
@@ -170,7 +170,12 @@ class MainGUI(QtGui.QMainWindow):
         self.ui.list_TS.setModel(self.ts_list_model)
         self.ui.list_TS.selectionModel().selectionChanged.connect(self.on_list_TS_selectionChanged)
 
-        
+        # add actions
+        self.ui.list_minima_main.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.ui.list_minima_main.connect(self.ui.list_minima_main, 
+                                         QtCore.SIGNAL("customContextMenuRequested(QPoint)"), 
+                                                       self.list_view_on_context)
+                
         self.NewSystem()
 
         # determine the maximum number of minima to keep in the lists.
@@ -222,8 +227,9 @@ class MainGUI(QtGui.QMainWindow):
         launch a file browser to connect to an existing database
         """
         if checked is None: return
-        filename = QtGui.QFileDialog.getSaveFileName(self, 'Open File', '.')
-        self.connect_db(filename)
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Select database', '.')
+        if len(filename) > 0:
+            self.connect_db(filename)
 
     def connect_db(self, filename=":memory:"):
         """
@@ -244,6 +250,33 @@ class MainGUI(QtGui.QMainWindow):
         self.system.database.on_minimum_removed(self.RemoveMinimum)
         self.system.database.on_ts_added.connect(self.NewTS)
         self.system.database.on_ts_removed.connect(self.RemoveTS)
+    
+    def list_view_on_context(self, point):
+        view = self.ui.list_minima_main
+        index = view.indexAt(point)
+        item = self.minima_list_model.itemFromIndex(index)
+        minimum = item.minimum
+        
+        # create the menu
+        menu = QtGui.QMenu("list menu", self)
+        
+        def save_coords(val):
+            filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file name', '.')
+            if len(filename) > 0:
+                print "saving coords to file", filename
+                with open(filename, "w") as fout:
+                    fout.write("# id " + str(minimum._id) + " energy " + str(minimum.energy) + "\n")
+                    for x in minimum.coords:
+                        fout.write( str(x) + "\n")
+                
+        
+        action1 = QtGui.QAction("save coords", self)
+        action1.triggered.connect(save_coords)
+        menu.addAction(action1)
+#        self.ui.list_minima_main.map
+#        menu.a
+        # show the context menu
+        menu.exec_(view.mapToGlobal(point))
     
     def on_list_minima_main_selectionChanged(self, new, old):
         index = new.indexes()[0]
