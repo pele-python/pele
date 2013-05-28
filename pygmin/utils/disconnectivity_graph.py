@@ -71,6 +71,61 @@ class DGTree(Tree):
     def get_minima(self):
         return [leaf.data["minimum"] for leaf in self.get_leaves()]          
 
+def bfs_edges_filter(G,source, edge_filter=None):
+    """Produce edges in a breadth-first-search starting at source."""
+    # Based on http://www.ics.uci.edu/~eppstein/PADS/BFS.py
+    # by D. Eppstein, July 2004.
+    visited=set([source])
+    stack = [(source,iter(G[source]))]
+    while stack:
+        parent,children = stack[0]
+        try:
+            child = next(children)
+            if child not in visited:
+                if edge_filter(parent, child):
+                    yield parent,child
+                    visited.add(child)
+                    stack.append((child,iter(G[child])))
+        except StopIteration:
+            stack.pop(0)
+
+def connected_components_filter(G, edge_filter):
+    """Return nodes in connected components of graph filtered by edge_filter.
+
+    Parameters
+    ----------
+    G : NetworkX Graph
+       An undirected graph.
+    edge_filter : callable
+        must accept an edge as parameter and return a bool.  If False
+        is returned then that edge will be ignored
+
+    Returns
+    -------
+    comp : list of lists
+       A list of nodes for each component of G.
+
+    Notes
+    -----
+    This is copied directly from networkx.connected_components with only 
+    a few changes to implemente the filter.
+    """
+    if G.is_directed():
+        raise nx.NetworkXError("""Not allowed for directed graph G.
+              Use UG=G.to_undirected() to create an undirected graph.""")
+    seen = set()
+    components=[]
+    for v in G:      
+        if v not in seen:
+            edges = bfs_edges_filter(G,v, edge_filter=edge_filter)
+            c = set([b for a, b in edges])
+            c.add(v)
+            components.append(list(c))
+            seen.update(c)
+    components.sort(key=len,reverse=True)            
+    return components            
+
+
 class DisconnectivityGraph(object):
     """
     make a disconnectivity graph
@@ -211,7 +266,7 @@ class DisconnectivityGraph(object):
             graph_list.append(G.subgraph(c))
         return graph_list
     
-    def _split_graph(self, graph, ethresh):
+    def _split_graph_old(self, graph, ethresh):
         """
         make a new graph from the old one after excluding edges with energy > ethresh
         
@@ -224,6 +279,30 @@ class DisconnectivityGraph(object):
                 newgraph.add_edge(*edge)
 #        return nx.connected_component_subgraphs(newgraph)
         return self._connected_component_subgraphs(newgraph)
+    
+    def _split_graph(self, graph, ethresh):
+        def edge_filter(m1, m2):
+            return self._getEnergy(self._getTS(m1, m2)) < ethresh
+        cc = connected_components_filter(graph, edge_filter)
+        graphlist = [graph.subgraph(c) for c in cc]
+        
+        if False:
+            ccold = self._split_graph_old(graph, ethresh)
+            if len(ccold) != len(graphlist):
+                print "connected components don't agree"
+                print ccold
+                print graphlist
+                raise Exception() 
+            
+#            sumlenold = sum([c.n for c in ccold])
+            sumlen = sum([c.number_of_nodes() for c in graphlist])
+            if sumlen != graph.number_of_nodes():
+                print ccold
+                print graphlist
+                raise Exception("number of nodes is wrong %d %d" % (graph.number_of_nodes(), sumlen)) 
+                
+            
+        return graphlist
 
 
     def _recursive_new_tree(self, parent_tree, graph, energy_levels, ilevel):
