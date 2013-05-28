@@ -3,14 +3,14 @@ import argparse
 import networkx as nx
 
 from pygmin.storage.database import Database
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 
 def long_summary(db):
     nts = db.number_of_transition_states()
     if nts == 0:
         print "long summary not applicable: no transition states"
         return
-    graph = Graph(db).graph
+    graph = TSGraph(db).graph
     
     cclist = nx.connected_components(graph)
     

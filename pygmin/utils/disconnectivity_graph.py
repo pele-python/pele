@@ -5,8 +5,8 @@ __all__ = ["DisconnectivityGraph", "database2graph"]
 
 def database2graph(database):
     """create a networkx graph from a pygmin database"""
-    from pygmin.landscape import Graph # this must be imported here to avoid circular imports
-    graph_wrapper = Graph(database)
+    from pygmin.landscape import TSGraph # this must be imported here to avoid circular imports
+    graph_wrapper = TSGraph(database)
     return graph_wrapper.graph
     
 
@@ -80,10 +80,10 @@ class DisconnectivityGraph(object):
     graph : a networkx graph
         a graph with Minimum objects as nodes and transition
         states defining the edges.  You can use
-        pygmin.landscape.Graph to create this from a database.
+        pygmin.landscape.TSGraph to create this from a database.
         
-        >>> from pygmin.landscape import Graph
-        >>> graphwrapper = Graph(database)
+        >>> from pygmin.landscape import TSGraph
+        >>> graphwrapper = TSGraph(database)
         >>> dg = DisconnectivityGraph(graphwrapper.graph)
          
     nlevels : int
@@ -128,16 +128,16 @@ class DisconnectivityGraph(object):
         a script (in pygmin/scripts) to make the disconnectivity graph from the command line
     pygmin.storage.Database :
         The database format in which minima and transition states are stored in pygmin
-    pygmin.landscape.Graph : 
+    pygmin.landscape.TSGraph : 
         a wrapper to create a networkx Graph from a database
     
     Examples
     --------
     These examples assume a Database with minima already exists
     
-    >>> from pygmin.landscape import Graph
+    >>> from pygmin.landscape import TSGraph
     >>> import matplotlib.pyplot as plt
-    >>> graphwrapper = Graph(database)
+    >>> graphwrapper = TSGraph(database)
     >>> dg = DisconnectivityGraph(graphwrapper.graph)
     >>> dg.calculate()
     >>> dg.plot()

@@ -9,7 +9,7 @@ from PyQt4 import QtCore, QtGui, Qt
 
 from pygmin.gui.MainWindow import Ui_MainWindow 
 from pygmin.gui.bhrunner import BHRunner
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 from pygmin.gui.dlg_params import DlgParams
 from pygmin.config import config
 from pygmin.gui.ui.dgraph_dlg import DGraphDialog
@@ -452,7 +452,7 @@ class MainGUI(QtGui.QMainWindow):
 #                self.NewMinimum(m)
             
         #now use DoubleEndedConnect to test if they are connected
-        graph = Graph(db)
+        graph = TSGraph(db)
         if graph.areConnected(min1, min2):
             #use double ended connect to draw the interpolated path
             #this is ugly

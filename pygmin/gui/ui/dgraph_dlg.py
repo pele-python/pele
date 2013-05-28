@@ -10,7 +10,7 @@ import matplotlib.colors as col
 import matplotlib.cm as cm
 
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 from pygmin.storage import Database, TransitionState
 from pygmin.utils.events import Signal
 from pygmin.gui.ui.mplwidget import MPLWidgetWithToolbar
@@ -157,7 +157,7 @@ class DGraphWidget(QWidget):
             if self.params.has_key('Emax'):
                 graph = reduced_db2graph(db, params['Emax'])
             else:
-                graphwrapper = Graph(db)
+                graphwrapper = TSGraph(db)
                 graph = graphwrapper.graph
         dg = DisconnectivityGraph(graph, **params)
         dg.calculate()
@@ -223,17 +223,14 @@ class DGraphDialog(QtGui.QMainWindow):
         self.dgraph_widget.rebuild_disconnectivity_graph()
         
 
-def reduced_db2graph(db,Emax):
+def reduced_db2graph(db, Emax):
     '''
-    Removes minima and ts with energy > Emax before calculating calculating the networkx graph
+    make a networkx graph from a database including only transition states with energy < Emax
     '''
-    
     g = nx.Graph()
-
     ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax).all()
-
-    for t in ts: g.add_edge(t.minimum1, t.minimum2, ts=t)
-    
+    for t in ts: 
+        g.add_edge(t.minimum1, t.minimum2, ts=t)
     return g
 
 

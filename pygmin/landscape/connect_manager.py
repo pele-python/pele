@@ -10,7 +10,7 @@ import sqlalchemy
 import networkx as nx
 
 from pygmin.storage import Minimum
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 
 
@@ -53,7 +53,7 @@ class ConnectManagerGMin(BaseConnectManager):
         
         gmin = self.database.minima()[0]
         
-        graph = Graph(self.database)
+        graph = TSGraph(self.database)
         
         for m in self.database.minima()[1:]:
             if not graph.areConnected(gmin, m):
@@ -82,9 +82,10 @@ class ConnectManagerUntrap(BaseConnectManager):
         Essentially this parameter indicates how often to rebuild the list
         of minima pairs to connect
     """
-    def __init__(self, database, list_len=10):
+    def __init__(self, database, list_len=10, nlevels=20):
         self.database = database
         self.list_len = list_len
+        self.nlevels = nlevels
         
         self.minpairs = deque()
     
@@ -103,7 +104,7 @@ class ConnectManagerUntrap(BaseConnectManager):
                 
     def _compute_barriers(self, graph, min1):
         """for each minimum graph compute the (approximate) energy barrier to min1"""
-        dgraph = DisconnectivityGraph(graph)
+        dgraph = DisconnectivityGraph(graph, nlevels=self.nlevels)
         dgraph.calculate()
         tree = dgraph.tree_graph
         
@@ -117,7 +118,7 @@ class ConnectManagerUntrap(BaseConnectManager):
         print "using disconnectivity analysis to find minima to untrap"
         self.minpairs = deque()
         
-        graph = Graph(self.database).graph
+        graph = TSGraph(self.database).graph
         cclist = nx.connected_components(graph)
         
         # get the largest cluster
@@ -187,7 +188,7 @@ class ConnectManagerCombine(BaseConnectManager):
         print "analyzing the database to find minima to connect"
         self.minpairs = deque()
         
-        graph = Graph(self.database).graph
+        graph = TSGraph(self.database).graph
         cclist = nx.connected_components(graph)
 
         # remove clusters with fewer than clust_min
@@ -293,13 +294,14 @@ class ConnectManager(object):
         define the default strategy for the connect runs.  Can be one of 
         ["random", "combine", "untrap", "gmin"] 
     """
-    def __init__(self, database, strategy="random", list_len=20, clust_min=4, Emax=None):
+    def __init__(self, database, strategy="random", list_len=20, clust_min=4, Emax=None,
+                  untrap_nlevels=20):
         self.database = database
         self.default_strategy = strategy
         
         self.manager_random = ConnectManagerRandom(self.database, Emax)
         self.manager_combine = ConnectManagerCombine(self.database, list_len=list_len, clust_min=4)
-        self.manager_untrap = ConnectManagerUntrap(database, list_len=list_len)
+        self.manager_untrap = ConnectManagerUntrap(database, list_len=list_len, nlevels=untrap_nlevels)
         self.manager_gmin = ConnectManagerGMin(database, list_len=list_len)
         
         self.possible_strategies = ["random", "combine", "untrap", "gmin"]

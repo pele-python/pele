@@ -2,7 +2,6 @@ import networkx as nx
 import numpy as np
 import logging
 
-from pygmin.landscape import Graph
 
 __all__ = []
 
@@ -582,6 +581,7 @@ def mytest(nmin=40, natoms=13):
     from pygmin.landscape._graph import create_random_database
     from pygmin.mindist import minPermDistStochastic, MinDistWrapper
     from pygmin.potentials import LJ
+    from pygmin.landscape import TSGraph
     
     pot = LJ()
     mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)
@@ -590,7 +590,7 @@ def mytest(nmin=40, natoms=13):
     min1, min2 = list(db.minima())[:2] 
     
     
-    graph = Graph(db)
+    graph = TSGraph(db)
     connect = DoubleEndedConnect(min1, min2, pot, mindist, db, use_all_min=True, 
                                  merge_minima=True, max_dist_merge=.1)
 

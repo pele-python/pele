@@ -8,7 +8,7 @@ from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 
 from pygmin.gui.connect_run_dlg import OutLog
 from pygmin.gui.double_ended_connect_runner import DECRunner
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 from pygmin.gui.graph_viewer import GraphViewWidget
 #from pygmin.gui.ui.connect_run_ui import Ui_MainWindow as UI
 from pygmin.gui.connect_run_dlg import ConnectViewer
@@ -102,7 +102,7 @@ class ConnectAllDialog(ConnectViewer):
     def get_next_pair_gmin(self):
         minima = self.database.minima()
         min1 = minima[0]
-        graph = Graph(self.database)
+        graph = TSGraph(self.database)
         all_connected = True
         for m2 in minima[1:]:
             if not graph.areConnected(min1, m2):

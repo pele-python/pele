@@ -35,7 +35,7 @@ Other utilities
 .. autosummary::
    :toctree: generated/
 
-    Graph
+    TSGraph
     smoothPath
 
 Core Routines

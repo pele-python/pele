@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 import pygmin.utils.disconnectivity_graph as dg
 from pygmin.storage import Database
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 from pygmin.systems import LJCluster
 
 def get_database(natoms=13, nconn=5):
@@ -30,7 +30,7 @@ def get_database(natoms=13, nconn=5):
 
 def make_graph(database):
     #make a graph from the database
-    graphwrapper = Graph(db)
+    graphwrapper = TSGraph(db)
     
     #turn the graph into a disconnectivity graph
     mydg = dg.DisconnectivityGraph(graphwrapper.graph, 

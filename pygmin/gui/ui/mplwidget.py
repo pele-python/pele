@@ -7,7 +7,6 @@ from matplotlib.figure import Figure
 import numpy as np
 
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from pygmin.landscape import Graph
 from pygmin.storage import Database
 
 

@@ -4,7 +4,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QDialog, QWidget
 
 from pygmin.gui.ui.mplwidget import MPLWidget
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 from pygmin.utils.events import Signal
 
 try:
@@ -31,7 +31,7 @@ class GraphViewWidget(MPLWidget):
 
         print "making graph", database, minima
         #get the graph object, eliminate nodes without edges
-        graphwrapper = Graph(database, minima)
+        graphwrapper = TSGraph(database, minima)
         graph = graphwrapper.graph
         print graph.number_of_nodes()
         degree = graph.degree()

@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 import logging
 
-from pygmin.landscape import Graph, LocalConnect
+from pygmin.landscape import TSGraph, LocalConnect
 from pygmin.landscape._distance_graph import _DistanceGraph
 
 __all__ = ["DoubleEndedConnect"]
@@ -162,9 +162,9 @@ class DoubleEndedConnect(object):
         self.database = database
         self.fresh_connect = fresh_connect
         if self.fresh_connect:
-            self.graph = Graph(self.database, minima=[self.minstart, self.minend], no_edges=True)
+            self.graph = TSGraph(self.database, minima=[self.minstart, self.minend], no_edges=True)
         else:
-            self.graph = Graph(self.database)
+            self.graph = TSGraph(self.database)
 
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
@@ -172,7 +172,7 @@ class DoubleEndedConnect(object):
 
         self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
 
-        #check if a connection exists before initializing distance Graph
+        #check if a connection exists before initializing distance graph
         if self.graph.areConnected(self.minstart, self.minend):
             logger.info("minima are already connected.  not initializing distance graph")
             return
@@ -578,7 +578,7 @@ def getSetOfMinLJ(system): #for testing purposes
 
 
 def test(Connect=DoubleEndedConnect, natoms=16):
-#    from pygmin.landscape import Graph
+#    from pygmin.landscape import TSGraph
 #    from pygmin.storage.database import Database
     from pygmin.systems import LJCluster
     #get min1
