@@ -66,6 +66,25 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
                 toremove = max(candidates)
                 self.takeRow(toremove[1])
 
+class SaveCoordsAction(QtGui.QAction):
+    def __init__(self, minimum, parent=None):
+        super(SaveCoordsAction, self).__init__("save coords", parent)
+        self.parent = parent
+        self.minimum = minimum
+        self.triggered.connect(self.__call__)
+
+    def __call__(self, val):
+        filename = QtGui.QFileDialog.getSaveFileName(self.parent, 'Save coords to', '.')
+        if len(filename) > 0:
+            print "saving coords to file", filename
+            with open(filename, "w") as fout:
+                fout.write("# id " + str(self.minimum._id) + " energy " + str(self.minimum.energy) + "\n")
+                for x in self.minimum.coords:
+                    fout.write( str(x) + "\n")
+
+#    def triggered(self, val):
+#        self.__call__(val)
+        
 
 class ListViewManager(object):
     def __init__(self, parent):
@@ -104,7 +123,10 @@ class ListViewManager(object):
         self.ui.list_minima_main.connect(self.ui.list_minima_main, 
                                          QtCore.SIGNAL("customContextMenuRequested(QPoint)"), 
                                                        self.list_view_on_context)
-
+        self.ui.list_TS.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.ui.list_TS.connect(self.ui.list_TS, 
+                                         QtCore.SIGNAL("customContextMenuRequested(QPoint)"), 
+                                                       self.transition_state_on_context)
     
     def finish_setup(self):
         """this must be called after NewSystem() is called"""
@@ -121,6 +143,30 @@ class ListViewManager(object):
         self.minima_list_model.clear()
         self.ts_list_model.clear()
 
+    def transition_state_on_context(self, point):
+        view = self.ui.list_TS
+        index = view.indexAt(point)
+        item = self.ts_list_model.itemFromIndex(index)
+        ts = item.ts
+        
+        # create the menu
+        menu = QtGui.QMenu("list menu", self.parent)
+        
+        action1 = SaveCoordsAction(ts, parent=self.parent)     
+        menu.addAction(action1)
+        
+        def prepare_in_connect(val):
+            print "value", val
+            self.parent._SelectMinimum1(ts.minimum1)
+            print "selected minimum 1"
+            self.parent._SelectMinimum2(ts.minimum2)
+        action2 = QtGui.QAction("show in connect tab", self.parent)
+        action2.triggered.connect(prepare_in_connect)
+        menu.addAction(action2)
+
+        # show the context menu
+        menu.exec_(view.mapToGlobal(point))
+
     def list_view_on_context(self, point):
         view = self.ui.list_minima_main
         index = view.indexAt(point)
@@ -130,22 +176,9 @@ class ListViewManager(object):
         # create the menu
         menu = QtGui.QMenu("list menu", self.parent)
         
-        def save_coords(val):
-            filename = QtGui.QFileDialog.getSaveFileName(self.parent, 'Save file name', '.')
-            if len(filename) > 0:
-                print "saving coords to file", filename
-                with open(filename, "w") as fout:
-                    fout.write("# id " + str(minimum._id) + " energy " + str(minimum.energy) + "\n")
-                    for x in minimum.coords:
-                        fout.write( str(x) + "\n")
-                
-        
-        action1 = QtGui.QAction("save coords", self.parent)
-        action1.triggered.connect(save_coords)
+        action1 = SaveCoordsAction(minimum, parent=self.parent)     
         menu.addAction(action1)
-#        self.ui.list_minima_main.map
-#        menu.a
-        # show the context menu
+
         menu.exec_(view.mapToGlobal(point))
     
     def on_list_minima_main_selectionChanged(self, new, old):

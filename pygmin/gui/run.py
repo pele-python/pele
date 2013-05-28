@@ -147,6 +147,7 @@ class MainGUI(QtGui.QMainWindow):
 #        print "selecting minimum", minimum._id, minimum.energy
         if set_selected:
             self.list_manager._select_main(minimum)
+            return
         self.ui.ogl_main.setSystem(self.system)
         self.ui.ogl_main.setCoords(minimum.coords)
         self.ui.ogl_main.setMinimum(minimum)
@@ -156,9 +157,10 @@ class MainGUI(QtGui.QMainWindow):
 
     def _SelectMinimum1(self, minimum, set_selected=True):
         """set the first minimum displayed in the connect tab"""
-        print "selecting minimum 1", minimum._id, minimum.energy
         if set_selected:
             self.list_manager._select1(minimum)
+            return
+        print "selecting minimum 1:", minimum._id, minimum.energy
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=1)
 #        self.ui.oglPath.setMinimum(minimum, index=1)
@@ -170,9 +172,10 @@ class MainGUI(QtGui.QMainWindow):
 
     def _SelectMinimum2(self, minimum, set_selected=True):
         """set the second minimum displayed in the connect tab"""
-        print "selecting minimum 2", minimum._id, minimum.energy
         if set_selected:
             self.list_manager._select2(minimum)
+            return
+        print "selecting minimum 2:", minimum._id, minimum.energy
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=2)
 #        self.ui.oglPath.setMinimum(minimum, index=2)
