@@ -1,6 +1,7 @@
 import sys
 import os
 import getopt
+import time
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -185,16 +186,33 @@ def main():
         md.show()
         sys.exit(app.exec_())
         
-    if not OPTIM: graph = reduced_db2graph(db, kwargs['Emax'])
+    if not OPTIM: 
+        # make graph from database
+        if "Emax" in kwargs and use_gui:
+            graph = reduced_db2graph(db, kwargs['Emax'])
+        else:
+            graph = dg.database2graph(db)
+
+    # do the disconnectivity graph analysis
     mydg = dg.DisconnectivityGraph(graph, **kwargs)
+    print "doing disconnectivity graph analysis"
+    t1 = time.time()
     mydg.calculate()
+    t2 = time.time()
+    print "d-graph analysis finished in", t2-t1, "seconds"
     print "number of minima:", mydg.tree_graph.number_of_leaves()
-    mydg.plot()
+    print "plotting disconnectivigy graph"
+    sys.stdout.flush()
     
+    
+    # make the figure and save it
+    mydg.plot()
     if outfile is None:
         plt.show()
     else:
         plt.savefig(outfile)
+    t3 = time.time()
+    print "plotting finished in", t3-t2, "seconds"
         
     
 
