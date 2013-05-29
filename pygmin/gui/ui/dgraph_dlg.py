@@ -166,11 +166,31 @@ class DGraphWidget(QWidget):
         ax.clear()
         ax.hold(True)        
         
-        for i in self.colour_tree:
-            t , c = i
+        for t, c in self.colour_tree:
             tree = dg.tree_list[t[0]][t[1]]
             dg.assign_colour(tree, c)
             
+        if show_trees:
+            # draw the nodes
+            node_id, x_pos, energies = dg.get_tree_layout()
+
+            points = ax.scatter(x_pos, energies, picker=5, color='red', alpha=0.5)
+
+            def on_pick_tree(event):
+                if event.artist != points:
+    #                print "you clicked on something other than a node"
+                    return True
+                ind = event.ind[0]
+
+                i = node_id[ind]
+
+                print "you clicked on basin ", i[1]," at level", i[0]
+                self.tree_selected = i
+
+            self.canvas.mpl_connect('pick_event', on_pick_tree)
+
+        # plot the lines and set up the rest of the plot using the built in function 
+        dg.plot(axes=ax, show_minima=False)
 
         #draw minima as points and make them interactive
         if show_minima:
@@ -182,34 +202,12 @@ class DGraphWidget(QWidget):
                 if event.artist != points:
     #                print "you clicked on something other than a node"
                     return True
-                thispoint = event.artist
                 ind = event.ind[0]
                 min1 = minima[ind]
                 print "you clicked on minimum with id", min1._id, "and energy", min1.energy
                 self.minimum_selected(min1)
             self.canvas.mpl_connect('pick_event', on_pick_min)
-            
-        if show_trees:
-            id, x_pos, energies = dg.get_tree_layout()
 
-            points = ax.scatter(x_pos, energies, picker=5, color = 'red', alpha=0.5)
-
-            def on_pick_tree(event):
-                if event.artist != points:
-    #                print "you clicked on something other than a node"
-                    return True
-                thispoint = event.artist
-                ind = event.ind[0]
-
-                i = id[ind]
-
-                print "you clicked on basin ", i[1]," at level", i[0]
-                self.tree_selected = i
-
-            self.canvas.mpl_connect('pick_event', on_pick_tree)
-
-        # plot the lines and set up the rest of the plot using the built in function 
-        dg.plot(axes=ax, show_minima=False)
         self.canvas.draw()
 
 

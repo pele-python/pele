@@ -372,7 +372,7 @@ class DisconnectivityGraph(object):
     """
     def __init__(self, graph, minima=None, nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
-                 order_by_basin_size=True, node_offset=1.0,
+                 order_by_basin_size=True, node_offset=1.,
                  center_gmin=True, include_gmin=True, energy_attribute="energy"):
         self.graph = graph
         self.nlevels = nlevels
@@ -444,8 +444,8 @@ class DisconnectivityGraph(object):
         transition_states = nx.get_edge_attributes(graph, "ts").values()
         minima = graph.nodes()
         maketree = _MakeTree(minima, transition_states, energy_levels, get_energy=self._getEnergy)
-        tree = maketree.make_tree()
-        return tree
+        trees = maketree.make_tree()
+        return trees
         
     ##########################################################
     #functions for determining the x position of the branches
@@ -616,40 +616,62 @@ class DisconnectivityGraph(object):
         """
         if tree.parent is None:
             # this is a top level tree.  Add a short decorative vertical line
+            if "children_not_connected" in tree.data:
+                # this tree is simply a container, add the line to the subtrees
+                treelist = tree.subtrees
+            else:
+                treelist = [tree]
+            
             dy = self.energy_levels[-1] - self.energy_levels[-2]
-            x = tree.data["x"]
-            y = tree.data["ethresh"]
-            line_segments.append(([x,x], [y,y+dy])) 
+            for t in treelist:
+                x = t.data["x"]
+                y = t.data["ethresh"]
+                line_segments.append(([x,x], [y,y+dy]))
         else:
+            # add two line segments.  A vertical one to yhigh
+            #  ([x, x], [y, yhigh])
+            # and an angled one connecting yhigh with the parent
+            #  ([x, xparent], [yhigh, yparent])
             xparent = tree.parent.data['x']
-            x = tree.data['x']
+            xself = tree.data['x']
             yparent = tree.parent.data["ethresh"]
 
-                     
             if tree.is_leaf():
-                ylow = self._getEnergy(tree.data["minimum"])
+                yself = self._getEnergy(tree.data["minimum"])
             else:
-                ylow = tree.data["ethresh"]
+                yself = tree.data["ethresh"]
             
-            yhigh = max(yparent - eoffset, ylow)
-                        
-            if(yparent - eoffset > ylow or tree.number_of_branches() > 0):
+            # determine yhigh from eoffset
+            yhigh = yparent - eoffset
+            if yhigh <= yself:
+                draw_vertical = False
+                yhigh = yself
+            else:
+                draw_vertical = True
+            
+            # determine the line color
+            try: 
+                color = tree.parent.data['colour']
+            except KeyError:
+                color = (0.0,0.0,0.0)
+            
+            # draw vertical line
+            if tree.is_leaf() and not draw_vertical:
+                # stop diagonal line earlier to avoid artifacts
+                # change the x position also so that the angle of the line
+                # doesn't change
+                dxdy = (xself - xparent) / eoffset
+                xself = dxdy * (yparent - yself) + xparent
+                tree.data['x'] = xself
+            else: 
                 #add vertical line segment
-                line_segments.append( ([x,x], [ylow, yhigh]) )
-                
-                try: line_colours.append(tree.parent.data['colour'])
-                except KeyError: line_colours.append((0.0,0.0,0.0))
-
-                
-            else: # stop diagonal line earlier to avoid artifacts
-                x = (x-xparent)/eoffset * (yparent - ylow) + xparent
-                
+                line_segments.append( ([xself,xself], [yself, yhigh]) )
+                line_colours.append(color)
+            
+            # draw the diagonal line
             if not tree.parent.data.has_key("children_not_connected"):
-                #add angled line segment
-                line_segments.append( ([xparent, x], [yparent,yhigh]) )
-                
-                try: line_colours.append(tree.parent.data['colour'])
-                except KeyError: line_colours.append((0.0,0.0,0.0))
+                line_segments.append( ([xself, xparent], [yhigh, yparent]) )
+                line_colours.append(color)
 
                 
         for subtree in tree.get_subtrees():
@@ -809,24 +831,26 @@ class DisconnectivityGraph(object):
         graph = self._remove_nodes_with_few_edges(graph, 1)
         
         assert graph.number_of_nodes() > 0, "after cleaning up the graph, graph has no minima"
-        assert graph.number_of_edges() > 0, "after cleaning up the graph, graph has no minima" 
+        assert graph.number_of_edges() > 0, "after cleaning up the graph, graph has no edges" 
 
         #make the tree graph defining the discontinuity of the minima
         tree_graph = self._make_tree(graph, elevels)
         
         #assign id to trees
-#        self._assign_id(tree_graph)
+        # this is needed for coloring basins
+        self._assign_id(tree_graph)
         
         #layout the x positions of the minima and the nodes
         self._layout_x_axis(tree_graph)
 
         #get the line segments which will be drawn to define the graph
         eoffset = (elevels[-1] - elevels[-2]) * self.node_offset  #this should be passable
-        line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
+#        line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
+        
         
         self.eoffset = eoffset
         self.tree_graph = tree_graph
-        self.line_segments = line_segments
+#        self.line_segments = line_segments
     
     def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None):
         """draw the disconnectivity graph using matplotlib
@@ -835,13 +859,12 @@ class DisconnectivityGraph(object):
         
         also, you must call pyplot.show() to actually see the plot
         """
-        import matplotlib as mpl
         from matplotlib.collections import LineCollection
         import matplotlib.pyplot as plt
         
         self.line_segments, self.line_colours = self._get_line_segments(self.tree_graph, eoffset=self.eoffset)
-        
-        #set up how the figure should look
+
+        # get the axes object        
         if axes is not None:
             ax = axes
         else:
@@ -849,6 +872,7 @@ class DisconnectivityGraph(object):
             fig.set_facecolor('white')
             ax = fig.add_subplot(111, adjustable='box')
 
+        #set up how the figure should look
         ax.tick_params(axis='y', direction='out')
         ax.yaxis.tick_left()
         ax.spines['left'].set_color('black')
@@ -858,15 +882,9 @@ class DisconnectivityGraph(object):
         ax.spines['right'].set_color('none')
 #        plt.box(on=True)
 
-#         if show_trees:
-#             trees = self.tree_graph.get_subtrees()
-        
         #draw the minima as points
-        if show_minima:      
-            leaves = self.tree_graph.get_leaves()
-            energies = [self._getEnergy(leaf.data["minimum"]) for leaf in leaves]
-            xpos = [leaf.data["x"] for leaf in leaves]
-        
+        if show_minima: 
+            xpos, energies = self.get_minima_layout()     
             ax.plot(xpos, energies, 'o')
         
         # draw the line segments 

@@ -196,6 +196,7 @@ def main():
     # do the disconnectivity graph analysis
     mydg = dg.DisconnectivityGraph(graph, **kwargs)
     print "doing disconnectivity graph analysis"
+    sys.stdout.flush()
     t1 = time.time()
     mydg.calculate()
     t2 = time.time()
