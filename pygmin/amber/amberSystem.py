@@ -59,7 +59,7 @@ class AMBERSystem(BaseSystem):
                 print '\namberSystem> Using GMIN Amber potential ..'
             except ImportError:
                 # using OpenMM because ambgmin_ could not be imported 
-                print '\namberSystem> Using OpenMM amber potential ..'
+                print '\namberSystem> Using OpenMM amber potential because ambgmin_ not imported ..'
                 self.potential    = openmm_potential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
         else:
             # using OpenMM because min.in and data files not found 
@@ -96,7 +96,8 @@ class AMBERSystem(BaseSystem):
         self.sanitycheck = True  # todo: this should be part of params and show up in GUI 
         
         if self.sanitycheck:
-            self.params.basinhopping.confCheck = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
+#            self.params.basinhopping.confCheck = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
+            self.params.basinhopping.confCheck = [self.check_CAchirality_wrapper]
             self.params.double_ended_connect.conf_checks = [self.check_cistrans_wrapper_kwargs, self.check_CAchirality_wrapper_kwargs]
 
 
@@ -495,7 +496,7 @@ class AMBERSystem(BaseSystem):
             # check cis 
             if deg < 90 or deg > 270: 
                 isTrans = False  
-#                print 'CIS peptide bond between atoms ', i, ' torsion (deg) = ', deg 
+                print 'CIS peptide bond between atoms ', i, ' torsion (deg) = ', deg 
                 
         return isTrans  
             
@@ -537,8 +538,8 @@ class AMBERSystem(BaseSystem):
             if deg < 180 :
                 # this condition was found by inspection of structures todo   
                 isL = False  
-#                print 'chiral state of CA atom ', i[0], ' is D' 
-#                print 'CA improper torsion (deg) ', i, ' = ', deg 
+                print 'chiral state of CA atom ', i[0], ' is D' 
+                print 'CA improper torsion (deg) ', i, ' = ', deg 
 
         return isL  
 
