@@ -1,24 +1,17 @@
-import numpy as np
-from PyQt4 import QtGui
-from PyQt4.QtGui import QDialog, QApplication, QWidget
-from PyQt4.QtCore import pyqtSlot
-import dgraph_browser
 import sys
 
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-from matplotlib.collections import LineCollection
-import matplotlib.colors as col
-import matplotlib.cm as cm
+from PyQt4 import QtGui
+from PyQt4.QtGui import QApplication, QWidget
+from PyQt4.QtCore import pyqtSlot
 
+import matplotlib.colors as col
+
+import dgraph_browser
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from pygmin.landscape import TSGraph
 from pygmin.storage import Database, TransitionState
 from pygmin.utils.events import Signal
-from pygmin.gui.ui.mplwidget import MPLWidgetWithToolbar
 import networkx as nx
-
-#class DGraphWidget(MPLWidgetWithToolbar):
-#    def __init__(self):
 
 
 class DGraphWidget(QWidget):

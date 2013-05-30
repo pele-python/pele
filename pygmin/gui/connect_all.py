@@ -4,13 +4,9 @@ import numpy as np
 import sqlalchemy
 
 from PyQt4 import QtGui, QtCore, Qt
-from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 
-from pygmin.gui.connect_run_dlg import OutLog
 from pygmin.gui.double_ended_connect_runner import DECRunner
 from pygmin.landscape import TSGraph
-from pygmin.gui.graph_viewer import GraphViewWidget
-#from pygmin.gui.ui.connect_run_ui import Ui_MainWindow as UI
 from pygmin.gui.connect_run_dlg import ConnectViewer
 from pygmin.gui.ui.dgraph_dlg import DGraphWidget
 from pygmin.storage import Minimum

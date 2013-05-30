@@ -49,6 +49,7 @@ class wham1d:
         
         self.whampot = WhamPotential(self.logP, self.reduced_energy)
         
+        
         X = np.random.rand( nreps + nbins )
         E = self.whampot.getEnergy(X)
         #print "energy", E 
@@ -56,7 +57,7 @@ class wham1d:
         #print "quenching"
         try: 
             from pygmin.optimize import mylbfgs as quench
-            ret = quench(X, self.whampot, iprint=-1, maxstep = 1e4)
+            ret = quench(X, self.whampot, iprint=-1, maxstep=1e4)
         except ImportError:
             from pygmin.optimize import lbfgs_scipy as quench
             ret = quench(X, self.whampot)            
@@ -111,12 +112,31 @@ class wham1d:
         self.logn_E = X[nreps:]
         self.w_i_final = X[:nreps]
 
+#    def calc_Cv_no_wham(self):
+#        """ """
 
+    def calc_Cv_new(self, NDOF, TRANGE=None, NTEMP=100):
+        from pygmin.thermodynamics import dos_to_cv
+        dT = (self.Tlist[-1] - self.Tlist[0]) / NTEMP
+        Tlist = np.arange(self.Tlist[0], self.Tlist[-1], dT)
+#        print self.logn_E
+        lZ, U, U2, Cv = dos_to_cv(self.binenergy, self.logn_E, Tlist, K=NDOF)
+        cvdata = np.zeros([len(Tlist), 6])
+        cvdata[:,0] = Tlist
+        cvdata[:,1] = lZ
+        cvdata[:,2] = U # average potential energy
+        cvdata[:,3] = U2
+        cvdata[:,5] = Cv
+        
+        eavg = U + float(NDOF) / 2 * Tlist # average energy including the kinetic degrees of freedom
+        cvdata[:,4] = eavg
+        return cvdata
+        
 
-
-    def calc_Cv(self, NDOF, TRANGE=None, NTEMP=100, use_log_sum = None):
-        return wham_utils.calc_Cv(self.logn_E, self.visits1d, self.binenergy, \
-                NDOF, self.Tlist, self.k_B, TRANGE, NTEMP, use_log_sum = use_log_sum)
+    def calc_Cv(self, NDOF, TRANGE=None, NTEMP=100, use_log_sum=None):
+        return self.calc_Cv_new(NDOF, TRANGE, NTEMP)
+        return wham_utils.calc_Cv(self.logn_E, self.visits1d, self.binenergy,
+                NDOF, self.Tlist, self.k_B, TRANGE, NTEMP, use_log_sum=use_log_sum)
 
 
 

@@ -54,8 +54,7 @@ class WhamPotential(BasePotential):
             a lot of extra work done trying to minimize irrelevant variables.  This is fine, just make sure
             logP == 0 for all bins with zero visits, not logP = -inf
         """
-        self.nreps = len( logP[:,0] )
-        self.nbins = len( logP[0,:] )
+        self.nreps, self.nbins = logP.shape
         self.logP = logP
         self.weight = self.logP + reduced_energy
         #self.reduced_energy = reduced_energy
