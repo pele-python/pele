@@ -1,6 +1,7 @@
 import numpy as np
 from PyQt4 import QtGui
 from PyQt4.QtGui import QDialog, QApplication, QWidget
+from PyQt4.QtCore import pyqtSlot
 import dgraph_browser
 import sys
 
@@ -56,6 +57,13 @@ class DGraphWidget(QWidget):
         self.colour_tree = []
         self.tree_selected = None
 
+        # populate the dropdown list with the color names
+        self._colors = sorted(col.cnames.keys())
+        self.ui.comboBox_colour.addItems(self._colors)
+        [self.ui.comboBox_colour.addItem(s) for s in self._colors]
+        self.ui.comboBox_colour.activated[str].connect(self._color_tree)
+
+
     def _set_checked(self, keyword, default):
         """utility to set the default values for check boxes
         
@@ -100,7 +108,6 @@ class DGraphWidget(QWidget):
         self._set_lineEdit("subgraph_size")
         self._set_lineEdit("nlevels")
 
-        [self.ui.comboBox_colour.addItem(s) for s in col.cnames]
 
     def _get_input_parameters(self):
         self.params = {}
@@ -124,32 +131,41 @@ class DGraphWidget(QWidget):
 
 
         params["center_gmin"] = self.ui.chkbx_center_gmin.isChecked()
-        params["show_minima"] = self.ui.chkbx_show_minima.isChecked()
+        self.show_minima = self.ui.chkbx_show_minima.isChecked()
         params["order_by_energy"] = self.ui.chkbx_order_by_energy.isChecked()
         params["order_by_basin_size"] = self.ui.chkbx_order_by_basin_size.isChecked()
         params["include_gmin"] = self.ui.chkbx_include_gmin.isChecked()
-        params["show_trees"] = self.ui.chkbx_show_trees.isChecked()
-        
-        self.ui.comboBox_colour.activated[str].connect(self.setTreeColourDict)
-    
-    def setTreeColourDict(self, colour):
-        c = col.hex2color(col.cnames[str(colour)])
+        self.show_trees = self.ui.chkbx_show_trees.isChecked()
 
-        if self.tree_selected: 
-            self.colour_tree.append([self.tree_selected, c])
-            print 'basin %d at level %d will be coloured %s'%(self.tree_selected[1],
-                                                              self.tree_selected[0],
-                                                              str(colour))
-            self.tree_selected = None
+    
+    @pyqtSlot(str)
+    def _color_tree(self, colour):
+        if self.tree_selected is not None: 
+            c = col.hex2color(col.cnames[str(colour)])
+            print "coloring tree", colour, self.tree_selected
+
+            for tree in self.tree_selected.get_all_trees():
+                tree.data["colour"] = c
             
+            self.redraw_disconnectivity_graph()
+#            self.tree_selected = None
+
+    @pyqtSlot()
+    def on_btnRedraw_clicked(self):
+#        if clicked is None: return
+        self.redraw_disconnectivity_graph()
+        
+
+    def redraw_disconnectivity_graph(self):        
+        self.params = self._get_input_parameters()
+        self._draw_disconnectivity_graph(self.show_minima, self.show_trees)
 
     def rebuild_disconnectivity_graph(self):        
         self._get_input_parameters()
         self._build_disconnectivity_graph(**self.params)
+        self._draw_disconnectivity_graph(self.show_minima, self.show_trees)
 
-
-    def _build_disconnectivity_graph(self, show_minima=True, show_trees=False, **params):
-        #this should be somewhere else
+    def _build_disconnectivity_graph(self, **params):
         if self.database is None:
             graph = self.graph
         else:
@@ -161,36 +177,51 @@ class DGraphWidget(QWidget):
                 graph = graphwrapper.graph
         dg = DisconnectivityGraph(graph, **params)
         dg.calculate()
-        
+        self.dg = dg
+
+    def _get_tree_layout(self, tree):
+        treelist = []
+        xlist = []
+        energies = []
+        for tree in tree.get_all_trees():
+            xlist.append(tree.data["x"])
+            treelist.append(tree)
+            if tree.is_leaf():
+                energies.append(tree.data["minimum"].energy)
+            else:
+                energies.append(tree.data["ethresh"])
+        return treelist, xlist, energies
+
+    def _draw_disconnectivity_graph(self, show_minima=True, show_trees=False):
         ax = self.canvas.axes
         ax.clear()
-        ax.hold(True)        
-        
-        for t, c in self.colour_tree:
-            tree = dg.tree_list[t[0]][t[1]]
-            dg.assign_colour(tree, c)
-            
+        ax.hold(True)
+
+        dg = self.dg
+
+        # plot the lines and set up the rest of the plot using the built in function
+        # this might change some of the minima x positions, so this has to go before
+        # anything dependent on those positions
+        dg.plot(axes=ax, show_minima=False)
+
+#        if show_trees
         if show_trees:
             # draw the nodes
-            node_id, x_pos, energies = dg.get_tree_layout()
+            tree_list, x_pos, energies = self._get_tree_layout(dg.tree_graph)
 
-            points = ax.scatter(x_pos, energies, picker=5, color='red', alpha=0.5)
+            treepoints = ax.scatter(x_pos, energies, picker=5, color='red', alpha=0.5)
 
             def on_pick_tree(event):
-                if event.artist != points:
+                if event.artist != treepoints:
     #                print "you clicked on something other than a node"
                     return True
                 ind = event.ind[0]
+                self.tree_selected = tree_list[ind]
+                print "tree clicked on", self.tree_selected
 
-                i = node_id[ind]
-
-                print "you clicked on basin ", i[1]," at level", i[0]
-                self.tree_selected = i
 
             self.canvas.mpl_connect('pick_event', on_pick_tree)
 
-        # plot the lines and set up the rest of the plot using the built in function 
-        dg.plot(axes=ax, show_minima=False)
 
         #draw minima as points and make them interactive
         if show_minima:
@@ -234,7 +265,7 @@ def reduced_db2graph(db, Emax):
 
 if __name__ == "__main__":
     
-    db = Database("test.db")
+    db = Database("lj31.db")
     if len(db.minima()) < 2:
         raise Exception("database has no minima")
     

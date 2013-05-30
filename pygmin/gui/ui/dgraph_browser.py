@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'dgraph_browser.ui'
 #
-# Created: Thu May  2 17:05:39 2013
+# Created: Thu May 30 10:11:18 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -100,14 +100,22 @@ class Ui_Form(object):
         self.gridLayout_2.setContentsMargins(0, 0, -1, -1)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.btnRebuild = QtGui.QPushButton(self.layoutWidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnRebuild.sizePolicy().hasHeightForWidth())
         self.btnRebuild.setSizePolicy(sizePolicy)
-        self.btnRebuild.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.btnRebuild.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.btnRebuild.setObjectName(_fromUtf8("btnRebuild"))
         self.gridLayout_2.addWidget(self.btnRebuild, 0, 0, 1, 1)
+        self.btnRedraw = QtGui.QPushButton(self.layoutWidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btnRedraw.sizePolicy().hasHeightForWidth())
+        self.btnRedraw.setSizePolicy(sizePolicy)
+        self.btnRedraw.setObjectName(_fromUtf8("btnRedraw"))
+        self.gridLayout_2.addWidget(self.btnRedraw, 0, 1, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout_2)
         self.horizontalLayout.addWidget(self.splitter)
 
@@ -124,14 +132,19 @@ class Ui_Form(object):
         self.chkbx_order_by_energy.setText(QtGui.QApplication.translate("Form", "order by energy", None, QtGui.QApplication.UnicodeUTF8))
         self.chkbx_order_by_basin_size.setText(QtGui.QApplication.translate("Form", "order by basin size", None, QtGui.QApplication.UnicodeUTF8))
         self.chkbx_include_gmin.setText(QtGui.QApplication.translate("Form", "include global min", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_show_trees.setText(QtGui.QApplication.translate("Form", "colour basins", None, QtGui.QApplication.UnicodeUTF8))
+        self.chkbx_show_trees.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>Show tree nodes for coloring purposes.  To color a basin select a node then select a color.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.chkbx_show_trees.setText(QtGui.QApplication.translate("Form", "show trees for coloring", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>set the maximum energy level</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "Emax", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>change the minimum size of a disconnected region to be included in the graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Form", "Minimum subgraph size", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Form", "nlevels", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Form", "offset", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("Form", "colour", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>To color a basin first enable &quot;show trees.&quot;  Then select a node and select a color</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setText(QtGui.QApplication.translate("Form", "color", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnRebuild.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>rebuild and redraw the graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRebuild.setText(QtGui.QApplication.translate("Form", "Rebuild Graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnRedraw.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>redraw the graph without rebuilding</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnRedraw.setText(QtGui.QApplication.translate("Form", "Redraw Graph", None, QtGui.QApplication.UnicodeUTF8))
 
 from mplwidget import MPLWidgetWithToolbar
