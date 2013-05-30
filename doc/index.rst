@@ -65,6 +65,7 @@ Modules
    structure_alignment
    system_class
    transition_states_module
+   concurrent
    utils
 
 Indices and tables

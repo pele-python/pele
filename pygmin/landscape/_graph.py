@@ -1,7 +1,7 @@
 '''Wrapper to represent a storage class as a graph'''
 import networkx as nx
 
-__all__ = ["Graph"]
+__all__ = ["TSGraph", "Graph"]
 
 
 class _ConnectedComponents():
@@ -36,7 +36,7 @@ class _ConnectedComponents():
         return self.component[min1] == self.component[min2]
             
 
-class Graph(object):
+class TSGraph(object):
     '''
     Wrapper to represent a database object as a graph
     
@@ -64,7 +64,7 @@ class Graph(object):
     --------
     a graph can be easily constructed from a database::
     
-    >>> graph = Graph(database)
+    >>> graph = TSGraph(database)
     
     the networkx graph is accessed directly by
     
@@ -199,6 +199,11 @@ def create_random_database(nmin=20, nts=None, natoms=2):
         db.addTransitionState(e, coords, m1, m2)
     return db
 
+class Graph(TSGraph):
+    """this is included for backwards compatibility"""
+    pass
+
+
 
 import unittest
 class TestGraph(unittest.TestCase):
@@ -206,7 +211,7 @@ class TestGraph(unittest.TestCase):
         self.db = create_random_database()
     
     def test_hi(self):
-        graph = Graph(self.db)
+        graph = TSGraph(self.db)
         ng = graph.graph.number_of_nodes()
         nd = len(self.db.minima()) 
         self.assertEqual(ng, nd, "all nodes not imported")
@@ -219,14 +224,14 @@ class TestGraph(unittest.TestCase):
         nmin = 3
         minima = list(self.db.minima())
         minima = minima[:nmin]
-        graph = Graph(self.db, minima=minima, no_edges=True)
+        graph = TSGraph(self.db, minima=minima, no_edges=True)
         ng = graph.graph.number_of_nodes()
         self.assertEqual(ng, nmin)
         
         self.assertEqual(graph.graph.number_of_edges(), 0)
     
     def test_merge_minima(self):
-        graph = Graph(self.db)
+        graph = TSGraph(self.db)
         #select two minima with at least one edge
         minima = []
         for n in graph.graph.nodes():

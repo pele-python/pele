@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'connect_run_ui.ui'
 #
-# Created: Wed Apr 24 11:14:17 2013
+# Created: Thu May 16 16:22:29 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -114,6 +114,9 @@ class Ui_MainWindow(object):
         icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/stop.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionKill.setIcon(icon1)
         self.actionKill.setObjectName(_fromUtf8("actionKill"))
+        self.actionRandom_connect = QtGui.QAction(MainWindow)
+        self.actionRandom_connect.setCheckable(True)
+        self.actionRandom_connect.setObjectName(_fromUtf8("actionRandom_connect"))
         self.toolBar.addAction(self.actionPause)
         self.toolBar.addAction(self.actionKill)
         self.toolBar.addAction(self.actionLog)
@@ -122,6 +125,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionGraph)
         self.toolBar.addAction(self.actionD_Graph)
         self.toolBar.addAction(self.actionSummary)
+        self.toolBar.addAction(self.actionRandom_connect)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -147,6 +151,8 @@ class Ui_MainWindow(object):
         self.actionLog.setToolTip(QtGui.QApplication.translate("MainWindow", "display log information", None, QtGui.QApplication.UnicodeUTF8))
         self.actionKill.setText(QtGui.QApplication.translate("MainWindow", "kill", None, QtGui.QApplication.UnicodeUTF8))
         self.actionKill.setToolTip(QtGui.QApplication.translate("MainWindow", "interrupt the connect run", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRandom_connect.setText(QtGui.QApplication.translate("MainWindow", "random connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRandom_connect.setToolTip(QtGui.QApplication.translate("MainWindow", "connect random minima", None, QtGui.QApplication.UnicodeUTF8))
 
 from pygmin.gui.show3d_with_slider import Show3DWithSlider
 import resources_rc

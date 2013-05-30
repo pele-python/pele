@@ -452,7 +452,7 @@ class NeighborListPotentialMulti(basepot):
         if not None, then the system is in a periodic box of size boxl
         
     """
-    def __init__(self, potentials, natoms, rcut, rskin = 0.5, boxl = None):
+    def __init__(self, potentials, natoms, rcut, rskin=0.5, boxl = None):
         self.potentials = potentials
         self.oldcoords = np.zeros([natoms,3])
         self.rcut = rcut
@@ -471,7 +471,6 @@ class NeighborListPotentialMulti(basepot):
         self.buildcount = 0
         self.count = 0
 
-    
     def needNewList(self, coords):
         coords = np.reshape(coords, [-1,3])
         if self.periodic:
@@ -481,11 +480,10 @@ class NeighborListPotentialMulti(basepot):
                 return False
             dr = coords[indices,:] - self.oldcoords[indices,:]
             dr -= self.boxl * np.round(dr / self.boxl)
-            return np.any( dr.sum(1) > self.redo_displacement**2 ) 
+            return np.any((dr**2).sum(1) > self.redo_displacement**2) 
         else:
             return np.any( ((coords - self.oldcoords)**2).sum(1) > self.redo_displacement**2 )
 
-    
     def update(self, coords):
         self.count += 1
         if self.needNewList(coords):
@@ -512,10 +510,6 @@ class NeighborListPotentialMulti(basepot):
         return Etot, gradtot
 
     
-
-
-
-
 class MultiComponentSystem(basepot):
     """
     a potential wrapper for multiple potentials

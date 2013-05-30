@@ -1,6 +1,6 @@
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
 from pygmin.storage import Database
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 import pylab as pl
 import numpy as np
 
@@ -8,7 +8,7 @@ kbT = 0.75
 
 db = Database(db="tip4p_8.sqlite", createdb=False)
 
-graph = Graph(db)
+graph = TSGraph(db)
 
 dg = DisconnectivityGraph(graph.graph, db.minima(), subgraph_size=20)
 dg.calculate()

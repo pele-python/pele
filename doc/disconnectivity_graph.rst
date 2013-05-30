@@ -23,10 +23,10 @@ states connecting them.  Assuming you already have a database, here is how
 you turn it into a disconnectivity graph.  
 
 First you must convert the database to a networkx graph. This can be done
-using pygmin's graph wrapper `Graph` ::
+using pygmin's graph wrapper `TSGraph` ::
 
-    from pygmin.landscape import Graph
-    graphwrapper = Graph(database)
+    from pygmin.landscape import TSGraph
+    graphwrapper = TSGraph(database)
     graph = graphwrapper.graph
 
 Now we pass graphwrapper to the class DisconnectivityGraph ::

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Wed Apr 24 20:40:55 2013
+# Created: Sun May 26 19:28:22 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -64,6 +64,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.list_minima_main.sizePolicy().hasHeightForWidth())
         self.list_minima_main.setSizePolicy(sizePolicy)
         self.list_minima_main.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.list_minima_main.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.list_minima_main.setObjectName(_fromUtf8("list_minima_main"))
         self.verticalLayout_3.addWidget(self.list_minima_main)
         self.pushTakestepExplorer = QtGui.QPushButton(self.BHTab)
@@ -106,6 +107,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.listMinima1.sizePolicy().hasHeightForWidth())
         self.listMinima1.setSizePolicy(sizePolicy)
         self.listMinima1.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.listMinima1.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.listMinima1.setObjectName(_fromUtf8("listMinima1"))
         self.verticalLayout_5.addWidget(self.listMinima1)
         self.listMinima2 = QtGui.QListView(self.NEBTab)
@@ -115,6 +117,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.listMinima2.sizePolicy().hasHeightForWidth())
         self.listMinima2.setSizePolicy(sizePolicy)
         self.listMinima2.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.listMinima2.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.listMinima2.setObjectName(_fromUtf8("listMinima2"))
         self.verticalLayout_5.addWidget(self.listMinima2)
         self.gridLayout_2 = QtGui.QGridLayout()
@@ -177,13 +180,14 @@ class Ui_MainWindow(object):
         self.gridLayout_8.addWidget(self.oglTS, 0, 0, 1, 1)
         self.verticalLayout_9 = QtGui.QVBoxLayout()
         self.verticalLayout_9.setObjectName(_fromUtf8("verticalLayout_9"))
-        self.list_TS = QtGui.QListWidget(self.TSTab)
+        self.list_TS = QtGui.QListView(self.TSTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.list_TS.sizePolicy().hasHeightForWidth())
         self.list_TS.setSizePolicy(sizePolicy)
         self.list_TS.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.list_TS.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.list_TS.setObjectName(_fromUtf8("list_TS"))
         self.verticalLayout_9.addWidget(self.list_TS)
         self.pushNormalmodesTS = QtGui.QPushButton(self.TSTab)

@@ -73,7 +73,7 @@ class MultiComponentSystemFreeze(basepot):
 
 
 
-def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA = None, rcut = 2.5, boxl=None):
+def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl=None):
     """
     create the potential object for the kob andersen binary lennard jones with frozeen particles
     
@@ -200,9 +200,11 @@ class FreezePot(basepot):
 
 
     def getEnergy(self, coords):
+        assert len(coords) == self.natoms * 3
         return self.pot.getEnergy(coords)
 
     def getEnergyGradient(self, coords):
+        assert len(coords) == self.natoms * 3
         e, grad = self.pot.getEnergyGradient(coords)
         grad[self.frozen1d] = 0.
         return e, grad

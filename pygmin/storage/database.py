@@ -342,7 +342,7 @@ class Database(object):
         self.on_ts_added = Signal()
         self.on_ts_removed = Signal()
         
-        self.compareMinima=compareMinima
+        self.compareMinima = compareMinima
         self.lock = threading.Lock()
         self.connection = self.engine.connect()
         
@@ -400,13 +400,14 @@ class Database(object):
             filter(Minimum.energy < E+self.accuracy)
         
         new = Minimum(E, coords)
-            
+        
         for m in candidates:
-            if(self.compareMinima):
-                if(self.compareMinima(new, m) == False):
+            if self.compareMinima:
+                if not self.compareMinima(new, m):
                     continue
             self.lock.release() 
             return m
+
         if max_n_minima > 0:
             if self.number_of_minima() >= max_n_minima:
                 mmax = self._highest_energy_minimum()

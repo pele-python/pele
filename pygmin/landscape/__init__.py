@@ -17,7 +17,17 @@ series of minima and transition states between two end point minima.
    :toctree: generated/
 
     DoubleEndedConnect
-    DoubleEndedConnectPar
+
+Connect manager
+++++++++++++++++++++++++++++
+The connect manager is a tool to organize which minima from a database 
+are selected for double ended connect jobs.  
+
+.. autosummary::
+   :toctree: generated/
+
+    ConnectManager
+
 
 Other utilities
 ++++++++++++++++++++++++++++++++++++
@@ -25,7 +35,7 @@ Other utilities
 .. autosummary::
    :toctree: generated/
 
-    Graph
+    TSGraph
     smoothPath
 
 Core Routines
@@ -52,3 +62,4 @@ from connect_min import *
 from connect_min_parallel import *
 from singleended import *
 from _smooth_path import *
+from connect_manager import *

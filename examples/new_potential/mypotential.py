@@ -81,11 +81,11 @@ def run_double_ended_connect(sys, database):
         connect.connect()
 
 from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from pygmin.landscape import Graph
+from pygmin.landscape import TSGraph
 import matplotlib.pyplot as plt
 
 def make_disconnectivity_graph(database):
-    graph = Graph(database).graph
+    graph = TSGraph(database).graph
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()

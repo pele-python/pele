@@ -63,7 +63,7 @@ class WhamPotential(BasePotential):
             print "logP is NaN or infinite"
             exit(1)
 
-        if True: #see how much effort is wasted
+        if False: #see how much effort is wasted
             nallzero = len( np.where(np.abs(self.logP.sum(1)) < 1e-10 )[0])
             print "WHAM: number of degrees of freedom", self.nreps + self.nbins
             print "WHAM: number of irrelevant d.o.f. ", nallzero

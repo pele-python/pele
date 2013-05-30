@@ -77,18 +77,19 @@ def calc_Cv(logn_E, visits1d, binenergy, NDOF, Treplica, k_B, TRANGE=None, NTEMP
         try:
             logSumFast( np.array([.1, .2, .3]) )
             use_log_sum = True
-            print "using logsum"
+            #print "using logsum"
         except ImportError:
             #dont use log sum unless the fast logsum is working
-            print "not using logsum because it's too slow.  Install scipy weave to use the fast version of logsum"
+            #print "not using logsum because it's too slow.  Install scipy weave to use the fast version of logsum"
             use_log_sum = False
     else:
-        print "use_log_sum = ", use_log_sum
+        #print "use_log_sum = ", use_log_sum
+        pass
     
 
     #put some variables in this namespace
     nrep, nebins = np.shape(visits1d)
-    print "nreps, nebins", nrep, nebins
+    #print "nreps, nebins", nrep, nebins
 
     nz = np.where( visits1d.sum(0) != 0)[0]
 

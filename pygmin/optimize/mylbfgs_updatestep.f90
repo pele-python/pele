@@ -101,7 +101,7 @@
 
          BOUND=ITER
          IF (ITER.GT.M) BOUND=M
-         CALL FLUSH()
+         !CALL FLUSH()
          YS= DDOT(N,W(IYPT+NPT+1),1,W(ISPT+NPT+1),1)
 !
 !  Update estimate of diagonal inverse Hessian elements

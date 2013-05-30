@@ -3,7 +3,7 @@ from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as minpe
 from random import choice
 import networkx as nx
 
-from  pygmin.NEB.graph import Graph
+from  pygmin.NEB.graph import TSGraph
 import time
 import pickle
 
@@ -20,7 +20,7 @@ t0 = time.time()
 
 print "generating graph"
 t0 = time.time()
-graph = Graph(db)
+graph = TSGraph(db)
 print "%.1f seconds"%(time.time() - t0)
 
 

@@ -66,6 +66,9 @@
                 <height>16777215</height>
                </size>
               </property>
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
              </widget>
             </item>
             <item>
@@ -141,6 +144,9 @@
                 <height>16777215</height>
                </size>
               </property>
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
              </widget>
             </item>
             <item>
@@ -156,6 +162,9 @@
                 <width>200</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
               </property>
              </widget>
             </item>
@@ -304,7 +313,7 @@
         <item row="0" column="2">
          <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0">
           <item>
-           <widget class="QListWidget" name="list_TS">
+           <widget class="QListView" name="list_TS">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -316,6 +325,9 @@
               <width>200</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
             </property>
            </widget>
           </item>

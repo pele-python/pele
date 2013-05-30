@@ -2,7 +2,6 @@ import networkx as nx
 import numpy as np
 import logging
 
-from pygmin.landscape import Graph
 
 __all__ = []
 
@@ -447,6 +446,8 @@ class TestDistanceGraph(unittest.TestCase):
         res = Result()
         res.coords = coords
         res.energy = energy
+        res.eigenval = 1.
+        res.eigenvec = coords.copy()
         return res
 
     
@@ -482,13 +483,12 @@ class TestDistanceGraph(unittest.TestCase):
         
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min4.energy)
+        tsres = self.make_result(coords, E)
         min_ret1 = self.make_result(min3.coords, min3.energy)
         min_ret2 = self.make_result(min4.coords, min4.energy)
         
-        eigenvec = coords.copy()
-        eigenval = -1.
-        
-        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+       
+        self.connect._addTransitionState(tsres, min_ret1, min_ret2)
 
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "adding a transition state broke the distance graph")
@@ -515,11 +515,9 @@ class TestDistanceGraph(unittest.TestCase):
         #create new TS from thin air        
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min_ret2.energy)
+        tsres = self.make_result(coords, E)
         
-        eigenvec = coords.copy()
-        eigenval = -1.
-        
-        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+        self.connect._addTransitionState(tsres, min_ret1, min_ret2)
 
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "adding a transition state broke the distance graph")
@@ -535,16 +533,14 @@ class TestDistanceGraph(unittest.TestCase):
         
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min4.energy)
+        tsres = self.make_result(coords, E)
         min_ret1 = self.make_result(min3.coords, min3.energy)
         min_ret2 = self.make_result(min4.coords, min4.energy)
 
 #        min_ret1 = [min3.coords, min3.energy]
 #        min_ret2 = [min4.coords, min4.energy]
         
-        eigenvec = coords.copy()
-        eigenval = -1.
-        
-        self.connect._addTransitionState(E, coords, min_ret1, min_ret2, eigenvec, eigenval)
+        self.connect._addTransitionState(tsres, min_ret1, min_ret2)
 
         if not nocheck:
             allok = self.connect.dist_graph.checkGraph()
@@ -585,6 +581,7 @@ def mytest(nmin=40, natoms=13):
     from pygmin.landscape._graph import create_random_database
     from pygmin.mindist import minPermDistStochastic, MinDistWrapper
     from pygmin.potentials import LJ
+    from pygmin.landscape import TSGraph
     
     pot = LJ()
     mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)
@@ -593,7 +590,7 @@ def mytest(nmin=40, natoms=13):
     min1, min2 = list(db.minima())[:2] 
     
     
-    graph = Graph(db)
+    graph = TSGraph(db)
     connect = DoubleEndedConnect(min1, min2, pot, mindist, db, use_all_min=True, 
                                  merge_minima=True, max_dist_merge=.1)
 

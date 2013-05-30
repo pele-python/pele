@@ -1,17 +1,18 @@
 import sys
 import os
 import getopt
+import time
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
 import pygmin.utils.disconnectivity_graph as dg
 from pygmin.storage import Database
-from pygmin.landscape import Graph
+
 
 try:
     from PyQt4.QtGui import QApplication
-    from pygmin.gui.ui.dgraph_dlg import DGraphDialog
+    from pygmin.gui.ui.dgraph_dlg import DGraphDialog, reduced_db2graph
     use_gui = True
 except ImportError:
     use_gui = False
@@ -176,26 +177,44 @@ def main():
             exit()
         
         db = Database(dbfile)
-        graphwrapper = Graph(db)
-        graph = graphwrapper.graph
-    
+        
     if outfile is None and use_gui:
         app = QApplication(sys.argv) 
         kwargs["show_minima"] = False
-        md = DGraphDialog(None, graph=graph, params=kwargs)
+        md = DGraphDialog(db, params=kwargs)
         md.rebuild_disconnectivity_graph()
         md.show()
         sys.exit(app.exec_())
         
+    if not OPTIM: 
+        # make graph from database
+        if "Emax" in kwargs and use_gui:
+            graph = reduced_db2graph(db, kwargs['Emax'])
+        else:
+            graph = dg.database2graph(db)
+
+    # do the disconnectivity graph analysis
     mydg = dg.DisconnectivityGraph(graph, **kwargs)
+    print "doing disconnectivity graph analysis"
+    sys.stdout.flush()
+    t1 = time.time()
     mydg.calculate()
+    t2 = time.time()
+    print "d-graph analysis finished in", t2-t1, "seconds"
     print "number of minima:", mydg.tree_graph.number_of_leaves()
-    mydg.plot()
+    print "plotting disconnectivigy graph"
+    sys.stdout.flush()
     
+    
+    # make the figure and save it
+    mydg.plot()
     if outfile is None:
         plt.show()
     else:
         plt.savefig(outfile)
+    t3 = time.time()
+    print "plotting finished in", t3-t2, "seconds"
+        
     
 
 if __name__ == "__main__":

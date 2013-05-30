@@ -258,10 +258,10 @@ As a final step, let's plot the connectivity in the database using a :ref:`disco
 graph <disconnectivity_graph>` ::
 
     from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-    from pygmin.landscape import Graph
+    from pygmin.landscape import TSGraph
     import matplotlib.pyplot as plt
     #convert the database to a networkx graph
-    graph = Graph(database).graph
+    graph = TSGraph(database).graph
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()

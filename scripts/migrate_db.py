@@ -46,6 +46,8 @@ def migrate(db):
 if __name__ == '__main__':
     if len(sys.argv) < 2 or "--help" in sys.argv or "-h" in sys.argv:
         print "usage:\npython migrate_db.py <database1> [<database2> ...]"
+        print ""
+        print "update pygmin database to the newist version"
         sys.exit()
     for dbfile in sys.argv[1:]:
         print dbfile

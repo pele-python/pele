@@ -588,9 +588,9 @@ class AMBERSystem(BaseSystem):
             
     def test_disconn_graph(self,database):
         from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-        from pygmin.landscape import Graph
+        from pygmin.landscape import TSGraph
         import matplotlib.pyplot as plt
-        graph = Graph(database).graph
+        graph = TSGraph(database).graph
         dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
         dg.calculate()
         dg.plot()
