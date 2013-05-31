@@ -25,13 +25,14 @@ class MinimumStandardItem(Qt.QStandardItem):
         return self.minimum.energy < item2.minimum.energy
 
 class TransitionStateStandardItem(Qt.QStandardItem):
-    """defines an item to populate the lists of minima in the GUI
+    """defines an item to populate the lists of transition states in the GUI
     
     These items will be collected in a QStandardItemModel and viewed using
     QListView
     """
     def __init__(self, ts):
         text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
+        text="%.4f"%(ts.energy)
         super(TransitionStateStandardItem, self).__init__(text)
         self.ts = ts
     def __lt__(self, item2):
@@ -59,8 +60,12 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
             if orientation == QtCore.Qt.Horizontal:
                 if section == 0:
                     return "Energy"
-                else:
+                elif section == 1:
                     return "ID"
+                elif section == 2:
+                    return "Min1"
+                elif section == 3:
+                    return "Min2 "
 
     def set_nmax(self, nmax):
         self.nmax = nmax
@@ -68,8 +73,6 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
     def item_from_minimum(self, minimum):
         return self._minimum_to_item[minimum]
     
-    def addMinimum(self, m):
-        self.appendRow(MinimumStandardItem(m))
     
     def minimum_from_index(self, index):
         item = self.item(index.row())
@@ -82,11 +85,16 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
             return None
         return self.minimum_from_index(index)
 
-    
-    def appendRow(self, item, *args, **kwargs):
-        self._minimum_to_item[item.minimum] = item
+    def addMinimum(self, m):
+        item = MinimumStandardItem(m)
         iditem = NumberStandardItem(item.minimum._id)
-        Qt.QStandardItemModel.appendRow(self, [item, iditem])
+        self.appendRow([item, iditem])
+    
+    def appendRow(self, items, *args, **kwargs):
+        Qt.QStandardItemModel.appendRow(self, items)
+        mitem = items[0]
+#        print "adding minimum", mitem.minimum, mitem.minimum._id
+        self._minimum_to_item[mitem.minimum] = mitem
         look_back = min(10, self.nmax)
         if self.nmax is not None:
             nrows = self.rowCount()
@@ -119,6 +127,18 @@ class MinimumSortFilterProxyModel(Qt.QSortFilterProxyModel):
         index = source_model.indexFromItem(item)
         return self.mapFromSource(index)
 
+class TransitionStateStandardItemModel(MinimumStandardItemModel):
+    def __init__(self, nmax=None):
+        MinimumStandardItemModel.__init__(self, nmax=nmax)
+    
+        self.setColumnCount(4)
+    
+    def addTS(self, ts):
+        item = TransitionStateStandardItem(ts)
+        iditem = NumberStandardItem(ts._id)
+        m1item = NumberStandardItem(ts.minimum1._id)
+        m2item = NumberStandardItem(ts.minimum2._id)
+        self.appendRow([item, iditem, m1item, m2item])
 
 
 class SaveCoordsAction(QtGui.QAction):
@@ -178,7 +198,7 @@ class ListViewManager(object):
         self.ui.listMinima2.selectionModel().selectionChanged.connect(self.on_listMinima2_selectionChanged)
         
         # set up the list of transition states in the gui
-        self.ts_list_model = MinimumStandardItemModel()
+        self.ts_list_model = TransitionStateStandardItemModel()
         self.ui.list_TS.setModel(self.ts_list_model)
         self.ui.list_TS.selectionModel().selectionChanged.connect(self.on_list_TS_selectionChanged)
 
@@ -194,7 +214,7 @@ class ListViewManager(object):
     
     def finish_setup(self):
         """this must be called after NewSystem() is called"""
-                # determine the maximum number of minima to keep in the lists.
+        # determine the maximum number of minima to keep in the lists.
         # this must be done after NewSystem() is called
         try:
             nmax = self.parent.system.params.gui.list_nmax
@@ -210,13 +230,16 @@ class ListViewManager(object):
     def transition_state_on_context(self, point):
         view = self.ui.list_TS
         index = view.indexAt(point)
-        item = self.ts_list_model.itemFromIndex(index)
-        ts = item.ts
+        ts = self.ts_list_model.minimum_from_index(index)
+        
+        if True:
+            ts.energy
+            ts.minimum1
         
         # create the menu
         menu = QtGui.QMenu("list menu", self.parent)
         
-        action1 = SaveCoordsAction(ts, parent=self.parent)     
+        action1 = SaveCoordsAction(ts, parent=self.parent)
         menu.addAction(action1)
         
         def prepare_in_connect(val):
@@ -281,9 +304,8 @@ class ListViewManager(object):
 
 
     def on_list_TS_selectionChanged(self, new, old):
-        index = new.indexes()[0]
-        item = self.ts_list_model.item(index.row())
-        ts = item.ts
+#        index = new.indexes()[0]
+        ts = self.ts_list_model.minimum_from_selection(new)
         self.ts_selected = ts
         self.parent.show_TS(ts)
 
@@ -342,10 +364,13 @@ class ListViewManager(object):
 #        print "done sorting lists"
 
     def resize_columns_minima(self):
-        print "resizing"
+#        print "resizing minima columns"
         self.ui.list_minima_main.resizeColumnsToContents()
         self.ui.listMinima1.resizeColumnsToContents()
         self.ui.listMinima2.resizeColumnsToContents()
+    def resize_columns_ts(self):
+#        print "resizing ts columns"
+        self.ui.list_TS.resizeColumnsToContents()
 
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
@@ -381,7 +406,11 @@ class ListViewManager(object):
         else: 
             tslist = [ts]
         for ts in tslist:
-            tsitem = TransitionStateStandardItem(ts)
-            self.ts_list_model.appendRow(tsitem)
+#            tsitem = TransitionStateStandardItem(ts)
+            self.ts_list_model.addTS(ts)
         if sort:
             self._sort_ts()
+            
+        if not hasattr(self, "_ts_columns_resized"):
+            self.resize_columns_ts()
+            self._ts_columns_resized = True

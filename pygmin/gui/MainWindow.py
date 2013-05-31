@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Fri May 31 15:01:36 2013
+# Created: Fri May 31 16:38:45 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -185,15 +185,21 @@ class Ui_MainWindow(object):
         self.gridLayout_8.addWidget(self.oglTS, 0, 0, 1, 1)
         self.verticalLayout_9 = QtGui.QVBoxLayout()
         self.verticalLayout_9.setObjectName(_fromUtf8("verticalLayout_9"))
-        self.list_TS = QtGui.QListView(self.TSTab)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Expanding)
+        self.list_TS = QtGui.QTableView(self.TSTab)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.list_TS.sizePolicy().hasHeightForWidth())
         self.list_TS.setSizePolicy(sizePolicy)
-        self.list_TS.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.list_TS.setMaximumSize(QtCore.QSize(300, 16777215))
         self.list_TS.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.list_TS.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.list_TS.setSortingEnabled(True)
         self.list_TS.setObjectName(_fromUtf8("list_TS"))
+        self.list_TS.horizontalHeader().setCascadingSectionResizes(True)
+        self.list_TS.horizontalHeader().setDefaultSectionSize(80)
+        self.list_TS.horizontalHeader().setMinimumSectionSize(20)
+        self.list_TS.verticalHeader().setVisible(False)
         self.verticalLayout_9.addWidget(self.list_TS)
         self.pushNormalmodesTS = QtGui.QPushButton(self.TSTab)
         self.pushNormalmodesTS.setObjectName(_fromUtf8("pushNormalmodesTS"))
@@ -239,7 +245,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuActions.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

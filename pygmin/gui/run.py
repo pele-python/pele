@@ -133,6 +133,8 @@ class MainGUI(QtGui.QMainWindow):
             self.NewMinimum(minimum, sort_items=False)
         self.list_manager._sort_minima()
         self.NewTS(self.system.database.transition_states())
+        self.list_manager.resize_columns_minima()
+        self.list_manager.resize_columns_ts()
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
         self.system.database.on_minimum_removed(self.RemoveMinimum)
