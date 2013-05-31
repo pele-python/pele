@@ -252,7 +252,7 @@ class ExactMatchCluster(object):
         self.transform.rotate(x2_trial, rot2)
         # use the maximum distance, not rms as cutoff criterion
         
-        
+        self._last_checked_rotation = np.dot(rot2, rot)
         if  self.measure.get_dist(x1, x2_trial) < self.tol:
             return True
         return False
