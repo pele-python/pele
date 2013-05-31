@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Fri May 31 14:07:13 2013
+# Created: Fri May 31 15:01:36 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -97,7 +97,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.verticalLayout_5 = QtGui.QVBoxLayout()
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
-        self.listMinima1 = QtGui.QListView(self.NEBTab)
+        self.listMinima1 = QtGui.QTableView(self.NEBTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -105,9 +105,13 @@ class Ui_MainWindow(object):
         self.listMinima1.setSizePolicy(sizePolicy)
         self.listMinima1.setMaximumSize(QtCore.QSize(200, 16777215))
         self.listMinima1.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.listMinima1.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.listMinima1.setSortingEnabled(True)
         self.listMinima1.setObjectName(_fromUtf8("listMinima1"))
+        self.listMinima1.horizontalHeader().setDefaultSectionSize(85)
+        self.listMinima1.verticalHeader().setVisible(False)
         self.verticalLayout_5.addWidget(self.listMinima1)
-        self.listMinima2 = QtGui.QListView(self.NEBTab)
+        self.listMinima2 = QtGui.QTableView(self.NEBTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -115,7 +119,11 @@ class Ui_MainWindow(object):
         self.listMinima2.setSizePolicy(sizePolicy)
         self.listMinima2.setMaximumSize(QtCore.QSize(200, 16777215))
         self.listMinima2.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.listMinima2.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.listMinima2.setSortingEnabled(True)
         self.listMinima2.setObjectName(_fromUtf8("listMinima2"))
+        self.listMinima2.horizontalHeader().setDefaultSectionSize(80)
+        self.listMinima2.verticalHeader().setVisible(False)
         self.verticalLayout_5.addWidget(self.listMinima2)
         self.gridLayout_2 = QtGui.QGridLayout()
         self.gridLayout_2.setContentsMargins(20, 0, 20, -1)

@@ -1,6 +1,14 @@
 
 from PyQt4 import QtCore, QtGui, Qt
 
+class NumberStandardItem(Qt.QStandardItem):
+    def __init__(self, n):
+        self.n = n
+        Qt.QStandardItem.__init__(self, str(self.n))
+    
+    def __lt__(self, item2):
+        return self.n < item2.n
+
 
 class MinimumStandardItem(Qt.QStandardItem):
     """defines an item to populate the lists of minima in the GUI
@@ -9,7 +17,7 @@ class MinimumStandardItem(Qt.QStandardItem):
     QListView
     """
     def __init__(self, minimum):
-        text="%.4f (%d)"%(minimum.energy, minimum._id)
+        text="%.4f"%(minimum.energy)
         super(MinimumStandardItem, self).__init__(text)
         self.minimum = minimum
     def __lt__(self, item2):
@@ -63,17 +71,21 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
     def addMinimum(self, m):
         self.appendRow(MinimumStandardItem(m))
     
+    def minimum_from_index(self, index):
+        item = self.item(index.row())
+        return item.minimum
+    
     def minimum_from_selection(self, selection):
         try:
             index = selection.indexes()[0]
         except IndexError:
             return None
-        item = self.item(index.row())
-        return item.minimum
+        return self.minimum_from_index(index)
+
     
     def appendRow(self, item, *args, **kwargs):
         self._minimum_to_item[item.minimum] = item
-        iditem = Qt.QStandardItem(str(item.minimum._id))
+        iditem = NumberStandardItem(item.minimum._id)
         Qt.QStandardItemModel.appendRow(self, [item, iditem])
         look_back = min(10, self.nmax)
         if self.nmax is not None:
@@ -88,36 +100,26 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
                 toremove = max(candidates)
                 self.takeRow(toremove[1])
 
+class MinimumSortFilterProxyModel(Qt.QSortFilterProxyModel):
+    def minimum_from_selection(self, selection):
+        source_selection = self.mapSelectionToSource(selection)
+        return self.sourceModel().minimum_from_selection(source_selection)
+    def minimum_from_index(self, index):
+        source_index = self.mapToSource(index)
+        return self.sourceModel().minimum_from_index(source_index)
 
-#class MinimumAbstractTableModel(Qt.QAbstractTableModel):
-#    """a class to manage the list of minima for display in the gui"""
-#    def __init__(self, nmax=None, **kwargs):
-#        super(MinimumStandardItemModel, self).__init__(**kwargs)
-#        self.nmax = nmax # the maximum number of minima
-#        self.issued_warning = False
-#        self._minimum_to_item = dict()
-#
-#    def set_nmax(self, nmax):
-#        self.nmax = nmax
-#    
-#    def item_from_minimum(self, minimum):
-#        return self._minimum_to_item[minimum]
-#          
-#    def addMinimum(self, item, *args, **kwargs):
-#        self._minimum_to_item[item.minimum] = item
-#        Qt.QStandardItemModel.appendRow(self, item, *args, **kwargs)
-#        look_back = min(10, self.nmax)
-#        if self.nmax is not None:
-#            nrows = self.rowCount()
-#            if nrows > self.nmax:
-#                if not self.issued_warning:
-#                    print "warning: limiting the number of minima displayed in the gui to", self.nmax
-#                    self.issued_warning = True
-#                # choose an item to remove from the list.  we can't usume it's totally sorted
-#                # because it might have been a while since it was last sorted
-#                candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-look_back,nrows)]
-#                toremove = max(candidates)
-#                self.takeRow(toremove[1])
+    def lessThan(self, index1, index2):
+        item1 = self.sourceModel().itemFromIndex(index1)
+        item2 = self.sourceModel().itemFromIndex(index2)
+        return item1 < item2
+        
+    def index_from_minimum(self, minimum):
+        source_model = self.sourceModel()
+        item = source_model.item_from_minimum(minimum)
+        index = source_model.indexFromItem(item)
+        return self.mapFromSource(index)
+
+
 
 class SaveCoordsAction(QtGui.QAction):
     def __init__(self, minimum, parent=None):
@@ -134,10 +136,8 @@ class SaveCoordsAction(QtGui.QAction):
                 fout.write("# id " + str(self.minimum._id) + " energy " + str(self.minimum.energy) + "\n")
                 for x in self.minimum.coords:
                     fout.write( str(x) + "\n")
+    
 
-#    def triggered(self, val):
-#        self.__call__(val)
-        
 
 class ListViewManager(object):
     def __init__(self, parent):
@@ -153,13 +153,24 @@ class ListViewManager(object):
         
         self.ts_selected = None
         
-        # keep track of minima using a QStandardItemModel 
+        # keep track of minima using a QStandardItemModel
         self.minima_list_model = MinimumStandardItemModel()
+        
+        # set up the sort/filter proxies which allow the lists to be
+        # sorted separately
+        self.mproxy_main = MinimumSortFilterProxyModel()
+        self.mproxy_main.setSourceModel(self.minima_list_model)
+        self.mproxy_1 = MinimumSortFilterProxyModel()
+        self.mproxy_1.setSourceModel(self.minima_list_model)
+        self.mproxy_2 = MinimumSortFilterProxyModel()
+        self.mproxy_2.setSourceModel(self.minima_list_model)
+        
         # use QListView objects to view the lists of minima in the gui
-        self.ui.list_minima_main.setModel(self.minima_list_model)
+        self.ui.list_minima_main.setModel(self.mproxy_main)
 #        self.ui.list_minima_main.set
-        self.ui.listMinima1.setModel(self.minima_list_model)
-        self.ui.listMinima2.setModel(self.minima_list_model)
+
+        self.ui.listMinima1.setModel(self.mproxy_1)
+        self.ui.listMinima2.setModel(self.mproxy_2)
 
         # connect to the signals of the QSelectionModel objects of the list view's   
         self.ui.list_minima_main.selectionModel().selectionChanged.connect(self.on_list_minima_main_selectionChanged)
@@ -223,8 +234,8 @@ class ListViewManager(object):
     def list_view_on_context(self, point):
         view = self.ui.list_minima_main
         index = view.indexAt(point)
-        item = self.minima_list_model.itemFromIndex(index)
-        minimum = item.minimum
+        
+        minimum = self.mproxy_main.minimum_from_index(index)
         
         # create the menu
         menu = QtGui.QMenu("list menu", self.parent)
@@ -235,19 +246,19 @@ class ListViewManager(object):
         menu.exec_(view.mapToGlobal(point))
     
     def on_list_minima_main_selectionChanged(self, new, old):
-        minimum = self.minima_list_model.minimum_from_selection(new)
+        minimum = self.mproxy_main.minimum_from_selection(new)
         if minimum is not None:
             self.parent.SelectMinimum(minimum, set_selected=False)
 
     def on_listMinima1_selectionChanged(self, new, old):
         """when an item in the first list in the connect tab is selected"""
-        minimum = self.minima_list_model.minimum_from_selection(new)
+        minimum = self.mproxy_1.minimum_from_selection(new)
         if minimum is not None:
             self.parent._SelectMinimum1(minimum, set_selected=False)
     
     def on_listMinima2_selectionChanged(self, new, old):
         """when an item in the second list in the connect tab is selected"""
-        minimum = self.minima_list_model.minimum_from_selection(new)
+        minimum = self.mproxy_2.minimum_from_selection(new)
         if minimum is not None:
             self.parent._SelectMinimum2(minimum, set_selected=False)
 
@@ -255,20 +266,17 @@ class ListViewManager(object):
         """set the minimum as selected in the basinhopping tab"""
         # I'm surprised we don't need to catch exceptions if the minimum is not in the 
         # model (e.g. if the maximum list length is exceeded)
-        item = self.minima_list_model.item_from_minimum(minimum)
-        index = self.minima_list_model.indexFromItem(item)
+        index = self.mproxy_main.index_from_minimum(minimum)
         self.ui.list_minima_main.setCurrentIndex(index)
 
     def _select1(self, minimum):
         """set the minimum as selected in the first list of the connect tab"""
-        item = self.minima_list_model.item_from_minimum(minimum)
-        index = self.minima_list_model.indexFromItem(item)
+        index = self.mproxy_1.index_from_minimum(minimum)
         self.ui.listMinima1.setCurrentIndex(index)
 
     def _select2(self, minimum):
         """set the minimum as selected in the second list of the connect tab"""
-        item = self.minima_list_model.item_from_minimum(minimum)
-        index = self.minima_list_model.indexFromItem(item)
+        index = self.mproxy_2.index_from_minimum(minimum)
         self.ui.listMinima2.setCurrentIndex(index)
 
 
@@ -333,11 +341,22 @@ class ListViewManager(object):
         self._sort_timer.stop()
 #        print "done sorting lists"
 
+    def resize_columns_minima(self):
+        print "resizing"
+        self.ui.list_minima_main.resizeColumnsToContents()
+        self.ui.listMinima1.resizeColumnsToContents()
+        self.ui.listMinima2.resizeColumnsToContents()
+
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
         self.minima_list_model.addMinimum(minimum)
+        self.ui.list_minima_main.resizeColumnsToContents()
         if sort_items:
             self._sort_minima()
+        if not hasattr(self, "_minima_columns_resized"):
+            self.resize_columns_minima()
+            self._minima_columns_resized = True
+            
 
     def RemoveMinimum(self, minimum):
         """remove a minimum from self.minima_list_model"""
