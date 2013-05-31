@@ -38,21 +38,43 @@ class TransitionStateStandardItem(Qt.QStandardItem):
 
 class MinimumStandardItemModel(Qt.QStandardItemModel):
     """a class to manage the list of minima for display in the gui"""
-    def __init__(self, nmax=None, **kwargs):
-        super(MinimumStandardItemModel, self).__init__(**kwargs)
+    def __init__(self, nmax=None):
+        super(MinimumStandardItemModel, self).__init__()
         self.nmax = nmax # the maximum number of minima
         self.issued_warning = False
         self._minimum_to_item = dict()
+        
+        self.setColumnCount(2)
+        
+    def headerData(self, section, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                if section == 0:
+                    return "Energy"
+                else:
+                    return "ID"
 
     def set_nmax(self, nmax):
         self.nmax = nmax
     
     def item_from_minimum(self, minimum):
         return self._minimum_to_item[minimum]
-          
+    
+    def addMinimum(self, m):
+        self.appendRow(MinimumStandardItem(m))
+    
+    def minimum_from_selection(self, selection):
+        try:
+            index = selection.indexes()[0]
+        except IndexError:
+            return None
+        item = self.item(index.row())
+        return item.minimum
+    
     def appendRow(self, item, *args, **kwargs):
         self._minimum_to_item[item.minimum] = item
-        Qt.QStandardItemModel.appendRow(self, item, *args, **kwargs)
+        iditem = Qt.QStandardItem(str(item.minimum._id))
+        Qt.QStandardItemModel.appendRow(self, [item, iditem])
         look_back = min(10, self.nmax)
         if self.nmax is not None:
             nrows = self.rowCount()
@@ -65,6 +87,37 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
                 candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-look_back,nrows)]
                 toremove = max(candidates)
                 self.takeRow(toremove[1])
+
+
+#class MinimumAbstractTableModel(Qt.QAbstractTableModel):
+#    """a class to manage the list of minima for display in the gui"""
+#    def __init__(self, nmax=None, **kwargs):
+#        super(MinimumStandardItemModel, self).__init__(**kwargs)
+#        self.nmax = nmax # the maximum number of minima
+#        self.issued_warning = False
+#        self._minimum_to_item = dict()
+#
+#    def set_nmax(self, nmax):
+#        self.nmax = nmax
+#    
+#    def item_from_minimum(self, minimum):
+#        return self._minimum_to_item[minimum]
+#          
+#    def addMinimum(self, item, *args, **kwargs):
+#        self._minimum_to_item[item.minimum] = item
+#        Qt.QStandardItemModel.appendRow(self, item, *args, **kwargs)
+#        look_back = min(10, self.nmax)
+#        if self.nmax is not None:
+#            nrows = self.rowCount()
+#            if nrows > self.nmax:
+#                if not self.issued_warning:
+#                    print "warning: limiting the number of minima displayed in the gui to", self.nmax
+#                    self.issued_warning = True
+#                # choose an item to remove from the list.  we can't usume it's totally sorted
+#                # because it might have been a while since it was last sorted
+#                candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-look_back,nrows)]
+#                toremove = max(candidates)
+#                self.takeRow(toremove[1])
 
 class SaveCoordsAction(QtGui.QAction):
     def __init__(self, minimum, parent=None):
@@ -182,25 +235,21 @@ class ListViewManager(object):
         menu.exec_(view.mapToGlobal(point))
     
     def on_list_minima_main_selectionChanged(self, new, old):
-        index = new.indexes()[0]
-        item = self.minima_list_model.itemFromIndex(index)
-        minimum = item.minimum
-        self.parent.SelectMinimum(minimum, set_selected=False)
+        minimum = self.minima_list_model.minimum_from_selection(new)
+        if minimum is not None:
+            self.parent.SelectMinimum(minimum, set_selected=False)
 
     def on_listMinima1_selectionChanged(self, new, old):
         """when an item in the first list in the connect tab is selected"""
-        index = new.indexes()[0]
-        item = self.minima_list_model.itemFromIndex(index)
-        minimum = item.minimum
-        self.parent._SelectMinimum1(minimum, set_selected=False)
-
+        minimum = self.minima_list_model.minimum_from_selection(new)
+        if minimum is not None:
+            self.parent._SelectMinimum1(minimum, set_selected=False)
     
     def on_listMinima2_selectionChanged(self, new, old):
         """when an item in the second list in the connect tab is selected"""
-        index = new.indexes()[0]
-        item = self.minima_list_model.itemFromIndex(index)
-        minimum = item.minimum
-        self.parent._SelectMinimum2(minimum, set_selected=False)
+        minimum = self.minima_list_model.minimum_from_selection(new)
+        if minimum is not None:
+            self.parent._SelectMinimum2(minimum, set_selected=False)
 
     def _select_main(self, minimum):
         """set the minimum as selected in the basinhopping tab"""
@@ -286,7 +335,7 @@ class ListViewManager(object):
 
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
-        self.minima_list_model.appendRow(MinimumStandardItem(minimum))
+        self.minima_list_model.addMinimum(minimum)
         if sort_items:
             self._sort_minima()
 

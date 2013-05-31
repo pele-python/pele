@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Sun May 26 19:28:22 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Fri May 31 14:07:13 2013
+#      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -54,10 +45,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addWidget(self.ogl_main)
         self.verticalLayout_3 = QtGui.QVBoxLayout()
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
-        self.label_2 = QtGui.QLabel(self.BHTab)
-        self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.verticalLayout_3.addWidget(self.label_2)
-        self.list_minima_main = QtGui.QListView(self.BHTab)
+        self.list_minima_main = QtGui.QTableView(self.BHTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -65,7 +53,16 @@ class Ui_MainWindow(object):
         self.list_minima_main.setSizePolicy(sizePolicy)
         self.list_minima_main.setMaximumSize(QtCore.QSize(200, 16777215))
         self.list_minima_main.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.list_minima_main.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.list_minima_main.setSortingEnabled(True)
         self.list_minima_main.setObjectName(_fromUtf8("list_minima_main"))
+        self.list_minima_main.horizontalHeader().setCascadingSectionResizes(True)
+        self.list_minima_main.horizontalHeader().setDefaultSectionSize(80)
+        self.list_minima_main.horizontalHeader().setSortIndicatorShown(True)
+        self.list_minima_main.horizontalHeader().setStretchLastSection(False)
+        self.list_minima_main.verticalHeader().setVisible(False)
+        self.list_minima_main.verticalHeader().setCascadingSectionResizes(False)
+        self.list_minima_main.verticalHeader().setSortIndicatorShown(False)
         self.verticalLayout_3.addWidget(self.list_minima_main)
         self.pushTakestepExplorer = QtGui.QPushButton(self.BHTab)
         self.pushTakestepExplorer.setObjectName(_fromUtf8("pushTakestepExplorer"))
@@ -198,7 +195,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 839, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 839, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuSimulation = QtGui.QMenu(self.menubar)
         self.menuSimulation.setObjectName(_fromUtf8("menuSimulation"))
@@ -238,42 +235,41 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        self.label_2.setText(_translate("MainWindow", "Energy (id)", None))
-        self.pushTakestepExplorer.setText(_translate("MainWindow", "Takestep explorer", None))
-        self.pushNormalmodesMin.setText(_translate("MainWindow", "Normalmodes", None))
-        self.btn_start_basinhopping.setToolTip(_translate("MainWindow", "<html><head/><body><p>Start a short basinhopping run</p></body></html>", None))
-        self.btn_start_basinhopping.setText(_translate("MainWindow", "Run", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.BHTab), _translate("MainWindow", "Basin Hopping", None))
-        self.btnAlign.setToolTip(_translate("MainWindow", "<html><head/><body><p>Find best alignment between two structures</p></body></html>", None))
-        self.btnAlign.setText(_translate("MainWindow", "Align", None))
-        self.btnReconnect.setToolTip(_translate("MainWindow", "<html><head/><body><p>Start a fresh double ended connect run</p></body></html>", None))
-        self.btnReconnect.setText(_translate("MainWindow", "Reconnect", None))
-        self.btnNEB.setToolTip(_translate("MainWindow", "<html><head/><body><p>Start an NEB run (no alignment is done)</p></body></html>", None))
-        self.btnNEB.setText(_translate("MainWindow", "NEB", None))
-        self.btnConnect.setToolTip(_translate("MainWindow", "<html><head/><body><p>Start a double ended connect run</p></body></html>", None))
-        self.btnConnect.setText(_translate("MainWindow", "Connect", None))
-        self.btnShowGraph.setToolTip(_translate("MainWindow", "<html><head/><body><p>Show the graph of minima and transition states</p></body></html>", None))
-        self.btnShowGraph.setText(_translate("MainWindow", "show graph", None))
-        self.btnDisconnectivity_graph.setToolTip(_translate("MainWindow", "<html><head/><body><p>Show the disconnectivity graph</p></body></html>", None))
-        self.btnDisconnectivity_graph.setText(_translate("MainWindow", "disconnectivity graph", None))
-        self.btn_connect_in_optim.setToolTip(_translate("MainWindow", "<html><head/><body><p>Spawn an external OPTIM job</p></body></html>", None))
-        self.btn_connect_in_optim.setText(_translate("MainWindow", "Connect in OPTIM", None))
-        self.btn_connect_all.setText(_translate("MainWindow", "Connect All", None))
-        self.btn_close_all.setText(_translate("MainWindow", "Close Windows", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), _translate("MainWindow", "Connect", None))
-        self.pushNormalmodesTS.setText(_translate("MainWindow", "Normalmodes", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.TSTab), _translate("MainWindow", "Transition States", None))
-        self.menuSimulation.setTitle(_translate("MainWindow", "Database", None))
-        self.menuHelp.setTitle(_translate("MainWindow", "Help", None))
-        self.menuActions.setTitle(_translate("MainWindow", "Actions", None))
-        self.actionNew.setText(_translate("MainWindow", "New", None))
-        self.actionClear.setText(_translate("MainWindow", "Clear Database", None))
-        self.action_db_connect.setText(_translate("MainWindow", "Connect to Database", None))
-        self.actionAbout.setText(_translate("MainWindow", "About", None))
-        self.action_delete_minimum.setText(_translate("MainWindow", "Delete Minimum", None))
-        self.action_edit_params.setText(_translate("MainWindow", "Edit default parameters", None))
-        self.action_merge_minima.setText(_translate("MainWindow", "Merge Minima", None))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushTakestepExplorer.setText(QtGui.QApplication.translate("MainWindow", "Takestep explorer", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushNormalmodesMin.setText(QtGui.QApplication.translate("MainWindow", "Normalmodes", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_start_basinhopping.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a short basinhopping run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_start_basinhopping.setText(QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.BHTab), QtGui.QApplication.translate("MainWindow", "Basin Hopping", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnAlign.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Find best alignment between two structures</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnAlign.setText(QtGui.QApplication.translate("MainWindow", "Align", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnReconnect.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a fresh double ended connect run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnReconnect.setText(QtGui.QApplication.translate("MainWindow", "Reconnect", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnNEB.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start an NEB run (no alignment is done)</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnNEB.setText(QtGui.QApplication.translate("MainWindow", "NEB", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnConnect.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a double ended connect run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnShowGraph.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Show the graph of minima and transition states</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "show graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnDisconnectivity_graph.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Show the disconnectivity graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnDisconnectivity_graph.setText(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_connect_in_optim.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Spawn an external OPTIM job</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_connect_in_optim.setText(QtGui.QApplication.translate("MainWindow", "Connect in OPTIM", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_connect_all.setText(QtGui.QApplication.translate("MainWindow", "Connect All", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_close_all.setText(QtGui.QApplication.translate("MainWindow", "Close Windows", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushNormalmodesTS.setText(QtGui.QApplication.translate("MainWindow", "Normalmodes", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.TSTab), QtGui.QApplication.translate("MainWindow", "Transition States", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuSimulation.setTitle(QtGui.QApplication.translate("MainWindow", "Database", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuActions.setTitle(QtGui.QApplication.translate("MainWindow", "Actions", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNew.setText(QtGui.QApplication.translate("MainWindow", "New", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClear.setText(QtGui.QApplication.translate("MainWindow", "Clear Database", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_db_connect.setText(QtGui.QApplication.translate("MainWindow", "Connect to Database", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_delete_minimum.setText(QtGui.QApplication.translate("MainWindow", "Delete Minimum", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_edit_params.setText(QtGui.QApplication.translate("MainWindow", "Edit default parameters", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_merge_minima.setText(QtGui.QApplication.translate("MainWindow", "Merge Minima", None, QtGui.QApplication.UnicodeUTF8))
 
 from show3d_with_slider import Show3DWithSlider
 from pygmin.gui.show3d import Show3D
