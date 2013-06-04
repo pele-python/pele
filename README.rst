@@ -1,7 +1,7 @@
-pele: tools for global optimization and energy landscape exploration.
+PELE : Python Energy Landscape Explorer
++++++++++++++++++++++++++++++++++++++++
 
-pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
-programs written by David Wales and collaborators.
+tools for global optimization and energy landscape exploration.
 
 The code is hosted at
 
@@ -14,6 +14,9 @@ http://pele-python.github.com/pele/
 The code project upon which this python package is based can be found at
 
 http://www-wales.ch.cam.ac.uk/software.html
+
+pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
+programs written by David Wales and collaborators.
 
 
 INSTALLATION
