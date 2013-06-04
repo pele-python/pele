@@ -1,0 +1,23 @@
+pele.accept_tests.SphericalContainer
+====================================
+
+.. currentmodule:: pele.accept_tests
+
+.. autoclass:: SphericalContainer
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~SphericalContainer.__call__
+         ~SphericalContainer.accept
+         ~SphericalContainer.acceptWrapper
+         ~SphericalContainer.accept_fortran
+   
+   
+
+   
+   
+   

@@ -1,0 +1,24 @@
+pele.takestep.BlockMoves
+========================
+
+.. currentmodule:: pele.takestep
+
+.. autoclass:: BlockMoves
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~BlockMoves.__call__
+         ~BlockMoves.addBlock
+         ~BlockMoves.scale
+         ~BlockMoves.takeStep
+         ~BlockMoves.updateStep
+   
+   
+
+   
+   
+   

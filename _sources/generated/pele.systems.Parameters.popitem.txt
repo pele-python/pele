@@ -1,0 +1,6 @@
+pele.systems.Parameters.popitem
+===============================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: Parameters.popitem

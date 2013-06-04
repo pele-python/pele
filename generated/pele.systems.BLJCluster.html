@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.systems.BLJCluster &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="System Class (pele.systems)" href="../system_class.html" />
+    <link rel="next" title="pele.systems.BLJCluster.createNEB" href="pele.systems.BLJCluster.createNEB.html" />
+    <link rel="prev" title="pele.systems.LJCluster.smooth_path" href="pele.systems.LJCluster.smooth_path.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BLJCluster.createNEB.html" title="pele.systems.BLJCluster.createNEB"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.LJCluster.smooth_path.html" title="pele.systems.LJCluster.smooth_path"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../system_class.html" accesskey="U">System Class (<cite>pele.systems</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-systems-bljcluster">
+<h1>pele.systems.BLJCluster<a class="headerlink" href="#pele-systems-bljcluster" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.systems.BLJCluster">
+<em class="property">class </em><tt class="descclassname">pele.systems.</tt><tt class="descname">BLJCluster</tt><big>(</big><em>natoms</em>, <em>ntypeA='default'</em>, <em>**potential_kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/systems/bljcluster.html#BLJCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.systems.BLJCluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>define the System class for a binary Lennard-Jones cluster</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>natoms</strong> : int</p>
+<p><strong>ntypeA</strong> : int</p>
+<blockquote>
+<div><p>number of type-A, big particles</p>
+</div></blockquote>
+<p><strong>**kwargs</strong> : other keyword parameters</p>
+<blockquote class="last">
+<div><p>these are passed on to the potential</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.systems.BaseSystem.html#pele.systems.BaseSystem" title="pele.systems.BaseSystem"><tt class="xref py py-obj docutils literal"><span class="pre">BaseSystem</span></tt></a>, <a class="reference internal" href="pele.systems.AtomicCluster.html#pele.systems.AtomicCluster" title="pele.systems.AtomicCluster"><tt class="xref py py-obj docutils literal"><span class="pre">AtomicCluster</span></tt></a></p>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.createNEB.html#pele.systems.BLJCluster.createNEB" title="pele.systems.BLJCluster.createNEB"><tt class="xref py py-obj docutils literal"><span class="pre">createNEB</span></tt></a>(coords1,&nbsp;coords2,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.create_database.html#pele.systems.BLJCluster.create_database" title="pele.systems.BLJCluster.create_database"><tt class="xref py py-obj docutils literal"><span class="pre">create_database</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>return a new database object</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.draw.html#pele.systems.BLJCluster.draw" title="pele.systems.BLJCluster.draw"><tt class="xref py py-obj docutils literal"><span class="pre">draw</span></tt></a>(coordslinear,&nbsp;index)</td>
+<td>tell the gui how to represent your system using openGL objects</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_basinhopping.html#pele.systems.BLJCluster.get_basinhopping" title="pele.systems.BLJCluster.get_basinhopping"><tt class="xref py py-obj docutils literal"><span class="pre">get_basinhopping</span></tt></a>([database,&nbsp;takestep,&nbsp;...])</td>
+<td>return the basinhopping object with takestep</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.get_compare_exact.html#pele.systems.BLJCluster.get_compare_exact" title="pele.systems.BLJCluster.get_compare_exact"><tt class="xref py py-obj docutils literal"><span class="pre">get_compare_exact</span></tt></a>(**kwargs)</td>
+<td>this function quickly determines whether two clusters are identical</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_compare_minima.html#pele.systems.BLJCluster.get_compare_minima" title="pele.systems.BLJCluster.get_compare_minima"><tt class="xref py py-obj docutils literal"><span class="pre">get_compare_minima</span></tt></a>()</td>
+<td>a wrapper for compare exact so in input can be in</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.get_double_ended_connect.html#pele.systems.BLJCluster.get_double_ended_connect" title="pele.systems.BLJCluster.get_double_ended_connect"><tt class="xref py py-obj docutils literal"><span class="pre">get_double_ended_connect</span></tt></a>(min1,&nbsp;min2,&nbsp;database)</td>
+<td>return a DoubleEndedConnect object</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_log_product_normalmode_freq.html#pele.systems.BLJCluster.get_log_product_normalmode_freq" title="pele.systems.BLJCluster.get_log_product_normalmode_freq"><tt class="xref py py-obj docutils literal"><span class="pre">get_log_product_normalmode_freq</span></tt></a>(coords[,&nbsp;...])</td>
+<td>return the log product of the squared normal mode frequencies</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.get_metric_tensor.html#pele.systems.BLJCluster.get_metric_tensor" title="pele.systems.BLJCluster.get_metric_tensor"><tt class="xref py py-obj docutils literal"><span class="pre">get_metric_tensor</span></tt></a>(coords)</td>
+<td>metric tensor for all masses m_i=1.0</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_mindist.html#pele.systems.BLJCluster.get_mindist" title="pele.systems.BLJCluster.get_mindist"><tt class="xref py py-obj docutils literal"><span class="pre">get_mindist</span></tt></a>(**kwargs)</td>
+<td>return a function which puts two structures in best alignment.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.get_minimizer.html#pele.systems.BLJCluster.get_minimizer" title="pele.systems.BLJCluster.get_minimizer"><tt class="xref py py-obj docutils literal"><span class="pre">get_minimizer</span></tt></a>(**kwargs)</td>
+<td>return a function to minimize the structure</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_normalmodes.html#pele.systems.BLJCluster.get_normalmodes" title="pele.systems.BLJCluster.get_normalmodes"><tt class="xref py py-obj docutils literal"><span class="pre">get_normalmodes</span></tt></a>(coords)</td>
+<td>return the squared normal mode frequencies and eigenvectors</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.get_nzero_modes.html#pele.systems.BLJCluster.get_nzero_modes" title="pele.systems.BLJCluster.get_nzero_modes"><tt class="xref py py-obj docutils literal"><span class="pre">get_nzero_modes</span></tt></a>()</td>
+<td>return the number of vibration modes with zero frequency</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_orthogonalize_to_zero_eigenvectors.html#pele.systems.BLJCluster.get_orthogonalize_to_zero_eigenvectors" title="pele.systems.BLJCluster.get_orthogonalize_to_zero_eigenvectors"><tt class="xref py py-obj docutils literal"><span class="pre">get_orthogonalize_to_zero_eigenvectors</span></tt></a>()</td>
+<td>the zero eigenvectors correspond to 3 global translational</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.get_permlist.html#pele.systems.BLJCluster.get_permlist" title="pele.systems.BLJCluster.get_permlist"><tt class="xref py py-obj docutils literal"><span class="pre">get_permlist</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_pgorder.html#pele.systems.BLJCluster.get_pgorder" title="pele.systems.BLJCluster.get_pgorder"><tt class="xref py py-obj docutils literal"><span class="pre">get_pgorder</span></tt></a>(coords)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.get_potential.html#pele.systems.BLJCluster.get_potential" title="pele.systems.BLJCluster.get_potential"><tt class="xref py py-obj docutils literal"><span class="pre">get_potential</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_random_configuration.html#pele.systems.BLJCluster.get_random_configuration" title="pele.systems.BLJCluster.get_random_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_configuration</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.get_random_minimized_configuration.html#pele.systems.BLJCluster.get_random_minimized_configuration" title="pele.systems.BLJCluster.get_random_minimized_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_minimized_configuration</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.get_takestep.html#pele.systems.BLJCluster.get_takestep" title="pele.systems.BLJCluster.get_takestep"><tt class="xref py py-obj docutils literal"><span class="pre">get_takestep</span></tt></a>([stepsize])</td>
+<td>return the takestep object for use in basinhopping, etc.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BLJCluster.load_coords_pymol.html#pele.systems.BLJCluster.load_coords_pymol" title="pele.systems.BLJCluster.load_coords_pymol"><tt class="xref py py-obj docutils literal"><span class="pre">load_coords_pymol</span></tt></a>(coordslist,&nbsp;oname[,&nbsp;index])</td>
+<td>load the coords into pymol</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BLJCluster.smooth_path.html#pele.systems.BLJCluster.smooth_path" title="pele.systems.BLJCluster.smooth_path"><tt class="xref py py-obj docutils literal"><span class="pre">smooth_path</span></tt></a>(path,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.systems.LJCluster.smooth_path.html"
+                        title="previous chapter">pele.systems.LJCluster.smooth_path</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.systems.BLJCluster.createNEB.html"
+                        title="next chapter">pele.systems.BLJCluster.createNEB</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.systems.BLJCluster.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BLJCluster.createNEB.html" title="pele.systems.BLJCluster.createNEB"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.LJCluster.smooth_path.html" title="pele.systems.LJCluster.smooth_path"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../system_class.html" >System Class (<cite>pele.systems</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

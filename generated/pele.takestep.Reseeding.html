@@ -1,0 +1,176 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.takestep.Reseeding &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Step Taking (pele.takestep)" href="../step_taking.html" />
+    <link rel="next" title="pele.takestep.Reseeding.scale" href="pele.takestep.Reseeding.scale.html" />
+    <link rel="prev" title="pele.takestep.BlockMoves.updateStep" href="pele.takestep.BlockMoves.updateStep.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.takestep.Reseeding.scale.html" title="pele.takestep.Reseeding.scale"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.takestep.BlockMoves.updateStep.html" title="pele.takestep.BlockMoves.updateStep"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../step_taking.html" accesskey="U">Step Taking (<cite>pele.takestep</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-takestep-reseeding">
+<h1>pele.takestep.Reseeding<a class="headerlink" href="#pele-takestep-reseeding" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.takestep.Reseeding">
+<em class="property">class </em><tt class="descclassname">pele.takestep.</tt><tt class="descname">Reseeding</tt><big>(</big><em>takestep</em>, <em>reseed</em>, <em>maxnoimprove=100</em>, <em>accuracy=0.0001</em><big>)</big><a class="reference internal" href="../_modules/pele/takestep/group.html#Reseeding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.takestep.Reseeding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeding if energy did not improve</p>
+<p>This class wraps 2 takestep objects, one for a regular takestep move, and a
+reseeding step which is executed if the energy of the basin hopping run did not
+improve after a given number of steps.</p>
+<p>The energy is considered as improved if it is lower than the lowest energy found 
+during the current cycle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>takestep</strong> : takestep object</p>
+<blockquote>
+<div><p>takestep object to perform regular step taking</p>
+</div></blockquote>
+<p><strong>reseed</strong> : takestep object</p>
+<blockquote>
+<div><p>takestep object to do reseeding, e.g. generate a new random configuration</p>
+</div></blockquote>
+<p><strong>maxnoimprove</strong> : integer</p>
+<blockquote class="last">
+<div><p>do 1 reseeding step if the energy did not improve after so many steps.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.Reseeding.scale.html#pele.takestep.Reseeding.scale" title="pele.takestep.Reseeding.scale"><tt class="xref py py-obj docutils literal"><span class="pre">scale</span></tt></a>(factor)</td>
+<td>scale the stepsize</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.takestep.Reseeding.takeStep.html#pele.takestep.Reseeding.takeStep" title="pele.takestep.Reseeding.takeStep"><tt class="xref py py-obj docutils literal"><span class="pre">takeStep</span></tt></a>(coords,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.Reseeding.updateStep.html#pele.takestep.Reseeding.updateStep" title="pele.takestep.Reseeding.updateStep"><tt class="xref py py-obj docutils literal"><span class="pre">updateStep</span></tt></a>(accepted,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.takestep.BlockMoves.updateStep.html"
+                        title="previous chapter">pele.takestep.BlockMoves.updateStep</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.takestep.Reseeding.scale.html"
+                        title="next chapter">pele.takestep.Reseeding.scale</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.takestep.Reseeding.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.takestep.Reseeding.scale.html" title="pele.takestep.Reseeding.scale"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.takestep.BlockMoves.updateStep.html" title="pele.takestep.BlockMoves.updateStep"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../step_taking.html" >Step Taking (<cite>pele.takestep</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

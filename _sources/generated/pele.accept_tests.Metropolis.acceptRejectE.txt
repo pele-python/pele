@@ -1,0 +1,6 @@
+pele.accept_tests.Metropolis.acceptRejectE
+==========================================
+
+.. currentmodule:: pele.accept_tests
+
+.. automethod:: Metropolis.acceptRejectE

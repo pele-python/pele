@@ -1,0 +1,176 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.optimize.MYLBFGS &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Optimizers (pele.optimize)" href="../quenching.html" />
+    <link rel="next" title="pele.optimize.MYLBFGS.adjustStepSize" href="pele.optimize.MYLBFGS.adjustStepSize.html" />
+    <link rel="prev" title="pele.optimize.lbfgs_py" href="pele.optimize.lbfgs_py.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.MYLBFGS.adjustStepSize.html" title="pele.optimize.MYLBFGS.adjustStepSize"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.lbfgs_py.html" title="pele.optimize.lbfgs_py"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../quenching.html" accesskey="U">Optimizers (<cite>pele.optimize</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-optimize-mylbfgs">
+<h1>pele.optimize.MYLBFGS<a class="headerlink" href="#pele-optimize-mylbfgs" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.optimize.MYLBFGS">
+<em class="property">class </em><tt class="descclassname">pele.optimize.</tt><tt class="descname">MYLBFGS</tt><big>(</big><em>X</em>, <em>pot</em>, <em>**lbfgs_py_kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/optimize/_mylbfgs.html#MYLBFGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.MYLBFGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>minimize a function using the LBFGS routine</p>
+<p>this class inherits everything from the pythonic LBFGS
+except the implementation of the LBFGS algorithm (determining an appropriate
+step size and direction). This is reimplemented 
+using the Fortran code from GMIN.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><strong>see base class LBFGS</strong> :</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="pele.optimize.LBFGS.html#pele.optimize.LBFGS" title="pele.optimize.LBFGS"><tt class="xref py py-obj docutils literal"><span class="pre">LBFGS</span></tt></a></dt>
+<dd>base class</dd>
+</dl>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.adjustStepSize.html#pele.optimize.MYLBFGS.adjustStepSize" title="pele.optimize.MYLBFGS.adjustStepSize"><tt class="xref py py-obj docutils literal"><span class="pre">adjustStepSize</span></tt></a>(X,&nbsp;E,&nbsp;G,&nbsp;stp)</td>
+<td>We now have a proposed step.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.MYLBFGS.attachEvent.html#pele.optimize.MYLBFGS.attachEvent" title="pele.optimize.MYLBFGS.attachEvent"><tt class="xref py py-obj docutils literal"><span class="pre">attachEvent</span></tt></a>(event)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.getStep.html#pele.optimize.MYLBFGS.getStep" title="pele.optimize.MYLBFGS.getStep"><tt class="xref py py-obj docutils literal"><span class="pre">getStep</span></tt></a>(X,&nbsp;G)</td>
+<td>use the Fortran LBFGS code from GMIN to get the step</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.MYLBFGS.reset.html#pele.optimize.MYLBFGS.reset" title="pele.optimize.MYLBFGS.reset"><tt class="xref py py-obj docutils literal"><span class="pre">reset</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.run.html#pele.optimize.MYLBFGS.run" title="pele.optimize.MYLBFGS.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>()</td>
+<td>the main loop of the algorithm</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.optimize.lbfgs_py.html"
+                        title="previous chapter">pele.optimize.lbfgs_py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.optimize.MYLBFGS.adjustStepSize.html"
+                        title="next chapter">pele.optimize.MYLBFGS.adjustStepSize</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.optimize.MYLBFGS.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.MYLBFGS.adjustStepSize.html" title="pele.optimize.MYLBFGS.adjustStepSize"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.lbfgs_py.html" title="pele.optimize.lbfgs_py"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../quenching.html" >Optimizers (<cite>pele.optimize</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

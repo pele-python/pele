@@ -1,0 +1,6 @@
+pele.utils.rbtools.CoordsAdapter.nrigid
+=======================================
+
+.. currentmodule:: pele.utils.rbtools
+
+.. autoattribute:: CoordsAdapter.nrigid

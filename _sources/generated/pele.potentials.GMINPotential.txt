@@ -1,0 +1,29 @@
+pele.potentials.GMINPotential
+=============================
+
+.. currentmodule:: pele.potentials
+
+.. autoclass:: GMINPotential
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~GMINPotential.NumericalDerivative
+         ~GMINPotential.NumericalHessian
+         ~GMINPotential.getCoords
+         ~GMINPotential.getEnergy
+         ~GMINPotential.getEnergyGradient
+         ~GMINPotential.getEnergyGradientHessian
+         ~GMINPotential.getEnergyGradientNumerical
+         ~GMINPotential.getGradient
+         ~GMINPotential.getHessian
+         ~GMINPotential.test_potential
+   
+   
+
+   
+   
+   

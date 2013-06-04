@@ -1,0 +1,6 @@
+pele.utils.frozen_atoms.makeBLJNeighborListPotFreeze
+====================================================
+
+.. currentmodule:: pele.utils.frozen_atoms
+
+.. autofunction:: makeBLJNeighborListPotFreeze

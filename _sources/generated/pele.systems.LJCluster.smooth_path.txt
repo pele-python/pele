@@ -1,0 +1,6 @@
+pele.systems.LJCluster.smooth_path
+==================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.smooth_path

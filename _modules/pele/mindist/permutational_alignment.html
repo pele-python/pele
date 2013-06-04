@@ -1,0 +1,444 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.mindist.permutational_alignment &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.mindist.permutational_alignment</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="c">#from munkres import make_cost_matrix</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;find_best_permutation&quot;</span><span class="p">,</span> <span class="s">&quot;optimize_permutations&quot;</span><span class="p">,</span>
+           <span class="s">&quot;find_permutations_OPTIM&quot;</span><span class="p">,</span> <span class="s">&quot;find_permutations_munkres&quot;</span><span class="p">,</span>
+           <span class="s">&quot;find_permutations_hungarian&quot;</span><span class="p">]</span> 
+
+<span class="n">have_minperm</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="n">have_hungarian</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="n">have_munkres</span> <span class="o">=</span> <span class="bp">False</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">minperm</span>
+    <span class="n">have_minperm</span> <span class="o">=</span> <span class="bp">True</span>    
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">hungarian</span>
+    <span class="n">have_hungarian</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">try</span><span class="p">:</span>    
+    <span class="kn">import</span> <span class="nn">munkres</span>
+    <span class="n">have_munkres</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<span class="n">_findBestPermutationList</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="k">if</span> <span class="n">have_minperm</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_find_permutations</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">find_permutations_OPTIM</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">elif</span> <span class="n">have_hungarian</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_find_permutations</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">find_permutations_hungarian</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">have_munkres</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_find_permutations</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">find_permutations_munkres</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">BaseException</span><span class="p">(</span><span class="s">&quot;No Hungarian algorithm implementation found!&quot;</span>
+                        <span class="s">&quot;Please compile minperm.f90 or install the hungarian or the munkres package&quot;</span><span class="p">)</span>
+
+
+
+
+
+<span class="k">def</span> <span class="nf">permuteArray</span><span class="p">(</span><span class="n">Xold</span><span class="p">,</span> <span class="n">perm</span><span class="p">):</span>
+    <span class="c">#don&#39;t modify Xold</span>
+    <span class="n">Xnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">Xold</span><span class="p">)</span>
+    <span class="n">permsorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">iold</span><span class="p">,</span> <span class="n">inew</span><span class="p">)</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">permsorted</span><span class="p">,</span> <span class="n">perm</span><span class="p">):</span>
+        <span class="c">#print iold, &quot;-&gt;&quot;, inew</span>
+        <span class="n">Xnew</span><span class="p">[</span><span class="n">inew</span><span class="o">*</span><span class="mi">3</span><span class="p">:</span><span class="n">inew</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">Xold</span><span class="p">[</span><span class="n">iold</span><span class="o">*</span><span class="mi">3</span><span class="p">:</span><span class="n">iold</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">Xnew</span>
+
+
+<span class="k">def</span> <span class="nf">_make_cost_matrix</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    return the cost matrix for use in the hungarian algorithm.</span>
+<span class="sd">    </span>
+<span class="sd">    the cost matrix is the distance matrix (squared) for all atoms in atomlist</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cost</span> <span class="o">=</span> <span class="p">(((</span><span class="n">X1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">X2</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">cost</span>
+
+<span class="k">def</span> <span class="nf">find_permutations_munkres</span><span class="p">(</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">make_cost_matrix</span><span class="o">=</span><span class="n">_make_cost_matrix</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For a given set of positions X1 and X2, find the best permutation of the</span>
+<span class="sd">    atoms in X2.</span>
+<span class="sd">    </span>
+<span class="sd">    The positions must already be reshaped to reflect the dimensionality of the system!</span>
+
+<span class="sd">    Use an implementation of the Hungarian Algorithm in the Python package</span>
+<span class="sd">    index (PyPi) called munkres (another name for the algorithm).  The</span>
+<span class="sd">    hungarian algorithm time scales as O(n^3), much faster than the O(n!) from</span>
+<span class="sd">    looping through all permutations.</span>
+
+<span class="sd">    http://en.wikipedia.org/wiki/Hungarian_algorithm</span>
+<span class="sd">    http://pypi.python.org/pypi/munkres/1.0.5.2</span>
+<span class="sd">    </span>
+<span class="sd">    another package, hungarian, implements the same routine in comiled C</span>
+<span class="sd">    http://pypi.python.org/pypi/hungarian/</span>
+<span class="sd">    When I first downloaded this package I got segfaults.  The problem for me</span>
+<span class="sd">    was casing an integer pointer as (npy_intp *).  I may add the corrected </span>
+<span class="sd">    version to pele at some point</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#########################################</span>
+    <span class="c"># create the cost matrix</span>
+    <span class="c"># cost[j,i] = (X1(i,:) - X2(j,:))**2</span>
+    <span class="c">#########################################</span>
+    <span class="n">cost</span> <span class="o">=</span> <span class="n">make_cost_matrix</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">)</span>
+    <span class="c">#cost = np.sqrt(cost)</span>
+
+    <span class="c">#########################################</span>
+    <span class="c"># run the munkres algorithm</span>
+    <span class="c">#########################################</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">cost</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">munkres</span><span class="o">.</span><span class="n">Munkres</span><span class="p">()</span>
+    <span class="n">newind</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>    
+    
+    <span class="c">#########################################</span>
+    <span class="c"># apply the permutation</span>
+    <span class="c">#########################################</span>
+    <span class="n">costnew</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">X2new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
+    <span class="n">new_indices</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">iold</span><span class="p">,</span> <span class="n">inew</span><span class="p">)</span> <span class="ow">in</span> <span class="n">newind</span><span class="p">:</span>
+        <span class="n">costnew</span> <span class="o">+=</span> <span class="n">cost</span><span class="p">[</span><span class="n">iold</span><span class="p">,</span> <span class="n">inew</span><span class="p">]</span>
+        <span class="n">new_indices</span><span class="p">[</span><span class="n">inew</span><span class="p">]</span> <span class="o">=</span> <span class="n">iold</span>
+
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">costnew</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dist</span><span class="p">,</span> <span class="n">new_indices</span>
+
+<span class="k">def</span> <span class="nf">find_permutations_hungarian</span><span class="p">(</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">make_cost_matrix</span><span class="o">=</span><span class="n">_make_cost_matrix</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For a given set of positions X1 and X2, find the best permutation of the</span>
+<span class="sd">    atoms in X2.</span>
+
+<span class="sd">    The positions must already be reshaped to reflect the dimensionality of the system!</span>
+
+<span class="sd">    Use an implementation of the Hungarian Algorithm in the Python package</span>
+<span class="sd">    index (PyPi) called munkres (another name for the algorithm).  The</span>
+<span class="sd">    hungarian algorithm time scales as O(n^3), much faster than the O(n!) from</span>
+<span class="sd">    looping through all permutations.</span>
+
+<span class="sd">    http://en.wikipedia.org/wiki/Hungarian_algorithm</span>
+<span class="sd">    http://pypi.python.org/pypi/munkres/1.0.5.2</span>
+<span class="sd">    </span>
+<span class="sd">    another package, hungarian, implements the same routine in comiled C</span>
+<span class="sd">    http://pypi.python.org/pypi/hungarian/</span>
+<span class="sd">    When I first downloaded this package I got segfaults.  The problem for me</span>
+<span class="sd">    was casing an integer pointer as (npy_intp *).  I may add the corrected </span>
+<span class="sd">    version to pele at some point</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#########################################</span>
+    <span class="c"># create the cost matrix</span>
+    <span class="c"># cost[j,i] = (X1(i,:) - X2(j,:))**2</span>
+    <span class="c">#########################################</span>
+    <span class="n">cost</span> <span class="o">=</span> <span class="n">make_cost_matrix</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">)</span>
+    <span class="c">#cost = np.sqrt(cost)</span>
+
+    <span class="c">#########################################</span>
+    <span class="c"># run the hungarian algorithm</span>
+    <span class="c">#########################################</span>
+    <span class="n">newind1</span> <span class="o">=</span> <span class="n">hungarian</span><span class="o">.</span><span class="n">lap</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span>
+    <span class="n">perm</span> <span class="o">=</span> <span class="n">newind1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c">#note: the hungarian algorithm changes</span>
+    <span class="c">#the cost matrix.  I&#39;m not sure why, and it may be a bug, </span>
+    <span class="c">#but the indices it returns are still correct</span>
+<span class="c">#    if not np.all(cost &gt;= 0):</span>
+<span class="c">#        m = np.max(np.abs(cost-costsave))</span>
+<span class="c">#        print &quot;after hungarian cost greater than zero:, %g&quot; % m</span>
+    
+    
+    <span class="c">#########################################</span>
+    <span class="c"># apply the permutation</span>
+    <span class="c">#########################################</span>
+    <span class="c"># TODO: how to get new distance?</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="n">dist</span><span class="p">,</span> <span class="n">perm</span>
+
+<span class="k">def</span> <span class="nf">find_permutations_OPTIM</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">box_lengths</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">make_cost_matrix</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    use OPTIM&#39;s minperm() routine to calculate the optimum permutation</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    
+    <span class="k">if</span> <span class="n">make_cost_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_make_cost_matrix</span> <span class="ow">and</span> <span class="n">make_cost_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;cannot use a custom cost matrix with findBestPermutationListOPTIM&quot;</span><span class="p">)</span>
+
+    <span class="c">#deal with periodic boundary conditions</span>
+    <span class="n">periodic</span> <span class="o">=</span> <span class="n">box_lengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">periodic</span><span class="p">:</span>
+        <span class="c">#it must have a value for passing to fortran </span>
+        <span class="n">box_lengths</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]</span>
+    <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">,</span> <span class="n">sz</span> <span class="o">=</span> <span class="n">box_lengths</span>
+        
+    <span class="c">#run the minperm algorithm</span>
+    <span class="n">perm</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">worstdist</span><span class="p">,</span> <span class="n">worstradius</span> <span class="o">=</span> <span class="n">minperm</span><span class="o">.</span><span class="n">minperm</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">X2</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">,</span> <span class="n">sz</span><span class="p">,</span> <span class="n">periodic</span><span class="p">)</span>
+    <span class="n">perm</span> <span class="o">-=</span> <span class="mi">1</span> <span class="c">#fortran indexing</span>
+
+    <span class="c">#note, dist returned by minperm comes will only be accurate to 6 decimal places at best.</span>
+    <span class="c">#if we want a more accurate distance we should calculate it from the coordinates</span>
+
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dist</span><span class="p">,</span> <span class="n">perm</span>
+
+
+<div class="viewcode-block" id="find_best_permutation"><a class="viewcode-back" href="../../../generated/pele.mindist.find_best_permutation.html#pele.mindist.find_best_permutation">[docs]</a><span class="k">def</span> <span class="nf">find_best_permutation</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">permlist</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user_algorithm</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                            <span class="n">reshape</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">user_cost_matrix</span><span class="o">=</span><span class="n">_make_cost_matrix</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    find the permutation of the atoms which minimizes the distance |X1-X2|</span>
+<span class="sd">    </span>
+<span class="sd">    With all the default parameters, findBestPermutation assumes that X1, X2</span>
+<span class="sd">    are arrays of atoms in 3d space and performs reshaping on the coordinates. However,</span>
+<span class="sd">    if you want to pass a 2D system or a custom array with own cost function, you can turn</span>
+<span class="sd">    automatic reshaping off. </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X1, X2 : </span>
+<span class="sd">        the structures to align</span>
+<span class="sd">    permlist : a list of lists</span>
+<span class="sd">        A list of lists of atoms which are interchangable.</span>
+<span class="sd">        e.g. for a 50/50 binary mixture::</span>
+<span class="sd">        </span>
+<span class="sd">            permlist = [range(1,natoms/2), range(natoms/2,natoms)]</span>
+
+<span class="sd">    user_algoriithm : None or callable</span>
+<span class="sd">        you can optionally pass which algorithm to use.</span>
+<span class="sd">    gen_cost_matrix : None or callable</span>
+<span class="sd">        user function to generate the cost matrix</span>
+<span class="sd">    reshape : boolean</span>
+<span class="sd">        shall coordinate reshaping be performed.</span>
+<span class="sd">    box_lengths : float array</span>
+<span class="sd">        array of floats giving the box lengths for periodic boundary conditions.</span>
+<span class="sd">        Set to None for no periodic boundary conditions.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dist : float</span>
+<span class="sd">        the minimum distance</span>
+<span class="sd">    perm:</span>
+<span class="sd">        a list of all permutations</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This for each list of interchangeable atoms in permlist the permutation</span>
+<span class="sd">    which minimizes the distance between the two structures is found.  This minimimization</span>
+<span class="sd">    is done by mapping the problem onto the linear assignment problem which can then be solved</span>
+<span class="sd">    using graph theoretic techniques.  </span>
+<span class="sd">    </span>
+<span class="sd">    http://en.wikipedia.org/wiki/Linear_assignment_problem</span>
+<span class="sd">    http://en.wikipedia.org/wiki/Hungarian_algorithm</span>
+
+<span class="sd">    there are several packages in pypi which solve the linear assignment problem</span>
+<span class="sd">    </span>
+<span class="sd">    hungarian : c++ code wrapped in python.  scales roughly like natoms**2.5</span>
+<span class="sd">    </span>
+<span class="sd">    munkres : completely in python. scales roughly like natoms**3.  very slow for natoms &gt; 10</span>
+<span class="sd">    </span>
+<span class="sd">    in addition we have wrapped the OPTIM version for use in pele.  It uses the sparse </span>
+<span class="sd">    version of the Jonker-Volgenant algorithm.  Furthermore the cost matrix calculated in </span>
+<span class="sd">    a compiled language for an additional speed boost. It scales roughly like natoms**2</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">reshape</span><span class="p">:</span>
+        <span class="n">X1</span> <span class="o">=</span> <span class="n">X1</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">X2</span> <span class="o">=</span> <span class="n">X2</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+    
+    <span class="k">if</span> <span class="n">permlist</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">permlist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X1</span><span class="p">))]</span>
+    
+    <span class="n">newperm</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X1</span><span class="p">))</span>
+    <span class="n">disttot</span> <span class="o">=</span> <span class="mf">0.</span>
+    
+    <span class="k">for</span> <span class="n">atomlist</span> <span class="ow">in</span> <span class="n">permlist</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">user_algorithm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">dist</span><span class="p">,</span> <span class="n">perm</span> <span class="o">=</span> <span class="n">user_algorithm</span><span class="p">(</span><span class="n">X1</span><span class="p">[</span><span class="n">atomlist</span><span class="p">],</span> <span class="n">X2</span><span class="p">[</span><span class="n">atomlist</span><span class="p">],</span> <span class="n">make_cost_matrix</span><span class="o">=</span><span class="n">user_cost_matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">user_cost_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_make_cost_matrix</span><span class="p">:</span>
+            <span class="n">dist</span><span class="p">,</span> <span class="n">perm</span> <span class="o">=</span> <span class="n">find_permutations_hungarian</span><span class="p">(</span><span class="n">X1</span><span class="p">[</span><span class="n">atomlist</span><span class="p">],</span> <span class="n">X2</span><span class="p">[</span><span class="n">atomlist</span><span class="p">],</span> <span class="n">make_cost_matrix</span><span class="o">=</span><span class="n">user_cost_matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dist</span><span class="p">,</span> <span class="n">perm</span> <span class="o">=</span> <span class="n">_find_permutations</span><span class="p">(</span><span class="n">X1</span><span class="p">[</span><span class="n">atomlist</span><span class="p">],</span> <span class="n">X2</span><span class="p">[</span><span class="n">atomlist</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="n">disttot</span> <span class="o">+=</span> <span class="n">dist</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">for</span> <span class="n">atom</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">atomlist</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atomlist</span><span class="p">))):</span>
+            <span class="n">newperm</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span> <span class="o">=</span> <span class="n">atomlist</span><span class="p">[</span><span class="n">perm</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">disttot</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dist</span><span class="p">,</span> <span class="n">newperm</span>
+</div>
+<span class="k">def</span> <span class="nf">_cartesian_distance_periodic</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">box_lengths</span><span class="p">):</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">box_lengths</span><span class="p">)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">dim</span><span class="p">])</span>
+    <span class="n">dx</span> <span class="o">-=</span> <span class="n">box_lengths</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dx</span> <span class="o">/</span> <span class="n">box_lengths</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dist</span>
+
+
+<span class="k">def</span> <span class="nf">_cartesian_distance</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">box_lengths</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">box_lengths</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x2</span><span class="o">-</span><span class="n">x1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_cartesian_distance_periodic</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">box_lengths</span><span class="p">)</span>
+        
+
+<div class="viewcode-block" id="optimize_permutations"><a class="viewcode-back" href="../../../generated/pele.mindist.optimize_permutations.html#pele.mindist.optimize_permutations">[docs]</a><span class="k">def</span> <span class="nf">optimize_permutations</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">permlist</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user_algorithm</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                           <span class="n">recalculate_distance</span><span class="o">=</span><span class="n">_cartesian_distance</span><span class="p">,</span>
+                           <span class="n">box_lengths</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                           <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;return the best alignment of the structures X1 and X2 after optimizing permutations</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X1, X2 : </span>
+<span class="sd">        the structures to align.  X1 will be left unchanged.</span>
+<span class="sd">    permlist : a list of lists</span>
+<span class="sd">        A list of lists of atoms which are interchangable.</span>
+<span class="sd">        e.g. for a 50/50 binary mixture::</span>
+<span class="sd">        </span>
+<span class="sd">            permlist = [range(1,natoms/2), range(natoms/2,natoms)]</span>
+
+<span class="sd">    user_algoriithm : None or callable</span>
+<span class="sd">        you can optionally pass which algorithm to use to optimize the permutations the structures</span>
+<span class="sd">    gen_cost_matrix : None or callable</span>
+<span class="sd">        user function to generate the cost matrix</span>
+<span class="sd">    recalculate_distance : callable</span>
+<span class="sd">        function to compute the distance of the optimized coords.  If None is passed</span>
+<span class="sd">        then the distance is not recalculated and the returned distance is unreliable.</span>
+<span class="sd">    reshape : boolean</span>
+<span class="sd">        shall coordinate reshaping be performed.</span>
+<span class="sd">    box_lengths : float array</span>
+<span class="sd">        array of floats giving the box lengths for periodic boundary conditions.</span>
+<span class="sd">        Set to None for no periodic boundary conditions.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dist : float</span>
+<span class="sd">        the minimum distance</span>
+<span class="sd">    X1, X2new:</span>
+<span class="sd">        the optimized coordinates</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    find_best_permutation : </span>
+<span class="sd">        use this function to find the optimized permutation without changing the coordinates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">box_lengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;box_lengths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">box_lengths</span>
+    <span class="n">dist</span><span class="p">,</span> <span class="n">perm</span> <span class="o">=</span> <span class="n">find_best_permutation</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">permlist</span><span class="o">=</span><span class="n">permlist</span><span class="p">,</span> 
+                    <span class="n">user_algorithm</span><span class="o">=</span><span class="n">user_algorithm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">X2_</span> <span class="o">=</span> <span class="n">X2</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+    <span class="n">X2new</span> <span class="o">=</span> <span class="n">X2_</span><span class="p">[</span><span class="n">perm</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">recalculate_distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="c"># Recalculate the distance.  We can&#39;t trust the returned value</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">_cartesian_distance</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2new</span><span class="p">,</span> <span class="n">box_lengths</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">dist</span><span class="p">,</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2new</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

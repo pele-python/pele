@@ -1,0 +1,28 @@
+pele.utils.neighbor_list.NeighborListPotential
+==============================================
+
+.. currentmodule:: pele.utils.neighbor_list
+
+.. autoclass:: NeighborListPotential
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~NeighborListPotential.NumericalDerivative
+         ~NeighborListPotential.NumericalHessian
+         ~NeighborListPotential.getEnergy
+         ~NeighborListPotential.getEnergyGradient
+         ~NeighborListPotential.getEnergyGradientHessian
+         ~NeighborListPotential.getEnergyGradientNumerical
+         ~NeighborListPotential.getGradient
+         ~NeighborListPotential.getHessian
+         ~NeighborListPotential.test_potential
+   
+   
+
+   
+   
+   

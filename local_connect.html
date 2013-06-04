@@ -1,0 +1,143 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Local Connect Algorithm &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="up" title="Energy Landscape Exploration" href="landscape.html" />
+    <link rel="next" title="Nudged Elastic Band" href="NEB.html" />
+    <link rel="prev" title="Energy Landscape Exploration" href="landscape.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="NEB.html" title="Nudged Elastic Band"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="landscape.html" title="Energy Landscape Exploration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="landscape.html" accesskey="U">Energy Landscape Exploration</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="local-connect-algorithm">
+<h1>Local Connect Algorithm<a class="headerlink" href="#local-connect-algorithm" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="NEB.html">Nudged Elastic Band</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transition_state_refinement.html">Transition State Refinement</a></li>
+</ul>
+</div>
+<p>Local connect has three steps.</p>
+<ol class="arabic simple">
+<li>Do a <a class="reference internal" href="NEB.html#neb-description"><em>nudged elastic band (NEB)</em></a> run between min1 and min2 in order to get
+transition state candidates.</li>
+<li><a class="reference internal" href="transition_state_refinement.html#ts-refinement-description"><em>Refine the transition state</em></a> candidates to find actual transition states to
+the required tolerance.</li>
+<li>Falls off both sides of the transition state and minimize in order to find
+the pair of minima which the transition state connects.</li>
+</ol>
+<p>See <a class="reference internal" href="landscape_module.html#landscape-module"><em>landscape</em></a> for more complete documentation</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="landscape.html"
+                        title="previous chapter">Energy Landscape Exploration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="NEB.html"
+                        title="next chapter">Nudged Elastic Band</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/local_connect.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="NEB.html" title="Nudged Elastic Band"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="landscape.html" title="Energy Landscape Exploration"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="landscape.html" >Energy Landscape Exploration</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

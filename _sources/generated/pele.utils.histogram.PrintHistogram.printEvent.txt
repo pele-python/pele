@@ -1,0 +1,6 @@
+pele.utils.histogram.PrintHistogram.printEvent
+==============================================
+
+.. currentmodule:: pele.utils.histogram
+
+.. automethod:: PrintHistogram.printEvent

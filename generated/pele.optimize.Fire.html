@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.optimize.Fire &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Optimizers (pele.optimize)" href="../quenching.html" />
+    <link rel="next" title="pele.optimize.Fire.converged" href="pele.optimize.Fire.converged.html" />
+    <link rel="prev" title="pele.optimize.lbfgs_scipy" href="pele.optimize.lbfgs_scipy.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.Fire.converged.html" title="pele.optimize.Fire.converged"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.lbfgs_scipy.html" title="pele.optimize.lbfgs_scipy"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../quenching.html" accesskey="U">Optimizers (<cite>pele.optimize</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-optimize-fire">
+<h1>pele.optimize.Fire<a class="headerlink" href="#pele-optimize-fire" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.optimize.Fire">
+<em class="property">class </em><tt class="descclassname">pele.optimize.</tt><tt class="descname">Fire</tt><big>(</big><em>coords</em>, <em>potential</em>, <em>restart=None</em>, <em>logfile='-'</em>, <em>trajectory=None</em>, <em>dt=0.1</em>, <em>maxstep=0.5</em>, <em>dtmax=1.0</em>, <em>Nmin=5</em>, <em>finc=1.1</em>, <em>fdec=0.5</em>, <em>astart=0.1</em>, <em>fa=0.99</em>, <em>a=0.1</em>, <em>iprint=-1</em>, <em>alternate_stop_criterion=None</em>, <em>events=None</em>, <em>logger=None</em><big>)</big><a class="reference internal" href="../_modules/pele/optimize/_fire.html#Fire"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.Fire" title="Permalink to this definition">¶</a></dt>
+<dd><p>The FIRE optimization algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>coords</strong> : array</p>
+<blockquote>
+<div><p>the starting configuration for the optimization.</p>
+</div></blockquote>
+<p><strong>potential :</strong> :</p>
+<blockquote>
+<div><p>the potential object</p>
+</div></blockquote>
+<p><strong>dt</strong> : float</p>
+<blockquote>
+<div><p>adaptive time step for integration of the equations of motion</p>
+</div></blockquote>
+<p><strong>maxstep</strong> : float</p>
+<blockquote>
+<div><p>the maximum step size permitted</p>
+</div></blockquote>
+<p><strong>dtmax</strong> : float</p>
+<blockquote>
+<div><p>the maximum time step permitted</p>
+</div></blockquote>
+<p><strong>Nmin</strong> : int</p>
+<blockquote>
+<div><p>minimum number of steps taken after an uphill step before
+adaptive parameters are allowed to change</p>
+</div></blockquote>
+<p><strong>finc</strong> : float</p>
+<blockquote>
+<div><p>factor by which the time step is increased if moving downhill and
+at least Nmin steps from the last uphill step</p>
+</div></blockquote>
+<p><strong>fdec</strong> : float</p>
+<blockquote>
+<div><p>factor by which the time step is decreased if an uphill step has been taken</p>
+</div></blockquote>
+<p><strong>astart</strong> : float</p>
+<blockquote>
+<div><p>initial value of a and value taken after an uphill step.</p>
+</div></blockquote>
+<p><strong>fa</strong> : float</p>
+<blockquote>
+<div><p>factor by which parameter a decreases if moving downhill and at
+least Nmin steps from the last uphill step</p>
+</div></blockquote>
+<p><strong>a</strong> : float</p>
+<blockquote>
+<div><p>adaptive parameter that controls the velocity used to evolve the system.</p>
+</div></blockquote>
+<p><strong>iprint</strong> : int</p>
+<blockquote>
+<div><p>how often to print status information</p>
+</div></blockquote>
+<p><strong>alternative_stop_criterion</strong> : callable</p>
+<blockquote>
+<div><p>this criterion will be used rather than rms gradient to determine
+when to stop the iteration.  must return a boolean and accept the following keywords:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><cite>energy</cite></li>
+<li><cite>gradient</cite></li>
+<li><cite>tol</cite></li>
+</ol>
+</div></blockquote>
+</div></blockquote>
+<p><strong>events</strong> : list of callables</p>
+<blockquote class="last">
+<div><p>these are called after each iteration. Events can also be added using Fire.attachEvent().
+Each event must accept keywords:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><cite>coords</cite></li>
+<li><cite>energy</cite></li>
+<li><cite>rms</cite></li>
+</ol>
+</div></blockquote>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.optimize.LBFGS.html#pele.optimize.LBFGS" title="pele.optimize.LBFGS"><tt class="xref py py-obj docutils literal"><span class="pre">LBFGS</span></tt></a>, <a class="reference internal" href="pele.optimize.MYLBFGS.html#pele.optimize.MYLBFGS" title="pele.optimize.MYLBFGS"><tt class="xref py py-obj docutils literal"><span class="pre">MYLBFGS</span></tt></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>The Fast Inertial Relaxation Engine is an optimization algorithm based
+on molecular dynamics with modifications to the velocity and adaptive
+time steps. The method is based on a blind skier searching for the
+bottom of a valley and is described and tested here:</p>
+<p>Erik Bitzek, Pekka Koskinen, Franz Gaehler, Michael Moseler, and Peter Gumbsch.
+Phys. Rev. Lett. 97, 170201 (2006)
+<a class="reference external" href="http://link.aps.org/doi/10.1103/PhysRevLett.97.170201">http://link.aps.org/doi/10.1103/PhysRevLett.97.170201</a></p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Fire.converged.html#pele.optimize.Fire.converged" title="pele.optimize.Fire.converged"><tt class="xref py py-obj docutils literal"><span class="pre">converged</span></tt></a>([forces])</td>
+<td>Did the optimization converge?</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Fire.initialize.html#pele.optimize.Fire.initialize" title="pele.optimize.Fire.initialize"><tt class="xref py py-obj docutils literal"><span class="pre">initialize</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Fire.run.html#pele.optimize.Fire.run" title="pele.optimize.Fire.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>([fmax,&nbsp;steps])</td>
+<td>Run structure optimization algorithm.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Fire.step.html#pele.optimize.Fire.step" title="pele.optimize.Fire.step"><tt class="xref py py-obj docutils literal"><span class="pre">step</span></tt></a>(f)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.optimize.lbfgs_scipy.html"
+                        title="previous chapter">pele.optimize.lbfgs_scipy</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.optimize.Fire.converged.html"
+                        title="next chapter">pele.optimize.Fire.converged</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.optimize.Fire.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.Fire.converged.html" title="pele.optimize.Fire.converged"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.lbfgs_scipy.html" title="pele.optimize.lbfgs_scipy"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../quenching.html" >Optimizers (<cite>pele.optimize</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

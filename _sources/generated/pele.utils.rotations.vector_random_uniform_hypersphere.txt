@@ -1,0 +1,6 @@
+pele.utils.rotations.vector_random_uniform_hypersphere
+======================================================
+
+.. currentmodule:: pele.utils.rotations
+
+.. autofunction:: vector_random_uniform_hypersphere

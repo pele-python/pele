@@ -1,0 +1,6 @@
+pele.systems.BaseSystem.get_random_configuration
+================================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseSystem.get_random_configuration

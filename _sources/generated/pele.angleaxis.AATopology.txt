@@ -1,0 +1,31 @@
+pele.angleaxis.AATopology
+=========================
+
+.. currentmodule:: pele.angleaxis
+
+.. autoclass:: AATopology
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~AATopology.add_sites
+         ~AATopology.align_coords
+         ~AATopology.align_path
+         ~AATopology.coords_adapter
+         ~AATopology.distance_squared
+         ~AATopology.distance_squared_grad
+         ~AATopology.interpolate
+         ~AATopology.metric_tensor
+         ~AATopology.neb_distance
+         ~AATopology.orthogopt
+         ~AATopology.ortogopt_aa
+         ~AATopology.zeroEV
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+pele.potentials.LJpshift.getGradient
+====================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: LJpshift.getGradient

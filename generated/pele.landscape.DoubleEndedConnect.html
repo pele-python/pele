@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.landscape.DoubleEndedConnect &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Landscape Exploration (pele.landscape)" href="../landscape_module.html" />
+    <link rel="next" title="pele.landscape.DoubleEndedConnect.connect" href="pele.landscape.DoubleEndedConnect.connect.html" />
+    <link rel="prev" title="pele.landscape.LocalConnectPar.connect" href="pele.landscape.LocalConnectPar.connect.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.landscape.DoubleEndedConnect.connect.html" title="pele.landscape.DoubleEndedConnect.connect"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.landscape.LocalConnectPar.connect.html" title="pele.landscape.LocalConnectPar.connect"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../landscape_module.html" accesskey="U">Landscape Exploration (<cite>pele.landscape</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-landscape-doubleendedconnect">
+<h1>pele.landscape.DoubleEndedConnect<a class="headerlink" href="#pele-landscape-doubleendedconnect" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.landscape.DoubleEndedConnect">
+<em class="property">class </em><tt class="descclassname">pele.landscape.</tt><tt class="descname">DoubleEndedConnect</tt><big>(</big><em>min1</em>, <em>min2</em>, <em>pot</em>, <em>mindist</em>, <em>database</em>, <em>use_all_min=False</em>, <em>verbosity=1</em>, <em>merge_minima=False</em>, <em>max_dist_merge=0.1</em>, <em>local_connect_params={}</em>, <em>fresh_connect=False</em>, <em>longest_first=True</em>, <em>niter=200</em>, <em>conf_checks=None</em>, <em>load_no_distances=False</em><big>)</big><a class="reference internal" href="../_modules/pele/landscape/connect_min.html#DoubleEndedConnect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.landscape.DoubleEndedConnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a connected network of minima and transition states between min1 and min2</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>min1, min2</strong> : Mimumum() objects</p>
+<blockquote>
+<div><p>the two minima to try to connect</p>
+</div></blockquote>
+<p><strong>pot</strong> : potential object</p>
+<blockquote>
+<div><p>the potential</p>
+</div></blockquote>
+<p><strong>mindist</strong> : callable</p>
+<blockquote>
+<div><p>the function which returns the optimized minimum distance between
+two structures</p>
+</div></blockquote>
+<p><strong>database</strong> : Database() object</p>
+<blockquote>
+<div><p>the database object, used to save distance calculations so
+mindist() need only be called once for each minima pair. <em>Note</em> the
+use of this and graph is a bit redundant, this should be cleaned up</p>
+</div></blockquote>
+<p><strong>use_all_min</strong> : bool</p>
+<blockquote>
+<div><p>if True, then all known minima and transition states in graph will
+be used to try to connect min1 and min2.  This requires a mindist()
+call (or a retrieveal operation from database) for every pair which
+can take a very long time if many minima are known.</p>
+</div></blockquote>
+<p><strong>niter</strong> : int, optional</p>
+<blockquote>
+<div><p>maximum number of iterations</p>
+</div></blockquote>
+<p><strong>verbosity</strong> : int</p>
+<blockquote>
+<div><p>this controls how many status messages are printed.  (not really
+implemented yet)</p>
+</div></blockquote>
+<p><strong>merge_minima</strong> : bool</p>
+<blockquote>
+<div><p>if True, minima for which NEB finds no transition state candidates 
+between them will be merged</p>
+</div></blockquote>
+<p><strong>max_dist_merge</strong> : float</p>
+<blockquote>
+<div><p>merging minima will be aborted if the distance between them is greater
+than max_dist_merge</p>
+</div></blockquote>
+<p><strong>local_connect_params</strong> : dict</p>
+<blockquote>
+<div><p>parameters passed to the local connect algorithm.  This includes all
+NEB and all transition state search parameters, along with, e.g. 
+now many times to retry a local connect run.  See documentation for
+LocalConnect for details.</p>
+</div></blockquote>
+<p><strong>fresh_connect</strong> : bool</p>
+<blockquote>
+<div><p>if true, ignore all existing minima and transition states in the
+database and try to find a new path</p>
+</div></blockquote>
+<p><strong>longest_first</strong> : bool</p>
+<blockquote>
+<div><p>if true, always try to connect the longest segment in the path guess
+first</p>
+</div></blockquote>
+<p><strong>conf_checks</strong> : list of callables</p>
+<blockquote>
+<div><p>a list of callable function that determine if a configuration is valid.
+They must return a bool, and accept the keyword parameters</p>
+<blockquote>
+<div><p>conf_check(energy=energy, coords=coords)</p>
+</div></blockquote>
+<p>If any configuration in a minimum-transition_state-minimum triplet fails
+a test then the whole triplet is rejected.</p>
+</div></blockquote>
+<p><strong>load_no_distances</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>if True, then no distances will be loaded from the database</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><tt class="xref py py-obj docutils literal"><span class="pre">DoubleEndedConnectPar</span></tt></dt>
+<dd>parallel version of this class</dd>
+<dt><a class="reference internal" href="pele.landscape.LocalConnect.html#pele.landscape.LocalConnect" title="pele.landscape.LocalConnect"><tt class="xref py py-obj docutils literal"><span class="pre">LocalConnect</span></tt></a></dt>
+<dd>the core algorithm of this routine</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>The algorithm is iterative, with each iteration composed of</p>
+<dl class="docutils">
+<dt>While min1 and min2 are not connected:</dt>
+<dd><ol class="first arabic simple">
+<li>choose a pair of known minima to try to connect</li>
+<li>use NEB to get a guess for the transition states between them</li>
+<li>refine the transition states to desired accuracy</li>
+</ol>
+<p>4) fall off either side of the transition states to find the two
+minima associated with that candidate</p>
+<p class="last">5) add the transition states and associated minima to the known
+network</p>
+</dd>
+</dl>
+<p>Of the above, steps 1 and 2 and 3 are the most involved.  2, 3, 4 are 
+wrapped into a separate class called LocalConnect.  See this class and
+the NEB and FindTransitionState classes for detailed descriptions of 
+these procedures.</p>
+<p>An important note is that the NEB is used only to get a <em>guess</em> for the
+transition state.  Thus we only want to put enough time and energy into
+the NEB routine to get the guess close enough that FindTransitionState
+can refine it to the correct transition state.  FindTransitionState is
+very fast if the initial guess is good, but can be very slow otherwise.</p>
+<p>Choose a pair:</p>
+<p>Here I will describe step 1), the algorithm to find a pair of known
+minima to try to connect.  This choice will keep in mind that the
+ultimate goal is to connect min1 and min2.</p>
+<p>In addition to the input parameter &#8220;graph&#8221;, we keep a second graph
+&#8220;Gdist&#8221; (now wrapped in a separate class _DistanceGraph) which also has 
+minima as the vertices. Gdist has an edge between every pair of nodes. 
+The edge weight between vertices u and v
+is</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>if u and v are connected by transition states:</dt>
+<dd>weight(u, v) = 0.</dd>
+<dt>elif we have already tried local_connect on (u,v):</dt>
+<dd>weight(u, v) = Infinity</dd>
+<dt>else:</dt>
+<dd>weight(u, v) = dist(u, v)**2</dd>
+</dl>
+</div></blockquote>
+<p>This edge weight is set to Infinity to ensure we don&#8217;t repeat 
+LocalConnect runs over and over
+again.  The minimum weight path between min1 and min2 in Gdist gives a
+good guess for the best way to try connect min1 and min2.  So the
+algorithm to find a pair of know minima (trial1, trial2) to try to
+connect is</p>
+<p>path = Gdist.minimum_weight_path(min1, min2)
+trial1, trial2 = minima pair in path with lowest nonzero edge weight. (note:
+if parameter longest_first is True) then the edgepair with the largest
+edge weight will be selected)</p>
+<dl class="docutils">
+<dt>todo:</dt>
+<dd>allow user to pass graph</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.landscape.DoubleEndedConnect.connect.html#pele.landscape.DoubleEndedConnect.connect" title="pele.landscape.DoubleEndedConnect.connect"><tt class="xref py py-obj docutils literal"><span class="pre">connect</span></tt></a>()</td>
+<td>the main loop of the algorithm</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.landscape.DoubleEndedConnect.getDist.html#pele.landscape.DoubleEndedConnect.getDist" title="pele.landscape.DoubleEndedConnect.getDist"><tt class="xref py py-obj docutils literal"><span class="pre">getDist</span></tt></a>(min1,&nbsp;min2)</td>
+<td>get the distance between min1 and min2.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.landscape.DoubleEndedConnect.mergeMinima.html#pele.landscape.DoubleEndedConnect.mergeMinima" title="pele.landscape.DoubleEndedConnect.mergeMinima"><tt class="xref py py-obj docutils literal"><span class="pre">mergeMinima</span></tt></a>(min1,&nbsp;min2)</td>
+<td>merge two minimum objects</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.landscape.DoubleEndedConnect.returnPath.html#pele.landscape.DoubleEndedConnect.returnPath" title="pele.landscape.DoubleEndedConnect.returnPath"><tt class="xref py py-obj docutils literal"><span class="pre">returnPath</span></tt></a>()</td>
+<td>return information about the path</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.landscape.DoubleEndedConnect.success.html#pele.landscape.DoubleEndedConnect.success" title="pele.landscape.DoubleEndedConnect.success"><tt class="xref py py-obj docutils literal"><span class="pre">success</span></tt></a>()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.landscape.LocalConnectPar.connect.html"
+                        title="previous chapter">pele.landscape.LocalConnectPar.connect</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.landscape.DoubleEndedConnect.connect.html"
+                        title="next chapter">pele.landscape.DoubleEndedConnect.connect</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.landscape.DoubleEndedConnect.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.landscape.DoubleEndedConnect.connect.html" title="pele.landscape.DoubleEndedConnect.connect"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.landscape.LocalConnectPar.connect.html" title="pele.landscape.LocalConnectPar.connect"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../landscape_module.html" >Landscape Exploration (<cite>pele.landscape</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

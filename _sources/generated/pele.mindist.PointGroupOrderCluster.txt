@@ -1,0 +1,20 @@
+pele.mindist.PointGroupOrderCluster
+===================================
+
+.. currentmodule:: pele.mindist
+
+.. autoclass:: PointGroupOrderCluster
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~PointGroupOrderCluster.__call__
+   
+   
+
+   
+   
+   

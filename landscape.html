@@ -1,0 +1,173 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Energy Landscape Exploration &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="Local Connect Algorithm" href="local_connect.html" />
+    <link rel="prev" title="pele.takestep.TakestepSlice.updateStep" href="generated/pele.takestep.TakestepSlice.updateStep.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="local_connect.html" title="Local Connect Algorithm"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.takestep.TakestepSlice.updateStep.html" title="pele.takestep.TakestepSlice.updateStep"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="energy-landscape-exploration">
+<span id="landscape-description"></span><h1>Energy Landscape Exploration<a class="headerlink" href="#energy-landscape-exploration" title="Permalink to this headline">¶</a></h1>
+<p>This is an attempt at describing the methods used in the double ended connect
+algorithm.  For instructions on how to use it see the <a class="reference internal" href="landscape_module.html#landscape-module"><em>module</em></a> documention and the documentation of functions therin.
+Also, there are examples in the examples/ folder describing how to use these
+routines.</p>
+<div class="section" id="double-ended-transition-state-search">
+<h2>Double ended transition state search<a class="headerlink" href="#double-ended-transition-state-search" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="local_connect.html">Local Connect Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_alignment.html">Structure Alignment (<cite>pele.mindist</cite>)</a></li>
+</ul>
+</div>
+<p>Double ended transition state searches are the main technique we use
+for exploring the energy landscape.  We attempt to try to find a connected
+series of transition states between two minima.  The end result might look like:</p>
+<div class="highlight-python"><pre>                         TS2
+            TS1        /    \
+          /    \      /      \
+         /       Min1         \
+MinStart                       \
+                                MinEnd</pre>
+</div>
+<p>The global algorithm looks like this:</p>
+<div class="highlight-python"><pre>while MinStart and MinEnd are not connected:
+    min1, min2 = get_next_minima_pair()
+    local_connect(min1, min2)</pre>
+</div>
+<p>The algorithm has two parts: get_next_minima_pair, and local_connect (psuedo-code names).
+get_next_minima_pair selects a pair of known, but, unconnected minima (min1 and min2) to try to connect.
+The algorithm which chooses this minima pair is designed to find the optimial path
+as quickly as possible between MinStart and
+MinEnd.
+<a class="reference internal" href="local_connect.html#local-connect-description"><em>Local connect</em></a>
+does a nudged elastic band run between min1 and min2 in order to get transition
+state candidates.  It then refines the transition state candidates to find actual transition
+states to the required tolerance.  It then falls off each side of the transition state
+and minimized in order to find the pair of minima which the transition state connects.</p>
+<p>See <a class="reference internal" href="landscape_module.html#landscape-module"><em>landscape</em></a> for more complete documentation</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Energy Landscape Exploration</a><ul>
+<li><a class="reference internal" href="#double-ended-transition-state-search">Double ended transition state search</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.takestep.TakestepSlice.updateStep.html"
+                        title="previous chapter">pele.takestep.TakestepSlice.updateStep</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="local_connect.html"
+                        title="next chapter">Local Connect Algorithm</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/landscape.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="local_connect.html" title="Local Connect Algorithm"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.takestep.TakestepSlice.updateStep.html" title="pele.takestep.TakestepSlice.updateStep"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+pele.basinhopping.BasinHopping.printStep
+========================================
+
+.. currentmodule:: pele.basinhopping
+
+.. automethod:: BasinHopping.printStep

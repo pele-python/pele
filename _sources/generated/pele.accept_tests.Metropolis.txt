@@ -1,0 +1,22 @@
+pele.accept_tests.Metropolis
+============================
+
+.. currentmodule:: pele.accept_tests
+
+.. autoclass:: Metropolis
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~Metropolis.__call__
+         ~Metropolis.acceptRejectE
+         ~Metropolis.forceAccept
+   
+   
+
+   
+   
+   

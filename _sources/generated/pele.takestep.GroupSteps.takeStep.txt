@@ -1,0 +1,6 @@
+pele.takestep.GroupSteps.takeStep
+=================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: GroupSteps.takeStep

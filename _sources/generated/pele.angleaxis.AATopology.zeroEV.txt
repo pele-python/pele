@@ -1,0 +1,6 @@
+pele.angleaxis.AATopology.zeroEV
+================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: AATopology.zeroEV

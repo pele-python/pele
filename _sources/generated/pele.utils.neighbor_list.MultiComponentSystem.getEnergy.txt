@@ -1,0 +1,6 @@
+pele.utils.neighbor_list.MultiComponentSystem.getEnergy
+=======================================================
+
+.. currentmodule:: pele.utils.neighbor_list
+
+.. automethod:: MultiComponentSystem.getEnergy

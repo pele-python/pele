@@ -1,0 +1,6 @@
+pele.transition_states.InterpolatedPathDensity
+==============================================
+
+.. currentmodule:: pele.transition_states
+
+.. autofunction:: InterpolatedPathDensity

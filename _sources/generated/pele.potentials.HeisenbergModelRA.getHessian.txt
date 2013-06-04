@@ -1,0 +1,6 @@
+pele.potentials.HeisenbergModelRA.getHessian
+============================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: HeisenbergModelRA.getHessian

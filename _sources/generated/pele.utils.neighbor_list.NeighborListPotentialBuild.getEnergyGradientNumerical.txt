@@ -1,0 +1,6 @@
+pele.utils.neighbor_list.NeighborListPotentialBuild.getEnergyGradientNumerical
+==============================================================================
+
+.. currentmodule:: pele.utils.neighbor_list
+
+.. automethod:: NeighborListPotentialBuild.getEnergyGradientNumerical

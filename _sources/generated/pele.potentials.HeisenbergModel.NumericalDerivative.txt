@@ -1,0 +1,6 @@
+pele.potentials.HeisenbergModel.NumericalDerivative
+===================================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: HeisenbergModel.NumericalDerivative

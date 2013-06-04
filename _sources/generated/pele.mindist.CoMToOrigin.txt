@@ -1,0 +1,6 @@
+pele.mindist.CoMToOrigin
+========================
+
+.. currentmodule:: pele.mindist
+
+.. autofunction:: CoMToOrigin

@@ -1,0 +1,6 @@
+pele.mindist.MinPermDistCluster.finalize_best_match
+===================================================
+
+.. currentmodule:: pele.mindist
+
+.. automethod:: MinPermDistCluster.finalize_best_match

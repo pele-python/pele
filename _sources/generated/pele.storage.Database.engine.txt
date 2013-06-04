@@ -1,0 +1,6 @@
+pele.storage.Database.engine
+============================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Database.engine

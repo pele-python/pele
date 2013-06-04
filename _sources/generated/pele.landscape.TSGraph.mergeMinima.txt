@@ -1,0 +1,6 @@
+pele.landscape.TSGraph.mergeMinima
+==================================
+
+.. currentmodule:: pele.landscape
+
+.. automethod:: TSGraph.mergeMinima

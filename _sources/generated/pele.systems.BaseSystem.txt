@@ -1,0 +1,41 @@
+pele.systems.BaseSystem
+=======================
+
+.. currentmodule:: pele.systems
+
+.. autoclass:: BaseSystem
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~BaseSystem.__call__
+         ~BaseSystem.createNEB
+         ~BaseSystem.create_database
+         ~BaseSystem.draw
+         ~BaseSystem.get_basinhopping
+         ~BaseSystem.get_compare_exact
+         ~BaseSystem.get_compare_minima
+         ~BaseSystem.get_double_ended_connect
+         ~BaseSystem.get_log_product_normalmode_freq
+         ~BaseSystem.get_metric_tensor
+         ~BaseSystem.get_mindist
+         ~BaseSystem.get_minimizer
+         ~BaseSystem.get_normalmodes
+         ~BaseSystem.get_nzero_modes
+         ~BaseSystem.get_orthogonalize_to_zero_eigenvectors
+         ~BaseSystem.get_pgorder
+         ~BaseSystem.get_potential
+         ~BaseSystem.get_random_configuration
+         ~BaseSystem.get_random_minimized_configuration
+         ~BaseSystem.get_takestep
+         ~BaseSystem.load_coords_pymol
+         ~BaseSystem.smooth_path
+   
+   
+
+   
+   
+   

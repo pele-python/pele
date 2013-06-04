@@ -1,0 +1,20 @@
+pele.landscape.LocalConnectPar
+==============================
+
+.. currentmodule:: pele.landscape
+
+.. autoclass:: LocalConnectPar
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~LocalConnectPar.connect
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+pele.systems.AtomicCluster.createNEB
+====================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: AtomicCluster.createNEB

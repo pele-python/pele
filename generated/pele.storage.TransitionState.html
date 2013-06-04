@@ -1,0 +1,205 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.storage.TransitionState &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Database storage (pele.storage)" href="../database.html" />
+    <link rel="next" title="pele.storage.TransitionState.energy" href="pele.storage.TransitionState.energy.html" />
+    <link rel="prev" title="pele.storage.Minimum.right_neighbors" href="pele.storage.Minimum.right_neighbors.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.TransitionState.energy.html" title="pele.storage.TransitionState.energy"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Minimum.right_neighbors.html" title="pele.storage.Minimum.right_neighbors"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../database.html" accesskey="U">Database storage (<cite>pele.storage</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-storage-transitionstate">
+<h1>pele.storage.TransitionState<a class="headerlink" href="#pele-storage-transitionstate" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.storage.TransitionState">
+<em class="property">class </em><tt class="descclassname">pele.storage.</tt><tt class="descname">TransitionState</tt><big>(</big><em>energy</em>, <em>coords</em>, <em>min1</em>, <em>min2</em>, <em>eigenval=None</em>, <em>eigenvec=None</em><big>)</big><a class="reference internal" href="../_modules/pele/storage/database.html#TransitionState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.storage.TransitionState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transition state object</p>
+<p>The TransitionState class represents a saddle point in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>energy</strong> : float</p>
+<p><strong>coords</strong> : numpy array</p>
+<p><strong>min1</strong> : Minimum object</p>
+<blockquote>
+<div><p>first minimum</p>
+</div></blockquote>
+<p><strong>min2</strong> : Minimum object</p>
+<blockquote>
+<div><p>first minimum</p>
+</div></blockquote>
+<p><strong>eigenval</strong> : float, optional</p>
+<blockquote>
+<div><p>lowest (single negative) eigenvalue of the saddle point</p>
+</div></blockquote>
+<p><strong>eigenvec</strong> : numpy array, optional</p>
+<blockquote>
+<div><p>eigenvector which corresponds to the negative eigenvalue</p>
+</div></blockquote>
+<p><strong>fvib</strong> : float</p>
+<blockquote>
+<div><p>log product of squared frequencies for free energy calculation</p>
+</div></blockquote>
+<p><strong>pgorder</strong> : integer</p>
+<blockquote class="last">
+<div><p>point group order</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.storage.Database.html#pele.storage.Database" title="pele.storage.Database"><tt class="xref py py-obj docutils literal"><span class="pre">Database</span></tt></a>, <a class="reference internal" href="pele.storage.Minimum.html#pele.storage.Minimum" title="pele.storage.Minimum"><tt class="xref py py-obj docutils literal"><span class="pre">Minimum</span></tt></a>, <a class="reference internal" href="pele.storage.Distance.html#pele.storage.Distance" title="pele.storage.Distance"><tt class="xref py py-obj docutils literal"><span class="pre">Distance</span></tt></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>To avoid any double entries and be able to compare them, only use 
+Database.addTransitionState to create a TransitionStateobject.</p>
+<p>programming note: The functions in the database require that 
+ts.minimum1._id &lt; ts.minimum2._id.  This will be handled automatically
+by the database, but we must remember not to screw it up</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.TransitionState.energy.html#pele.storage.TransitionState.energy" title="pele.storage.TransitionState.energy"><tt class="xref py py-obj docutils literal"><span class="pre">energy</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.TransitionState.coords.html#pele.storage.TransitionState.coords" title="pele.storage.TransitionState.coords"><tt class="xref py py-obj docutils literal"><span class="pre">coords</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.TransitionState.minimum1.html#pele.storage.TransitionState.minimum1" title="pele.storage.TransitionState.minimum1"><tt class="xref py py-obj docutils literal"><span class="pre">minimum1</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.TransitionState.minimum2.html#pele.storage.TransitionState.minimum2" title="pele.storage.TransitionState.minimum2"><tt class="xref py py-obj docutils literal"><span class="pre">minimum2</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.TransitionState.eigenval.html#pele.storage.TransitionState.eigenval" title="pele.storage.TransitionState.eigenval"><tt class="xref py py-obj docutils literal"><span class="pre">eigenval</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.TransitionState.eigenvec.html#pele.storage.TransitionState.eigenvec" title="pele.storage.TransitionState.eigenvec"><tt class="xref py py-obj docutils literal"><span class="pre">eigenvec</span></tt></a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.storage.Minimum.right_neighbors.html"
+                        title="previous chapter">pele.storage.Minimum.right_neighbors</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.storage.TransitionState.energy.html"
+                        title="next chapter">pele.storage.TransitionState.energy</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.storage.TransitionState.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.TransitionState.energy.html" title="pele.storage.TransitionState.energy"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Minimum.right_neighbors.html" title="pele.storage.Minimum.right_neighbors"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../database.html" >Database storage (<cite>pele.storage</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

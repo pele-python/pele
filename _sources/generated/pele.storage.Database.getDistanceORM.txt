@@ -1,0 +1,6 @@
+pele.storage.Database.getDistanceORM
+====================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.getDistanceORM

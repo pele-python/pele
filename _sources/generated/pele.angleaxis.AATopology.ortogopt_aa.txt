@@ -1,0 +1,6 @@
+pele.angleaxis.AATopology.ortogopt_aa
+=====================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: AATopology.ortogopt_aa

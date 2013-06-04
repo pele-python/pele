@@ -1,0 +1,6 @@
+pele.optimize.LBFGS.adjustStepSize
+==================================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: LBFGS.adjustStepSize

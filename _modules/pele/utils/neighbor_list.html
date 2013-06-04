@@ -1,0 +1,795 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.utils.neighbor_list &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.utils.neighbor_list</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">classes to build and maintain neighborlists</span>
+<span class="sd">.. currentmodule:: pele.utils.neighbor_list</span>
+
+<span class="sd">.. autosummary:: </span>
+<span class="sd">    :toctree: generated/</span>
+<span class="sd">    </span>
+<span class="sd">    NeighborList</span>
+<span class="sd">    NeighborListSubset</span>
+<span class="sd">    NeighborListPotential</span>
+<span class="sd">    MultiComponentSystem</span>
+<span class="sd">    NeighborListSubsetBuild</span>
+<span class="sd">    NeighborListPotentialBuild</span>
+<span class="sd">    NeighborListPotentialMulti</span>
+<span class="sd">    makeBLJNeighborListPot</span>
+
+<span class="sd">    </span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pele.potentials.potential</span> <span class="kn">import</span> <span class="n">potential</span> <span class="k">as</span> <span class="n">basepot</span>
+<span class="kn">import</span> <span class="nn">_fortran_utils</span>
+<span class="kn">from</span> <span class="nn">pele.potentials.ljcut</span> <span class="kn">import</span> <span class="n">LJCut</span> <span class="k">as</span> <span class="n">LJ</span>
+<span class="kn">import</span> <span class="nn">pele.potentials.ljpshift</span> <span class="kn">as</span> <span class="nn">ljpshift</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;NeighborList&quot;</span><span class="p">,</span> <span class="s">&quot;NeighborListSubset&quot;</span><span class="p">,</span> <span class="s">&quot;NeighborListPotential&quot;</span><span class="p">,</span> <span class="s">&quot;MultiComponentSystem&quot;</span><span class="p">,</span> 
+           <span class="s">&quot;makeBLJNeighborListPot&quot;</span><span class="p">,</span> <span class="s">&quot;NeighborListSubsetBuild&quot;</span><span class="p">,</span> <span class="s">&quot;NeighborListPotentialBuild&quot;</span><span class="p">,</span> 
+           <span class="s">&quot;NeighborListPotentialMulti&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="NeighborList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborList.html#pele.utils.neighbor_list.NeighborList">[docs]</a><span class="k">class</span> <span class="nc">NeighborList</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a neighbor list and keep it updated</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rcut : </span>
+<span class="sd">        the cutoff distance for the potential</span>
+<span class="sd">    rskin : </span>
+<span class="sd">        the skin distance.  atoms are listed as </span>
+<span class="sd">        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin</span>
+<span class="sd">        will have more interaction pairs, but will need to be updated less</span>
+<span class="sd">        frequently</span>
+<span class="sd">    boxl : </span>
+<span class="sd">        if not None, then the system is in a periodic box of size boxl</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">rskin</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">boxl</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span> <span class="o">=</span> <span class="n">rcut</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span> <span class="o">=</span> <span class="n">rskin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span> <span class="o">/</span> <span class="mf">2.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist</span><span class="o">**</span><span class="mi">2</span>
+        
+        <span class="c">#natoms = len(coords) / 3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">natoms</span><span class="o">*</span><span class="p">(</span><span class="n">natoms</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+        
+        <span class="c">#self.buildList(coords)</span>
+    
+<div class="viewcode-block" id="NeighborList.buildList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborList.buildList.html#pele.utils.neighbor_list.NeighborList.buildList">[docs]</a>    <span class="k">def</span> <span class="nf">buildList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a list of neighbor pairs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
+        <span class="n">nlist</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                <span class="n">R2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">R2</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span><span class="p">[</span><span class="n">nlist</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> 
+                    <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span><span class="p">[</span><span class="n">nlist</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+                    <span class="n">nlist</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlist</span> <span class="o">=</span> <span class="n">nlist</span>
+    </div>
+<div class="viewcode-block" id="NeighborList.needNewList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborList.needNewList.html#pele.utils.neighbor_list.NeighborList.needNewList">[docs]</a>    <span class="k">def</span> <span class="nf">needNewList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">maxR2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span> <span class="p">((</span><span class="n">coords</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">maxR2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span><span class="o">**</span><span class="mi">2</span>
+</div>
+<div class="viewcode-block" id="NeighborList.getList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborList.getList.html#pele.utils.neighbor_list.NeighborList.getList">[docs]</a>    <span class="k">def</span> <span class="nf">getList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">needNewList</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buildList</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">nlist</span><span class="p">]</span>
+                
+            </div></div>
+<div class="viewcode-block" id="NeighborListSubset"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListSubset.html#pele.utils.neighbor_list.NeighborListSubset">[docs]</a><span class="k">class</span> <span class="nc">NeighborListSubset</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a neighbor list and keep it updated for a subset of the atoms.</span>
+<span class="sd">    </span>
+<span class="sd">    This class is designed to deal with only a subset of all atoms</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    natoms :</span>
+<span class="sd">        number of atoms</span>
+<span class="sd">    rcut : </span>
+<span class="sd">        the cutoff distance for the potential</span>
+<span class="sd">    rskin : </span>
+<span class="sd">        the skin distance.  atoms are listed as </span>
+<span class="sd">        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin</span>
+<span class="sd">        will have more interaction pairs, but will need to be updated less</span>
+<span class="sd">        frequently</span>
+<span class="sd">    Alist : </span>
+<span class="sd">        The list of atoms that are interacting</span>
+<span class="sd">    Blist : the list of atoms that are interacting with Alist</span>
+<span class="sd">        if Blist is None or Blist is Alist then the atoms in Alist will be </span>
+<span class="sd">        assumed to be interacting with each other.  Duplicate interactions will</span>
+<span class="sd">        be avoided.</span>
+<span class="sd">    boxl : </span>
+<span class="sd">        if not None, then the system is in a periodic box of size boxl</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">Alist</span><span class="p">,</span> <span class="n">Blist</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">rskin</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">boxl</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span> <span class="o">=</span> <span class="n">rcut</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span> <span class="o">=</span> <span class="n">rskin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span> <span class="o">/</span> <span class="mf">2.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist</span><span class="o">**</span><span class="mi">2</span>
+        
+        <span class="k">if</span> <span class="n">boxl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="o">=</span> <span class="n">boxl</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">Alist</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Blist</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">Blist</span> <span class="ow">is</span> <span class="n">Alist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">Blist</span><span class="p">))</span>
+        <span class="c">#print &quot;onelist&quot;, self.onelist</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>
+            <span class="n">listmaxlen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">listmaxlen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">listmaxlen</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span> <span class="o">=</span> <span class="n">listmaxlen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlist</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c">#print &quot;shape neib_list&quot;, np.shape(self.neib_list)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>            
+        <span class="c">#self.buildList(coords)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">atomlist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">atomlist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atomlist</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atomlist</span><span class="p">)</span>
+        
+        <span class="c">#we must specify the type of integer so that we can</span>
+        <span class="c">#pass it to fortran without copying</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atomlist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atomlist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="NeighborListSubset.buildList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListSubset.buildList.html#pele.utils.neighbor_list.NeighborListSubset.buildList">[docs]</a>    <span class="k">def</span> <span class="nf">buildList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="c">#neib_list = np.reshape(self.neib_list, -1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]))</span>
+<span class="c">#        raw_input(&quot;press enter to continue: onelist %d, len(alist)=%d, len(coords)=%d&quot; % (self.onelist, len(self.Alist), len(coords)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>
+            <span class="c">#nlist = _fortran_utils.build_neighbor_list1(</span>
+            <span class="c">#        coords, self.Alist, neib_list, self.rlist2)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+                <span class="n">neib_list</span><span class="p">,</span> <span class="n">nlist</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">build_neighbor_list1_periodic</span><span class="p">(</span>
+                        <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">neib_list</span><span class="p">,</span> <span class="n">nlist</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">build_neighbor_list1</span><span class="p">(</span>
+                        <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+                <span class="n">neib_list</span><span class="p">,</span> <span class="n">nlist</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">build_neighbor_list2_periodic</span><span class="p">(</span>
+                        <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">neib_list</span><span class="p">,</span> <span class="n">nlist</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">build_neighbor_list2</span><span class="p">(</span>
+                        <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">neib_list</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlist</span> <span class="o">=</span> <span class="n">nlist</span>
+      
+    </div>
+<div class="viewcode-block" id="NeighborListSubset.buildListSlow"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListSubset.buildListSlow.html#pele.utils.neighbor_list.NeighborListSubset.buildListSlow">[docs]</a>    <span class="k">def</span> <span class="nf">buildListSlow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a list of neighbor pairs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buildListFortran</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="c">#return</span>
+        <span class="c">#print &quot;rebuilding Neighbor List&quot;, self.buildcount</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">nlist</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">[</span><span class="n">k1</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">k2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k1</span><span class="p">):</span>
+                    <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">[</span><span class="n">k2</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+                        <span class="n">dr</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span>
+                        <span class="n">dr</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span> <span class="n">dr</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="p">)</span>
+                        <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">dr</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">R2</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">:</span>
+                        <span class="c">#print nlist, np.shape(self.neib_list)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span><span class="p">[</span><span class="n">nlist</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span><span class="p">[</span><span class="n">nlist</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+                        <span class="n">nlist</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+                        <span class="n">dr</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span>
+                        <span class="n">dr</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span> <span class="n">dr</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="p">)</span>
+                        <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">dr</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">R2</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span><span class="p">[</span><span class="n">nlist</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span><span class="p">[</span><span class="n">nlist</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+                        <span class="n">nlist</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlist</span> <span class="o">=</span> <span class="n">nlist</span>
+        <span class="c">#print &quot;rebuild list: nlist&quot;, nlist</span>
+        <span class="c">#if not self.periodic:</span>
+        <span class="c">#    print &quot;nlist not from fortran&quot;, nlist, self.neib_list[0,:], self.neib_list[self.nlist-1,:]</span>
+
+    </div>
+<div class="viewcode-block" id="NeighborListSubset.needNewList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListSubset.needNewList.html#pele.utils.neighbor_list.NeighborListSubset.needNewList">[docs]</a>    <span class="k">def</span> <span class="nf">needNewList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check if any atom has moved far enough that we need to redo the neighbor list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oldcoords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">boxl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span>
+        <span class="k">if</span> <span class="n">boxl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">boxl</span> <span class="o">=</span> <span class="mf">1.</span>
+<span class="c">#        raw_input(&quot;press enter to continue: onelist %d, len(atomlist)=%d, len(coords)=%d&quot; % (self.onelist, len(self.atomlist), len(coords)))</span>
+        <span class="n">rebuild</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">check_neighbor_lists</span><span class="p">(</span><span class="n">oldcoords</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomlist</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> 
+                                                      <span class="n">boxl</span><span class="p">)</span>
+        <span class="n">rebuild</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">rebuild</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="c">#testing</span>
+            <span class="n">rebuild_alt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">needNewListSlow</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rebuild</span> <span class="o">!=</span> <span class="n">rebuild_alt</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;rebuild is incorrect&quot;</span><span class="p">,</span> <span class="n">rebuild</span><span class="p">,</span> <span class="n">rebuild_alt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span>
+                <span class="k">print</span> <span class="s">&quot;    &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomlist</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+                
+        <span class="k">return</span> <span class="n">rebuild</span>
+    </div>
+<div class="viewcode-block" id="NeighborListSubset.needNewListSlow"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListSubset.needNewListSlow.html#pele.utils.neighbor_list.NeighborListSubset.needNewListSlow">[docs]</a>    <span class="k">def</span> <span class="nf">needNewListSlow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check if any atom has moved far enough that we need to redo the neighbor list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">maxR2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span> <span class="p">((</span><span class="n">coords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,:]</span> 
+                          <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>    
+                <span class="n">tempmaxR2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span> <span class="p">((</span><span class="n">coords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">,:]</span> 
+                                     <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
+                <span class="n">maxR2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">maxR2</span><span class="p">,</span> <span class="n">tempmaxR2</span><span class="p">])</span>
+        <span class="c">#print &quot;maxR2&quot;, maxR2, self.redo_displacement**2</span>
+        <span class="k">return</span> <span class="n">maxR2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span><span class="o">**</span><span class="mi">2</span>
+</div>
+<div class="viewcode-block" id="NeighborListSubset.getList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListSubset.getList.html#pele.utils.neighbor_list.NeighborListSubset.getList">[docs]</a>    <span class="k">def</span> <span class="nf">getList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">needNewList</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buildList</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neib_list</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">nlist</span><span class="p">,:]</span>
+
+</div></div>
+<div class="viewcode-block" id="NeighborListPotential"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotential.html#pele.utils.neighbor_list.NeighborListPotential">[docs]</a><span class="k">class</span> <span class="nc">NeighborListPotential</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    a potential wrapper for a neighbor list</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    neighborList : </span>
+<span class="sd">        the neighbor list object</span>
+<span class="sd">    pot :</span>
+<span class="sd">        the potential object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighborList</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighborList</span> <span class="o">=</span> <span class="n">neighborList</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
+
+<div class="viewcode-block" id="NeighborListPotential.getEnergy"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotential.getEnergy.html#pele.utils.neighbor_list.NeighborListPotential.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="nb">list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighborList</span><span class="o">.</span><span class="n">getList</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyList</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span></div>
+<div class="viewcode-block" id="NeighborListPotential.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotential.getEnergyGradient.html#pele.utils.neighbor_list.NeighborListPotential.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="nb">list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighborList</span><span class="o">.</span><span class="n">getList</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradientList</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="NeighborListSubsetBuild"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListSubsetBuild.html#pele.utils.neighbor_list.NeighborListSubsetBuild">[docs]</a><span class="k">class</span> <span class="nc">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The same as NeighborListSubset except only do the building.</span>
+<span class="sd">    </span>
+<span class="sd">    This class will build the neighbor lists, but can&#39;t</span>
+<span class="sd">    check whether they need to be rebuilt.  This is meant to be used</span>
+<span class="sd">    in situations where multiple neighbor lists are being maintained and</span>
+<span class="sd">    we don&#39;t want to do repetative checks for whether the lists should be rebuilt</span>
+<span class="sd">    </span>
+<span class="sd">    It has the added benefit that no copy of coords is saved, so it takes up less memory. </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    natoms :</span>
+<span class="sd">        number of atoms</span>
+<span class="sd">    rcut : </span>
+<span class="sd">        the cutoff distance for the potential</span>
+<span class="sd">    rskin : </span>
+<span class="sd">        the skin distance.  atoms are listed as </span>
+<span class="sd">        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin</span>
+<span class="sd">        will have more interaction pairs, but will need to be updated less</span>
+<span class="sd">        frequently</span>
+<span class="sd">    Alist : </span>
+<span class="sd">        The list of atoms that are interacting</span>
+<span class="sd">    Blist : the list of atoms that are interacting with Alist</span>
+<span class="sd">        if Blist is None or Blist is Alist then the atoms in Alist will be </span>
+<span class="sd">        assumed to be interacting with each other.  Duplicate interactions will</span>
+<span class="sd">        be avoided.</span>
+<span class="sd">    boxl : </span>
+<span class="sd">        if not None, then the system is in a periodic box of size boxl</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">Alist</span><span class="p">,</span> <span class="n">Blist</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">rskin</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">boxl</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">=</span> <span class="n">natoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span> <span class="o">=</span> <span class="n">rcut</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span> <span class="o">=</span> <span class="n">rskin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span> <span class="o">/</span> <span class="mf">2.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist</span><span class="o">**</span><span class="mi">2</span>
+        
+        <span class="k">if</span> <span class="n">boxl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="o">=</span> <span class="n">boxl</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">Alist</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">Blist</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">Blist</span> <span class="ow">is</span> <span class="n">Alist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">Blist</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>
+            <span class="n">listmaxlen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">listmaxlen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">)</span>
+        <span class="c">#self.neib_list = np.zeros([listmaxlen, 2], np.integer)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span> <span class="o">=</span> <span class="n">listmaxlen</span>
+        <span class="c">#self.nlist = 0</span>
+        <span class="c">#print &quot;shape neib_list&quot;, np.shape(self.neib_list)</span>
+
+        <span class="c">#we must specify the type of integer so that we can</span>
+        <span class="c">#pass it to fortran without copying</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="NeighborListSubsetBuild.buildList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListSubsetBuild.buildList.html#pele.utils.neighbor_list.NeighborListSubsetBuild.buildList">[docs]</a>    <span class="k">def</span> <span class="nf">buildList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="c">#neib_list = np.reshape(self.neib_list, -1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">onelist</span><span class="p">:</span>
+            <span class="c">#nlist = _fortran_utils.build_neighbor_list1(</span>
+            <span class="c">#        coords, self.Alist, neib_list, self.rlist2)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+                <span class="n">neib_list</span><span class="p">,</span> <span class="n">nlist</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">build_neighbor_list1_periodic</span><span class="p">(</span>
+                        <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">neib_list</span><span class="p">,</span> <span class="n">nlist</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">build_neighbor_list1</span><span class="p">(</span>
+                        <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+                <span class="n">neib_list</span><span class="p">,</span> <span class="n">nlist</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">build_neighbor_list2_periodic</span><span class="p">(</span>
+                        <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">neib_list</span><span class="p">,</span> <span class="n">nlist</span> <span class="o">=</span> <span class="n">_fortran_utils</span><span class="o">.</span><span class="n">build_neighbor_list2</span><span class="p">(</span>
+                        <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Blist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlistmax</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span><span class="p">)</span>
+        <span class="n">neib_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">neib_list</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">neib_list</span><span class="p">[:</span><span class="n">nlist</span><span class="p">,:]</span>
+
+</div></div>
+<div class="viewcode-block" id="NeighborListPotentialBuild"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialBuild.html#pele.utils.neighbor_list.NeighborListPotentialBuild">[docs]</a><span class="k">class</span> <span class="nc">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    a potential wrapper for a neighbor list, but only rebuild when told to</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    neighborList : </span>
+<span class="sd">        the neighbor list object</span>
+<span class="sd">    pot :</span>
+<span class="sd">        the potential object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighborList</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighborList</span> <span class="o">=</span> <span class="n">neighborList</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
+    
+<div class="viewcode-block" id="NeighborListPotentialBuild.buildList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialBuild.buildList.html#pele.utils.neighbor_list.NeighborListPotentialBuild.buildList">[docs]</a>    <span class="k">def</span> <span class="nf">buildList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        instruct the neighbor list object to rebuild it&#39;s list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighborList</span><span class="o">.</span><span class="n">buildList</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeighborListPotentialBuild.getEnergy"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialBuild.getEnergy.html#pele.utils.neighbor_list.NeighborListPotentialBuild.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyList</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">list</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeighborListPotentialBuild.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialBuild.getEnergyGradient.html#pele.utils.neighbor_list.NeighborListPotentialBuild.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradientList</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">list</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="NeighborListPotentialMulti"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialMulti.html#pele.utils.neighbor_list.NeighborListPotentialMulti">[docs]</a><span class="k">class</span> <span class="nc">NeighborListPotentialMulti</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A wrapper for multiple NeighborListPotentialBuild</span>
+<span class="sd">    </span>
+<span class="sd">    This will wrap multiple instances of NeighborListPotentialBuild.  This class</span>
+<span class="sd">    will the check the coords and control when the neighbor lists are rebuilt.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    potentials :</span>
+<span class="sd">        a list of neighbor list potential objects.  Each potential must have attribute</span>
+<span class="sd">        </span>
+<span class="sd">            potential.buildList(coords)</span>
+<span class="sd">    natoms : </span>
+<span class="sd">        number of atoms</span>
+<span class="sd">    rcut : </span>
+<span class="sd">        the cutoff distance for the potential</span>
+<span class="sd">    rskin : </span>
+<span class="sd">        the skin distance.  atoms are listed as </span>
+<span class="sd">        neighbors if they are closer then rlist = rcut + rskin.  A larger rskin</span>
+<span class="sd">        will have more interaction pairs, but will need to be updated less</span>
+<span class="sd">        frequently</span>
+<span class="sd">    boxl : </span>
+<span class="sd">        if not None, then the system is in a periodic box of size boxl</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potentials</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">rskin</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">boxl</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span> <span class="o">=</span> <span class="n">potentials</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span> <span class="o">=</span> <span class="n">rcut</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span> <span class="o">=</span> <span class="n">rskin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span> <span class="o">/</span> <span class="mf">2.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rskin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rlist2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rlist</span><span class="o">**</span><span class="mi">2</span>
+        
+        <span class="k">if</span> <span class="n">boxl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="o">=</span> <span class="n">boxl</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="NeighborListPotentialMulti.needNewList"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialMulti.needNewList.html#pele.utils.neighbor_list.NeighborListPotentialMulti.needNewList">[docs]</a>    <span class="k">def</span> <span class="nf">needNewList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+            <span class="c">#only check periodic boundary conditions for the atoms that fail the normal test</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="p">((</span><span class="n">coords</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span><span class="o">**</span><span class="mi">2</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">indices</span><span class="p">,:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span><span class="p">[</span><span class="n">indices</span><span class="p">,:]</span>
+            <span class="n">dr</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dr</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="n">dr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span> <span class="p">((</span><span class="n">coords</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">redo_displacement</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NeighborListPotentialMulti.update"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialMulti.update.html#pele.utils.neighbor_list.NeighborListPotentialMulti.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">needNewList</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buildcount</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oldcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+                <span class="n">pot</span><span class="o">.</span><span class="n">buildList</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="NeighborListPotentialMulti.getEnergy"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialMulti.getEnergy.html#pele.utils.neighbor_list.NeighborListPotentialMulti.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+            <span class="n">E</span> <span class="o">+=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">E</span>
+</div>
+<div class="viewcode-block" id="NeighborListPotentialMulti.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.NeighborListPotentialMulti.getEnergyGradient.html#pele.utils.neighbor_list.NeighborListPotentialMulti.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">Etot</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">gradtot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+            <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="n">Etot</span> <span class="o">+=</span> <span class="n">E</span>
+            <span class="n">gradtot</span> <span class="o">+=</span> <span class="n">grad</span>
+        <span class="k">return</span> <span class="n">Etot</span><span class="p">,</span> <span class="n">gradtot</span>
+
+    </div></div>
+<div class="viewcode-block" id="MultiComponentSystem"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.MultiComponentSystem.html#pele.utils.neighbor_list.MultiComponentSystem">[docs]</a><span class="k">class</span> <span class="nc">MultiComponentSystem</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    a potential wrapper for multiple potentials</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    potentials :</span>
+<span class="sd">        a list of potential objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potentials</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span> <span class="o">=</span> <span class="n">potentials</span>
+<div class="viewcode-block" id="MultiComponentSystem.getEnergy"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.MultiComponentSystem.getEnergy.html#pele.utils.neighbor_list.MultiComponentSystem.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+            <span class="n">E</span> <span class="o">+=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">E</span></div>
+<div class="viewcode-block" id="MultiComponentSystem.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.MultiComponentSystem.getEnergyGradient.html#pele.utils.neighbor_list.MultiComponentSystem.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">Etot</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">gradtot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+            <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="n">Etot</span> <span class="o">+=</span> <span class="n">E</span>
+            <span class="n">gradtot</span> <span class="o">+=</span> <span class="n">grad</span>
+        <span class="k">return</span> <span class="n">Etot</span><span class="p">,</span> <span class="n">gradtot</span>
+</div></div>
+<div class="viewcode-block" id="makeBLJNeighborListPot"><a class="viewcode-back" href="../../../generated/pele.utils.neighbor_list.makeBLJNeighborListPot.html#pele.utils.neighbor_list.makeBLJNeighborListPot">[docs]</a><span class="k">def</span> <span class="nf">makeBLJNeighborListPot</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">rcut</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    recreate the binary lj with atom typea A,B from 3 interaction lists AA, BB, AB</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;making BLJ neighborlist potential&quot;</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span>
+    <span class="c">#rcut = 2.5</span>
+    <span class="c">#natoms = 40</span>
+    <span class="k">if</span> <span class="n">ntypeA</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">ntypeA</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">natoms</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">Alist</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntypeA</span><span class="p">)</span>
+    <span class="n">Blist</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntypeA</span><span class="p">,</span> <span class="n">natoms</span><span class="p">)</span>
+    
+    
+    <span class="n">blj</span> <span class="o">=</span> <span class="n">ljpshift</span><span class="o">.</span><span class="n">LJpshift</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">)</span>
+
+        
+    <span class="n">ljAA</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">AA</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">AA</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="o">*</span><span class="n">blj</span><span class="o">.</span><span class="n">AA</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    <span class="n">ljBB</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">BB</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">BB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="o">*</span><span class="n">blj</span><span class="o">.</span><span class="n">BB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    <span class="n">ljAB</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">AB</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">AB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="o">*</span><span class="n">blj</span><span class="o">.</span><span class="n">AB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    
+    <span class="n">nlAA</span> <span class="o">=</span> <span class="n">NeighborListSubset</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">Alist</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlBB</span> <span class="o">=</span> <span class="n">NeighborListSubset</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">Blist</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlAB</span> <span class="o">=</span> <span class="n">NeighborListSubset</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">Alist</span><span class="p">,</span> <span class="n">Blist</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    
+    <span class="n">potlist</span> <span class="o">=</span> <span class="p">[</span> 
+               <span class="n">NeighborListPotential</span><span class="p">(</span><span class="n">nlAA</span><span class="p">,</span> <span class="n">ljAA</span><span class="p">),</span>
+               <span class="n">NeighborListPotential</span><span class="p">(</span><span class="n">nlBB</span><span class="p">,</span> <span class="n">ljBB</span><span class="p">),</span>
+               <span class="n">NeighborListPotential</span><span class="p">(</span><span class="n">nlAB</span><span class="p">,</span> <span class="n">ljAB</span><span class="p">)</span>
+                <span class="p">]</span>
+    <span class="n">mcpot</span> <span class="o">=</span> <span class="n">MultiComponentSystem</span><span class="p">(</span><span class="n">potlist</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mcpot</span>
+
+
+</div>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">natoms</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">pele.potentials.ljpshiftfast</span> <span class="kn">as</span> <span class="nn">ljpshift</span>
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
+    <span class="n">ntypeA</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">natoms</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">rcut</span> <span class="o">=</span> <span class="mf">2.5</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+    
+    <span class="n">blj</span> <span class="o">=</span> <span class="n">ljpshift</span><span class="o">.</span><span class="n">LJpshift</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">makeBLJNeighborListPot</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="o">=</span><span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    
+
+    
+    <span class="n">eblj</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;blj energy&quot;</span><span class="p">,</span> <span class="n">eblj</span>
+    
+    <span class="n">epot</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;mcpot energy&quot;</span><span class="p">,</span> <span class="n">epot</span>
+    
+    <span class="k">print</span> <span class="s">&quot;difference&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">epot</span> <span class="o">-</span> <span class="n">eblj</span><span class="p">)</span><span class="o">/</span><span class="n">eblj</span>
+    
+    <span class="n">ret1</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">blj</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">11</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s">&quot;out.coords&quot;</span><span class="p">,</span> <span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy from quench1&quot;</span><span class="p">,</span> <span class="n">ret1</span><span class="o">.</span><span class="n">energy</span>
+    <span class="n">ret2</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy from quench2&quot;</span><span class="p">,</span> <span class="n">ret2</span><span class="o">.</span><span class="n">energy</span>
+    
+    <span class="k">print</span> <span class="s">&quot;ret1 evaluated in both potentials&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">),</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;ret2 evaluated in both potentials&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">),</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">ret1</span><span class="o">.</span><span class="n">coords</span>
+    <span class="n">e1</span><span class="p">,</span> <span class="n">g1</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">e2</span><span class="p">,</span> <span class="n">g2</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy difference from getEnergyGradient&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">e2</span> <span class="o">-</span> <span class="n">e1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;largest gradient difference&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">g2</span><span class="o">-</span><span class="n">g1</span><span class="p">))</span>
+    <span class="k">print</span> <span class="s">&quot;rms gradients&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g2</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g1</span><span class="p">))</span>
+
+    
+    <span class="k">for</span> <span class="n">subpot</span> <span class="ow">in</span> <span class="n">pot</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+        <span class="n">nl</span> <span class="o">=</span> <span class="n">subpot</span><span class="o">.</span><span class="n">neighborList</span>
+        <span class="k">print</span> <span class="s">&quot;number of times neighbor list was remade&quot;</span><span class="p">,</span> <span class="n">nl</span><span class="o">.</span><span class="n">buildcount</span><span class="p">,</span> <span class="s">&quot;out of&quot;</span><span class="p">,</span> <span class="n">nl</span><span class="o">.</span><span class="n">count</span>
+    
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="kn">import</span> <span class="nn">pele.utils.pymolwrapper</span> <span class="kn">as</span> <span class="nn">pym</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">draw_spheres</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span> <span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">draw_spheres</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span> <span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">draw_spheres</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span> <span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Could not draw using pymol, skipping this step&quot;</span> 
+    
+<span class="k">def</span> <span class="nf">test2</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">pele.potentials.ljpshiftfast</span> <span class="kn">as</span> <span class="nn">ljpshiftfast</span>
+    <span class="kn">import</span> <span class="nn">pele.potentials.ljpshift</span> <span class="kn">as</span> <span class="nn">ljpshift</span>
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="s">&quot;/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench&quot;</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="s">&quot;/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords&quot;</span>
+    <span class="c">#fname = &quot;out.coords&quot;</span>
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">boxl</span> <span class="o">=</span> <span class="mf">11.05209</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">natoms</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="k">print</span> <span class="s">&quot;max, min coords&quot;</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">coords</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">boxl</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">/</span><span class="mi">3</span>
+    <span class="n">ntypeA</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">natoms</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">rcut</span> <span class="o">=</span> <span class="mf">2.5</span>
+    <span class="k">print</span> <span class="s">&quot;natoms&quot;</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="s">&quot;ntypea&quot;</span><span class="p">,</span> <span class="n">ntypeA</span>
+    
+    <span class="n">blj</span> <span class="o">=</span> <span class="n">ljpshift</span><span class="o">.</span><span class="n">LJpshift</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    <span class="n">bljfast</span> <span class="o">=</span> <span class="n">ljpshiftfast</span><span class="o">.</span><span class="n">LJpshift</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">makeBLJNeighborListPot</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="o">=</span><span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    
+    <span class="n">eblj</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;blj energy&quot;</span><span class="p">,</span> <span class="n">eblj</span>
+    
+    <span class="n">epot</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;mcpot energy&quot;</span><span class="p">,</span> <span class="n">epot</span>
+    
+    <span class="k">print</span> <span class="s">&quot;energy difference&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">epot</span> <span class="o">-</span> <span class="n">eblj</span><span class="p">)</span>
+    
+    <span class="n">e1</span><span class="p">,</span> <span class="n">g1</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">e2</span><span class="p">,</span> <span class="n">g2</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy difference from getEnergyGradient&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">e2</span> <span class="o">-</span> <span class="n">e1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;largest gradient difference&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">g2</span><span class="o">-</span><span class="n">g1</span><span class="p">))</span>
+    <span class="k">print</span> <span class="s">&quot;rms gradients&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g2</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g1</span><span class="p">))</span>
+    
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;quenching&quot;</span>
+        <span class="n">ret1</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">blj</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">11</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s">&quot;out.coords&quot;</span><span class="p">,</span> <span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;energy from quench1&quot;</span><span class="p">,</span> <span class="n">ret1</span><span class="o">.</span><span class="n">energy</span>
+        <span class="n">ret2</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;energy from quench2&quot;</span><span class="p">,</span> <span class="n">ret2</span><span class="o">.</span><span class="n">energy</span>
+        <span class="k">print</span> <span class="s">&quot;max, min quenched coords&quot;</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">coords</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+
+        <span class="k">print</span> <span class="s">&quot;ret1 evaluated in both potentials&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">),</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;ret2 evaluated in both potentials&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">),</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;quenching&quot;</span>
+        <span class="n">ret2</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;energy from quench2&quot;</span><span class="p">,</span> <span class="n">ret2</span><span class="o">.</span><span class="n">energy</span>
+        <span class="k">print</span> <span class="s">&quot;max, min quenched coords&quot;</span><span class="p">,</span> <span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+        <span class="k">print</span> <span class="s">&quot;ret2 evaluated in both potentials&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">),</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;and in blj fast                  &quot;</span><span class="p">,</span> <span class="n">bljfast</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+
+        
+
+
+    
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c">#test2()</span>
+    <span class="n">test</span><span class="p">(</span><span class="n">natoms</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    
+       
+        
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

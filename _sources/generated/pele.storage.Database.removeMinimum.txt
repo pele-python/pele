@@ -1,0 +1,6 @@
+pele.storage.Database.removeMinimum
+===================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.removeMinimum

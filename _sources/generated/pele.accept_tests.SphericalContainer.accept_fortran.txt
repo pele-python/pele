@@ -1,0 +1,6 @@
+pele.accept_tests.SphericalContainer.accept_fortran
+===================================================
+
+.. currentmodule:: pele.accept_tests
+
+.. automethod:: SphericalContainer.accept_fortran

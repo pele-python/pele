@@ -1,0 +1,23 @@
+pele.takestep.TakestepInterface
+===============================
+
+.. currentmodule:: pele.takestep
+
+.. autoclass:: TakestepInterface
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~TakestepInterface.__call__
+         ~TakestepInterface.scale
+         ~TakestepInterface.takeStep
+         ~TakestepInterface.updateStep
+   
+   
+
+   
+   
+   

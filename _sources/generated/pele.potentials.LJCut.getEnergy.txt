@@ -1,0 +1,6 @@
+pele.potentials.LJCut.getEnergy
+===============================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: LJCut.getEnergy

@@ -1,0 +1,6 @@
+pele.concurrent.ConnectServer.get_connect_job
+=============================================
+
+.. currentmodule:: pele.concurrent
+
+.. automethod:: ConnectServer.get_connect_job

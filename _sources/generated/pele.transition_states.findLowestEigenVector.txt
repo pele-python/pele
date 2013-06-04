@@ -1,0 +1,6 @@
+pele.transition_states.findLowestEigenVector
+============================================
+
+.. currentmodule:: pele.transition_states
+
+.. autofunction:: findLowestEigenVector

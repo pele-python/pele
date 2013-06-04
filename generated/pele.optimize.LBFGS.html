@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.optimize.LBFGS &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Optimizers (pele.optimize)" href="../quenching.html" />
+    <link rel="next" title="pele.optimize.LBFGS.adjustStepSize" href="pele.optimize.LBFGS.adjustStepSize.html" />
+    <link rel="prev" title="pele.optimize.steepest_descent" href="pele.optimize.steepest_descent.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.LBFGS.adjustStepSize.html" title="pele.optimize.LBFGS.adjustStepSize"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.steepest_descent.html" title="pele.optimize.steepest_descent"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../quenching.html" accesskey="U">Optimizers (<cite>pele.optimize</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-optimize-lbfgs">
+<h1>pele.optimize.LBFGS<a class="headerlink" href="#pele-optimize-lbfgs" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.optimize.LBFGS">
+<em class="property">class </em><tt class="descclassname">pele.optimize.</tt><tt class="descname">LBFGS</tt><big>(</big><em>X</em>, <em>pot</em>, <em>maxstep=0.1</em>, <em>maxErise=0.0001</em>, <em>M=4</em>, <em>rel_energy=False</em>, <em>H0=1.0</em>, <em>events=</em><span class="optional">[</span><span class="optional">]</span>, <em>alternate_stop_criterion=None</em>, <em>debug=False</em>, <em>iprint=-1</em>, <em>nsteps=10000</em>, <em>tol=1e-06</em>, <em>logger=None</em><big>)</big><a class="reference internal" href="../_modules/pele/optimize/_lbfgs_py.html#LBFGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.LBFGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>minimize a function using the LBFGS routine</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>X</strong> : array</p>
+<blockquote>
+<div><p>the starting configuration for the minimization</p>
+</div></blockquote>
+<p><strong>pot :</strong> :</p>
+<blockquote>
+<div><p>the potential object</p>
+</div></blockquote>
+<p><strong>nsteps</strong> : int</p>
+<blockquote>
+<div><p>the maximum number of iterations</p>
+</div></blockquote>
+<p><strong>tol</strong> : float</p>
+<blockquote>
+<div><p>the minimization will stop when the rms grad is less than tol</p>
+</div></blockquote>
+<p><strong>iprint</strong> : int</p>
+<blockquote>
+<div><p>how often to print status information</p>
+</div></blockquote>
+<p><strong>maxstep</strong> : float</p>
+<blockquote>
+<div><p>the maximum step size</p>
+</div></blockquote>
+<p><strong>maxErise</strong> : float</p>
+<blockquote>
+<div><p>the maximum the energy is alowed to rise during a step.
+The step size will be reduced until this condition is satisfied.</p>
+</div></blockquote>
+<p><strong>M</strong> : int</p>
+<blockquote>
+<div><p>the number of previous iterations to use in determining the optimal step</p>
+</div></blockquote>
+<p><strong>rel_energy</strong> : bool</p>
+<blockquote>
+<div><p>if True, then maxErise the the <em>relative</em> maximum the energy is allowed
+to rise during a step</p>
+</div></blockquote>
+<p><strong>H0</strong> : float</p>
+<blockquote>
+<div><p>the initial guess for the inverse diagonal Hessian.  This particular
+implementation of LBFGS takes all the inverse diagonal components to be the same.</p>
+</div></blockquote>
+<p><strong>events</strong> : list of callables</p>
+<blockquote>
+<div><p>these are called after each iteration.  events can also be added using
+attachEvent()</p>
+</div></blockquote>
+<p><strong>alternate_stop_criterion</strong> : callable</p>
+<blockquote>
+<div><p>this criterion will be used rather than rms gradiant to determine when
+to stop the iteration</p>
+</div></blockquote>
+<p><strong>debug :</strong> :</p>
+<blockquote>
+<div><p>print debugging information</p>
+</div></blockquote>
+<p><strong>logger</strong> : logger object</p>
+<blockquote class="last">
+<div><p>messages will be passed to this logger rather than the default</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="pele.optimize.MYLBFGS.html#pele.optimize.MYLBFGS" title="pele.optimize.MYLBFGS"><tt class="xref py py-obj docutils literal"><span class="pre">MYLBFGS</span></tt></a></dt>
+<dd>this implemented in a compiled language</dd>
+<dt><a class="reference internal" href="pele.optimize.lbfgs_py.html#pele.optimize.lbfgs_py" title="pele.optimize.lbfgs_py"><tt class="xref py py-obj docutils literal"><span class="pre">lbfgs_py</span></tt></a></dt>
+<dd>a function wrapper</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>This each iteration of this minimization routine is composed of the 
+following parts</p>
+<ol class="arabic simple">
+<li>determine a step size and direction using the LBFGS algorithm</li>
+<li>ensure the step size is appropriate (see maxErise and maxstep).
+Reduce the step size until conditions are satisfied.</li>
+<li>take step</li>
+</ol>
+<p><a class="reference external" href="http://dx.doi.org/10.1007/BF01589116">http://dx.doi.org/10.1007/BF01589116</a></p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.adjustStepSize.html#pele.optimize.LBFGS.adjustStepSize" title="pele.optimize.LBFGS.adjustStepSize"><tt class="xref py py-obj docutils literal"><span class="pre">adjustStepSize</span></tt></a>(X,&nbsp;E,&nbsp;G,&nbsp;stp)</td>
+<td>We now have a proposed step.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.LBFGS.attachEvent.html#pele.optimize.LBFGS.attachEvent" title="pele.optimize.LBFGS.attachEvent"><tt class="xref py py-obj docutils literal"><span class="pre">attachEvent</span></tt></a>(event)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.getStep.html#pele.optimize.LBFGS.getStep" title="pele.optimize.LBFGS.getStep"><tt class="xref py py-obj docutils literal"><span class="pre">getStep</span></tt></a>(X,&nbsp;G)</td>
+<td>Calculate a step direction and step size using the</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.LBFGS.reset.html#pele.optimize.LBFGS.reset" title="pele.optimize.LBFGS.reset"><tt class="xref py py-obj docutils literal"><span class="pre">reset</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.run.html#pele.optimize.LBFGS.run" title="pele.optimize.LBFGS.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>()</td>
+<td>the main loop of the algorithm</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.optimize.steepest_descent.html"
+                        title="previous chapter">pele.optimize.steepest_descent</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.optimize.LBFGS.adjustStepSize.html"
+                        title="next chapter">pele.optimize.LBFGS.adjustStepSize</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.optimize.LBFGS.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.LBFGS.adjustStepSize.html" title="pele.optimize.LBFGS.adjustStepSize"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.steepest_descent.html" title="pele.optimize.steepest_descent"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../quenching.html" >Optimizers (<cite>pele.optimize</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

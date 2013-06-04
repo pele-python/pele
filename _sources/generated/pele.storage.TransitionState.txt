@@ -1,0 +1,33 @@
+pele.storage.TransitionState
+============================
+
+.. currentmodule:: pele.storage
+
+.. autoclass:: TransitionState
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+   
+   
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~TransitionState.coords
+         ~TransitionState.eigenval
+         ~TransitionState.eigenvec
+         ~TransitionState.energy
+         ~TransitionState.fvib
+         ~TransitionState.metadata
+         ~TransitionState.minimum1
+         ~TransitionState.minimum2
+         ~TransitionState.pgorder
+   
+   

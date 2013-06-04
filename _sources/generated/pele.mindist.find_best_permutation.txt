@@ -1,0 +1,6 @@
+pele.mindist.find_best_permutation
+==================================
+
+.. currentmodule:: pele.mindist
+
+.. autofunction:: find_best_permutation

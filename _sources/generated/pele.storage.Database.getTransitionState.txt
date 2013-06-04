@@ -1,0 +1,6 @@
+pele.storage.Database.getTransitionState
+========================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.getTransitionState

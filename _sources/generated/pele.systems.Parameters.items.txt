@@ -1,0 +1,6 @@
+pele.systems.Parameters.items
+=============================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: Parameters.items

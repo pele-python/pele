@@ -1,0 +1,6 @@
+pele.angleaxis.AATopology.coords_adapter
+========================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: AATopology.coords_adapter

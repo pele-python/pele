@@ -1,0 +1,6 @@
+pele.optimize.LBFGS.attachEvent
+===============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: LBFGS.attachEvent

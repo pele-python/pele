@@ -1,0 +1,6 @@
+pele.potentials.HeisenbergModelRA.test_potential
+================================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: HeisenbergModelRA.test_potential

@@ -1,0 +1,6 @@
+pele.optimize.LBFGS.reset
+=========================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: LBFGS.reset

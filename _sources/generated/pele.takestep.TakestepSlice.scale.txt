@@ -1,0 +1,6 @@
+pele.takestep.TakestepSlice.scale
+=================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: TakestepSlice.scale

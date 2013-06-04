@@ -1,0 +1,6 @@
+pele.systems.Parameters.update
+==============================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: Parameters.update

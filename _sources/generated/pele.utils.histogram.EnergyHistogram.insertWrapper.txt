@@ -1,0 +1,6 @@
+pele.utils.histogram.EnergyHistogram.insertWrapper
+==================================================
+
+.. currentmodule:: pele.utils.histogram
+
+.. automethod:: EnergyHistogram.insertWrapper

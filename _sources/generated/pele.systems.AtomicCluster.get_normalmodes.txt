@@ -1,0 +1,6 @@
+pele.systems.AtomicCluster.get_normalmodes
+==========================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: AtomicCluster.get_normalmodes

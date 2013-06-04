@@ -1,0 +1,255 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.transition_states.FindTransitionState &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Transition States (pele.transition_states)" href="../transition_states_module.html" />
+    <link rel="next" title="pele.transition_states.FindTransitionState.params" href="pele.transition_states.FindTransitionState.params.html" />
+    <link rel="prev" title="pele.transition_states.minima_from_ts" href="pele.transition_states.minima_from_ts.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.FindTransitionState.params.html" title="pele.transition_states.FindTransitionState.params"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.minima_from_ts.html" title="pele.transition_states.minima_from_ts"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../transition_states_module.html" accesskey="U">Transition States (<cite>pele.transition_states</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-transition-states-findtransitionstate">
+<h1>pele.transition_states.FindTransitionState<a class="headerlink" href="#pele-transition-states-findtransitionstate" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.transition_states.FindTransitionState">
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">FindTransitionState</tt><big>(</big><em>coords</em>, <em>pot</em>, <em>tol=0.0001</em>, <em>event=None</em>, <em>nsteps=100</em>, <em>nfail_max=200</em>, <em>eigenvec0=None</em>, <em>iprint=-1</em>, <em>orthogZeroEigs=0</em>, <em>lowestEigenvectorQuenchParams={}</em>, <em>tangentSpaceQuenchParams={}</em>, <em>max_uphill_step=0.1</em>, <em>demand_initial_negative_vec=True</em>, <em>nsteps_tangent1=10</em>, <em>nsteps_tangent2=100</em>, <em>verbosity=1</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/transition_state_refinement.html#FindTransitionState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.FindTransitionState" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class implements the routine for finding the nearest transition state</p>
+<p><strong>*orthogZeroEigs is system dependent, don&#8217;t forget to set it*</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>coords :</strong> :</p>
+<blockquote>
+<div><p>the starting coordinates</p>
+</div></blockquote>
+<p><strong>pot :</strong> :</p>
+<blockquote>
+<div><p>the potential class</p>
+</div></blockquote>
+<p><strong>tol :</strong> :</p>
+<blockquote>
+<div><p>the tolerance for the rms gradient</p>
+</div></blockquote>
+<p><strong>event</strong> : callable</p>
+<blockquote>
+<div><p>This will be called after each step</p>
+</div></blockquote>
+<p><strong>nsteps :</strong> :</p>
+<blockquote>
+<div><p>number of iterations</p>
+</div></blockquote>
+<p><strong>nfail_max :</strong> :</p>
+<blockquote>
+<div><p>if the lowest eigenvector search fails this many times in a row
+than the algorithm ends</p>
+</div></blockquote>
+<p><strong>eigenvec0 :</strong> :</p>
+<blockquote>
+<div><p>a guess for the initial lowest eigenvector</p>
+</div></blockquote>
+<p><strong>iprint :</strong> :</p>
+<blockquote>
+<div><p>the interval at which to print status messages</p>
+</div></blockquote>
+<p><strong>orthogZeroEigs</strong> : callable</p>
+<blockquote>
+<div><p>this function makes a vector orthogonal to the known zero
+eigenvectors</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>orthogZeroEigs=0 <span class="classifier-delimiter">:</span> <span class="classifier">default behavior, assume translational and</span></dt>
+<dd><p class="first last">rotational symmetry</p>
+</dd>
+</dl>
+<p>orthogZeroEigs=None : the vector is unchanged</p>
+</div></blockquote>
+</div></blockquote>
+<p><strong>lowestEigenvectorQuenchParams</strong> : dict</p>
+<blockquote>
+<div><p>these parameters are passed to the quench routine for he lowest
+eigenvector search</p>
+</div></blockquote>
+<p><strong>tangentSpaceQuenchParams</strong> : dict</p>
+<blockquote>
+<div><p>these parameters are passed quench routine for the minimization in
+the space tabgent to the lowest eigenvector</p>
+</div></blockquote>
+<p><strong>max_uphill_step :</strong> :</p>
+<blockquote>
+<div><p>the maximum step uphill along the direction of the lowest
+eigenvector</p>
+</div></blockquote>
+<p><strong>demand_initial_negative_vec</strong> : bool</p>
+<blockquote>
+<div><p>if True, abort if the initial lowest eigenvalue is positive</p>
+</div></blockquote>
+<p><strong>nsteps_tangent1, nsteps_tangent2</strong> : int</p>
+<blockquote>
+<div><p>the number of iterations for tangent space minimization before and after
+the eigenvalue is deemed to be converged</p>
+</div></blockquote>
+<p><strong>verbosity</strong> : int</p>
+<blockquote class="last">
+<div><p>how much debugging information to print (only partially implemented)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="pele.transition_states.findTransitionState.html#pele.transition_states.findTransitionState" title="pele.transition_states.findTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">findTransitionState</span></tt></a></dt>
+<dd>function wrapper for this class</dd>
+<dt><a class="reference internal" href="pele.transition_states.findLowestEigenVector.html#pele.transition_states.findLowestEigenVector" title="pele.transition_states.findLowestEigenVector"><tt class="xref py py-obj docutils literal"><span class="pre">findLowestEigenVector</span></tt></a></dt>
+<dd>a core algorithm</dd>
+<dt><a class="reference internal" href="pele.landscape.LocalConnect.html#pele.landscape.LocalConnect" title="pele.landscape.LocalConnect"><tt class="xref py py-obj docutils literal"><span class="pre">pele.landscape.LocalConnect</span></tt></a></dt>
+<dd>the class which most often calls this routine</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<dl class="docutils">
+<dt>It is composed of the following steps</dt>
+<dd><p class="first">1) Find eigenvector corresponding to the lowest <em>nonzero</em>
+eigenvector.</p>
+<ol class="last arabic simple" start="2">
+<li>Step uphill in the direction of the lowest eigenvector</li>
+<li>minimize in the space tangent to the lowest eigenvector</li>
+</ol>
+</dd>
+</dl>
+<p>The tolerances for the various steps of this algorithm must be correlated.
+if the tol for tangent space search is lower than the total tol, then it will never finish</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.FindTransitionState.params.html#pele.transition_states.FindTransitionState.params" title="pele.transition_states.FindTransitionState.params"><tt class="xref py py-obj docutils literal"><span class="pre">params</span></tt></a>([obj])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.FindTransitionState.run.html#pele.transition_states.FindTransitionState.run" title="pele.transition_states.FindTransitionState.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>()</td>
+<td>The main loop of the algorithm</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.transition_states.minima_from_ts.html"
+                        title="previous chapter">pele.transition_states.minima_from_ts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.transition_states.FindTransitionState.params.html"
+                        title="next chapter">pele.transition_states.FindTransitionState.params</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.transition_states.FindTransitionState.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.FindTransitionState.params.html" title="pele.transition_states.FindTransitionState.params"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.minima_from_ts.html" title="pele.transition_states.minima_from_ts"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../transition_states_module.html" >Transition States (<cite>pele.transition_states</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+pele.potentials.XYModel
+=======================
+
+.. currentmodule:: pele.potentials
+
+.. autoclass:: XYModel
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~XYModel.NumericalDerivative
+         ~XYModel.NumericalHessian
+         ~XYModel.getEnergy
+         ~XYModel.getEnergyGradient
+         ~XYModel.getEnergyGradientHessian
+         ~XYModel.getEnergyGradientNumerical
+         ~XYModel.getGradient
+         ~XYModel.getHessian
+         ~XYModel.test_potential
+   
+   
+
+   
+   
+   

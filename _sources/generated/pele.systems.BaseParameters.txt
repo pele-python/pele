@@ -1,0 +1,37 @@
+pele.systems.BaseParameters
+===========================
+
+.. currentmodule:: pele.systems
+
+.. autoclass:: BaseParameters
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~BaseParameters.clear
+         ~BaseParameters.copy
+         ~BaseParameters.fromkeys
+         ~BaseParameters.get
+         ~BaseParameters.has_key
+         ~BaseParameters.items
+         ~BaseParameters.iteritems
+         ~BaseParameters.iterkeys
+         ~BaseParameters.itervalues
+         ~BaseParameters.keys
+         ~BaseParameters.pop
+         ~BaseParameters.popitem
+         ~BaseParameters.setdefault
+         ~BaseParameters.update
+         ~BaseParameters.values
+         ~BaseParameters.viewitems
+         ~BaseParameters.viewkeys
+         ~BaseParameters.viewvalues
+   
+   
+
+   
+   
+   

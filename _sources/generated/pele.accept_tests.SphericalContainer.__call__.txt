@@ -1,0 +1,6 @@
+pele.accept_tests.SphericalContainer.__call__
+=============================================
+
+.. currentmodule:: pele.accept_tests
+
+.. automethod:: SphericalContainer.__call__

@@ -1,0 +1,28 @@
+pele.potentials.LJpshift
+========================
+
+.. currentmodule:: pele.potentials
+
+.. autoclass:: LJpshift
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~LJpshift.NumericalDerivative
+         ~LJpshift.NumericalHessian
+         ~LJpshift.getEnergy
+         ~LJpshift.getEnergyGradient
+         ~LJpshift.getEnergyGradientHessian
+         ~LJpshift.getEnergyGradientNumerical
+         ~LJpshift.getGradient
+         ~LJpshift.getHessian
+         ~LJpshift.test_potential
+   
+   
+
+   
+   
+   

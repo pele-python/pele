@@ -1,0 +1,6 @@
+pele.mindist.MeasurePolicy.find_rotation
+========================================
+
+.. currentmodule:: pele.mindist
+
+.. automethod:: MeasurePolicy.find_rotation

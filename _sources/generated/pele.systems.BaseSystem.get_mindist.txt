@@ -1,0 +1,6 @@
+pele.systems.BaseSystem.get_mindist
+===================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseSystem.get_mindist

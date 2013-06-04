@@ -1,0 +1,6 @@
+pele.mindist.findrotation_kearsley
+==================================
+
+.. currentmodule:: pele.mindist
+
+.. autofunction:: findrotation_kearsley

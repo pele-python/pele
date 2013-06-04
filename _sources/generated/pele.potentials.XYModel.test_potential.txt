@@ -1,0 +1,6 @@
+pele.potentials.XYModel.test_potential
+======================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: XYModel.test_potential

@@ -1,0 +1,6 @@
+pele.transition_states.minima_from_ts
+=====================================
+
+.. currentmodule:: pele.transition_states
+
+.. autofunction:: minima_from_ts

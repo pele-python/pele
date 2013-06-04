@@ -1,0 +1,6 @@
+pele.potentials.GMINPotential.getEnergyGradientNumerical
+========================================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: GMINPotential.getEnergyGradientNumerical

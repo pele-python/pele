@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.transition_states._NEB_parallel &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.transition_states._NEB_parallel</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="kn">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">NEB</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;NEBPar&quot;</span><span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;pele.connect.neb&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_PotentialProcess</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    this class defines the worker object to be run as a separate process</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pot : </span>
+<span class="sd">        the potential object</span>
+<span class="sd">    conn : </span>
+<span class="sd">        the communications pipe</span>
+<span class="sd">    copy_potential : integer</span>
+<span class="sd">        if copy_potential &gt; 1 then the copy_potential deep copies of the potential</span>
+<span class="sd">        will be made and each one used for a different item in coordslist.  This</span>
+<span class="sd">        is useful to minimize rebuilding of neighborlists.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    attributes:</span>
+<span class="sd">    </span>
+<span class="sd">    start():</span>
+<span class="sd">        start the process.  The proceess will sit idle waiting for instructions</span>
+<span class="sd">        sent through the pipe conn</span>
+<span class="sd">    join():</span>
+<span class="sd">        wait until the process has finished it&#39;s task.  (Send message &quot;kill&quot; to stop </span>
+<span class="sd">        the process waiting for the next task)</span>
+<span class="sd">    terminate():</span>
+<span class="sd">        kill the process</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    example usage::</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; parent_conn, child_conn = mp.Pipe()</span>
+<span class="sd">    &gt;&gt;&gt; worker = _PotentialProcess( potential, child_conn)</span>
+<span class="sd">    &gt;&gt;&gt; worker.start()</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; X1 = np.random.rand(3*10)</span>
+<span class="sd">    &gt;&gt;&gt; X2 = np.random.rand(3*10)</span>
+<span class="sd">    &gt;&gt;&gt; parent_conn.send((&quot;calculate energy gradient&quot;, [X1, X2]))</span>
+<span class="sd">    &gt;&gt;&gt; eglist = parent_conn.recv()</span>
+<span class="sd">    &gt;&gt;&gt; print &quot;energies&quot;, eglist[0][0], eglist[1][0]</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; parent_conn.send((&quot;kill&quot;,))</span>
+<span class="sd">    &gt;&gt;&gt; worker.join()</span>
+<span class="sd">    &gt;&gt;&gt; worker.terminate() </span>
+
+
+<span class="sd">    </span>
+<span class="sd">    once this process is started (start()) it will be waiting for a message for what to do</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> <span class="n">copy_potential</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">conn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copy_potential</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">copy_potential</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy_potential</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">potlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">copy_potential</span><span class="p">)]</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
+    
+    <span class="k">def</span> <span class="nf">getEnergyGradientMultiple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordslist</span><span class="p">):</span>
+        <span class="n">eglist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy_potential</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordslist</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy_potential</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">coordslist</span><span class="p">):</span>
+                <span class="n">eglist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">potlist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">coordslist</span><span class="p">:</span>
+                <span class="n">eglist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">eglist</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#this redefines mp.Process.run</span>
+        <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+            <span class="c">#print &quot;message&quot;, message</span>
+            <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;kill&quot;</span><span class="p">:</span>
+                <span class="c">#print &quot;terminating&quot;, self.name</span>
+                <span class="k">return</span>
+            <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;calculate energy gradient&quot;</span><span class="p">:</span>
+                <span class="c">#print &quot;received message: calculating gradient&quot;</span>
+                <span class="n">coordslist</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">eglist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyGradientMultiple</span><span class="p">(</span><span class="n">coordslist</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">eglist</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;unknown message: </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                
+                
+<div class="viewcode-block" id="NEBPar"><a class="viewcode-back" href="../../../generated/pele.transition_states.NEBPar.html#pele.transition_states.NEBPar">[docs]</a><span class="k">class</span> <span class="nc">NEBPar</span><span class="p">(</span><span class="n">NEB</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Exactly the same as NEB, but calculate the potentials in parallel</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    --------------</span>
+<span class="sd">    inherited parameters :</span>
+<span class="sd">        all required and optional parameters from NEB are accepted</span>
+<span class="sd">    ncores : </span>
+<span class="sd">        the number of cores to use</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    NEB : base class</span>
+<span class="sd">    pele.landscape.LocalConnectPar : were this class is used</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c">#self.ncores = ncores</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ncores</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;ncores&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ncores</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="c">#we must deal with copy_potential separately, so extract copy potential</span>
+        <span class="c">#from the parameter list and set it to false.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">par_copy_potential</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;copy_potential&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">par_copy_potential</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;copy_potential&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span> 
+            
+        <span class="n">ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">NEBPar</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c">#we need to distribute self.nimages potential calculations over self.ncores processors</span>
+        <span class="c">#if there are 5 jobs and 3 processors it will be distributed like this</span>
+        <span class="c">#core1 will have images 1,2 </span>
+        <span class="c">#core2 will have images 3,4 </span>
+        <span class="c">#core3 will have image  5 </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">par_images</span> <span class="o">=</span> <span class="p">[]</span> <span class="c">#a list of lists of which images are on which cores</span>
+        <span class="n">nall</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nimages</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncores</span><span class="p">)</span> <span class="c">#all cores have at least this many images</span>
+        <span class="n">nextra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimages</span> <span class="o">-</span> <span class="n">nall</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncores</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncores</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextra</span><span class="p">:</span>
+                <span class="c">#this core has nall+1 images</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">par_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">,</span><span class="n">count</span><span class="o">+</span><span class="n">nall</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="n">nall</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c">#this core has nall images</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">par_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">,</span><span class="n">count</span><span class="o">+</span><span class="n">nall</span><span class="p">)))</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="n">nall</span>
+        <span class="c">#print self.par_images        </span>
+        
+        <span class="c">#initialize the parallel workers with the potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workerlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncores</span><span class="p">):</span>
+            <span class="n">parent_conn</span><span class="p">,</span> <span class="n">child_conn</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pipe</span><span class="p">()</span>
+            <span class="n">worker_nimages</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">par_images</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">par_copy_potential</span><span class="p">:</span>
+                <span class="n">worker_nimages</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">worker</span> <span class="o">=</span> <span class="n">_PotentialProcess</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="p">,</span> <span class="n">child_conn</span><span class="p">,</span> <span class="n">copy_potential</span><span class="o">=</span><span class="n">worker_nimages</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workerlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">worker</span> <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">parent_conn</span> <span class="p">)</span>
+            <span class="c">#worker.start()</span>
+
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">def</span> <span class="nf">_getRealEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordsall</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        override the function from NEB to calculate the energies in parallel</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#start all workers </span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncores</span><span class="p">):</span>
+            <span class="n">coordslist</span> <span class="o">=</span> <span class="n">coordsall</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">par_images</span><span class="p">[</span><span class="n">i</span><span class="p">],:]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connlist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">((</span><span class="s">&quot;calculate energy gradient&quot;</span><span class="p">,</span> <span class="n">coordslist</span><span class="p">))</span>
+        
+        <span class="c">#receive energies and gradients from all workers</span>
+        <span class="n">realgrad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">coordsall</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncores</span><span class="p">):</span>
+            <span class="n">eglist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connlist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+            <span class="n">imagelist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par_images</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">imagelist</span><span class="p">)):</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">imagelist</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">image</span><span class="p">]</span> <span class="o">=</span> <span class="n">eglist</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">realgrad</span><span class="p">[</span><span class="n">image</span><span class="p">,:]</span>  <span class="o">=</span> <span class="n">eglist</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            
+        <span class="k">return</span> <span class="n">realgrad</span>   
+    
+    <span class="k">def</span> <span class="nf">_killWorkers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workerlist</span><span class="p">):</span>
+            <span class="c">#print &quot;killing&quot;</span>
+            <span class="c">#tell the worker to stop waiting for messages</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connlist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">send</span><span class="p">((</span><span class="s">&quot;kill&quot;</span><span class="p">,))</span>
+            <span class="c">#print &quot;joining&quot;</span>
+            <span class="c">#wait for the worker to finish what it&#39;s doing</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="c">#kill the worker process</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="c">#print &quot;is alive?&quot;, worker.is_alive()</span>
+
+
+<div class="viewcode-block" id="NEBPar.optimize"><a class="viewcode-back" href="../../../generated/pele.transition_states.NEBPar.optimize.html#pele.transition_states.NEBPar.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        wrap the optimize routine of NEB so the workers can be started</span>
+<span class="sd">        and, importantly, stopped, even if an exception is raised.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">workerlist</span><span class="p">:</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;running NEB in parallel with </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncores</span><span class="p">,</span> <span class="s">&quot;cores&quot;</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">NEBPar</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_killWorkers</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">ret</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;exception raised while doing NEB in parallel, terminating child processes&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">workerlist</span><span class="p">:</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="c">#self._killWorkers()</span>
+            <span class="k">raise</span>
+    </div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">pele.transition_states._NEB</span> <span class="kn">import</span> <span class="n">nebtest</span>
+    <span class="n">nebtest</span><span class="p">(</span><span class="n">NEBPar</span><span class="p">)</span>
+
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

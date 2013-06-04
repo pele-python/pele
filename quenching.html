@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Optimizers (pele.optimize) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="pele.optimize.LBFGS" href="generated/pele.optimize.LBFGS.html" />
+    <link rel="prev" title="pele.mc.MonteCarlo.takeOneStep" href="generated/pele.mc.MonteCarlo.takeOneStep.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.optimize.LBFGS.html" title="pele.optimize.LBFGS"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.mc.MonteCarlo.takeOneStep.html" title="pele.mc.MonteCarlo.takeOneStep"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.optimize"><span id="optimize-module"></span></span><div class="section" id="optimizers-pele-optimize">
+<h1>Optimizers (<cite>pele.optimize</cite>)<a class="headerlink" href="#optimizers-pele-optimize" title="Permalink to this headline">¶</a></h1>
+<p>This module contains all of the optimizers available in pele.  There are so 
+many available for testing purposes and because sometimes different optimizers are
+more appropriate in different circumstances.  These optimizers are all local.  That
+is they find the nearest local minimum.  For global optimization see <a class="reference internal" href="global_optimization.html#global-optimization"><em>global
+optimization</em></a>.</p>
+<p>In our experience, we have found that the best minizers are lbfgs and fire.  
+lbfgs seems to be by far the fastest, however there are some circumstances
+where the better stability of fire might be useful.  These cases
+include where it is important to clearly define the boundary between basins of 
+attraction.  LBFGS can also fail in non-Hamiltonian situations where you have
+forces, but no potential function.  This is the case in the Nudged elastic band, 
+where the NEB force doesn&#8217;t correspond to any NEB energy.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">we use the words &#8220;optimize&#8221;, &#8220;quench&#8221;, and &#8220;minimize&#8221; interchangeably</p>
+</div>
+<p>All of the optimizers that are functions in this package have the same form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">res</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">getEnergyGradient</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <cite>coords</cite> is the starting structure for the minimaztion, getEnergyGradient is a function 
+which return the energy and gradient, and kwargs are a collection of optional parameters.
+We have tried to make the minimizers as consistent as possible, but it is not always possible.
+Some of the common parameters most of them accept are:</p>
+<ol class="arabic simple">
+<li>nsteps : number of iterations</li>
+<li>tol : tolerance criterion for the rms gradient</li>
+<li>iprint : how often to print status informatation</li>
+</ol>
+<div class="section" id="lbfgs-routines">
+<h2>LBFGS routines<a class="headerlink" href="#lbfgs-routines" title="Permalink to this headline">¶</a></h2>
+<p>limited-memory BFGS (Broyden-Fletcher-Goldfarb-Shanno) routine</p>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Limited-memory_BFGS">http://en.wikipedia.org/wiki/Limited-memory_BFGS</a></p>
+<p>These routines (excluding the scipy version) are slightly different from
+most lbfgs routines in that the don&#8217;t use a line search.  Instead, both
+the step size and direction returned by the lbfgs routine are accepted subject
+to a constraint on the energy change.  If the energy rises more than a given amount then the 
+step size is reduce until the condition is satisfied.  Note: this is what makes
+lbfgs potentially fail with non-Hamiltonian systems.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.optimize.LBFGS.html#pele.optimize.LBFGS" title="pele.optimize.LBFGS"><tt class="xref py py-obj docutils literal"><span class="pre">LBFGS</span></tt></a>(X,&nbsp;pot[,&nbsp;maxstep,&nbsp;maxErise,&nbsp;M,&nbsp;...])</td>
+<td>minimize a function using the LBFGS routine</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.optimize.lbfgs_py.html#pele.optimize.lbfgs_py" title="pele.optimize.lbfgs_py"><tt class="xref py py-obj docutils literal"><span class="pre">lbfgs_py</span></tt></a>(coords,&nbsp;pot,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.optimize.MYLBFGS.html#pele.optimize.MYLBFGS" title="pele.optimize.MYLBFGS"><tt class="xref py py-obj docutils literal"><span class="pre">MYLBFGS</span></tt></a>(X,&nbsp;pot,&nbsp;**lbfgs_py_kwargs)</td>
+<td>minimize a function using the LBFGS routine</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.optimize.mylbfgs.html#pele.optimize.mylbfgs" title="pele.optimize.mylbfgs"><tt class="xref py py-obj docutils literal"><span class="pre">mylbfgs</span></tt></a>(coords,&nbsp;pot,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.optimize.lbfgs_scipy.html#pele.optimize.lbfgs_scipy" title="pele.optimize.lbfgs_scipy"><tt class="xref py py-obj docutils literal"><span class="pre">lbfgs_scipy</span></tt></a>(coords,&nbsp;pot[,&nbsp;iprint,&nbsp;tol,&nbsp;nsteps])</td>
+<td>a wrapper function for lbfgs routine in scipy</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="fire">
+<h2>Fire<a class="headerlink" href="#fire" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.optimize.Fire.html#pele.optimize.Fire" title="pele.optimize.Fire"><tt class="xref py py-obj docutils literal"><span class="pre">Fire</span></tt></a>(coords,&nbsp;potential[,&nbsp;restart,&nbsp;logfile,&nbsp;...])</td>
+<td>The FIRE optimization algorithm</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.optimize.fire.html#pele.optimize.fire" title="pele.optimize.fire"><tt class="xref py py-obj docutils literal"><span class="pre">fire</span></tt></a>(coords,&nbsp;pot[,&nbsp;tol,&nbsp;nsteps])</td>
+<td>A wrapper function for the pele FIRE implementation</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="other-routines">
+<h2>Other routines<a class="headerlink" href="#other-routines" title="Permalink to this headline">¶</a></h2>
+<p>most of these are simply wrappers to the
+optimizers available in scipy.optimize.
+These are not used very often and may be buggy.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">bfgs</span></tt></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.optimize.cg.html#pele.optimize.cg" title="pele.optimize.cg"><tt class="xref py py-obj docutils literal"><span class="pre">cg</span></tt></a>(coords,&nbsp;pot[,&nbsp;iprint,&nbsp;tol,&nbsp;nsteps])</td>
+<td>a wrapper function for conjugate gradient routine in scipy</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">fmin</span></tt></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.optimize.steepest_descent.html#pele.optimize.steepest_descent" title="pele.optimize.steepest_descent"><tt class="xref py py-obj docutils literal"><span class="pre">steepest_descent</span></tt></a>(x0,&nbsp;pot[,&nbsp;iprint,&nbsp;dx,&nbsp;...])</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Optimizers (<cite>pele.optimize</cite>)</a><ul>
+<li><a class="reference internal" href="#lbfgs-routines">LBFGS routines</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#fire">Fire</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#other-routines">Other routines</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.mc.MonteCarlo.takeOneStep.html"
+                        title="previous chapter">pele.mc.MonteCarlo.takeOneStep</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/pele.optimize.LBFGS.html"
+                        title="next chapter">pele.optimize.LBFGS</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/quenching.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.optimize.LBFGS.html" title="pele.optimize.LBFGS"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.mc.MonteCarlo.takeOneStep.html" title="pele.mc.MonteCarlo.takeOneStep"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

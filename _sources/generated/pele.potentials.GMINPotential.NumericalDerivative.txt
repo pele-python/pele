@@ -1,0 +1,6 @@
+pele.potentials.GMINPotential.NumericalDerivative
+=================================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: GMINPotential.NumericalDerivative

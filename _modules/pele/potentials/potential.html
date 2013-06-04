@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.potentials.potential &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.potentials.potential</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">this module holds the base classes for potentials</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;BasePotential&quot;</span><span class="p">,</span> <span class="s">&quot;BasePotentialAtomistic&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="BasePotential"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.html#pele.potentials.BasePotential">[docs]</a><span class="k">class</span> <span class="nc">BasePotential</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Base class for all potentials</span>
+<span class="sd">    </span>
+<span class="sd">    Derived classes must overload getEnergy().  It is also highly</span>
+<span class="sd">    recommended to overload getEnergyGradient(), otherwise gradients</span>
+<span class="sd">    will be calculated numerically  </span>
+<span class="sd">    </span>
+<span class="sd">        getEnergyGradient()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+<div class="viewcode-block" id="BasePotential.getEnergy"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.getEnergy.html#pele.potentials.BasePotential.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the energy at the given coordinates&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        </div>
+<div class="viewcode-block" id="BasePotential.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.getEnergyGradient.html#pele.potentials.BasePotential.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the energy and gradient at the given coordinates&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyGradientNumerical</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BasePotential.getEnergyGradientNumerical"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.getEnergyGradientNumerical.html#pele.potentials.BasePotential.getEnergyGradientNumerical">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradientNumerical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">NumericalDerivative</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">)</span>
+            </div>
+<div class="viewcode-block" id="BasePotential.NumericalDerivative"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.NumericalDerivative.html#pele.potentials.BasePotential.NumericalDerivative">[docs]</a>    <span class="k">def</span> <span class="nf">NumericalDerivative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the gradient calculated numerically&quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">eps</span>
+            <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">eps</span>
+            <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">eps</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">eps</span>
+        <span class="k">return</span> <span class="n">g</span>
+    </div>
+<div class="viewcode-block" id="BasePotential.getGradient"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.getGradient.html#pele.potentials.BasePotential.getGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the gradient at the given coordinates&quot;&quot;&quot;</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">g</span>     
+</div>
+<div class="viewcode-block" id="BasePotential.NumericalHessian"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.NumericalHessian.html#pele.potentials.BasePotential.NumericalHessian">[docs]</a>    <span class="k">def</span> <span class="nf">NumericalHessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the Hessian matrix of second derivatives computed numerically</span>
+<span class="sd">        </span>
+<span class="sd">        this takes 2*len(coords) calls to getGradient</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">ndof</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">hess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">ndof</span><span class="p">,</span> <span class="n">ndof</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">ndof</span><span class="p">):</span>
+            <span class="n">xbkup</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">eps</span>
+            <span class="n">g1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getGradient</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xbkup</span> <span class="o">-</span> <span class="n">eps</span>
+            <span class="n">g2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getGradient</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>            
+            <span class="n">hess</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">g1</span> <span class="o">-</span> <span class="n">g2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">eps</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xbkup</span>
+        <span class="k">return</span> <span class="n">hess</span>
+</div>
+<div class="viewcode-block" id="BasePotential.getEnergyGradientHessian"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.getEnergyGradientHessian.html#pele.potentials.BasePotential.getEnergyGradientHessian">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradientHessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the energy, gradient, and Hessian at the given coordinates&quot;&quot;&quot;</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">hess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NumericalHessian</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">hess</span>
+    </div>
+<div class="viewcode-block" id="BasePotential.getHessian"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.getHessian.html#pele.potentials.BasePotential.getHessian">[docs]</a>    <span class="k">def</span> <span class="nf">getHessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the hessian&quot;&quot;&quot;</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyGradientHessian</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">h</span>
+    </div>
+<div class="viewcode-block" id="BasePotential.test_potential"><a class="viewcode-back" href="../../../generated/pele.potentials.BasePotential.test_potential.html#pele.potentials.BasePotential.test_potential">[docs]</a>    <span class="k">def</span> <span class="nf">test_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;print some information testing whether the analytical gradients are correct&quot;&quot;&quot;</span>
+        <span class="n">E1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">E2</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">gradnum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NumericalDerivative</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;testing energy and gradient&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;energy from getEnergy        &quot;</span><span class="p">,</span> <span class="n">E1</span>
+        <span class="k">print</span> <span class="s">&quot;energy from getEnergyGradient&quot;</span><span class="p">,</span> <span class="n">E2</span>
+        <span class="k">print</span> <span class="s">&quot;difference&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">E1</span><span class="o">-</span><span class="n">E2</span><span class="p">)</span>
+<span class="c">#        print &quot;analytical gradient&quot;, grad</span>
+<span class="c">#        print &quot;numerical gradient &quot;, gradnum</span>
+        <span class="k">print</span> <span class="s">&quot;analytical rms gradient&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;numerical rms gradient &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gradnum</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;maximum difference between analytical and numerical gradient&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">grad</span><span class="o">-</span><span class="n">gradnum</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&quot;normalized by the maximum gradient&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">grad</span><span class="o">-</span><span class="n">gradnum</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">grad</span><span class="p">))</span>
+</div></div>
+<span class="k">class</span> <span class="nc">potential</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    for backward compatibility</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">BasePotentialAtomistic</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Base class for all potentials that can use interaction lists</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    BasePotential</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">getEnergyList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">ilist</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;the energy of select interactions defined in ilist</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coords : array</span>
+<span class="sd">        ilist : array, shape (*,2)</span>
+<span class="sd">            a numpy array containing pairs of atoms (ilist[i,:]).  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">getEnergyGradientList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">ilist</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the energy and gradient of select interactions defined in ilist</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coords : array</span>
+<span class="sd">        ilist : array, shape (*,2)</span>
+<span class="sd">            a numpy array containing pairs of atoms (ilist[i,:]).  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.utils.disconnectivity_graph.DisconnectivityGraph &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Disconnectivity Graphs" href="../disconnectivity_graph.html" />
+    <link rel="next" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html" />
+    <link rel="prev" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../disconnectivity_graph.html" accesskey="U">Disconnectivity Graphs</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-utils-disconnectivity-graph-disconnectivitygraph">
+<h1>pele.utils.disconnectivity_graph.DisconnectivityGraph<a class="headerlink" href="#pele-utils-disconnectivity-graph-disconnectivitygraph" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.utils.disconnectivity_graph.DisconnectivityGraph">
+<em class="property">class </em><tt class="descclassname">pele.utils.disconnectivity_graph.</tt><tt class="descname">DisconnectivityGraph</tt><big>(</big><em>graph</em>, <em>minima=None</em>, <em>nlevels=20</em>, <em>Emax=None</em>, <em>subgraph_size=None</em>, <em>order_by_energy=False</em>, <em>order_by_basin_size=True</em>, <em>node_offset=1.0</em>, <em>center_gmin=True</em>, <em>include_gmin=True</em>, <em>energy_attribute='energy'</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/disconnectivity_graph.html#DisconnectivityGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.disconnectivity_graph.DisconnectivityGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>make a disconnectivity graph</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>graph</strong> : a networkx graph</p>
+<blockquote>
+<div><p>a graph with Minimum objects as nodes and transition
+states defining the edges.  You can use
+pele.landscape.TSGraph to create this from a database.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graphwrapper</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dg</span> <span class="o">=</span> <span class="n">DisconnectivityGraph</span><span class="p">(</span><span class="n">graphwrapper</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>nlevels</strong> : int</p>
+<blockquote>
+<div><p>how many levels at which to bin the transition states</p>
+</div></blockquote>
+<p><strong>Emax</strong> : float</p>
+<blockquote>
+<div><p>maximum energy for transition state cutoff.  Default
+is the maximum energy of all transition states.</p>
+</div></blockquote>
+<p><strong>minima</strong> : list of Minima</p>
+<blockquote>
+<div><p>a list of minima to ensure are displayed in the graph.
+e.g. they will be displayed even if they&#8217;re in a connected
+cluster smaller than smaller than subgraph_size</p>
+</div></blockquote>
+<p><strong>subgraph_size</strong> : int</p>
+<blockquote>
+<div><p>if subgraph_size is not None then all disconnected graphs
+of size greater than subraph_size will be included.</p>
+</div></blockquote>
+<p><strong>order_by_energy</strong> : bool</p>
+<blockquote>
+<div><p>order the subtrees by placing ones with lower energy closer
+to the center</p>
+</div></blockquote>
+<p><strong>order_by_basin_size</strong> : bool</p>
+<blockquote>
+<div><p>order the subtrees by placing larger basins closer to the center</p>
+</div></blockquote>
+<p><strong>center_gmin</strong> : bool</p>
+<blockquote>
+<div><p>when a node splits into its daughter
+nodes, the one containing the global minimum is always placed centrally
+(even if other nodes carry more minima). This does not guarantee that
+the global minimum is central in the overall diagram because other
+nodes may push the one containing the global minimum over to one side</p>
+</div></blockquote>
+<p><strong>include_gmin</strong> : bool</p>
+<blockquote>
+<div><p>make sure to include the global minimum, even if it is not part of the
+main connected region</p>
+</div></blockquote>
+<p><strong>node_offset</strong> : float</p>
+<blockquote>
+<div><p>offset between 0 and 1 for how to draw the angled lines.
+0 for no angle, draw horizontally out then vertically down.  1 for 
+angled lines all the way to the next energy level</p>
+</div></blockquote>
+<p><strong>energy_attribute</strong> : string, optional</p>
+<blockquote class="last">
+<div><p>attribute which contains energy. default is energy. This attribute can
+be used to generate free energy disconnectivity graphs</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><tt class="xref py py-obj docutils literal"><span class="pre">make_disconnectivity_graph.py</span></tt></dt>
+<dd>a script (in pele/scripts) to make the disconnectivity graph from the command line</dd>
+<dt><a class="reference internal" href="pele.storage.Database.html#pele.storage.Database" title="pele.storage.Database"><tt class="xref py py-obj docutils literal"><span class="pre">pele.storage.Database</span></tt></a></dt>
+<dd>The database format in which minima and transition states are stored in pele</dd>
+<dt><a class="reference internal" href="pele.landscape.TSGraph.html#pele.landscape.TSGraph" title="pele.landscape.TSGraph"><tt class="xref py py-obj docutils literal"><span class="pre">pele.landscape.TSGraph</span></tt></a></dt>
+<dd>a wrapper to create a networkx Graph from a database</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>These examples assume a Database with minima already exists</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graphwrapper</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dg</span> <span class="o">=</span> <span class="n">DisconnectivityGraph</span><span class="p">(</span><span class="n">graphwrapper</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dg</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dg</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate"><tt class="xref py py-obj docutils literal"><span class="pre">calculate</span></tt></a>()</td>
+<td>do the calculations necessary to draw the diconnectivity graph</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout"><tt class="xref py py-obj docutils literal"><span class="pre">get_minima_layout</span></tt></a>()</td>
+<td>return the x position of the minima</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout"><tt class="xref py py-obj docutils literal"><span class="pre">get_tree_layout</span></tt></a>()</td>
+<td>Returns the x position of the trees</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.plot.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.plot" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.plot"><tt class="xref py py-obj docutils literal"><span class="pre">plot</span></tt></a>([show_minima,&nbsp;show_trees,&nbsp;linewidth,&nbsp;axes])</td>
+<td>draw the disconnectivity graph using matplotlib</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels"><tt class="xref py py-obj docutils literal"><span class="pre">set_energy_levels</span></tt></a>(elevels)</td>
+<td>manually set the energy levels</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels.html"
+                        title="previous chapter">pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html"
+                        title="next chapter">pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.utils.disconnectivity_graph.DisconnectivityGraph.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../disconnectivity_graph.html" >Disconnectivity Graphs</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+pele.systems.LJCluster.get_pgorder
+==================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.get_pgorder

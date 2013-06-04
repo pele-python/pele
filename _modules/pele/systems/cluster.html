@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.systems.cluster &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.systems.cluster</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">BaseSystem</span>
+<span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">LJ</span>
+<span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">orthogopt</span>
+<span class="kn">from</span> <span class="nn">pele.mindist</span> <span class="kn">import</span> <span class="n">MinPermDistAtomicCluster</span><span class="p">,</span> <span class="n">ExactMatchAtomicCluster</span><span class="p">,</span> \
+    <span class="n">PointGroupOrderCluster</span>
+<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">smoothPath</span>
+<span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">create_NEB</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;AtomicCluster&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="AtomicCluster"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.html#pele.systems.AtomicCluster">[docs]</a><span class="k">class</span> <span class="nc">AtomicCluster</span><span class="p">(</span><span class="n">BaseSystem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Define an atomic cluster.  </span>
+<span class="sd">    </span>
+<span class="sd">    This is a system of point particles with global rotational </span>
+<span class="sd">    and translational symmetry and some form of permutational </span>
+<span class="sd">    symmetry.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AtomicCluster.get_potential"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_potential.html#pele.systems.AtomicCluster.get_potential">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LJ</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="AtomicCluster.get_random_configuration"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_random_configuration.html#pele.systems.AtomicCluster.get_random_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">get_random_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.7</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">coords</span>
+    </div>
+<div class="viewcode-block" id="AtomicCluster.get_permlist"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_permlist.html#pele.systems.AtomicCluster.get_permlist">[docs]</a>    <span class="k">def</span> <span class="nf">get_permlist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    </div>
+<div class="viewcode-block" id="AtomicCluster.get_compare_exact"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_compare_exact.html#pele.systems.AtomicCluster.get_compare_exact">[docs]</a>    <span class="k">def</span> <span class="nf">get_compare_exact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;this function quickly determines whether two clusters are identical</span>
+<span class="sd">        given translational, rotational and permutational symmeties</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">permlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_permlist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ExactMatchAtomicCluster</span><span class="p">(</span><span class="n">permlist</span><span class="o">=</span><span class="n">permlist</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="AtomicCluster.get_mindist"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_mindist.html#pele.systems.AtomicCluster.get_mindist">[docs]</a>    <span class="k">def</span> <span class="nf">get_mindist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a function which puts two structures in best alignment.</span>
+<span class="sd">        </span>
+<span class="sd">        take into account global rotational symmetry, global translational</span>
+<span class="sd">        symmetry and permutational symmetry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">permlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_permlist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">MinPermDistAtomicCluster</span><span class="p">(</span><span class="n">permlist</span><span class="o">=</span><span class="n">permlist</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="AtomicCluster.get_orthogonalize_to_zero_eigenvectors"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_orthogonalize_to_zero_eigenvectors.html#pele.systems.AtomicCluster.get_orthogonalize_to_zero_eigenvectors">[docs]</a>    <span class="k">def</span> <span class="nf">get_orthogonalize_to_zero_eigenvectors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;the zero eigenvectors correspond to 3 global translational</span>
+<span class="sd">        degrees of freedom and 3 global rotational degrees of freedom&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">orthogopt</span>
+</div>
+<div class="viewcode-block" id="AtomicCluster.get_metric_tensor"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_metric_tensor.html#pele.systems.AtomicCluster.get_metric_tensor">[docs]</a>    <span class="k">def</span> <span class="nf">get_metric_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; metric tensor for all masses m_i=1.0 &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="AtomicCluster.get_pgorder"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_pgorder.html#pele.systems.AtomicCluster.get_pgorder">[docs]</a>    <span class="k">def</span> <span class="nf">get_pgorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">calculator</span> <span class="o">=</span> <span class="n">PointGroupOrderCluster</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_compare_exact</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">calculator</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+    
+    <span class="c">#</span>
+    <span class="c">#below here only stuff for the gui</span>
+    <span class="c">#</span>
+</div>
+<div class="viewcode-block" id="AtomicCluster.smooth_path"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.smooth_path.html#pele.systems.AtomicCluster.smooth_path">[docs]</a>    <span class="k">def</span> <span class="nf">smooth_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mindist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">smoothPath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="AtomicCluster.createNEB"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.createNEB.html#pele.systems.AtomicCluster.createNEB">[docs]</a>    <span class="k">def</span> <span class="nf">createNEB</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
+        <span class="n">NEBparams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">double_ended_connect</span><span class="o">.</span><span class="n">local_connect_params</span><span class="o">.</span><span class="n">NEBparams</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">NEBparams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">create_NEB</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">NEBparams</span><span class="p">)</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

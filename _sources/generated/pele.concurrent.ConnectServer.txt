@@ -1,0 +1,25 @@
+pele.concurrent.ConnectServer
+=============================
+
+.. currentmodule:: pele.concurrent
+
+.. autoclass:: ConnectServer
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~ConnectServer.add_minimum
+         ~ConnectServer.add_ts
+         ~ConnectServer.get_connect_job
+         ~ConnectServer.get_system
+         ~ConnectServer.run
+         ~ConnectServer.set_connect_manager
+   
+   
+
+   
+   
+   

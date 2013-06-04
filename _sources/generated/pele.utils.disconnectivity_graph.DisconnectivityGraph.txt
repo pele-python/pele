@@ -1,0 +1,24 @@
+pele.utils.disconnectivity_graph.DisconnectivityGraph
+=====================================================
+
+.. currentmodule:: pele.utils.disconnectivity_graph
+
+.. autoclass:: DisconnectivityGraph
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~DisconnectivityGraph.calculate
+         ~DisconnectivityGraph.get_minima_layout
+         ~DisconnectivityGraph.get_tree_layout
+         ~DisconnectivityGraph.plot
+         ~DisconnectivityGraph.set_energy_levels
+   
+   
+
+   
+   
+   

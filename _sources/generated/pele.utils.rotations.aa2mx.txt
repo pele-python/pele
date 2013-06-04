@@ -1,0 +1,6 @@
+pele.utils.rotations.aa2mx
+==========================
+
+.. currentmodule:: pele.utils.rotations
+
+.. autofunction:: aa2mx

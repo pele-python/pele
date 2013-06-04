@@ -1,0 +1,6 @@
+pele.systems.BaseParameters.copy
+================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseParameters.copy

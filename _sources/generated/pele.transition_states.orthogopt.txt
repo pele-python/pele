@@ -1,0 +1,6 @@
+pele.transition_states.orthogopt
+================================
+
+.. currentmodule:: pele.transition_states
+
+.. autofunction:: orthogopt

@@ -1,0 +1,6 @@
+pele.takestep.AdaptiveStepsize.__call__
+=======================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: AdaptiveStepsize.__call__

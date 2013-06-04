@@ -1,0 +1,6 @@
+pele.potentials.XYModel.getGradient
+===================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: XYModel.getGradient

@@ -1,0 +1,6 @@
+pele.systems.BaseParameters.iteritems
+=====================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseParameters.iteritems

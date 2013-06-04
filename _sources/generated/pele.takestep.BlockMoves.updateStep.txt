@@ -1,0 +1,6 @@
+pele.takestep.BlockMoves.updateStep
+===================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: BlockMoves.updateStep

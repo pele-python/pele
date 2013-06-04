@@ -1,0 +1,6 @@
+pele.systems.LJCluster.get_permlist
+===================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.get_permlist

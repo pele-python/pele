@@ -1,0 +1,6 @@
+pele.landscape.ConnectManager.untried
+=====================================
+
+.. currentmodule:: pele.landscape
+
+.. automethod:: ConnectManager.untried

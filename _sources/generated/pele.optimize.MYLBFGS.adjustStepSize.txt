@@ -1,0 +1,6 @@
+pele.optimize.MYLBFGS.adjustStepSize
+====================================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: MYLBFGS.adjustStepSize

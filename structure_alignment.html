@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Structure Alignment (pele.mindist) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="pele.mindist.findrotation" href="generated/pele.mindist.findrotation.html" />
+    <link rel="prev" title="pele.takestep.TakestepSlice.updateStep" href="generated/pele.takestep.TakestepSlice.updateStep.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.mindist.findrotation.html" title="pele.mindist.findrotation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.takestep.TakestepSlice.updateStep.html" title="pele.takestep.TakestepSlice.updateStep"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.mindist"><span id="structure-alignment"></span></span><div class="section" id="structure-alignment-pele-mindist">
+<h1>Structure Alignment (<cite>pele.mindist</cite>)<a class="headerlink" href="#structure-alignment-pele-mindist" title="Permalink to this headline">¶</a></h1>
+<p>Tools for finding the best alignment between two structures.
+(a.k.a. minimum distance routines, mindist, minpermdist, etc.) When trying to
+find path between two minima it is importatnt to ensure that the starting
+points are as close together as possible given the symmetries of the system.
+Common symmetries that need to be accounted for are global translational 
+invariance, global rotational invariance, global inversion symmetry, and
+permutational invariance.</p>
+<p>Translation and inversion symmetries are trivial to deal with.
+Given <em>either</em> rotational or permutational symmetries it is trivial to find the
+optimum alignment.  When you have both, a solution cannot be found analytically
+without going through all N-factorial options, a ludicrously slow option.
+Instead we solve it approximately and stochastically.</p>
+<div class="section" id="rotational-alignment">
+<h2>Rotational alignment<a class="headerlink" href="#rotational-alignment" title="Permalink to this headline">¶</a></h2>
+<p>Find the optimal rotation for two sets of coordinates (i.e. perform a rms fit)</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.findrotation.html#pele.mindist.findrotation" title="pele.mindist.findrotation"><tt class="xref py py-obj docutils literal"><span class="pre">findrotation</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;align_com])</td>
+<td>Return the quaternion which aligns XB with XA</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.mindist.findrotation_kabsch.html#pele.mindist.findrotation_kabsch" title="pele.mindist.findrotation_kabsch"><tt class="xref py py-obj docutils literal"><span class="pre">findrotation_kabsch</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;...])</td>
+<td>Kabsch, Wolfgang, (1976) &#8220;A solution of the best rotation to relate two sets of vectors&#8221;, Acta Crystallographica 32:922</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.findrotation_kearsley.html#pele.mindist.findrotation_kearsley" title="pele.mindist.findrotation_kearsley"><tt class="xref py py-obj docutils literal"><span class="pre">findrotation_kearsley</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;...])</td>
+<td>Return the quaternion which aligns XB with XA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="permutational-aligment">
+<h2>Permutational aligment<a class="headerlink" href="#permutational-aligment" title="Permalink to this headline">¶</a></h2>
+<p>Finding the best alignment can be mapped onto the Assignment Problem and solved
+very quickly using the Hungarian (shortest augmenting path) algorithm.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.optimize_permutations.html#pele.mindist.optimize_permutations" title="pele.mindist.optimize_permutations"><tt class="xref py py-obj docutils literal"><span class="pre">optimize_permutations</span></tt></a>(X1,&nbsp;X2[,&nbsp;permlist,&nbsp;...])</td>
+<td>return the best alignment of the structures X1 and X2 after optimizing permutations</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.mindist.find_best_permutation.html#pele.mindist.find_best_permutation" title="pele.mindist.find_best_permutation"><tt class="xref py py-obj docutils literal"><span class="pre">find_best_permutation</span></tt></a>(X1,&nbsp;X2[,&nbsp;permlist,&nbsp;...])</td>
+<td>find the permutation of the atoms which minimizes the distance <a href="#id1"><span class="problematic" id="id2">|X1-X2|</span></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="rotational-permutational-alignment">
+<h2>Rotational + permutational alignment<a class="headerlink" href="#rotational-permutational-alignment" title="Permalink to this headline">¶</a></h2>
+<p>This cannot be solved exactly in a reasonable amount of time (The time scales as
+natoms factorial).  Instead it&#8217;s solved iteratively by iterating random rotation -&gt; 
+permutational alignment -&gt; rotational alignment.  This generally produces a good alignment, but not
+necessarily the optimal</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.MinPermDistCluster.html#pele.mindist.MinPermDistCluster" title="pele.mindist.MinPermDistCluster"><tt class="xref py py-obj docutils literal"><span class="pre">MinPermDistCluster</span></tt></a>([niter,&nbsp;verbose,&nbsp;tol,&nbsp;...])</td>
+<td>Minimize the distance between two clusters.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.mindist.ExactMatchCluster.html#pele.mindist.ExactMatchCluster" title="pele.mindist.ExactMatchCluster"><tt class="xref py py-obj docutils literal"><span class="pre">ExactMatchCluster</span></tt></a>([tol,&nbsp;accuracy,&nbsp;...])</td>
+<td>Deterministic check if 2 clusters are a perfect match</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.StandardClusterAlignment.html#pele.mindist.StandardClusterAlignment" title="pele.mindist.StandardClusterAlignment"><tt class="xref py py-obj docutils literal"><span class="pre">StandardClusterAlignment</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;...])</td>
+<td>class to iterate over standard alignments for atomic clusters</td>
+</tr>
+</tbody>
+</table>
+<p>For atomic cluster, specialized wrapper exist.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.MinPermDistAtomicCluster.html#pele.mindist.MinPermDistAtomicCluster" title="pele.mindist.MinPermDistAtomicCluster"><tt class="xref py py-obj docutils literal"><span class="pre">MinPermDistAtomicCluster</span></tt></a>([permlist,&nbsp;can_invert])</td>
+<td>minpermdist for atomic cluster (3 carthesian coordinates per site)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.mindist.ExactMatchAtomicCluster.html#pele.mindist.ExactMatchAtomicCluster" title="pele.mindist.ExactMatchAtomicCluster"><tt class="xref py py-obj docutils literal"><span class="pre">ExactMatchAtomicCluster</span></tt></a>([permlist,&nbsp;can_invert])</td>
+<td>minpermdist for atomic cluster (3 carthesian coordinates per site)</td>
+</tr>
+</tbody>
+</table>
+<p>See the angleaxis module for angleaxis minpermdist routines</p>
+</div>
+<div class="section" id="periodic-boundary-conditions">
+<h2>Periodic Boundary Conditions<a class="headerlink" href="#periodic-boundary-conditions" title="Permalink to this headline">¶</a></h2>
+<p>This is generally a much harder problem than those discussed above.  Currently
+we have no general mindist routine, but we do have a test to check if the
+structures are identical</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.ExactMatchPeriodic.html#pele.mindist.ExactMatchPeriodic" title="pele.mindist.ExactMatchPeriodic"><tt class="xref py py-obj docutils literal"><span class="pre">ExactMatchPeriodic</span></tt></a>(measure[,&nbsp;accuracy])</td>
+<td>Deterministic check if 2 structures are a perfect match  assume there are permutable atoms, because if there are not then the problem is trivial.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="customizing-minpermdist-minpermdist-policies">
+<h2>Customizing minpermdist - minpermdist policies<a class="headerlink" href="#customizing-minpermdist-minpermdist-policies" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.TransformPolicy.html#pele.mindist.TransformPolicy" title="pele.mindist.TransformPolicy"><tt class="xref py py-obj docutils literal"><span class="pre">TransformPolicy</span></tt></a></td>
+<td>interface for possible transformations on a set of coordinates</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.mindist.MeasurePolicy.html#pele.mindist.MeasurePolicy" title="pele.mindist.MeasurePolicy"><tt class="xref py py-obj docutils literal"><span class="pre">MeasurePolicy</span></tt></a></td>
+<td>interface for possible measurements on a set of coordinates</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="utilities">
+<h2>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.PointGroupOrderCluster.html#pele.mindist.PointGroupOrderCluster" title="pele.mindist.PointGroupOrderCluster"><tt class="xref py py-obj docutils literal"><span class="pre">PointGroupOrderCluster</span></tt></a>(exact_match)</td>
+<td>Determines the point group order of a cluster</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="obsolete-translational-alignment">
+<h2>OBSOLETE: translational alignment<a class="headerlink" href="#obsolete-translational-alignment" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.alignCoM.html#pele.mindist.alignCoM" title="pele.mindist.alignCoM"><tt class="xref py py-obj docutils literal"><span class="pre">alignCoM</span></tt></a>(X1,&nbsp;X2)</td>
+<td>align the center of mass of X2 with that of X1</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.mindist.CoMToOrigin.html#pele.mindist.CoMToOrigin" title="pele.mindist.CoMToOrigin"><tt class="xref py py-obj docutils literal"><span class="pre">CoMToOrigin</span></tt></a>(X1)</td>
+<td>move the center of mass to the origin</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Structure Alignment (<cite>pele.mindist</cite>)</a><ul>
+<li><a class="reference internal" href="#rotational-alignment">Rotational alignment</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#permutational-aligment">Permutational aligment</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#rotational-permutational-alignment">Rotational + permutational alignment</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#periodic-boundary-conditions">Periodic Boundary Conditions</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#customizing-minpermdist-minpermdist-policies">Customizing minpermdist - minpermdist policies</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#utilities">Utilities</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#obsolete-translational-alignment">OBSOLETE: translational alignment</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.takestep.TakestepSlice.updateStep.html"
+                        title="previous chapter">pele.takestep.TakestepSlice.updateStep</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/pele.mindist.findrotation.html"
+                        title="next chapter">pele.mindist.findrotation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/structure_alignment.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.mindist.findrotation.html" title="pele.mindist.findrotation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.takestep.TakestepSlice.updateStep.html" title="pele.takestep.TakestepSlice.updateStep"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

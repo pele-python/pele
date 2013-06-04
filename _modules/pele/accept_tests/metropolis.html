@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.accept_tests.metropolis &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.accept_tests.metropolis</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Metropolis&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Metropolis"><a class="viewcode-back" href="../../../generated/pele.accept_tests.Metropolis.html#pele.accept_tests.Metropolis">[docs]</a><span class="k">class</span> <span class="nc">Metropolis</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Accept steps based on the metropolis criterion</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    temperature : float</span>
+<span class="sd">    random : callable</span>
+<span class="sd">        return a random number in [0,1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random</span> <span class="o">=</span> <span class="n">random</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accept_next</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="Metropolis.acceptRejectE"><a class="viewcode-back" href="../../../generated/pele.accept_tests.Metropolis.acceptRejectE.html#pele.accept_tests.Metropolis.acceptRejectE">[docs]</a>    <span class="k">def</span> <span class="nf">acceptRejectE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Eold</span><span class="p">,</span> <span class="n">Enew</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;the Metropolis criterion&quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_accept_next</span><span class="p">):</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_accept_next</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">Enew</span> <span class="o">&lt;</span> <span class="n">Eold</span><span class="p">:</span> <span class="k">return</span> <span class="bp">True</span>
+        <span class="n">acceptstep</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">wcomp</span> <span class="o">=</span> <span class="p">(</span><span class="n">Enew</span> <span class="o">-</span> <span class="n">Eold</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span>
+        <span class="n">w</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">wcomp</span><span class="p">))</span>
+        <span class="n">rand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rand</span> <span class="o">&gt;</span> <span class="n">w</span><span class="p">):</span> <span class="n">acceptstep</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c">#print &quot;mc step: Eo&quot;, Eold, &quot;En&quot;, Enew, &quot;accepted&quot;, acceptstep, w, self.temperature</span>
+
+        <span class="k">return</span> <span class="n">acceptstep</span>
+    </div>
+<div class="viewcode-block" id="Metropolis.forceAccept"><a class="viewcode-back" href="../../../generated/pele.accept_tests.Metropolis.forceAccept.html#pele.accept_tests.Metropolis.forceAccept">[docs]</a>    <span class="k">def</span> <span class="nf">forceAccept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            Force acceptance of the next step. This is useful for reseeding.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accept_next</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Metropolis.__call__"><a class="viewcode-back" href="../../../generated/pele.accept_tests.Metropolis.__call__.html#pele.accept_tests.Metropolis.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Eold</span><span class="p">,</span> <span class="n">Enew</span><span class="p">,</span> <span class="n">qcoords</span><span class="o">=</span><span class="p">[],</span> <span class="n">coords</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;wrapper for acceptRejectE&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptRejectE</span><span class="p">(</span><span class="n">Eold</span><span class="p">,</span> <span class="n">Enew</span><span class="p">)</span>
+</div></div>
+<span class="k">class</span> <span class="nc">MetropolisNonQuench</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    perform metropolis criterion on non quenched energy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metropolis</span> <span class="o">=</span> <span class="n">Metropolis</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">random</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">acceptReject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Equench_old</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">Equench_new</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">qcoords</span><span class="o">=</span><span class="p">[],</span> <span class="n">coords</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Enew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Eold</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Eold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Enew</span>
+        <span class="c">#print &quot;Eold Enew&quot;, self.Eold, self.Enew</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metropolis</span><span class="o">.</span><span class="n">acceptReject</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Eold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Enew</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">checkAccepted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quenchedE</span><span class="p">,</span> <span class="n">quenched_coords</span><span class="p">,</span> <span class="n">accepted</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if the step was accepted, update self.Eold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Eold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Enew</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">met</span> <span class="o">=</span> <span class="n">Metropolis</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+    
+    
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

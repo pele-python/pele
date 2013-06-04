@@ -1,0 +1,6 @@
+pele.systems.BLJCluster.get_nzero_modes
+=======================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BLJCluster.get_nzero_modes

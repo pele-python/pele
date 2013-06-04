@@ -1,0 +1,6 @@
+pele.optimize.Fire.run
+======================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Fire.run

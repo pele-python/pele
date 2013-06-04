@@ -1,0 +1,710 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.transition_states.transition_state_refinement &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.transition_states.transition_state_refinement</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">Result</span>
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
+<span class="kn">from</span> <span class="nn">pele.potentials.potential</span> <span class="kn">import</span> <span class="n">potential</span> <span class="k">as</span> <span class="n">basepot</span>
+<span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">findLowestEigenVector</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;findTransitionState&quot;</span><span class="p">,</span> <span class="s">&quot;FindTransitionState&quot;</span><span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;pele.connect.findTS&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">TSRefinementPotential</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    this is a potential wrapper for use in an optimization package.  The intent</span>
+<span class="sd">    is to try to locate the nearest transition state of the system.</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    getEnergyGradient():</span>
+<span class="sd">        will return the gradient with the component along the eigenvector</span>
+<span class="sd">        removed.  This is for energy minimization in the space tangent to the</span>
+<span class="sd">        gradient    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eigenvec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        orthogZeroEigs : callable</span>
+<span class="sd">            The function which makes a vector orthogonal to known zero</span>
+<span class="sd">            eigenvectors.  The default value is 0, which means use the default</span>
+<span class="sd">            function orthogopt which assumes rotational and translational</span>
+<span class="sd">            invariance.  If None is pass then no function will be used</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">eigenvec</span>
+
+    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return the energy and the gradient with the component along the</span>
+<span class="sd">        eigenvec removed.  For use in energy minimization in the space</span>
+<span class="sd">        perpendicular to eigenvec</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="c">#norm = np.sum(self.eigenvec)</span>
+        <span class="n">grad</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span>
+        <span class="k">return</span> <span class="n">e</span><span class="p">,</span> <span class="n">grad</span>
+
+
+
+<div class="viewcode-block" id="FindTransitionState"><a class="viewcode-back" href="../../../generated/pele.transition_states.FindTransitionState.html#pele.transition_states.FindTransitionState">[docs]</a><span class="k">class</span> <span class="nc">FindTransitionState</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class implements the routine for finding the nearest transition state</span>
+<span class="sd">    </span>
+<span class="sd">    ***orthogZeroEigs is system dependent, don&#39;t forget to set it***</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coords : </span>
+<span class="sd">        the starting coordinates</span>
+<span class="sd">    pot : </span>
+<span class="sd">        the potential class</span>
+<span class="sd">    tol : </span>
+<span class="sd">        the tolerance for the rms gradient</span>
+<span class="sd">    event : callable</span>
+<span class="sd">        This will be called after each step</span>
+<span class="sd">    nsteps : </span>
+<span class="sd">        number of iterations</span>
+<span class="sd">    nfail_max :</span>
+<span class="sd">        if the lowest eigenvector search fails this many times in a row</span>
+<span class="sd">        than the algorithm ends</span>
+<span class="sd">    eigenvec0 : </span>
+<span class="sd">        a guess for the initial lowest eigenvector</span>
+<span class="sd">    iprint :</span>
+<span class="sd">        the interval at which to print status messages</span>
+<span class="sd">    orthogZeroEigs : callable</span>
+<span class="sd">        this function makes a vector orthogonal to the known zero</span>
+<span class="sd">        eigenvectors</span>
+
+<span class="sd">            orthogZeroEigs=0  : default behavior, assume translational and</span>
+<span class="sd">                                rotational symmetry</span>
+<span class="sd">            orthogZeroEigs=None : the vector is unchanged</span>
+
+<span class="sd">    lowestEigenvectorQuenchParams : dict </span>
+<span class="sd">        these parameters are passed to the quench routine for he lowest</span>
+<span class="sd">        eigenvector search </span>
+<span class="sd">    tangentSpaceQuenchParams : dict </span>
+<span class="sd">        these parameters are passed quench routine for the minimization in</span>
+<span class="sd">        the space tabgent to the lowest eigenvector </span>
+<span class="sd">    max_uphill_step : </span>
+<span class="sd">        the maximum step uphill along the direction of the lowest</span>
+<span class="sd">        eigenvector</span>
+<span class="sd">    demand_initial_negative_vec : bool</span>
+<span class="sd">        if True, abort if the initial lowest eigenvalue is positive</span>
+<span class="sd">    nsteps_tangent1, nsteps_tangent2 : int</span>
+<span class="sd">        the number of iterations for tangent space minimization before and after</span>
+<span class="sd">        the eigenvalue is deemed to be converged</span>
+<span class="sd">    verbosity : int</span>
+<span class="sd">        how much debugging information to print (only partially implemented)</span>
+<span class="sd">        </span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    </span>
+<span class="sd">    It is composed of the following steps</span>
+<span class="sd">        1) Find eigenvector corresponding to the lowest *nonzero*</span>
+<span class="sd">        eigenvector.  </span>
+<span class="sd">        </span>
+<span class="sd">        2) Step uphill in the direction of the lowest eigenvector</span>
+<span class="sd">        </span>
+<span class="sd">        3) minimize in the space tangent to the lowest eigenvector</span>
+<span class="sd">        </span>
+<span class="sd">    The tolerances for the various steps of this algorithm must be correlated.</span>
+<span class="sd">    if the tol for tangent space search is lower than the total tol, then it will never finish</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    findTransitionState : function wrapper for this class</span>
+<span class="sd">    findLowestEigenVector : a core algorithm</span>
+<span class="sd">    pele.landscape.LocalConnect : the class which most often calls this routine</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
+                 <span class="n">nfail_max</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">lowestEigenvectorQuenchParams</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
+                 <span class="n">tangentSpaceQuenchParams</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> 
+                 <span class="n">max_uphill_step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">demand_initial_negative_vec</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">nsteps_tangent1</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">nsteps_tangent2</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nfail_max</span> <span class="o">=</span> <span class="n">nfail_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nfail</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">eigenvec0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span> <span class="o">=</span> <span class="n">orthogZeroEigs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">=</span> <span class="n">iprint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span> <span class="o">=</span> <span class="n">lowestEigenvectorQuenchParams</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_uphill_step</span> <span class="o">=</span> <span class="n">max_uphill_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quencher</span> <span class="o">=</span> <span class="n">mylbfgs</span> <span class="c">#  should make this passable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tangentSpaceQuenchParams</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span> <span class="o">=</span> <span class="n">demand_initial_negative_vec</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">npositive_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">rmsnorm</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldeigenvec</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c">#set tolerance for the tangent space minimization.  </span>
+        <span class="c">#Be sure it is tighter tolerance than self.tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol_tangent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">*</span> <span class="mf">0.2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;tol&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tol_tangent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tol_tangent</span><span class="p">,</span> 
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;tol&quot;</span><span class="p">])</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;tol&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_tangent1</span> <span class="o">=</span> <span class="n">nsteps_tangent1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_tangent2</span> <span class="o">=</span> <span class="n">nsteps_tangent2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;maxstep&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxstep_tangent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;maxstep&quot;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;maxstep&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxstep_tangent</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c">#this should be determined in a better way</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;logger&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;logger&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;pele.connect.findTS.tangent_space_quench&quot;</span><span class="p">)</span>
+
+
+        <span class="c">#set some parameters used in finding lowest eigenvector</span>
+        <span class="c">#initial guess for Hermitian</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span> <span class="o">=</span> <span class="bp">None</span> 
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0_transverse</span> <span class="o">=</span> <span class="bp">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_factor</span> <span class="o">=</span> <span class="o">.</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npositive</span> <span class="o">=</span> <span class="mi">0</span>
+        
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="FindTransitionState.params"><a class="viewcode-back" href="../../../generated/pele.transition_states.FindTransitionState.params.html#pele.transition_states.FindTransitionState.params">[docs]</a>    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">obj</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">FindTransitionState</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="bp">None</span><span class="p">)</span>
+        
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;tangentSpaceQuenchParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;lowestEigenvectorQuenchParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;tol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">tol</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;nsteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">nsteps</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;nfail_max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">nfail_max</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;iprint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">iprint</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;max_uphill_step&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">max_uphill_step</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;demand_initial_negative_vec&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;nsteps_tangent1&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">nsteps_tangent1</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;nsteps_tangent2&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">nsteps_tangent2</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&quot;verbosity&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">verbosity</span>
+        
+        <span class="c"># event=None, eigenvec0=None, orthogZeroEigs=0,</span>
+        <span class="k">return</span> <span class="n">params</span>
+    
+    
+    </div>
+    <span class="k">def</span> <span class="nf">_saveState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_eigenvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_eigenval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_H0_leig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_H0_transverse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0_transverse</span>
+        <span class="c">#self.saved_oldeigenvec = np.copy(self.oldeigenvec)</span>
+
+    <span class="k">def</span> <span class="nf">_resetState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_eigenvec</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_eigenval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldeigenvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_overlap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_H0_leig</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0_transverse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_H0_transverse</span>
+        <span class="k">return</span> <span class="n">coords</span>
+
+<div class="viewcode-block" id="FindTransitionState.run"><a class="viewcode-back" href="../../../generated/pele.transition_states.FindTransitionState.run.html#pele.transition_states.FindTransitionState.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The main loop of the algorithm&quot;&quot;&quot;</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span> <span class="c">#  return object</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
+            
+            <span class="c"># get the lowest eigenvalue and eigenvector</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span>
+            
+            <span class="c"># check to make sure the eigenvector is ok</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_saveState</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">npositive</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">npositive</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">npositive_max</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="s">&quot;positive eigenvalue found too many times. ending </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">npositive</span><span class="p">)</span>
+                    <span class="n">res</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s">&quot;positive eigenvalue found too many times </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">npositive</span> <span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;the eigenvalue turned positive.&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="s">&quot;Resetting last good values and taking smaller steps&quot;</span><span class="p">)</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resetState</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="c"># step uphill along the direction of the lowest eigenvector</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stepUphill</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+                <span class="c"># maybe we want to update the lowest eigenvector now that we&#39;ve moved?</span>
+                <span class="c"># david thinks this is a bad idea</span>
+                <span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+            <span class="c"># minimize the coordinates in the space perpendicular to the lowest eigenvector</span>
+            <span class="n">coords</span><span class="p">,</span> <span class="n">tangentrms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimizeTangentSpace</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+
+            <span class="c"># check if we are done and print some stuff</span>
+            <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="n">rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsnorm</span>
+            <span class="n">gradpar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">ostring</span> <span class="o">=</span> <span class="s">&quot;findTS: </span><span class="si">%3d</span><span class="s"> E </span><span class="si">%9g</span><span class="s"> rms </span><span class="si">%8g</span><span class="s"> eigenvalue </span><span class="si">%9g</span><span class="s"> rms perp </span><span class="si">%8g</span><span class="s"> grad par </span><span class="si">%9g</span><span class="s"> overlap </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                                    <span class="n">i</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">rms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="n">tangentrms</span><span class="p">,</span> <span class="n">gradpar</span><span class="p">,</span> <span class="n">overlap</span><span class="p">)</span>
+                    <span class="n">extra</span> <span class="o">=</span> <span class="s">&quot;  Evec search: </span><span class="si">%d</span><span class="s"> rms </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">leig_result</span><span class="o">.</span><span class="n">nfev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">leig_result</span><span class="o">.</span><span class="n">rms</span><span class="p">)</span>
+                    <span class="n">extra</span> <span class="o">+=</span> <span class="s">&quot;  Tverse search: </span><span class="si">%d</span><span class="s"> step </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tangent_result</span><span class="o">.</span><span class="n">nfev</span><span class="p">,</span> 
+                                                                    <span class="bp">self</span><span class="o">.</span><span class="n">tangent_move_step</span><span class="p">)</span>
+                    <span class="n">extra</span> <span class="o">+=</span> <span class="s">&quot;  Uphill step:</span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uphill_step_size</span><span class="p">,)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">ostring</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">rms</span><span class="o">=</span><span class="n">rms</span><span class="p">,</span> <span class="n">eigenval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="n">stepnum</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfail</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfail_max</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;stopping findTransitionState.  too many failures in eigenvector search </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfail</span><span class="p">)</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s">&quot;too many failures in eigenvector search </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfail</span> <span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;initial eigenvalue is positive - increase NEB spring constant?&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;            aborting transition state search&quot;</span><span class="p">)</span>
+                    <span class="n">res</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s">&quot;initial eigenvalue is positive </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="p">)</span>
+                    <span class="k">break</span>
+
+        <span class="c"># done.  do one last eigenvector search because coords may have changed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_getLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+        <span class="c"># print some data</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;findTransitionState done: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">rms</span><span class="p">,</span> <span class="s">&quot;eigenvalue&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span>
+    
+        <span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="c"># check if results make sense</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&gt;=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;warning: transition state is ending with positive eigenvalue </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">rms</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;warning: transition state search appears to have failed: rms </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">rms</span><span class="p">)</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s">&quot;maximum iterations reached </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">i</span> <span class="p">)</span>
+            
+
+        <span class="c">#return results</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">E</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">grad</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">rms</span> <span class="o">=</span> <span class="n">rms</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="n">success</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+
+        </div>
+    <span class="k">def</span> <span class="nf">_getLowestEigenVector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">findLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="n">H0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> 
+                                    <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span><span class="p">,</span>
+                                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leig_result</span> <span class="o">=</span> <span class="n">res</span>
+        
+<span class="c">#        if res.eigenval &gt; 0.:</span>
+<span class="c">#            print &quot;warning transition state search found positive lowest eigenvalue&quot;, res.eigenval, \</span>
+<span class="c">#                &quot;step&quot;, i</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">H0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">eigenvec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">eigenval</span>
+        
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oldeigenvec</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">overlap</span> <span class="o">&lt;</span> <span class="mf">0.5</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;warning: the new eigenvector has low overlap with previous </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">overlap</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">overlap</span> <span class="o">=</span> <span class="mf">0.</span>
+
+        <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nfail</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nfail</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldeigenvec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">overlap</span>
+    
+    <span class="k">def</span> <span class="nf">_minimizeTangentSpace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        now minimize the energy in the space perpendicular to eigenvec.</span>
+<span class="sd">        There&#39;s no point in spending much effort on this until </span>
+<span class="sd">        we&#39;ve gotten close to the transition state.  So limit the number of steps</span>
+<span class="sd">        to 10 until we get close.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#determine the number of steps</span>
+        <span class="c">#i.e. if the eigenvector is deemed to have converged</span>
+        <span class="n">use_gradpar</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">use_gradpar</span><span class="p">:</span>
+            <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="n">gradpar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
+            <span class="n">eigenvec_converged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gradpar</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="o">*</span><span class="mf">2.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">eigenvec_converged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="o">.</span><span class="mi">999</span> 
+        
+        <span class="n">nstepsperp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_tangent1</span>
+        <span class="k">if</span> <span class="n">eigenvec_converged</span><span class="p">:</span>
+            <span class="n">nstepsperp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_tangent2</span>
+
+        <span class="n">maxstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxstep_tangent</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">maxstep</span> <span class="o">*=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_factor</span><span class="p">)</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span>
+
+
+
+        <span class="n">tspot</span> <span class="o">=</span> <span class="n">TSRefinementPotential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
+        <span class="n">coords1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quencher</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">tspot</span><span class="p">,</span> 
+                                          <span class="n">nsteps</span><span class="o">=</span><span class="n">nstepsperp</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol_tangent</span><span class="p">,</span>
+                                          <span class="n">maxstep</span><span class="o">=</span><span class="n">maxstep</span><span class="p">,</span>
+                                          <span class="n">H0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0_transverse</span><span class="p">,</span>
+                                          <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">)</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tangent_move_step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">coords</span> <span class="o">-</span> <span class="n">coords1</span><span class="p">)</span>
+        <span class="n">rms</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">rms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tangent_result</span> <span class="o">=</span> <span class="n">ret</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0_transverse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_result</span><span class="o">.</span><span class="n">H0</span>
+        <span class="k">return</span> <span class="n">coords</span><span class="p">,</span> <span class="n">rms</span>
+
+    <span class="k">def</span> <span class="nf">_stepUphill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        step uphill in the direction of self.eigenvec.  self.eigenval is used</span>
+<span class="sd">        to determine the best stepsize</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span> 
+        <span class="n">h</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="n">F</span><span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span><span class="o">+</span><span class="mf">4.</span><span class="o">*</span><span class="n">F</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="o">**</span><span class="mi">2</span> <span class="p">))</span>
+
+        <span class="n">maxstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_uphill_step</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">maxstep</span> <span class="o">*=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_factor</span><span class="p">)</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span>
+
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">maxstep</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;reducing step from </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="s">&quot;to&quot;</span><span class="p">,</span> <span class="n">maxstep</span><span class="p">)</span> 
+            <span class="n">h</span> <span class="o">*=</span> <span class="n">maxstep</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uphill_step_size</span> <span class="o">=</span> <span class="n">h</span>
+        <span class="n">coords</span> <span class="o">+=</span> <span class="n">h</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span>
+
+        <span class="k">return</span> <span class="n">coords</span>
+
+</div>
+<div class="viewcode-block" id="findTransitionState"><a class="viewcode-back" href="../../../generated/pele.transition_states.findTransitionState.html#pele.transition_states.findTransitionState">[docs]</a><span class="k">def</span> <span class="nf">findTransitionState</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    simply a wrapper for initializing and running FindTransitionState</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    FindTransitionState : for all documentation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">finder</span> <span class="o">=</span> <span class="n">FindTransitionState</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">finder</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+
+
+<span class="c">###################################################################</span>
+<span class="c">#below here only stuff for testing</span>
+<span class="c">###################################################################</span>
+
+</div>
+<span class="k">def</span> <span class="nf">testgetcoordsLJ</span><span class="p">():</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.12</span> <span class="c">#2.**(1./6.)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="mf">60.</span><span class="o">/</span><span class="mi">360</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.3</span> \
+              <span class="p">]</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">coords</span>
+
+
+<span class="k">def</span> <span class="nf">guesstsATLJ</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">pele.potentials.ATLJ</span> <span class="kn">import</span> <span class="n">ATLJ</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">ATLJ</span><span class="p">(</span><span class="n">Z</span> <span class="o">=</span> <span class="mf">2.</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.12</span> <span class="c">#2.**(1./6.)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="mf">60.</span><span class="o">/</span><span class="mi">360</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">coords1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.</span> <span class="p">])</span>
+    <span class="n">coords2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span> <span class="p">])</span>
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span> <span class="k">as</span> <span class="n">quench</span>
+    <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span>
+    <span class="n">ret1</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">)</span>
+    <span class="n">ret2</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">)</span>
+    <span class="n">coords1</span> <span class="o">=</span> <span class="n">ret1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">coords2</span> <span class="o">=</span> <span class="n">ret2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">NEB</span>
+    <span class="n">neb</span> <span class="o">=</span> <span class="n">NEB</span><span class="p">(</span><span class="n">InterpolatedPath</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span> <span class="n">pot</span><span class="p">)</span>
+    <span class="n">neb</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+    <span class="n">neb</span><span class="o">.</span><span class="n">MakeAllMaximaClimbing</span><span class="p">()</span>
+    <span class="c">#neb.optimize()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">)):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">isclimbing</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
+    <span class="k">return</span> <span class="n">pot</span><span class="p">,</span> <span class="n">coords</span>
+
+<span class="k">def</span> <span class="nf">guessts</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span> <span class="k">as</span> <span class="n">quench</span>
+<span class="c">#    from pele.mindist.minpermdist_stochastic import minPermDistStochastic as mindist</span>
+    <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">NEB</span>
+    <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
+    <span class="n">ret1</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">)</span>
+    <span class="n">ret2</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">)</span>
+    <span class="n">coords1</span> <span class="o">=</span> <span class="n">ret1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">coords2</span> <span class="o">=</span> <span class="n">ret2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
+    <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
+    <span class="n">mindist</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
+    <span class="n">dist</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">mindist</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span> 
+    <span class="k">print</span> <span class="s">&quot;dist&quot;</span><span class="p">,</span> <span class="n">dist</span>
+    <span class="k">print</span> <span class="s">&quot;energy coords1&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy coords2&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span>
+    <span class="n">neb</span> <span class="o">=</span> <span class="n">NEB</span><span class="p">(</span><span class="n">InterpolatedPath</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">pot</span><span class="p">)</span>
+    <span class="c">#neb.optimize(quenchParams={&quot;iprint&quot; : 1})</span>
+    <span class="n">neb</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">iprint</span><span class="o">=-</span><span class="mi">30</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">neb</span><span class="o">.</span><span class="n">MakeAllMaximaClimbing</span><span class="p">()</span>
+    <span class="c">#neb.optimize(quenchParams={&quot;iprint&quot;: 30, &quot;nsteps&quot;:100})</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">)):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">isclimbing</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
+    <span class="k">return</span> <span class="n">pot</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">,:],</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
+
+
+<span class="k">def</span> <span class="nf">guesstsLJ</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">pele.potentials.lj</span> <span class="kn">import</span> <span class="n">LJ</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">()</span>
+    <span class="n">natoms</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">pele.basinhopping</span> <span class="kn">import</span> <span class="n">BasinHopping</span>
+    <span class="kn">from</span> <span class="nn">pele.takestep.displace</span> <span class="kn">import</span> <span class="n">RandomDisplacement</span>
+    <span class="kn">from</span> <span class="nn">pele.takestep.adaptive</span> <span class="kn">import</span> <span class="n">AdaptiveStepsize</span>
+    <span class="kn">from</span> <span class="nn">pele.storage.savenlowest</span> <span class="kn">import</span> <span class="n">SaveN</span>
+    <span class="n">saveit</span> <span class="o">=</span> <span class="n">SaveN</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">takestep1</span> <span class="o">=</span> <span class="n">RandomDisplacement</span><span class="p">()</span>
+    <span class="n">takestep</span> <span class="o">=</span> <span class="n">AdaptiveStepsize</span><span class="p">(</span><span class="n">takestep1</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">bh</span> <span class="o">=</span> <span class="n">BasinHopping</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">takestep</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">saveit</span><span class="p">,</span> <span class="n">outstream</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">coords1</span> <span class="o">=</span> <span class="n">saveit</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">coords</span>
+    <span class="n">coords2</span> <span class="o">=</span> <span class="n">saveit</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coords</span>
+    
+    <span class="k">return</span> <span class="n">guessts</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+
+
+
+
+    
+
+<span class="k">def</span> <span class="nf">testgetcoordsATLJ</span><span class="p">():</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.12</span> <span class="c">#2.**(1./6.)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="mf">40.</span><span class="o">/</span><span class="mi">360</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.</span> <span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">testpot1</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">itertools</span>
+    <span class="kn">from</span> <span class="nn">pele.printing.print_atoms_xyz</span> <span class="kn">import</span> <span class="n">printAtomsXYZ</span> <span class="k">as</span> <span class="n">printxyz</span>
+    <span class="n">pot</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">guesstsLJ</span><span class="p">()</span>
+    <span class="n">coordsinit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span>
+        <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">r</span> 
+    
+    <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;initial E&quot;</span><span class="p">,</span> <span class="n">e</span>
+    <span class="k">print</span> <span class="s">&quot;initial G&quot;</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;&quot;</span>
+    
+
+    
+    
+    <span class="kn">from</span> <span class="nn">pele.printing.print_atoms_xyz</span> <span class="kn">import</span> <span class="n">PrintEvent</span>
+
+    <span class="c">#print ret</span>
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;out.xyz&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;energy of minima 1&quot;</span><span class="p">,</span> <span class="n">e</span>
+        <span class="n">printxyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">line2</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coordsinit</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;energy of NEB guess for the transition state&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s">&quot;rms grad&quot;</span><span class="p">,</span> \
+            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
+        <span class="n">printxyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coordsinit</span><span class="p">,</span> <span class="n">line2</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;energy of minima 2&quot;</span><span class="p">,</span> <span class="n">e</span>
+        <span class="n">printxyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">line2</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        
+        <span class="c">#mess up coords a bit</span>
+        <span class="n">coords</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span><span class="o">*</span><span class="mf">0.05</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">printxyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">line2</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+        
+        <span class="n">printevent</span> <span class="o">=</span> <span class="n">PrintEvent</span><span class="p">(</span><span class="n">fout</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;starting the transition state search&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">findTransitionState</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">ret</span>
+        <span class="c">#coords, eval, evec, e, grad, rms = ret</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">printxyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">line2</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+    <span class="k">print</span> <span class="s">&quot;finished searching for transition state&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="n">e</span>
+    <span class="k">print</span> <span class="s">&quot;rms grad&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">rms</span>
+    <span class="k">print</span> <span class="s">&quot;eigenvalue&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">eigenval</span>
+    
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;now try the same search with the dimer method&quot;</span>
+        <span class="kn">from</span> <span class="nn">pele.NEB.dimer</span> <span class="kn">import</span> <span class="n">findTransitionState</span> <span class="k">as</span> <span class="n">dimerfindTS</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">coordsinit</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+        <span class="n">tau</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">dimerfindTS</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tau</span> <span class="p">)</span>
+        <span class="n">enew</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="n">enew</span>
+        <span class="k">print</span> <span class="s">&quot;rms grad&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
+
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">testpot1</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

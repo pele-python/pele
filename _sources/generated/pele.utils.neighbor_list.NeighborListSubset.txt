@@ -1,0 +1,24 @@
+pele.utils.neighbor_list.NeighborListSubset
+===========================================
+
+.. currentmodule:: pele.utils.neighbor_list
+
+.. autoclass:: NeighborListSubset
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~NeighborListSubset.buildList
+         ~NeighborListSubset.buildListSlow
+         ~NeighborListSubset.getList
+         ~NeighborListSubset.needNewList
+         ~NeighborListSubset.needNewListSlow
+   
+   
+
+   
+   
+   

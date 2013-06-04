@@ -1,0 +1,6 @@
+pele.landscape.DoubleEndedConnect.returnPath
+============================================
+
+.. currentmodule:: pele.landscape
+
+.. automethod:: DoubleEndedConnect.returnPath

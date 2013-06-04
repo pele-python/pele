@@ -1,0 +1,6 @@
+pele.systems.BLJCluster.get_pgorder
+===================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BLJCluster.get_pgorder

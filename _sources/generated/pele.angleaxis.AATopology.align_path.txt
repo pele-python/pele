@@ -1,0 +1,6 @@
+pele.angleaxis.AATopology.align_path
+====================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: AATopology.align_path

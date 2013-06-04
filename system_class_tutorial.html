@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using the system class &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="Global Optimization" href="global_optimization.html" />
+    <link rel="prev" title="Creating Your Potential" href="tutorial_potential.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="global_optimization.html" title="Global Optimization"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_potential.html" title="Creating Your Potential"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-the-system-class">
+<span id="tutorial-system-class"></span><h1>Using the system class<a class="headerlink" href="#using-the-system-class" title="Permalink to this headline">¶</a></h1>
+<p>All of the tools in pele are modular, and can be used without a system class,
+but seting up a system class can make your life a <em>lot</em> easier.  If you set it up
+once then access to all the tools in pele is simply one function call away.  This
+tutorial is designed to show how use the system class to access the most common
+features of pele.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This tutorial mirrors an example in the examples folder.</p>
+</div>
+<p>This tutorial uses the LJCluster system class as an example.  We
+start by initializing the system class.  Different system classes
+may take different parameters for the constructor.  LJCluster simply
+takes the number of atoms.  We&#8217;ll look at clusters of 13 atoms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
+<span class="n">natoms</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We start by generating a random configuration:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">coords</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We want to know the energy of that configuration, so we use the system
+class to create a <a class="reference internal" href="potentials.html#potentials-description"><em>potential object</em></a>.  This
+potential object has functions for computing the energy, gradient, and
+Hessian:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">potential</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;the energy of the random configuration is&quot;</span><span class="p">,</span> <span class="n">energy</span>
+</pre></div>
+</div>
+<p>Next we minimize that configuration to it&#8217;s nearest local minimum. To do
+that we use the system class to generate an object to do the <a class="reference internal" href="quenching.html#optimize-module"><em>minimization</em></a>
+for us:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">quencher</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_minimizer</span><span class="p">()</span>
+<span class="n">ret</span> <span class="o">=</span> <span class="n">quencher</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+<span class="n">newcoords</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">newenergy</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">print</span> <span class="s">&quot;after quenching, the energy is&quot;</span><span class="p">,</span> <span class="n">newenergy</span>
+</pre></div>
+</div>
+<p>Next we will create a <a class="reference internal" href="database.html#database"><em>database</em></a> to store the newly
+generated minimum:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
+<span class="n">minimum1</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">newenergy</span><span class="p">,</span> <span class="n">newcoords</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>This creates a database in memory.  If you want to save the results to a file
+you would use:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">db</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="s">&quot;lj.sqlite&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Let&#8217;s generate a second random minimum and add it to the database.  Now we
+use a shortcut from the system class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ret</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_random_minimized_configuration</span><span class="p">()</span>
+<span class="k">print</span> <span class="s">&quot;a second minimum has energy&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">e2</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">minimum2</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">e2</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we&#8217;ll do a short basinhopping run to find the global minimum and build up
+the database of minima:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">bh</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">db</span><span class="p">)</span>
+<span class="n">niter</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">niter</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;the lowest energy found after&quot;</span><span class="p">,</span> <span class="n">niter</span><span class="p">,</span> <span class="s">&quot; basinhopping steps is&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">energy</span>
+</pre></div>
+</div>
+<p>Print the energies of all the minima we&#8217;ve found:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&quot;the minima in the database have energies&quot;</span>
+<span class="k">for</span> <span class="n">minimum</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">&quot;  &quot;</span><span class="p">,</span> <span class="n">minimum</span><span class="o">.</span><span class="n">energy</span>
+</pre></div>
+</div>
+<p>Next, lets find the <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>minimum distance</em></a> (a.k.a. mindist) between the two lowest
+minima:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">mindist</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
+<span class="n">dist</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">mindist</span><span class="p">(</span><span class="n">m1</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">m2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;the minimum distance between the two lowest minima is&quot;</span><span class="p">,</span> <span class="n">dist</span>
+</pre></div>
+</div>
+<p>Now lets do a <a class="reference internal" href="landscape.html#landscape-description"><em>double ended connect</em></a> run.  This
+finds a connected series of minima and transition states between two minima:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">connect</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+<span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+<span class="n">mints</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">energies</span> <span class="o">=</span> <span class="n">connect</span><span class="o">.</span><span class="n">returnPath</span><span class="p">()</span>
+<span class="n">nts</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mints</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="k">print</span> <span class="s">&quot;found a connection with&quot;</span><span class="p">,</span> <span class="n">nts</span><span class="p">,</span> <span class="s">&quot;transition states&quot;</span>
+</pre></div>
+</div>
+<p>Finally, lets connect all of the minima in the database to the lowest minimum:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&quot;now connecting all the minima to the lowest energy minimum&quot;</span>
+<span class="n">m1</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">m2</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]:</span>
+    <span class="k">print</span> <span class="s">&quot;connecting minima with id&#39;s&quot;</span><span class="p">,</span> <span class="n">m1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m2</span><span class="o">.</span><span class="n">_id</span>
+    <span class="n">connect</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+    <span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And we&#8217;ll end by printing out some information about what is in the database:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&quot;database summary:&quot;</span>
+<span class="k">print</span> <span class="s">&quot;    &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">()),</span> <span class="s">&quot;minima&quot;</span>
+<span class="k">print</span> <span class="s">&quot;    &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">transition_states</span><span class="p">()),</span> <span class="s">&quot;transition states&quot;</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial_potential.html"
+                        title="previous chapter">Creating Your Potential</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="global_optimization.html"
+                        title="next chapter">Global Optimization</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/system_class_tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="global_optimization.html" title="Global Optimization"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_potential.html" title="Creating Your Potential"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

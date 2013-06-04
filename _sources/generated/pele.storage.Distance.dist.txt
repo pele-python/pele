@@ -1,0 +1,6 @@
+pele.storage.Distance.dist
+==========================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Distance.dist

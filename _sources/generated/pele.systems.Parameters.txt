@@ -1,0 +1,37 @@
+pele.systems.Parameters
+=======================
+
+.. currentmodule:: pele.systems
+
+.. autoclass:: Parameters
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~Parameters.clear
+         ~Parameters.copy
+         ~Parameters.fromkeys
+         ~Parameters.get
+         ~Parameters.has_key
+         ~Parameters.items
+         ~Parameters.iteritems
+         ~Parameters.iterkeys
+         ~Parameters.itervalues
+         ~Parameters.keys
+         ~Parameters.pop
+         ~Parameters.popitem
+         ~Parameters.setdefault
+         ~Parameters.update
+         ~Parameters.values
+         ~Parameters.viewitems
+         ~Parameters.viewkeys
+         ~Parameters.viewvalues
+   
+   
+
+   
+   
+   

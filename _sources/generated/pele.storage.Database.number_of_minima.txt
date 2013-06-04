@@ -1,0 +1,6 @@
+pele.storage.Database.number_of_minima
+======================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.number_of_minima

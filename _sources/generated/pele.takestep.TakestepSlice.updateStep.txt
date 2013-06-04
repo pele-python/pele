@@ -1,0 +1,6 @@
+pele.takestep.TakestepSlice.updateStep
+======================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: TakestepSlice.updateStep

@@ -1,0 +1,6 @@
+pele.systems.LJCluster.createNEB
+================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.createNEB

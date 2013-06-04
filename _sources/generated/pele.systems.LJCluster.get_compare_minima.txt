@@ -1,0 +1,6 @@
+pele.systems.LJCluster.get_compare_minima
+=========================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.get_compare_minima

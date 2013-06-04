@@ -1,0 +1,6 @@
+pele.systems.BaseParameters.get
+===============================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseParameters.get

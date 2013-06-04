@@ -1,0 +1,6 @@
+pele.utils.rotations.vec_random
+===============================
+
+.. currentmodule:: pele.utils.rotations
+
+.. autofunction:: vec_random

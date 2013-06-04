@@ -1,0 +1,165 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.storage.Database.addMinimum &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="pele.storage.Database" href="pele.storage.Database.html" />
+    <link rel="next" title="pele.storage.Database.addTransitionState" href="pele.storage.Database.addTransitionState.html" />
+    <link rel="prev" title="pele.storage.Database.compareMinima" href="pele.storage.Database.compareMinima.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Database.addTransitionState.html" title="pele.storage.Database.addTransitionState"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Database.compareMinima.html" title="pele.storage.Database.compareMinima"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../database.html" >Database storage (<cite>pele.storage</cite>)</a> &raquo;</li>
+          <li><a href="pele.storage.Database.html" accesskey="U">pele.storage.Database</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-storage-database-addminimum">
+<h1>pele.storage.Database.addMinimum<a class="headerlink" href="#pele-storage-database-addminimum" title="Permalink to this headline">¶</a></h1>
+<dl class="method">
+<dt id="pele.storage.Database.addMinimum">
+<tt class="descclassname">Database.</tt><tt class="descname">addMinimum</tt><big>(</big><em>E</em>, <em>coords</em>, <em>commit=True</em>, <em>max_n_minima=-1</em><big>)</big><a class="reference internal" href="../_modules/pele/storage/database.html#Database.addMinimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.storage.Database.addMinimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a new minimum to database</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>E</strong> : float</p>
+<p><strong>coords</strong> : numpy.array</p>
+<blockquote>
+<div><p>coordinates of the minimum</p>
+</div></blockquote>
+<p><strong>commit</strong> : bool, optional</p>
+<blockquote>
+<div><p>commit changes to database</p>
+</div></blockquote>
+<p><strong>max_n_minima</strong> : int, optional</p>
+<blockquote>
+<div><p>keep only the max_n_minima with the lowest energies. If E is greater
+than the minimum with the highest energy in the database, then don&#8217;t add
+this minimum and return None.  Else add this minimum and delete the minimum
+with the highest energy.  if max_n_minima &lt; 0 then it is ignored.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>minimum</strong> : Minimum</p>
+<blockquote class="last">
+<div><p>minimum which was added (not necessarily a new minimum)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.storage.Database.compareMinima.html"
+                        title="previous chapter">pele.storage.Database.compareMinima</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.storage.Database.addTransitionState.html"
+                        title="next chapter">pele.storage.Database.addTransitionState</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.storage.Database.addMinimum.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Database.addTransitionState.html" title="pele.storage.Database.addTransitionState"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Database.compareMinima.html" title="pele.storage.Database.compareMinima"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../database.html" >Database storage (<cite>pele.storage</cite>)</a> &raquo;</li>
+          <li><a href="pele.storage.Database.html" >pele.storage.Database</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+pele.landscape.DoubleEndedConnect.success
+=========================================
+
+.. currentmodule:: pele.landscape
+
+.. automethod:: DoubleEndedConnect.success

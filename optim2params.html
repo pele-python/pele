@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The Parameter tree and OPTIM keywords &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-parameter-tree-and-optim-keywords">
+<span id="optim2params"></span><h1>The Parameter tree and OPTIM keywords<a class="headerlink" href="#the-parameter-tree-and-optim-keywords" title="Permalink to this headline">¶</a></h1>
+<p>This page describes how to translate an OPTIM odata file into the pele
+<a class="reference internal" href="system_class.html#system-class"><em>Parameter</em></a> tree.  If a keyword is not mentioned, then it is either not relevant, or
+I just haven&#8217;t gotten to it yet.</p>
+<p>The documentation for OPTIM keywords can be found here, <a class="reference external" href="http://www-wales.ch.cam.ac.uk/OPTIM.doc/node4.html">http://www-wales.ch.cam.ac.uk/OPTIM.doc/node4.html</a></p>
+<p>Generally shortened names are used for the Parameter tree, e.g. <cite>lowestEigenvectorQuenchParams</cite> instead
+of <cite>params.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams</cite>.  See
+<a class="reference internal" href="system_class.html#system-class"><em>here</em></a> for a full description of the Parameter tree.</p>
+<p>NEWCONNECT NConMax NTriesMax ImageDensity IterDensity ImageMax ImageIncr RMStol:</p>
+<div class="highlight-python"><pre>double_ended_connect.niter = NConnMax
+(local_connect.NEBattempts = NTriesMax not passable)
+NEBparams.image_density =  ImageDensity
+NEBparams.iter_density =  IterDensity
+NEBparams.max_images =  ImageMax
+(ImageIncr not implemented)
+NEBparams.NEBquenchParams.tol = RMStol</pre>
+</div>
+<p>NEBK nebk:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">NEBparams</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">nebk</span>
+</pre></div>
+</div>
+<p>MAXERISE x1 x2:</p>
+<div class="highlight-python"><pre>(x1 is for normal quenches)
+pushoff_params.quenchParams.maxErise = x1 (maybe other places also?)
+lowestEigenvectorQuenchParams.maxErise = x2</pre>
+</div>
+<p>BFGSTS nevs ncgmax1 ncgmax2 ceig nevl:</p>
+<div class="highlight-python"><pre>lowestEigenvectorQuenchParams.nsteps = nevs
+tsSearchParams.nsteps_tangent1 = ncgmax1
+tsSearchParams.nsteps_tangent2 = ncgmax2
+lowestEigenvectorQuenchParams.tol = ceig
+(nevl not used)</pre>
+</div>
+<p>BFGSMIN gmax:</p>
+<div class="highlight-python"><pre>(tolerance for standard quenches)
+pushoff_params.quenchParams.tol = gmax (maybe other places also?)</pre>
+</div>
+<p>MAXSTEP x1 x2:</p>
+<div class="highlight-python"><pre>(x1 is for eigenvector-following, but is it used for other things?)
+(x2 ? not documented)</pre>
+</div>
+<p>MAXMAX x:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">tsSearchParams</span><span class="o">.</span><span class="n">max_uphill_step</span> <span class="o">=</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>BFGSCONV gmax:</p>
+<div class="highlight-python"><pre>tsSearchParams.tangentSpaceQuenchParams.tol = gmax (I think)</pre>
+</div>
+<p>PUSHOFF x:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">local_connect_params</span><span class="o">.</span><span class="n">pushoff_params</span><span class="o">.</span><span class="n">stepmin</span> <span class="o">=</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>STEPS n:</p>
+<div class="highlight-python"><pre>?</pre>
+</div>
+<p>BFGSSTEPS n:</p>
+<div class="highlight-python"><pre>(number of steps for standard quenches)
+local_connect_params.pushoff_params.nsteps = n</pre>
+</div>
+<p>MAXBFGS x1 x2 x3 x4:</p>
+<div class="highlight-python"><pre>(max step length)
+(x1 for normal quenches)
+local_connect_params.pushoff_params.maxstep = x1 (maybe other places also?)
+lowestEigenvectorQuenchParams.maxstep = x2
+(x3 for putting structures in closest coincidence with ministd)
+NEBparams.NEBquenchParams.maxstep = x4</pre>
+</div>
+<p>UPDATES mupdate1 mupdate2 mupdate3 mupdate4:</p>
+<div class="highlight-python"><pre>(M for lbfgs)
+(mupdate1 is for standard quenches)
+pushoff_params.quenchParams.M = mupdate1 (maybe other places also?)
+(??? mupdate2 is currently ignored by mind)
+lowestEigenvectorQuenchParams.M = mupdate3
+NEBparams.NEBquenchParams.M = mupdate4</pre>
+</div>
+<p>CHECKCHIRALITY:</p>
+<div class="highlight-python"><pre>(not implemented, but should be)</pre>
+</div>
+<p>RANROT n:</p>
+<div class="highlight-python"><pre>(niter in the stochastic minpermdist routine.  not in parameter tree yet)</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/optim2params.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+pele.landscape.TSGraph.addTransitionState
+=========================================
+
+.. currentmodule:: pele.landscape
+
+.. automethod:: TSGraph.addTransitionState

@@ -1,0 +1,6 @@
+pele.angleaxis.AATopology.interpolate
+=====================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: AATopology.interpolate

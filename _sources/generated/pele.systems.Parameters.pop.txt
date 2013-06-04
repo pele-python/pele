@@ -1,0 +1,6 @@
+pele.systems.Parameters.pop
+===========================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: Parameters.pop

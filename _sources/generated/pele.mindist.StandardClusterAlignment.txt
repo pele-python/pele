@@ -1,0 +1,20 @@
+pele.mindist.StandardClusterAlignment
+=====================================
+
+.. currentmodule:: pele.mindist
+
+.. autoclass:: StandardClusterAlignment
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~StandardClusterAlignment.next
+   
+   
+
+   
+   
+   

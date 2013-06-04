@@ -1,0 +1,6 @@
+pele.storage.Database.accuracy
+==============================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Database.accuracy

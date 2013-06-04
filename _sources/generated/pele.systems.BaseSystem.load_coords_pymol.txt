@@ -1,0 +1,6 @@
+pele.systems.BaseSystem.load_coords_pymol
+=========================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseSystem.load_coords_pymol

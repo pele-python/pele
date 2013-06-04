@@ -1,0 +1,28 @@
+pele.potentials.BasePotential
+=============================
+
+.. currentmodule:: pele.potentials
+
+.. autoclass:: BasePotential
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~BasePotential.NumericalDerivative
+         ~BasePotential.NumericalHessian
+         ~BasePotential.getEnergy
+         ~BasePotential.getEnergyGradient
+         ~BasePotential.getEnergyGradientHessian
+         ~BasePotential.getEnergyGradientNumerical
+         ~BasePotential.getGradient
+         ~BasePotential.getHessian
+         ~BasePotential.test_potential
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+pele.utils.rbtools.CoordsAdapter.copy
+=====================================
+
+.. currentmodule:: pele.utils.rbtools
+
+.. automethod:: CoordsAdapter.copy

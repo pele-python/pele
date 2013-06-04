@@ -1,0 +1,6 @@
+pele.utils.hessian.make_sparse
+==============================
+
+.. currentmodule:: pele.utils.hessian
+
+.. autofunction:: make_sparse

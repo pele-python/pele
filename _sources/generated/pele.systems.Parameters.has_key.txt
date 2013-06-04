@@ -1,0 +1,6 @@
+pele.systems.Parameters.has_key
+===============================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: Parameters.has_key

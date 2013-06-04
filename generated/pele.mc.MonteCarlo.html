@@ -1,0 +1,230 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.mc.MonteCarlo &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Monte Carlo (pele.mc)" href="../monte_carlo.html" />
+    <link rel="next" title="pele.mc.MonteCarlo.addEventAfterStep" href="pele.mc.MonteCarlo.addEventAfterStep.html" />
+    <link rel="prev" title="pele.mc.MonteCarlo.takeOneStep" href="pele.mc.MonteCarlo.takeOneStep.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.mc.MonteCarlo.addEventAfterStep.html" title="pele.mc.MonteCarlo.addEventAfterStep"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.mc.MonteCarlo.takeOneStep.html" title="pele.mc.MonteCarlo.takeOneStep"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../monte_carlo.html" accesskey="U">Monte Carlo (<cite>pele.mc</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-mc-montecarlo">
+<h1>pele.mc.MonteCarlo<a class="headerlink" href="#pele-mc-montecarlo" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.mc.MonteCarlo">
+<em class="property">class </em><tt class="descclassname">pele.mc.</tt><tt class="descname">MonteCarlo</tt><big>(</big><em>coords</em>, <em>potential</em>, <em>takeStep</em>, <em>storage=None</em>, <em>event_after_step=</em><span class="optional">[</span><span class="optional">]</span>, <em>acceptTest=None</em>, <em>temperature=1.0</em>, <em>confCheck=</em><span class="optional">[</span><span class="optional">]</span>, <em>outstream=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w' at 0x2ad3e6c611e0&gt;</em>, <em>store_initial=True</em>, <em>iprint=1</em><big>)</big><a class="reference internal" href="../_modules/pele/mc.html#MonteCarlo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mc.MonteCarlo" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class to run the Monte Carlo algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>coords</strong> : numpy array, one dimensional</p>
+<blockquote>
+<div><p>The initial set of coordinates.</p>
+</div></blockquote>
+<p><strong>potential</strong> : potential object</p>
+<blockquote>
+<div><p>A class implementing the potential.  The class must have the
+following functions implemented:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">potential</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+<span class="n">potential</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>takeStep</strong> : object</p>
+<blockquote>
+<div><p>The class which randomly perterbs the system, e.g. random
+displacement.  It must have two functions implemented which
+are called like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">takeStep</span><span class="o">.</span><span class="n">takeStep</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>       <span class="c">#  takes the step</span>
+<span class="n">takeStep</span><span class="o">.</span><span class="n">updateStep</span><span class="p">(</span><span class="n">acceptstep</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span> <span class="c">#  for adaptive step size management</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>acceptTest</strong> : callable, optional</p>
+<blockquote>
+<div><p>Acceptance criterion for monte carlo move.  If None is given, metropolis is used.
+It must have the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">bool</span> <span class="o">=</span> <span class="n">acceptTest</span><span class="p">(</span><span class="n">Eold</span><span class="p">,</span> <span class="n">Enew</span><span class="p">,</span> <span class="n">old_coords</span><span class="p">,</span> <span class="n">new_coords</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>confCheck</strong> : list of callables, optional</p>
+<blockquote>
+<div><p>list of checks if current configuration is valid. This is executed before acceptTest
+and accepTest is only called if all checks return True.  The checks are called like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">check</span><span class="p">(</span><span class="n">trial_energy</span><span class="p">,</span> <span class="n">trial_coords</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and must return a bool</p>
+</div></blockquote>
+<p><strong>temperature</strong> : float, optional</p>
+<blockquote>
+<div><p>The temperature used in the metropolis criterion.</p>
+</div></blockquote>
+<p><strong>event_after_step</strong> :  list of callables, optional</p>
+<blockquote>
+<div><p>these are called just after each monte carlo
+round.  Each event in the list takes the form::</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">event</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">acceptstep</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>outstream</strong> : open file object, optional</p>
+<blockquote>
+<div><p>The file stream to print quench information to.  None for no printing.
+Default to standard out.</p>
+</div></blockquote>
+<p><strong>store_initial</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>if True store initial structure</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../potentials.html#module-pele.potentials" title="pele.potentials"><tt class="xref py py-obj docutils literal"><span class="pre">pele.potentials</span></tt></a>, <a class="reference internal" href="../step_taking.html#module-pele.takestep" title="pele.takestep"><tt class="xref py py-obj docutils literal"><span class="pre">pele.takestep</span></tt></a>, <a class="reference internal" href="../database.html#module-pele.storage" title="pele.storage"><tt class="xref py py-obj docutils literal"><span class="pre">pele.storage</span></tt></a>, <a class="reference internal" href="../accept_tests.html#module-pele.accept_tests" title="pele.accept_tests"><tt class="xref py py-obj docutils literal"><span class="pre">pele.accept_tests</span></tt></a></p>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.mc.MonteCarlo.addEventAfterStep.html#pele.mc.MonteCarlo.addEventAfterStep" title="pele.mc.MonteCarlo.addEventAfterStep"><tt class="xref py py-obj docutils literal"><span class="pre">addEventAfterStep</span></tt></a>(event)</td>
+<td>add an even to the list event_after_step</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.mc.MonteCarlo.printStep.html#pele.mc.MonteCarlo.printStep" title="pele.mc.MonteCarlo.printStep"><tt class="xref py py-obj docutils literal"><span class="pre">printStep</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mc.MonteCarlo.run.html#pele.mc.MonteCarlo.run" title="pele.mc.MonteCarlo.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>(nsteps)</td>
+<td>do multiple iterations</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.mc.MonteCarlo.setPrinting.html#pele.mc.MonteCarlo.setPrinting" title="pele.mc.MonteCarlo.setPrinting"><tt class="xref py py-obj docutils literal"><span class="pre">setPrinting</span></tt></a>([ostream,&nbsp;frq])</td>
+<td>change how the printing is done</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mc.MonteCarlo.takeOneStep.html#pele.mc.MonteCarlo.takeOneStep" title="pele.mc.MonteCarlo.takeOneStep"><tt class="xref py py-obj docutils literal"><span class="pre">takeOneStep</span></tt></a>()</td>
+<td>one cycle of the routine</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.mc.MonteCarlo.takeOneStep.html"
+                        title="previous chapter">pele.mc.MonteCarlo.takeOneStep</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.mc.MonteCarlo.addEventAfterStep.html"
+                        title="next chapter">pele.mc.MonteCarlo.addEventAfterStep</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.mc.MonteCarlo.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.mc.MonteCarlo.addEventAfterStep.html" title="pele.mc.MonteCarlo.addEventAfterStep"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.mc.MonteCarlo.takeOneStep.html" title="pele.mc.MonteCarlo.takeOneStep"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../monte_carlo.html" >Monte Carlo (<cite>pele.mc</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

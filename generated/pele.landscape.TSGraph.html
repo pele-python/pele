@@ -1,0 +1,199 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.landscape.TSGraph &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Landscape Exploration (pele.landscape)" href="../landscape_module.html" />
+    <link rel="next" title="pele.landscape.TSGraph.addMinimum" href="pele.landscape.TSGraph.addMinimum.html" />
+    <link rel="prev" title="pele.landscape.ConnectManager.untried" href="pele.landscape.ConnectManager.untried.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.landscape.TSGraph.addMinimum.html" title="pele.landscape.TSGraph.addMinimum"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.landscape.ConnectManager.untried.html" title="pele.landscape.ConnectManager.untried"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../landscape_module.html" accesskey="U">Landscape Exploration (<cite>pele.landscape</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-landscape-tsgraph">
+<h1>pele.landscape.TSGraph<a class="headerlink" href="#pele-landscape-tsgraph" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.landscape.TSGraph">
+<em class="property">class </em><tt class="descclassname">pele.landscape.</tt><tt class="descname">TSGraph</tt><big>(</big><em>database</em>, <em>minima=None</em>, <em>no_edges=False</em><big>)</big><a class="reference internal" href="../_modules/pele/landscape/_graph.html#TSGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.landscape.TSGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to represent a database object as a graph</p>
+<p>This class is primarily used by DoubleEndedConnect and has a number
+of utility functions for that purpose.  If you want access to the
+networkx Graph object, it is stored as self.graph</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>database :</strong> :</p>
+<blockquote>
+<div><p>the database object to represent</p>
+</div></blockquote>
+<p><strong>minima</strong> : list of minima, optional</p>
+<blockquote>
+<div><p>if none, include all minima and transition states from the database, 
+else include only the minima in the list</p>
+</div></blockquote>
+<p><strong>no_edges</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>If true include no transition states in the graph.
+This is used, for example, to try to find a new connection between 
+two minima.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.landscape.DoubleEndedConnect.html#pele.landscape.DoubleEndedConnect" title="pele.landscape.DoubleEndedConnect"><tt class="xref py py-obj docutils literal"><span class="pre">DoubleEndedConnect</span></tt></a></p>
+</div>
+<p class="rubric">Examples</p>
+<p>a graph can be easily constructed from a database:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>the networkx graph is accessed directly by</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">networkx_graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.landscape.TSGraph.addMinimum.html#pele.landscape.TSGraph.addMinimum" title="pele.landscape.TSGraph.addMinimum"><tt class="xref py py-obj docutils literal"><span class="pre">addMinimum</span></tt></a>(energy,&nbsp;coords,&nbsp;**kwargs)</td>
+<td>add a minimum to the database and graph</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.landscape.TSGraph.addTransitionState.html#pele.landscape.TSGraph.addTransitionState" title="pele.landscape.TSGraph.addTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">addTransitionState</span></tt></a>(E,&nbsp;coords,&nbsp;min1,&nbsp;min2,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.landscape.TSGraph.areConnected.html#pele.landscape.TSGraph.areConnected" title="pele.landscape.TSGraph.areConnected"><tt class="xref py py-obj docutils literal"><span class="pre">areConnected</span></tt></a>(min1,&nbsp;min2)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.landscape.TSGraph.getPath.html#pele.landscape.TSGraph.getPath" title="pele.landscape.TSGraph.getPath"><tt class="xref py py-obj docutils literal"><span class="pre">getPath</span></tt></a>(min1,&nbsp;min2)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.landscape.TSGraph.mergeMinima.html#pele.landscape.TSGraph.mergeMinima" title="pele.landscape.TSGraph.mergeMinima"><tt class="xref py py-obj docutils literal"><span class="pre">mergeMinima</span></tt></a>(min1,&nbsp;min2[,&nbsp;update_database])</td>
+<td>delete minima2.  all transition states pointing to min2 should</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.landscape.TSGraph.refresh.html#pele.landscape.TSGraph.refresh" title="pele.landscape.TSGraph.refresh"><tt class="xref py py-obj docutils literal"><span class="pre">refresh</span></tt></a>()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.landscape.ConnectManager.untried.html"
+                        title="previous chapter">pele.landscape.ConnectManager.untried</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.landscape.TSGraph.addMinimum.html"
+                        title="next chapter">pele.landscape.TSGraph.addMinimum</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.landscape.TSGraph.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.landscape.TSGraph.addMinimum.html" title="pele.landscape.TSGraph.addMinimum"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.landscape.ConnectManager.untried.html" title="pele.landscape.ConnectManager.untried"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../landscape_module.html" >Landscape Exploration (<cite>pele.landscape</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

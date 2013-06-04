@@ -1,0 +1,6 @@
+pele.utils.frozen_atoms.FreezePot.NumericalDerivative
+=====================================================
+
+.. currentmodule:: pele.utils.frozen_atoms
+
+.. automethod:: FreezePot.NumericalDerivative

@@ -1,0 +1,28 @@
+pele.potentials.HeisenbergModelRA
+=================================
+
+.. currentmodule:: pele.potentials
+
+.. autoclass:: HeisenbergModelRA
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~HeisenbergModelRA.NumericalDerivative
+         ~HeisenbergModelRA.NumericalHessian
+         ~HeisenbergModelRA.getEnergy
+         ~HeisenbergModelRA.getEnergyGradient
+         ~HeisenbergModelRA.getEnergyGradientHessian
+         ~HeisenbergModelRA.getEnergyGradientNumerical
+         ~HeisenbergModelRA.getGradient
+         ~HeisenbergModelRA.getHessian
+         ~HeisenbergModelRA.test_potential
+   
+   
+
+   
+   
+   

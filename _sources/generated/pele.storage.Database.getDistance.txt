@@ -1,0 +1,6 @@
+pele.storage.Database.getDistance
+=================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.getDistance

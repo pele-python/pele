@@ -1,0 +1,6 @@
+pele.transition_states.InterpolatedPath.current
+===============================================
+
+.. currentmodule:: pele.transition_states
+
+.. autoattribute:: InterpolatedPath.current

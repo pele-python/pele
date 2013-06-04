@@ -1,0 +1,6 @@
+pele.transition_states.NEBPar.tangent
+=====================================
+
+.. currentmodule:: pele.transition_states
+
+.. automethod:: NEBPar.tangent

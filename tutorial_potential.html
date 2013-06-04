@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Creating Your Potential &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="Using the system class" href="system_class_tutorial.html" />
+    <link rel="prev" title="Welcome to pele’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="system_class_tutorial.html" title="Using the system class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pele’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="creating-your-potential">
+<span id="tutorial-potential"></span><h1>Creating Your Potential<a class="headerlink" href="#creating-your-potential" title="Permalink to this headline">¶</a></h1>
+<p>pele has a number of potentials built in, including the Lennard-Jones potential which
+is used for most of our examples.  It also has an interface to the GMIN program with
+which you can access any myriad of GMIN&#8217;s built in potentials.
+We also plan to build interfaces to some of the standard molecular dynamics packages
+like gromacs and OpenMM.</p>
+<p>The flexibility of pele alows it to be easily used with just about any scalar
+function.  Probably the biggest limitation is that, because we use a lot of
+gradient based local minimization you may experience problems if your potential
+is discontinuous.</p>
+<div class="section" id="simple-1d-potential">
+<h2>simple 1D potential<a class="headerlink" href="#simple-1d-potential" title="Permalink to this headline">¶</a></h2>
+<p>Lets create an artificial potential from the sum of a parabola and a cosine
+term:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="k">class</span> <span class="nc">My1DPot</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">14.5</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The above definition of member function getEnergy() is all that is required to
+use the global optimization features of pele.  It is derived from BasePotential, which will
+calculate gradient numerically.  However, Defining an analytical gradient will
+make things run a lot faster:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="k">class</span> <span class="nc">My1DPot</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;1d potential&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">14.5</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">14.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">14.5</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">+</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.2</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">grad</span>
+</pre></div>
+</div>
+<p>From this point you can jump in and use BasinHopping to find the global minimum.
+The best way to do this is to use the convience wrapper, the <a class="reference internal" href="system_class.html#system-class"><em>system class</em></a>.
+As a first start, all we must do is tell the system class what our potential is</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">BaseSystem</span>
+<span class="k">class</span> <span class="nc">My1DSystem</span><span class="p">(</span><span class="n">BaseSystem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">My1DPot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The following code will use the system class to initialize a basinhopping class
+and run basinhopping for 100 steps.  We use an <a class="reference internal" href="database.html#database"><em>sqlite database</em></a> to store the minima found:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sys</span> <span class="o">=</span> <span class="n">My1DSystem</span><span class="p">()</span>
+<span class="n">database</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">])</span>
+<span class="n">bh</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
+<span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;found&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()),</span> <span class="s">&quot;minima&quot;</span>
+<span class="n">min0</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">print</span> <span class="s">&quot;lowest minimum found at&quot;</span><span class="p">,</span> <span class="n">min0</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="s">&quot;with energy&quot;</span><span class="p">,</span> <span class="n">min0</span><span class="o">.</span><span class="n">energy</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="atomic-pair-potential">
+<h2>atomic pair potential<a class="headerlink" href="#atomic-pair-potential" title="Permalink to this headline">¶</a></h2>
+<p>We now look at a more involved system.
+Lets create a system of atoms interacting via a pair potential similar to
+the Lennard-Jones potential.  See pele/examples/new_potential/ for the code
+related to this example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
+<span class="k">class</span> <span class="nc">MyPot</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a Lennard Jones potential with altered exponents</span>
+
+<span class="sd">    E(r) = r**-24 - r**-12</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">natoms</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">=</span> <span class="n">natoms</span> <span class="c">#number of atoms</span>
+
+    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+                <span class="n">E</span> <span class="o">+=</span> <span class="n">r</span><span class="o">**-</span><span class="mi">24</span> <span class="o">-</span> <span class="n">r</span><span class="o">**-</span><span class="mi">12</span>
+        <span class="k">return</span> <span class="n">E</span>
+
+    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                <span class="n">dr</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,:]</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dr</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+                <span class="n">E</span> <span class="o">+=</span> <span class="n">r</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">24</span><span class="p">)</span> <span class="o">-</span> <span class="n">r</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">12</span><span class="p">)</span>
+                <span class="n">g</span> <span class="o">=</span> <span class="mf">24.</span> <span class="o">*</span> <span class="n">r</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">25</span><span class="p">)</span> <span class="o">-</span> <span class="mf">12.</span> <span class="o">*</span> <span class="n">r</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">13</span><span class="p">)</span>
+                <span class="n">grad</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+=</span> <span class="o">-</span><span class="n">g</span> <span class="o">*</span> <span class="n">dr</span><span class="o">/</span><span class="n">r</span>
+                <span class="n">grad</span><span class="p">[</span><span class="n">j</span><span class="p">,:]</span> <span class="o">+=</span> <span class="n">g</span> <span class="o">*</span> <span class="n">dr</span><span class="o">/</span><span class="n">r</span>
+        <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">grad</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We have getEnergy and getEnergyGradient implemented, so the potential is
+ready to use.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">Loops in python are very slow.  The above functions getEnergy() and
+getEnergyGradient() will run <em>a lot</em> faster in a compiled language.  Good
+choices might be cython or fortran (using f2py).  See the included potential
+pele.potentials.LJ for an example of how to do this.</p>
+</div>
+<p>We are now ready to define the system class.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">BaseSystem</span>
+<span class="k">class</span> <span class="nc">MySystem</span><span class="p">(</span><span class="n">BaseSystem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">natoms</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MySystem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">=</span> <span class="n">natoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span><span class="mf">0.001</span>
+
+    <span class="k">def</span> <span class="nf">get_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MyPot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can now run basinhopping in exactly the same way we did before:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="n">natoms</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">sys</span> <span class="o">=</span> <span class="n">MySystem</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
+<span class="n">database</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,[</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">bh</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
+<span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;found&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()),</span> <span class="s">&quot;minima&quot;</span>
+<span class="n">min0</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">print</span> <span class="s">&quot;lowest minimum found has energy&quot;</span><span class="p">,</span> <span class="n">min0</span><span class="o">.</span><span class="n">energy</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The database saves all unique minima found, and determines uniqueness
+through an energy criterion.  If two minima have energies closer than
+database.accuracy then they are deemed to be the same minimum and one is
+discarded.  It might be a good idea to change this accuracy parameter to be
+more appropriate for your system. This is done in the above example where we
+set self.params.database.accuracy in __init__().  Note that this must be done
+after calling the base class __init__().</p>
+<p class="last">Distinguishing minima by energy is generally good, but often not good enough.
+If you overload the function MySystem.get_compare_exact(), then the database
+will use that function in addition to the energy criterion to compare minima.
+See <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>structure alignment</em></a> for how to set that up.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">One of the core routines of basinhopping is the takestep routine.  This is
+the routine which randomly moves the configuration through phase space.  The
+default is a random displacement of the coordinates where both the step size
+and the temperature are adaptively adjusted to give the best results.  For
+more complex systems there is often a better way to search.  Improving
+takestep is probably the most important thing you can do to improve the speed
+at which you find the global minimum.  See the <a class="reference internal" href="global_optimization.html#global-optimization"><em>global optimization</em></a> page for more information about how to use
+alternative, already implemented, takestep routines, and for more information
+about how to implement your own.  If you do choose to use a non-default
+takestep, you should overload MySystem.get_takestep() in order to use it with
+the system class.</p>
+</div>
+</div>
+<div class="section" id="finding-transition-state-pathways">
+<h2>finding transition state pathways<a class="headerlink" href="#finding-transition-state-pathways" title="Permalink to this headline">¶</a></h2>
+<p>We have, to this point, defined a potential, MyPotential, and a system class
+MySystem with one function get_potential().  This was enough to run
+basinhopping, but unfortunately is not enough to find transition states and
+build up the connected network.  A few additional functions are required.</p>
+<p>Many of the routines in DoubleEndedConnect need a distance metric which returns
+how far apart are two structures.  This is know as mindist (or minpermdist) in
+our lingo.  We use as our metric the root mean squared
+deviation, so in the simplist case the distance is just:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X1</span> <span class="o">-</span> <span class="n">X2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The simple case breaks down, however, when there are global symmetries of the
+system.  Imagine the system is translationally invariant and <cite>X2</cite> is
+exactly the same as <cite>X1</cite>, but just translated.  Then the root mean squared
+deviation would give a large distance when the distance should be zero.
+Thus the distance routine must take into account all the symmetries of a system.
+Some common symmetries are</p>
+<ol class="arabic simple">
+<li>translational invariance</li>
+<li>rotational invariance</li>
+<li>reflection symmetry</li>
+<li>permutational invariance</li>
+</ol>
+<p>pele has all the utilities necessary for handling these cases, but they are,
+by definition system dependent, so you must manually specify them for your
+system.  These should be implemented in the system class by overloading
+MySystem.get_mindist().  See <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>Structure Alignment</em></a> for
+how more detailed information and help choosing which routine to use.</p>
+<p>Lets continue defining the system class for MyPotential.  Lets set
+it up as a cluster of atoms floating in a vacuum.   Thus we have all three spatial
+symmetries listed above.  Assuming the atoms are indistinguishable we also have
+permutational symmetry.  The mindist class which deals with these 4 symmetries
+is minPermDistStochastic()</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.mindist</span> <span class="kn">import</span> <span class="n">MinPermDistAtomicCluster</span>
+<span class="k">class</span> <span class="nc">MySystem</span><span class="p">(</span><span class="n">BaseSystem</span><span class="p">):</span>
+  <span class="o">...</span>
+  <span class="k">def</span> <span class="nf">get_mindist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="n">permlist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)]</span>
+      <span class="k">return</span> <span class="n">MinPermDistAtomicCluster</span><span class="p">(</span><span class="n">permlist</span><span class="o">=</span><span class="n">permlist</span><span class="p">,</span> <span class="n">niter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We&#8217;re not quite ready yet.  The routine which searches for transition states
+uses a routine which walks uphill in the direction of the lowest eigenvector
+(the eigenvector with the lowest eigenvalue) while walking downhill in all
+other directions.  We find this lowest eigenvector by looking for the direction
+with the largest negative curvature.  This search is a lot easier and less error
+prone if the search space is reduced and made simpler by removing the trivial
+zero eigenvectors.  These are directions in phase space which have zero
+eigenvalue and correspond to trivial global symmetries of the system, e.g.
+translational and rotational symmetry, or frozen degrees of freedom.
+In order to implement this, MySystem.get_orthogonalize_to_zero_eigenvectors()
+must return a function which makes a given vector orthogonal to all trivial
+zero eigenvectors.  See <a class="reference internal" href="transition_state_refinement.html#ts-refinement-description"><em>transition state search</em></a>
+for more information.  For our cluster system we have 3 zero eigenvectors
+for translational symmetries and 3 zero eigenvectors for rotational symmetries.
+The routine which takes care of this is called <cite>orthogopt</cite></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">orthogopt</span>
+<span class="k">class</span> <span class="nc">MySystem</span><span class="p">(</span><span class="n">BaseSystem</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">get_orthogonalize_to_zero_eigenvectors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">orthogopt</span>
+</pre></div>
+</div>
+<p>We are now ready to find transition state pathways between minima.
+As a starting point we will use the database that we built up
+from the basinhopping run above. We will connect all minima to the lowest
+energy minimum.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">minima</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()</span>
+<span class="n">min1</span> <span class="o">=</span> <span class="n">minima</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">min2</span> <span class="ow">in</span> <span class="n">minima</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+    <span class="n">connect</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">database</span><span class="p">)</span>
+    <span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We now have a fully connected database (though the basinhopping run was quite
+short, so we may not have found the global minimum yet).
+As a final step, let&#8217;s plot the connectivity in the database using a <a class="reference internal" href="disconnectivity_graph.html#disconnectivity-graph"><em>disconnectivity
+graph</em></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.utils.disconnectivity_graph</span> <span class="kn">import</span> <span class="n">DisconnectivityGraph</span>
+<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="c">#convert the database to a networkx graph</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span><span class="o">.</span><span class="n">graph</span>
+<span class="n">dg</span> <span class="o">=</span> <span class="n">DisconnectivityGraph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">center_gmin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">dg</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+<span class="n">dg</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Creating Your Potential</a><ul>
+<li><a class="reference internal" href="#simple-1d-potential">simple 1D potential</a></li>
+<li><a class="reference internal" href="#atomic-pair-potential">atomic pair potential</a></li>
+<li><a class="reference internal" href="#finding-transition-state-pathways">finding transition state pathways</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to pele&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="system_class_tutorial.html"
+                        title="next chapter">Using the system class</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial_potential.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="system_class_tutorial.html" title="Using the system class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pele’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

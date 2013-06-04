@@ -1,0 +1,6 @@
+pele.systems.BLJCluster.get_random_minimized_configuration
+==========================================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BLJCluster.get_random_minimized_configuration

@@ -1,0 +1,6 @@
+pele.systems.LJCluster.create_database
+======================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.create_database

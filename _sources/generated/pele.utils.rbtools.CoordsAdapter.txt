@@ -1,0 +1,34 @@
+pele.utils.rbtools.CoordsAdapter
+================================
+
+.. currentmodule:: pele.utils.rbtools
+
+.. autoclass:: CoordsAdapter
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~CoordsAdapter.copy
+         ~CoordsAdapter.updateCoords
+   
+   
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~CoordsAdapter.coords
+         ~CoordsAdapter.lattice
+         ~CoordsAdapter.natoms
+         ~CoordsAdapter.nlattice
+         ~CoordsAdapter.nrigid
+         ~CoordsAdapter.posAtoms
+         ~CoordsAdapter.posRigid
+         ~CoordsAdapter.rotRigid
+   
+   

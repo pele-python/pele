@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.transition_states.NEBDriver &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Transition States (pele.transition_states)" href="../transition_states_module.html" />
+    <link rel="next" title="pele.transition_states.NEBDriver.generate_path" href="pele.transition_states.NEBDriver.generate_path.html" />
+    <link rel="prev" title="pele.transition_states.findLowestEigenVector" href="pele.transition_states.findLowestEigenVector.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.NEBDriver.generate_path.html" title="pele.transition_states.NEBDriver.generate_path"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.findLowestEigenVector.html" title="pele.transition_states.findLowestEigenVector"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../transition_states_module.html" accesskey="U">Transition States (<cite>pele.transition_states</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-transition-states-nebdriver">
+<h1>pele.transition_states.NEBDriver<a class="headerlink" href="#pele-transition-states-nebdriver" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.transition_states.NEBDriver">
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">NEBDriver</tt><big>(</big><em>potential</em>, <em>coords1</em>, <em>coords2</em>, <em>k=100.0</em>, <em>max_images=50</em>, <em>image_density=10</em>, <em>iter_density=10</em>, <em>verbose=0</em>, <em>factor=1.0</em>, <em>NEBquenchParams=None</em>, <em>adjustk_freq=0</em>, <em>adjustk_tol=0.1</em>, <em>adjustk_factor=1.05</em>, <em>dneb=True</em>, <em>reinterpolate_tol=0.1</em>, <em>reinterpolate=0</em>, <em>adaptive_nimages=False</em>, <em>adaptive_niter=False</em>, <em>interpolator=&lt;function interpolate_linear at 0x2da6938&gt;</em>, <em>distance=&lt;function distance_cart at 0x39d8aa0&gt;</em>, <em>parallel=False</em>, <em>ncores=4</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_nebdriver.html#NEBDriver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.NEBDriver" title="Permalink to this definition">¶</a></dt>
+<dd><p>driver class for NEB</p>
+<p>The NEBDriver wraps calls for NEB from LocalConnect. The driver class is responsible for setting
+up the initial interpolation and optimizing the band.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>potential :</strong> :</p>
+<blockquote>
+<div><p>the potential object</p>
+</div></blockquote>
+<p><strong>coords1, coords2</strong> : array</p>
+<blockquote>
+<div><p>the structures to connect with the band</p>
+</div></blockquote>
+<p><strong>k</strong> : float, optional</p>
+<blockquote>
+<div><p>the elastic band spring constant</p>
+</div></blockquote>
+<p><strong>max_images</strong> : int</p>
+<blockquote>
+<div><p>the maximum number of NEB images</p>
+</div></blockquote>
+<p><strong>image_density</strong> : float</p>
+<blockquote>
+<div><p>how many NEB images per unit distance to use.</p>
+</div></blockquote>
+<p><strong>iter_density</strong> : float</p>
+<blockquote>
+<div><p>how many optimization iterations per unit distance to use.</p>
+</div></blockquote>
+<p><strong>adjustk_freq</strong> : integer</p>
+<blockquote>
+<div><p>frequency to adjust k, set to zero to disable</p>
+</div></blockquote>
+<p><strong>adjustk_tol</strong> : float</p>
+<blockquote>
+<div><p>tolerance for adjusting k up or down</p>
+</div></blockquote>
+<p><strong>adjustk_factor</strong> : float</p>
+<blockquote>
+<div><p>the multiplicative factor used to adjust k</p>
+</div></blockquote>
+<p><strong>dneb</strong> : bool</p>
+<blockquote>
+<div><p>use DNEB (Doubly-Nudged Elastic Band) rather than NEB</p>
+</div></blockquote>
+<p><strong>reinterpolate</strong> : integer</p>
+<blockquote>
+<div><p>reinterpolate the path to achieve equidistant spacing every so many steps</p>
+</div></blockquote>
+<p><strong>reinterpolate_tol</strong> : float</p>
+<blockquote>
+<div><p>tolerance for reinterpolation, only reinterpolate if relative change 
+in nimages or distance variation are above tolerance</p>
+</div></blockquote>
+<p><strong>adaptive_nimages</strong> : bool</p>
+<blockquote>
+<div><p>adjust number of images on reinterpolate to match image density</p>
+</div></blockquote>
+<p><strong>adaptive_niter</strong> : bool</p>
+<blockquote>
+<div><p>adjust number of iterations if nimages is adjusted</p>
+</div></blockquote>
+<p><strong>factor</strong> : int</p>
+<blockquote>
+<div><p>The number of images is multiplied by this factor.  If the number of 
+images is already at it&#8217;s maximum, then the number of iterations is 
+multiplied by this factor instead</p>
+</div></blockquote>
+<p><strong>verbose</strong> : integer</p>
+<p><strong>parallel</strong> : bool</p>
+<blockquote>
+<div><p>if True, then use class NEBPar to evaluate the image potentials in parallel</p>
+</div></blockquote>
+<p><strong>ncores</strong> : int</p>
+<blockquote>
+<div><p>the number of cores to use.  Ignored if parallel is False</p>
+</div></blockquote>
+<p><strong>interpolator</strong> : callable, optional</p>
+<blockquote>
+<div><p>the function used to do the path interpolation for the NEB</p>
+</div></blockquote>
+<p><strong>NEBquenchParams</strong> : dict</p>
+<blockquote>
+<div><p>parameters passed to the minimizer</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : keyword options</p>
+<blockquote class="last">
+<div><p>additional options are passed to the NEB class</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.transition_states.NEB.html#pele.transition_states.NEB" title="pele.transition_states.NEB"><tt class="xref py py-obj docutils literal"><span class="pre">NEB</span></tt></a>, <a class="reference internal" href="pele.transition_states.InterpolatedPath.html#pele.transition_states.InterpolatedPath" title="pele.transition_states.InterpolatedPath"><tt class="xref py py-obj docutils literal"><span class="pre">InterpolatedPath</span></tt></a></p>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.NEBDriver.generate_path.html#pele.transition_states.NEBDriver.generate_path" title="pele.transition_states.NEBDriver.generate_path"><tt class="xref py py-obj docutils literal"><span class="pre">generate_path</span></tt></a>(coords1,&nbsp;coords2)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.NEBDriver.params.html#pele.transition_states.NEBDriver.params" title="pele.transition_states.NEBDriver.params"><tt class="xref py py-obj docutils literal"><span class="pre">params</span></tt></a>([obj])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.NEBDriver.prepare.html#pele.transition_states.NEBDriver.prepare" title="pele.transition_states.NEBDriver.prepare"><tt class="xref py py-obj docutils literal"><span class="pre">prepare</span></tt></a>([path])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.NEBDriver.run.html#pele.transition_states.NEBDriver.run" title="pele.transition_states.NEBDriver.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.transition_states.findLowestEigenVector.html"
+                        title="previous chapter">pele.transition_states.findLowestEigenVector</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.transition_states.NEBDriver.generate_path.html"
+                        title="next chapter">pele.transition_states.NEBDriver.generate_path</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.transition_states.NEBDriver.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.NEBDriver.generate_path.html" title="pele.transition_states.NEBDriver.generate_path"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.findLowestEigenVector.html" title="pele.transition_states.findLowestEigenVector"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../transition_states_module.html" >Transition States (<cite>pele.transition_states</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

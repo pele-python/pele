@@ -1,0 +1,6 @@
+pele.systems.LJCluster.get_normalmodes
+======================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.get_normalmodes

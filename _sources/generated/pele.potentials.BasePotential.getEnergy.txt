@@ -1,0 +1,6 @@
+pele.potentials.BasePotential.getEnergy
+=======================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: BasePotential.getEnergy

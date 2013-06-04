@@ -1,0 +1,6 @@
+pele.transition_states.FindTransitionState.params
+=================================================
+
+.. currentmodule:: pele.transition_states
+
+.. automethod:: FindTransitionState.params

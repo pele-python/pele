@@ -1,0 +1,6 @@
+pele.transition_states.NEB.MakeHighestImageClimbing
+===================================================
+
+.. currentmodule:: pele.transition_states
+
+.. automethod:: NEB.MakeHighestImageClimbing

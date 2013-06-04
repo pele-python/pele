@@ -1,0 +1,6 @@
+pele.systems.BaseSystem.get_nzero_modes
+=======================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseSystem.get_nzero_modes

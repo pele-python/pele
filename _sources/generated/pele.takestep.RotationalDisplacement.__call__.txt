@@ -1,0 +1,6 @@
+pele.takestep.RotationalDisplacement.__call__
+=============================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: RotationalDisplacement.__call__

@@ -1,0 +1,21 @@
+pele.landscape.ConnectManager
+=============================
+
+.. currentmodule:: pele.landscape
+
+.. autoclass:: ConnectManager
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~ConnectManager.get_connect_job
+         ~ConnectManager.untried
+   
+   
+
+   
+   
+   

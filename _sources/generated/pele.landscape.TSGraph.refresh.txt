@@ -1,0 +1,6 @@
+pele.landscape.TSGraph.refresh
+==============================
+
+.. currentmodule:: pele.landscape
+
+.. automethod:: TSGraph.refresh

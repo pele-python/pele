@@ -1,0 +1,30 @@
+pele.potentials.LJ
+==================
+
+.. currentmodule:: pele.potentials
+
+.. autoclass:: LJ
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~LJ.NumericalDerivative
+         ~LJ.NumericalHessian
+         ~LJ.getEnergy
+         ~LJ.getEnergyGradient
+         ~LJ.getEnergyGradientHessian
+         ~LJ.getEnergyGradientList
+         ~LJ.getEnergyGradientNumerical
+         ~LJ.getEnergyList
+         ~LJ.getGradient
+         ~LJ.getHessian
+         ~LJ.test_potential
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+pele.optimize.Fire.converged
+============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Fire.converged

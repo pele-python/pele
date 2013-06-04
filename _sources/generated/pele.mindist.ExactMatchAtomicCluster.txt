@@ -1,0 +1,22 @@
+pele.mindist.ExactMatchAtomicCluster
+====================================
+
+.. currentmodule:: pele.mindist
+
+.. autoclass:: ExactMatchAtomicCluster
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~ExactMatchAtomicCluster.__call__
+         ~ExactMatchAtomicCluster.check_match
+         ~ExactMatchAtomicCluster.standard_alignments
+   
+   
+
+   
+   
+   

@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.utils.neighbor_list.NeighborListPotential &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Utilities (pele.utils)" href="../utils.html" />
+    <link rel="next" title="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative" href="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative.html" />
+    <link rel="prev" title="pele.utils.neighbor_list.NeighborListSubset.needNewListSlow" href="pele.utils.neighbor_list.NeighborListSubset.needNewListSlow.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative.html" title="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.neighbor_list.NeighborListSubset.needNewListSlow.html" title="pele.utils.neighbor_list.NeighborListSubset.needNewListSlow"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../utils.html" accesskey="U">Utilities (<cite>pele.utils</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-utils-neighbor-list-neighborlistpotential">
+<h1>pele.utils.neighbor_list.NeighborListPotential<a class="headerlink" href="#pele-utils-neighbor-list-neighborlistpotential" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.utils.neighbor_list.NeighborListPotential">
+<em class="property">class </em><tt class="descclassname">pele.utils.neighbor_list.</tt><tt class="descname">NeighborListPotential</tt><big>(</big><em>neighborList</em>, <em>pot</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/neighbor_list.html#NeighborListPotential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.neighbor_list.NeighborListPotential" title="Permalink to this definition">¶</a></dt>
+<dd><p>a potential wrapper for a neighbor list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>neighborList :</strong> :</p>
+<blockquote>
+<div><p>the neighbor list object</p>
+</div></blockquote>
+<p><strong>pot :</strong> :</p>
+<blockquote class="last">
+<div><p>the potential object</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative.html#pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative" title="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative"><tt class="xref py py-obj docutils literal"><span class="pre">NumericalDerivative</span></tt></a>(coords[,&nbsp;eps])</td>
+<td>return the gradient calculated numerically</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.NumericalHessian.html#pele.utils.neighbor_list.NeighborListPotential.NumericalHessian" title="pele.utils.neighbor_list.NeighborListPotential.NumericalHessian"><tt class="xref py py-obj docutils literal"><span class="pre">NumericalHessian</span></tt></a>(coords[,&nbsp;eps])</td>
+<td>return the Hessian matrix of second derivatives computed numerically</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.getEnergy.html#pele.utils.neighbor_list.NeighborListPotential.getEnergy" title="pele.utils.neighbor_list.NeighborListPotential.getEnergy"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergy</span></tt></a>(coords)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.getEnergyGradient.html#pele.utils.neighbor_list.NeighborListPotential.getEnergyGradient" title="pele.utils.neighbor_list.NeighborListPotential.getEnergyGradient"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradient</span></tt></a>(coords)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.getEnergyGradientHessian.html#pele.utils.neighbor_list.NeighborListPotential.getEnergyGradientHessian" title="pele.utils.neighbor_list.NeighborListPotential.getEnergyGradientHessian"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradientHessian</span></tt></a>(coords)</td>
+<td>return the energy, gradient, and Hessian at the given coordinates</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.getEnergyGradientNumerical.html#pele.utils.neighbor_list.NeighborListPotential.getEnergyGradientNumerical" title="pele.utils.neighbor_list.NeighborListPotential.getEnergyGradientNumerical"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradientNumerical</span></tt></a>(coords)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.getGradient.html#pele.utils.neighbor_list.NeighborListPotential.getGradient" title="pele.utils.neighbor_list.NeighborListPotential.getGradient"><tt class="xref py py-obj docutils literal"><span class="pre">getGradient</span></tt></a>(coords)</td>
+<td>return the gradient at the given coordinates</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.getHessian.html#pele.utils.neighbor_list.NeighborListPotential.getHessian" title="pele.utils.neighbor_list.NeighborListPotential.getHessian"><tt class="xref py py-obj docutils literal"><span class="pre">getHessian</span></tt></a>(coords)</td>
+<td>return the hessian</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.neighbor_list.NeighborListPotential.test_potential.html#pele.utils.neighbor_list.NeighborListPotential.test_potential" title="pele.utils.neighbor_list.NeighborListPotential.test_potential"><tt class="xref py py-obj docutils literal"><span class="pre">test_potential</span></tt></a>(coords[,&nbsp;eps])</td>
+<td>print some information testing whether the analytical gradients are correct</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.utils.neighbor_list.NeighborListSubset.needNewListSlow.html"
+                        title="previous chapter">pele.utils.neighbor_list.NeighborListSubset.needNewListSlow</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative.html"
+                        title="next chapter">pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.utils.neighbor_list.NeighborListPotential.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative.html" title="pele.utils.neighbor_list.NeighborListPotential.NumericalDerivative"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.neighbor_list.NeighborListSubset.needNewListSlow.html" title="pele.utils.neighbor_list.NeighborListSubset.needNewListSlow"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../utils.html" >Utilities (<cite>pele.utils</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+pele.utils.rbtools.CoordsAdapter.coords
+=======================================
+
+.. currentmodule:: pele.utils.rbtools
+
+.. autoattribute:: CoordsAdapter.coords

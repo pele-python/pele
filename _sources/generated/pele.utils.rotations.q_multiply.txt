@@ -1,0 +1,6 @@
+pele.utils.rotations.q_multiply
+===============================
+
+.. currentmodule:: pele.utils.rotations
+
+.. autofunction:: q_multiply

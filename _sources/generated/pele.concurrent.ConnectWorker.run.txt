@@ -1,0 +1,6 @@
+pele.concurrent.ConnectWorker.run
+=================================
+
+.. currentmodule:: pele.concurrent
+
+.. automethod:: ConnectWorker.run

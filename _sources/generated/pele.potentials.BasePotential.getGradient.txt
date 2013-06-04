@@ -1,0 +1,6 @@
+pele.potentials.BasePotential.getGradient
+=========================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: BasePotential.getGradient

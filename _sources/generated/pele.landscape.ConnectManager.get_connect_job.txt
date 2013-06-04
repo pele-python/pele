@@ -1,0 +1,6 @@
+pele.landscape.ConnectManager.get_connect_job
+=============================================
+
+.. currentmodule:: pele.landscape
+
+.. automethod:: ConnectManager.get_connect_job

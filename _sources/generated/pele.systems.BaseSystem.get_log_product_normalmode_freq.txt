@@ -1,0 +1,6 @@
+pele.systems.BaseSystem.get_log_product_normalmode_freq
+=======================================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseSystem.get_log_product_normalmode_freq

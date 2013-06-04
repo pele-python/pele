@@ -1,0 +1,22 @@
+pele.mindist.ExactMatchCluster
+==============================
+
+.. currentmodule:: pele.mindist
+
+.. autoclass:: ExactMatchCluster
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~ExactMatchCluster.__call__
+         ~ExactMatchCluster.check_match
+         ~ExactMatchCluster.standard_alignments
+   
+   
+
+   
+   
+   

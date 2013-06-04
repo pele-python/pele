@@ -1,0 +1,372 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.optimize._quench &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.optimize._quench</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">wrappers for the various optimizers.</span>
+
+<span class="sd">warning: we&#39;ve tried to make the most common options the same but there are still differences </span>
+
+<span class="sd">we should make this consistent with scipy.</span>
+<span class="sd">scipy.minimize would do a similar thing</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">LBFGS</span><span class="p">,</span> <span class="n">MYLBFGS</span><span class="p">,</span> <span class="n">Fire</span><span class="p">,</span> <span class="n">Result</span>
+<span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;lbfgs_scipy&quot;</span><span class="p">,</span> <span class="s">&quot;fire&quot;</span><span class="p">,</span> <span class="s">&quot;lbfgs_py&quot;</span><span class="p">,</span> <span class="s">&quot;mylbfgs&quot;</span><span class="p">,</span> <span class="s">&quot;cg&quot;</span><span class="p">,</span> 
+           <span class="s">&quot;steepest_descent&quot;</span><span class="p">,</span> <span class="s">&quot;bfgs_scipy&quot;</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    create a potential object from getEnergyGradient.  This is quite wasteful</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">getEnergyGradient</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_e_g</span> <span class="o">=</span> <span class="n">getEnergyGradient</span>
+<span class="c">#        print &quot;warning: the minimizer usage has changed, please pass a potential object not the function getEnergyGradient&quot;</span>
+    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_e_g</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e</span>
+    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_e_g</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+<div class="viewcode-block" id="lbfgs_scipy"><a class="viewcode-back" href="../../../generated/pele.optimize.lbfgs_scipy.html#pele.optimize.lbfgs_scipy">[docs]</a><span class="k">def</span> <span class="nf">lbfgs_scipy</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">15000</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    a wrapper function for lbfgs routine in scipy</span>
+<span class="sd">    </span>
+<span class="sd">    .. warn::</span>
+<span class="sd">        the scipy version of lbfgs uses linesearch based only on energy</span>
+<span class="sd">        which can make the minimization stop early.  When the step size</span>
+<span class="sd">        is so small that the energy doesn&#39;t change to within machine precision (times the</span>
+<span class="sd">        parameter `factr`) the routine declares success and stops.  This sounds fine, but</span>
+<span class="sd">        if the gradient is analytical the gradient can still be not converged.  This is</span>
+<span class="sd">        because in the vicinity of the minimum the gradient changes much more rapidly then</span>
+<span class="sd">        the energy.  Thus we want to make factr as small as possible.  Unfortunately,</span>
+<span class="sd">        if we make it too small the routine realizes that the linesearch routine</span>
+<span class="sd">        isn&#39;t working and declares failure and exits.</span>
+<span class="sd">        </span>
+<span class="sd">        So long story short, if your tolerance is very small (&lt; 1e-6) this routine</span>
+<span class="sd">        will probably stop before truly reaching that tolerance.  If you reduce `factr` </span>
+<span class="sd">        too much to mitigate this lbfgs will stop anyway, but declare failure misleadingly.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
+        <span class="c"># for compatibility with old quenchers.</span>
+        <span class="c"># assume pot is a getEnergyGradient function</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="nn">scipy.optimize</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dictionary</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fmin_l_bfgs_b</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">,</span> 
+            <span class="n">coords</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=</span><span class="n">iprint</span><span class="p">,</span> <span class="n">pgtol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">maxfun</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">factr</span><span class="o">=</span><span class="mf">10.</span><span class="p">)</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s">&quot;grad&quot;</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s">&quot;funcalls&quot;</span><span class="p">]</span>
+    <span class="n">warnflag</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s">&#39;warnflag&#39;</span><span class="p">]</span>
+    <span class="c">#res.nsteps = dictionary[&#39;nit&#39;] #  new in scipy version 0.12</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">nfev</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s">&#39;task&#39;</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">warnflag</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;warning: problem with quench: &quot;</span><span class="p">,</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">warnflag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s">&quot;too many function evaluations&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s">&#39;task&#39;</span><span class="p">])</span>
+        <span class="k">print</span> <span class="n">res</span><span class="o">.</span><span class="n">message</span>
+    <span class="c">#note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check</span>
+    <span class="c">#tolerance exactly</span>
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="n">maxV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="n">maxV</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;warning: gradient seems too large&quot;</span><span class="p">,</span> <span class="n">maxV</span><span class="p">,</span> <span class="s">&quot;tol =&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s">&quot;. This is a known, but not understood issue of scipy_lbfgs&quot;</span>
+                <span class="k">print</span> <span class="n">res</span><span class="o">.</span><span class="n">message</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">rms</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">res</span>
+</div>
+<div class="viewcode-block" id="fire"><a class="viewcode-back" href="../../../generated/pele.optimize.fire.html#pele.optimize.fire">[docs]</a><span class="k">def</span> <span class="nf">fire</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A wrapper function for the pele FIRE implementation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
+        <span class="c"># for compatibility with old quenchers.</span>
+        <span class="c"># assume pot is a getEnergyGradient function</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="n">opt</span> <span class="o">=</span> <span class="n">Fire</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">res</span>
+</div>
+<div class="viewcode-block" id="cg"><a class="viewcode-back" href="../../../generated/pele.optimize.cg.html#pele.optimize.cg">[docs]</a><span class="k">def</span> <span class="nf">cg</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    a wrapper function for conjugate gradient routine in scipy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
+        <span class="c"># for compatibility with old quenchers.</span>
+        <span class="c"># assume pot is a getEnergyGradient function</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="nn">scipy.optimize</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fmin_cg</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getGradient</span><span class="p">,</span> 
+                                 <span class="n">gtol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="n">iprint</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span> 
+                                 <span class="n">maxiter</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c">#e = ret[1]</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="c">#calls to gradient</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">warnflag</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">warnflag</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<span class="c">#        print &quot;warning: problem with quench: &quot;,</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">warnflag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s">&quot;Maximum number of iterations exceeded&quot;</span>
+        <span class="k">if</span> <span class="n">warnflag</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Gradient and/or function calls not changing&quot;</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">grad</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">res</span> 
+
+</div>
+<div class="viewcode-block" id="steepest_descent"><a class="viewcode-back" href="../../../generated/pele.optimize.steepest_descent.html#pele.optimize.steepest_descent">[docs]</a><span class="k">def</span> <span class="nf">steepest_descent</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                      <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">maxstep</span><span class="o">=-</span><span class="mf">1.</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
+        <span class="c"># for compatibility with old quenchers.</span>
+        <span class="c"># assume pot is a getEnergyGradient function</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">E</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">funcalls</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nsteps</span><span class="p">):</span>
+        <span class="n">stp</span> <span class="o">=</span> <span class="o">-</span><span class="n">V</span> <span class="o">*</span> <span class="n">dx</span>
+        <span class="k">if</span> <span class="n">maxstep</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">stpsize</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">V</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">stpsize</span> <span class="o">&gt;</span> <span class="n">maxstep</span><span class="p">:</span>
+                <span class="n">stp</span> <span class="o">*=</span> <span class="n">maxstep</span> <span class="o">/</span> <span class="n">stpsize</span>                
+        <span class="n">x</span> <span class="o">+=</span> <span class="n">stp</span>
+        <span class="n">E</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">funcalls</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">V</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">iprint</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">funcalls</span> <span class="o">%</span> <span class="n">iprint</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
+                <span class="k">print</span> <span class="s">&quot;step </span><span class="si">%8d</span><span class="s"> energy </span><span class="si">%20.12g</span><span class="s"> rms gradient </span><span class="si">%20.12g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">funcalls</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">rms</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">event</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">rms</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">E</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">rms</span> <span class="o">=</span> <span class="n">rms</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">V</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="n">funcalls</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">k</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">rms</span> <span class="o">&lt;=</span> <span class="n">tol</span> 
+    <span class="k">return</span> <span class="n">res</span>
+</div>
+<span class="k">def</span> <span class="nf">bfgs_scipy</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    a wrapper function for the scipy BFGS algorithm</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
+        <span class="c"># for compatibility with old quenchers.</span>
+        <span class="c"># assume pot is a getEnergyGradient function</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="nn">scipy.optimize</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fmin_bfgs</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">fprime</span><span class="o">=</span><span class="n">pot</span><span class="o">.</span><span class="n">getGradient</span><span class="p">,</span>
+                                   <span class="n">gtol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="n">iprint</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span> 
+                                   <span class="n">maxiter</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="p">))</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="n">ret</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="c">#  not correct, but no better information</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">tol</span>
+    <span class="k">return</span> <span class="n">res</span>
+
+<div class="viewcode-block" id="lbfgs_py"><a class="viewcode-back" href="../../../generated/pele.optimize.lbfgs_py.html#pele.optimize.lbfgs_py">[docs]</a><span class="k">def</span> <span class="nf">lbfgs_py</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
+        <span class="c"># for compatibility with old quenchers.</span>
+        <span class="c"># assume pot is a getEnergyGradient function</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="n">lbfgs</span> <span class="o">=</span> <span class="n">LBFGS</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>    
+    <span class="k">return</span> <span class="n">lbfgs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="mylbfgs"><a class="viewcode-back" href="../../../generated/pele.optimize.mylbfgs.html#pele.optimize.mylbfgs">[docs]</a><span class="k">def</span> <span class="nf">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
+        <span class="c"># for compatibility with old quenchers.</span>
+        <span class="c"># assume pot is a getEnergyGradient function</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="n">lbfgs</span> <span class="o">=</span> <span class="n">MYLBFGS</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lbfgs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+</div>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="k">class</span> <span class="nc">TestMinimizers</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
+        <span class="n">natoms</span> <span class="o">=</span> <span class="mi">31</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
+        
+        <span class="c"># get a partially minimized structure</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">lbfgs_py</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">E0</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">energy</span>
+        
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">lbfgs_py</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">energy</span>
+    
+    <span class="k">def</span> <span class="nf">check_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;energy&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;coords&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;nsteps&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;nfev&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;rms&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;grad&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;success&quot;</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="nf">test_lbfgs_py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">lbfgs_py</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_attributes</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">test_mylbfgs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_attributes</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">test_fire</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">fire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_attributes</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">test_lbfgs_scipy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">lbfgs_scipy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_attributes</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">test_bfgs_scipy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">bfgs_scipy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_attributes</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        
+        
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+<span class="c">#    from pele.systems import LJCluster</span>
+<span class="c">#    system = LJCluster(13)</span>
+<span class="c">#    pot = system.get_potential()</span>
+<span class="c">#    coords = system.get_random_configuration()</span>
+<span class="c">#    res = lbfgs_scipy(coords, pot)</span>
+<span class="c">#    res = lbfgs_scipy(coords, pot.getEnergyGradient)</span>
+<span class="c">#    x, e, rms, nfev, res = lbfgs_scipy(coords, pot)</span>
+<span class="c">#    print &quot;quench success&quot;, res.success</span>
+        
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,218 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Landscape Exploration (pele.landscape) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="pele.landscape.DoubleEndedConnect" href="generated/pele.landscape.DoubleEndedConnect.html" />
+    <link rel="prev" title="pele.gui.run_gui" href="generated/pele.gui.run_gui.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.landscape.DoubleEndedConnect.html" title="pele.landscape.DoubleEndedConnect"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.gui.run_gui.html" title="pele.gui.run_gui"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.landscape"><span id="landscape-module"></span></span><div class="section" id="landscape-exploration-pele-landscape">
+<h1>Landscape Exploration (<cite>pele.landscape</cite>)<a class="headerlink" href="#landscape-exploration-pele-landscape" title="Permalink to this headline">¶</a></h1>
+<p>This module implements routines for exploring the energy landscape.  This
+primarily consists of using DoubleEndedConnect to find connected pathways
+of minimum -&gt; transition state -&gt; minimum between two minima.</p>
+<div class="section" id="double-ended-transition-state-search">
+<h2>Double ended transition state search<a class="headerlink" href="#double-ended-transition-state-search" title="Permalink to this headline">¶</a></h2>
+<p>Double ended transition state searches are the main technique we use
+for exploring the energy landscape.  We attempt to try to find a connected
+series of minima and transition states between two end point minima.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.landscape.DoubleEndedConnect.html#pele.landscape.DoubleEndedConnect" title="pele.landscape.DoubleEndedConnect"><tt class="xref py py-obj docutils literal"><span class="pre">DoubleEndedConnect</span></tt></a>(min1,&nbsp;min2,&nbsp;pot,&nbsp;mindist,&nbsp;...)</td>
+<td>Find a connected network of minima and transition states between min1 and min2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="connect-manager">
+<h2>Connect manager<a class="headerlink" href="#connect-manager" title="Permalink to this headline">¶</a></h2>
+<p>The connect manager is a tool to organize which minima from a database 
+are selected for double ended connect jobs.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.landscape.ConnectManager.html#pele.landscape.ConnectManager" title="pele.landscape.ConnectManager"><tt class="xref py py-obj docutils literal"><span class="pre">ConnectManager</span></tt></a>(database[,&nbsp;strategy,&nbsp;...])</td>
+<td>class to manage which minima to try to connect</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="other-utilities">
+<h2>Other utilities<a class="headerlink" href="#other-utilities" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.landscape.TSGraph.html#pele.landscape.TSGraph" title="pele.landscape.TSGraph"><tt class="xref py py-obj docutils literal"><span class="pre">TSGraph</span></tt></a>(database[,&nbsp;minima,&nbsp;no_edges])</td>
+<td>Wrapper to represent a database object as a graph</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.landscape.smoothPath.html#pele.landscape.smoothPath" title="pele.landscape.smoothPath"><tt class="xref py py-obj docutils literal"><span class="pre">smoothPath</span></tt></a>(path,&nbsp;mindist[,&nbsp;density,&nbsp;...])</td>
+<td>return a smooth (interpolated) path</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="core-routines">
+<h2>Core Routines<a class="headerlink" href="#core-routines" title="Permalink to this headline">¶</a></h2>
+<p>These are some core routines used by this module.  The user probably won&#8217;t need to call them,
+but will want to know about them.  Parameters for these routines can be changed by passing
+dictionaries to DoubleEndedConnect</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.landscape.LocalConnect.html#pele.landscape.LocalConnect" title="pele.landscape.LocalConnect"><tt class="xref py py-obj docutils literal"><span class="pre">LocalConnect</span></tt></a>(pot,&nbsp;mindist[,&nbsp;tsSearchParams,&nbsp;...])</td>
+<td>a class to do a single local connect run, i.e. NEB + transition state search</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.landscape.LocalConnectPar.html#pele.landscape.LocalConnectPar" title="pele.landscape.LocalConnectPar"><tt class="xref py py-obj docutils literal"><span class="pre">LocalConnectPar</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Overload some of the routines from LocalConnect so they can</td>
+</tr>
+</tbody>
+</table>
+<p>More core routines can be found in the documentation for the 
+<a class="reference internal" href="transition_states_module.html#transition-states-module"><em>transition_states</em></a> module</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Landscape Exploration (<cite>pele.landscape</cite>)</a><ul>
+<li><a class="reference internal" href="#double-ended-transition-state-search">Double ended transition state search</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#connect-manager">Connect manager</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#other-utilities">Other utilities</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#core-routines">Core Routines</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.gui.run_gui.html"
+                        title="previous chapter">pele.gui.run_gui</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/pele.landscape.DoubleEndedConnect.html"
+                        title="next chapter">pele.landscape.DoubleEndedConnect</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/landscape_module.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.landscape.DoubleEndedConnect.html" title="pele.landscape.DoubleEndedConnect"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.gui.run_gui.html" title="pele.gui.run_gui"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

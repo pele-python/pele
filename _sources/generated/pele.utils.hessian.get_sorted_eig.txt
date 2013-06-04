@@ -1,0 +1,6 @@
+pele.utils.hessian.get_sorted_eig
+=================================
+
+.. currentmodule:: pele.utils.hessian
+
+.. autofunction:: get_sorted_eig

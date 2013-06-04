@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.optimize._mylbfgs &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.optimize._mylbfgs</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c">#from bfgs import lineSearch, BFGS</span>
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">LBFGS</span>
+<span class="kn">from</span> <span class="nn">mylbfgs_updatestep</span> <span class="kn">import</span> <span class="n">mylbfgs_updatestep</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;MYLBFGS&quot;</span><span class="p">]</span>
+
+<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;pele.optimize&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MYLBFGS"><a class="viewcode-back" href="../../../generated/pele.optimize.MYLBFGS.html#pele.optimize.MYLBFGS">[docs]</a><span class="k">class</span> <span class="nc">MYLBFGS</span><span class="p">(</span><span class="n">LBFGS</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    minimize a function using the LBFGS routine</span>
+<span class="sd">    </span>
+<span class="sd">    this class inherits everything from the pythonic LBFGS</span>
+<span class="sd">    except the implementation of the LBFGS algorithm (determining an appropriate</span>
+<span class="sd">    step size and direction). This is reimplemented </span>
+<span class="sd">    using the Fortran code from GMIN.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    see base class LBFGS</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    LBFGS : base class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">lbfgs_py_kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MYLBFGS</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">lbfgs_py_kwargs</span><span class="p">)</span>
+        
+        
+        <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>
+        
+        <span class="c">#in fortran mylbfgs H0 is a vector of length N with all the elements the same</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="c">#initial guess for the hessian</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">M</span><span class="p">)</span> <span class="c">#mylbfgs working space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point</span> <span class="o">=</span> <span class="mi">0</span>
+        
+    
+<div class="viewcode-block" id="MYLBFGS.getStep"><a class="viewcode-back" href="../../../generated/pele.optimize.MYLBFGS.getStep.html#pele.optimize.MYLBFGS.getStep">[docs]</a>    <span class="k">def</span> <span class="nf">getStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">G</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        use the Fortran LBFGS code from GMIN to get the step</span>
+<span class="sd">        size and direction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">G</span>
+        <span class="c">#save the position and gradient change</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>
+            
+            <span class="c">#</span>
+            <span class="c"># need write the change in position and the change in gradient</span>
+            <span class="c"># to W.  This should be done more elegantly</span>
+            <span class="c">#</span>
+            <span class="n">ISPT</span><span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">M</span>     <span class="c"># index for storage of search steps</span>
+            <span class="n">IYPT</span><span class="o">=</span> <span class="n">ISPT</span> <span class="o">+</span> <span class="n">N</span><span class="o">*</span><span class="n">M</span>  <span class="c"># index for storage of gradient differences</span>
+
+            <span class="n">NPT</span> <span class="o">=</span> <span class="n">N</span><span class="o">*</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">point</span> <span class="o">+</span> <span class="n">M</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">M</span><span class="p">)</span>  
+            <span class="c">#s = X - self.Xold</span>
+            <span class="c">#y = G - self.Gold</span>
+            <span class="c">#print &quot;YS YY py&quot;, np.dot( y, s ), np.dot( y,y ), ISPT+NPT</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">[</span><span class="n">ISPT</span><span class="o">+</span><span class="n">NPT</span> <span class="p">:</span> <span class="n">ISPT</span><span class="o">+</span><span class="n">NPT</span> <span class="o">+</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xold</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">[</span><span class="n">IYPT</span><span class="o">+</span><span class="n">NPT</span> <span class="p">:</span> <span class="n">IYPT</span><span class="o">+</span><span class="n">NPT</span> <span class="o">+</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="n">G</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Gold</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xold</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Gold</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        
+        <span class="c">#print self.iter, self.point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span> <span class="o">=</span> <span class="n">mylbfgs_updatestep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">])</span>
+        
+        <span class="c">#print &quot;stp&quot;, np.linalg.norm(self.stp), self.stp</span>
+        <span class="c">#print &quot;G&quot;, self.G</span>
+        <span class="c">#print &quot;overlap&quot;, np.dot(self.stp, self.G)</span>
+        <span class="c">#print &quot;H0&quot;, self.H0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stp</span>
+
+
+<span class="c">#class LBFGS(MYLBFGS):</span>
+<span class="c">#    &quot;&quot;&quot;for backward compatibility &quot;&quot;&quot;</span>
+<span class="c">#    pass</span>
+
+<span class="c">#</span>
+<span class="c">#only testing stuff below here</span>
+<span class="c"># </span>
+    
+</div></div>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="c">#import bfgs</span>
+    
+    
+    <span class="c">#X = bfgs.getInitialCoords(natoms, pot)</span>
+    <span class="c">#X += np.random.uniform(-1,1,[3*natoms]) * 0.3</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,[</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span><span class="o">*</span><span class="n">natoms</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mf">1.</span>
+    
+    <span class="n">runtest</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">iprint</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">runtest</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">_lbfgs_py</span> <span class="kn">import</span> <span class="n">PrintEvent</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-5</span>
+    <span class="n">maxstep</span> <span class="o">=</span> <span class="mf">0.005</span>
+
+    <span class="n">Xinit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="n">e</span>
+    
+    <span class="n">lbfgs</span> <span class="o">=</span> <span class="n">LBFGS</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">maxstep</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span>
+                  <span class="n">iprint</span><span class="o">=</span><span class="n">iprint</span><span class="p">,</span> <span class="n">H0</span><span class="o">=</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">printevent</span> <span class="o">=</span> <span class="n">PrintEvent</span><span class="p">(</span> <span class="s">&quot;debugout.xyz&quot;</span><span class="p">)</span>
+    <span class="n">lbfgs</span><span class="o">.</span><span class="n">attachEvent</span><span class="p">(</span><span class="n">printevent</span><span class="p">)</span>
+    
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">lbfgs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">print</span> <span class="n">ret</span>
+    
+    <span class="k">print</span> <span class="s">&quot;&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;now do the same with scipy lbfgs&quot;</span>
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_scipy</span> <span class="k">as</span> <span class="n">quench</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">ret</span>
+    <span class="c">#print ret[1], ret[2], ret[3]    </span>
+    
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;now do the same with scipy bfgs&quot;</span>
+        <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">bfgs</span> <span class="k">as</span> <span class="n">oldbfgs</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">oldbfgs</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">ret</span>
+    
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;now do the same with gradient + linesearch&quot;</span>
+        <span class="kn">import</span> <span class="nn">_bfgs</span>
+        <span class="n">gpl</span> <span class="o">=</span> <span class="n">_bfgs</span><span class="o">.</span><span class="n">GradientPlusLinesearch</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">maxstep</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span>  
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">gpl</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">ret</span>
+            
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;calling from wrapper function&quot;</span>
+        <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">lbfgs_py</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">ret</span>
+        
+    <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;now do the same with lbfgs_py&quot;</span>
+        <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">lbfgs_py</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">ret</span>
+
+
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pele.utils.pymolwrapper</span> <span class="kn">as</span> <span class="nn">pym</span>
+        <span class="n">pym</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">printevent</span><span class="o">.</span><span class="n">coordslist</span><span class="p">):</span>
+            <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">draw_spheres</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;error loading pymol&quot;</span>
+
+        
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c">#from pele.potentials.lj import LJ as Pot</span>
+    <span class="kn">from</span> <span class="nn">pele.potentials.ATLJ</span> <span class="kn">import</span> <span class="n">ATLJ</span> <span class="k">as</span> <span class="n">Pot</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">Pot</span><span class="p">()</span>
+
+    <span class="n">test</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s">&quot;coords&quot;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">coords</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">coords</span>
+    <span class="n">runtest</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

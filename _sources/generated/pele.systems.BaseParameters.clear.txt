@@ -1,0 +1,6 @@
+pele.systems.BaseParameters.clear
+=================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseParameters.clear

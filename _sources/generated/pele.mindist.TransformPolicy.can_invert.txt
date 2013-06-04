@@ -1,0 +1,6 @@
+pele.mindist.TransformPolicy.can_invert
+=======================================
+
+.. currentmodule:: pele.mindist
+
+.. automethod:: TransformPolicy.can_invert

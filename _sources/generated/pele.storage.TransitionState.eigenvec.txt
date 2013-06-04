@@ -1,0 +1,6 @@
+pele.storage.TransitionState.eigenvec
+=====================================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: TransitionState.eigenvec

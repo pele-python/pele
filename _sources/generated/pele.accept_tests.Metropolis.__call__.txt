@@ -1,0 +1,6 @@
+pele.accept_tests.Metropolis.__call__
+=====================================
+
+.. currentmodule:: pele.accept_tests
+
+.. automethod:: Metropolis.__call__

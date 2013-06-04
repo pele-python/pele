@@ -1,0 +1,172 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.transition_states.minima_from_ts &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Transition States (pele.transition_states)" href="../transition_states_module.html" />
+    <link rel="next" title="Parallel connect jobs (pele.concurrent)" href="../concurrent.html" />
+    <link rel="prev" title="pele.transition_states.gramm_schmidt" href="pele.transition_states.gramm_schmidt.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../concurrent.html" title="Parallel connect jobs (pele.concurrent)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.gramm_schmidt.html" title="pele.transition_states.gramm_schmidt"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../transition_states_module.html" accesskey="U">Transition States (<cite>pele.transition_states</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-transition-states-minima-from-ts">
+<h1>pele.transition_states.minima_from_ts<a class="headerlink" href="#pele-transition-states-minima-from-ts" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pele.transition_states.minima_from_ts">
+<tt class="descclassname">pele.transition_states.</tt><tt class="descname">minima_from_ts</tt><big>(</big><em>pot</em>, <em>xt</em>, <em>n=None</em>, <em>quench=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/tstools.html#minima_from_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.minima_from_ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>step off either side of a transition state and quench to find the minima</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>pot</strong> : potential object</p>
+<p><strong>xt</strong> : array</p>
+<blockquote>
+<div><p>transition state coords</p>
+</div></blockquote>
+<p><strong>stepmin</strong> : float</p>
+<blockquote>
+<div><p>initial guess for size of pushoff when stepping off the transition state</p>
+</div></blockquote>
+<p><strong>stepmax</strong> : float</p>
+<blockquote>
+<div><p>maximum size of pushoff when stepping off the transition state</p>
+</div></blockquote>
+<p><strong>gdiff</strong> : float</p>
+<blockquote>
+<div><p>criterion for choosing a step size.  Try to choose a stepsize so that:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">gradpar</span> <span class="o">-</span> <span class="n">gradpar_ts</span><span class="p">)</span> <span class="o">/</span> <span class="n">gradpar_ts</span> <span class="o">&gt;=</span> <span class="n">gdiff</span>
+</pre></div>
+</div>
+<p>where gradpar and gradpar_ts is the parallel component of the gradient
+after the step and at the top of the transition state</p>
+</div></blockquote>
+<p><strong>quenchRoutine</strong> : callable</p>
+<blockquote>
+<div><p>routine to use to do the quenching</p>
+</div></blockquote>
+<p><strong>quenchParams</strong> : dict</p>
+<blockquote>
+<div><p>parameters to pass to quenchRoutine</p>
+</div></blockquote>
+<p class="last"><strong>verbose</strong> : bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.transition_states.gramm_schmidt.html"
+                        title="previous chapter">pele.transition_states.gramm_schmidt</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../concurrent.html"
+                        title="next chapter">Parallel connect jobs (<cite>pele.concurrent</cite>)</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.transition_states.minima_from_ts.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../concurrent.html" title="Parallel connect jobs (pele.concurrent)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.gramm_schmidt.html" title="pele.transition_states.gramm_schmidt"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../transition_states_module.html" >Transition States (<cite>pele.transition_states</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

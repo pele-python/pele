@@ -1,0 +1,6 @@
+pele.potentials.BasePotential.NumericalHessian
+==============================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: BasePotential.NumericalHessian

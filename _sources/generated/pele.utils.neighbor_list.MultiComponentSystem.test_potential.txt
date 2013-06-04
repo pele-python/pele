@@ -1,0 +1,6 @@
+pele.utils.neighbor_list.MultiComponentSystem.test_potential
+============================================================
+
+.. currentmodule:: pele.utils.neighbor_list
+
+.. automethod:: MultiComponentSystem.test_potential

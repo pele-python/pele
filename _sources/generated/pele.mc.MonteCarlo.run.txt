@@ -1,0 +1,6 @@
+pele.mc.MonteCarlo.run
+======================
+
+.. currentmodule:: pele.mc
+
+.. automethod:: MonteCarlo.run

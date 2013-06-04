@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Utilities (pele.utils) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="pele.utils.rotations.q_multiply" href="generated/pele.utils.rotations.q_multiply.html" />
+    <link rel="prev" title="pele.concurrent.ConnectWorker.run" href="generated/pele.concurrent.ConnectWorker.run.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.utils.rotations.q_multiply.html" title="pele.utils.rotations.q_multiply"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.concurrent.ConnectWorker.run.html" title="pele.concurrent.ConnectWorker.run"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.utils"></span><div class="section" id="utilities-pele-utils">
+<h1>Utilities (<cite>pele.utils</cite>)<a class="headerlink" href="#utilities-pele-utils" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="helper-functions">
+<h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pele.utils.rotations">
+<span id="rotations"></span><h3>rotations<a class="headerlink" href="#module-pele.utils.rotations" title="Permalink to this headline">¶</a></h3>
+<p>Functions related to rotations</p>
+<p>Most of these were adapted from victor&#8217;s rotations.f90.  Not all functions from
+the file have been implemented.
+Warning, they have not all been tested in this format.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.q_multiply.html#pele.utils.rotations.q_multiply" title="pele.utils.rotations.q_multiply"><tt class="xref py py-obj docutils literal"><span class="pre">q_multiply</span></tt></a>(q0,&nbsp;q1)</td>
+<td>multiply 2 quaternions q1, q2</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.aa2q.html#pele.utils.rotations.aa2q" title="pele.utils.rotations.aa2q"><tt class="xref py py-obj docutils literal"><span class="pre">aa2q</span></tt></a>(AA)</td>
+<td>convert angle axis to quaternion</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.q2aa.html#pele.utils.rotations.q2aa" title="pele.utils.rotations.q2aa"><tt class="xref py py-obj docutils literal"><span class="pre">q2aa</span></tt></a>(qin)</td>
+<td>quaternion to angle axis</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.q2mx.html#pele.utils.rotations.q2mx" title="pele.utils.rotations.q2mx"><tt class="xref py py-obj docutils literal"><span class="pre">q2mx</span></tt></a>(qin)</td>
+<td>quaternion to rotation matrix</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.mx2q.html#pele.utils.rotations.mx2q" title="pele.utils.rotations.mx2q"><tt class="xref py py-obj docutils literal"><span class="pre">mx2q</span></tt></a>(mi)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.mx2aa.html#pele.utils.rotations.mx2aa" title="pele.utils.rotations.mx2aa"><tt class="xref py py-obj docutils literal"><span class="pre">mx2aa</span></tt></a>(m)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.rot_q2mx.html#pele.utils.rotations.rot_q2mx" title="pele.utils.rotations.rot_q2mx"><tt class="xref py py-obj docutils literal"><span class="pre">rot_q2mx</span></tt></a>(qin)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.aa2mx.html#pele.utils.rotations.aa2mx" title="pele.utils.rotations.aa2mx"><tt class="xref py py-obj docutils literal"><span class="pre">aa2mx</span></tt></a>(p)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.random_q.html#pele.utils.rotations.random_q" title="pele.utils.rotations.random_q"><tt class="xref py py-obj docutils literal"><span class="pre">random_q</span></tt></a>()</td>
+<td>uniform random rotation in angle axis formulation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.random_aa.html#pele.utils.rotations.random_aa" title="pele.utils.rotations.random_aa"><tt class="xref py py-obj docutils literal"><span class="pre">random_aa</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.takestep_aa.html#pele.utils.rotations.takestep_aa" title="pele.utils.rotations.takestep_aa"><tt class="xref py py-obj docutils literal"><span class="pre">takestep_aa</span></tt></a>(p,&nbsp;maxtheta)</td>
+<td>change an angle axis vector by a small rotation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.rotate_aa.html#pele.utils.rotations.rotate_aa" title="pele.utils.rotations.rotate_aa"><tt class="xref py py-obj docutils literal"><span class="pre">rotate_aa</span></tt></a>(p1,&nbsp;p2)</td>
+<td>change a given angle axis rotation p1 by the</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.small_random_aa.html#pele.utils.rotations.small_random_aa" title="pele.utils.rotations.small_random_aa"><tt class="xref py py-obj docutils literal"><span class="pre">small_random_aa</span></tt></a>(maxtheta)</td>
+<td>generate a small random rotation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.vec_random.html#pele.utils.rotations.vec_random" title="pele.utils.rotations.vec_random"><tt class="xref py py-obj docutils literal"><span class="pre">vec_random</span></tt></a>()</td>
+<td>uniform random unit vector</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.vec_random_ndim.html#pele.utils.rotations.vec_random_ndim" title="pele.utils.rotations.vec_random_ndim"><tt class="xref py py-obj docutils literal"><span class="pre">vec_random_ndim</span></tt></a>(n)</td>
+<td>n-dimensional uniform random unit vector</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.vector_random_uniform_hypersphere.html#pele.utils.rotations.vector_random_uniform_hypersphere" title="pele.utils.rotations.vector_random_uniform_hypersphere"><tt class="xref py py-obj docutils literal"><span class="pre">vector_random_uniform_hypersphere</span></tt></a>(k)</td>
+<td>return a vector sampled uniformly in a hypersphere of dimension k</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.q_slerp.html#pele.utils.rotations.q_slerp" title="pele.utils.rotations.q_slerp"><tt class="xref py py-obj docutils literal"><span class="pre">q_slerp</span></tt></a>(a,&nbsp;b,&nbsp;t)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">pele.utils.vec3.invert3x3</span></tt>(A)</td>
+<td>return the inverse of a 3x3 matrix</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="benchmarking-tool">
+<h3>benchmarking tool<a class="headerlink" href="#benchmarking-tool" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">pele.utils.benchmark.QuenchBenchmark</span></tt>(potential)</td>
+<td>classdocs</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-pele.utils.rbtools">
+<span id="coords-adapter"></span><h3>Coords Adapter<a class="headerlink" href="#module-pele.utils.rbtools" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rbtools.CoordsAdapter.html#pele.utils.rbtools.CoordsAdapter" title="pele.utils.rbtools.CoordsAdapter"><tt class="xref py py-obj docutils literal"><span class="pre">pele.utils.rbtools.CoordsAdapter</span></tt></a>([nrigid,&nbsp;...])</td>
+<td>Wrapper to access coordinate array for rigid body systems</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-pele.utils.hessian">
+<span id="hessian-eigenvalues-and-eigenvectors"></span><h3>Hessian eigenvalues and eigenvectors<a class="headerlink" href="#module-pele.utils.hessian" title="Permalink to this headline">¶</a></h3>
+<p>Tools for manipulating the Hessian.  In particular, for finding eigenvalues and eigenvectors</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.hessian.get_eig.html#pele.utils.hessian.get_eig" title="pele.utils.hessian.get_eig"><tt class="xref py py-obj docutils literal"><span class="pre">get_eig</span></tt></a>(hess,&nbsp;**kwargs)</td>
+<td>return the eigenvalue and eigenvectors of a Hessian (symmetric)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.hessian.get_eigvals.html#pele.utils.hessian.get_eigvals" title="pele.utils.hessian.get_eigvals"><tt class="xref py py-obj docutils literal"><span class="pre">get_eigvals</span></tt></a>(hess,&nbsp;**kwargs)</td>
+<td>return the eigenvalues of a Hessian (symmetric)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.hessian.get_sorted_eig.html#pele.utils.hessian.get_sorted_eig" title="pele.utils.hessian.get_sorted_eig"><tt class="xref py py-obj docutils literal"><span class="pre">get_sorted_eig</span></tt></a>(hess,&nbsp;**kwargs)</td>
+<td>return the sorted eigenvalues and eigenvectors of a Hessian sorted</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.hessian.get_smallest_eig.html#pele.utils.hessian.get_smallest_eig" title="pele.utils.hessian.get_smallest_eig"><tt class="xref py py-obj docutils literal"><span class="pre">get_smallest_eig</span></tt></a>(hess,&nbsp;**kwargs)</td>
+<td>return the smallest eigenvalue and associated eigenvector of a Hessian</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.hessian.make_sparse.html#pele.utils.hessian.make_sparse" title="pele.utils.hessian.make_sparse"><tt class="xref py py-obj docutils literal"><span class="pre">make_sparse</span></tt></a>(hess,&nbsp;**kwargs)</td>
+<td>return a sparse form of the hessian using scipy.sparse</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="module-pele.utils.neighbor_list">
+<span id="neighborlists"></span><h2>NeighborLists<a class="headerlink" href="#module-pele.utils.neighbor_list" title="Permalink to this headline">¶</a></h2>
+<p>classes to build and maintain neighborlists
+.. currentmodule:: pele.utils.neighbor_list</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborList.html#pele.utils.neighbor_list.NeighborList" title="pele.utils.neighbor_list.NeighborList"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborList</span></tt></a>(natoms,&nbsp;rcut[,&nbsp;rskin,&nbsp;boxl])</td>
+<td>Create a neighbor list and keep it updated</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListSubset.html#pele.utils.neighbor_list.NeighborListSubset" title="pele.utils.neighbor_list.NeighborListSubset"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListSubset</span></tt></a>(natoms,&nbsp;rcut,&nbsp;Alist[,&nbsp;...])</td>
+<td>Create a neighbor list and keep it updated for a subset of the atoms.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListPotential.html#pele.utils.neighbor_list.NeighborListPotential" title="pele.utils.neighbor_list.NeighborListPotential"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListPotential</span></tt></a>(neighborList,&nbsp;pot)</td>
+<td>a potential wrapper for a neighbor list</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.MultiComponentSystem.html#pele.utils.neighbor_list.MultiComponentSystem" title="pele.utils.neighbor_list.MultiComponentSystem"><tt class="xref py py-obj docutils literal"><span class="pre">MultiComponentSystem</span></tt></a>(potentials)</td>
+<td>a potential wrapper for multiple potentials</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListSubsetBuild.html#pele.utils.neighbor_list.NeighborListSubsetBuild" title="pele.utils.neighbor_list.NeighborListSubsetBuild"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListSubsetBuild</span></tt></a>(natoms,&nbsp;rcut,&nbsp;Alist)</td>
+<td>The same as NeighborListSubset except only do the building.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListPotentialBuild.html#pele.utils.neighbor_list.NeighborListPotentialBuild" title="pele.utils.neighbor_list.NeighborListPotentialBuild"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListPotentialBuild</span></tt></a>(neighborList,&nbsp;pot)</td>
+<td>a potential wrapper for a neighbor list, but only rebuild when told to</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListPotentialMulti.html#pele.utils.neighbor_list.NeighborListPotentialMulti" title="pele.utils.neighbor_list.NeighborListPotentialMulti"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListPotentialMulti</span></tt></a>(potentials,&nbsp;...)</td>
+<td>A wrapper for multiple NeighborListPotentialBuild</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.makeBLJNeighborListPot.html#pele.utils.neighbor_list.makeBLJNeighborListPot" title="pele.utils.neighbor_list.makeBLJNeighborListPot"><tt class="xref py py-obj docutils literal"><span class="pre">makeBLJNeighborListPot</span></tt></a>(natoms[,&nbsp;ntypeA,&nbsp;...])</td>
+<td>recreate the binary lj with atom typea A,B from 3 interaction lists AA, BB, AB</td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-pele.utils.frozen_atoms"></span><p>tools for dealing with frozen atoms.  Especially in relation to neighbor lists</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.frozen_atoms.FreezePot.html#pele.utils.frozen_atoms.FreezePot" title="pele.utils.frozen_atoms.FreezePot"><tt class="xref py py-obj docutils literal"><span class="pre">FreezePot</span></tt></a>(pot,&nbsp;frozen,&nbsp;natoms)</td>
+<td>potential wrapper for frozen particles</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.frozen_atoms.makeBLJNeighborListPotFreeze.html#pele.utils.frozen_atoms.makeBLJNeighborListPotFreeze" title="pele.utils.frozen_atoms.makeBLJNeighborListPotFreeze"><tt class="xref py py-obj docutils literal"><span class="pre">makeBLJNeighborListPotFreeze</span></tt></a>(natoms,&nbsp;frozenlist)</td>
+<td>create the potential object for the kob andersen binary lennard jones with frozeen particles</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-pele.utils.histogram">
+<span id="histogram"></span><h2>Histogram<a class="headerlink" href="#module-pele.utils.histogram" title="Permalink to this headline">¶</a></h2>
+<p>Create and print histograms.  Especially energy histograms.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.histogram.EnergyHistogram.html#pele.utils.histogram.EnergyHistogram" title="pele.utils.histogram.EnergyHistogram"><tt class="xref py py-obj docutils literal"><span class="pre">EnergyHistogram</span></tt></a>(emin,&nbsp;emax[,&nbsp;nbins])</td>
+<td>this class will build 1 dimensional histogram.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.histogram.PrintHistogram.html#pele.utils.histogram.PrintHistogram" title="pele.utils.histogram.PrintHistogram"><tt class="xref py py-obj docutils literal"><span class="pre">PrintHistogram</span></tt></a>(fname,&nbsp;hist,&nbsp;interval)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-pele.utils.xyz">
+<span id="xyz-files"></span><h2>.xyz files<a class="headerlink" href="#module-pele.utils.xyz" title="Permalink to this headline">¶</a></h2>
+<p>tools for reading from and writing to .xyz files</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.xyz.read_xyz.html#pele.utils.xyz.read_xyz" title="pele.utils.xyz.read_xyz"><tt class="xref py py-obj docutils literal"><span class="pre">read_xyz</span></tt></a>(fin)</td>
+<td>read a xyz file from file handle</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.xyz.write_xyz.html#pele.utils.xyz.write_xyz" title="pele.utils.xyz.write_xyz"><tt class="xref py py-obj docutils literal"><span class="pre">write_xyz</span></tt></a>(fout,&nbsp;coords[,&nbsp;title,&nbsp;atomtypes])</td>
+<td>write a xyz file from file handle</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="disconnectivity-graph">
+<h2>Disconnectivity Graph<a class="headerlink" href="#disconnectivity-graph" title="Permalink to this headline">¶</a></h2>
+<p>see <a class="reference internal" href="disconnectivity_graph.html#disconnectivity-graph"><em>disconnectivity graph</em></a></p>
+</div>
+<div class="section" id="module-pele.utils.pymolwrapper">
+<span id="wrapper-helper-functions-for-external-programs"></span><h2>Wrapper / helper functions for external programs<a class="headerlink" href="#module-pele.utils.pymolwrapper" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pele.utils.pymolwrapper.draw_spheres">
+<tt class="descclassname">pele.utils.pymolwrapper.</tt><tt class="descname">draw_spheres</tt><big>(</big><em>coords</em>, <em>model</em>, <em>frame</em>, <em>radius=0.5</em><big>)</big><a class="reference internal" href="_modules/pele/utils/pymolwrapper.html#draw_spheres"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.pymolwrapper.draw_spheres" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pele.utils.pymolwrapper.start">
+<tt class="descclassname">pele.utils.pymolwrapper.</tt><tt class="descname">start</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pele/utils/pymolwrapper.html#start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.pymolwrapper.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-pele.utils.amber"></span><dl class="class">
+<dt id="pele.utils.amber.readAmberParam">
+<em class="property">class </em><tt class="descclassname">pele.utils.amber.</tt><tt class="descname">readAmberParam</tt><a class="reference internal" href="_modules/pele/utils/amber.html#readAmberParam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.amber.readAmberParam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract info from coords.prmtop</p>
+<dl class="docutils">
+<dt>prmtop:</dt>
+<dd>string with the full coords.prmtop file</dd>
+<dt>bondConn:</dt>
+<dd>list of 2-ples such that bondConn[i][0] and bondConn[i][1] are the 
+atom numbers of the i-th bond; atom numbers start at 1</dd>
+</dl>
+<p>TODO: deprecate &#8211; use OpenMM parser instead (11 Jan 13)</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#pele.utils.amber.readAmberParam.populateBondConn" title="pele.utils.amber.readAmberParam.populateBondConn"><tt class="xref py py-obj docutils literal"><span class="pre">populateBondConn</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#pele.utils.amber.readAmberParam.printBondConn" title="pele.utils.amber.readAmberParam.printBondConn"><tt class="xref py py-obj docutils literal"><span class="pre">printBondConn</span></tt></a>()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pele.utils.amber.readAmberParam.populateBondConn">
+<tt class="descname">populateBondConn</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pele/utils/amber.html#readAmberParam.populateBondConn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.amber.readAmberParam.populateBondConn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pele.utils.amber.readAmberParam.printBondConn">
+<tt class="descname">printBondConn</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pele/utils/amber.html#readAmberParam.printBondConn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.amber.readAmberParam.printBondConn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Utilities (<cite>pele.utils</cite>)</a><ul>
+<li><a class="reference internal" href="#helper-functions">Helper functions</a><ul>
+<li><a class="reference internal" href="#module-pele.utils.rotations">rotations</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#benchmarking-tool">benchmarking tool</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pele.utils.rbtools">Coords Adapter</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pele.utils.hessian">Hessian eigenvalues and eigenvectors</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pele.utils.neighbor_list">NeighborLists</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pele.utils.histogram">Histogram</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pele.utils.xyz">.xyz files</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#disconnectivity-graph">Disconnectivity Graph</a></li>
+<li><a class="reference internal" href="#module-pele.utils.pymolwrapper">Wrapper / helper functions for external programs</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.concurrent.ConnectWorker.run.html"
+                        title="previous chapter">pele.concurrent.ConnectWorker.run</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/pele.utils.rotations.q_multiply.html"
+                        title="next chapter">pele.utils.rotations.q_multiply</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/utils.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.utils.rotations.q_multiply.html" title="pele.utils.rotations.q_multiply"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.concurrent.ConnectWorker.run.html" title="pele.concurrent.ConnectWorker.run"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Potentials (pele.potentials) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="pele.potentials.BasePotential" href="generated/pele.potentials.BasePotential.html" />
+    <link rel="prev" title="pele.landscape.LocalConnectPar.connect" href="generated/pele.landscape.LocalConnectPar.connect.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.potentials.BasePotential.html" title="pele.potentials.BasePotential"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.landscape.LocalConnectPar.connect.html" title="pele.landscape.LocalConnectPar.connect"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.potentials"><span id="potentials-description"></span></span><div class="section" id="potentials-pele-potentials">
+<h1>Potentials (<cite>pele.potentials</cite>)<a class="headerlink" href="#potentials-pele-potentials" title="Permalink to this headline">¶</a></h1>
+<p>This module contains all the potentials that are included in pele.
+The list is not very long because we have made it very easy for you
+to write your own.</p>
+<div class="section" id="base-potential">
+<h2>Base Potential<a class="headerlink" href="#base-potential" title="Permalink to this headline">¶</a></h2>
+<p>All potentials are derived from the base class</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.potentials.BasePotential.html#pele.potentials.BasePotential" title="pele.potentials.BasePotential"><tt class="xref py py-obj docutils literal"><span class="pre">BasePotential</span></tt></a></td>
+<td>Base class for all potentials</td>
+</tr>
+</tbody>
+</table>
+<p>When creating your own potential, only member function which must absolutely
+be overloaded is getEnergy().  Many routines in pele 
+also use gradient information, so it is highly recommended to also
+implement getEnergyGradient().  Otherwise the gradients will be calculated
+numerically and your system will run a lot slower.</p>
+</div>
+<div class="section" id="pele-potentials">
+<h2>pele potentials<a class="headerlink" href="#pele-potentials" title="Permalink to this headline">¶</a></h2>
+<p>these are potentials that exist completely within the pele package</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.potentials.LJ.html#pele.potentials.LJ" title="pele.potentials.LJ"><tt class="xref py py-obj docutils literal"><span class="pre">LJ</span></tt></a>([eps,&nbsp;sig,&nbsp;boxl])</td>
+<td>simple lennard jones potential</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.potentials.LJCut.html#pele.potentials.LJCut" title="pele.potentials.LJCut"><tt class="xref py py-obj docutils literal"><span class="pre">LJCut</span></tt></a>([eps,&nbsp;sig,&nbsp;rcut,&nbsp;boxl])</td>
+<td>lennard jones potential with a cutoff that is continuous and smooth</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.potentials.LJpshift.html#pele.potentials.LJpshift" title="pele.potentials.LJpshift"><tt class="xref py py-obj docutils literal"><span class="pre">LJpshift</span></tt></a>(natoms,&nbsp;ntypeA[,&nbsp;boxl,&nbsp;rcut,&nbsp;...])</td>
+<td>binary lennard jones potential with smooth cutoff</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.potentials.ATLJ.html#pele.potentials.ATLJ" title="pele.potentials.ATLJ"><tt class="xref py py-obj docutils literal"><span class="pre">ATLJ</span></tt></a>([eps,&nbsp;sig,&nbsp;Z])</td>
+<td>Lennard Jones + three body Axilrod-Teller term</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.potentials.XYModel.html#pele.potentials.XYModel" title="pele.potentials.XYModel"><tt class="xref py py-obj docutils literal"><span class="pre">XYModel</span></tt></a>([dim,&nbsp;phi])</td>
+<td>XY model of 2d spins on a lattice</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.potentials.HeisenbergModel.html#pele.potentials.HeisenbergModel" title="pele.potentials.HeisenbergModel"><tt class="xref py py-obj docutils literal"><span class="pre">HeisenbergModel</span></tt></a>([dim,&nbsp;field_disorder])</td>
+<td>The classical Heisenberg Model of 3d spins on a lattice.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.potentials.HeisenbergModelRA.html#pele.potentials.HeisenbergModelRA" title="pele.potentials.HeisenbergModelRA"><tt class="xref py py-obj docutils literal"><span class="pre">HeisenbergModelRA</span></tt></a>([dim,&nbsp;field_disorder])</td>
+<td>The classical Heisenberg Model of 3d spins on a lattice with random anisotropy.</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">MaxNeibsLJ</span></tt></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">MaxNeibsBLJ</span></tt></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="gmin-potentials">
+<h2>GMIN potentials<a class="headerlink" href="#gmin-potentials" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.potentials.GMINPotential.html#pele.potentials.GMINPotential" title="pele.potentials.GMINPotential"><tt class="xref py py-obj docutils literal"><span class="pre">GMINPotential</span></tt></a>(GMIN)</td>
+<td>Interface to fortran GMIN potential</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="other-external-potentials">
+<h2>other external potentials<a class="headerlink" href="#other-external-potentials" title="Permalink to this headline">¶</a></h2>
+<p>to be written</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Potentials (<cite>pele.potentials</cite>)</a><ul>
+<li><a class="reference internal" href="#base-potential">Base Potential</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#pele-potentials">pele potentials</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#gmin-potentials">GMIN potentials</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#other-external-potentials">other external potentials</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.landscape.LocalConnectPar.connect.html"
+                        title="previous chapter">pele.landscape.LocalConnectPar.connect</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/pele.potentials.BasePotential.html"
+                        title="next chapter">pele.potentials.BasePotential</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/potentials.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.potentials.BasePotential.html" title="pele.potentials.BasePotential"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.landscape.LocalConnectPar.connect.html" title="pele.landscape.LocalConnectPar.connect"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

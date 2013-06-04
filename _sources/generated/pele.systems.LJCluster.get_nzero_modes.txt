@@ -1,0 +1,6 @@
+pele.systems.LJCluster.get_nzero_modes
+======================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.get_nzero_modes

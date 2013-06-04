@@ -1,0 +1,6 @@
+pele.optimize.fire
+==================
+
+.. currentmodule:: pele.optimize
+
+.. autofunction:: fire

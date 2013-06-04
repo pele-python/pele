@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.utils.rbtools.CoordsAdapter &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Utilities (pele.utils)" href="../utils.html" />
+    <link rel="next" title="pele.utils.rbtools.CoordsAdapter.coords" href="pele.utils.rbtools.CoordsAdapter.coords.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.rbtools.CoordsAdapter.coords.html" title="pele.utils.rbtools.CoordsAdapter.coords"
+             accesskey="N">next</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../utils.html" accesskey="U">Utilities (<cite>pele.utils</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-utils-rbtools-coordsadapter">
+<h1>pele.utils.rbtools.CoordsAdapter<a class="headerlink" href="#pele-utils-rbtools-coordsadapter" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.utils.rbtools.CoordsAdapter">
+<em class="property">class </em><tt class="descclassname">pele.utils.rbtools.</tt><tt class="descname">CoordsAdapter</tt><big>(</big><em>nrigid=None</em>, <em>natoms=None</em>, <em>nlattice=0</em>, <em>coords=None</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/rbtools.html#CoordsAdapter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.rbtools.CoordsAdapter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to access coordinate array for rigid body systems</p>
+<p>The CoordsAdapter is a wrapper for a coords array. It creates views to directly
+access rigid body position &amp; rotations, atom positions and lattice coordinates.
+This offers a convenient way to access coorinates without the hazzle of 
+indexing</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pele.utils.rbtools</span> <span class="kn">import</span> <span class="n">CoordsAdapter</span>
+<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nrigid</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="o">*</span><span class="n">nrigid</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ca</span> <span class="o">=</span> <span class="n">CoordsAdapter</span><span class="p">(</span><span class="n">nrigid</span><span class="o">=</span><span class="n">nrigid</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ca</span><span class="o">.</span><span class="n">posRigid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ca</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.rbtools.CoordsAdapter.coords.html#pele.utils.rbtools.CoordsAdapter.coords" title="pele.utils.rbtools.CoordsAdapter.coords"><tt class="xref py py-obj docutils literal"><span class="pre">coords</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.rbtools.CoordsAdapter.lattice.html#pele.utils.rbtools.CoordsAdapter.lattice" title="pele.utils.rbtools.CoordsAdapter.lattice"><tt class="xref py py-obj docutils literal"><span class="pre">lattice</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.rbtools.CoordsAdapter.posAtoms.html#pele.utils.rbtools.CoordsAdapter.posAtoms" title="pele.utils.rbtools.CoordsAdapter.posAtoms"><tt class="xref py py-obj docutils literal"><span class="pre">posAtoms</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.rbtools.CoordsAdapter.posRigid.html#pele.utils.rbtools.CoordsAdapter.posRigid" title="pele.utils.rbtools.CoordsAdapter.posRigid"><tt class="xref py py-obj docutils literal"><span class="pre">posRigid</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.rbtools.CoordsAdapter.rotRigid.html#pele.utils.rbtools.CoordsAdapter.rotRigid" title="pele.utils.rbtools.CoordsAdapter.rotRigid"><tt class="xref py py-obj docutils literal"><span class="pre">rotRigid</span></tt></a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.rbtools.CoordsAdapter.copy.html#pele.utils.rbtools.CoordsAdapter.copy" title="pele.utils.rbtools.CoordsAdapter.copy"><tt class="xref py py-obj docutils literal"><span class="pre">copy</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.rbtools.CoordsAdapter.updateCoords.html#pele.utils.rbtools.CoordsAdapter.updateCoords" title="pele.utils.rbtools.CoordsAdapter.updateCoords"><tt class="xref py py-obj docutils literal"><span class="pre">updateCoords</span></tt></a>(coords)</td>
+<td>update the coordinate array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.utils.rbtools.CoordsAdapter.coords.html"
+                        title="next chapter">pele.utils.rbtools.CoordsAdapter.coords</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.utils.rbtools.CoordsAdapter.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.rbtools.CoordsAdapter.coords.html" title="pele.utils.rbtools.CoordsAdapter.coords"
+             >next</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../utils.html" >Utilities (<cite>pele.utils</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

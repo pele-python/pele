@@ -1,0 +1,28 @@
+pele.utils.neighbor_list.MultiComponentSystem
+=============================================
+
+.. currentmodule:: pele.utils.neighbor_list
+
+.. autoclass:: MultiComponentSystem
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~MultiComponentSystem.NumericalDerivative
+         ~MultiComponentSystem.NumericalHessian
+         ~MultiComponentSystem.getEnergy
+         ~MultiComponentSystem.getEnergyGradient
+         ~MultiComponentSystem.getEnergyGradientHessian
+         ~MultiComponentSystem.getEnergyGradientNumerical
+         ~MultiComponentSystem.getGradient
+         ~MultiComponentSystem.getHessian
+         ~MultiComponentSystem.test_potential
+   
+   
+
+   
+   
+   

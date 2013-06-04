@@ -1,0 +1,6 @@
+pele.potentials.LJpshift.getEnergy
+==================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: LJpshift.getEnergy

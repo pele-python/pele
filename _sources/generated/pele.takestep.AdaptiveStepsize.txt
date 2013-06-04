@@ -1,0 +1,24 @@
+pele.takestep.AdaptiveStepsize
+==============================
+
+.. currentmodule:: pele.takestep
+
+.. autoclass:: AdaptiveStepsize
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~AdaptiveStepsize.__call__
+         ~AdaptiveStepsize.adjustStep
+         ~AdaptiveStepsize.scale
+         ~AdaptiveStepsize.takeStep
+         ~AdaptiveStepsize.updateStep
+   
+   
+
+   
+   
+   

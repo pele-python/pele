@@ -1,0 +1,6 @@
+pele.storage.Distance.minimum1
+==============================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Distance.minimum1

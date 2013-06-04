@@ -1,0 +1,6 @@
+pele.storage.Minimum.energy
+===========================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Minimum.energy

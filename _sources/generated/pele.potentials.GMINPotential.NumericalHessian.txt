@@ -1,0 +1,6 @@
+pele.potentials.GMINPotential.NumericalHessian
+==============================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: GMINPotential.NumericalHessian

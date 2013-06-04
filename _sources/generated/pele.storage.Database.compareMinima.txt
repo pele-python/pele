@@ -1,0 +1,6 @@
+pele.storage.Database.compareMinima
+===================================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Database.compareMinima

@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.takestep.group &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.takestep.group</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Created on Jun 7, 2012</span>
+
+<span class="sd">@author: vr274</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">.generic</span> <span class="kn">import</span> <span class="n">TakestepInterface</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;GroupSteps&quot;</span><span class="p">,</span> <span class="s">&quot;BlockMoves&quot;</span><span class="p">,</span> <span class="s">&quot;Reseeding&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="GroupSteps"><a class="viewcode-back" href="../../../generated/pele.takestep.GroupSteps.html#pele.takestep.GroupSteps">[docs]</a><span class="k">class</span> <span class="nc">GroupSteps</span><span class="p">(</span><span class="n">TakestepInterface</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;group several takestep objects</span>
+<span class="sd">    </span>
+<span class="sd">    This class is a wrapper for takestep objects to group several takestep</span>
+<span class="sd">    objects into one and perform all takesteps simultaneously.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    steptakers : list of takestep objects</span>
+<span class="sd">        list of takestep objects to combine to a single one</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steptakers</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span> <span class="o">=</span> <span class="n">steptakers</span>
+
+<div class="viewcode-block" id="GroupSteps.takeStep"><a class="viewcode-back" href="../../../generated/pele.takestep.GroupSteps.takeStep.html#pele.takestep.GroupSteps.takeStep">[docs]</a>    <span class="k">def</span> <span class="nf">takeStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span><span class="p">:</span>
+            <span class="n">step</span><span class="o">.</span><span class="n">takeStep</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+       </div>
+<div class="viewcode-block" id="GroupSteps.updateStep"><a class="viewcode-back" href="../../../generated/pele.takestep.GroupSteps.updateStep.html#pele.takestep.GroupSteps.updateStep">[docs]</a>    <span class="k">def</span> <span class="nf">updateStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span><span class="p">:</span>
+            <span class="n">step</span><span class="o">.</span><span class="n">updateStep</span><span class="p">(</span><span class="n">accepted</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="BlockMoves"><a class="viewcode-back" href="../../../generated/pele.takestep.BlockMoves.html#pele.takestep.BlockMoves">[docs]</a><span class="k">class</span> <span class="nc">BlockMoves</span><span class="p">(</span><span class="n">TakestepInterface</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;block based step taking</span>
+<span class="sd">    </span>
+<span class="sd">    This class is a wrapper for takestep objects to group several takestep</span>
+<span class="sd">    objects into one and perform takestep moves block wise, changing the takestep</span>
+<span class="sd">    mechanism after a given amount of steps.</span>
+<span class="sd">    </span>
+<span class="sd">    Takestep objects can be added with addBlock</span>
+<span class="sd">    </span>
+<span class="sd">    ::</span>
+<span class="sd">    </span>
+<span class="sd">        step1 = RandomDisplacement()</span>
+<span class="sd">        step2 = RandomRotation()</span>
+<span class="sd">        </span>
+<span class="sd">        step = BlockMoves()</span>
+<span class="sd">        step.addBlock(100, step1)</span>
+<span class="sd">        step.addBlock(100, step2)        </span>
+<span class="sd">        </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="BlockMoves.addBlock"><a class="viewcode-back" href="../../../generated/pele.takestep.BlockMoves.addBlock.html#pele.takestep.BlockMoves.addBlock">[docs]</a>    <span class="k">def</span> <span class="nf">addBlock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">takestep</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;add a takestep object</span>
+<span class="sd">            </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nsteps: integer</span>
+<span class="sd">            number of steps to perform this type of step</span>
+<span class="sd">        takestep: takestep object</span>
+<span class="sd">            takestep object to call for this block</span>
+<span class="sd">            </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">takestep</span><span class="p">])</span>
+      </div>
+<div class="viewcode-block" id="BlockMoves.takeStep"><a class="viewcode-back" href="../../../generated/pele.takestep.BlockMoves.takeStep.html#pele.takestep.BlockMoves.takeStep">[docs]</a>    <span class="k">def</span> <span class="nf">takeStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_current</span><span class="p">][</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_current</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">takeStep</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+       </div>
+<div class="viewcode-block" id="BlockMoves.updateStep"><a class="viewcode-back" href="../../../generated/pele.takestep.BlockMoves.updateStep.html#pele.takestep.BlockMoves.updateStep">[docs]</a>    <span class="k">def</span> <span class="nf">updateStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steptakers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_current</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">updateStep</span><span class="p">(</span><span class="n">accepted</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="Reseeding"><a class="viewcode-back" href="../../../generated/pele.takestep.Reseeding.html#pele.takestep.Reseeding">[docs]</a><span class="k">class</span> <span class="nc">Reseeding</span><span class="p">(</span><span class="n">TakestepInterface</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Reseeding if energy did not improve</span>
+<span class="sd">    </span>
+<span class="sd">    This class wraps 2 takestep objects, one for a regular takestep move, and a</span>
+<span class="sd">    reseeding step which is executed if the energy of the basin hopping run did not</span>
+<span class="sd">    improve after a given number of steps.</span>
+<span class="sd">    </span>
+<span class="sd">    The energy is considered as improved if it is lower than the lowest energy found </span>
+<span class="sd">    during the current cycle.</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    takestep : takestep object</span>
+<span class="sd">        takestep object to perform regular step taking</span>
+<span class="sd">    reseed : takestep object</span>
+<span class="sd">        takestep object to do reseeding, e.g. generate a new random configuration    </span>
+<span class="sd">    maxnoimprove : integer</span>
+<span class="sd">        do 1 reseeding step if the energy did not improve after so many steps.</span>
+<span class="sd">        </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">takestep</span><span class="p">,</span> <span class="n">reseed</span><span class="p">,</span> <span class="n">maxnoimprove</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">takestep</span> <span class="o">=</span> <span class="n">takestep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reseed</span> <span class="o">=</span> <span class="n">reseed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxnoimprove</span> <span class="o">=</span> <span class="n">maxnoimprove</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noimprove</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy</span>
+        
+<div class="viewcode-block" id="Reseeding.takeStep"><a class="viewcode-back" href="../../../generated/pele.takestep.Reseeding.takeStep.html#pele.takestep.Reseeding.takeStep">[docs]</a>    <span class="k">def</span> <span class="nf">takeStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_noimprove</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxnoimprove</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;The energy did not improve after &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_noimprove</span><span class="p">)</span> <span class="o">+</span> \
+                <span class="s">&quot; steps, reseeding&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reseed</span><span class="o">.</span><span class="n">takeStep</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;driver&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">acceptTest</span><span class="o">.</span><span class="n">forceAccept</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">takestep</span><span class="o">.</span><span class="n">takeStep</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+       </div>
+<div class="viewcode-block" id="Reseeding.updateStep"><a class="viewcode-back" href="../../../generated/pele.takestep.Reseeding.updateStep.html#pele.takestep.Reseeding.updateStep">[docs]</a>    <span class="k">def</span> <span class="nf">updateStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>        
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;driver&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">markovE</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_noimprove</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxnoimprove</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reseed</span><span class="o">.</span><span class="n">updateStep</span><span class="p">(</span><span class="n">accepted</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_noimprove</span><span class="o">=</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">takestep</span><span class="o">.</span><span class="n">updateStep</span><span class="p">(</span><span class="n">accepted</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">driver</span><span class="o">.</span><span class="n">markovE</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span> <span class="ow">or</span> <span class="n">accepted</span><span class="o">==</span><span class="bp">False</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_noimprove</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c">#print &quot;resetting reseed counter&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">markovE</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_noimprove</span><span class="o">=</span><span class="mi">1</span>
+            </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

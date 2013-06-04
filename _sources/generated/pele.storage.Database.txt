@@ -1,0 +1,47 @@
+pele.storage.Database
+=====================
+
+.. currentmodule:: pele.storage
+
+.. autoclass:: Database
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~Database.addMinimum
+         ~Database.addTransitionState
+         ~Database.distances
+         ~Database.getDistance
+         ~Database.getDistanceORM
+         ~Database.getMinimum
+         ~Database.getTransitionState
+         ~Database.mergeMinima
+         ~Database.minima
+         ~Database.minimum_adder
+         ~Database.number_of_minima
+         ~Database.number_of_transition_states
+         ~Database.removeMinimum
+         ~Database.remove_transition_state
+         ~Database.setDistance
+         ~Database.setDistanceBulk
+         ~Database.transition_states
+   
+   
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~Database.Session
+         ~Database.accuracy
+         ~Database.compareMinima
+         ~Database.connection
+         ~Database.engine
+         ~Database.session
+   
+   

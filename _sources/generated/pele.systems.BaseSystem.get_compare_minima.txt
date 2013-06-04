@@ -1,0 +1,6 @@
+pele.systems.BaseSystem.get_compare_minima
+==========================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseSystem.get_compare_minima

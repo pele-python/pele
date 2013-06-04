@@ -1,0 +1,22 @@
+pele.utils.histogram.EnergyHistogram
+====================================
+
+.. currentmodule:: pele.utils.histogram
+
+.. autoclass:: EnergyHistogram
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~EnergyHistogram.__call__
+         ~EnergyHistogram.insert
+         ~EnergyHistogram.insertWrapper
+   
+   
+
+   
+   
+   

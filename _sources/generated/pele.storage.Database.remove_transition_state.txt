@@ -1,0 +1,6 @@
+pele.storage.Database.remove_transition_state
+=============================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.remove_transition_state

@@ -1,0 +1,290 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.storage.Database &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Database storage (pele.storage)" href="../database.html" />
+    <link rel="next" title="pele.storage.Database.engine" href="pele.storage.Database.engine.html" />
+    <link rel="prev" title="pele.storage.Distance" href="pele.storage.Distance.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Database.engine.html" title="pele.storage.Database.engine"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Distance.html" title="pele.storage.Distance"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../database.html" accesskey="U">Database storage (<cite>pele.storage</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-storage-database">
+<h1>pele.storage.Database<a class="headerlink" href="#pele-storage-database" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.storage.Database">
+<em class="property">class </em><tt class="descclassname">pele.storage.</tt><tt class="descname">Database</tt><big>(</big><em>db=':memory:'</em>, <em>accuracy=0.001</em>, <em>connect_string='sqlite:///%s'</em>, <em>compareMinima=None</em>, <em>createdb=True</em><big>)</big><a class="reference internal" href="../_modules/pele/storage/database.html#Database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.storage.Database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Database storage class</p>
+<p>The Database class handles the connection to the database. It has functions to create new Minima,
+TransitionState and Distance objects. The objects are persistent in the database and exist as
+soon as the Database class in connected to the database. If any value in the objects is changed,
+the changes are automatically persistent in the database (TODO: be careful, check commit transactions, ...)</p>
+<p>Database uses SQLAlchemy to connect to the database. Check the web page for available connectors. Unless
+you know better, the standard sqlite should be used. The database can be generated in memory (default) or
+written to a file if db is specified when creating the class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>db</strong> : string, optional</p>
+<blockquote>
+<div><p>filename of new or existing database to connect to.  default creates
+new database in memory.</p>
+</div></blockquote>
+<p><strong>accuracy</strong> : float, optional</p>
+<blockquote>
+<div><p>energy tolerance to count minima as equal</p>
+</div></blockquote>
+<p><strong>connect_string</strong> : string, optional</p>
+<blockquote>
+<div><p>connection string, default is sqlite database</p>
+</div></blockquote>
+<p><strong>compareMinima</strong> : callable, <cite>bool = compareMinima(min1, min2)</cite>, optional</p>
+<blockquote>
+<div><p>called to determine if two minima are identical.  Only called
+if the energies are within <cite>accuracy</cite> of each other.</p>
+</div></blockquote>
+<p><strong>createdb</strong> : boolean, optional</p>
+<blockquote class="last">
+<div><p>create database if not exists, default is true</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.storage.Minimum.html#pele.storage.Minimum" title="pele.storage.Minimum"><tt class="xref py py-obj docutils literal"><span class="pre">Minimum</span></tt></a>, <a class="reference internal" href="pele.storage.TransitionState.html#pele.storage.TransitionState" title="pele.storage.TransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">TransitionState</span></tt></a>, <a class="reference internal" href="pele.storage.Distance.html#pele.storage.Distance" title="pele.storage.Distance"><tt class="xref py py-obj docutils literal"><span class="pre">Distance</span></tt></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pele.storage</span> <span class="kn">import</span> <span class="n">Database</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="s">&quot;test.db&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">minimum</span> <span class="ow">in</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span> <span class="n">minimum</span><span class="o">.</span><span class="n">energy</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.engine.html#pele.storage.Database.engine" title="pele.storage.Database.engine"><tt class="xref py py-obj docutils literal"><span class="pre">engine</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.session.html#pele.storage.Database.session" title="pele.storage.Database.session"><tt class="xref py py-obj docutils literal"><span class="pre">session</span></tt></a></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.accuracy.html#pele.storage.Database.accuracy" title="pele.storage.Database.accuracy"><tt class="xref py py-obj docutils literal"><span class="pre">accuracy</span></tt></a></td>
+<td>float(x) -&gt; floating point number</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.compareMinima.html#pele.storage.Database.compareMinima" title="pele.storage.Database.compareMinima"><tt class="xref py py-obj docutils literal"><span class="pre">compareMinima</span></tt></a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="7%" />
+<col width="74%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>on_minimum_removed</td>
+<td>signal</td>
+<td>called when a minimum is removed from the database</td>
+</tr>
+<tr class="row-even"><td>on_minimum_added</td>
+<td>signal</td>
+<td>called when a new, unique, minimum is added to the database</td>
+</tr>
+<tr class="row-odd"><td>on_ts_removed</td>
+<td>signal</td>
+<td>called when a transition_state is removed from the database</td>
+</tr>
+<tr class="row-even"><td>on_ts_added</td>
+<td>signal</td>
+<td>called when a new, unique, transition state is added to the database</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.addMinimum.html#pele.storage.Database.addMinimum" title="pele.storage.Database.addMinimum"><tt class="xref py py-obj docutils literal"><span class="pre">addMinimum</span></tt></a>(E,&nbsp;coords[,&nbsp;commit,&nbsp;max_n_minima])</td>
+<td>add a new minimum to database</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.addTransitionState.html#pele.storage.Database.addTransitionState" title="pele.storage.Database.addTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">addTransitionState</span></tt></a>(energy,&nbsp;coords,&nbsp;min1,&nbsp;min2)</td>
+<td>Add transition state object</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.distances.html#pele.storage.Database.distances" title="pele.storage.Database.distances"><tt class="xref py py-obj docutils literal"><span class="pre">distances</span></tt></a>()</td>
+<td>return an iterator over all distances in database</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.getDistance.html#pele.storage.Database.getDistance" title="pele.storage.Database.getDistance"><tt class="xref py py-obj docutils literal"><span class="pre">getDistance</span></tt></a>(min1,&nbsp;min2)</td>
+<td>return the distance between two minima</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.getDistanceORM.html#pele.storage.Database.getDistanceORM" title="pele.storage.Database.getDistanceORM"><tt class="xref py py-obj docutils literal"><span class="pre">getDistanceORM</span></tt></a>(min1,&nbsp;min2)</td>
+<td>slow way of getting distance.  deprecated</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.getMinimum.html#pele.storage.Database.getMinimum" title="pele.storage.Database.getMinimum"><tt class="xref py py-obj docutils literal"><span class="pre">getMinimum</span></tt></a>(id)</td>
+<td>return the minimum with a given id</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.getTransitionState.html#pele.storage.Database.getTransitionState" title="pele.storage.Database.getTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">getTransitionState</span></tt></a>(min1,&nbsp;min2)</td>
+<td>return the TransitionState between two minima</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.mergeMinima.html#pele.storage.Database.mergeMinima" title="pele.storage.Database.mergeMinima"><tt class="xref py py-obj docutils literal"><span class="pre">mergeMinima</span></tt></a>(min1,&nbsp;min2)</td>
+<td>merge two minima in the database</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.minima.html#pele.storage.Database.minima" title="pele.storage.Database.minima"><tt class="xref py py-obj docutils literal"><span class="pre">minima</span></tt></a>([order_energy])</td>
+<td>return an iterator over all minima in database</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.minimum_adder.html#pele.storage.Database.minimum_adder" title="pele.storage.Database.minimum_adder"><tt class="xref py py-obj docutils literal"><span class="pre">minimum_adder</span></tt></a>([Ecut,&nbsp;max_n_minima])</td>
+<td>wrapper class to add minima</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.number_of_minima.html#pele.storage.Database.number_of_minima" title="pele.storage.Database.number_of_minima"><tt class="xref py py-obj docutils literal"><span class="pre">number_of_minima</span></tt></a>()</td>
+<td>return the number of minima in the database</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.number_of_transition_states.html#pele.storage.Database.number_of_transition_states" title="pele.storage.Database.number_of_transition_states"><tt class="xref py py-obj docutils literal"><span class="pre">number_of_transition_states</span></tt></a>()</td>
+<td>return the number of transition states in the database</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.removeMinimum.html#pele.storage.Database.removeMinimum" title="pele.storage.Database.removeMinimum"><tt class="xref py py-obj docutils literal"><span class="pre">removeMinimum</span></tt></a>(m[,&nbsp;commit])</td>
+<td>remove a minimum from the database</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.remove_transition_state.html#pele.storage.Database.remove_transition_state" title="pele.storage.Database.remove_transition_state"><tt class="xref py py-obj docutils literal"><span class="pre">remove_transition_state</span></tt></a>(ts[,&nbsp;commit])</td>
+<td>remove a transition states from the database</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.setDistance.html#pele.storage.Database.setDistance" title="pele.storage.Database.setDistance"><tt class="xref py py-obj docutils literal"><span class="pre">setDistance</span></tt></a>(dist,&nbsp;min1,&nbsp;min2)</td>
+<td>set the distance between two minima</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.storage.Database.setDistanceBulk.html#pele.storage.Database.setDistanceBulk" title="pele.storage.Database.setDistanceBulk"><tt class="xref py py-obj docutils literal"><span class="pre">setDistanceBulk</span></tt></a>(values)</td>
+<td>set multiple distances</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.Database.transition_states.html#pele.storage.Database.transition_states" title="pele.storage.Database.transition_states"><tt class="xref py py-obj docutils literal"><span class="pre">transition_states</span></tt></a>()</td>
+<td>return an iterator over all transition states in database</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.storage.Distance.html"
+                        title="previous chapter">pele.storage.Distance</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.storage.Database.engine.html"
+                        title="next chapter">pele.storage.Database.engine</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.storage.Database.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Database.engine.html" title="pele.storage.Database.engine"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.storage.Distance.html" title="pele.storage.Distance"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../database.html" >Database storage (<cite>pele.storage</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

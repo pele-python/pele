@@ -1,0 +1,23 @@
+pele.takestep.Reseeding
+=======================
+
+.. currentmodule:: pele.takestep
+
+.. autoclass:: Reseeding
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~Reseeding.__call__
+         ~Reseeding.scale
+         ~Reseeding.takeStep
+         ~Reseeding.updateStep
+   
+   
+
+   
+   
+   

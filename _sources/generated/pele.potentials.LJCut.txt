@@ -1,0 +1,23 @@
+pele.potentials.LJCut
+=====================
+
+.. currentmodule:: pele.potentials
+
+.. autoclass:: LJCut
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~LJCut.getEnergy
+         ~LJCut.getEnergyGradient
+         ~LJCut.getEnergyGradientList
+         ~LJCut.getEnergyList
+   
+   
+
+   
+   
+   

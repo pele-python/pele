@@ -1,0 +1,6 @@
+pele.optimize.lbfgs_scipy
+=========================
+
+.. currentmodule:: pele.optimize
+
+.. autofunction:: lbfgs_scipy

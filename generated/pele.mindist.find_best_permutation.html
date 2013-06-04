@@ -1,0 +1,197 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.mindist.find_best_permutation &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Structure Alignment (pele.mindist)" href="../structure_alignment.html" />
+    <link rel="next" title="pele.mindist.MinPermDistCluster" href="pele.mindist.MinPermDistCluster.html" />
+    <link rel="prev" title="pele.mindist.optimize_permutations" href="pele.mindist.optimize_permutations.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.mindist.MinPermDistCluster.html" title="pele.mindist.MinPermDistCluster"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.mindist.optimize_permutations.html" title="pele.mindist.optimize_permutations"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../structure_alignment.html" accesskey="U">Structure Alignment (<cite>pele.mindist</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-mindist-find-best-permutation">
+<h1>pele.mindist.find_best_permutation<a class="headerlink" href="#pele-mindist-find-best-permutation" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pele.mindist.find_best_permutation">
+<tt class="descclassname">pele.mindist.</tt><tt class="descname">find_best_permutation</tt><big>(</big><em>X1</em>, <em>X2</em>, <em>permlist=None</em>, <em>user_algorithm=None</em>, <em>reshape=True</em>, <em>user_cost_matrix=&lt;function _make_cost_matrix at 0x3a56578&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/permutational_alignment.html#find_best_permutation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.find_best_permutation" title="Permalink to this definition">¶</a></dt>
+<dd><p>find the permutation of the atoms which minimizes the distance <a href="#id1"><span class="problematic" id="id2">|X1-X2|</span></a></p>
+<p>With all the default parameters, findBestPermutation assumes that X1, X2
+are arrays of atoms in 3d space and performs reshaping on the coordinates. However,
+if you want to pass a 2D system or a custom array with own cost function, you can turn
+automatic reshaping off.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>X1, X2 :</strong> :</p>
+<blockquote>
+<div><p>the structures to align</p>
+</div></blockquote>
+<p><strong>permlist</strong> : a list of lists</p>
+<blockquote>
+<div><p>A list of lists of atoms which are interchangable.
+e.g. for a 50/50 binary mixture:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">permlist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">natoms</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>user_algoriithm</strong> : None or callable</p>
+<blockquote>
+<div><p>you can optionally pass which algorithm to use.</p>
+</div></blockquote>
+<p><strong>gen_cost_matrix</strong> : None or callable</p>
+<blockquote>
+<div><p>user function to generate the cost matrix</p>
+</div></blockquote>
+<p><strong>reshape</strong> : boolean</p>
+<blockquote>
+<div><p>shall coordinate reshaping be performed.</p>
+</div></blockquote>
+<p><strong>box_lengths</strong> : float array</p>
+<blockquote>
+<div><p>array of floats giving the box lengths for periodic boundary conditions.
+Set to None for no periodic boundary conditions.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>dist</strong> : float</p>
+<blockquote>
+<div><p>the minimum distance</p>
+</div></blockquote>
+<p><strong>perm:</strong> :</p>
+<blockquote class="last">
+<div><p>a list of all permutations</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>This for each list of interchangeable atoms in permlist the permutation
+which minimizes the distance between the two structures is found.  This minimimization
+is done by mapping the problem onto the linear assignment problem which can then be solved
+using graph theoretic techniques.</p>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Linear_assignment_problem">http://en.wikipedia.org/wiki/Linear_assignment_problem</a>
+<a class="reference external" href="http://en.wikipedia.org/wiki/Hungarian_algorithm">http://en.wikipedia.org/wiki/Hungarian_algorithm</a></p>
+<p>there are several packages in pypi which solve the linear assignment problem</p>
+<p>hungarian : c++ code wrapped in python.  scales roughly like natoms**2.5</p>
+<p>munkres : completely in python. scales roughly like natoms**3.  very slow for natoms &gt; 10</p>
+<p>in addition we have wrapped the OPTIM version for use in pele.  It uses the sparse 
+version of the Jonker-Volgenant algorithm.  Furthermore the cost matrix calculated in 
+a compiled language for an additional speed boost. It scales roughly like natoms**2</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.mindist.optimize_permutations.html"
+                        title="previous chapter">pele.mindist.optimize_permutations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.mindist.MinPermDistCluster.html"
+                        title="next chapter">pele.mindist.MinPermDistCluster</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.mindist.find_best_permutation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.mindist.MinPermDistCluster.html" title="pele.mindist.MinPermDistCluster"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.mindist.optimize_permutations.html" title="pele.mindist.optimize_permutations"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../structure_alignment.html" >Structure Alignment (<cite>pele.mindist</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

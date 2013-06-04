@@ -1,0 +1,6 @@
+pele.storage.Minimum.metadata
+=============================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Minimum.metadata

@@ -1,0 +1,6 @@
+pele.transition_states.zeroEV_cluster
+=====================================
+
+.. currentmodule:: pele.transition_states
+
+.. autofunction:: zeroEV_cluster

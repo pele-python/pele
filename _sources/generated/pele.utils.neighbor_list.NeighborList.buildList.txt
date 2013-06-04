@@ -1,0 +1,6 @@
+pele.utils.neighbor_list.NeighborList.buildList
+===============================================
+
+.. currentmodule:: pele.utils.neighbor_list
+
+.. automethod:: NeighborList.buildList

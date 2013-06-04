@@ -1,0 +1,6 @@
+pele.storage.Database.transition_states
+=======================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.transition_states

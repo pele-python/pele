@@ -1,0 +1,6 @@
+pele.transition_states.findTransitionState
+==========================================
+
+.. currentmodule:: pele.transition_states
+
+.. autofunction:: findTransitionState

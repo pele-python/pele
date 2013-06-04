@@ -1,0 +1,6 @@
+pele.optimize.Fire.initialize
+=============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Fire.initialize

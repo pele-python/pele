@@ -1,0 +1,262 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.transition_states.NEB &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Transition States (pele.transition_states)" href="../transition_states_module.html" />
+    <link rel="next" title="pele.transition_states.NEB.MakeAllMaximaClimbing" href="pele.transition_states.NEB.MakeAllMaximaClimbing.html" />
+    <link rel="prev" title="pele.transition_states.NEBDriver.run" href="pele.transition_states.NEBDriver.run.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.NEB.MakeAllMaximaClimbing.html" title="pele.transition_states.NEB.MakeAllMaximaClimbing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.NEBDriver.run.html" title="pele.transition_states.NEBDriver.run"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../transition_states_module.html" accesskey="U">Transition States (<cite>pele.transition_states</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-transition-states-neb">
+<h1>pele.transition_states.NEB<a class="headerlink" href="#pele-transition-states-neb" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.transition_states.NEB">
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">NEB</tt><big>(</big><em>path</em>, <em>potential</em>, <em>distance=&lt;function distance_cart at 0x39d8aa0&gt;</em>, <em>k=100.0</em>, <em>adjustk_freq=0</em>, <em>adjustk_tol=0.1</em>, <em>adjustk_factor=1.05</em>, <em>with_springenergy=False</em>, <em>dneb=True</em>, <em>copy_potential=False</em>, <em>quenchParams={}</em>, <em>quenchRoutine=None</em>, <em>save_energies=False</em>, <em>verbose=-1</em>, <em>events=None</em>, <em>use_minimizer_callback=True</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_NEB.html#NEB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.NEB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Doubly nudged elastic band implementation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>path: iteratable</strong> :</p>
+<blockquote>
+<div><p>iteratable object of all images</p>
+</div></blockquote>
+<p><strong>potential :</strong> :</p>
+<blockquote>
+<div><p>the potential object</p>
+</div></blockquote>
+<p><strong>distance</strong> : callable</p>
+<blockquote>
+<div><p>distance function for the elastic band</p>
+</div></blockquote>
+<p><strong>k</strong> : float, optional</p>
+<blockquote>
+<div><p>the elastic band spring constant</p>
+</div></blockquote>
+<p><strong>adjustk_freq</strong> : integer</p>
+<blockquote>
+<div><p>frequency to adjust k, set to zero to disable</p>
+</div></blockquote>
+<p><strong>adjustk_tol</strong> : float</p>
+<blockquote>
+<div><p>tolerance for adjusting k up or down</p>
+</div></blockquote>
+<p><strong>adjustk_factor</strong> : float</p>
+<blockquote>
+<div><p>the multiplicative factor used to adjust k</p>
+</div></blockquote>
+<p><strong>dneb: bool, optional</strong> :</p>
+<blockquote>
+<div><p>do double nudging, default True</p>
+</div></blockquote>
+<p><strong>with_springenergy: boolean, optional</strong> :</p>
+<blockquote>
+<div><p>add the spring energy to the total energy of the band, default is False</p>
+</div></blockquote>
+<p><strong>copy_potential</strong> : bool, optional</p>
+<blockquote>
+<div><p>if True a separate copy of the potential will be made for
+each image.  This can be used to keep neighbor lists from being rebuilt
+over and over again.</p>
+</div></blockquote>
+<p><strong>quenchRoutine</strong> : callable</p>
+<blockquote>
+<div><p>the quench routine to use in optimizing the band</p>
+</div></blockquote>
+<p><strong>quenchParams :</strong> :</p>
+<blockquote>
+<div><p>parameters passed to the quench routine. The default tolerance for quench is 1e-4</p>
+</div></blockquote>
+<p><strong>save_energies</strong> : bool</p>
+<blockquote>
+<div><p>if True and quenchParams.iprint exists and is positive, then the energy 
+along the NEB path will be printed to a file of the form &#8220;neb.EofS.####&#8221; 
+every iprint steps.</p>
+</div></blockquote>
+<p><strong>verbose</strong> : integer</p>
+<blockquote>
+<div><p>verbosity level</p>
+</div></blockquote>
+<p><strong>events</strong> : list of callables</p>
+<blockquote>
+<div><p>list of callback functions called just before getEnergyGradient returns</p>
+</div></blockquote>
+<p><strong>use_minimizer_callback: boolean, optional</strong> :</p>
+<blockquote class="last">
+<div><p>use the callback function of theminimizer to adjust k, it is not recommended to change this to false</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="pele.transition_states.NEBPar.html#pele.transition_states.NEBPar" title="pele.transition_states.NEBPar"><tt class="xref py py-obj docutils literal"><span class="pre">NEBPar</span></tt></a></dt>
+<dd>parallel version of this class</dd>
+<dt><a class="reference internal" href="pele.transition_states.InterpolatedPath.html#pele.transition_states.InterpolatedPath" title="pele.transition_states.InterpolatedPath"><tt class="xref py py-obj docutils literal"><span class="pre">InterpolatedPath</span></tt></a></dt>
+<dd>used to construct required parameter <cite>path</cite></dd>
+<dt><a class="reference internal" href="pele.transition_states.InterpolatedPathDensity.html#pele.transition_states.InterpolatedPathDensity" title="pele.transition_states.InterpolatedPathDensity"><tt class="xref py py-obj docutils literal"><span class="pre">InterpolatedPathDensity</span></tt></a></dt>
+<dd>alternate interpolater</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>use the Interpolation tools in this package to construct the initial path
+from a starting and ending point</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.NEB.MakeAllMaximaClimbing.html#pele.transition_states.NEB.MakeAllMaximaClimbing" title="pele.transition_states.NEB.MakeAllMaximaClimbing"><tt class="xref py py-obj docutils literal"><span class="pre">MakeAllMaximaClimbing</span></tt></a>()</td>
+<td>Make all maxima along the neb climbing images.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.NEB.MakeHighestImageClimbing.html#pele.transition_states.NEB.MakeHighestImageClimbing" title="pele.transition_states.NEB.MakeHighestImageClimbing"><tt class="xref py py-obj docutils literal"><span class="pre">MakeHighestImageClimbing</span></tt></a>()</td>
+<td>Make the image with the highest energy a climbing image</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.NEB.NEBForce.html#pele.transition_states.NEB.NEBForce" title="pele.transition_states.NEB.NEBForce"><tt class="xref py py-obj docutils literal"><span class="pre">NEBForce</span></tt></a>(isclimbing,&nbsp;image,&nbsp;left,&nbsp;right,&nbsp;...)</td>
+<td>Calculate NEB force for 1 image. That contains projected real force and spring force.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.NEB.copy.html#pele.transition_states.NEB.copy" title="pele.transition_states.NEB.copy"><tt class="xref py py-obj docutils literal"><span class="pre">copy</span></tt></a>()</td>
+<td>create a copy of the current neb</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.NEB.getEnergy.html#pele.transition_states.NEB.getEnergy" title="pele.transition_states.NEB.getEnergy"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergy</span></tt></a>(coords)</td>
+<td>this is a very dumb way of getting the energy.  it should be replaced</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.NEB.getEnergyGradient.html#pele.transition_states.NEB.getEnergyGradient" title="pele.transition_states.NEB.getEnergyGradient"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradient</span></tt></a>(coords1d)</td>
+<td>Calculates the gradient for the whole NEB. only use force based minimizer!</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.NEB.optimize.html#pele.transition_states.NEB.optimize" title="pele.transition_states.NEB.optimize"><tt class="xref py py-obj docutils literal"><span class="pre">optimize</span></tt></a>([quenchRoutine])</td>
+<td>Optimize the band   ..</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.NEB.printState.html#pele.transition_states.NEB.printState" title="pele.transition_states.NEB.printState"><tt class="xref py py-obj docutils literal"><span class="pre">printState</span></tt></a>()</td>
+<td>print the current state of the NEB.  Useful for bug testing</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.NEB.tangent.html#pele.transition_states.NEB.tangent" title="pele.transition_states.NEB.tangent"><tt class="xref py py-obj docutils literal"><span class="pre">tangent</span></tt></a>(central,&nbsp;left,&nbsp;right,&nbsp;gleft,&nbsp;gright)</td>
+<td>New uphill tangent formulation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.NEB.tangent_old.html#pele.transition_states.NEB.tangent_old" title="pele.transition_states.NEB.tangent_old"><tt class="xref py py-obj docutils literal"><span class="pre">tangent_old</span></tt></a>(central,&nbsp;left,&nbsp;right,&nbsp;gleft,&nbsp;gright)</td>
+<td>Old tangent construction based on average of neighbouring images</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.transition_states.NEBDriver.run.html"
+                        title="previous chapter">pele.transition_states.NEBDriver.run</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.transition_states.NEB.MakeAllMaximaClimbing.html"
+                        title="next chapter">pele.transition_states.NEB.MakeAllMaximaClimbing</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.transition_states.NEB.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.NEB.MakeAllMaximaClimbing.html" title="pele.transition_states.NEB.MakeAllMaximaClimbing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.transition_states.NEBDriver.run.html" title="pele.transition_states.NEBDriver.run"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../transition_states_module.html" >Transition States (<cite>pele.transition_states</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

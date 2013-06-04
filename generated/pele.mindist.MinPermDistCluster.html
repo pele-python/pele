@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.mindist.MinPermDistCluster &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Structure Alignment (pele.mindist)" href="../structure_alignment.html" />
+    <link rel="next" title="pele.mindist.MinPermDistCluster.check_match" href="pele.mindist.MinPermDistCluster.check_match.html" />
+    <link rel="prev" title="pele.mindist.find_best_permutation" href="pele.mindist.find_best_permutation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.mindist.MinPermDistCluster.check_match.html" title="pele.mindist.MinPermDistCluster.check_match"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.mindist.find_best_permutation.html" title="pele.mindist.find_best_permutation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../structure_alignment.html" accesskey="U">Structure Alignment (<cite>pele.mindist</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-mindist-minpermdistcluster">
+<h1>pele.mindist.MinPermDistCluster<a class="headerlink" href="#pele-mindist-minpermdistcluster" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.mindist.MinPermDistCluster">
+<em class="property">class </em><tt class="descclassname">pele.mindist.</tt><tt class="descname">MinPermDistCluster</tt><big>(</big><em>niter=10</em>, <em>verbose=False</em>, <em>tol=0.01</em>, <em>accuracy=0.01</em>, <em>measure=&lt;pele.mindist._minpermdist_policies.MeasureAtomicCluster object at 0x3a55a90&gt;</em>, <em>transform=&lt;pele.mindist._minpermdist_policies.TransformAtomicCluster object at 0x3a55ad0&gt;</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/minpermdist_stochastic.html#MinPermDistCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.MinPermDistCluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimize the distance between two clusters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>niter</strong> : int</p>
+<blockquote>
+<div><p>the number of basinhopping iterations to perform</p>
+</div></blockquote>
+<p><strong>verbose</strong> : boolean</p>
+<blockquote>
+<div><p>whether to print status information</p>
+</div></blockquote>
+<p><strong>accuracy :float, optional</strong> :</p>
+<blockquote>
+<div><p>accuracy for standard alignment which determines if the structures are identical</p>
+</div></blockquote>
+<p><strong>tol</strong> : float, optional</p>
+<blockquote>
+<div><p>tolerance for an exact match to stop iterations</p>
+</div></blockquote>
+<p><strong>transform :</strong> :</p>
+<blockquote>
+<div><p>Transform policy which tells MinpermDist how to transform the given coordinates</p>
+</div></blockquote>
+<p><strong>measure :</strong> :</p>
+<blockquote class="last">
+<div><p>measure policy which tells minpermdist how to perform certains measures on the coordinates.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.mindist.TransformPolicy.html#pele.mindist.TransformPolicy" title="pele.mindist.TransformPolicy"><tt class="xref py py-obj docutils literal"><span class="pre">TransformPolicy</span></tt></a>, <a class="reference internal" href="pele.mindist.MeasurePolicy.html#pele.mindist.MeasurePolicy" title="pele.mindist.MeasurePolicy"><tt class="xref py py-obj docutils literal"><span class="pre">MeasurePolicy</span></tt></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>The following symmetries will be accounted for:</p>
+<ol class="arabic simple">
+<li>Translational symmetry</li>
+<li>Global rotational symmetry</li>
+<li>Permutational symmetry</li>
+<li>Point inversion symmetry</li>
+</ol>
+<p>The algorithm here to find the best distance is</p>
+<dl class="docutils">
+<dt>for rotation in standardalignments:</dt>
+<dd>optimize permutation
+optimize rotation
+check_match</dd>
+<dt>for i in range(niter):    </dt>
+<dd>random_rotation
+optimize permutations
+align rotation
+check_match</dd>
+</dl>
+<p>The minpermdist algorithm is generic and can act on various types of
+coordinates, e.g. carthesian, angle axis, .... The transform and measure
+policies define and interface to manipulate and analyze a given set of
+coordinates. If the coordinates don&#8217;t have a standard format, custom policies
+can be specified. As an example see the angle axis minpermdist routines.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.check_match.html#pele.mindist.MinPermDistCluster.check_match" title="pele.mindist.MinPermDistCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
+<td>check a given rotation for a match</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.finalize_best_match.html#pele.mindist.MinPermDistCluster.finalize_best_match" title="pele.mindist.MinPermDistCluster.finalize_best_match"><tt class="xref py py-obj docutils literal"><span class="pre">finalize_best_match</span></tt></a>(x1)</td>
+<td>do final processing of the best match</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.mindist.find_best_permutation.html"
+                        title="previous chapter">pele.mindist.find_best_permutation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.mindist.MinPermDistCluster.check_match.html"
+                        title="next chapter">pele.mindist.MinPermDistCluster.check_match</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.mindist.MinPermDistCluster.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.mindist.MinPermDistCluster.check_match.html" title="pele.mindist.MinPermDistCluster.check_match"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.mindist.find_best_permutation.html" title="pele.mindist.find_best_permutation"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../structure_alignment.html" >Structure Alignment (<cite>pele.mindist</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

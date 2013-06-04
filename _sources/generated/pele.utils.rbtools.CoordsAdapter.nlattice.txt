@@ -1,0 +1,6 @@
+pele.utils.rbtools.CoordsAdapter.nlattice
+=========================================
+
+.. currentmodule:: pele.utils.rbtools
+
+.. autoattribute:: CoordsAdapter.nlattice

@@ -1,0 +1,6 @@
+pele.takestep.Reseeding.updateStep
+==================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: Reseeding.updateStep

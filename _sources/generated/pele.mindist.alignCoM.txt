@@ -1,0 +1,6 @@
+pele.mindist.alignCoM
+=====================
+
+.. currentmodule:: pele.mindist
+
+.. autofunction:: alignCoM

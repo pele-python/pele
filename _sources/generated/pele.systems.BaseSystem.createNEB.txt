@@ -1,0 +1,6 @@
+pele.systems.BaseSystem.createNEB
+=================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BaseSystem.createNEB

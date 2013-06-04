@@ -1,0 +1,6 @@
+pele.utils.rbtools.CoordsAdapter.posRigid
+=========================================
+
+.. currentmodule:: pele.utils.rbtools
+
+.. autoattribute:: CoordsAdapter.posRigid

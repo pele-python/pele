@@ -1,0 +1,6 @@
+pele.transition_states.NEB.printState
+=====================================
+
+.. currentmodule:: pele.transition_states
+
+.. automethod:: NEB.printState

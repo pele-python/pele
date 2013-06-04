@@ -1,0 +1,6 @@
+pele.storage.Database.connection
+================================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Database.connection

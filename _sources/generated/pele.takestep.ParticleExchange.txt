@@ -1,0 +1,23 @@
+pele.takestep.ParticleExchange
+==============================
+
+.. currentmodule:: pele.takestep
+
+.. autoclass:: ParticleExchange
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~ParticleExchange.__call__
+         ~ParticleExchange.scale
+         ~ParticleExchange.takeStep
+         ~ParticleExchange.updateStep
+   
+   
+
+   
+   
+   

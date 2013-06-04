@@ -1,0 +1,6 @@
+pele.utils.rotations.small_random_aa
+====================================
+
+.. currentmodule:: pele.utils.rotations
+
+.. autofunction:: small_random_aa

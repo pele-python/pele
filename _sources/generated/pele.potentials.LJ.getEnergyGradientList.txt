@@ -1,0 +1,6 @@
+pele.potentials.LJ.getEnergyGradientList
+========================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: LJ.getEnergyGradientList

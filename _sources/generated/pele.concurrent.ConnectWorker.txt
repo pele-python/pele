@@ -1,0 +1,20 @@
+pele.concurrent.ConnectWorker
+=============================
+
+.. currentmodule:: pele.concurrent
+
+.. autoclass:: ConnectWorker
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~ConnectWorker.run
+   
+   
+
+   
+   
+   

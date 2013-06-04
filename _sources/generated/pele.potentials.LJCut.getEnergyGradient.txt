@@ -1,0 +1,6 @@
+pele.potentials.LJCut.getEnergyGradient
+=======================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: LJCut.getEnergyGradient

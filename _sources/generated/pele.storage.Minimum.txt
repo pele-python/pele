@@ -1,0 +1,31 @@
+pele.storage.Minimum
+====================
+
+.. currentmodule:: pele.storage
+
+.. autoclass:: Minimum
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~Minimum.left_neighbors
+         ~Minimum.right_neighbors
+   
+   
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~Minimum.coords
+         ~Minimum.energy
+         ~Minimum.fvib
+         ~Minimum.metadata
+         ~Minimum.pgorder
+   
+   

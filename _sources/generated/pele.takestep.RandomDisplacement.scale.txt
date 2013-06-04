@@ -1,0 +1,6 @@
+pele.takestep.RandomDisplacement.scale
+======================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: RandomDisplacement.scale

@@ -1,0 +1,6 @@
+pele.systems.BLJCluster.createNEB
+=================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BLJCluster.createNEB

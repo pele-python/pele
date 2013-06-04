@@ -1,0 +1,144 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.systems.BaseSystem.get_metric_tensor &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="pele.systems.BaseSystem" href="pele.systems.BaseSystem.html" />
+    <link rel="next" title="pele.systems.BaseSystem.get_mindist" href="pele.systems.BaseSystem.get_mindist.html" />
+    <link rel="prev" title="pele.systems.BaseSystem.get_log_product_normalmode_freq" href="pele.systems.BaseSystem.get_log_product_normalmode_freq.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BaseSystem.get_mindist.html" title="pele.systems.BaseSystem.get_mindist"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BaseSystem.get_log_product_normalmode_freq.html" title="pele.systems.BaseSystem.get_log_product_normalmode_freq"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../system_class.html" >System Class (<cite>pele.systems</cite>)</a> &raquo;</li>
+          <li><a href="pele.systems.BaseSystem.html" accesskey="U">pele.systems.BaseSystem</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-systems-basesystem-get-metric-tensor">
+<h1>pele.systems.BaseSystem.get_metric_tensor<a class="headerlink" href="#pele-systems-basesystem-get-metric-tensor" title="Permalink to this headline">¶</a></h1>
+<dl class="method">
+<dt id="pele.systems.BaseSystem.get_metric_tensor">
+<tt class="descclassname">BaseSystem.</tt><tt class="descname">get_metric_tensor</tt><big>(</big><em>coords</em><big>)</big><a class="reference internal" href="../_modules/pele/systems/basesystem.html#BaseSystem.get_metric_tensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.systems.BaseSystem.get_metric_tensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>return (mass-weighted) metric tensor for given coordinates</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.landscape.smoothPath.html#pele.landscape.smoothPath" title="pele.landscape.smoothPath"><tt class="xref py py-obj docutils literal"><span class="pre">pele.landscape.smoothPath</span></tt></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>The metric tensor is needed for normal mode analysis. In the simplest case it is just the identity.
+For atomic systems (cartesian coordinates) with masses different to 1.0, the metric tensor
+is a diagonal matrix with 1/m_i on the diagonal.
+For curvilinear coordinates like angle axis coordinates it is more complicated.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.systems.BaseSystem.get_log_product_normalmode_freq.html"
+                        title="previous chapter">pele.systems.BaseSystem.get_log_product_normalmode_freq</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.systems.BaseSystem.get_mindist.html"
+                        title="next chapter">pele.systems.BaseSystem.get_mindist</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.systems.BaseSystem.get_metric_tensor.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BaseSystem.get_mindist.html" title="pele.systems.BaseSystem.get_mindist"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BaseSystem.get_log_product_normalmode_freq.html" title="pele.systems.BaseSystem.get_log_product_normalmode_freq"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../system_class.html" >System Class (<cite>pele.systems</cite>)</a> &raquo;</li>
+          <li><a href="pele.systems.BaseSystem.html" >pele.systems.BaseSystem</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

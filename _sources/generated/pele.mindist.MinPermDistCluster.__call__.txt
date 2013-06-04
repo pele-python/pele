@@ -1,0 +1,6 @@
+pele.mindist.MinPermDistCluster.__call__
+========================================
+
+.. currentmodule:: pele.mindist
+
+.. automethod:: MinPermDistCluster.__call__

@@ -1,0 +1,6 @@
+pele.transition_states.NEB.getEnergyGradient
+============================================
+
+.. currentmodule:: pele.transition_states
+
+.. automethod:: NEB.getEnergyGradient

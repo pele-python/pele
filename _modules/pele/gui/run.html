@@ -1,0 +1,680 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.gui.run &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.gui.run</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s">&quot;QT4Agg&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">traceback</span>    
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">Qt</span>
+
+<span class="kn">from</span> <span class="nn">pele.gui.MainWindow</span> <span class="kn">import</span> <span class="n">Ui_MainWindow</span> 
+<span class="kn">from</span> <span class="nn">pele.gui.bhrunner</span> <span class="kn">import</span> <span class="n">BHRunner</span>
+<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
+<span class="kn">from</span> <span class="nn">pele.gui.dlg_params</span> <span class="kn">import</span> <span class="n">DlgParams</span>
+<span class="kn">from</span> <span class="nn">pele.config</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">pele.gui.ui.dgraph_dlg</span> <span class="kn">import</span> <span class="n">DGraphDialog</span>
+<span class="c">#from pele.gui.connect_explorer_dlg import ConnectExplorerDialog</span>
+<span class="kn">from</span> <span class="nn">pele.gui.connect_run_dlg</span> <span class="kn">import</span> <span class="n">ConnectViewer</span>
+<span class="kn">from</span> <span class="nn">pele.gui.takestep_explorer</span> <span class="kn">import</span> <span class="n">TakestepExplorer</span>
+<span class="kn">from</span> <span class="nn">pele.gui.normalmode_browser</span> <span class="kn">import</span> <span class="n">NormalmodeBrowser</span>
+<span class="kn">from</span> <span class="nn">pele.gui._list_views</span> <span class="kn">import</span> <span class="n">ListViewManager</span>
+
+
+<span class="k">def</span> <span class="nf">excepthook</span><span class="p">(</span><span class="n">ex_type</span><span class="p">,</span> <span class="n">ex_value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; redirected exception handler &quot;&quot;&quot;</span>
+    
+    <span class="n">errorbox</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="p">()</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;An unhandled exception occurred:</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ex_type</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span>\
+                     <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex_value</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">Traceback:</span><span class="se">\n</span><span class="s">----------&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_tb</span><span class="p">(</span><span class="n">traceback_obj</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">line</span>
+    <span class="n">errorbox</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">errorbox</span><span class="o">.</span><span class="n">setStandardButtons</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Ignore</span> <span class="o">|</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Cancel</span><span class="p">)</span>
+    <span class="n">errorbox</span><span class="o">.</span><span class="n">setDefaultButton</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Cancel</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">errorbox</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Cancel</span><span class="p">:</span>
+        <span class="k">raise</span>
+
+<span class="k">class</span> <span class="nc">MySelection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;keep track of which minima have been selected and whether those coordinates have been modified</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum1</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum1</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords1</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords1</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<span class="k">class</span> <span class="nc">MainGUI</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    this is the main class for the pele gui</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    app : </span>
+<span class="sd">        the application object returned by QtGui.QApplication()</span>
+<span class="sd">    systemtype : system class object</span>
+<span class="sd">        the system class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">systemtype</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span> <span class="o">=</span> <span class="n">Ui_MainWindow</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">setupUi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">systemtype</span> <span class="o">=</span> <span class="n">systemtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="o">=</span><span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">double_ended_connect_runs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pick_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span> <span class="o">=</span> <span class="n">MySelection</span><span class="p">()</span>
+ 
+        <span class="c"># set up the list manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span> <span class="o">=</span> <span class="n">ListViewManager</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        
+        <span class="c"># define the system</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NewSystem</span><span class="p">()</span>
+
+        <span class="c"># finish setting up the list manager (this must be done after NewSystem() is called)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">finish_setup</span><span class="p">()</span>
+
+        <span class="c">#try to load the pymol viewer.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">use_pymol</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s">&quot;gui&quot;</span><span class="p">,</span> <span class="s">&quot;use_pymol&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">pymol_viewer</span> <span class="kn">import</span> <span class="n">PymolViewer</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pymolviewer</span> <span class="o">=</span> <span class="n">PymolViewer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">load_coords_pymol</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span> <span class="ow">or</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span> <span class="o">=</span> <span class="bp">False</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="c">#note: glutInit() must be called exactly once.  pymol calls it</span>
+            <span class="c">#during pymol.finish_launching(), so if we call it again it will</span>
+            <span class="c">#give an error. On the other hand, if we&#39;re not using pymol we </span>
+            <span class="c">#must call it.</span>
+            <span class="kn">from</span> <span class="nn">OpenGL.GLUT</span> <span class="kn">import</span> <span class="n">glutInit</span>
+            <span class="n">glutInit</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">NewSystem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        this is called to initialize the system with a database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">systemtype</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_db</span><span class="p">()</span>
+            
+    <span class="k">def</span> <span class="nf">on_action_edit_params_triggered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">checked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramsdlg</span> <span class="o">=</span> <span class="n">DlgParams</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramsdlg</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">processEvents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">processEvents</span><span class="p">()</span>
+     
+    <span class="k">def</span> <span class="nf">on_action_db_connect_triggered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        launch a file browser to connect to an existing database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">checked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getSaveFileName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Select database&#39;</span><span class="p">,</span> <span class="s">&#39;.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connect_db</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">connect_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s">&quot;:memory:&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        connect to an existing database at location filename</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="n">db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="c">#add minima to listWidged.  do sorting after all minima are added</span>
+        <span class="k">for</span> <span class="n">minimum</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NewMinimum</span><span class="p">(</span><span class="n">minimum</span><span class="p">,</span> <span class="n">sort_items</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">_sort_minima</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NewTS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">transition_states</span><span class="p">(</span><span class="n">order_energy</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">resize_columns_minima</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">resize_columns_ts</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">on_minimum_added</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">NewMinimum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">on_minimum_removed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RemoveMinimum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">on_ts_added</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">NewTS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">on_ts_removed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RemoveTS</span><span class="p">)</span>
+    
+
+
+    <span class="k">def</span> <span class="nf">SelectMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">set_selected</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;when you click on a minimum in the basinhopping tab</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c">#        print &quot;selecting minimum&quot;, minimum._id, minimum.energy</span>
+        <span class="k">if</span> <span class="n">set_selected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">_select_main</span><span class="p">(</span><span class="n">minimum</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ogl_main</span><span class="o">.</span><span class="n">setSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ogl_main</span><span class="o">.</span><span class="n">setCoords</span><span class="p">(</span><span class="n">minimum</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ogl_main</span><span class="o">.</span><span class="n">setMinimum</span><span class="p">(</span><span class="n">minimum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglTS</span><span class="o">.</span><span class="n">setSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pymolviewer</span><span class="o">.</span><span class="n">update_coords</span><span class="p">([</span><span class="n">minimum</span><span class="o">.</span><span class="n">coords</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delete_all</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_SelectMinimum1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">set_selected</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;set the first minimum displayed in the connect tab&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">set_selected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">_select1</span><span class="p">(</span><span class="n">minimum</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">print</span> <span class="s">&quot;selecting minimum 1:&quot;</span><span class="p">,</span> <span class="n">minimum</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">minimum</span><span class="o">.</span><span class="n">energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setCoords</span><span class="p">(</span><span class="n">minimum</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c">#        self.ui.oglPath.setMinimum(minimum, index=1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">minimum1</span> <span class="o">=</span> <span class="n">minimum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">coords1</span> <span class="o">=</span> <span class="n">minimum</span><span class="o">.</span><span class="n">coords</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neb</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pymolviewer</span><span class="o">.</span><span class="n">update_coords</span><span class="p">([</span><span class="n">minimum</span><span class="o">.</span><span class="n">coords</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_SelectMinimum2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">set_selected</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;set the second minimum displayed in the connect tab&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">set_selected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">_select2</span><span class="p">(</span><span class="n">minimum</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">print</span> <span class="s">&quot;selecting minimum 2:&quot;</span><span class="p">,</span> <span class="n">minimum</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">minimum</span><span class="o">.</span><span class="n">energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setCoords</span><span class="p">(</span><span class="n">minimum</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="c">#        self.ui.oglPath.setMinimum(minimum, index=2)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">minimum2</span> <span class="o">=</span> <span class="n">minimum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">coords2</span> <span class="o">=</span> <span class="n">minimum</span><span class="o">.</span><span class="n">coords</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">neb</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pymolviewer</span><span class="o">.</span><span class="n">update_coords</span><span class="p">([</span><span class="n">minimum</span><span class="o">.</span><span class="n">coords</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">get_selected_minima</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the two minima that have been chosen in the gui&quot;&quot;&quot;</span>
+        <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">minimum2</span>
+        <span class="k">if</span> <span class="n">m1</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">m2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;you must select two minima first&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span>
+ 
+    <span class="k">def</span> <span class="nf">get_selected_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the two sets of coordinates that have been chosen in the gui</span>
+<span class="sd">        </span>
+<span class="sd">        note, that these may not be the same as what is stored in the minimum.  E.g. they</span>
+<span class="sd">        may be the aligned structures</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">coords1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">coords2</span>
+        <span class="k">if</span> <span class="n">coords1</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">coords2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;you must select two minima first&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span>
+
+    <span class="k">def</span> <span class="nf">show_TS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        show the transition state and the associated minima in the 3d viewer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglTS</span><span class="o">.</span><span class="n">setSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+        <span class="n">m1</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span>
+        <span class="n">m2</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span>
+        <span class="c">#  put them in best alignment</span>
+        <span class="n">mindist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
+        <span class="n">dist</span><span class="p">,</span> <span class="n">m1coords</span><span class="p">,</span> <span class="n">tscoords</span> <span class="o">=</span> <span class="n">mindist</span><span class="p">(</span><span class="n">m1</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">dist</span><span class="p">,</span> <span class="n">m2coords</span><span class="p">,</span> <span class="n">tscoords</span> <span class="o">=</span> <span class="n">mindist</span><span class="p">(</span><span class="n">m2</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tscoordspath</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">m1coords</span><span class="p">,</span> <span class="n">tscoords</span><span class="p">,</span> <span class="n">m2coords</span><span class="p">])</span>
+        <span class="n">labels</span>  <span class="o">=</span> <span class="p">[</span><span class="s">&quot;minimum: energy &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m1</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; id &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m1</span><span class="o">.</span><span class="n">_id</span><span class="p">)]</span>
+        <span class="n">labels</span> <span class="o">+=</span> <span class="p">[</span><span class="s">&quot;ts: energy &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">energy</span><span class="p">)]</span>
+        <span class="n">labels</span> <span class="o">+=</span> <span class="p">[</span><span class="s">&quot;minimum: energy &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m2</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; id &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m2</span><span class="o">.</span><span class="n">_id</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglTS</span><span class="o">.</span><span class="n">setCoordsPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tscoordspath</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pymolviewer</span><span class="o">.</span><span class="n">update_coords</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tscoordspath</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delete_all</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">on_btnAlign_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;use mindist to align the minima.</span>
+<span class="sd">        </span>
+<span class="sd">        called when the align button is pressed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_coords</span><span class="p">()</span>
+        <span class="n">align</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&quot;energy before alignment&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords1</span><span class="p">),</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
+        <span class="n">dist</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">align</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;energy after alignment&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords1</span><span class="p">),</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;best alignment distance&quot;</span><span class="p">,</span> <span class="n">dist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setCoords</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setCoords</span><span class="p">(</span><span class="n">coords2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">coords1</span> <span class="o">=</span> <span class="n">coords1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minima_selection</span><span class="o">.</span><span class="n">coords2</span> <span class="o">=</span> <span class="n">coords2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pymolviewer</span><span class="o">.</span><span class="n">update_coords</span><span class="p">([</span><span class="n">coords1</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pymolviewer</span><span class="o">.</span><span class="n">update_coords</span><span class="p">([</span><span class="n">coords2</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">on_btnNEB_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;do an NEB run (not a connect run).  Don&#39;t find best alignment first&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_coords</span><span class="p">()</span>
+        <span class="kn">from</span> <span class="nn">neb_explorer</span> <span class="kn">import</span> <span class="n">NEBExplorer</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;nebexplorer&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nebexplorer</span> <span class="o">=</span> <span class="n">NEBExplorer</span><span class="p">(</span><span class="n">system</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nebexplorer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nebexplorer</span><span class="o">.</span><span class="n">new_neb</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
+        
+<span class="c">#    def showFrame(self, i):</span>
+<span class="c">#        if hasattr(self, &quot;nebcoords&quot;):</span>
+<span class="c">#            self.ui.oglPath.setCoords(self.nebcoords[i,:])</span>
+    
+    <span class="k">def</span> <span class="nf">on_minimum_picked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;called when a minimimum is clicked on in the graph or disconnectivity graph&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pick_count</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_SelectMinimum1</span><span class="p">(</span><span class="n">min1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_SelectMinimum2</span><span class="p">(</span><span class="n">min1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pick_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">on_btnDisconnectivity_graph_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;show the disconnectivity graph </span>
+<span class="sd">        </span>
+<span class="sd">        it is interactive, so that when you click on an end point</span>
+<span class="sd">        that minima is selected</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;dgraph_dlg&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dgraph_dlg</span> <span class="o">=</span> <span class="n">DGraphDialog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dgraph_dlg</span><span class="o">.</span><span class="n">dgraph_widget</span><span class="o">.</span><span class="n">minimum_selected</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_minimum_picked</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dgraph_dlg</span><span class="o">.</span><span class="n">dgraph_widget</span><span class="o">.</span><span class="n">minimum_selected</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SelectMinimum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dgraph_dlg</span><span class="o">.</span><span class="n">rebuild_disconnectivity_graph</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dgraph_dlg</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    
+    <span class="k">def</span> <span class="nf">on_btnShowGraph_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; show the graph of minima and transition states </span>
+<span class="sd">        </span>
+<span class="sd">        make it interactive, so that when you click on a point</span>
+<span class="sd">        that minima is selected</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pick_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="kn">from</span> <span class="nn">pele.gui.graph_viewer</span> <span class="kn">import</span> <span class="n">GraphViewDialog</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;graphview&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span> <span class="o">=</span> <span class="n">GraphViewDialog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">on_minima_picked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_minimum_picked</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">on_minima_picked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SelectMinimum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">make_graph</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">show_graph</span><span class="p">()</span>
+        <span class="k">return</span>
+        
+    <span class="k">def</span> <span class="nf">on_pushNormalmodesMin_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;normalmode_explorer&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span> <span class="o">=</span> <span class="n">NormalmodeBrowser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+        <span class="n">min1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ogl_main</span><span class="o">.</span><span class="n">minima</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span><span class="o">.</span><span class="n">set_coords</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">get_selected_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_selected</span>
+        <span class="k">if</span> <span class="n">ts</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;you must select a transition state first&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ts</span>
+    
+    <span class="k">def</span> <span class="nf">on_pushNormalmodesTS_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;normalmode_explorer&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span> <span class="o">=</span> <span class="n">NormalmodeBrowser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_ts</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span><span class="o">.</span><span class="n">set_coords</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+        
+                    
+    
+    <span class="k">def</span> <span class="nf">NewMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">sort_items</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; add a new minimum to the system &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">NewMinimum</span><span class="p">(</span><span class="n">minimum</span><span class="p">,</span> <span class="n">sort_items</span><span class="o">=</span><span class="n">sort_items</span><span class="p">)</span>
+                
+    <span class="k">def</span> <span class="nf">RemoveMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;remove a minimum from self.minima_list_model&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">RemoveMinimum</span><span class="p">(</span><span class="n">minimum</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">NewTS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;add new transition state, or list of transition states&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">NewTS</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="n">sort</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">RemoveTS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;remove transition state&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;removing transition states not implemented yet&quot;</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">list_TS</span>
+        <span class="n">tsid</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="n">itms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">list_TS</span><span class="o">.</span><span class="n">findItems</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">MatchWildcard</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">itms</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">tsid</span> <span class="o">==</span> <span class="n">tsid</span><span class="p">:</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">takeItem</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">row</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+
+  
+                     
+    <span class="k">def</span> <span class="nf">on_btn_start_basinhopping_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bhrunner</span> <span class="o">=</span> <span class="n">BHRunner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bhrunner</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">db</span>
+        
+<span class="c">#    def tsSearch(self):</span>
+<span class="c">#        ts = self.system.findTS(self.ui.oglTS.coords[1])</span>
+<span class="c">#        self.transition = [ts[1][0], ts[0][0], ts[2][0]]</span>
+
+<span class="c">#    def showFrameTS(self, i):</span>
+<span class="c">#        if self.transition:</span>
+<span class="c">#            self.ui.oglTS.setCoords(self.transition[i])</span>
+
+    <span class="k">def</span> <span class="nf">on_action_delete_minimum_triggered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">checked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">min1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ogl_main</span><span class="o">.</span><span class="n">minima</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Deleting minima&quot;</span><span class="p">,</span> 
+                                   <span class="s">&quot;Do you want to delete minima </span><span class="si">%d</span><span class="s"> with energy </span><span class="si">%g</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">energy</span><span class="p">),</span> 
+                                   <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Ok</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Cancel</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">ret</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Ok</span><span class="p">):</span>
+            <span class="k">print</span> <span class="s">&quot;deleting minima&quot;</span>
+            <span class="k">print</span> <span class="s">&quot;deleting minimum&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">energy</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RemoveMinimum</span><span class="p">(</span><span class="n">min1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">removeMinimum</span><span class="p">(</span><span class="n">min1</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">on_btnConnect_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doubleEndedConnect</span><span class="p">(</span><span class="n">reconnect</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_btnReconnect_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doubleEndedConnect</span><span class="p">(</span><span class="n">reconnect</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_doubleEndedConnect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reconnect</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">min1min2</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        launch a double ended connect run to connect the two selected minima.</span>
+
+<span class="sd">        If the minima are not connected, or reconnect is True, launch a connect browser</span>
+<span class="sd">        in  a separate window.  Else just show the path in the OGL viewer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># determine which minima to connect</span>
+        <span class="k">if</span> <span class="n">min1min2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_minima</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">min1min2</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reconnect</span><span class="p">:</span>
+            <span class="c"># check if the minima are already connected</span>
+            <span class="n">double_ended_connect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> 
+                                                   <span class="n">fresh_connect</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">double_ended_connect</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">areConnected</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
+                <span class="k">print</span> <span class="s">&quot;minima are already connected.  loading smoothed path in viewer&quot;</span>
+                <span class="n">mints</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">energies</span> <span class="o">=</span> <span class="n">double_ended_connect</span><span class="o">.</span><span class="n">returnPath</span><span class="p">()</span>
+                <span class="n">clist</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">coords</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mints</span><span class="p">]</span>
+                <span class="n">smoothpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">smooth_path</span><span class="p">(</span><span class="n">clist</span><span class="p">)</span>
+                
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">smoothpath</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nebcoords</span> <span class="o">=</span> <span class="n">coords</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nebenergies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span>
+                <span class="k">print</span> <span class="s">&quot;setting path in oglPath&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setCoordsPath</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="c">#, labels)</span>
+<span class="c">#                self.ui.oglPath.setCoords(coords[0,:], 1)</span>
+<span class="c">#                self.ui.oglPath.setCoords(None, 2)</span>
+<span class="c">#                self.ui.sliderFrame.setRange(0, coords.shape[0]-1)</span>
+                
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pymolviewer</span><span class="o">.</span><span class="n">update_coords</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nebcoords</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delete_all</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                
+                <span class="k">return</span>
+
+                
+        <span class="c"># make the connect viewer</span>
+        
+        
+        <span class="n">decviewer</span> <span class="o">=</span> <span class="n">ConnectViewer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+        
+        <span class="k">print</span> <span class="s">&quot;starting double ended&quot;</span>
+        <span class="n">decviewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">decviewer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        
+        <span class="c"># store pointers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">double_ended_connect_runs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">decviewer</span><span class="p">)</span>
+     
+    <span class="k">def</span> <span class="nf">on_btn_connect_in_optim_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;spawn an OPTIM job and retrieve the minima and transition states </span>
+<span class="sd">        it finds&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_minima</span><span class="p">()</span>
+<span class="c">#        existing_minima = set(self.system.database.minima())</span>
+        <span class="n">spawner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_optim_spawner</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">spawner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span>
+        <span class="n">newminima</span><span class="p">,</span> <span class="n">newts</span> <span class="o">=</span> <span class="n">spawner</span><span class="o">.</span><span class="n">load_results</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">)</span>
+<span class="c">#        for m in newminima:</span>
+<span class="c">#            if m not in existing_minima:</span>
+<span class="c">#                self.NewMinimum(m)</span>
+            
+        <span class="c">#now use DoubleEndedConnect to test if they are connected</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">areConnected</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
+            <span class="c">#use double ended connect to draw the interpolated path</span>
+            <span class="c">#this is ugly</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_doubleEndedConnect</span><span class="p">(</span><span class="n">reconnect</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">min1min2</span><span class="o">=</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">))</span>
+                                                       
+
+    <span class="k">def</span> <span class="nf">_merge_minima</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
+        <span class="n">mindist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
+        <span class="n">dist</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">mindist</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">query</span>  <span class="o">=</span> <span class="s">&quot;Do you want to merge minimum </span><span class="si">%d</span><span class="s"> with energy </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">+=</span> <span class="s">&quot;                with minimum </span><span class="si">%d</span><span class="s"> with energy </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">+=</span> <span class="s">&quot;    separated by distance </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dist</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Merging minima&quot;</span><span class="p">,</span> 
+                                   <span class="n">query</span><span class="p">,</span> 
+                                   <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Ok</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Cancel</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">ret</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Ok</span><span class="p">):</span>
+            <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span>
+            <span class="k">if</span> <span class="n">m1</span><span class="o">.</span><span class="n">_id</span> <span class="o">&gt;</span> <span class="n">m2</span><span class="o">.</span><span class="n">_id</span><span class="p">:</span>
+                <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">m2</span><span class="p">,</span> <span class="n">m1</span>
+            <span class="k">print</span> <span class="s">&quot;merging minima&quot;</span><span class="p">,</span> <span class="n">m1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m2</span><span class="o">.</span><span class="n">_id</span><span class="c">#, &quot;: minimum&quot;, m2._id, &quot;will be deleted&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RemoveMinimum</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_action_merge_minima_triggered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">checked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_minima</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_merge_minima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
+
+
+
+<span class="c">#    def launch_connect_explorer(self):</span>
+<span class="c">#        coords1, coords2 = self.get_selected_coords()</span>
+<span class="c">#</span>
+<span class="c">#        if not hasattr(self, &quot;local_connect_explorer&quot;):</span>
+<span class="c">#            self.local_connect_explorer = ConnectExplorerDialog(self.system)</span>
+<span class="c">#            self.local_connect_explorer.nebwgt.process_events.connect(self.processEvents)</span>
+<span class="c">#        self.local_connect_explorer.show()</span>
+<span class="c">#        self.local_connect_explorer.createNEB(coords1, coords2)</span>
+<span class="c">#        self.local_connect_explorer.runNEB()</span>
+
+
+    <span class="k">def</span> <span class="nf">on_btn_close_all_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">checked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">print</span> <span class="s">&quot;closing all windows&quot;</span>
+        <span class="k">for</span> <span class="n">dv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">double_ended_connect_runs</span><span class="p">:</span>
+            <span class="n">dv</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+<span class="c">#            del dv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">double_ended_connect_runs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">local_connect_explorer</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_connect_explorer</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span> <span class="k">pass</span>
+
+        <span class="k">try</span><span class="p">:</span>        
+            <span class="bp">self</span><span class="o">.</span><span class="n">dgraph_dlg</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgraph_dlg</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span> <span class="k">pass</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nebexplorer</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebexplorer</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span> <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">on_btn_connect_all_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">checked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="kn">from</span> <span class="nn">pele.gui.connect_all</span> <span class="kn">import</span> <span class="n">ConnectAllDialog</span>
+<span class="c">#        if hasattr(self, &quot;connect_all&quot;):</span>
+<span class="c">#            if not self.connect_all.isVisible():</span>
+<span class="c">#                self.connect_all.show()</span>
+<span class="c">#            if not self.connect_all.is_running()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_all</span> <span class="o">=</span> <span class="n">ConnectAllDialog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> 
+                                            <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_all</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_all</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">on_pushTakestepExplorer_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;takestep_explorer&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">takestep_explorer</span> <span class="o">=</span> <span class="n">TakestepExplorer</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="n">app</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span>
+                                                      <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">takestep_explorer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        
+<span class="c">#def refresh_pl():</span>
+    <span class="c">#pl.pause(0.000001)    </span>
+    
+<div class="viewcode-block" id="run_gui"><a class="viewcode-back" href="../../../generated/pele.gui.run_gui.html#pele.gui.run_gui">[docs]</a><span class="k">def</span> <span class="nf">run_gui</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The top level function that will launch the gui for a given system</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    system : System class</span>
+<span class="sd">        A pele system, derived from BaseSystem.  All information </span>
+<span class="sd">        about the system is in this class.</span>
+<span class="sd">    db : str, optional</span>
+<span class="sd">        connect to the database at this file location</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+    
+    <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">excepthook</span>
+
+    <span class="n">myapp</span> <span class="o">=</span> <span class="n">MainGUI</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">system</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">myapp</span><span class="o">.</span><span class="n">connect_db</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+        
+<span class="c">#    refresh_timer = QtCore.QTimer()</span>
+<span class="c">#    refresh_timer.timeout.connect(refresh_pl)</span>
+<span class="c">#    refresh_timer.start(0.)</span>
+    <span class="n">myapp</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">())</span> 
+       
+<span class="c">#def run_gui(systemtype):</span>
+<span class="c">#    app = QtGui.QApplication(sys.argv)</span>
+<span class="c">#    import pylab as pl</span>
+<span class="c">#    myapp = MainGUI(systemtype)</span>
+<span class="c">#    refresh_timer = QtCore.QTimer()</span>
+<span class="c">#    refresh_timer.timeout.connect(refresh_pl)</span>
+<span class="c">#    refresh_timer.start(0.)</span>
+<span class="c">#    </span>
+<span class="c">#    myapp.show()</span>
+<span class="c">#    sys.exit(app.exec_())</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

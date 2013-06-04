@@ -1,0 +1,6 @@
+pele.systems.BLJCluster.__call__
+================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BLJCluster.__call__

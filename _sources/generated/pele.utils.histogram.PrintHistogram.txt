@@ -1,0 +1,22 @@
+pele.utils.histogram.PrintHistogram
+===================================
+
+.. currentmodule:: pele.utils.histogram
+
+.. autoclass:: PrintHistogram
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~PrintHistogram.__call__
+         ~PrintHistogram.printEvent
+         ~PrintHistogram.printHis
+   
+   
+
+   
+   
+   

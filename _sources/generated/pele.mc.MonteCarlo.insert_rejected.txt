@@ -1,0 +1,6 @@
+pele.mc.MonteCarlo.insert_rejected
+==================================
+
+.. currentmodule:: pele.mc
+
+.. autoattribute:: MonteCarlo.insert_rejected

@@ -1,0 +1,421 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.utils.frozen_atoms &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.utils.frozen_atoms</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">tools for dealing with frozen atoms.  Especially in relation to neighbor lists</span>
+
+<span class="sd">.. currentmodule:: pele.utils.frozen_atoms</span>
+
+<span class="sd">.. autosummary::</span>
+<span class="sd">    :toctree: generated/</span>
+<span class="sd">    </span>
+<span class="sd">    FreezePot</span>
+<span class="sd">    makeBLJNeighborListPotFreeze</span>
+<span class="sd">    </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">pele.potentials.ljpshift</span> <span class="kn">as</span> <span class="nn">ljpshift</span>
+<span class="kn">from</span> <span class="nn">pele.potentials.potential</span> <span class="kn">import</span> <span class="n">potential</span> <span class="k">as</span> <span class="n">basepot</span>
+<span class="kn">from</span> <span class="nn">pele.potentials.ljcut</span> <span class="kn">import</span> <span class="n">LJCut</span>
+<span class="kn">from</span> <span class="nn">pele.utils.neighbor_list</span> <span class="kn">import</span> <span class="n">NeighborListSubsetBuild</span><span class="p">,</span> <span class="n">NeighborListPotentialBuild</span>
+<span class="kn">from</span> <span class="nn">pele.utils.neighbor_list</span> <span class="kn">import</span> <span class="n">NeighborListPotentialMulti</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;makeBLJNeighborListPotFreeze&quot;</span><span class="p">,</span> <span class="s">&quot;FreezePot&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">MultiComponentSystemFreeze</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    a potential wrapper for multiple potentials with frozen particles</span>
+<span class="sd">    </span>
+<span class="sd">    The primary reason to use this class is that frozen-frozen </span>
+<span class="sd">    interactions need only be calculated once</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    potentials_mobile :</span>
+<span class="sd">        a list of potential objects that include mobile atoms</span>
+<span class="sd">    potentials_frozen :</span>
+<span class="sd">        a list of potentials including only frozen atoms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potentials_mobile</span><span class="p">,</span> <span class="n">potentials_frozen</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span> <span class="o">=</span> <span class="n">potentials_mobile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">potentials_frozen</span> <span class="o">=</span> <span class="n">potentials_frozen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get the energy from the frozen-frozen interactions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Eff</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">potentials_frozen</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;buildList&quot;</span><span class="p">):</span>
+                <span class="n">pot</span><span class="o">.</span><span class="n">buildList</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Eff</span> <span class="o">+=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setup</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Eff</span>
+        <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+            <span class="n">E</span> <span class="o">+=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">E</span>
+
+    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setup</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">Etot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Eff</span>
+        <span class="n">gradtot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+            <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="n">Etot</span> <span class="o">+=</span> <span class="n">E</span>
+            <span class="n">gradtot</span> <span class="o">+=</span> <span class="n">grad</span>
+        <span class="k">return</span> <span class="n">Etot</span><span class="p">,</span> <span class="n">gradtot</span>
+
+
+
+<div class="viewcode-block" id="makeBLJNeighborListPotFreeze"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.makeBLJNeighborListPotFreeze.html#pele.utils.frozen_atoms.makeBLJNeighborListPotFreeze">[docs]</a><span class="k">def</span> <span class="nf">makeBLJNeighborListPotFreeze</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">frozenlist</span><span class="p">,</span> <span class="n">ntypeA</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    create the potential object for the kob andersen binary lennard jones with frozeen particles</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    natoms :</span>
+<span class="sd">        number of atoms in the system</span>
+<span class="sd">    frozenlist : </span>
+<span class="sd">        list of frozen atoms</span>
+<span class="sd">    ntypeA : </span>
+<span class="sd">        number of atoms of type A.  It is assumed that they have indices in [0,ntypeA]</span>
+<span class="sd">    rcut : </span>
+<span class="sd">        the cutoff for the lj potential in units of sigA</span>
+<span class="sd">    boxl : </span>
+<span class="sd">        the box length for periodic box.  None for no periodic boundary conditions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;making BLJ neighborlist potential&quot;</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span>
+    <span class="c">#rcut = 2.5</span>
+    <span class="c">#natoms = 40</span>
+    <span class="k">if</span> <span class="n">ntypeA</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">ntypeA</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">natoms</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">Alist</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntypeA</span><span class="p">)</span>
+    <span class="n">Blist</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntypeA</span><span class="p">,</span> <span class="n">natoms</span><span class="p">)</span>
+    
+    <span class="n">frozenA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Alist</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frozenlist</span><span class="p">]</span> <span class="p">)</span>
+    <span class="n">mobileA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Alist</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frozenlist</span><span class="p">]</span> <span class="p">)</span>
+    <span class="n">frozenB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Blist</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frozenlist</span><span class="p">]</span> <span class="p">)</span>
+    <span class="n">mobileB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Blist</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frozenlist</span><span class="p">]</span> <span class="p">)</span>
+    
+    
+    <span class="n">blj</span> <span class="o">=</span> <span class="n">ljpshift</span><span class="o">.</span><span class="n">LJpshift</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">)</span>
+
+        
+    <span class="n">ljAA</span> <span class="o">=</span> <span class="n">LJCut</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">AA</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">AA</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="o">*</span><span class="n">blj</span><span class="o">.</span><span class="n">AA</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    <span class="n">ljBB</span> <span class="o">=</span> <span class="n">LJCut</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">BB</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">BB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="o">*</span><span class="n">blj</span><span class="o">.</span><span class="n">BB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    <span class="n">ljAB</span> <span class="o">=</span> <span class="n">LJCut</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">AB</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="n">blj</span><span class="o">.</span><span class="n">AB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="o">*</span><span class="n">blj</span><span class="o">.</span><span class="n">AB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    
+    
+    <span class="c">#ten lists in total</span>
+    <span class="c">#nlAA_ff</span>
+    <span class="c">#nlAA_mm</span>
+    <span class="c">#nlAA_mf</span>
+    <span class="c">#nlBB_ff</span>
+    <span class="c">#nlBB_mm</span>
+    <span class="c">#nlBB_mf</span>
+    <span class="c">#nlAB_ff</span>
+    <span class="c">#nlAB_mm</span>
+    <span class="c">#nlAB_mf</span>
+    <span class="c">#nlAB_fm</span>
+    
+    <span class="n">nlAA_ff</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">frozenA</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlAA_mm</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">mobileA</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlAA_mf</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">mobileA</span><span class="p">,</span> <span class="n">Blist</span><span class="o">=</span><span class="n">frozenA</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    
+    <span class="n">nlBB_ff</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">frozenB</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlBB_mm</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">mobileB</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlBB_mf</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">mobileB</span><span class="p">,</span> <span class="n">Blist</span><span class="o">=</span><span class="n">frozenB</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    
+    <span class="n">nlAB_ff</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">frozenA</span><span class="p">,</span> <span class="n">Blist</span><span class="o">=</span><span class="n">frozenB</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlAB_mm</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">mobileA</span><span class="p">,</span> <span class="n">Blist</span><span class="o">=</span><span class="n">mobileB</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlAB_mf</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">mobileA</span><span class="p">,</span> <span class="n">Blist</span><span class="o">=</span><span class="n">frozenB</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    <span class="n">nlAB_fm</span> <span class="o">=</span> <span class="n">NeighborListSubsetBuild</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">mobileB</span><span class="p">,</span> <span class="n">Blist</span><span class="o">=</span><span class="n">frozenA</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span> <span class="p">)</span>
+    
+    <span class="n">potlist_frozen</span> <span class="o">=</span> <span class="p">[</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlAA_ff</span><span class="p">,</span> <span class="n">ljAA</span><span class="p">),</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlBB_ff</span><span class="p">,</span> <span class="n">ljBB</span><span class="p">),</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlAB_ff</span><span class="p">,</span> <span class="n">ljAB</span><span class="p">)</span>
+                <span class="p">]</span>
+    <span class="n">potlist_mobile</span> <span class="o">=</span> <span class="p">[</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlAA_mm</span><span class="p">,</span> <span class="n">ljAA</span><span class="p">),</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlAA_mf</span><span class="p">,</span> <span class="n">ljAA</span><span class="p">),</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlBB_mm</span><span class="p">,</span> <span class="n">ljBB</span><span class="p">),</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlBB_mf</span><span class="p">,</span> <span class="n">ljBB</span><span class="p">),</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlAB_mm</span><span class="p">,</span> <span class="n">ljAB</span><span class="p">),</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlAB_mf</span><span class="p">,</span> <span class="n">ljAB</span><span class="p">),</span>
+                 <span class="n">NeighborListPotentialBuild</span><span class="p">(</span><span class="n">nlAB_fm</span><span class="p">,</span> <span class="n">ljAB</span><span class="p">),</span>
+                 <span class="p">]</span>
+    
+    <span class="c">#wrap the mobile potentials so the check for whether coords needs to be updated</span>
+    <span class="c">#can be done all at once</span>
+    <span class="n">mobile_pot</span> <span class="o">=</span> <span class="n">NeighborListPotentialMulti</span><span class="p">(</span><span class="n">potlist_mobile</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+
+    <span class="c">#wrap the mobile and frozen potentials together</span>
+    <span class="n">mcpot</span> <span class="o">=</span> <span class="n">MultiComponentSystemFreeze</span><span class="p">([</span><span class="n">mobile_pot</span><span class="p">],</span> <span class="n">potlist_frozen</span><span class="p">)</span>
+    
+    <span class="c">#finally, wrap it once more in a class that will zero the gradients of the frozen atoms</span>
+    <span class="n">frozenpot</span> <span class="o">=</span> <span class="n">FreezePot</span><span class="p">(</span><span class="n">mcpot</span><span class="p">,</span> <span class="n">frozenlist</span><span class="p">,</span> <span class="n">natoms</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frozenpot</span>
+
+</div>
+<div class="viewcode-block" id="FreezePot"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.FreezePot.html#pele.utils.frozen_atoms.FreezePot">[docs]</a><span class="k">class</span> <span class="nc">FreezePot</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    potential wrapper for frozen particles</span>
+<span class="sd">    </span>
+<span class="sd">    the gradient will be set to zero for all frozen particles</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pot : </span>
+<span class="sd">        the potential object</span>
+<span class="sd">    frozen : </span>
+<span class="sd">        a list of frozen particles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">frozen</span><span class="p">,</span> <span class="n">natoms</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">=</span> <span class="n">natoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frozen_atoms</span> <span class="o">=</span> <span class="n">frozen</span>  <span class="c">#a list of frozen atoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frozen1d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_1d_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frozen_atoms</span><span class="p">)</span>
+<span class="c">#        self.frozen1d = np.zeros(len(self.frozen_atoms)*3, np.integer) # a list of frozen coordinates (x,y,z) for each atom</span>
+<span class="c">#        j = 0</span>
+<span class="c">#        for i in self.frozen_atoms:</span>
+<span class="c">#            self.frozen1d[j] = i*3</span>
+<span class="c">#            self.frozen1d[j+1] = i*3 + 1</span>
+<span class="c">#            self.frozen1d[j+2] = i*3 + 2</span>
+<span class="c">#            j+=3</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mobile_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_atoms</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mobile1d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_1d_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mobile_atoms</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FreezePot.get_1d_indices"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.FreezePot.get_1d_indices.html#pele.utils.frozen_atoms.FreezePot.get_1d_indices">[docs]</a>    <span class="k">def</span> <span class="nf">get_1d_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atomlist</span><span class="p">):</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">,</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">atomlist</span><span class="p">])</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">indices</span>
+
+</div>
+<div class="viewcode-block" id="FreezePot.getEnergy"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.FreezePot.getEnergy.html#pele.utils.frozen_atoms.FreezePot.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="FreezePot.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.FreezePot.getEnergyGradient.html#pele.utils.frozen_atoms.FreezePot.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">grad</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">frozen1d</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">return</span> <span class="n">e</span><span class="p">,</span> <span class="n">grad</span>
+</div>
+<div class="viewcode-block" id="FreezePot.getEnergyList"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.FreezePot.getEnergyList.html#pele.utils.frozen_atoms.FreezePot.getEnergyList">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyList</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="FreezePot.getEnergyGradientList"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.FreezePot.getEnergyGradientList.html#pele.utils.frozen_atoms.FreezePot.getEnergyGradientList">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradientList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">grad</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">frozen1d</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">return</span> <span class="n">e</span><span class="p">,</span> <span class="n">grad</span>
+    </div>
+<div class="viewcode-block" id="FreezePot.NumericalDerivative"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.FreezePot.NumericalDerivative.html#pele.utils.frozen_atoms.FreezePot.NumericalDerivative">[docs]</a>    <span class="k">def</span> <span class="nf">NumericalDerivative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the gradient calculated numerically&quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mobile1d</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">eps</span>
+            <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">eps</span>
+            <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">eps</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">eps</span>
+        <span class="k">return</span> <span class="n">g</span>
+    </div>
+<div class="viewcode-block" id="FreezePot.NumericalHessian"><a class="viewcode-back" href="../../../generated/pele.utils.frozen_atoms.FreezePot.NumericalHessian.html#pele.utils.frozen_atoms.FreezePot.NumericalHessian">[docs]</a>    <span class="k">def</span> <span class="nf">NumericalHessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the Hessian matrix of second derivatives computed numerically</span>
+<span class="sd">        </span>
+<span class="sd">        this takes 2*len(coords) calls to getGradient</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">ndof</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">hess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">ndof</span><span class="p">,</span> <span class="n">ndof</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mobile1d</span><span class="p">:</span>
+            <span class="n">xbkup</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">eps</span>
+            <span class="n">g1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getGradient</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xbkup</span> <span class="o">-</span> <span class="n">eps</span>
+            <span class="n">g2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getGradient</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>            
+            <span class="n">hess</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">g1</span> <span class="o">-</span> <span class="n">g2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">eps</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xbkup</span>
+        <span class="k">return</span> <span class="n">hess</span>
+
+
+
+
+<span class="c">#########################################################</span>
+<span class="c">#testing stuff below here</span>
+<span class="c">#########################################################</span>
+</div></div>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">natoms</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="mf">4.</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">pele.potentials.ljpshiftfast</span> <span class="kn">as</span> <span class="nn">ljpshift</span>
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
+    <span class="kn">from</span> <span class="nn">pele.utils.neighbor_list</span> <span class="kn">import</span> <span class="n">makeBLJNeighborListPot</span>
+    <span class="n">ntypeA</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">natoms</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">ntypeB</span> <span class="o">=</span> <span class="n">natoms</span> <span class="o">-</span> <span class="n">ntypeA</span>
+    <span class="n">rcut</span> <span class="o">=</span> <span class="mf">2.5</span>
+    <span class="n">freezelist</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntypeA</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntypeA</span><span class="p">,</span><span class="n">ntypeA</span><span class="o">+</span><span class="n">ntypeB</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">nfrozen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">freezelist</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;nfrozen&quot;</span><span class="p">,</span> <span class="n">nfrozen</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+    
+    
+    <span class="n">NLblj</span> <span class="o">=</span> <span class="n">ljpshift</span><span class="o">.</span><span class="n">LJpshift</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    <span class="n">blj</span> <span class="o">=</span> <span class="n">FreezePot</span><span class="p">(</span><span class="n">NLblj</span><span class="p">,</span> <span class="n">freezelist</span><span class="p">,</span> <span class="n">natoms</span><span class="p">)</span>
+
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">makeBLJNeighborListPotFreeze</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">freezelist</span><span class="p">,</span> <span class="n">ntypeA</span><span class="o">=</span><span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">)</span>
+    <span class="c">#pot = FreezePot(NLpot, freezelist)</span>
+    
+    
+    
+    <span class="n">eblj</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;blj energy&quot;</span><span class="p">,</span> <span class="n">eblj</span>
+    
+    <span class="n">epot</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;mcpot energy&quot;</span><span class="p">,</span> <span class="n">epot</span>
+    
+    <span class="k">print</span> <span class="s">&quot;difference&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">epot</span> <span class="o">-</span> <span class="n">eblj</span><span class="p">)</span><span class="o">/</span><span class="n">eblj</span>
+    <span class="n">pot</span><span class="o">.</span><span class="n">test_potential</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+    
+    <span class="n">ret1</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">blj</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">11</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s">&quot;out.coords&quot;</span><span class="p">,</span> <span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy from quench1&quot;</span><span class="p">,</span> <span class="n">ret1</span><span class="o">.</span><span class="n">energy</span>
+    <span class="n">ret2</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy from quench2&quot;</span><span class="p">,</span> <span class="n">ret2</span><span class="o">.</span><span class="n">energy</span>
+    
+    <span class="k">print</span> <span class="s">&quot;ret1 evaluated in both potentials&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">),</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;ret2 evaluated in both potentials&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">),</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">ret1</span><span class="o">.</span><span class="n">coords</span>
+    <span class="n">e1</span><span class="p">,</span> <span class="n">g1</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">e2</span><span class="p">,</span> <span class="n">g2</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;energy difference from getEnergyGradient&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">e2</span> <span class="o">-</span> <span class="n">e1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;largest gradient difference&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">g2</span><span class="o">-</span><span class="n">g1</span><span class="p">))</span>
+    <span class="k">print</span> <span class="s">&quot;rms gradients&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g2</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g1</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">subpot</span> <span class="ow">in</span> <span class="n">pot</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">potentials</span><span class="p">:</span>
+            <span class="n">nl</span> <span class="o">=</span> <span class="n">subpot</span>
+            <span class="k">print</span> <span class="s">&quot;number of times neighbor list was remade:&quot;</span><span class="p">,</span> <span class="n">nl</span><span class="o">.</span><span class="n">buildcount</span><span class="p">,</span> <span class="s">&quot;out of&quot;</span><span class="p">,</span> <span class="n">nl</span><span class="o">.</span><span class="n">count</span>
+    
+    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="kn">import</span> <span class="nn">pele.utils.pymolwrapper</span> <span class="kn">as</span> <span class="nn">pym</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">draw_spheres</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span> <span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">draw_spheres</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ret1</span><span class="o">.</span><span class="n">coords</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span> <span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">pym</span><span class="o">.</span><span class="n">draw_spheres</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ret2</span><span class="o">.</span><span class="n">coords</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span> <span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Could not draw using pymol, skipping this step&quot;</span> 
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+pele.storage.Database.session
+=============================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Database.session

@@ -1,0 +1,6 @@
+pele.systems.BLJCluster.load_coords_pymol
+=========================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: BLJCluster.load_coords_pymol

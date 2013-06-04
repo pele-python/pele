@@ -1,0 +1,6 @@
+pele.transition_states.NEB.MakeAllMaximaClimbing
+================================================
+
+.. currentmodule:: pele.transition_states
+
+.. automethod:: NEB.MakeAllMaximaClimbing

@@ -1,0 +1,6 @@
+pele.angleaxis.AATopology.add_sites
+===================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: AATopology.add_sites

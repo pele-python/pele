@@ -1,0 +1,6 @@
+pele.takestep.RotationalDisplacement.scale
+==========================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: RotationalDisplacement.scale

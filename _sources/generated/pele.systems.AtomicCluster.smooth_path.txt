@@ -1,0 +1,6 @@
+pele.systems.AtomicCluster.smooth_path
+======================================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: AtomicCluster.smooth_path

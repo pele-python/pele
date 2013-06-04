@@ -1,0 +1,6 @@
+pele.mc.MonteCarlo.addEventAfterStep
+====================================
+
+.. currentmodule:: pele.mc
+
+.. automethod:: MonteCarlo.addEventAfterStep

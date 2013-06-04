@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>System Class (pele.systems) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="pele.systems.BaseSystem" href="generated/pele.systems.BaseSystem.html" />
+    <link rel="prev" title="pele.mindist.CoMToOrigin" href="generated/pele.mindist.CoMToOrigin.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.systems.BaseSystem.html" title="pele.systems.BaseSystem"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.mindist.CoMToOrigin.html" title="pele.mindist.CoMToOrigin"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.systems"><span id="system-class"></span></span><div class="section" id="system-class-pele-systems">
+<h1>System Class (<cite>pele.systems</cite>)<a class="headerlink" href="#system-class-pele-systems" title="Permalink to this headline">¶</a></h1>
+<p>The system class is a convenience wrapper for easily defining all the necessary
+information about a given system in one place.  It also makes using the tools in
+pele very simple.</p>
+<div class="section" id="basesystem-class">
+<h2>BaseSystem Class<a class="headerlink" href="#basesystem-class" title="Permalink to this headline">¶</a></h2>
+<p>the BaseSystem defines the base class from which all other system
+classes are derived.  It lists the optional and required functions for defining
+a system class.  It also defines several functions (e.g. get_basinhopping, get_double_ended_connect)
+which uses other functions to create high level objects.  Depending on what calculations
+you want to perform, different functions are required</p>
+<p>basinhopping:</p>
+<div class="highlight-python"><pre>get_potential : required
+get_takestep : optional
+get_random_configuration : optional
+get_compare_exact : optional</pre>
+</div>
+<p>landscape exploration and transition state searches:</p>
+<div class="highlight-python"><pre>get_potential : required
+get_mindist : required
+get_orthogonalize_to_zero_eigenvectors : required
+get_compare_exact : optional, recommended
+get_random_configuration : optional</pre>
+</div>
+<p>See <a class="reference internal" href="potentials.html#potentials-description"><em>Potentials</em></a> for more information about how to implement get_potential().
+See <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>Structure Alignment</em></a> for more information about how to implement get_mindist().
+See <a class="reference internal" href="global_optimization.html#global-optimization"><em>Global Optimization</em></a> for more information about how to implement get_takestep().</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.systems.BaseSystem.html#pele.systems.BaseSystem" title="pele.systems.BaseSystem"><tt class="xref py py-obj docutils literal"><span class="pre">BaseSystem</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>this class defines a base class for a System object</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="classes-of-systems">
+<h2>classes of systems<a class="headerlink" href="#classes-of-systems" title="Permalink to this headline">¶</a></h2>
+<p>These are groups of system types that have common features (e.g. the same 
+symmetries).  Thus some of the required functions can be defined here 
+and inherited by specific systems.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.systems.AtomicCluster.html#pele.systems.AtomicCluster" title="pele.systems.AtomicCluster"><tt class="xref py py-obj docutils literal"><span class="pre">AtomicCluster</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Define an atomic cluster.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="system-list">
+<h2>system list<a class="headerlink" href="#system-list" title="Permalink to this headline">¶</a></h2>
+<p>Here we list the existing systems.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.systems.LJCluster.html#pele.systems.LJCluster" title="pele.systems.LJCluster"><tt class="xref py py-obj docutils literal"><span class="pre">LJCluster</span></tt></a>(natoms)</td>
+<td>define the System class for a Lennard-Jones cluster</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.systems.BLJCluster.html#pele.systems.BLJCluster" title="pele.systems.BLJCluster"><tt class="xref py py-obj docutils literal"><span class="pre">BLJCluster</span></tt></a>(natoms[,&nbsp;ntypeA])</td>
+<td>define the System class for a binary Lennard-Jones cluster</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="parameter-class">
+<h2>Parameter Class<a class="headerlink" href="#parameter-class" title="Permalink to this headline">¶</a></h2>
+<p>The parameter class is what the system class uses for
+holding and maintaining global defaults for all the many adjustable
+parameters in pele.</p>
+<p>If, in your new system class you want to change the default number of
+double ended connect iterations, you can do it by adding this line
+to __init__():</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">double_ended_connect</span><span class="o">.</span><span class="n">niter</span> <span class="o">=</span> <span class="mi">50</span>
+</pre></div>
+</div>
+<p>then, when you create the double ended connect object it will use
+this new value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">connect</span> <span class="o">=</span> <span class="n">mysys</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">database</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The top level functions often use multiple levels of algorithms.  E.g. 
+DoubleEndedConnect calls LocalConnect which calls FindTransitionState.  
+If you want to change a parameter in one of these low level algorithm
+you must use the parameter tree.
+the parameter tree looks like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">-</span><span class="n">params</span>
+<span class="o">-----</span><span class="n">double_ended_connect</span>
+<span class="o">---------</span><span class="n">local_connect_params</span>
+<span class="o">-------------</span><span class="n">NEBparams</span>
+<span class="o">-----------------</span><span class="n">NEBquenchParams</span>
+<span class="o">-------------</span><span class="n">tsSearchParams</span>
+<span class="o">-----------------</span><span class="n">lowestEigenvectorQuenchParams</span>
+<span class="o">-----------------</span><span class="n">tangentSpaceQuenchParams</span>
+<span class="o">-------------</span><span class="n">pushoff_params</span>
+<span class="o">-----------------</span><span class="n">quenchParams</span>
+</pre></div>
+</div>
+<p>All of the these listed above are dictionaries that are passed to the appropriate functions or classes.  
+For simplification, they 
+can be accessed either by keyword or attribute.  The maximum uphill step in the transition state search can
+be modified in either of these two equivalent ways:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mysys</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">double_ended_connect</span><span class="o">.</span><span class="n">local_connect_params</span><span class="o">.</span><span class="n">tsSearchParams</span><span class="o">.</span><span class="n">max_uphill_step</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="n">mysys</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&quot;double_ended_connect&quot;</span><span class="p">][</span><span class="s">&quot;local_connect_params&quot;</span><span class="p">][</span><span class="s">&quot;tsSearchParams&quot;</span><span class="p">][</span><span class="s">&quot;max_uphill_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.2</span>
+</pre></div>
+</div>
+<p>The logic is that the system class passes the dictionary <cite>double_ended_connect</cite>
+as kwargs (key word arguments) to <cite>DoubleEndedConnect</cite>.  One of those keyword
+argemnts is <cite>local_connect_params</cite>, which is then passed by
+<cite>DoubleEndedConnect</cite> as kwargs to <cite>LocalConnect</cite>.  <cite>LocalConnect</cite> then passes
+<cite>tsSearchParams</cite> to <cite>FindTransitionState</cite> and so on.  Each parameter dictionary
+holds keyword arguments for the following function</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">parameter dictionary</th>
+<th class="head">passed as parameters to</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>double_ended_connect</cite></td>
+<td><a class="reference internal" href="landscape_module.html#landscape-module"><em>DoubleEndedConnect</em></a></td>
+</tr>
+<tr class="row-odd"><td><cite>local_connect_params</cite></td>
+<td><a class="reference internal" href="landscape_module.html#landscape-module"><em>LocalConnect</em></a></td>
+</tr>
+<tr class="row-even"><td><cite>NEBparams</cite></td>
+<td><a class="reference internal" href="transition_states_module.html#transition-states-module"><em>create_NEB</em></a></td>
+</tr>
+<tr class="row-odd"><td><cite>NEBquenchParams</cite></td>
+<td>the <a class="reference internal" href="quenching.html#optimize-module"><em>optimizer</em></a> called by <a class="reference internal" href="transition_states_module.html#transition-states-module"><em>NEB</em></a></td>
+</tr>
+<tr class="row-even"><td><cite>tsSearchParams</cite></td>
+<td><a class="reference internal" href="transition_states_module.html#transition-states-module"><em>FindTransitionState</em></a></td>
+</tr>
+<tr class="row-odd"><td><cite>lowestEigenvectorQuenchParams</cite></td>
+<td>the <a class="reference internal" href="quenching.html#optimize-module"><em>optimizer</em></a> called by <a class="reference internal" href="transition_states_module.html#transition-states-module"><em>findLowestEigenVector</em></a></td>
+</tr>
+<tr class="row-even"><td><cite>tangentSpaceQuenchParams</cite></td>
+<td><dl class="first last docutils">
+<dt>the <a class="reference internal" href="quenching.html#optimize-module"><em>optimizer</em></a> called by <a class="reference internal" href="transition_states_module.html#transition-states-module"><em>FindTransitionState</em></a></dt>
+<dd>for the tangent space quench</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td><cite>pushoff_params</cite></td>
+<td>the <a class="reference internal" href="transition_states_module.html#transition-states-module"><em>routine</em></a> which finds the minima on either side of a transition state</td>
+</tr>
+</tbody>
+</table>
+<p>Note that the Parameters class doesn&#8217;t hold the pele default values for
+each algorithm.  These are defined in the algorithms themselves.  Instead,
+the Parameters class keeps track only of what has been overridden.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.systems.BaseParameters.html#pele.systems.BaseParameters" title="pele.systems.BaseParameters"><tt class="xref py py-obj docutils literal"><span class="pre">BaseParameters</span></tt></a></td>
+<td>define a dictionary who&#8217;s values can be accessed like attributes</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.systems.Parameters.html#pele.systems.Parameters" title="pele.systems.Parameters"><tt class="xref py py-obj docutils literal"><span class="pre">Parameters</span></tt></a>()</td>
+<td>Define the parameter tree for use with BaseSystem class</td>
+</tr>
+</tbody>
+</table>
+<p>For a translation between an OPTIM odata file and the pele Parameter tree, see
+<a class="reference internal" href="optim2params.html#optim2params"><em>here</em></a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">System Class (<cite>pele.systems</cite>)</a><ul>
+<li><a class="reference internal" href="#basesystem-class">BaseSystem Class</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#classes-of-systems">classes of systems</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#system-list">system list</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#parameter-class">Parameter Class</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.mindist.CoMToOrigin.html"
+                        title="previous chapter">pele.mindist.CoMToOrigin</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/pele.systems.BaseSystem.html"
+                        title="next chapter">pele.systems.BaseSystem</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/system_class.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.systems.BaseSystem.html" title="pele.systems.BaseSystem"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.mindist.CoMToOrigin.html" title="pele.mindist.CoMToOrigin"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

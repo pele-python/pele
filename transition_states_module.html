@@ -1,0 +1,266 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Transition States (pele.transition_states) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="pele.transition_states.FindTransitionState" href="generated/pele.transition_states.FindTransitionState.html" />
+    <link rel="prev" title="pele.systems.Parameters.viewvalues" href="generated/pele.systems.Parameters.viewvalues.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.transition_states.FindTransitionState.html" title="pele.transition_states.FindTransitionState"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.systems.Parameters.viewvalues.html" title="pele.systems.Parameters.viewvalues"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.transition_states"><span id="transition-states-module"></span></span><div class="section" id="transition-states-pele-transition-states">
+<h1>Transition States (<cite>pele.transition_states</cite>)<a class="headerlink" href="#transition-states-pele-transition-states" title="Permalink to this headline">¶</a></h1>
+<p>This module contains functions and classes related to local transition state searches.
+Most of these algorithms will not need to be directly called by the user.  However
+it is important to know how these work because they form some of the core routines of
+<a class="reference internal" href="landscape_module.html#landscape-module"><em>landscape exploration</em></a>.</p>
+<div class="section" id="local-transition-state-search">
+<h2>Local transition state search<a class="headerlink" href="#local-transition-state-search" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.FindTransitionState.html#pele.transition_states.FindTransitionState" title="pele.transition_states.FindTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">FindTransitionState</span></tt></a>(coords,&nbsp;pot[,&nbsp;tol,&nbsp;...])</td>
+<td>This class implements the routine for finding the nearest transition state</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.transition_states.findTransitionState.html#pele.transition_states.findTransitionState" title="pele.transition_states.findTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">findTransitionState</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>simply a wrapper for initializing and running FindTransitionState</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="lowest-eigenvalue-search">
+<h2>Lowest eigenvalue search<a class="headerlink" href="#lowest-eigenvalue-search" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.findLowestEigenVector.html#pele.transition_states.findLowestEigenVector" title="pele.transition_states.findLowestEigenVector"><tt class="xref py py-obj docutils literal"><span class="pre">findLowestEigenVector</span></tt></a>(coords,&nbsp;pot[,&nbsp;...])</td>
+<td>find the eigenvector corresponding to the lowest eigenvalue using</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="doubly-nudged-elastic-band">
+<h2>(Doubly-) Nudged Elastic Band<a class="headerlink" href="#doubly-nudged-elastic-band" title="Permalink to this headline">¶</a></h2>
+<p>The following functions implement the Nudged Elastic Band and Doubly-Nudged Elastic Band method.
+The user should interact via the driver class:</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.NEBDriver.html#pele.transition_states.NEBDriver" title="pele.transition_states.NEBDriver"><tt class="xref py py-obj docutils literal"><span class="pre">NEBDriver</span></tt></a>(potential,&nbsp;coords1,&nbsp;coords2[,&nbsp;k,&nbsp;...])</td>
+<td>driver class for NEB</td>
+</tr>
+</tbody>
+</table>
+<p>In the backend, the work is done by the following functions.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.NEB.html#pele.transition_states.NEB" title="pele.transition_states.NEB"><tt class="xref py py-obj docutils literal"><span class="pre">NEB</span></tt></a>(path,&nbsp;potential[,&nbsp;distance,&nbsp;k,&nbsp;...])</td>
+<td>Doubly nudged elastic band implementation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.transition_states.NEBPar.html#pele.transition_states.NEBPar" title="pele.transition_states.NEBPar"><tt class="xref py py-obj docutils literal"><span class="pre">NEBPar</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<td>Exactly the same as NEB, but calculate the potentials in parallel</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.InterpolatedPath.html#pele.transition_states.InterpolatedPath" title="pele.transition_states.InterpolatedPath"><tt class="xref py py-obj docutils literal"><span class="pre">InterpolatedPath</span></tt></a>(initial,&nbsp;final,&nbsp;nimages[,&nbsp;...])</td>
+<td>Wraps interpolation that it can be accessed like a list / array without storing the nodes</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.transition_states.InterpolatedPathDensity.html#pele.transition_states.InterpolatedPathDensity" title="pele.transition_states.InterpolatedPathDensity"><tt class="xref py py-obj docutils literal"><span class="pre">InterpolatedPathDensity</span></tt></a>(initial,&nbsp;final,&nbsp;distance)</td>
+<td>Return a InterpolatedPath object with the appropriate</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="orthogonalize-to-zero-eigenvectors">
+<h2>Orthogonalize to zero eigenvectors<a class="headerlink" href="#orthogonalize-to-zero-eigenvectors" title="Permalink to this headline">¶</a></h2>
+<p>These functions make a vector orthogonal to known zero eigenvectors (eigenvectors with a zero eigenvalue).  Typically these
+correspond to known symmetries of the system like translational invariance, rotational invariance.
+Frozen degrees of freedom also contribute zero eigenvecotrs</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.orthogopt.html#pele.transition_states.orthogopt" title="pele.transition_states.orthogopt"><tt class="xref py py-obj docutils literal"><span class="pre">orthogopt</span></tt></a>(v,&nbsp;coords[,&nbsp;norm,&nbsp;translation_only])</td>
+<td>make a vector orthogonal to eigenvectors of the Hessian corresponding to overall</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.transition_states.orthogopt_translation_only.html#pele.transition_states.orthogopt_translation_only" title="pele.transition_states.orthogopt_translation_only"><tt class="xref py py-obj docutils literal"><span class="pre">orthogopt_translation_only</span></tt></a>(v,&nbsp;coords[,&nbsp;...])</td>
+<td>a convience wrapper for orthogopt with the translation_only flag set to True</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.zeroEV_translation.html#pele.transition_states.zeroEV_translation" title="pele.transition_states.zeroEV_translation"><tt class="xref py py-obj docutils literal"><span class="pre">zeroEV_translation</span></tt></a>(coords)</td>
+<td>return the set of zero eigenvalue vectors corresponding to uniform translation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.transition_states.zeroEV_rotation.html#pele.transition_states.zeroEV_rotation" title="pele.transition_states.zeroEV_rotation"><tt class="xref py py-obj docutils literal"><span class="pre">zeroEV_rotation</span></tt></a>(coords)</td>
+<td>return the set of zero eigenvalue vectors corresponding to global rotation</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.zeroEV_cluster.html#pele.transition_states.zeroEV_cluster" title="pele.transition_states.zeroEV_cluster"><tt class="xref py py-obj docutils literal"><span class="pre">zeroEV_cluster</span></tt></a>(coords)</td>
+<td>return the set of zero eigenvalue vectors corresponding to uniform translation and rotation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.transition_states.gramm_schmidt.html#pele.transition_states.gramm_schmidt" title="pele.transition_states.gramm_schmidt"><tt class="xref py py-obj docutils literal"><span class="pre">gramm_schmidt</span></tt></a>(v)</td>
+<td>make a set of vectors orthogonal to each other.</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="finding-minima-on-either-side-of-a-transition-state">
+<h3>Finding minima on either side of a transition state<a class="headerlink" href="#finding-minima-on-either-side-of-a-transition-state" title="Permalink to this headline">¶</a></h3>
+<p>When a transition state is found we step off either side of the transition state to find
+the minima which the transition state connects.  This routine controls that process</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.minima_from_ts.html#pele.transition_states.minima_from_ts" title="pele.transition_states.minima_from_ts"><tt class="xref py py-obj docutils literal"><span class="pre">minima_from_ts</span></tt></a>(pot,&nbsp;xt[,&nbsp;n,&nbsp;quench])</td>
+<td>step off either side of a transition state and quench to find the minima</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Transition States (<cite>pele.transition_states</cite>)</a><ul>
+<li><a class="reference internal" href="#local-transition-state-search">Local transition state search</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#lowest-eigenvalue-search">Lowest eigenvalue search</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#doubly-nudged-elastic-band">(Doubly-) Nudged Elastic Band</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#orthogonalize-to-zero-eigenvectors">Orthogonalize to zero eigenvectors</a><ul>
+<li><a class="reference internal" href="#finding-minima-on-either-side-of-a-transition-state">Finding minima on either side of a transition state</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.systems.Parameters.viewvalues.html"
+                        title="previous chapter">pele.systems.Parameters.viewvalues</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/pele.transition_states.FindTransitionState.html"
+                        title="next chapter">pele.transition_states.FindTransitionState</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/transition_states_module.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.transition_states.FindTransitionState.html" title="pele.transition_states.FindTransitionState"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.systems.Parameters.viewvalues.html" title="pele.systems.Parameters.viewvalues"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

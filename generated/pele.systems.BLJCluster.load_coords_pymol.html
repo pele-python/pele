@@ -1,0 +1,159 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.systems.BLJCluster.load_coords_pymol &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="pele.systems.BLJCluster" href="pele.systems.BLJCluster.html" />
+    <link rel="next" title="pele.systems.BLJCluster.smooth_path" href="pele.systems.BLJCluster.smooth_path.html" />
+    <link rel="prev" title="pele.systems.BLJCluster.get_takestep" href="pele.systems.BLJCluster.get_takestep.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BLJCluster.smooth_path.html" title="pele.systems.BLJCluster.smooth_path"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BLJCluster.get_takestep.html" title="pele.systems.BLJCluster.get_takestep"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../system_class.html" >System Class (<cite>pele.systems</cite>)</a> &raquo;</li>
+          <li><a href="pele.systems.BLJCluster.html" accesskey="U">pele.systems.BLJCluster</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-systems-bljcluster-load-coords-pymol">
+<h1>pele.systems.BLJCluster.load_coords_pymol<a class="headerlink" href="#pele-systems-bljcluster-load-coords-pymol" title="Permalink to this headline">¶</a></h1>
+<dl class="method">
+<dt id="pele.systems.BLJCluster.load_coords_pymol">
+<tt class="descclassname">BLJCluster.</tt><tt class="descname">load_coords_pymol</tt><big>(</big><em>coordslist</em>, <em>oname</em>, <em>index=1</em><big>)</big><a class="reference internal" href="../_modules/pele/systems/bljcluster.html#BLJCluster.load_coords_pymol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.systems.BLJCluster.load_coords_pymol" title="Permalink to this definition">¶</a></dt>
+<dd><p>load the coords into pymol</p>
+<p>the new object must be named oname so we can manipulate it later</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>coordslist</strong> : list of arrays</p>
+<p><strong>oname</strong> : str</p>
+<blockquote>
+<div><p>the new pymol object must be named oname so it can be manipulated
+later</p>
+</div></blockquote>
+<p><strong>index</strong> : int</p>
+<blockquote class="last">
+<div><p>we can have more than one molecule on the screen at one time.  index tells
+which one to draw.  They are viewed at the same time, so should be
+visually distinct, e.g. different colors.  accepted values are 1 or 2</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>the implementation here is a bit hacky.  we create a temporary xyz file from coords
+and load the molecule in pymol from this file.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.systems.BLJCluster.get_takestep.html"
+                        title="previous chapter">pele.systems.BLJCluster.get_takestep</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.systems.BLJCluster.smooth_path.html"
+                        title="next chapter">pele.systems.BLJCluster.smooth_path</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.systems.BLJCluster.load_coords_pymol.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BLJCluster.smooth_path.html" title="pele.systems.BLJCluster.smooth_path"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.systems.BLJCluster.get_takestep.html" title="pele.systems.BLJCluster.get_takestep"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../system_class.html" >System Class (<cite>pele.systems</cite>)</a> &raquo;</li>
+          <li><a href="pele.systems.BLJCluster.html" >pele.systems.BLJCluster</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

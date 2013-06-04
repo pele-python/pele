@@ -1,0 +1,6 @@
+pele.takestep.BlockMoves.__call__
+=================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: BlockMoves.__call__

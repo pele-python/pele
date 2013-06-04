@@ -1,0 +1,6 @@
+pele.mc.MonteCarlo.setPrinting
+==============================
+
+.. currentmodule:: pele.mc
+
+.. automethod:: MonteCarlo.setPrinting

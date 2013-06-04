@@ -1,0 +1,6 @@
+pele.transition_states.InterpolatedPath.final
+=============================================
+
+.. currentmodule:: pele.transition_states
+
+.. autoattribute:: InterpolatedPath.final

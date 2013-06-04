@@ -1,0 +1,6 @@
+pele.mindist.ExactMatchAtomicCluster.__call__
+=============================================
+
+.. currentmodule:: pele.mindist
+
+.. automethod:: ExactMatchAtomicCluster.__call__

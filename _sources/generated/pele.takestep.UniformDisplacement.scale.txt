@@ -1,0 +1,6 @@
+pele.takestep.UniformDisplacement.scale
+=======================================
+
+.. currentmodule:: pele.takestep
+
+.. automethod:: UniformDisplacement.scale

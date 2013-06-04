@@ -1,0 +1,6 @@
+pele.transition_states.zeroEV_rotation
+======================================
+
+.. currentmodule:: pele.transition_states
+
+.. autofunction:: zeroEV_rotation

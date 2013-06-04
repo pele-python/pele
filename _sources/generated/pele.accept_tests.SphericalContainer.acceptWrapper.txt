@@ -1,0 +1,6 @@
+pele.accept_tests.SphericalContainer.acceptWrapper
+==================================================
+
+.. currentmodule:: pele.accept_tests
+
+.. automethod:: SphericalContainer.acceptWrapper

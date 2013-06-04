@@ -1,0 +1,167 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.utils.hessian.get_eigvals &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Utilities (pele.utils)" href="../utils.html" />
+    <link rel="next" title="pele.utils.hessian.get_sorted_eig" href="pele.utils.hessian.get_sorted_eig.html" />
+    <link rel="prev" title="pele.utils.hessian.get_eig" href="pele.utils.hessian.get_eig.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.hessian.get_sorted_eig.html" title="pele.utils.hessian.get_sorted_eig"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.hessian.get_eig.html" title="pele.utils.hessian.get_eig"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../utils.html" accesskey="U">Utilities (<cite>pele.utils</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-utils-hessian-get-eigvals">
+<h1>pele.utils.hessian.get_eigvals<a class="headerlink" href="#pele-utils-hessian-get-eigvals" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pele.utils.hessian.get_eigvals">
+<tt class="descclassname">pele.utils.hessian.</tt><tt class="descname">get_eigvals</tt><big>(</big><em>hess</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/hessian.html#get_eigvals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.hessian.get_eigvals" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the eigenvalues of a Hessian (symmetric)</p>
+<p>The following docs are from numpy.linalg.eigvalsh</p>
+<p>Compute the eigenvalues of a Hermitian or real symmetric matrix.</p>
+<p>Main difference from eigh: the eigenvectors are not computed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>a</strong> : array_like, shape (M, M)</p>
+<blockquote>
+<div><p>A complex- or real-valued matrix whose eigenvalues are to be
+computed.</p>
+</div></blockquote>
+<p><strong>UPLO</strong> : {&#8216;L&#8217;, &#8216;U&#8217;}, optional</p>
+<blockquote>
+<div><p>Specifies whether the calculation is done with the lower triangular
+part of <cite>a</cite> (&#8216;L&#8217;, default) or the upper triangular part (&#8216;U&#8217;).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>w</strong> : ndarray, shape (M,)</p>
+<blockquote>
+<div><p>The eigenvalues, not necessarily ordered, each repeated according to
+its multiplicity.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>LinAlgError</strong> :</p>
+<blockquote class="last">
+<div><p>If the eigenvalue computation does not converge.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.utils.hessian.get_eig.html"
+                        title="previous chapter">pele.utils.hessian.get_eig</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.utils.hessian.get_sorted_eig.html"
+                        title="next chapter">pele.utils.hessian.get_sorted_eig</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.utils.hessian.get_eigvals.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.hessian.get_sorted_eig.html" title="pele.utils.hessian.get_sorted_eig"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.utils.hessian.get_eig.html" title="pele.utils.hessian.get_eig"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../utils.html" >Utilities (<cite>pele.utils</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
