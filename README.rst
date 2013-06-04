@@ -16,8 +16,8 @@ The code project upon which this python package is based can be found at
 http://www-wales.ch.cam.ac.uk/software.html
 
 pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
-programs written by David Wales and collaborators.
-
+programs written by David Wales and collaborators.  pele has recently been
+renamed.  The previous name of the project was pygmin
 
 INSTALLATION
 ============
