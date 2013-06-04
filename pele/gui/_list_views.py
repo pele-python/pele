@@ -91,10 +91,11 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
         self.appendRow([item, iditem])
     
     def addMinima(self, mlist):
-        if len(mlist) > self.nmax:
-            mlist.sort(key=lambda m: m.energy)
-            mlist = mlist[:self.nmax]
-            print "warning: limiting the number of minima displayed in the gui to", self.nmax
+        if self.nmax is not None:
+            if len(mlist) > self.nmax:
+                mlist.sort(key=lambda m: m.energy)
+                mlist = mlist[:self.nmax]
+                print "warning: limiting the number of minima displayed in the gui to", self.nmax
         for m in mlist:
             self.addMinimum(m)
 
@@ -150,10 +151,11 @@ class TransitionStateStandardItemModel(MinimumStandardItemModel):
         self.appendRow([item, iditem, m1item, m2item])
 
     def addTransitionStates(self, tslist):
-        if len(tslist) > self.nmax:
-            tslist.sort(key=lambda ts: ts.energy)
-            tslist = tslist[:self.nmax]
-            print "warning: limiting the number of transition states displayed in the gui to", self.nmax
+        if self.nmax is not None:
+            if len(tslist) > self.nmax:
+                tslist.sort(key=lambda ts: ts.energy)
+                tslist = tslist[:self.nmax]
+                print "warning: limiting the number of transition states displayed in the gui to", self.nmax
         for ts in tslist:
             self.addTS(ts)
 
