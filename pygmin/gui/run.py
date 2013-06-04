@@ -132,7 +132,7 @@ class MainGUI(QtGui.QMainWindow):
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
         self.list_manager._sort_minima()
-        self.NewTS(self.system.database.transition_states())
+        self.NewTS(self.system.database.transition_states(order_energy=True))
         self.list_manager.resize_columns_minima()
         self.list_manager.resize_columns_ts()
 

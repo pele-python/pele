@@ -90,6 +90,15 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
         iditem = NumberStandardItem(item.minimum._id)
         self.appendRow([item, iditem])
     
+    def addMinima(self, mlist):
+        if len(mlist) > self.nmax:
+            mlist.sort(key=lambda m: m.energy)
+            mlist = mlist[:self.nmax]
+            print "warning: limiting the number of minima displayed in the gui to", self.nmax
+        for m in mlist:
+            self.addMinimum(m)
+
+    
     def appendRow(self, items, *args, **kwargs):
         Qt.QStandardItemModel.appendRow(self, items)
         mitem = items[0]
@@ -140,6 +149,13 @@ class TransitionStateStandardItemModel(MinimumStandardItemModel):
         m2item = NumberStandardItem(ts.minimum2._id)
         self.appendRow([item, iditem, m1item, m2item])
 
+    def addTransitionStates(self, tslist):
+        if len(tslist) > self.nmax:
+            tslist.sort(key=lambda ts: ts.energy)
+            tslist = tslist[:self.nmax]
+            print "warning: limiting the number of transition states displayed in the gui to", self.nmax
+        for ts in tslist:
+            self.addTS(ts)
 
 class SaveCoordsAction(QtGui.QAction):
     def __init__(self, minimum, parent=None):
@@ -374,8 +390,13 @@ class ListViewManager(object):
 
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
-        self.minima_list_model.addMinimum(minimum)
-        self.ui.list_minima_main.resizeColumnsToContents()
+        try:
+            len(minimum)
+            minima = minimum
+        except TypeError:
+            minima = [minimum]
+        self.minima_list_model.addMinima(minima)
+
         if sort_items:
             self._sort_minima()
         if not hasattr(self, "_minima_columns_resized"):
@@ -405,9 +426,10 @@ class ListViewManager(object):
             tslist = ts
         else: 
             tslist = [ts]
-        for ts in tslist:
-#            tsitem = TransitionStateStandardItem(ts)
-            self.ts_list_model.addTS(ts)
+        self.ts_list_model.addTransitionStates(tslist)
+#        for ts in tslist:
+##            tsitem = TransitionStateStandardItem(ts)
+#            self.ts_list_model.addTS(ts)
         if sort:
             self._sort_ts()
             
