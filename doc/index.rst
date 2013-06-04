@@ -6,7 +6,7 @@
 Welcome to pele's documentation!
 ==================================
 
-The source code repository can be found at `<https://github.com/js850/PyGMIN>`_
+The source code repository can be found at `<https://github.com/pele-python/pele>`_
 
 The documentation is hosted at `<http://js850.github.com/PyGMIN/>`_
 

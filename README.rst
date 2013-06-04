@@ -1,15 +1,15 @@
-PyGMIN: tools for global optimization and energy landscape exploration.
+pele: tools for global optimization and energy landscape exploration.
 
-PyGMIN is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
+pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
 programs written by David Wales and collaborators.
 
 The code is hosted at
 
-https://github.com/js850/PyGMIN
+https://github.com/pele-python/pele
 
 for documentation, see
 
-http://js850.github.com/PyGMIN/
+http://pele-python.github.com/pele/
 
 The code project upon which this python package is based can be found at
 
@@ -149,6 +149,6 @@ Running
 You can find examples of how to run pele in the examples folder.  More information
 can be found in the documentation at
 
-http://js850.github.com/PyGMIN/
+http://js850.github.com/pele/
 
 

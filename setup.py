@@ -50,7 +50,7 @@ ext_modules = fortran_modules + cxx_modules
 setup(name='pele', 
       version='0.1', 
       description="Python implementation of GMIN, OPTIM, and PATHSAMPLE",
-      url='http://github.com/js850/PyGMIN.git',
+      url='https://github.com/pele-python/pele',
       packages=["pele",
                 "pele.application",
                 "pele.potentials",
