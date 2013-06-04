@@ -1,10 +1,3 @@
-**This package is now renamed pele.  All developement on pygmin will now be done on pele.  You can find the new repository at**
-
-https://github.com/pele-python/pele
-
------------------------------------------------------------
-
-
 PyGMIN: tools for global optimization and energy landscape exploration.
 
 PyGMIN is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
