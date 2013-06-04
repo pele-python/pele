@@ -1,7 +1,7 @@
 import numpy as np
 
 from _orthogoptf import orthogopt as orthogoptf
-from pygmin.transition_states.zeroev import zeroEV_translation, zeroEV_rotation
+from pele.transition_states.zeroev import zeroEV_translation, zeroEV_rotation
 
 __all__ = ["orthogopt", "orthogopt_translation_only"]
 
@@ -118,7 +118,7 @@ import unittest
 class TestOrthogopt(unittest.TestCase):
     def test_o(self):
         """test orthogopt"""
-        from pygmin.transition_states import zeroEV_cluster
+        from pele.transition_states import zeroEV_cluster
         natoms = 13
         vec = np.random.uniform(-1,1,natoms*3)
         vec /= np.linalg.norm(vec)
@@ -134,7 +134,7 @@ class TestOrthogopt(unittest.TestCase):
     
     def test_slow(self):
         """test orthogopt_slow"""
-        from pygmin.transition_states import zeroEV_cluster
+        from pele.transition_states import zeroEV_cluster
         natoms = 13
         vec = np.random.uniform(-1,1,natoms*3)
         vec /= np.linalg.norm(vec)
@@ -150,7 +150,7 @@ class TestOrthogopt(unittest.TestCase):
 
     def test_translation_only(self):
         """test orthogopt with translations only""" 
-        from pygmin.transition_states import zeroEV_cluster
+        from pele.transition_states import zeroEV_cluster
         natoms = 13
         vec = np.random.uniform(-1,1,natoms*3)
         vec /= np.linalg.norm(vec)

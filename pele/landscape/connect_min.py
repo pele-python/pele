@@ -2,13 +2,13 @@ import numpy as np
 import networkx as nx
 import logging
 
-from pygmin.landscape import TSGraph, LocalConnect
-from pygmin.landscape._distance_graph import _DistanceGraph
+from pele.landscape import TSGraph, LocalConnect
+from pele.landscape._distance_graph import _DistanceGraph
 
 __all__ = ["DoubleEndedConnect"]
 
 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 
 
 class DoubleEndedConnect(object):
@@ -553,18 +553,18 @@ class DoubleEndedConnect(object):
 ###########################################################
 
 def getSetOfMinLJ(system): #for testing purposes
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     db = system.create_database()
     bh = system.get_basinhopping(db, outstream=None)
     bh.run(100)
     return system.get_potential(), db
-#    from pygmin.potentials.lj import LJ
+#    from pele.potentials.lj import LJ
 #    pot = LJ()
 #    coords = np.random.uniform(-1,1,natoms*3)
-#    from pygmin.basinhopping import BasinHopping
-#    from pygmin.takestep.displace import RandomDisplacement
-#    from pygmin.takestep.adaptive import AdaptiveStepsize
-#    from pygmin.storage.database import Database
+#    from pele.basinhopping import BasinHopping
+#    from pele.takestep.displace import RandomDisplacement
+#    from pele.takestep.adaptive import AdaptiveStepsize
+#    from pele.storage.database import Database
 #    import os
 #    #dbfile = "test.db"
 #    #os.remove(dbfile)
@@ -578,13 +578,13 @@ def getSetOfMinLJ(system): #for testing purposes
 
 
 def test(Connect=DoubleEndedConnect, natoms=16):
-#    from pygmin.landscape import TSGraph
-#    from pygmin.storage.database import Database
-    from pygmin.systems import LJCluster
+#    from pele.landscape import TSGraph
+#    from pele.storage.database import Database
+    from pele.systems import LJCluster
     #get min1
     system = LJCluster(natoms)
     pot, database = getSetOfMinLJ(system)
-#    from pygmin.potentials.lj import LJ
+#    from pele.potentials.lj import LJ
 #    pot = LJ()
 #    saveit = Database(db="test.db")
     minima = database.minima()

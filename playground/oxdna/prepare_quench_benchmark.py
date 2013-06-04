@@ -1,8 +1,8 @@
 import random
 import pickle
-from pygmin.storage.database import Database
+from pele.storage.database import Database
 #from math import pi
-from pygmin.systems.oxdna import OXDNATakestep, export_xyz, OXDNAScrewStep
+from pele.systems.oxdna import OXDNATakestep, export_xyz, OXDNAScrewStep
 
 # number of trial configurations to try
 nconf = 1000

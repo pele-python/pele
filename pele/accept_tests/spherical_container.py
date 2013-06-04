@@ -1,5 +1,5 @@
 import numpy as np
-import pygmin.exceptions as exc
+import pele.exceptions as exc
 import _spherical_container as fmodule
 
 __all__ = ["SphericalContainer"]

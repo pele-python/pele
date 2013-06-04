@@ -11,13 +11,13 @@ a connected set of minima and transition states betweeen them.
 import numpy as np
 import os
 
-from pygmin.potentials.lj import LJ
-from pygmin.optimize import lbfgs_py
-from pygmin.landscape import DoubleEndedConnect, smoothPath
-from pygmin.mindist import MinPermDistAtomicCluster
-from pygmin.transition_states import orthogopt
-from pygmin.storage import Database, Minimum
-from pygmin.printing import printAtomsXYZ
+from pele.potentials.lj import LJ
+from pele.optimize import lbfgs_py
+from pele.landscape import DoubleEndedConnect, smoothPath
+from pele.mindist import MinPermDistAtomicCluster
+from pele.transition_states import orthogopt
+from pele.storage import Database, Minimum
+from pele.printing import printAtomsXYZ
 np.random.seed(0)
 
 #set up the potential

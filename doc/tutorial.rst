@@ -1,7 +1,7 @@
-pygmin Turorial
+pele Turorial
 ===============
 
-pygmin is a package for global optimization and energy landscape analysis.
+pele is a package for global optimization and energy landscape analysis.
 For global optimization the preferred method is to use basinhopping.
 basinhopping a stochastic search algorithm whos structure is very similar to
 the Monte Carlo algorithm but does a local minimization (or quench) after every

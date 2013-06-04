@@ -1,6 +1,6 @@
 .. _monte_carlo:
-.. currentmodule:: pygmin.mc
-Monte Carlo (`pygmin.mc`)
+.. currentmodule:: pele.mc
+Monte Carlo (`pele.mc`)
 ===========================
 
 .. autosummary::

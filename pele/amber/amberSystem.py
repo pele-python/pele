@@ -27,15 +27,15 @@ import tempfile
 import os
 import shutil
 
-# pygmin  
-from pygmin.systems import BaseSystem
-from pygmin.mindist import ExactMatchAtomicCluster, MinPermDistAtomicCluster
-from pygmin.transition_states import orthogopt
-from pygmin.transition_states import InterpolatedPathDensity, NEB, create_NEB
-from pygmin.landscape import smoothPath
-from pygmin.systems import BaseParameters
-from pygmin.utils.elements import elements
-from pygmin.systems.spawn_OPTIM import SpawnOPTIM
+# pele  
+from pele.systems import BaseSystem
+from pele.mindist import ExactMatchAtomicCluster, MinPermDistAtomicCluster
+from pele.transition_states import orthogopt
+from pele.transition_states import InterpolatedPathDensity, NEB, create_NEB
+from pele.landscape import smoothPath
+from pele.systems import BaseParameters
+from pele.utils.elements import elements
+from pele.systems.spawn_OPTIM import SpawnOPTIM
 
 # OpenMM related 
 import openmm_potential  
@@ -115,7 +115,7 @@ class AMBERSystem(BaseSystem):
         NEBparams.k = 100.
         NEBparams.adjustk_freq = 5
         if False: #use fire
-            from pygmin.optimize import fire
+            from pele.optimize import fire
             NEBparams.quenchRoutine = fire
         else: #use lbfgs
             NEBparams.NEBquenchParams.maxErise = 100.5
@@ -309,7 +309,7 @@ class AMBERSystem(BaseSystem):
         from simtk.openmm.app import pdbfile as openmmpdb
 
         #write the coords into pdb file
-        from pygmin.mindist import CoMToOrigin
+        from pele.mindist import CoMToOrigin
         ct = 0 
         for coords in coordslist:
             ct = ct + 1 
@@ -341,7 +341,7 @@ class AMBERSystem(BaseSystem):
 
     def get_optim_spawner(self, coords1, coords2):
         import os
-        from pygmin.config import config
+        from pele.config import config
         optim = config.get("exec", "AMBOPTIM")
         optim = os.path.expandvars(os.path.expanduser(optim))
         print "optim executable", optim
@@ -587,8 +587,8 @@ class AMBERSystem(BaseSystem):
             connect.connect        
             
     def test_disconn_graph(self,database):
-        from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-        from pygmin.landscape import TSGraph
+        from pele.utils.disconnectivity_graph import DisconnectivityGraph
+        from pele.landscape import TSGraph
         import matplotlib.pyplot as plt
         graph = TSGraph(database).graph
         dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
@@ -598,7 +598,7 @@ class AMBERSystem(BaseSystem):
             
     def test_BH(self,db,nsteps):
                         
-        from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
+        from pele.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
         takeStepRnd   = RandomDisplacement( stepsize=2 )
         tsAdaptive = AdaptiveStepsizeTemperature(takeStepRnd, interval=10, verbose=True)
     
@@ -708,7 +708,7 @@ if __name__ == "__main__":
     sysAmb  = AMBERSystem('/home/ss2029/WORK/PyGMIN/examples/amber/coords.prmtop', '/home/ss2029/WORK/PyGMIN/examples/amber/coords.inpcrd')
     
     # load existing database 
-    from pygmin.storage import Database
+    from pele.storage import Database
     dbcurr = Database(db="/home/ss2029/WORK/PyGMIN/examples/amber/aladipep.db")
                         
     
@@ -717,7 +717,7 @@ if __name__ == "__main__":
     
     exit()  
     # ------- TEST gui 
-    from pygmin.gui import run as gr    
+    from pele.gui import run as gr    
     gr.run_gui(sysAmb)
     
     # ------ Test potential 

@@ -1,4 +1,4 @@
-from pygmin.amber import amberSystem as amb
+from pele.amber import amberSystem as amb
 
 # create a new amber system and load database to be pruned 
 sys    = amb.AMBERSystem('coords.prmtop', 'coords.inpcrd')

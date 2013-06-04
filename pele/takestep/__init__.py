@@ -1,7 +1,7 @@
 """
-.. currentmodule:: pygmin.takestep
+.. currentmodule:: pele.takestep
 
-Step Taking (`pygmin.takestep`)
+Step Taking (`pele.takestep`)
 ===============================
 
 The performance of the basin hopping critically depends on the step taking algorithm. 
@@ -38,8 +38,8 @@ TakestepInterface as a parent class (directly derived from that or a child class
 
 ::
 
-    from pygmin.takestep import TakestepInterface
-    from pygmin.takestep import buildingblocks as bb
+    from pele.takestep import TakestepInterface
+    from pele.takestep import buildingblocks as bb
     
     class MyStep(TakestepInterface):
         def takeStep(self, coords, **kwargs):

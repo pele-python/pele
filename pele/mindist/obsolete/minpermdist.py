@@ -1,9 +1,9 @@
 import numpy as np
 import itertools
-from pygmin.mindist import minDist
+from pele.mindist import minDist
 import math
-from pygmin.mindist import findBestPermutation, CoMToOrigin
-from pygmin.mindist.mindistutils import permuteArray
+from pele.mindist import findBestPermutation, CoMToOrigin
+from pele.mindist.mindistutils import permuteArray
 
 __all__ = ["minPermDistLong"]
 
@@ -90,7 +90,7 @@ def main():
     print "dist returned    ", dist
     print "dist from coords ", distfinal
 
-    import pygmin.printing.print_atoms_xyz as printxyz
+    import pele.printing.print_atoms_xyz as printxyz
     with open("out.xyz", "w") as fout:
         CoMToOrigin(X1i)
         CoMToOrigin(X2i)

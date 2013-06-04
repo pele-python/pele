@@ -1,7 +1,7 @@
-from pygmin.utils.rbtools import CoordsAdapter
-from pygmin.potentials.fortran.rmdrvt import rmdrvt
+from pele.utils.rbtools import CoordsAdapter
+from pele.potentials.fortran.rmdrvt import rmdrvt
 import oxdnagmin_ as GMIN
-from pygmin.potentials import GMINPotential
+from pele.potentials import GMINPotential
 import numpy as np
 from dihedral import dihedral_angle, dihedral_gradient
 

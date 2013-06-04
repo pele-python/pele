@@ -1,4 +1,4 @@
-from pygmin.storage import Database
+from pele.storage import Database
 import unittest
 
 class TestDB(unittest.TestCase):

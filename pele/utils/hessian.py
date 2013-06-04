@@ -1,7 +1,7 @@
 """
 Tools for manipulating the Hessian.  In particular, for finding eigenvalues and eigenvectors
 
-.. currentmodule:: pygmin.utils.hessian
+.. currentmodule:: pele.utils.hessian
 
 .. autosummary::
     :toctree: generated
@@ -14,7 +14,7 @@ Tools for manipulating the Hessian.  In particular, for finding eigenvalues and 
 
 """
 import numpy as np 
-from pygmin.potentials.lj import LJ
+from pele.potentials.lj import LJ
 
 __all__ = ["get_eig", "get_eigvals", "get_sorted_eig", "get_smallest_eig", "make_sparse"]
 
@@ -160,9 +160,9 @@ def get_smallest_eig_nohess(coords, system, **kwargs):
     
     See Also
     --------
-    pygmin.transition_states.findLowestEigenVector
+    pele.transition_states.findLowestEigenVector
     """
-    from pygmin.transition_states import findLowestEigenVector
+    from pele.transition_states import findLowestEigenVector
     ret = findLowestEigenVector(coords, system.get_potential(), orthogZeroEigs=system.get_orthogonalize_to_zero_eigenvectors(), **kwargs)
     return ret.eigenval, ret.eigenvec
 
@@ -190,7 +190,7 @@ def make_sparse(hess, **kwargs):
 import unittest
 class TestEig(unittest.TestCase):
     def setUp(self):
-        from pygmin.systems import LJCluster
+        from pele.systems import LJCluster
         natoms = 10
         self.system = LJCluster(natoms)
         system = self.system
@@ -304,7 +304,7 @@ class TestEig(unittest.TestCase):
         
 
 def size_scaling_smallest_eig(natoms):
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     import time, sys
     system = LJCluster(natoms)
     pot = system.get_potential()
@@ -354,7 +354,7 @@ def plot_hist(hess):
     pl.show()
 
 if __name__ == "__main__":
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     natoms = 30
     system = LJCluster(natoms)
     pot = system.get_potential()

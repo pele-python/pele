@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from pygmin.mindist.permutational_alignment import *
-from pygmin.mindist.permutational_alignment import  find_permutations_munkres, find_permutations_OPTIM
+from pele.mindist.permutational_alignment import *
+from pele.mindist.permutational_alignment import  find_permutations_munkres, find_permutations_OPTIM
 
 
 class PermutationTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 """
-.. currentmodule:: pygmin.thermodynamics
-Thermodynamics (`pygmin.thermodynamics`)
+.. currentmodule:: pele.thermodynamics
+Thermodynamics (`pele.thermodynamics`)
 =========================================
 
 This module implements routines to calculate thermodynamic properties within

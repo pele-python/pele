@@ -1,1 +1,1 @@
-.. automodule:: pygmin.accept_tests
+.. automodule:: pele.accept_tests

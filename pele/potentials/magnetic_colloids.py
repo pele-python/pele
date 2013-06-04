@@ -1,7 +1,7 @@
 import numpy as np
 
-from pygmin.potentials import BasePotential
-import pygmin.potentials.fortran.magnetic_colloids as mc
+from pele.potentials import BasePotential
+import pele.potentials.fortran.magnetic_colloids as mc
 
 
 class MagneticColloidPotential(BasePotential):
@@ -30,7 +30,7 @@ class MagneticColloidPotential(BasePotential):
         gradient = -f
         return wpot, gradient.flatten()
         
-from pygmin.systems import LJCluster
+from pele.systems import LJCluster
 class MagneticColloidSystem(LJCluster):
     def __init__(self, natoms, box):
         super(MagneticColloidSystem, self).__init__(natoms)
@@ -61,5 +61,5 @@ if __name__ == "__main__":
     pot.test_potential(coords)
     
     system = MagneticColloidSystem(natoms, box)
-    from pygmin.gui import run_gui
+    from pele.gui import run_gui
     run_gui(system)

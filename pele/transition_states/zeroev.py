@@ -105,7 +105,7 @@ if __name__ == '__main__':
         print np.linalg.norm(v-test1)
     exit()
     
-    from pygmin.potentials import lj
+    from pele.potentials import lj
     pot = lj.LJ()
     x = np.array([-1.,0.,0.,1., 0., 0., 0., 1., 1., 0.,-1.,-1.])
     x = np.random.random(x.shape)

@@ -1,7 +1,7 @@
 from PyQt4 import QtGui
 from ljsystem import NewLJDialog
 
-from pygmin.systems import BLJCluster
+from pele.systems import BLJCluster
  
 class BLJSystem(BLJCluster):
     def __init__(self):
@@ -17,5 +17,5 @@ class BLJSystem(BLJCluster):
         raise NotImplementedError
         
 if __name__ == "__main__":
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(BLJSystem)

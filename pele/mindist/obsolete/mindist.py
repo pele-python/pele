@@ -1,5 +1,5 @@
 import numpy as np
-from pygmin.mindist import CoMToOrigin, alignRotation
+from pele.mindist import CoMToOrigin, alignRotation
 
 __all__ = ["minDist"]
 
@@ -40,7 +40,7 @@ def main():
     print "dist from eigenvalue", dist
     print "distfinal", distfinal
 
-    import pygmin.printing.print_atoms_xyz as printxyz
+    import pele.printing.print_atoms_xyz as printxyz
     with open("out.xyz", "w") as fout:
         CoMToOrigin(X1i)
         CoMToOrigin(X2i)

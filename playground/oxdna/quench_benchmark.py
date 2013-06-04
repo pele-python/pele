@@ -1,11 +1,11 @@
 import random
 import pickle
 import numpy as np
-from pygmin.potentials.gminpotential import GMINPotential
-from pygmin.optimize.quench import mylbfgs, fire
+from pele.potentials.gminpotential import GMINPotential
+from pele.optimize.quench import mylbfgs, fire
 import oxdnagmin_ as GMIN
 import time
-from pygmin.systems import oxdna
+from pele.systems import oxdna
 
 from optparse import OptionParser
 parser = OptionParser()

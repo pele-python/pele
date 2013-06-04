@@ -7,7 +7,7 @@ a connected set of minima and transition states betweeen them.
 """
 import numpy as np
 
-from pygmin.systems import LJCluster
+from pele.systems import LJCluster
 
 natoms = 38
 system = LJCluster(natoms)

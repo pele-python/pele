@@ -1,10 +1,10 @@
 import numpy as np
 from copy import deepcopy
-from pygmin.angleaxis.molecules import create_water
-from pygmin.angleaxis import RBTopology
-import pygmin.angleaxis.aamindist as am
+from pele.angleaxis.molecules import create_water
+from pele.angleaxis import RBTopology
+import pele.angleaxis.aamindist as am
 import gmin_ as GMIN
-from pygmin.potentials import GMINPotential
+from pele.potentials import GMINPotential
 import unittest
 
 class TestAAMindist(unittest.TestCase):

@@ -1,3 +1,3 @@
 .. _step_taking:
 
-.. automodule:: pygmin.takestep
+.. automodule:: pele.takestep

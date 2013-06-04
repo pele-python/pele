@@ -7,17 +7,17 @@ import numpy as np
 
 from PyQt4 import QtCore, QtGui, Qt
 
-from pygmin.gui.MainWindow import Ui_MainWindow 
-from pygmin.gui.bhrunner import BHRunner
-from pygmin.landscape import TSGraph
-from pygmin.gui.dlg_params import DlgParams
-from pygmin.config import config
-from pygmin.gui.ui.dgraph_dlg import DGraphDialog
-#from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
-from pygmin.gui.connect_run_dlg import ConnectViewer
-from pygmin.gui.takestep_explorer import TakestepExplorer
-from pygmin.gui.normalmode_browser import NormalmodeBrowser
-from pygmin.gui._list_views import ListViewManager
+from pele.gui.MainWindow import Ui_MainWindow 
+from pele.gui.bhrunner import BHRunner
+from pele.landscape import TSGraph
+from pele.gui.dlg_params import DlgParams
+from pele.config import config
+from pele.gui.ui.dgraph_dlg import DGraphDialog
+#from pele.gui.connect_explorer_dlg import ConnectExplorerDialog
+from pele.gui.connect_run_dlg import ConnectViewer
+from pele.gui.takestep_explorer import TakestepExplorer
+from pele.gui.normalmode_browser import NormalmodeBrowser
+from pele.gui._list_views import ListViewManager
 
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -46,7 +46,7 @@ class MySelection(object):
 
 class MainGUI(QtGui.QMainWindow):
     """
-    this is the main class for the pygmin gui
+    this is the main class for the pele gui
     
     Parameters
     ----------
@@ -294,7 +294,7 @@ class MainGUI(QtGui.QMainWindow):
         """
         if clicked is None: return
         self.pick_count = 0
-        from pygmin.gui.graph_viewer import GraphViewDialog
+        from pele.gui.graph_viewer import GraphViewDialog
         if not hasattr(self, "graphview"):
             self.graphview = GraphViewDialog(self.system.database, parent=self, app=self.app)
             self.graphview.widget.on_minima_picked.connect(self.on_minimum_picked)
@@ -521,7 +521,7 @@ class MainGUI(QtGui.QMainWindow):
 
     def on_btn_connect_all_clicked(self, checked=None):
         if checked is None: return
-        from pygmin.gui.connect_all import ConnectAllDialog
+        from pele.gui.connect_all import ConnectAllDialog
 #        if hasattr(self, "connect_all"):
 #            if not self.connect_all.isVisible():
 #                self.connect_all.show()
@@ -548,7 +548,7 @@ def run_gui(system, db=None):
     Parameters
     ----------
     system : System class
-        A pygmin system, derived from BaseSystem.  All information 
+        A pele system, derived from BaseSystem.  All information 
         about the system is in this class.
     db : str, optional
         connect to the database at this file location

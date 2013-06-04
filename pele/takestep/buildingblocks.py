@@ -1,6 +1,6 @@
 import numpy as np
-from pygmin.utils import rotations
-from pygmin.utils import vec3
+from pele.utils import rotations
+from pele.utils import vec3
 
 __all__ = ["uniform_displace", "rotate", "reduced_coordinates_displace"]
 

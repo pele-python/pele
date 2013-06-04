@@ -69,13 +69,13 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     
     print ""
     print "now do the same with scipy lbfgs"
-    from pygmin.optimize import lbfgs_scipy as quench
+    from pele.optimize import lbfgs_scipy as quench
     ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
     print ret[1], ret[2], ret[3]    
     
     if False:
         print "now do the same with scipy bfgs"
-        from pygmin.optimize import bfgs as oldbfgs
+        from pele.optimize import bfgs as oldbfgs
         ret = oldbfgs(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
     
@@ -89,21 +89,21 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     if True:
         print ""
         print "calling from wrapper function"
-        from pygmin.optimize import mylbfgs as quench
+        from pele.optimize import mylbfgs as quench
         ret = quench(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
         
     if True:
         print ""
         print "now do the same with lbfgs_py"
-        from pygmin.optimize import lbfgs_py
+        from pele.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot.getEnergyGradient, tol = tol)
         print ret[1], ret[2], ret[3]    
 
 
 
     if False:
-        import pygmin.utils.pymolwrapper as pym
+        import pele.utils.pymolwrapper as pym
         pym.start()
         for n, coords in enumerate(printevent.coordslist):
             coords=coords.reshape(natoms, 3)
@@ -111,8 +111,8 @@ def runtest(X, pot, natoms = 100, iprint=-1):
 
         
 if __name__ == "__main__":
-    #from pygmin.potentials.lj import LJ as Pot
-    from pygmin.potentials.ATLJ import ATLJ as Pot
+    #from pele.potentials.lj import LJ as Pot
+    from pele.potentials.ATLJ import ATLJ as Pot
     pot = Pot()
 
     test(pot, natoms=3, iprint=-1)

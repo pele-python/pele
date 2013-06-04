@@ -1,7 +1,7 @@
 from math import *
 import numpy as np #to access np.exp() not built int exp
 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 
 __all__ = ["LJpshift"]
 

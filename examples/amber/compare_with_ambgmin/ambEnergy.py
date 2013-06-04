@@ -1,5 +1,5 @@
 import ambgmin_ as GMIN
-import pygmin.potentials.gminpotential as gminpot
+import pele.potentials.gminpotential as gminpot
 
 # OpenMM 
 from simtk.openmm.app import * # AmberPrmtopFile, AmberInpcrdFile, PDBFile, Simulation

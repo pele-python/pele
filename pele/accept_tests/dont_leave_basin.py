@@ -1,4 +1,4 @@
-import pygmin.exceptions as exc
+import pele.exceptions as exc
 
 __all__ = ["DontLeaveBasin"]
 

@@ -7,10 +7,10 @@ from PyQt4.QtCore import pyqtSlot
 import matplotlib.colors as col
 
 import dgraph_browser
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from pygmin.landscape import TSGraph
-from pygmin.storage import Database, TransitionState
-from pygmin.utils.events import Signal
+from pele.utils.disconnectivity_graph import DisconnectivityGraph
+from pele.landscape import TSGraph
+from pele.storage import Database, TransitionState
+from pele.utils.events import Signal
 import networkx as nx
 
 

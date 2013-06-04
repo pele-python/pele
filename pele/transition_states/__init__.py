@@ -1,6 +1,6 @@
 """
-.. currentmodule:: pygmin.transition_states
-Transition States (`pygmin.transition_states`)
+.. currentmodule:: pele.transition_states
+Transition States (`pele.transition_states`)
 ================================================
 This module contains functions and classes related to local transition state searches.
 Most of these algorithms will not need to be directly called by the user.  However

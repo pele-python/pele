@@ -56,10 +56,10 @@ class wham1d:
         
         #print "quenching"
         try: 
-            from pygmin.optimize import mylbfgs as quench
+            from pele.optimize import mylbfgs as quench
             ret = quench(X, self.whampot, iprint=-1, maxstep=1e4)
         except ImportError:
-            from pygmin.optimize import lbfgs_scipy as quench
+            from pele.optimize import lbfgs_scipy as quench
             ret = quench(X, self.whampot)            
         #print "quench energy", ret.energy
         X = ret.coords
@@ -87,12 +87,12 @@ class wham1d:
         print "energy", E 
         
         print "quenching"
-        from pygmin.optimize import lbfgs_scipy as quench
+        from pele.optimize import lbfgs_scipy as quench
         ret = quench(X, self.whampot)
         print "quench energy", ret.energy
         
-        from pygmin.basinhopping import BasinHopping
-        from pygmin.takestep.displace import RandomDisplacement
+        from pele.basinhopping import BasinHopping
+        from pele.takestep.displace import RandomDisplacement
         takestep = RandomDisplacement(stepsize=10)
         takestep.useAdaptiveStep()
         takestep.adaptive_class.f = 1.5 #i have no idea what a good stepsize should be
@@ -116,7 +116,7 @@ class wham1d:
 #        """ """
 
     def calc_Cv_new(self, NDOF, TRANGE=None, NTEMP=100):
-        from pygmin.thermodynamics import dos_to_cv
+        from pele.thermodynamics import dos_to_cv
         dT = (self.Tlist[-1] - self.Tlist[0]) / NTEMP
         Tlist = np.arange(self.Tlist[0], self.Tlist[-1], dT)
 #        print self.logn_E

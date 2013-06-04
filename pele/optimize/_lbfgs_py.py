@@ -3,11 +3,11 @@ import logging
 
 #from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
-from pygmin.optimize import Result
+from pele.optimize import Result
 
 __all__ = ["LBFGS"]
 
-_logger = logging.getLogger("pygmin.optimize")
+_logger = logging.getLogger("pele.optimize")
 
 
 class LBFGS(object):
@@ -375,7 +375,7 @@ class PrintEvent:
         self.coordslist = []
 
     def __call__(self, coords, **kwargs):
-        from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz 
+        from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz 
         printxyz(self.fout, coords)
         self.coordslist.append( coords.copy() )
         
@@ -403,13 +403,13 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     print "done", ret
     
     print "now do the same with scipy lbfgs"
-    from pygmin.optimize import lbfgs_scipy as quench
+    from pele.optimize import lbfgs_scipy as quench
     ret = quench(Xinit, pot, tol = tol)
     print ret 
     
     if False:
         print "now do the same with scipy bfgs"
-        from pygmin.optimize import bfgs as oldbfgs
+        from pele.optimize import bfgs as oldbfgs
         ret = oldbfgs(Xinit, pot, tol = tol)
         print ret    
     
@@ -422,13 +422,13 @@ def runtest(X, pot, natoms = 100, iprint=-1):
             
     if False:
         print "calling from wrapper function"
-        from pygmin.optimize import lbfgs_py
+        from pele.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot, tol = tol)
         print ret
 
 
     try:
-        import pygmin.utils.pymolwrapper as pym
+        import pele.utils.pymolwrapper as pym
         pym.start()
         for n, coords in enumerate(printevent.coordslist):
             coords=coords.reshape(natoms, 3)
@@ -438,8 +438,8 @@ def runtest(X, pot, natoms = 100, iprint=-1):
 
         
 if __name__ == "__main__":
-    from pygmin.potentials.lj import LJ
-    from pygmin.potentials.ATLJ import ATLJ
+    from pele.potentials.lj import LJ
+    from pele.potentials.ATLJ import ATLJ
     pot = ATLJ()
 
     #test(pot, natoms=3, iprint=1)

@@ -116,6 +116,6 @@ class Ui_MainWindow(object):
         self.actionShow_energies.setText(QtGui.QApplication.translate("MainWindow", "show energies", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShow_energies.setToolTip(QtGui.QApplication.translate("MainWindow", "show a plot of the energies", None, QtGui.QApplication.UnicodeUTF8))
 
-from pygmin.gui.ui.mplwidget import MPLWidget
-from pygmin.gui.show3d_with_slider import Show3DWithSlider
+from pele.gui.ui.mplwidget import MPLWidget
+from pele.gui.show3d_with_slider import Show3DWithSlider
 import resources_rc

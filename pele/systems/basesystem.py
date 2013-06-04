@@ -1,14 +1,14 @@
 import tempfile
 
-from pygmin.landscape import DoubleEndedConnect, DoubleEndedConnectPar
-from pygmin import basinhopping
-from pygmin.storage import Database
-from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
-from pygmin.utils.xyz import write_xyz
-from pygmin.optimize import mylbfgs
-from pygmin.transition_states._nebdriver import NEBDriver
-from pygmin.transition_states import FindTransitionState
-from pygmin.thermodynamics import logproduct_freq2, normalmodes
+from pele.landscape import DoubleEndedConnect, DoubleEndedConnectPar
+from pele import basinhopping
+from pele.storage import Database
+from pele.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
+from pele.utils.xyz import write_xyz
+from pele.optimize import mylbfgs
+from pele.transition_states._nebdriver import NEBDriver
+from pele.transition_states import FindTransitionState
+from pele.thermodynamics import logproduct_freq2, normalmodes
 
 __all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
@@ -131,7 +131,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.potentials
+        pele.potentials
         """
         raise NotImplementedError
 
@@ -157,7 +157,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.mindist
+        pele.mindist
         """
         raise NotImplementedError
 
@@ -174,7 +174,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.storage
+        pele.storage
         """
         kwargs = dict_copy_update(self.params["database"], kwargs)        
         #note this syntax is quite ugly, but we would like to be able to 
@@ -209,7 +209,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.takestep
+        pele.takestep
         """
         kwargs = dict_copy_update(self.params["takestep"], kwargs)        
         takeStep = RandomDisplacement(stepsize=stepsize)
@@ -223,7 +223,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.basinhopping
+        pele.basinhopping
         """
         kwargs = dict_copy_update(self.params["basinhopping"], kwargs)
         pot = self.get_potential()
@@ -252,7 +252,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.mindist
+        pele.mindist
          
         """
         raise NotImplementedError
@@ -266,7 +266,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.transition_states
+        pele.transition_states
         """
         raise NotImplementedError
     
@@ -275,7 +275,7 @@ class BaseSystem(object):
     
         See Also
         --------
-        pygmin.landscape
+        pele.landscape
         """
         kwargs = dict_copy_update(self.params["double_ended_connect"], kwargs)
         pot = self.get_potential()
@@ -328,7 +328,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.mindist
+        pele.mindist
         
         """
         raise NotImplementedError
@@ -346,7 +346,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.landscape.smoothPath
+        pele.landscape.smoothPath
         """
         raise NotImplementedError
     
@@ -424,7 +424,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pygmin.landscape.smoothPath
+        pele.landscape.smoothPath
         """
         raise NotImplementedError
     

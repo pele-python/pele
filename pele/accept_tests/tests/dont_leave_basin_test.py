@@ -1,7 +1,7 @@
 import unittest
 import random
-import pygmin.exceptions as exc
-import pygmin.accept_tests.dont_leave_basin as dlb
+import pele.exceptions as exc
+import pele.accept_tests.dont_leave_basin as dlb
 
 class TestDontLeaveBasinTest(unittest.TestCase):
 

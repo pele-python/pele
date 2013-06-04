@@ -5,11 +5,11 @@ import sqlalchemy
 
 from PyQt4 import QtGui, QtCore, Qt
 
-from pygmin.gui.double_ended_connect_runner import DECRunner
-from pygmin.landscape import TSGraph
-from pygmin.gui.connect_run_dlg import ConnectViewer
-from pygmin.gui.ui.dgraph_dlg import DGraphWidget
-from pygmin.storage import Minimum
+from pele.gui.double_ended_connect_runner import DECRunner
+from pele.landscape import TSGraph
+from pele.gui.connect_run_dlg import ConnectViewer
+from pele.gui.ui.dgraph_dlg import DGraphWidget
+from pele.storage import Minimum
 
 class ConnectAttempt(object):
     def __init__(self, min1, min2, success, minima, transition_states, elapsed_time=None):
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     import pylab as pl
 
     app = QtGui.QApplication(sys.argv)
-    from pygmin.systems import LJCluster, BLJCluster
+    from pele.systems import LJCluster, BLJCluster
     pl.ion()
     natoms = 13
     system = BLJCluster(natoms)

@@ -260,7 +260,7 @@ class ExactMatchCluster(object):
     
 if __name__ == '__main__':
     natoms = 35
-    from pygmin.utils import rotations
+    from pele.utils import rotations
     
     for i in xrange(100):
         xx1 = np.random.random(3*natoms)*5

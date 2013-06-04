@@ -1,6 +1,6 @@
 import potentials.potential
 import numpy as np
-import pygmin
+import pele
 
 
 class PatchyParticle(potentials.potential.potential):
@@ -14,12 +14,12 @@ class PatchyParticle(potentials.potential.potential):
     
     def getEnergy(self, coords):
         x = self.toReal(coords)
-        return pygmin.getPAPEnergy(x)
+        return pele.getPAPEnergy(x)
     
     def getEnergyGradient(self, coords):
         x = self.toReal(coords)
         grad = np.zeros(x.shape)
-        E = pygmin.getPAPEnergyGradient(x, grad)
+        E = pele.getPAPEnergyGradient(x, grad)
 
         # transform gradient to reduced units
         m = self.getLatticeMatrix(coords)        

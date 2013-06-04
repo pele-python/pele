@@ -1,8 +1,8 @@
-from pygmin.basinhopping import BasinHopping
-from pygmin import takestep
+from pele.basinhopping import BasinHopping
+from pele import takestep
 from application_base import Application
-from pygmin.storage.database import Database
-from pygmin import defaults
+from pele.storage.database import Database
+from pele import defaults
 import time
 
 class AppBasinHopping(Application):

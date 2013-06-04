@@ -1,13 +1,13 @@
 import numpy as np
-from pygmin.potentials import GMINPotential
+from pele.potentials import GMINPotential
 import gmin_ as GMIN
-from pygmin.utils import rotations
-from pygmin.takestep import buildingblocks
-from pygmin.transition_states import NEB
+from pele.utils import rotations
+from pele.takestep import buildingblocks
+from pele.transition_states import NEB
 import pylab as pl
 from copy import deepcopy, copy
-from pygmin.optimize import mylbfgs
-from pygmin.angleaxis import RigidFragment, RBSystem
+from pele.optimize import mylbfgs
+from pele.angleaxis import RigidFragment, RBSystem
 import tip4p
 from tip4p import dump_path
 

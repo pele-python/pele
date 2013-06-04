@@ -1,10 +1,10 @@
 import distpot
 import numpy as np
 import copy
-import pygmin.utils.rotations as rot
-#from pygmin.optimize import lbfgs_scipy as quench
-from pygmin import basinhopping
-import pygmin.storage.savenlowest as storage
+import pele.utils.rotations as rot
+#from pele.optimize import lbfgs_scipy as quench
+from pele import basinhopping
+import pele.storage.savenlowest as storage
 from mindistutils import CoMToOrigin, alignRotation, findBestPermutationRBMol, getDistaa
 from aamindist import aadistance
 
@@ -162,10 +162,10 @@ class TestMinPermDistRBMol_OTP(unittest.TestCase):
     it has one internal symmetry
     """
     def setUp(self):
-        from pygmin.potentials.rigid_bodies.molecule import Molecule, setupLWOTP
-        from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
-        from pygmin.potentials.lj import LJ
-        from pygmin.optimize import lbfgs_py as quench
+        from pele.potentials.rigid_bodies.molecule import Molecule, setupLWOTP
+        from pele.potentials.rigid_bodies.sandbox import RBSandbox
+        from pele.potentials.lj import LJ
+        from pele.optimize import lbfgs_py as quench
         
         #set up system
         nmol = 5
@@ -211,7 +211,7 @@ class TestMinPermDistRBMol_OTP(unittest.TestCase):
 
 
     def testOPT(self):
-        from pygmin.optimize import lbfgs_py as quench
+        from pele.optimize import lbfgs_py as quench
         coords1 = np.copy(self.coords1)
         coords1i = np.copy(coords1)
         
@@ -258,7 +258,7 @@ def test(coords1, coords2, mysys, permlist):
 
     printlist.append((coords1.copy(), "coords1 after mindist"))
     printlist.append((coords2.copy(), "coords2 after mindist"))
-    import pygmin.printing.print_atoms_xyz as printxyz
+    import pele.printing.print_atoms_xyz as printxyz
     with open("otp.xyz", "w") as fout:
         for coords, line2 in printlist:
             xyz = mysys.getxyz(coords)
@@ -269,10 +269,10 @@ def test(coords1, coords2, mysys, permlist):
 
 
 def test_LWOTP(nmol = 5):
-    from pygmin.potentials.rigid_bodies.molecule import Molecule, setupLWOTP
-    from pygmin.potentials.rigid_bodies.sandbox import RBSandbox
-    from pygmin.potentials.lj import LJ
-    from pygmin.optimize import lbfgs_py as quench
+    from pele.potentials.rigid_bodies.molecule import Molecule, setupLWOTP
+    from pele.potentials.rigid_bodies.sandbox import RBSandbox
+    from pele.potentials.lj import LJ
+    from pele.optimize import lbfgs_py as quench
 
     printlist = []
     

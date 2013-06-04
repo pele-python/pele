@@ -1,16 +1,16 @@
-.. pygmin documentation master file, created by
+.. pele documentation master file, created by
    sphinx-quickstart on Wed Aug  1 03:04:59 2012.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pygmin's documentation!
+Welcome to pele's documentation!
 ==================================
 
 The source code repository can be found at `<https://github.com/js850/PyGMIN>`_
 
 The documentation is hosted at `<http://js850.github.com/PyGMIN/>`_
 
-pygmin is a package of tools for exploring energy landscapes.  The core
+pele is a package of tools for exploring energy landscapes.  The core
 routines are broken into two parts: :ref:`Basinhopping <global_optimization>`,
 for finding the global minimum of an energy landscape, and for building up
 databases of minima.  And :ref:`DoubleEndedConnect <landscape_module>`, for

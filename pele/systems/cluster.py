@@ -1,12 +1,12 @@
 import numpy as np
 
-from pygmin.systems import BaseSystem
-from pygmin.potentials import LJ
-from pygmin.transition_states import orthogopt
-from pygmin.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster, \
+from pele.systems import BaseSystem
+from pele.potentials import LJ
+from pele.transition_states import orthogopt
+from pele.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster, \
     PointGroupOrderCluster
-from pygmin.landscape import smoothPath
-from pygmin.transition_states import create_NEB
+from pele.landscape import smoothPath
+from pele.transition_states import create_NEB
 
 
 __all__ = ["AtomicCluster"]

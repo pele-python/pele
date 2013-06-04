@@ -1,12 +1,12 @@
 import numpy as np
-from pygmin.utils import rotations
-from pygmin.angleaxis import CoordsAdapter
-from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
-from pygmin.transition_states import interpolate_linear
+from pele.utils import rotations
+from pele.angleaxis import CoordsAdapter
+from pele.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
+from pele.transition_states import interpolate_linear
 from math import pi
-from pygmin import takestep
-from pygmin.transition_states import zeroev
-from pygmin.angleaxis.aamindist import TransformAngleAxisCluster
+from pele import takestep
+from pele.transition_states import zeroev
+from pele.angleaxis.aamindist import TransformAngleAxisCluster
 import _aadist
 
 __all__ = ["AASiteType", "AATopology", "interpolate_angleaxis", "TakestepAA"]

@@ -1,4 +1,4 @@
-from pygmin.mindist import StandardClusterAlignment
+from pele.mindist import StandardClusterAlignment
 
 __all__= ["PointGroupOrderCluster"]
 

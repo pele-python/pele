@@ -6,13 +6,13 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-import pygmin.utils.disconnectivity_graph as dg
-from pygmin.storage import Database
+import pele.utils.disconnectivity_graph as dg
+from pele.storage import Database
 
 
 try:
     from PyQt4.QtGui import QApplication
-    from pygmin.gui.ui.dgraph_dlg import DGraphDialog, reduced_db2graph
+    from pele.gui.ui.dgraph_dlg import DGraphDialog, reduced_db2graph
     use_gui = True
 except ImportError:
     use_gui = False

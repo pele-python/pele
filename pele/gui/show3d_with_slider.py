@@ -7,16 +7,16 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.Qt import Qt, QWidget
 #from PyQt4.QtOpenGL import *
 import numpy as np
-#import pygmin.utils.rotations as rot
-from pygmin.utils.events import Signal
+#import pele.utils.rotations as rot
+from pele.utils.events import Signal
 from PyQt4.QtCore import pyqtSlot
-from pygmin.gui.ui.show3d_with_slider_ui import Ui_show3d_with_slider
+from pele.gui.ui.show3d_with_slider_ui import Ui_show3d_with_slider
 
 
 
 class Show3DWithSlider(QWidget):
     """
-    The main OpenGL viewer for pygmin
+    The main OpenGL viewer for pele
     
     This viewer can display a single structure, two structures
     overlaid, or a pathway of structures (with a slider) 

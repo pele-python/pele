@@ -1,8 +1,8 @@
 import unittest
 import math
 import numpy as np
-import pygmin.exceptions as exc
-from pygmin.accept_tests.spherical_container import SphericalContainer as sphere
+import pele.exceptions as exc
+from pele.accept_tests.spherical_container import SphericalContainer as sphere
 
 class TestSphericalContainer(unittest.TestCase):
 

@@ -5,7 +5,7 @@ import logging
 
 __all__ = []
 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 
 class _DistanceGraph(object):
     """
@@ -237,7 +237,7 @@ class _DistanceGraph(object):
 
     def _initializeDistances(self):
         """put all distances in the database into distance_map for faster access"""
-#        from pygmin.storage.database import Distance
+#        from pele.storage.database import Distance
 #        from sqlalchemy.sql import select
 #        conn = self.database.engine.connect()
 #        sql = select([Distance.__table__])
@@ -416,11 +416,11 @@ class _DistanceGraph(object):
 import unittest
 class TestDistanceGraph(unittest.TestCase):
     def setUp(self):
-        from pygmin.landscape import DoubleEndedConnect
-        from pygmin.landscape._graph import create_random_database
-        from pygmin.systems import LJCluster
-#        from pygmin.mindist import minPermDistStochastic, MinDistWrapper
-#        from pygmin.potentials import LJ
+        from pele.landscape import DoubleEndedConnect
+        from pele.landscape._graph import create_random_database
+        from pele.systems import LJCluster
+#        from pele.mindist import minPermDistStochastic, MinDistWrapper
+#        from pele.potentials import LJ
         
         nmin = 10
         natoms=13
@@ -442,7 +442,7 @@ class TestDistanceGraph(unittest.TestCase):
         self.natoms = natoms
     
     def make_result(self, coords, energy):
-        from pygmin.optimize import Result
+        from pele.optimize import Result
         res = Result()
         res.coords = coords
         res.energy = energy
@@ -472,7 +472,7 @@ class TestDistanceGraph(unittest.TestCase):
         self.assertTrue(allok, "merging broke the distance graph")
         
     def test_add_TS_existing_minima(self):
-        from pygmin.optimize import Result
+        from pele.optimize import Result
         min3, min4 = list(self.db.minima())[4:6]
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "the distance graph is broken at the start")
@@ -577,11 +577,11 @@ class TestDistanceGraph(unittest.TestCase):
 
 
 def mytest(nmin=40, natoms=13):
-    from pygmin.landscape import DoubleEndedConnect
-    from pygmin.landscape._graph import create_random_database
-    from pygmin.mindist import minPermDistStochastic, MinDistWrapper
-    from pygmin.potentials import LJ
-    from pygmin.landscape import TSGraph
+    from pele.landscape import DoubleEndedConnect
+    from pele.landscape._graph import create_random_database
+    from pele.mindist import minPermDistStochastic, MinDistWrapper
+    from pele.potentials import LJ
+    from pele.landscape import TSGraph
     
     pot = LJ()
     mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)

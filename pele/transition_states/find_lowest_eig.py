@@ -1,17 +1,17 @@
 import numpy as np
 import logging
 
-from pygmin.optimize import Result
+from pele.optimize import Result
 
-from pygmin.transition_states import orthogopt
-from pygmin.potentials.potential import potential as basepot
-#from pygmin.optimize.lbfgs_py import LBFGS
-from pygmin.optimize import MYLBFGS
-import pygmin.utils.rotations as rotations
+from pele.transition_states import orthogopt
+from pele.potentials.potential import potential as basepot
+#from pele.optimize.lbfgs_py import LBFGS
+from pele.optimize import MYLBFGS
+import pele.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector"]
 
-#logger = logging.getLogger("pygmin.connect.findTS")
+#logger = logging.getLogger("pele.connect.findTS")
 
 class LowestEigPot(basepot):
     """
@@ -128,7 +128,7 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
                   kwargs.items())
     
     if not kwargs.has_key("logger"):
-        kwargs["logger"] = logging.getLogger("pygmin.connect.findTS.leig_quench")
+        kwargs["logger"] = logging.getLogger("pele.connect.findTS.leig_quench")
 
     
     if eigenvec0 is None:
@@ -188,7 +188,7 @@ def _analyticalLowestEigenvalue(coords, pot):
 
   
 def testpot2():
-    from pygmin.potentials.lj import LJ
+    from pele.potentials.lj import LJ
     import itertools
     pot = LJ()
     a = 1.12 #2.**(1./6.)
@@ -202,7 +202,7 @@ def testpot2():
         print i, j, r 
 
 def testpot1():
-    from pygmin.potentials.lj import LJ
+    from pele.potentials.lj import LJ
     import itertools
     pot = LJ()
     a = 1.12 #2.**(1./6.)
@@ -252,7 +252,7 @@ def testpot1():
         print "lowest eigenvector", v[:,imin]
 
     
-    from pygmin.optimize import lbfgs_py as quench
+    from pele.optimize import lbfgs_py as quench
     ret = quench(vec, eigpot.getEnergyGradient, iprint=10, tol = 1e-5, maxstep = 1e-3, \
                  rel_energy = True)
     print ret
@@ -274,7 +274,7 @@ def testpot3():
     
     vec = np.random.rand(len(coords))
     
-    from pygmin.optimize import lbfgs_py as quench
+    from pele.optimize import lbfgs_py as quench
     ret = quench(vec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, \
                  rel_energy = True)
 

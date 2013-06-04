@@ -10,8 +10,8 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Circle
 
 
-from pygmin.storage import Database
-from pygmin.utils.events import Signal
+from pele.storage import Database
+from pele.utils.events import Signal
 import ui.nebbrowser
 
 def no_event(*args, **kwargs):
@@ -202,8 +202,8 @@ def start():
     neb.optimize()
     
 if __name__ == "__main__":
-    from pygmin.systems import LJCluster
-    from pygmin.storage import Database
+    from pele.systems import LJCluster
+    from pele.storage import Database
     import pylab as pl
     app = QApplication(sys.argv)
     

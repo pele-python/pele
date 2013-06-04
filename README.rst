@@ -101,7 +101,7 @@ modules in their current directories::
 
   $ python setup.py build_ext -i --fcompiler=gfortran
 
-Users can install pygmin in the standard python package location::
+Users can install pele in the standard python package location::
 
   $ python setup.py build --fcompiler=gfortran
   $ python setup.py install [--user]
@@ -146,7 +146,7 @@ I haven't gotten it installed and running (I haven't tried the pay version)
 Running
 =======
 
-You can find examples of how to run pygmin in the examples folder.  More information
+You can find examples of how to run pele in the examples folder.  More information
 can be found in the documentation at
 
 http://js850.github.com/PyGMIN/

@@ -1,7 +1,7 @@
 import numpy as np
 import copy
-import pygmin.utils.rotations as rot
-import pygmin.potentials.potential as potential
+import pele.utils.rotations as rot
+import pele.potentials.potential as potential
 
 
 def overlap_slow( XA, XB, L2, atomlist, nlist = [] ):
@@ -72,7 +72,7 @@ class MinPermDistPotential(potential.potential):
 
     def setUpRigidBodies(self):
         #set up one rigid body
-        from pygmin.potentials.rigid_bodies.molecule import Molecule
+        from pele.potentials.rigid_bodies.molecule import Molecule
         self.rb = Molecule()
         for atomlist in self.permlist:
             #make a rigid body from atomlist

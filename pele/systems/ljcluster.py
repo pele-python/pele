@@ -1,9 +1,9 @@
 import tempfile
 import numpy as np
 
-from pygmin.systems import AtomicCluster
-from pygmin.potentials import LJ
-from pygmin.utils.xyz import write_xyz
+from pele.systems import AtomicCluster
+from pele.potentials import LJ
+from pele.utils.xyz import write_xyz
 
 __all__ = ["LJCluster"]
 
@@ -88,7 +88,7 @@ class LJCluster(AtomicCluster):
         fname = f.name
                 
         #write the coords into the xyz file
-        from pygmin.mindist import CoMToOrigin
+        from pele.mindist import CoMToOrigin
         for coords in coordslist:
             coords = CoMToOrigin(coords.copy())
             write_xyz(f, coords, title=oname, atomtypes=["LA"])

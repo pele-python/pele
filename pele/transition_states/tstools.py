@@ -1,11 +1,11 @@
 import numpy as np
 import logging
 
-from pygmin.optimize import mylbfgs
+from pele.optimize import mylbfgs
 
 __all__ = ["minima_from_ts"]
 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 
 def determinePushoff(
             pot, coords, vec, gdiff=100., stepmin = 1e-5, stepmax = 0.2, verbose=False,

@@ -1,6 +1,6 @@
 import numpy as np
 
-from pygmin.utils.hessian import sort_eigs
+from pele.utils.hessian import sort_eigs
 
 __all__ = ["normalmode_frequencies", "normalmodes", "logproduct_freq2"]
 

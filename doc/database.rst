@@ -1,4 +1,4 @@
 .. _database:
 
-.. automodule:: pygmin.storage
+.. automodule:: pele.storage
 

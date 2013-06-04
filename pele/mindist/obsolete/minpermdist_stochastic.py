@@ -1,11 +1,11 @@
 import numpy as np
 
-from pygmin.mindist import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation, getDistxyz
-from pygmin.utils.rotations import random_aa, aa2mx, q2mx
-from pygmin.mindist.mindistutils import getAlignRotation
-from pygmin.mindist import ExactMatchCluster
-from pygmin.mindist.distpot import MinPermDistPotential
-import pygmin.defaults as defaults
+from pele.mindist import CoMToOrigin, aa2xyz, alignRotation, findBestPermutation, getDistxyz
+from pele.utils.rotations import random_aa, aa2mx, q2mx
+from pele.mindist.mindistutils import getAlignRotation
+from pele.mindist import ExactMatchCluster
+from pele.mindist.distpot import MinPermDistPotential
+import pele.defaults as defaults
 
 __all__ = ["minPermDistStochastic"]
 
@@ -174,8 +174,8 @@ import unittest
 from testmindist import TestMinDist
 class TestMinPermDistStochastic_BLJ(TestMinDist):
     def setUp(self):
-        from pygmin.potentials.ljpshiftfast import LJpshift as BLJ
-        from pygmin import defaults
+        from pele.potentials.ljpshiftfast import LJpshift as BLJ
+        from pele import defaults
         
         self.natoms = 25
         self.ntypeA = int(self.natoms * .8)
@@ -190,12 +190,12 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         
 
     def testBLJ(self):
-        import pygmin.defaults
+        import pele.defaults
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
         #run a quench so the structure is not crazy
-        ret = pygmin.defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
+        ret = pele.defaults.quenchRoutine(X2, self.pot.getEnergyGradient)
         X2 = ret[0]
 
         self.runtest(X1, X2, minPermDistStochastic)
@@ -207,7 +207,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         
         test case where X2 is an isomer of X1.
         """
-        import pygmin.utils.rotations as rot
+        import pele.utils.rotations as rot
         X1i = np.copy(self.X1)
         X1 = np.copy(self.X1)        
         X2 = np.copy(X1)
@@ -221,7 +221,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         
         #permute X2
         import random, copy
-        from pygmin.mindist.permutational_alignment import permuteArray
+        from pele.mindist.permutational_alignment import permuteArray
         for atomlist in self.permlist:
             perm = copy.copy(atomlist)
             random.shuffle( perm )
@@ -266,7 +266,7 @@ def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz",
     printlist.append((X2.copy(), "X2 final"))
 
 
-    import pygmin.printing.print_atoms_xyz as printxyz
+    import pele.printing.print_atoms_xyz as printxyz
     with open(fname, "w") as fout:
         for xyz, line2 in printlist:
             printxyz.printAtomsXYZ(fout, xyz, line2=line2 +" "+ str(lj.getEnergy(xyz)))
@@ -274,14 +274,14 @@ def test(X1, X2, lj, atomtypes=["LA"], permlist = None, fname = "lj.xyz",
     
 
 def test_binary_LJ(natoms = 12, **kwargs):
-    import pygmin.defaults
-    import pygmin.utils.rotations as rot
-    quench = pygmin.defaults.quenchRoutine
+    import pele.defaults
+    import pele.utils.rotations as rot
+    quench = pele.defaults.quenchRoutine
 
     printlist = []
     
     ntypea = int(natoms*.8)
-    from pygmin.potentials.ljpshift import LJpshift
+    from pele.potentials.ljpshift import LJpshift
     lj = LJpshift(natoms, ntypea)
     permlist = [range(ntypea), range(ntypea, natoms)]
 
@@ -306,7 +306,7 @@ def test_binary_LJ(natoms = 12, **kwargs):
     
 
     import random, copy
-    from pygmin.mindist.permutational_alignment import permuteArray
+    from pele.mindist.permutational_alignment import permuteArray
 
     for atomlist in permlist:
         perm = copy.copy(atomlist)
@@ -342,13 +342,13 @@ def test_binary_LJ(natoms = 12, **kwargs):
         
         
 def test_LJ(natoms = 12, **kwargs):
-    from pygmin.potentials.lj import LJ
-    import pygmin.defaults
-    import pygmin.utils.rotations as rot
-    from pygmin.mindist.permutational_alignment import permuteArray
+    from pele.potentials.lj import LJ
+    import pele.defaults
+    import pele.utils.rotations as rot
+    from pele.mindist.permutational_alignment import permuteArray
     import random
 
-    quench = pygmin.defaults.quenchRoutine
+    quench = pele.defaults.quenchRoutine
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     #quench X1

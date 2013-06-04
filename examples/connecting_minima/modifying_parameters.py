@@ -12,7 +12,7 @@ See the class LJCluster for what the default parameters are for this system
 """
 import numpy as np
 
-from pygmin.systems import LJCluster
+from pele.systems import LJCluster
 
 natoms = 38
 system = LJCluster(natoms)

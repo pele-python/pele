@@ -4,7 +4,7 @@ Created on 3 Jun 2012
 @author: ruehle
 '''
 
-from pygmin.potentials import BasePotential 
+from pele.potentials import BasePotential 
 import numpy as np
 
 __all__ = ["GMINPotential"]

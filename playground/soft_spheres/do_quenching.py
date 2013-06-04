@@ -1,4 +1,4 @@
-from pygmin.optimize import lbfgs_scipy as quench_lbfgs
+from pele.optimize import lbfgs_scipy as quench_lbfgs
 
 
 class Minimum:

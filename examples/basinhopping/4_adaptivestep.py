@@ -3,8 +3,8 @@ Example 4: modify the parameters of the adaptive stepsize
 note that the system class uses adaptive stepsize by default, 
 so the previous examples also use adaptive stepsize
 """
-from pygmin.systems import LJCluster
-from pygmin.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
+from pele.systems import LJCluster
+from pele.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 
 natoms = 12
 niter = 100

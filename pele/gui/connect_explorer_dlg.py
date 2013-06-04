@@ -3,8 +3,8 @@ from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 from PyQt4 import QtCore
 import sys
 
-from pygmin.storage import Database
-from pygmin.landscape.local_connect import _refineTS
+from pele.storage import Database
+from pele.landscape.local_connect import _refineTS
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -205,7 +205,7 @@ def start():
     
     
 if __name__ == "__main__":
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     from nebdlg import getNEB
     from OpenGL.GLUT import glutInit
 

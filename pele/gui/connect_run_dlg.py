@@ -5,11 +5,11 @@ from PyQt4 import QtGui, QtCore, Qt
 from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 
 
-from pygmin.gui.ui.connect_run_ui import Ui_MainWindow as UI
-from pygmin.utils.events import Signal
-from pygmin.gui.double_ended_connect_runner import DECRunner
-from pygmin.gui.ui.mplwidget import MPLWidget
-from pygmin.gui.graph_viewer import GraphViewWidget
+from pele.gui.ui.connect_run_ui import Ui_MainWindow as UI
+from pele.utils.events import Signal
+from pele.gui.double_ended_connect_runner import DECRunner
+from pele.gui.ui.mplwidget import MPLWidget
+from pele.gui.graph_viewer import GraphViewWidget
 
 
 
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     import pylab as pl
 
     app = QtGui.QApplication(sys.argv)
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     pl.ion()
     natoms = 113
     system = LJCluster(natoms)

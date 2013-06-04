@@ -12,7 +12,7 @@ import sqlalchemy.orm
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, bindparam, case, insert
 from sqlalchemy.schema import Index
-from pygmin.utils.events import Signal
+from pele.utils.events import Signal
 import os
 
 __all__ = ["Minimum", "TransitionState", "Database", "Distance"]
@@ -291,7 +291,7 @@ class Database(object):
     Examples
     --------
     
-    >>> from pygmin.storage import Database
+    >>> from pele.storage import Database
     >>> db = Database(db="test.db")
     >>> for energy in np.random.random(10):
     >>>     a.addMinimum(energy, np.random.random(10))
@@ -332,7 +332,7 @@ class Database(object):
             conn.close()
             if _schema_version != schema:
                 raise IOError("database schema outdated, current (newest) version: "
-                              "%d (%d). Please use migrate_db.py in pygmin/scripts to update database"%(schema, _schema_version))
+                              "%d (%d). Please use migrate_db.py in pele/scripts to update database"%(schema, _schema_version))
             
         Session = sessionmaker(bind=self.engine)
         self.session = Session()

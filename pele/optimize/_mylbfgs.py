@@ -2,12 +2,12 @@ import numpy as np
 import logging
 
 #from bfgs import lineSearch, BFGS
-from pygmin.optimize import LBFGS
+from pele.optimize import LBFGS
 from mylbfgs_updatestep import mylbfgs_updatestep
 
 __all__ = ["MYLBFGS"]
 
-_logger = logging.getLogger("pygmin.optimize")
+_logger = logging.getLogger("pele.optimize")
 
 class MYLBFGS(LBFGS):
     """
@@ -122,14 +122,14 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     
     print ""
     print "now do the same with scipy lbfgs"
-    from pygmin.optimize import lbfgs_scipy as quench
+    from pele.optimize import lbfgs_scipy as quench
     ret = quench(Xinit, pot, tol = tol)
     print ret
     #print ret[1], ret[2], ret[3]    
     
     if False:
         print "now do the same with scipy bfgs"
-        from pygmin.optimize import bfgs as oldbfgs
+        from pele.optimize import bfgs as oldbfgs
         ret = oldbfgs(Xinit, pot, tol = tol)
         print ret
     
@@ -142,21 +142,21 @@ def runtest(X, pot, natoms = 100, iprint=-1):
             
     if False:
         print "calling from wrapper function"
-        from pygmin.optimize import lbfgs_py
+        from pele.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot, tol = tol)
         print ret
         
     if True:
         print ""
         print "now do the same with lbfgs_py"
-        from pygmin.optimize import lbfgs_py
+        from pele.optimize import lbfgs_py
         ret = lbfgs_py(Xinit, pot, tol = tol)
         print ret
 
 
 
     try:
-        import pygmin.utils.pymolwrapper as pym
+        import pele.utils.pymolwrapper as pym
         pym.start()
         for n, coords in enumerate(printevent.coordslist):
             coords=coords.reshape(natoms, 3)
@@ -166,8 +166,8 @@ def runtest(X, pot, natoms = 100, iprint=-1):
 
         
 if __name__ == "__main__":
-    #from pygmin.potentials.lj import LJ as Pot
-    from pygmin.potentials.ATLJ import ATLJ as Pot
+    #from pele.potentials.lj import LJ as Pot
+    from pele.potentials.ATLJ import ATLJ as Pot
     pot = Pot()
 
     test(pot, natoms=3, iprint=-1)

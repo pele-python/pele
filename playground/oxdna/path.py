@@ -1,13 +1,13 @@
 import numpy as np
-from pygmin.utils.rbtools import CoordsAdapter
-from pygmin.utils import rotations
+from pele.utils.rbtools import CoordsAdapter
+from pele.utils import rotations
 import oxdnagmin_ as GMIN
-from pygmin.potentials import GMINPotential
-from pygmin.transition_states import NEB, InterpolatedPath
-from pygmin.storage import Database
-from pygmin.mindist.rmsfit import findrotation_kabsch
+from pele.potentials import GMINPotential
+from pele.transition_states import NEB, InterpolatedPath
+from pele.storage import Database
+from pele.mindist.rmsfit import findrotation_kabsch
 from math import pi
-from pygmin.angleaxis import aamindist
+from pele.angleaxis import aamindist
 from oxgui import OXDNASystem
 
 infile="path/int.2min.xyz"

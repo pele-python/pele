@@ -1,13 +1,13 @@
-import pygmin.optimize._quench as quench
-#import pygmin.transition_states
+import pele.optimize._quench as quench
+#import pele.transition_states
 
 """
 WARNING: these functions are obsolete!
 These are an easy way to change the default parameters of the various features of PyGMIN. 
 
 to change the default quenchRoutine to FIRE, simply run
->>> import pygmin.utils.defaults as defaults
->>> from pygmin.optimize.quench import fire
+>>> import pele.utils.defaults as defaults
+>>> from pele.optimize.quench import fire
 >>> defaults.quenchRoutine = fire
 
 to further change the tolerance for all quenches do
@@ -82,7 +82,7 @@ The following are sections of the code which should have default settings in thi
 quenchRoutine = quench.lbfgs_py
 quenchParams = dict()
 
-#tsSearchRoutine = pygmin.transition_states.findTransitionState #  was causing cyclical import problems 
+#tsSearchRoutine = pele.transition_states.findTransitionState #  was causing cyclical import problems 
 tsSearchParams = dict()
 
 #these are parameters for the minimizer

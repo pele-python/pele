@@ -6,10 +6,10 @@ from numpy import cos, sin, pi
 
 import gmin_ as GMIN
 
-from pygmin.potentials import GMINPotential
-from pygmin.potentials import LJ
-from pygmin.angleaxis import RBTopology, RBSystem, RigidFragment
-from pygmin.utils.xyz import write_xyz
+from pele.potentials import GMINPotential
+from pele.potentials import LJ
+from pele.angleaxis import RBTopology, RBSystem, RigidFragment
+from pele.utils.xyz import write_xyz
 
 
 class OTPPotential(LJ):
@@ -78,7 +78,7 @@ class OTPSystem(RBSystem):
     def get_random_coordinates(self):
         coords = np.zeros([self.nmol*2, 3])
         coords[:self.nmol,:] = np.random.uniform(-1,1,[self.nmol,3]) * (self.nmol*3)**(-1./3) * 1.5
-        from pygmin.utils.rotations import random_aa
+        from pele.utils.rotations import random_aa
         for i in range(self.nmol, self.nmol*2):
             coords[i,:] = random_aa()
         return coords.flatten()
@@ -133,8 +133,8 @@ class OTPSystem(RBSystem):
         pymol.cmd.set("sphere_scale", value=0.2, selection=oname)
 
 def rungui(system, db=None):
-    import pygmin.gui.run as gr
-    from pygmin.storage import Database
+    import pele.gui.run as gr
+    from pele.storage import Database
     gr.run_gui(system, db=db)
     
 if __name__ == "__main__":

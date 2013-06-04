@@ -85,7 +85,7 @@ def find_permutations_munkres( X1, X2, make_cost_matrix=_make_cost_matrix ):
     http://pypi.python.org/pypi/hungarian/
     When I first downloaded this package I got segfaults.  The problem for me
     was casing an integer pointer as (npy_intp *).  I may add the corrected 
-    version to pygmin at some point
+    version to pele at some point
     """
     #########################################
     # create the cost matrix
@@ -133,7 +133,7 @@ def find_permutations_hungarian( X1, X2, make_cost_matrix=_make_cost_matrix ):
     http://pypi.python.org/pypi/hungarian/
     When I first downloaded this package I got segfaults.  The problem for me
     was casing an integer pointer as (npy_intp *).  I may add the corrected 
-    version to pygmin at some point
+    version to pele at some point
     """
     #########################################
     # create the cost matrix
@@ -243,7 +243,7 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
     
     munkres : completely in python. scales roughly like natoms**3.  very slow for natoms > 10
     
-    in addition we have wrapped the OPTIM version for use in pygmin.  It uses the sparse 
+    in addition we have wrapped the OPTIM version for use in pele.  It uses the sparse 
     version of the Jonker-Volgenant algorithm.  Furthermore the cost matrix calculated in 
     a compiled language for an additional speed boost. It scales roughly like natoms**2
 

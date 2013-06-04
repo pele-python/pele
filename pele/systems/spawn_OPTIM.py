@@ -4,7 +4,7 @@ import numpy as np
 import tempfile
 import shutil
 
-from pygmin.optimize import Result
+from pele.optimize import Result
 
 
 class PathInfoReader(object):
@@ -253,8 +253,8 @@ POINTS
 #
 
 def spawnlj(**kwargs):
-    from pygmin.systems import LJCluster
-    from pygmin.config import config
+    from pele.systems import LJCluster
+    from pele.config import config
     import os
     natoms = 13
     sys = LJCluster(natoms)

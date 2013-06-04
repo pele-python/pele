@@ -1,18 +1,18 @@
 import unittest
 
-#from pygmin.mindist.aamindist import aaDistTest
-from pygmin.mindist.tests import *
-#from pygmin.mindist.minpermdist_rbmol import TestMinPermDistRBMol_OTP
-#from pygmin.mindist.permutational_alignment import TestMinDistUtils
-from pygmin.potentials.ATLJ import TestATLJ
-from pygmin.potentials.lj import LJTest
-from pygmin.potentials.ljcut import LJCutTest
-from pygmin.landscape._graph import TestGraph
-from pygmin.landscape._distance_graph import TestDistanceGraph
-from pygmin.transition_states._orthogopt import TestOrthogopt
-from pygmin.utils.hessian import TestEig
-from pygmin.accept_tests.tests import *
-from pygmin.storage.tests import *
-from pygmin._test_basinhopping import TestBasinhopping
+#from pele.mindist.aamindist import aaDistTest
+from pele.mindist.tests import *
+#from pele.mindist.minpermdist_rbmol import TestMinPermDistRBMol_OTP
+#from pele.mindist.permutational_alignment import TestMinDistUtils
+from pele.potentials.ATLJ import TestATLJ
+from pele.potentials.lj import LJTest
+from pele.potentials.ljcut import LJCutTest
+from pele.landscape._graph import TestGraph
+from pele.landscape._distance_graph import TestDistanceGraph
+from pele.transition_states._orthogopt import TestOrthogopt
+from pele.utils.hessian import TestEig
+from pele.accept_tests.tests import *
+from pele.storage.tests import *
+from pele._test_basinhopping import TestBasinhopping
 
 unittest.main()

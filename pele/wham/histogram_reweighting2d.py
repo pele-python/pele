@@ -74,18 +74,18 @@ class wham2d(object):
         X = np.random.rand(nvar)
         print "initial energy", whampot.getEnergy(X)
         try: 
-            from pygmin.optimize import mylbfgs as quench
+            from pele.optimize import mylbfgs as quench
             ret = quench(X, whampot, iprint=10, maxstep = 1e4)
         except ImportError:
-            from pygmin.optimize import lbfgs_scipy as quench
+            from pele.optimize import lbfgs_scipy as quench
             ret = quench(X, whampot)            
 
         print "quenched energy", ret.energy
         
         global_min = False
         if global_min:
-            from pygmin.basinhopping import BasinHopping
-            from pygmin.takestep.displace import RandomDisplacement
+            from pele.basinhopping import BasinHopping
+            from pele.takestep.displace import RandomDisplacement
             takestep = RandomDisplacement(stepsize=10.)
             takestep.useAdaptiveStep()
             takestep.adaptive_class.f = 2.

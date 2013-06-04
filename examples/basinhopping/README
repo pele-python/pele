@@ -1,4 +1,4 @@
-These examples demonstrate how to run pygmin using python scripts.  A simple
+These examples demonstrate how to run pele using python scripts.  A simple
 Lennard-Jones potential is used.  
 
 All of these scripts use the existing Lennard-Jones system class LJCluster.

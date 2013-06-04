@@ -3,11 +3,11 @@ import copy
 import multiprocessing as mp
 import logging
 
-from pygmin.transition_states import NEB
+from pele.transition_states import NEB
 
 __all__ = ["NEBPar"]
 
-logger = logging.getLogger("pygmin.connect.neb")
+logger = logging.getLogger("pele.connect.neb")
 
 class _PotentialProcess(mp.Process):
     """
@@ -111,7 +111,7 @@ class NEBPar(NEB):
     See Also
     --------
     NEB : base class
-    pygmin.landscape.LocalConnectPar : were this class is used
+    pele.landscape.LocalConnectPar : were this class is used
     """
     def __init__(self, *args, **kwargs):
         #self.ncores = ncores
@@ -221,7 +221,7 @@ class NEBPar(NEB):
     
 if __name__ == "__main__":
     logger.basicConfig(level=logger.DEBUG)
-    from pygmin.transition_states._NEB import nebtest
+    from pele.transition_states._NEB import nebtest
     nebtest(NEBPar)
 
     

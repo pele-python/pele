@@ -1,4 +1,4 @@
-from pygmin.storage.database import Database, Minimum, TransitionState
+from pele.storage.database import Database, Minimum, TransitionState
 import time
 import numpy as np
 from simtk.openmm.app import AmberPrmtopFile

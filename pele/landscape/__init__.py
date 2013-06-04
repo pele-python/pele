@@ -1,6 +1,6 @@
 """
-.. currentmodule:: pygmin.landscape
-Landscape Exploration (`pygmin.landscape`)
+.. currentmodule:: pele.landscape
+Landscape Exploration (`pele.landscape`)
 ============================================
 
 This module implements routines for exploring the energy landscape.  This

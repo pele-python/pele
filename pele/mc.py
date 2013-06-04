@@ -3,7 +3,7 @@ import sys
 import accept_tests.metropolis as metropolis
 import copy
 import numpy as np
-from pygmin.optimize import Result
+from pele.optimize import Result
 
 
 class MonteCarlo(object):
@@ -58,7 +58,7 @@ class MonteCarlo(object):
     
     See Also
     --------
-    pygmin.potentials, pygmin.takestep, pygmin.storage, pygmin.accept_tests
+    pele.potentials, pele.takestep, pele.storage, pele.accept_tests
     """
     
     insert_rejected = False
@@ -204,7 +204,7 @@ class MonteCarlo(object):
 
 
 if __name__ == "__main__":
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     natoms = 13
     sys = LJCluster(natoms)
     pot = sys.get_potential()

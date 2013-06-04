@@ -5,7 +5,7 @@ Most of these were adapted from victor's rotations.f90.  Not all functions from
 the file have been implemented.
 Warning, they have not all been tested in this format.
 
-.. currentmodule:: pygmin.utils.rotations
+.. currentmodule:: pele.utils.rotations
 
 .. autosummary::
     :toctree: generated/

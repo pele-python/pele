@@ -1,5 +1,5 @@
 import numpy as np
-from pygmin.utils import rotations
+from pele.utils import rotations
 
 all = ["findrotation", "findrotation_kabsch", "findrotation_kearsley"]
 
@@ -139,7 +139,7 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
 findrotation = findrotation_kearsley
 
 if __name__ == "__main__":
-    from pygmin.utils import rotations
+    from pele.utils import rotations
     x1 = np.random.random(24)
     mx = rotations.q2mx(rotations.random_q())
     

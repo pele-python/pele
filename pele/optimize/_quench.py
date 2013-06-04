@@ -9,8 +9,8 @@ scipy.minimize would do a similar thing
 
 import numpy as np
 
-from pygmin.optimize import LBFGS, MYLBFGS, Fire, Result
-from pygmin.potentials import BasePotential
+from pele.optimize import LBFGS, MYLBFGS, Fire, Result
+from pele.potentials import BasePotential
 
 __all__ = ["lbfgs_scipy", "fire", "lbfgs_py", "mylbfgs", "cg", 
            "steepest_descent", "bfgs_scipy"]
@@ -83,7 +83,7 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
 
 def fire(coords, pot, tol=1e-3, nsteps=100000, **kwargs):
     """
-    A wrapper function for the pygmin FIRE implementation
+    A wrapper function for the pele FIRE implementation
     """
     if not hasattr(pot, "getEnergyGradient"):
         # for compatibility with old quenchers.
@@ -204,7 +204,7 @@ def mylbfgs(coords, pot, **kwargs):
 import unittest
 class TestMinimizers(unittest.TestCase):
     def setUp(self):
-        from pygmin.systems import LJCluster
+        from pele.systems import LJCluster
         natoms = 31
         self.system = LJCluster(natoms)
         self.pot = self.system.get_potential()
@@ -261,7 +261,7 @@ class TestMinimizers(unittest.TestCase):
         
 if __name__ == "__main__":
     unittest.main()
-#    from pygmin.systems import LJCluster
+#    from pele.systems import LJCluster
 #    system = LJCluster(13)
 #    pot = system.get_potential()
 #    coords = system.get_random_configuration()

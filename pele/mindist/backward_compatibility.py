@@ -1,8 +1,8 @@
 from minpermdist_stochastic import MinPermDistCluster
 from _minpermdist_policies import MeasureAtomicCluster
 from permutational_alignment import optimize_permutations
-from pygmin.utils import rotations
-from pygmin.utils import rotations as rot
+from pele.utils import rotations
+from pele.utils import rotations as rot
 from rmsfit import findrotation
 import numpy as np
 

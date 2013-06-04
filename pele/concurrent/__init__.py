@@ -1,9 +1,9 @@
 ''' 
-.. currentmodule:: pygmin.concurrent
+.. currentmodule:: pele.concurrent
 
-Parallel connect jobs (`pygmin.concurrent`)
+Parallel connect jobs (`pele.concurrent`)
 ===========================================
-Concurrent programming concepts allow pygmin connect jobs to be run in parallel. We use the package
+Concurrent programming concepts allow pele connect jobs to be run in parallel. We use the package
 Pyro4 which makes this amazingly simple.
 
 The server manages the central database and decides which connections to try. 

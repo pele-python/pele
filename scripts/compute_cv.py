@@ -4,9 +4,9 @@ a script to calculate Cv from the Harmonic Superposition Approximation
 
 import argparse
 import numpy as np
-from pygmin.thermodynamics import minima_to_cv
-from pygmin.storage import Database
-from pygmin.utils.optim_compatibility import read_min_data
+from pele.thermodynamics import minima_to_cv
+from pele.storage import Database
+from pele.utils.optim_compatibility import read_min_data
 
 import matplotlib as mpl
 mpl.use("Agg") # so we can use it without an X server
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         minima = [m for m in db.minima() if m.fvib is not None and m.pgorder is not None]
         if len(minima) == 0:
             print "There are not minima with the necessary thermodynamic information in the database.  Have you computed the normal mode"\
-                  " frequencies and point group order for all the minima?  See pygmin.thermodynamics "\
+                  " frequencies and point group order for all the minima?  See pele.thermodynamics "\
                   " for more information"
             exit(1)
     print "computing heat capacity from", len(minima), "minima"

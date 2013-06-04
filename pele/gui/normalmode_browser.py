@@ -1,6 +1,6 @@
 from PyQt4 import QtGui, QtCore, Qt
 from  ui.ui_normalmode_explorer import Ui_MainWindow as UI
-from pygmin.thermodynamics import normalmodes 
+from pele.thermodynamics import normalmodes 
 import numpy as np
 import pickle
 from dlg_params import DlgParams
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     import sys
     glutInit()
     app = QtGui.QApplication(sys.argv)
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     natoms = 13
     system = LJCluster(natoms)
     system.params.double_ended_connect.local_connect_params.NEBparams.iter_density = 5.

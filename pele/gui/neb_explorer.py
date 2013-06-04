@@ -1,19 +1,19 @@
 from PyQt4 import QtGui, QtCore, Qt
 #from PyQt4.QtGui import QDockWidget
-from pygmin.utils.events import Signal
+from pele.utils.events import Signal
 from copy import deepcopy
 from itertools import izip
 
 from nebdlg import NEBWidget
 #from show3d import Show3D
-from pygmin.storage import Database
-from pygmin.gui.ui.mplwidget import MPLWidget
-from  pygmin.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
+from pele.storage import Database
+from pele.gui.ui.mplwidget import MPLWidget
+from  pele.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
 from dlg_params import DlgParams
 from show3d_with_slider import Show3DWithSlider
 import numpy as np
 import pickle
-from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
+from pele.gui.connect_explorer_dlg import ConnectExplorerDialog
 
 class NEBRunner(object):
     def __init__(self, app, system, freq = 30):
@@ -352,7 +352,7 @@ if __name__ == "__main__":
     from OpenGL.GLUT import glutInit
     glutInit()
     app = QtGui.QApplication(sys.argv)
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     pl.ion()
     natoms = 13
     system = LJCluster(natoms)

@@ -2,7 +2,7 @@ import numpy as np
 import copy
 
 from _minpermdist_policies import MeasurePolicy, TransformPolicy
-from pygmin.mindist import find_best_permutation
+from pele.mindist import find_best_permutation
 
 
 class MeasurePeriodic(MeasurePolicy):
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     unittest.main()
         
 if __name__ == "__main__":
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     natoms = 20
     rho = .5
     boxl = (float(natoms) / rho)**(1./3)

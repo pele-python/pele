@@ -2,8 +2,8 @@ import argparse
 
 import networkx as nx
 
-from pygmin.storage.database import Database
-from pygmin.landscape import TSGraph
+from pele.storage.database import Database
+from pele.landscape import TSGraph
 
 def long_summary(db):
     nts = db.number_of_transition_states()

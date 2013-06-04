@@ -1,14 +1,14 @@
 import logging
 import numpy as np
 
-from pygmin.transition_states import NEB, NEBPar
-from pygmin.transition_states._NEB import distance_cart
+from pele.transition_states import NEB, NEBPar
+from pele.transition_states._NEB import distance_cart
 from interpolate import InterpolatedPath, interpolate_linear
-from pygmin.utils.events import Signal
+from pele.utils.events import Signal
 
 all = ["NEBDriver"]
 
-logger = logging.getLogger("pygmin.connect.neb")
+logger = logging.getLogger("pele.connect.neb")
 
 #def calc_neb_dist(coords, nimages, dist=True, grad=False):
 #    d_left = np.zeros(coords.shape)

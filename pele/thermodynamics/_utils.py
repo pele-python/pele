@@ -22,7 +22,7 @@ def get_thermodynamic_information(system, database):
     
     Parameters
     ----------
-    system : pygmin System class
+    system : pele System class
     databse : a Database object
     
     Notes

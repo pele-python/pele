@@ -1,7 +1,7 @@
 """
-.. currentmodu:: pygmin.gui
+.. currentmodu:: pele.gui
 
-pygmin GUI (`pygmin.gui`)
+pele GUI (`pele.gui`)
 --------------------------
 This module contains all the necessary components for running the gui.  
 
@@ -12,8 +12,8 @@ This module contains all the necessary components for running the gui.
 
 Simply initialize your system and pass it to run_gui::
 
-    from pygmin.systems import LJCluster
-    from pygmin.gui import run_gui
+    from pele.systems import LJCluster
+    from pele.gui import run_gui
     mysystem = LJCluster(13)
     run_gui(mysystem)
 

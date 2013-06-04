@@ -3,9 +3,9 @@ import numpy as np
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QDialog, QWidget
 
-from pygmin.gui.ui.mplwidget import MPLWidget
-from pygmin.landscape import TSGraph
-from pygmin.utils.events import Signal
+from pele.gui.ui.mplwidget import MPLWidget
+from pele.landscape import TSGraph
+from pele.utils.events import Signal
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     import pylab as pl
 
     app = QtGui.QApplication(sys.argv)
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     pl.ion()
     natoms = 13
     system = LJCluster(natoms)

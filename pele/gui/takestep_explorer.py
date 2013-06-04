@@ -110,7 +110,7 @@ if __name__ == "__main__":
     from OpenGL.GLUT import glutInit
     glutInit()
     app = QtGui.QApplication(sys.argv)
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     pl.ion()
     natoms = 13
     system = LJCluster(natoms)

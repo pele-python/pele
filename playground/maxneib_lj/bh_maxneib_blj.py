@@ -1,5 +1,5 @@
-from pygmin.potentials.maxneib_blj import MaxNeibsBLJ, MaxNeibsBLJSystem
-from pygmin.gui import run_gui
+from pele.potentials.maxneib_blj import MaxNeibsBLJ, MaxNeibsBLJSystem
+from pele.gui import run_gui
 import numpy as np
 
 

@@ -1,5 +1,5 @@
-from pygmin.concurrent import ConnectWorker
-from pygmin.systems import LJCluster
+from pele.concurrent import ConnectWorker
+from pele.systems import LJCluster
 
 from start_server import create_system, port, hostname, server_name
 

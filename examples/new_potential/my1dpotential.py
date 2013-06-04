@@ -3,7 +3,7 @@ a 1d example potential
 """
 import numpy as np
 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 
 class My1DPot(BasePotential):
     """1d potential"""
@@ -19,7 +19,7 @@ class My1DPot(BasePotential):
 #system class
 #
 
-from pygmin.systems import BaseSystem
+from pele.systems import BaseSystem
 class My1DSystem(BaseSystem):
     def get_potential(self):
         return My1DPot()

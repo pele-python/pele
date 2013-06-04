@@ -1,6 +1,6 @@
 """
 classes to build and maintain neighborlists
-.. currentmodule:: pygmin.utils.neighbor_list
+.. currentmodule:: pele.utils.neighbor_list
 
 .. autosummary:: 
     :toctree: generated/
@@ -19,10 +19,10 @@ classes to build and maintain neighborlists
 
 import numpy as np
 
-from pygmin.potentials.potential import potential as basepot
+from pele.potentials.potential import potential as basepot
 import _fortran_utils
-from pygmin.potentials.ljcut import LJCut as LJ
-import pygmin.potentials.ljpshift as ljpshift
+from pele.potentials.ljcut import LJCut as LJ
+import pele.potentials.ljpshift as ljpshift
 
 
 __all__ = ["NeighborList", "NeighborListSubset", "NeighborListPotential", "MultiComponentSystem", 
@@ -570,8 +570,8 @@ def makeBLJNeighborListPot(natoms, ntypeA = None, rcut = 2.5, boxl=None):
 
 
 def test(natoms = 40, boxl=None):
-    import pygmin.potentials.ljpshiftfast as ljpshift
-    from pygmin.optimize import mylbfgs
+    import pele.potentials.ljpshiftfast as ljpshift
+    from pele.optimize import mylbfgs
     ntypeA = int(natoms*0.8)
     rcut = 2.5
     coords = np.random.uniform(-1,1,natoms*3)*(natoms)**(1./3)/2
@@ -613,7 +613,7 @@ def test(natoms = 40, boxl=None):
     
     if False:
         try: 
-            import pygmin.utils.pymolwrapper as pym
+            import pele.utils.pymolwrapper as pym
             pym.start()
             pym.draw_spheres(np.reshape(coords,[-1,3]), "A", 1)
             pym.draw_spheres(np.reshape(ret1.coords,[-1,3]), "A", 2)
@@ -622,9 +622,9 @@ def test(natoms = 40, boxl=None):
             print "Could not draw using pymol, skipping this step" 
     
 def test2():
-    import pygmin.potentials.ljpshiftfast as ljpshiftfast
-    import pygmin.potentials.ljpshift as ljpshift
-    from pygmin.optimize import mylbfgs
+    import pele.potentials.ljpshiftfast as ljpshiftfast
+    import pele.potentials.ljpshift as ljpshift
+    from pele.optimize import mylbfgs
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench"
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords"
     #fname = "out.coords"

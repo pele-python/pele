@@ -1,10 +1,10 @@
 import numpy as np
-from pygmin.potentials import GMINPotential
+from pele.potentials import GMINPotential
 import gmin_ as GMIN
 from copy import deepcopy
 import tip4p
 
-from pygmin.angleaxis import RBTopology, RBSystem
+from pele.angleaxis import RBTopology, RBSystem
 
 class TIP4PSystem(RBSystem):
     def __init__(self):
@@ -40,5 +40,5 @@ class TIP4PSystem(RBSystem):
         return self.potential
     
 if __name__ == "__main__":
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(TIP4PSystem, db="tip4p_8.sqlite")

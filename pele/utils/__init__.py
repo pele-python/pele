@@ -1,18 +1,18 @@
 """
-Utilities (`pygmin.utils`)
+Utilities (`pele.utils`)
 +++++++++++++++++++++++++++
 Helper functions
 ================
 
 rotations
 ---------
-.. automodule:: pygmin.utils.rotations
+.. automodule:: pele.utils.rotations
     
 
 .. autosummary:: 
     :toctree: generated/
     
-    pygmin.utils.vec3.invert3x3
+    pele.utils.vec3.invert3x3
 
 
 benchmarking tool
@@ -20,31 +20,31 @@ benchmarking tool
 .. autosummary:: 
     :toctree: generated/
 
-    pygmin.utils.benchmark.QuenchBenchmark
+    pele.utils.benchmark.QuenchBenchmark
 
 Coords Adapter
 --------------    
-.. automodule:: pygmin.utils.rbtools 
+.. automodule:: pele.utils.rbtools 
 
 
 Hessian eigenvalues and eigenvectors
 -------------------------------------
-.. automodule:: pygmin.utils.hessian
+.. automodule:: pele.utils.hessian
 
 
 NeighborLists
 =============
-.. automodule:: pygmin.utils.neighbor_list
+.. automodule:: pele.utils.neighbor_list
 
-.. automodule:: pygmin.utils.frozen_atoms
+.. automodule:: pele.utils.frozen_atoms
 
 Histogram
 =========
-.. automodule:: pygmin.utils.histogram
+.. automodule:: pele.utils.histogram
 
 .xyz files
 ===========
-.. automodule:: pygmin.utils.xyz
+.. automodule:: pele.utils.xyz
 
 
 Disconnectivity Graph
@@ -55,11 +55,11 @@ see :ref:`disconnectivity graph <disconnectivity_graph>`
 Wrapper / helper functions for external programs
 ================================================
 
-.. automodule:: pygmin.utils.pymolwrapper 
+.. automodule:: pele.utils.pymolwrapper 
       :members:
       :undoc-members:
 
-.. automodule:: pygmin.utils.amber 
+.. automodule:: pele.utils.amber 
       :members:
       :undoc-members:
 

@@ -14,8 +14,8 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.Qt import Qt, QWidget
 from PyQt4.QtOpenGL import *
 import numpy as np
-import pygmin.utils.rotations as rot
-from pygmin.utils.events import Signal
+import pele.utils.rotations as rot
+from pele.utils.events import Signal
 from PyQt4.QtCore import pyqtSlot
 
 try:

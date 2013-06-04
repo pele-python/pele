@@ -286,4 +286,4 @@ class Ui_MainWindow(object):
         self.action_merge_minima.setText(QtGui.QApplication.translate("MainWindow", "Merge Minima", None, QtGui.QApplication.UnicodeUTF8))
 
 from show3d_with_slider import Show3DWithSlider
-from pygmin.gui.show3d import Show3D
+from pele.gui.show3d import Show3D

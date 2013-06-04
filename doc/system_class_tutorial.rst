@@ -3,11 +3,11 @@
 Using the system class
 ----------------------
 
-All of the tools in pygmin are modular, and can be used without a system class,
+All of the tools in pele are modular, and can be used without a system class,
 but seting up a system class can make your life a *lot* easier.  If you set it up
-once then access to all the tools in pygmin is simply one function call away.  This
+once then access to all the tools in pele is simply one function call away.  This
 tutorial is designed to show how use the system class to access the most common
-features of pygmin.
+features of pele.
 
 .. note::
   This tutorial mirrors an example in the examples folder.
@@ -17,7 +17,7 @@ start by initializing the system class.  Different system classes
 may take different parameters for the constructor.  LJCluster simply
 takes the number of atoms.  We'll look at clusters of 13 atoms::
 
-  from pygmin.systems import LJCluster
+  from pele.systems import LJCluster
   natoms = 13
   system = LJCluster(natoms)
 

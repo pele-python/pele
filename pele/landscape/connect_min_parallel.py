@@ -2,15 +2,15 @@ import multiprocessing as mp
 import logging
 
 #this import fixes some bugs in how multiprocessing deals with exceptions
-import pygmin.utils.fix_multiprocessing
+import pele.utils.fix_multiprocessing
 
-from pygmin.landscape import DoubleEndedConnect, LocalConnect
-from pygmin.landscape.local_connect import _refineTS
-from pygmin.transition_states import create_NEB
+from pele.landscape import DoubleEndedConnect, LocalConnect
+from pele.landscape.local_connect import _refineTS
+from pele.transition_states import create_NEB
 
 __all__ = ["DoubleEndedConnectPar", "LocalConnectPar"]
 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 
 def _refineTSWrapper(inputs):
     """
@@ -74,7 +74,7 @@ class LocalConnectPar(LocalConnect):
     --------
     LocalConnect : base class
     DoubleEndedConnectPar : uses this class
-    pygmin.transition_states.NEBPar : parallel version of NEB
+    pele.transition_states.NEBPar : parallel version of NEB
 
     
     Notes
@@ -162,5 +162,5 @@ class LocalConnectPar(LocalConnect):
 
 
 if __name__ == "__main__":
-    from pygmin.landscape.connect_min import test
+    from pele.landscape.connect_min import test
     test(DoubleEndedConnectPar, natoms=28)

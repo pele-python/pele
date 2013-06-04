@@ -1,7 +1,7 @@
 """
 tools for dealing with frozen atoms.  Especially in relation to neighbor lists
 
-.. currentmodule:: pygmin.utils.frozen_atoms
+.. currentmodule:: pele.utils.frozen_atoms
 
 .. autosummary::
     :toctree: generated/
@@ -12,11 +12,11 @@ tools for dealing with frozen atoms.  Especially in relation to neighbor lists
 """
 import numpy as np
 
-import pygmin.potentials.ljpshift as ljpshift
-from pygmin.potentials.potential import potential as basepot
-from pygmin.potentials.ljcut import LJCut
-from pygmin.utils.neighbor_list import NeighborListSubsetBuild, NeighborListPotentialBuild
-from pygmin.utils.neighbor_list import NeighborListPotentialMulti
+import pele.potentials.ljpshift as ljpshift
+from pele.potentials.potential import potential as basepot
+from pele.potentials.ljcut import LJCut
+from pele.utils.neighbor_list import NeighborListSubsetBuild, NeighborListPotentialBuild
+from pele.utils.neighbor_list import NeighborListPotentialMulti
 
 __all__ = ["makeBLJNeighborListPotFreeze", "FreezePot"]
 
@@ -256,9 +256,9 @@ class FreezePot(basepot):
 #########################################################
 
 def test(natoms = 40, boxl=4.):
-    import pygmin.potentials.ljpshiftfast as ljpshift
-    from pygmin.optimize import mylbfgs
-    from pygmin.utils.neighbor_list import makeBLJNeighborListPot
+    import pele.potentials.ljpshiftfast as ljpshift
+    from pele.optimize import mylbfgs
+    from pele.utils.neighbor_list import makeBLJNeighborListPot
     ntypeA = int(natoms*0.8)
     ntypeB = natoms - ntypeA
     rcut = 2.5
@@ -309,7 +309,7 @@ def test(natoms = 40, boxl=4.):
     
     if False:
         try: 
-            import pygmin.utils.pymolwrapper as pym
+            import pele.utils.pymolwrapper as pym
             pym.start()
             pym.draw_spheres(np.reshape(coords,[-1,3]), "A", 1)
             pym.draw_spheres(np.reshape(ret1.coords,[-1,3]), "A", 2)

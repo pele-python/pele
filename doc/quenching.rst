@@ -1,3 +1,3 @@
 .. _optimize_module:
 
-.. automodule:: pygmin.optimize
+.. automodule:: pele.optimize

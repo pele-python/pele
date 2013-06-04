@@ -1,21 +1,21 @@
 import numpy as np
 import tempfile
 
-from pygmin.angleaxis import RBTopology
+from pele.angleaxis import RBTopology
 from copy import deepcopy
-from pygmin.utils import rotations
-from pygmin.takestep import RotationalDisplacement
-from pygmin.systems import BaseSystem, dict_copy_update, BaseParameters
-from pygmin.transition_states import NEB, InterpolatedPathDensity
+from pele.utils import rotations
+from pele.takestep import RotationalDisplacement
+from pele.systems import BaseSystem, dict_copy_update, BaseParameters
+from pele.transition_states import NEB, InterpolatedPathDensity
 
-from pygmin.optimize import fire, mylbfgs
+from pele.optimize import fire, mylbfgs
 
-from pygmin.angleaxis.aamindist import *
-from pygmin.angleaxis import MinPermDistAACluster, ExactMatchAACluster
-from pygmin.angleaxis import TakestepAA
-from pygmin.landscape import smoothPath
-from pygmin.utils.elements import elements
-from pygmin.utils.xyz import write_xyz
+from pele.angleaxis.aamindist import *
+from pele.angleaxis import MinPermDistAACluster, ExactMatchAACluster
+from pele.angleaxis import TakestepAA
+from pele.landscape import smoothPath
+from pele.utils.elements import elements
+from pele.utils.xyz import write_xyz
 
 
 class AASystem(BaseSystem):
@@ -73,7 +73,7 @@ class AASystem(BaseSystem):
         
         See Also
         --------
-        pygmin.takestep
+        pele.takestep
         """
         kwargs = dict_copy_update(self.params["takestep"], kwargs)
         return TakestepAA(self.aasystem, **kwargs)
@@ -177,7 +177,7 @@ class RBSystem(AASystem):
         fname = f.name
                 
         # write the atomistic coords into the xyz file
-        from pygmin.mindist import CoMToOrigin
+        from pele.mindist import CoMToOrigin
         for coords in coordslist:
             if hasattr(self, "atom_types"):
                 atom_types = self.atom_types

@@ -8,7 +8,7 @@
 # cannot have any instance data and any variable data has to be passed in
 # the function call.
 
-cimport _pygmin
+cimport _pele
 
 # this is implemented in external fortran code
 cdef extern:
@@ -35,7 +35,7 @@ cdef double lj_energy(double *x, int n, void *userdata):
     pass
 
 # define the potential class
-cdef class LJ_cython(_pygmin.Potential):
+cdef class LJ_cython(_pele.Potential):
     cdef double _data[2]
     
     def __cinit__(self, sigma=1.0, epsilon=1.0):
@@ -43,7 +43,7 @@ cdef class LJ_cython(_pygmin.Potential):
         self._data[1] = epsilon
         # PotentialFunction uses lj_energy and lj_grad as callback
         # and self._data is passed to each function call
-        self.thisptr = <_pygmin.cPotential*>new _pygmin.cPotentialFunction(
+        self.thisptr = <_pele.cPotential*>new _pele.cPotentialFunction(
                                            &lj_energy,
                                            &lj_grad,
                                            <void*>self._data)

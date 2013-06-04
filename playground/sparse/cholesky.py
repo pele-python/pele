@@ -1,10 +1,10 @@
-from pygmin.systems import LJCluster
+from pele.systems import LJCluster
 import numpy as np
 import scipy.sparse
 import scikits.sparse.cholmod as cholmod
 import time
-import pygmin.transition_states as ts
-from pygmin.utils.hessian import get_sorted_eig
+import pele.transition_states as ts
+from pele.utils.hessian import get_sorted_eig
 
 natoms = 1000
 system = LJCluster(natoms)
