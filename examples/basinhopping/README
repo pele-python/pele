@@ -5,4 +5,4 @@ All of these scripts use the existing Lennard-Jones system class LJCluster.
 This hides a lot of the underlying calls.  For more detail and to see what's
 going on under the hood these examples are also written in another folder
 without the use of the system class.  Also, see the system class documentation
-(http://js850.github.com/PyGMIN/system_class_tutorial.html) for more information.
+(http://pele-python.github.com/pele/system_class_tutorial.html) for more information.
