@@ -57,7 +57,6 @@ class Parameters(BaseParameters):
         self.double_ended_connect.local_connect_params = BaseParameters()
 
         self.double_ended_connect.local_connect_params.pushoff_params = BaseParameters()
-        self.double_ended_connect.local_connect_params.pushoff_params.quenchParams = BaseParameters()
 
         self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters(FindTransitionState.params())
         self.double_ended_connect.local_connect_params.NEBparams = BaseParameters(NEBDriver.params())
@@ -117,9 +116,6 @@ class BaseSystem(object):
     """
     def __init__(self, *args, **kwargs):
         self.params = Parameters()
-        
-        tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
-        tsSearchParams.lowestEigenvectorQuenchParams["nsteps"] = 100
         
 #        self.params.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams.maxErise = 1e50
 
@@ -287,6 +283,7 @@ class BaseSystem(object):
         
         #attach the function which orthogonalizes to known zero eigenvectors.
         #This is amazingly ugly
+        # vr: yea, we should polish this parameters stuff and give create policies instead!
         try:
             kwargs["local_connect_params"]["tsSearchParams"]["orthogZeroEigs"]
         except KeyError:
@@ -303,6 +300,13 @@ class BaseSystem(object):
             if not "orthogZeroEigs" in tssp:
                 tssp["orthogZeroEigs"] = self.get_orthogonalize_to_zero_eigenvectors()
                 
+        try:
+            kwargs["local_connect_params"]["pushoff_params"]["quench"]
+        except:
+            if not "pushoff_params" in  kwargs["local_connect_params"]:
+                kwargs["local_connect_params"]["pushoff_params"] = BaseParameters()
+            kwargs["local_connect_params"]["pushoff_params"]["quench"] = self.get_minimizer()                
+        
         if parallel:
             return DoubleEndedConnectPar(min1, min2, pot, mindist, database, **kwargs)
         else:
