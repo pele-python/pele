@@ -8,7 +8,7 @@ Welcome to pele's documentation!
 
 The source code repository can be found at `<https://github.com/pele-python/pele>`_
 
-The documentation is hosted at `<http://js850.github.com/PyGMIN/>`_
+The documentation is hosted at `<http://pele-python.github.com/pele/>`_
 
 pele is a package of tools for exploring energy landscapes.  The core
 routines are broken into two parts: :ref:`Basinhopping <global_optimization>`,
