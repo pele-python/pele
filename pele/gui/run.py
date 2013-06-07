@@ -18,6 +18,7 @@ from pele.gui.connect_run_dlg import ConnectViewer
 from pele.gui.takestep_explorer import TakestepExplorer
 from pele.gui.normalmode_browser import NormalmodeBrowser
 from pele.gui._list_views import ListViewManager
+from pele.gui._cv_viewer import HeatCapacityViewer
 
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -537,7 +538,13 @@ class MainGUI(QtGui.QMainWindow):
                                                       database = self.system.database)
             
         self.takestep_explorer.show()
-        
+    
+    def on_btn_heat_capacity_clicked(self, clicked=None):
+        if clicked is None: return 
+        self.cv_viewer = HeatCapacityViewer(self.system, self.system.database, parent=self)
+        self.cv_viewer.show()
+        self.cv_viewer.rebuild_cv_plot()
+    
 #def refresh_pl():
     #pl.pause(0.000001)    
     

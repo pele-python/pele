@@ -92,6 +92,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="btn_heat_capacity">
+              <property name="text">
+               <string>heat capacity</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="pushTakestepExplorer">
               <property name="text">
                <string>Takestep explorer</string>
@@ -111,7 +118,7 @@
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start a short basinhopping run&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Run</string>
+               <string>Run Basinhopping</string>
               </property>
              </widget>
             </item>

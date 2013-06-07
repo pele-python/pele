@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Mon Jun  3 11:49:55 2013
+# Created: Fri Jun  7 15:43:13 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -64,6 +64,9 @@ class Ui_MainWindow(object):
         self.list_minima_main.verticalHeader().setCascadingSectionResizes(False)
         self.list_minima_main.verticalHeader().setSortIndicatorShown(False)
         self.verticalLayout_3.addWidget(self.list_minima_main)
+        self.btn_heat_capacity = QtGui.QPushButton(self.BHTab)
+        self.btn_heat_capacity.setObjectName(_fromUtf8("btn_heat_capacity"))
+        self.verticalLayout_3.addWidget(self.btn_heat_capacity)
         self.pushTakestepExplorer = QtGui.QPushButton(self.BHTab)
         self.pushTakestepExplorer.setObjectName(_fromUtf8("pushTakestepExplorer"))
         self.verticalLayout_3.addWidget(self.pushTakestepExplorer)
@@ -250,10 +253,11 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_heat_capacity.setText(QtGui.QApplication.translate("MainWindow", "heat capacity", None, QtGui.QApplication.UnicodeUTF8))
         self.pushTakestepExplorer.setText(QtGui.QApplication.translate("MainWindow", "Takestep explorer", None, QtGui.QApplication.UnicodeUTF8))
         self.pushNormalmodesMin.setText(QtGui.QApplication.translate("MainWindow", "Normalmodes", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_start_basinhopping.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a short basinhopping run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_start_basinhopping.setText(QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_start_basinhopping.setText(QtGui.QApplication.translate("MainWindow", "Run Basinhopping", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.BHTab), QtGui.QApplication.translate("MainWindow", "Basin Hopping", None, QtGui.QApplication.UnicodeUTF8))
         self.btnAlign.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Find best alignment between two structures</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnAlign.setText(QtGui.QApplication.translate("MainWindow", "Align", None, QtGui.QApplication.UnicodeUTF8))

@@ -16,20 +16,25 @@ class _ThermoWorker(mp.Process):
         the worker will return results on this queue
     system : pele system object
     """
-    def __init__(self, input_queue, output_queue, system, **kwargs):
+    def __init__(self, input_queue, output_queue, system, verbose=False, **kwargs):
         mp.Process.__init__(self, **kwargs)
         self.input_queue = input_queue
         self.output_queue = output_queue
         self.system = system
+        self.verbose = verbose
 
 
     def run(self):
         while True:
             if self.input_queue.empty():
+                if self.verbose:
+                    print "woker ending"
                 return
             mid, coords = self.input_queue.get()
             pgorder = self.system.get_pgorder(coords)
             fvib = self.system.get_log_product_normalmode_freq(coords)
+            if self.verbose:
+                print "finished computing thermodynamic info for minimum", mid, pgorder, fvib
             
             self.output_queue.put((mid, fvib, pgorder))
 
@@ -45,15 +50,17 @@ class GetThermodynamicInfoParallel(object):
         thermodynamic information will be calculated for all minima
         in the database that don't already have the data
     """
-    def __init__(self, system, database, npar=4):
+    def __init__(self, system, database, npar=4, verbose=False):
         self.system = system
         self.database = database
+        self.verbose = verbose
+
         # initialize workers
         self.workers = []
         self.send_queue = mp.Queue()
         self.done_queue = mp.Queue()
         for i in range(npar):
-            worker = _ThermoWorker(self.send_queue, self.done_queue, system)
+            worker = _ThermoWorker(self.send_queue, self.done_queue, system, verbose=self.verbose)
             worker.daemon = True
             self.workers.append(worker)
     
@@ -76,7 +83,17 @@ class GetThermodynamicInfoParallel(object):
             m.pgorder = pgorder
             self.database.session.commit()
 #            print "got result", mid
-            
+    
+    def finish(self):
+        if self.verbose:
+            print "closing workers"
+        for worker in self.workers:
+            worker.join()
+            worker.terminate()
+            worker.join()
+
+
+
     def start(self):
         # populate the queue
         self._populate_queue()
@@ -97,11 +114,7 @@ class GetThermodynamicInfoParallel(object):
             raise
         
         # kill the workers cleanly
-        for worker in self.workers:
-                worker.join()
-                worker.terminate()
-                worker.join()
-
+        self.finish()
         
     
     
