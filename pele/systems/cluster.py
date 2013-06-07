@@ -57,6 +57,9 @@ class AtomicCluster(BaseSystem):
     def get_pgorder(self, coords):
         calculator = PointGroupOrderCluster(self.get_compare_exact())
         return calculator(coords)
+    
+    def get_nzero_modes(self):
+        return 6
 
     
     #
