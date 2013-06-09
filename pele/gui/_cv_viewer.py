@@ -41,9 +41,9 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
         self.refresh_timer.timeout.connect(self.poll)
         self.refresh_timer.start(50.) # time in msec
 
-class HeatCapacityViewer(QtGui.QMainWindow):
+class HeatCapacityWidget(QtGui.QWidget):
     def __init__(self, system, database, parent=None):
-        super(HeatCapacityViewer, self).__init__(parent=parent)
+        super(HeatCapacityWidget, self).__init__(parent=parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         
@@ -136,6 +136,18 @@ class HeatCapacityViewer(QtGui.QMainWindow):
     def on_btn_recalculate_clicked(self, clicked=None):
         if clicked is None: return 
         self.rebuild_cv_plot()
+
+class HeatCapacityViewer(QtGui.QMainWindow):
+    def __init__(self, system, database, parent=None, app=None):
+        super(HeatCapacityViewer, self).__init__( parent=parent)
+        self.cv_widget = HeatCapacityWidget(system, database, parent=self)
+        self.setCentralWidget(self.cv_widget)
+    
+    def rebuild_cv_plot(self):
+        self.cv_widget.rebuild_cv_plot()
+        
+
+
 
 def test():
     import sys
