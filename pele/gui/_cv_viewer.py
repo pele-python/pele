@@ -53,7 +53,6 @@ class HeatCapacityWidget(QtGui.QWidget):
         
         self.canvas = self.ui.mplwidget.canvas
         self.axes = self.canvas.axes
-        self.setWindowTitle("Harmonic Superposition Heat Capacity")
     
     def rebuild_cv_plot(self):
         self._compute_thermodynamic_info(on_finish=self.make_cv_plot)
@@ -142,6 +141,7 @@ class HeatCapacityViewer(QtGui.QMainWindow):
         super(HeatCapacityViewer, self).__init__( parent=parent)
         self.cv_widget = HeatCapacityWidget(system, database, parent=self)
         self.setCentralWidget(self.cv_widget)
+        self.setWindowTitle("Harmonic Superposition Heat Capacity")
     
     def rebuild_cv_plot(self):
         self.cv_widget.rebuild_cv_plot()
