@@ -57,6 +57,10 @@ class RateCalculation(object):
             print "warning: the product set B is not fully connected or is not connected to A"
             self.B = self.B.difference_update(nodes)
         assert len(self.B) > 0
+        
+        if len(self.A) > 1 or len(self.B) > 1:
+            print "warning rates between minima in the product and reactant set should be set to zero but this isn't implemented yet"
+            # TODO : implement this
     
     def _get_local_rate(self, min1, min2, ts):
         """rate for going from min1 to min2
