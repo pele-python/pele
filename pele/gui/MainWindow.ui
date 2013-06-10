@@ -300,7 +300,7 @@
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the graph of minima and transition states&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
-                 <string>show graph</string>
+                 <string>Show graph</string>
                 </property>
                </widget>
               </item>
@@ -310,7 +310,7 @@
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the disconnectivity graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
-                 <string>disconnectivity graph</string>
+                 <string>Disconnectivity graph</string>
                 </property>
                </widget>
               </item>
@@ -334,7 +334,14 @@
               <item row="1" column="1">
                <widget class="QPushButton" name="btn_close_all">
                 <property name="text">
-                 <string>Close Windows</string>
+                 <string>Close windows</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="btn_rates">
+                <property name="text">
+                 <string>Compute rates</string>
                 </property>
                </widget>
               </item>

@@ -26,6 +26,8 @@ class RateCalculation(object):
         self.beta = 1. / T
         self.tsgraph = database2graph(database)
         
+        print "warning: rates are not fully implemented yet.  The returned rates will be relative, without any scaling prefactor"
+        
         
     def _reduce_tsgraph(self):
         """remove nodes from tsgraph that are not connected to A"""
@@ -135,7 +137,8 @@ def test():
     B = [db.minima()[-1]]
     
     rcalc = RateCalculation(db, A, B, T=1.)
-    rcalc.compute_rates()
+    rAB, rBA = rcalc.compute_rates()
+    print "rates", rAB, rBA
 
 if __name__ == "__main__":
     test()

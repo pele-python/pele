@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Fri Jun  7 15:43:13 2013
+# Created: Mon Jun 10 12:06:08 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -170,6 +170,9 @@ class Ui_MainWindow(object):
         self.btn_close_all = QtGui.QPushButton(self.NEBTab)
         self.btn_close_all.setObjectName(_fromUtf8("btn_close_all"))
         self.gridLayout_2.addWidget(self.btn_close_all, 1, 1, 1, 1)
+        self.btn_rates = QtGui.QPushButton(self.NEBTab)
+        self.btn_rates.setObjectName(_fromUtf8("btn_rates"))
+        self.gridLayout_2.addWidget(self.btn_rates, 2, 1, 1, 1)
         self.verticalLayout_5.addLayout(self.gridLayout_2)
         self.verticalLayout_2.addLayout(self.verticalLayout_5)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
@@ -268,13 +271,14 @@ class Ui_MainWindow(object):
         self.btnConnect.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a double ended connect run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.btnShowGraph.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Show the graph of minima and transition states</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "show graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnShowGraph.setText(QtGui.QApplication.translate("MainWindow", "Show graph", None, QtGui.QApplication.UnicodeUTF8))
         self.btnDisconnectivity_graph.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Show the disconnectivity graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnDisconnectivity_graph.setText(QtGui.QApplication.translate("MainWindow", "disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnDisconnectivity_graph.setText(QtGui.QApplication.translate("MainWindow", "Disconnectivity graph", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_connect_in_optim.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Spawn an external OPTIM job</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_connect_in_optim.setText(QtGui.QApplication.translate("MainWindow", "Connect in OPTIM", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_connect_all.setText(QtGui.QApplication.translate("MainWindow", "Connect All", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_close_all.setText(QtGui.QApplication.translate("MainWindow", "Close Windows", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_close_all.setText(QtGui.QApplication.translate("MainWindow", "Close windows", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_rates.setText(QtGui.QApplication.translate("MainWindow", "Compute rates", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.NEBTab), QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.pushNormalmodesTS.setText(QtGui.QApplication.translate("MainWindow", "Normalmodes", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.TSTab), QtGui.QApplication.translate("MainWindow", "Transition States", None, QtGui.QApplication.UnicodeUTF8))

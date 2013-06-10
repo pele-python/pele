@@ -58,8 +58,9 @@ class GraphReduction(object):
         self.rateAB = self._get_rate(u, v)
         self.rateBA = self._get_rate(v, u)
         
-        print "rate ", u, "->", v, self.rateAB
-        print "rate ", v, "->", u, self.rateBA
+        if self.debug:
+            print "rate ", u, "->", v, self.rateAB
+            print "rate ", v, "->", u, self.rateBA
         return self.rateAB, self.rateBA
             
     def _get_rate(self, u, v):
@@ -263,9 +264,10 @@ def test(nnodes=36):
     B = set(graph.nodes()[-2:])
     print "A B", A, B
     reducer = GraphReduction(graph, A, B)
-    reducer.renormalize()
+    rAB, rBA = reducer.renormalize()
     reducer.check_graph()
     print "number of nodes", graph.number_of_nodes()
+    print "rates", rAB, rBA
 
 if __name__ == "__main__":
     test()

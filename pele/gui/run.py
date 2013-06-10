@@ -19,6 +19,7 @@ from pele.gui.takestep_explorer import TakestepExplorer
 from pele.gui.normalmode_browser import NormalmodeBrowser
 from pele.gui._list_views import ListViewManager
 from pele.gui._cv_viewer import HeatCapacityViewer
+from pele.rates import RateCalculation
 
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -545,6 +546,18 @@ class MainGUI(QtGui.QMainWindow):
         self.cv_viewer.show()
         self.cv_viewer.rebuild_cv_plot()
     
+    def compute_rates(self, min1, min2):
+        rcalc = RateCalculation(self.system.database, [min1], [min2], T=1.)
+        r12, r21 = rcalc.compute_rates()
+        print "rate from", min1._id, "to", min2._id, "=", r12
+        print "rate from", min2._id, "to", min1._id, "=", r21
+    
+    def on_btn_rates_clicked(self, clicked=None):
+        if clicked is None: return
+        
+        min1, min2 = self.get_selected_minima()
+        self.compute_rates(min1, min2)
+        
 #def refresh_pl():
     #pl.pause(0.000001)    
     
