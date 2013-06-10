@@ -5,7 +5,6 @@ routines to help with computing rates from one subset of a graph to another
 import networkx as nx
 import numpy as np
 
-
 class GraphReduction(object):
     """
     class to apply the graph reduction method for finding transition rates between two groups of nodes
@@ -36,6 +35,7 @@ class GraphReduction(object):
         self.B = set(B)
         
         self.debug = False
+        self.check_graph()
     
     def renormalize(self):
         intermediates = set(self.graph.nodes())
@@ -55,19 +55,19 @@ class GraphReduction(object):
         
         u = iter(self.A).next()
         v = iter(self.B).next()
-        rateuv = self._get_rate(u, v)
-        ratevu = self._get_rate(v, u)
+        self.rateAB = self._get_rate(u, v)
+        self.rateBA = self._get_rate(v, u)
         
-        print "rate ", u, "->", v, rateuv
-        print "rate ", v, "->", u, ratevu
-        return rateuv, ratevu
+        print "rate ", u, "->", v, self.rateAB
+        print "rate ", v, "->", u, self.rateBA
+        return self.rateAB, self.rateBA
             
     def _get_rate(self, u, v):
         uvdata = self._get_edge_data(u, v)
         Puv = uvdata[self.Pkey(u, v)]
         tauu = self.graph.node[u]["tau"]
         
-        return tauu * Puv
+        return Puv / tauu
         
     
     def _add_edge(self, u, v):
@@ -192,8 +192,8 @@ class GraphReduction(object):
     def _check_node(self, u, verbose=True):
         udata = self.graph.node[u]  
 #        print "checking node", u
-        assert udata["tau"] > 0
-        assert udata["P"] > 0
+        assert udata["tau"] >= 0
+        assert 1 >= udata["P"] >= 0
         
         total_prob = udata["P"]
         for x, v, uvdata in self.graph.edges(u, data=True):
@@ -219,7 +219,7 @@ def _make_random_graph(nnodes=16):
     L = int(np.sqrt(nnodes))
     graph = nx.grid_graph([L,L], periodic=False)
     print graph
-    tool = GraphReduction(graph, [], [])
+    tool = GraphReduction
     
     for u, udata in graph.nodes(data=True):
         udata["P"] = np.random.rand()
@@ -242,7 +242,7 @@ def _make_random_graph(nnodes=16):
             uvdata[tool.Pkey(u, v)] /= total_prob
 
 
-    tool.check_graph()
+#    tool.check_graph()
     return graph
 
 def test(nnodes=36):
