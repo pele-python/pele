@@ -93,24 +93,27 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
     -------
     tuple of number of considered frequencies and log product of frequencies
     '''
-    inegative = 0
-    izero = 0
+    negative_eigs = []
+    zero_eigs = []
     lnf = 0.
     n = 0
     for f in freqs:
         if np.abs(f) < eps:
-            izero += 1
+            zero_eigs.append(f)
             continue
         if f < 0.:
-            inegative += 1
+            negative_eigs.append(f)
             continue
         lnf += np.log(f)
         n+=1
+
+    izero = len(zero_eigs)
+    inegative = len(negative_eigs)
         
     if nzero != izero:
         raise ValueError("the number of zero eigenvalues (%d) differs from the expected value (%d)" % (izero, nzero))
     if nnegative != inegative:
-        raise ValueError("the number of negative eigenvalues differs from the expected "
-                         "number (not a minimum / transition state?)")
+        raise ValueError("the number of negative eigenvalues (%d) differs from the expected "
+                         "number (%d) (not a minimum / transition state?)" % (inegative, nnegative))
 
     return n, lnf

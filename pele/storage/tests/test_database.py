@@ -111,6 +111,10 @@ class TestDB(unittest.TestCase):
         self.assertEqual(self.nminima, self.db.number_of_minima())
         self.assertIn(m, self.db.minima())
 
+    def test_getTSfromID(self):
+        ts = self.db.transition_states()[0]
+        ts1 = self.db.getTransitionStateFromID(ts._id)
+        self.assertEqual(ts, ts1)
 
 def benchmark_number_of_minima():
     import time, sys

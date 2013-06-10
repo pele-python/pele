@@ -11,7 +11,14 @@ class RateCalculation(object):
     
     Parameters 
     ----------
-    database : pele Database object
+    graph : networkx.Grapph
+        transition state graph with the minima as nodes and the transition states
+        attached to the edges. You can use the function database2graph() to 
+        create this from a database.:
+        
+            from pele.utils.disconnectivity_graph import database2graph
+            graph = database2graph(database)
+
     A, B : iterables
         groups of minima specifying the reactant and product groups.  The 
         rates returned will be the rate from A to B and vice versa.
@@ -19,15 +26,12 @@ class RateCalculation(object):
         temperature at which to do the the calculation.  Should be in units
         of energy, i.e. include the factor of k_B if necessary.
     """
-    def __init__(self, database, A, B, T):
-        self.database = database
+    def __init__(self, graph, A, B, T, use_fvib=True):
+        self.tsgraph = graph
         self.A = set(A)
         self.B = set(B)
         self.beta = 1. / T
-        self.tsgraph = database2graph(database)
-        
-        print "warning: rates are not fully implemented yet.  The returned rates will be relative, without any scaling prefactor"
-        
+        self.use_fvib = use_fvib
         
     def _reduce_tsgraph(self):
         """remove nodes from tsgraph that are not connected to A"""
@@ -55,8 +59,23 @@ class RateCalculation(object):
         assert len(self.B) > 0
     
     def _get_local_rate(self, min1, min2, ts):
-        """rate for going from min1 to min2"""
-        return np.exp( -(ts.energy - min1.energy) * self.beta)
+        """rate for going from min1 to min2
+        
+        should properly sum over all transition states between min1 and min2.
+        
+        from book Energy Landscapes page 387:
+        
+            sigma = 2 * min1.pgorder / ts.pgorder
+            k(T) = sigma * exp(min1.fvib - ts.fvib) * exp( -(ts.energy - min1.energy))
+        
+        where fvib is the log product of the harmonic mode frequencies  
+        """
+        if self.use_fvib:
+            sigma = 2. * min1.pgorder / ts.pgorder
+            return sigma * np.exp(min1.fvib - ts.fvib 
+                                  - (ts.energy - min1.energy) * self.beta )
+        else:
+            return np.exp( -(ts.energy - min1.energy) * self.beta)
     
     def _min2node(self, minimum):
         return minimum._id
@@ -120,6 +139,7 @@ class RateCalculation(object):
 def test():
     from pele.systems import LJCluster
     from pele.landscape import ConnectManager
+    from pele.thermodynamics import get_thermodynamic_information
     system = LJCluster(13)
     db = system.create_database("lj13.db")
     
@@ -136,7 +156,10 @@ def test():
     A = [db.minima()[0]]
     B = [db.minima()[-1]]
     
-    rcalc = RateCalculation(db, A, B, T=1.)
+    get_thermodynamic_information(system, db, nproc=2)
+    
+    graph = database2graph(db)
+    rcalc = RateCalculation(graph, A, B, T=1.)
     rAB, rBA = rcalc.compute_rates()
     print "rates", rAB, rBA
 

@@ -314,22 +314,13 @@ class MainGUI(QtGui.QMainWindow):
         self.normalmode_explorer.set_coords(min1.coords)
         self.normalmode_explorer.show()
     
-    def get_selected_ts(self):
-        ts = self.ts_selected
-        if ts is None:
-            raise Exception("you must select a transition state first")
-        return ts
-    
     def on_pushNormalmodesTS_clicked(self, clicked=None):
         if clicked is None: return
         if not hasattr(self, "normalmode_explorer"):
             self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
-        ts = self.get_selected_ts()
+        ts = self.list_manager.get_selected_ts()
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
-    
-        
-                    
     
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
@@ -546,12 +537,43 @@ class MainGUI(QtGui.QMainWindow):
         self.cv_viewer.show()
         self.cv_viewer.rebuild_cv_plot()
     
-    def compute_rates(self, min1, min2, T=1.):
+    def compute_thermodynamic_information(self, on_finish=None):
+        """compute thermodynamic information for minima and ts in the background
+        
+        call on_finish when the calculation is done
+        """
+        # TODO: deal carefuly with what will happen if this is called again
+        # before the first calculation is done.  if self.thermo_worker is overwritten will
+        # the first calculation stop?
+        from pele.gui._cv_viewer import GetThermodynamicInfoParallelQT
+        self.thermo_worker = GetThermodynamicInfoParallelQT(self.system, self.system.database, npar=1)
+        if on_finish is not None:
+            self.thermo_worker.on_finish.connect(on_finish)
+        self.thermo_worker.start()
+        njobs = self.thermo_worker.njobs
+        print "calculating thermodynamics for", njobs, "minima and transition states" 
+        
+
+    def _compute_rates(self, min1, min2, T=1.):
+        """compute rates without first calculating thermodynamics
+        """
+        from pele.utils.disconnectivity_graph import database2graph
         print "computing rates at temperature T =", T
-        rcalc = RateCalculation(self.system.database, [min1], [min2], T=T)
+        # TODO: should properly deal with the situation where some of the
+        # minima and ts don't have thermodynamic data yet
+        graph = database2graph(self.system.database)
+        rcalc = RateCalculation(graph, [min1], [min2], T=T)
         r12, r21 = rcalc.compute_rates()
         print "rate from", min1._id, "to", min2._id, "=", r12
         print "rate from", min2._id, "to", min1._id, "=", r21
+
+    def compute_rates(self, min1, min2, T=1.):
+        """compute the transition rate from min1 to min2 and vice versa"""
+        def on_finish():
+            print "thermodynamic calculation finished"
+            self._compute_rates(min1, min2)
+        self._on_finish_thermo_reference = on_finish # so it doeesn't get garbage collected
+        self.compute_thermodynamic_information(on_finish=on_finish)
     
     def on_btn_rates_clicked(self, clicked=None):
         if clicked is None: return

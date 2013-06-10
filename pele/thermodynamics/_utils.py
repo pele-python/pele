@@ -30,13 +30,20 @@ class _ThermoWorker(mp.Process):
                 if self.verbose:
                     print "woker ending"
                 return
-            mid, coords = self.input_queue.get()
+            mts, mid, coords = self.input_queue.get()
+            if mts == "ts":
+                nnegative=1
+                print "computing thermodynamics for ts", mid
+            elif mts == "m":
+                nnegative=0
+            else:
+                raise Exception("mts must be 'm' or 'ts'")
             pgorder = self.system.get_pgorder(coords)
-            fvib = self.system.get_log_product_normalmode_freq(coords)
+            fvib = self.system.get_log_product_normalmode_freq(coords, nnegative=nnegative)
             if self.verbose:
                 print "finished computing thermodynamic info for minimum", mid, pgorder, fvib
             
-            self.output_queue.put((mid, fvib, pgorder))
+            self.output_queue.put((mts, mid, fvib, pgorder))
 
 
 class GetThermodynamicInfoParallel(object):
@@ -49,8 +56,12 @@ class GetThermodynamicInfoParallel(object):
     database : pele database
         thermodynamic information will be calculated for all minima
         in the database that don't already have the data
+    verbose : bool
+        specify verbosity
+    only_minima : bool
+        if True the transition state free energy will not be computed
     """
-    def __init__(self, system, database, npar=4, verbose=False):
+    def __init__(self, system, database, npar=4, verbose=False, only_minima=False):
         self.system = system
         self.database = database
         self.verbose = verbose
@@ -71,18 +82,46 @@ class GetThermodynamicInfoParallel(object):
         for m in self.database.minima():
             if m.pgorder is None or m.fvib is None:
                 self.njobs += 1
-                self.send_queue.put((m._id, m.coords))
+                self.send_queue.put(("m", m._id, m.coords))
         
+        for ts in self.database.transition_states():
+            if ts.pgorder is None or ts.fvib is None:
+                self.njobs += 1
+                self.send_queue.put(("ts", ts._id, ts.coords))
+    
+    def _process_return_value(self, ret):
+        mts, mid, fvib, pgorder = ret
+        if mts == "m":
+            m = self.database.getMinimum(mid)
+            m.fvib = fvib
+            m.pgorder = pgorder
+        elif mts == "ts":
+            ts = self.database.getTransitionStateFromID(mid)
+            ts.fvib = fvib
+            ts.pgorder = pgorder
+        else:
+            raise Exception("mts must be 'm' or 'ts'")
+        self.database.session.commit()
+
+      
     def _get_results(self):
         """receive the results from the return queue
         """
         for i in xrange(self.njobs):
-            mid, fvib, pgorder = self.done_queue.get()
-            m = self.database.getMinimum(mid)
-            m.fvib = fvib
-            m.pgorder = pgorder
-            self.database.session.commit()
-#            print "got result", mid
+            ret = self.done_queue.get()
+            self._process_return_value(ret)
+#            if mts == "m":
+#                m = self.database.getMinimum(mid)
+#                m.fvib = fvib
+#                m.pgorder = pgorder
+#            elif mts == "ts":
+#                ts = self.database.getTransitionStateFromID(mid)
+#                ts.fvib = fvib
+#                ts.pgorder = pgorder
+#            else:
+#                raise Exception("mts must be 'm' or 'ts'")
+#            self.database.session.commit()
+##            print "got result", mid
     
     def finish(self):
         if self.verbose:
@@ -173,11 +212,18 @@ def get_thermodynamic_information(system, database, nproc=None):
 
 def test():
     from pele.systems import LJCluster
+    from pele.landscape import ConnectManager
     system = LJCluster(13)
     
     db = system.create_database()
     bh = system.get_basinhopping(db, outstream=None)
     bh.run(200)
+    
+    manager = ConnectManager(db)
+    for i in range(3):
+        min1, min2 = manager.get_connect_job()
+        connect = system.get_double_ended_connect(min1, min2, db)
+        connect.connect()
     
 #    get_thermodynamic_information(system, db)
     
@@ -187,6 +233,9 @@ def test():
     for m in db.minima():
         print m._id, m.pgorder, m.fvib
     
+    print "\nnow transition states"
+    for ts in db.transition_states():
+        print ts._id, ts.pgorder, ts.fvib
 
 if __name__ == "__main__":
     test()

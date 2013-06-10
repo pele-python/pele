@@ -19,11 +19,13 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
             return
         if not self.done_queue.empty():
             self.njobs -= 1
-            mid, fvib, pgorder = self.done_queue.get()
-            m = self.database.getMinimum(mid)
-            m.fvib = fvib
-            m.pgorder = pgorder
-            self.database.session.commit()
+            ret = self.done_queue.get()
+            self._process_return_value(ret)
+#            if mts == "m":
+#                m = self.database.getMinimum(mid)
+#                m.fvib = fvib
+#                m.pgorder = pgorder
+#                self.database.session.commit()
     
     def finish(self):
         super(GetThermodynamicInfoParallelQT, self).finish()
@@ -81,7 +83,7 @@ class HeatCapacityWidget(QtGui.QWidget):
             self.minima = self.database.minima()
 
         self.worker = GetThermodynamicInfoParallelQT(self.system, self.database, 
-                            npar=nproc, verbose=verbose)
+                            npar=nproc, verbose=verbose, only_minima=True)
         if on_finish is not None:
             self.worker.on_finish.connect(on_finish)
         self.worker.start()

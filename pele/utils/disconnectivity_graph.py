@@ -327,12 +327,13 @@ class DisconnectivityGraph(object):
     ----------
     graph : a networkx graph
         a graph with Minimum objects as nodes and transition
-        states defining the edges.  You can use
-        pele.landscape.TSGraph to create this from a database.
+        states defining the edges.  You can use the function
+        database2graph() defined in this module to create this 
+        from a database.
         
-        >>> from pele.landscape import TSGraph
-        >>> graphwrapper = TSGraph(database)
-        >>> dg = DisconnectivityGraph(graphwrapper.graph)
+        >>> from pele.utils.disconnectivity_graph import database2graph
+        >>> graph = database2graph(database)
+        >>> dg = DisconnectivityGraph(graph)
          
     nlevels : int
         how many levels at which to bin the transition states

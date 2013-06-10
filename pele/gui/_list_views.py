@@ -327,7 +327,12 @@ class ListViewManager(object):
         self.ts_selected = ts
         self.parent.show_TS(ts)
 
-
+    def get_selected_ts(self):
+        ts = self.ts_selected
+        if ts is None:
+            raise Exception("you must select a transition state first")
+        return ts
+    
     def _sort_ts(self):
         self.need_sorting_ts = True
         self._sort_lists()

@@ -518,6 +518,10 @@ class Database(object):
             return m
         return None
     
+    def getTransitionStateFromID(self, id_):
+        """return the transition state with id id_"""
+        return self.session.query(TransitionState).get(id_)
+    
     def setDistance(self, dist, min1, min2):
         """set the distance between two minima
         """
