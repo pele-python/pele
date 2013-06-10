@@ -3,14 +3,22 @@ import copy
 import networkx as nx
 from collections import deque
 
-__all__ = ["DisconnectivityGraph", "database2graph"]
+__all__ = ["DisconnectivityGraph", "database2graph", "graph_constructor"]
 
 def database2graph(database):
     """create a networkx graph from a pele database"""
     from pele.landscape import TSGraph # this must be imported here to avoid circular imports
     graph_wrapper = TSGraph(database)
     return graph_wrapper.graph
-    
+
+def graph_constructor(minima, tslist):
+    graph = nx.Graph()
+    graph.add_nodes_from(minima)
+    for ts in tslist:
+        graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+    return graph
+        
+
 
 class Tree(object):
     """

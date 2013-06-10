@@ -33,7 +33,7 @@ class _ThermoWorker(mp.Process):
             mts, mid, coords = self.input_queue.get()
             if mts == "ts":
                 nnegative=1
-                print "computing thermodynamics for ts", mid
+#                print "computing thermodynamics for ts", mid
             elif mts == "m":
                 nnegative=0
             else:

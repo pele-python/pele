@@ -113,7 +113,12 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
     if nzero != izero:
         raise ValueError("the number of zero eigenvalues (%d) differs from the expected value (%d)" % (izero, nzero))
     if nnegative != inegative:
-        raise ValueError("the number of negative eigenvalues (%d) differs from the expected "
+        if nnegative > 0 and inegative > nnegative:
+            print "warning: the number of negative eigenvalues (%d) is greater than the expected " \
+                         "number (%d).  Is this a higher order saddle point? ignoring" % (inegative, nnegative)
+            lnf = None
+        else:
+            raise ValueError("the number of negative eigenvalues (%d) differs from the expected "
                          "number (%d) (not a minimum / transition state?)" % (inegative, nnegative))
 
     return n, lnf
