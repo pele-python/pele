@@ -31,7 +31,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <zorder></zorder>
       </widget>
      </item>
      <item>
@@ -45,6 +44,13 @@
           <widget class="QPushButton" name="btn_show_all">
            <property name="text">
             <string>show all</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="checkBox_zoom">
+           <property name="text">
+            <string>zoom on click</string>
            </property>
           </widget>
          </item>

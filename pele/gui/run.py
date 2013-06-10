@@ -546,8 +546,9 @@ class MainGUI(QtGui.QMainWindow):
         self.cv_viewer.show()
         self.cv_viewer.rebuild_cv_plot()
     
-    def compute_rates(self, min1, min2):
-        rcalc = RateCalculation(self.system.database, [min1], [min2], T=1.)
+    def compute_rates(self, min1, min2, T=1.):
+        print "computing rates at temperature T =", T
+        rcalc = RateCalculation(self.system.database, [min1], [min2], T=T)
         r12, r21 = rcalc.compute_rates()
         print "rate from", min1._id, "to", min2._id, "=", r12
         print "rate from", min2._id, "to", min1._id, "=", r21

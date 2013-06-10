@@ -85,12 +85,13 @@ class GraphViewWidget(QWidget):
         print self.graph.number_of_nodes(), self.graph.number_of_edges()
     
     def on_minima_picked_local(self, min1):
-        self.make_graph_from([min1])
-        text = "showing graph near minima "
-        for m in self.from_minima: 
-            text += " " + str(m._id)
-        self.ui.label_status.setText(text)
-        self.show_graph()
+        if self.ui.checkBox_zoom.isChecked():
+            self.make_graph_from([min1])
+            text = "showing graph near minima "
+            for m in self.from_minima: 
+                text += " " + str(m._id)
+            self.ui.label_status.setText(text)
+            self.show_graph()
     
     def show_graph(self, fixed=False):
         import pylab as pl
