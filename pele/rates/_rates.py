@@ -2,7 +2,9 @@ import networkx as nx
 import numpy as np
 
 from pele.utils.disconnectivity_graph import database2graph
-from _rate_calculations import GraphReduction
+from pele.rates._rate_calculations import GraphReduction
+
+__all__ = ["RateCalculation"]
 
 class RateCalculation(object):
     """compute transition rates from a database of minima and transition states
