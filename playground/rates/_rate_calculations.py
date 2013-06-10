@@ -8,29 +8,78 @@ import numpy as np
 
 class GraphReduction(object):
     """
-    each transition state has data
+    class to apply the graph reduction method for finding transition rates between two groups of nodes
     
-    P : transition probability
-    k : rate constant
-    
-    each node has data
-    
-    P : the probability to stay in this state
-    tau : the occupation time
+    Parameters
+    ----------
+    graph : networkx.Graph object
+        an undirected graph specifying the connectivity, the initial transition probabilities
+        and the occupation times.  The graph must have all the data in the correct format.
+        Each node must have the following keys in their attributes dictionary::
+            
+            "P" : the probability to stay in this state
+            "tau" : occupation probability
+        
+        Each edge between nodes u and v must have the following keys in their 
+        attributes dictionary:
+        
+            ("P", u, v) : transition probability from u to v
+            ("P", v, u) : transition probability from v to u
+        
+    A, B : iterables
+        groups of nodes specifying the reactant and product groups.  The rates returned will be 
+        the rate from A to B and vice versa.
     """
-    def __init__(self, graph):
+    def __init__(self, graph, A, B):
         self.graph = graph
+        self.A = set(A)
+        self.B = set(B)
         
         self.debug = False
     
-    def add_edge(self, u, v):
+    def renormalize(self):
+        intermediates = set(self.graph.nodes())
+        intermediates.difference_update(self.A)
+        intermediates.difference_update(self.B)
+        
+        for x in intermediates:
+            self.remove_node(x)
+            
+        while len(self.A) > 1:
+            x = self.A.pop()
+            self.remove_node(x)
+            
+        while len(self.B) > 1:
+            x = self.B.pop()
+            self.remove_node(x)
+        
+        u = iter(self.A).next()
+        v = iter(self.B).next()
+        rateuv = self._get_rate(u, v)
+        ratevu = self._get_rate(v, u)
+        
+        print "rate ", u, "->", v, rateuv
+        print "rate ", v, "->", u, ratevu
+        return rateuv, ratevu
+            
+    def _get_rate(self, u, v):
+        uvdata = self._get_edge_data(u, v)
+        Puv = uvdata[self.Pkey(u, v)]
+        tauu = self.graph.node[u]["tau"]
+        
+        return tauu * Puv
+        
+    
+    def _add_edge(self, u, v):
         """add an edge to the graph and initialize it with the appropriate data"""
         if self.debug: print "creating edge", u, v
-        data = {self._Pkey(u, v):0., self._Pkey(v, u):0.}
+        data = {self.Pkey(u, v):0., self.Pkey(v, u):0.}
         self.graph.add_edge(u, v, attr_dict=data)
         return self._get_edge_data(u, v)
     
-    def _Pkey(self, u, v):
+    @staticmethod
+    def Pkey(u, v):
+        """return the edge attribute key for the transition probability from u to v"""
         return ("P", u, v)
     
     def _get_edge_data(self, u, v):
@@ -42,7 +91,7 @@ class GraphReduction(object):
     
     def _update_edge(self, u, v, uxdata, vxdata, x, xdata):
         """
-        update the probabilities of transition between u and v
+        update the probabilities of transition between u and v upon removing node x
         
         Puv -> Puv + Pux * Pxv / (1-Pxx)
         """
@@ -51,31 +100,31 @@ class GraphReduction(object):
         try:
             uvdata = self._get_edge_data(u, v)
         except KeyError:
-            uvdata = self.add_edge(u, v)
+            uvdata = self._add_edge(u, v)
         
         
-        Pux = uxdata[self._Pkey(u, x)]
-        Pxu = uxdata[self._Pkey(x, u)]
+        Pux = uxdata[self.Pkey(u, x)]
+        Pxu = uxdata[self.Pkey(x, u)]
 
-        Pvx = vxdata[self._Pkey(v, x)]
-        Pxv = vxdata[self._Pkey(x, v)]
+        Pvx = vxdata[self.Pkey(v, x)]
+        Pxv = vxdata[self.Pkey(x, v)]
         
         Pxx = xdata["P"]
         
         if self.debug:
-            Puvold = uvdata[self._Pkey(u, v)]
-            Pvuold = uvdata[self._Pkey(v, u)]
+            Puvold = uvdata[self.Pkey(u, v)]
+            Pvuold = uvdata[self.Pkey(v, u)]
             
-        uvdata[self._Pkey(u, v)] += Pux * Pxv / (1.-Pxx)
-        uvdata[self._Pkey(v, u)] += Pvx * Pxu / (1.-Pxx)
+        uvdata[self.Pkey(u, v)] += Pux * Pxv / (1.-Pxx)
+        uvdata[self.Pkey(v, u)] += Pvx * Pxu / (1.-Pxx)
         
         if self.debug:
-            print "updating edge data", u, v, Puvold, "->", uvdata[self._Pkey(u, v)]
-            print "updating edge data", v, u, Pvuold, "->", uvdata[self._Pkey(v, u)]
+            print "updating edge data", u, v, Puvold, "->", uvdata[self.Pkey(u, v)]
+            print "updating edge data", v, u, Pvuold, "->", uvdata[self.Pkey(v, u)]
     
     def _update_node(self, u, x, xdata, uxdata):
         """
-        update the waiting time and Puu for node u
+        update the waiting time and Puu for node u upon removing node x
         
         tauu -> tauu + Pux * taux / (1-Pxx)
         
@@ -87,8 +136,8 @@ class GraphReduction(object):
 #        uxdata = self._get_edge_data(u, x)
         udata = self.graph.node[u]
 
-        Pxu = uxdata[self._Pkey(x, u)]
-        Pux = uxdata[self._Pkey(u, x)]
+        Pxu = uxdata[self.Pkey(x, u)]
+        Pux = uxdata[self.Pkey(u, x)]
         
         # update the waiting time at u
         udata["tau"] += Pux * taux / (1.-Pxx)
@@ -133,10 +182,10 @@ class GraphReduction(object):
         
         total_prob = udata["P"]
         for x, v, uvdata in self.graph.edges(u, data=True):
-            print "  Pxv", uvdata[self._Pkey(u, v)], ": v =", v
-#            assert 1 >= uvdata[self._Pkey(u, v)] >= 0
-#            assert 1 >= uvdata[self._Pkey(v, u)] >= 0
-            total_prob += uvdata[self._Pkey(u, v)]
+            print "  Pxv", uvdata[self.Pkey(u, v)], ": v =", v
+#            assert 1 >= uvdata[self.Pkey(u, v)] >= 0
+#            assert 1 >= uvdata[self.Pkey(v, u)] >= 0
+            total_prob += uvdata[self.Pkey(u, v)]
         
         print "  total prob", total_prob
     
@@ -148,9 +197,9 @@ class GraphReduction(object):
         
         total_prob = udata["P"]
         for x, v, uvdata in self.graph.edges(u, data=True):
-            assert 1 >= uvdata[self._Pkey(u, v)] >= 0
-            assert 1 >= uvdata[self._Pkey(v, u)] >= 0
-            total_prob += uvdata[self._Pkey(u, v)]
+            assert 1 >= uvdata[self.Pkey(u, v)] >= 0
+            assert 1 >= uvdata[self.Pkey(v, u)] >= 0
+            total_prob += uvdata[self.Pkey(u, v)]
         
         assert np.abs(total_prob - 1.) < 1e-6, "%s: total_prob %g" % (str(u), total_prob)
 
@@ -170,15 +219,15 @@ def _make_random_graph(nnodes=16):
     L = int(np.sqrt(nnodes))
     graph = nx.grid_graph([L,L], periodic=False)
     print graph
-    tool = GraphReduction(graph)
+    tool = GraphReduction(graph, [], [])
     
     for u, udata in graph.nodes(data=True):
         udata["P"] = np.random.rand()
         udata["tau"] = np.random.rand()
     
     for u, v, uvdata in graph.edges_iter(data=True):
-        uvdata[tool._Pkey(u, v)] = np.random.rand()
-        uvdata[tool._Pkey(v, u)] = np.random.rand()
+        uvdata[tool.Pkey(u, v)] = np.random.rand()
+        uvdata[tool.Pkey(v, u)] = np.random.rand()
     
     # now normalize
     for u, udata in graph.nodes(data=True):
@@ -186,19 +235,19 @@ def _make_random_graph(nnodes=16):
         edges = [(v, data) for x, v, data in graph.edges(u, data=True)]
         for v, uvdata in edges:
             assert v != u
-            total_prob += uvdata[tool._Pkey(u, v)]
+            total_prob += uvdata[tool.Pkey(u, v)]
         
         udata["P"] /= total_prob
         for v, uvdata in edges:
-            uvdata[tool._Pkey(u, v)] /= total_prob
+            uvdata[tool.Pkey(u, v)] /= total_prob
 
 
     tool.check_graph()
     return graph
 
-def test(nnodes=16):
+def test(nnodes=36):
     graph = _make_random_graph(nnodes)
-    reducer = GraphReduction(graph)
+    reducer = GraphReduction(graph, [], [])
 
     x = graph.nodes()[0]
     print "removing node", x
@@ -210,7 +259,13 @@ def test(nnodes=16):
     reducer.remove_node(x)
     reducer.check_graph()
     
-
+    A = set(graph.nodes()[:2])
+    B = set(graph.nodes()[-2:])
+    print "A B", A, B
+    reducer = GraphReduction(graph, A, B)
+    reducer.renormalize()
+    reducer.check_graph()
+    print "number of nodes", graph.number_of_nodes()
 
 if __name__ == "__main__":
     test()
