@@ -1,8 +1,8 @@
 """
 Example 3: Saving all minima found to an xyz file
 """
-from pygmin.systems import LJCluster
-from pygmin.utils.xyz import write_xyz
+from pele.systems import LJCluster
+from pele.utils.xyz import write_xyz
 
 natoms = 12
 niter = 100
@@ -21,7 +21,7 @@ with open("lowest", "w") as fout:
 # some visualization
 ############################################################
 try: 
-    import pygmin.utils.pymolwrapper as pym
+    import pele.utils.pymolwrapper as pym
     pym.start()
     frame=1  
     for minimum in db.minima():        

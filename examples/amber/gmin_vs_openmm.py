@@ -14,7 +14,7 @@ Amber system class in not used here. So this script would be a good starting poi
 """
 
 import ambgmin_ as GMIN
-import pygmin.potentials.gminpotential as gminpot
+import pele.potentials.gminpotential as gminpot
 
 # OpenMM 
 from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation

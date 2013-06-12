@@ -1,4 +1,4 @@
 .. _gui:
 
-.. automodule:: pygmin.gui
+.. automodule:: pele.gui
 

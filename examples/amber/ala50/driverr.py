@@ -1,4 +1,4 @@
-from pygmin.systems.amberSystem import AMBERSystem_GMIN, AMBERSystem_OpenMM
+from pele.systems.amberSystem import AMBERSystem_GMIN, AMBERSystem_OpenMM
 import time  
 
 # create new amber system
@@ -13,11 +13,11 @@ sys  = AMBERSystem_OpenMM('coords.prmtop', 'coords.inpcrd')
 sys.test_potential('coords.pdb')
 
 # create new database  
-from pygmin.storage import Database
+from pele.storage import Database
 dbcurr = sys.create_database()
                     
 # ------- TEST gui 
-from pygmin.gui import run as gr    
+from pele.gui import run as gr    
 gr.run_gui(sys, db=dbcurr)
 
 # ------ Test potential 

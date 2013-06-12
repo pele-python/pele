@@ -575,7 +575,7 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 
 /*--- Type declarations ---*/
-struct __pyx_obj_10playground_11native_code_7_pygmin_Potential;
+struct __pyx_obj_10playground_11native_code_7_pele_Potential;
 struct __pyx_obj_10playground_11native_code_3_lj_LJ;
 
 /* "numpy.pxd":762
@@ -614,28 +614,28 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
 
-/* "_pygmin.pxd":26
+/* "_pele.pxd":26
  *     cdef void _call_pot "call_pot" (cPotential *pot, Array &x, Array &grad, int n)
  * 
  * cdef class Potential:             # <<<<<<<<<<<<<<
  *     cdef cPotential *thisptr      # hold a C++ instance which we're wrapping
  * 
  */
-struct __pyx_obj_10playground_11native_code_7_pygmin_Potential {
+struct __pyx_obj_10playground_11native_code_7_pele_Potential {
   PyObject_HEAD
-  pygmin::Potential *thisptr;
+  pele::Potential *thisptr;
 };
 
 
 /* "playground/native_code/_lj.pyx":9
  * 
  * # we just need to set a different c++ class instance
- * cdef class LJ(_pygmin.Potential):             # <<<<<<<<<<<<<<
+ * cdef class LJ(_pele.Potential):             # <<<<<<<<<<<<<<
  *     def __cinit__(self, eps=1.0, sigma=1.0):
- *         self.thisptr = <_pygmin.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
+ *         self.thisptr = <_pele.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
  */
 struct __pyx_obj_10playground_11native_code_3_lj_LJ {
-  struct __pyx_obj_10playground_11native_code_7_pygmin_Potential __pyx_base;
+  struct __pyx_obj_10playground_11native_code_7_pele_Potential __pyx_base;
 };
 
 #ifndef CYTHON_REFNANNY
@@ -956,8 +956,8 @@ static PyTypeObject *__pyx_ptype_5numpy_ndarray = 0;
 static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, char *, char *, int *); /*proto*/
 
-/* Module declarations from 'playground.native_code._pygmin' */
-static PyTypeObject *__pyx_ptype_10playground_11native_code_7_pygmin_Potential = 0;
+/* Module declarations from 'playground.native_code._pele' */
+static PyTypeObject *__pyx_ptype_10playground_11native_code_7_pele_Potential = 0;
 
 /* Module declarations from 'playground.native_code._lj' */
 static PyTypeObject *__pyx_ptype_10playground_11native_code_3_lj_LJ = 0;
@@ -1090,9 +1090,9 @@ static int __pyx_pw_10playground_11native_code_3_lj_2LJ_1__cinit__(PyObject *__p
 
 /* "playground/native_code/_lj.pyx":10
  * # we just need to set a different c++ class instance
- * cdef class LJ(_pygmin.Potential):
+ * cdef class LJ(_pele.Potential):
  *     def __cinit__(self, eps=1.0, sigma=1.0):             # <<<<<<<<<<<<<<
- *         self.thisptr = <_pygmin.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
+ *         self.thisptr = <_pele.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
  */
 
 static int __pyx_pf_10playground_11native_code_3_lj_2LJ___cinit__(struct __pyx_obj_10playground_11native_code_3_lj_LJ *__pyx_v_self, PyObject *__pyx_v_eps, PyObject *__pyx_v_sigma) {
@@ -1103,16 +1103,16 @@ static int __pyx_pf_10playground_11native_code_3_lj_2LJ___cinit__(struct __pyx_o
   PyObject *__pyx_t_3 = NULL;
   double __pyx_t_4;
   double __pyx_t_5;
-  pygmin::LJ *__pyx_t_6;
+  pele::LJ *__pyx_t_6;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
   /* "playground/native_code/_lj.pyx":11
- * cdef class LJ(_pygmin.Potential):
+ * cdef class LJ(_pele.Potential):
  *     def __cinit__(self, eps=1.0, sigma=1.0):
- *         self.thisptr = <_pygmin.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)             # <<<<<<<<<<<<<<
+ *         self.thisptr = <_pele.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)             # <<<<<<<<<<<<<<
  */
   __pyx_t_1 = PyFloat_FromDouble(4.); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -1141,12 +1141,12 @@ static int __pyx_pf_10playground_11native_code_3_lj_2LJ___cinit__(struct __pyx_o
   __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   try {
-    __pyx_t_6 = new pygmin::LJ(__pyx_t_4, __pyx_t_5);
+    __pyx_t_6 = new pele::LJ(__pyx_t_4, __pyx_t_5);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_self->__pyx_base.thisptr = ((pygmin::Potential *)__pyx_t_6);
+  __pyx_v_self->__pyx_base.thisptr = ((pele::Potential *)__pyx_t_6);
 
   __pyx_r = 0;
   goto __pyx_L0;
@@ -3137,7 +3137,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
 }
 
 static PyObject *__pyx_tp_new_10playground_11native_code_3_lj_LJ(PyTypeObject *t, PyObject *a, PyObject *k) {
-  PyObject *o = __pyx_ptype_10playground_11native_code_7_pygmin_Potential->tp_new(t, a, k);
+  PyObject *o = __pyx_ptype_10playground_11native_code_7_pele_Potential->tp_new(t, a, k);
   if (!o) return 0;
   if (__pyx_pw_10playground_11native_code_3_lj_2LJ_1__cinit__(o, a, k) < 0) {
     Py_DECREF(o); o = 0;
@@ -3146,7 +3146,7 @@ static PyObject *__pyx_tp_new_10playground_11native_code_3_lj_LJ(PyTypeObject *t
 }
 
 static void __pyx_tp_dealloc_10playground_11native_code_3_lj_LJ(PyObject *o) {
-  if (likely(__pyx_ptype_10playground_11native_code_7_pygmin_Potential)) __pyx_ptype_10playground_11native_code_7_pygmin_Potential->tp_dealloc(o); else __Pyx_call_next_tp_dealloc(o, __pyx_tp_dealloc_10playground_11native_code_3_lj_LJ);
+  if (likely(__pyx_ptype_10playground_11native_code_7_pele_Potential)) __pyx_ptype_10playground_11native_code_7_pele_Potential->tp_dealloc(o); else __Pyx_call_next_tp_dealloc(o, __pyx_tp_dealloc_10playground_11native_code_3_lj_LJ);
 }
 
 static PyMethodDef __pyx_methods_10playground_11native_code_3_lj_LJ[] = {
@@ -3512,8 +3512,8 @@ PyMODINIT_FUNC PyInit__lj(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  __pyx_ptype_10playground_11native_code_7_pygmin_Potential = __Pyx_ImportType("playground.native_code._pygmin", "Potential", sizeof(struct __pyx_obj_10playground_11native_code_7_pygmin_Potential), 1); if (unlikely(!__pyx_ptype_10playground_11native_code_7_pygmin_Potential)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_type_10playground_11native_code_3_lj_LJ.tp_base = __pyx_ptype_10playground_11native_code_7_pygmin_Potential;
+  __pyx_ptype_10playground_11native_code_7_pele_Potential = __Pyx_ImportType("playground.native_code._pele", "Potential", sizeof(struct __pyx_obj_10playground_11native_code_7_pele_Potential), 1); if (unlikely(!__pyx_ptype_10playground_11native_code_7_pele_Potential)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_type_10playground_11native_code_3_lj_LJ.tp_base = __pyx_ptype_10playground_11native_code_7_pele_Potential;
   if (PyType_Ready(&__pyx_type_10playground_11native_code_3_lj_LJ) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 9; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__Pyx_SetAttrString(__pyx_m, "LJ", (PyObject *)&__pyx_type_10playground_11native_code_3_lj_LJ) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 9; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_10playground_11native_code_3_lj_LJ = &__pyx_type_10playground_11native_code_3_lj_LJ;
@@ -3536,9 +3536,9 @@ PyMODINIT_FUNC PyInit__lj(void)
 
   /* "playground/native_code/_lj.pyx":10
  * # we just need to set a different c++ class instance
- * cdef class LJ(_pygmin.Potential):
+ * cdef class LJ(_pele.Potential):
  *     def __cinit__(self, eps=1.0, sigma=1.0):             # <<<<<<<<<<<<<<
- *         self.thisptr = <_pygmin.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
+ *         self.thisptr = <_pele.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
  */
   __pyx_t_1 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -3552,7 +3552,7 @@ PyMODINIT_FUNC PyInit__lj(void)
   __pyx_t_1 = 0;
 
   /* "playground/native_code/_lj.pyx":1
- * from playground.native_code cimport _pygmin             # <<<<<<<<<<<<<<
+ * from playground.native_code cimport _pele             # <<<<<<<<<<<<<<
  * 
  * # use external c++ class
  */

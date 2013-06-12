@@ -3,7 +3,7 @@
 The Parameter tree and OPTIM keywords
 -------------------------------------
 
-This page describes how to translate an OPTIM odata file into the pygmin
+This page describes how to translate an OPTIM odata file into the pele
 :ref:`Parameter <system_class>` tree.  If a keyword is not mentioned, then it is either not relevant, or
 I just haven't gotten to it yet.
 

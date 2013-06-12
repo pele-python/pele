@@ -1,3 +1,3 @@
 .. _potentials_description:
 
-.. automodule:: pygmin.potentials
+.. automodule:: pele.potentials

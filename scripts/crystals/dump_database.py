@@ -1,6 +1,6 @@
 from optparse import OptionParser
 import dmagmin_ as GMIN
-from pygmin.storage.database import Database
+from pele.storage.database import Database
 
 def main():
     # add some program options

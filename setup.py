@@ -20,57 +20,57 @@ if False:
 #    extra_compile_args += ["-ffixed-line-length-none"]
 
 fmodules = ModuleList(extra_compile_args=extra_compile_args)
-#fmodules.add_module("pygmin/mindist/overlap.f90")
-fmodules.add_module("pygmin/mindist/minperm.f90")
-fmodules.add_module("pygmin/optimize/mylbfgs_fort.f90")
-fmodules.add_module("pygmin/optimize/mylbfgs_updatestep.f90")
-fmodules.add_module("pygmin/potentials/fortran/AT.f90")
-fmodules.add_module("pygmin/potentials/fortran/ljpshiftfort.f90")
-fmodules.add_module("pygmin/potentials/fortran/lj.f90")
-fmodules.add_module("pygmin/potentials/fortran/ljcut.f90")
-fmodules.add_module("pygmin/potentials/fortran/rmdrvt.f90")
-fmodules.add_module("pygmin/potentials/fortran/soft_sphere_pot.f90")
-fmodules.add_module("pygmin/potentials/fortran/maxneib_lj.f90")
-fmodules.add_module("pygmin/potentials/fortran/maxneib_blj.f90")
-fmodules.add_module("pygmin/potentials/fortran/lj_hess.f90")
-fmodules.add_module("pygmin/potentials/fortran/magnetic_colloids.f90")
-#fmodules.add_module("pygmin/potentials/rigid_bodies/rbutils.f90")
-fmodules.add_module("pygmin/utils/_fortran_utils.f90")
-fmodules.add_module("pygmin/transition_states/_orthogoptf.f90")
-fmodules.add_module("pygmin/transition_states/_NEB_utils.f90")
-fmodules.add_module("pygmin/angleaxis/_aadist.f90")
-fmodules.add_module("pygmin/accept_tests/_spherical_container.f90")
-fmodules.add_module("pygmin/wham/_wham_utils.f90")
+#fmodules.add_module("pele/mindist/overlap.f90")
+fmodules.add_module("pele/mindist/minperm.f90")
+fmodules.add_module("pele/optimize/mylbfgs_fort.f90")
+fmodules.add_module("pele/optimize/mylbfgs_updatestep.f90")
+fmodules.add_module("pele/potentials/fortran/AT.f90")
+fmodules.add_module("pele/potentials/fortran/ljpshiftfort.f90")
+fmodules.add_module("pele/potentials/fortran/lj.f90")
+fmodules.add_module("pele/potentials/fortran/ljcut.f90")
+fmodules.add_module("pele/potentials/fortran/rmdrvt.f90")
+fmodules.add_module("pele/potentials/fortran/soft_sphere_pot.f90")
+fmodules.add_module("pele/potentials/fortran/maxneib_lj.f90")
+fmodules.add_module("pele/potentials/fortran/maxneib_blj.f90")
+fmodules.add_module("pele/potentials/fortran/lj_hess.f90")
+fmodules.add_module("pele/potentials/fortran/magnetic_colloids.f90")
+#fmodules.add_module("pele/potentials/rigid_bodies/rbutils.f90")
+fmodules.add_module("pele/utils/_fortran_utils.f90")
+fmodules.add_module("pele/transition_states/_orthogoptf.f90")
+fmodules.add_module("pele/transition_states/_NEB_utils.f90")
+fmodules.add_module("pele/angleaxis/_aadist.f90")
+fmodules.add_module("pele/accept_tests/_spherical_container.f90")
+fmodules.add_module("pele/wham/_wham_utils.f90")
 
 cxx_modules = [ ]
 
 fortran_modules = fmodules.module_list
 ext_modules = fortran_modules + cxx_modules
 
-setup(name='pygmin', 
+setup(name='pele', 
       version='0.1', 
       description="Python implementation of GMIN, OPTIM, and PATHSAMPLE",
-      url='http://github.com/js850/PyGMIN.git',
-      packages=["pygmin",
-                "pygmin.application",
-                "pygmin.potentials",
-                "pygmin.gui",
-                "pygmin.gui.ui",
-                "pygmin.mindist",
-                "pygmin.optimize",
-                "pygmin.transition_states",
-                "pygmin.transition_states.nebtesting",
-                "pygmin.landscape",
-                "pygmin.printing",
-                "pygmin.takestep",
-                "pygmin.utils",
-                "pygmin.wham",
-                "pygmin.storage",
-                "pygmin.potentials.fortran",
-                "pygmin.accept_tests",
-                "pygmin.systems",
-                "pygmin.angleaxis",
-                "pygmin.thermodynamics",
+      url='https://github.com/pele-python/pele',
+      packages=["pele",
+                "pele.application",
+                "pele.potentials",
+                "pele.gui",
+                "pele.gui.ui",
+                "pele.mindist",
+                "pele.optimize",
+                "pele.transition_states",
+                "pele.transition_states.nebtesting",
+                "pele.landscape",
+                "pele.printing",
+                "pele.takestep",
+                "pele.utils",
+                "pele.wham",
+                "pele.storage",
+                "pele.potentials.fortran",
+                "pele.accept_tests",
+                "pele.systems",
+                "pele.angleaxis",
+                "pele.thermodynamics",
                 ],
       ext_modules=ext_modules
         )
@@ -122,8 +122,8 @@ if have_cython:
     import numpy as np
 
     cython_modules = [
-                      Extension("pygmin.potentials.rigid_bodies._rbutils_cython",
-                                ["pygmin/potentials/rigid_bodies/_rbutils_cython.pyx"])
+                      Extension("pele.potentials.rigid_bodies._rbutils_cython",
+                                ["pele/potentials/rigid_bodies/_rbutils_cython.pyx"])
                       ]
 
     setup(

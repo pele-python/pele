@@ -2,9 +2,9 @@
 Example 5: if the energy doesn't improve after 20 basinhopping steps
 then do a short monte carlo run at a very high temperature.
 """
-from pygmin.systems import LJCluster
-from pygmin.takestep import RandomDisplacement, Reseeding
-from pygmin.mc import MonteCarlo
+from pele.systems import LJCluster
+from pele.takestep import RandomDisplacement, Reseeding
+from pele.mc import MonteCarlo
  
 
 class TakeStepMonteCarlo:

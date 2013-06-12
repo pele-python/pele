@@ -1,20 +1,23 @@
-PyGMIN: tools for global optimization and energy landscape exploration.
+PELE : Python Energy Landscape Explorer
++++++++++++++++++++++++++++++++++++++++
 
-PyGMIN is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
-programs written by David Wales and collaborators.
+tools for global optimization and energy landscape exploration.
 
 The code is hosted at
 
-https://github.com/js850/PyGMIN
+https://github.com/pele-python/pele
 
 for documentation, see
 
-http://js850.github.com/PyGMIN/
+http://pele-python.github.com/pele/
 
 The code project upon which this python package is based can be found at
 
 http://www-wales.ch.cam.ac.uk/software.html
 
+pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
+programs written by David Wales and collaborators.  pele has recently been
+renamed.  The previous name of the project was pygmin
 
 INSTALLATION
 ============
@@ -101,7 +104,7 @@ modules in their current directories::
 
   $ python setup.py build_ext -i --fcompiler=gfortran
 
-Users can install pygmin in the standard python package location::
+Users can install pele in the standard python package location::
 
   $ python setup.py build --fcompiler=gfortran
   $ python setup.py install [--user]
@@ -146,9 +149,9 @@ I haven't gotten it installed and running (I haven't tried the pay version)
 Running
 =======
 
-You can find examples of how to run pygmin in the examples folder.  More information
+You can find examples of how to run pele in the examples folder.  More information
 can be found in the documentation at
 
-http://js850.github.com/PyGMIN/
+http://js850.github.com/pele/
 
 

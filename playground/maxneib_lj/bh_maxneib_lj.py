@@ -1,4 +1,4 @@
-from pygmin.potentials.maxneib_lj import MaxNeibsLJ, MaxNeibsLJSystem
+from pele.potentials.maxneib_lj import MaxNeibsLJ, MaxNeibsLJSystem
 
 natoms = 20
 max_neibs = 3

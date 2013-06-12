@@ -1,1 +1,1 @@
-.. automodule:: pygmin.utils
+.. automodule:: pele.utils

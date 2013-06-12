@@ -1,15 +1,15 @@
 from math import sin, cos, pi
 import numpy as np
-from pygmin.angleaxis import RigidFragment, RBSystem
-from pygmin.mindist.rmsfit import findrotation_kabsch
-from pygmin.utils import rotations
-from pygmin.transition_states import NEB, InterpolatedPath
+from pele.angleaxis import RigidFragment, RBSystem
+from pele.mindist.rmsfit import findrotation_kabsch
+from pele.utils import rotations
+from pele.transition_states import NEB, InterpolatedPath
 
 def dump_path(filename, system, path):
     fl = open(filename, "w")
     lbls = system.get_atom_labels()
     for c in path:
-        from pygmin.printing import printAtomsXYZ
+        from pele.printing import printAtomsXYZ
         atomistic = system.to_atomistic(c)
         fl.write("%d\n\n"%len(lbls))
         for lbl, x in zip(lbls, atomistic):

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-namespace pygmin {
+namespace pele {
 
 class LBFGS
 {

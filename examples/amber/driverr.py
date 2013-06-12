@@ -1,4 +1,4 @@
-from pygmin.amber import amberSystem   
+from pele.amber import amberSystem   
 import time  
 
 # create new amber system
@@ -9,7 +9,7 @@ sys   = amberSystem.AMBERSystem('coords.prmtop', 'coords.inpcrd')
 sys.test_potential('coords.pdb')
 
 # load existing database 
-from pygmin.storage import Database
+from pele.storage import Database
 dbcurr = sys.create_database(db="aladipep.db")
 
 print "---------id, minener"
@@ -28,7 +28,7 @@ for ts in dbcurr.transition_states() :
 #    sysOpenMM.create_database(db=dbcurr)    
         
 # ------- TEST gui 
-#from pygmin.gui import run as gr    
+#from pele.gui import run as gr    
 #gr.run_gui(sys, db="aladipep.db")
 
 # ------ Test potential 

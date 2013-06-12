@@ -1,7 +1,7 @@
-from pygmin.potentials.maxneib_lj import MaxNeibsLJ, MaxNeibsLJSystem
+from pele.potentials.maxneib_lj import MaxNeibsLJ, MaxNeibsLJSystem
 
 def run_gui(system, db=None):
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(system, db=db)
 
 

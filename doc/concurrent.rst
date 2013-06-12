@@ -1,3 +1,3 @@
 .. _concurrent:
 
-.. automodule:: pygmin.concurrent
+.. automodule:: pele.concurrent

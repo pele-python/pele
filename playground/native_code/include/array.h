@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <iostream>
 
-namespace pygmin {
+namespace pele {
 	/**
 	 * Simple wrapper class for arrays
 	 *

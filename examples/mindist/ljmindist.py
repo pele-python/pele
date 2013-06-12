@@ -4,9 +4,9 @@ between two lennard jones clusters
 """
 import numpy as np
 
-from pygmin.potentials.lj import LJ
-from pygmin.optimize import lbfgs_py
-from pygmin.mindist import MinPermDistAtomicCluster
+from pele.potentials.lj import LJ
+from pele.optimize import lbfgs_py
+from pele.mindist import MinPermDistAtomicCluster
 
 pot = LJ()
 

@@ -1,6 +1,6 @@
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from pygmin.storage import Database
-from pygmin.landscape import TSGraph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph
+from pele.storage import Database
+from pele.landscape import TSGraph
 import pylab as pl
 import numpy as np
 

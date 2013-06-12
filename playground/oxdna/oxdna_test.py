@@ -1,17 +1,17 @@
 import numpy as np
 import oxdnagmin_ as GMIN
-from pygmin.potentials.gminpotential import GMINPotential
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
-from pygmin.storage.database import Database
-from pygmin import takestep
-from pygmin.utils import rotations
-from pygmin.utils.rbtools import CoordsAdapter
+from pele.potentials.gminpotential import GMINPotential
+import pele.basinhopping as bh
+from pele.takestep import displace
+from pele.storage.database import Database
+from pele import takestep
+from pele.utils import rotations
+from pele.utils.rbtools import CoordsAdapter
 from math import pi
 import os
-from pygmin.printing import printAtomsXYZ
-from pygmin.optimize.quench import lbfgs_py
-from pygmin.systems.oxdna import OXDNATakestep
+from pele.printing import printAtomsXYZ
+from pele.optimize.quench import lbfgs_py
+from pele.systems.oxdna import OXDNATakestep
 
 TO_PDB="python /home/vr274/opt/oxDNA/UTILS/traj2vis.py  pdb %s gmindnatop"
 

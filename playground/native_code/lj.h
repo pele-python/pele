@@ -14,7 +14,7 @@
 #define PYGMIN_LJ_H
 
 #include "include/simple_pairwise_potential.h"
-namespace pygmin {
+namespace pele {
 
 	/* define a pairwise interaction for lennard jones */
 	struct lj_interaction {

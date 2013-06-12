@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "Compiling _pygmin.pyx"
-cython --cplus _pygmin.pyx 
+echo "Compiling _pele.pyx"
+cython --cplus _pele.pyx 
 echo "Compiling _lj.pyx"
 cython --cplus _lj.pyx 
 echo "Compiling _lj_cython.pyx"

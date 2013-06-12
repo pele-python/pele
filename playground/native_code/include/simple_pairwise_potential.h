@@ -3,7 +3,7 @@
 
 #include "potential.h"
 
-namespace pygmin
+namespace pele
 {
 	template<typename pairwise_interaction>
 	class SimplePairwisePotential : public Potential

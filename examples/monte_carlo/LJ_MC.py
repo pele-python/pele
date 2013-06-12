@@ -1,11 +1,11 @@
 import numpy as np
-from pygmin.potentials.lj import LJ
-from pygmin.optimize import lbfgs_scipy as quench
-from pygmin.mc import MonteCarlo
-from pygmin.takestep.displace import RandomDisplacement as TakeStep
-from pygmin.takestep.adaptive import AdaptiveStepsize
+from pele.potentials.lj import LJ
+from pele.optimize import lbfgs_scipy as quench
+from pele.mc import MonteCarlo
+from pele.takestep.displace import RandomDisplacement as TakeStep
+from pele.takestep.adaptive import AdaptiveStepsize
 import sys
-from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
 
 class PrintEvent(object):
     def __init__(self, fout, printfrq = 1):

@@ -1,5 +1,5 @@
 from tip4p_system import TIP4PSystem
-from pygmin.concurrent import RandomConnectWorker
+from pele.concurrent import RandomConnectWorker
 
 manager_name = "water8_connect"
 hostname = "localhost"

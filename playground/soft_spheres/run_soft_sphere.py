@@ -1,6 +1,6 @@
 import numpy as np
 #from potentials.soft_sphere import SoftSphere, putInBox
-from pygmin.potentials.lj import LJ as SoftSphere
+from pele.potentials.lj import LJ as SoftSphere
 
 np.random.seed(0)
 
@@ -28,7 +28,7 @@ printlist.append((coords.copy(), "intial coords"))
 
 #test a quench with default lbfgs
 #from optimize.quench import quench
-from pygmin.optimize import lbfgs_ase as quench
+from pele.optimize import lbfgs_ase as quench
 coords, E, rms, funcalls = quench(coords, pot.getEnergyGradient, iprint=1)
 printlist.append((coords.copy(), "intial coords"))
 print "energy post quench", pot.getEnergy(coords)
@@ -44,7 +44,7 @@ print "testing gradient (should be small)", res
 
 fname = "out.xyz"
 print "saving coordinates to", fname
-from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
 with open(fname, "w") as fout:
     for xyz,line2 in printlist:
         #xyz = putInBox(xyz, boxl)

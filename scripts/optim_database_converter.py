@@ -1,5 +1,5 @@
 import numpy as np
-from pygmin.storage import Database, Minimum, TransitionState
+from pele.storage import Database, Minimum, TransitionState
 import argparse
 
 def read_points_min_ts(fname, ndof=None, endianness="="):
@@ -49,7 +49,7 @@ def read_points_min_ts(fname, ndof=None, endianness="="):
 
 class Convert(object):
     '''
-    Converts old OPTIM to pygmin database
+    Converts old OPTIM to pele database
     '''
     def __init__(self, ndof, db_name="Database.db", mindata="min.data", 
                   tsdata="ts.data", pointsmin="points.min", pointsts="points.ts",
@@ -152,7 +152,7 @@ class Convert(object):
 
 def main():
     parser = argparse.ArgumentParser(description="""
-convert an OPTIM database to a pygmin sqlite database.  Four files are needed.  Normally they are called:
+convert an OPTIM database to a pele sqlite database.  Four files are needed.  Normally they are called:
 
     points.min : the coordinates of the minima in binary format
     min.data   : additional information about the minima (like the energy)

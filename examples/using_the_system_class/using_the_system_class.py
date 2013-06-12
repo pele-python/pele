@@ -4,8 +4,8 @@ the Lennard-Jones system as an example
 """
 import logging
 
-from pygmin.systems import LJCluster
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
+from pele.systems import LJCluster
+from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
 
 
 # initialize the system class
@@ -60,7 +60,7 @@ print "the minimum distance between the two lowest minima is", dist
 # find a connected series of minima and transition states between m1 and m2
 # 
 # first use the logging module to turn off the status messages 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 logger.setLevel("WARNING")
 # now create the double ended connect object
 connect = system.get_double_ended_connect(m1, m2, db)

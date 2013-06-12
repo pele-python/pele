@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import cos, sin
 from copy import copy
-from pygmin.potentials.xyspin import XYModel
+from pele.potentials.xyspin import XYModel
 
 
 
@@ -37,7 +37,7 @@ print "energy ", e
 
 #try a quench
 if False:
-    from pygmin.optimize import mylbfgs
+    from pele.optimize import mylbfgs
     ret = mylbfgs(angles, pot)
     
     print ret
@@ -45,10 +45,10 @@ if False:
 
 #set up and run basin hopping
 
-from pygmin.basinhopping import BasinHopping
-from pygmin.takestep.displace import RandomDisplacement
-from pygmin.takestep.adaptive import AdaptiveStepsize
-from pygmin.storage import savenlowest
+from pele.basinhopping import BasinHopping
+from pele.takestep.displace import RandomDisplacement
+from pele.takestep.adaptive import AdaptiveStepsize
+from pele.storage import savenlowest
 
 #should probably use a different take step routine  which takes into account
 #the cyclical periodicity of angles

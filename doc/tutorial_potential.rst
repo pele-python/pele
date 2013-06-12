@@ -2,13 +2,13 @@
 
 Creating Your Potential
 -----------------------
-pygmin has a number of potentials built in, including the Lennard-Jones potential which
+pele has a number of potentials built in, including the Lennard-Jones potential which
 is used for most of our examples.  It also has an interface to the GMIN program with
 which you can access any myriad of GMIN's built in potentials.
 We also plan to build interfaces to some of the standard molecular dynamics packages
 like gromacs and OpenMM.  
 
-The flexibility of pygmin alows it to be easily used with just about any scalar
+The flexibility of pele alows it to be easily used with just about any scalar
 function.  Probably the biggest limitation is that, because we use a lot of
 gradient based local minimization you may experience problems if your potential
 is discontinuous.
@@ -18,18 +18,18 @@ simple 1D potential
 Lets create an artificial potential from the sum of a parabola and a cosine
 term::
 
-  from pygmin.potentials import BasePotential
+  from pele.potentials import BasePotential
   import numpy as np
   class My1DPot(BasePotential):
       def getEnergy(x):
           return np.cos(14.5 * x[0] - 0.3) + (x[0] + 0.2) * x[0]
 
 The above definition of member function getEnergy() is all that is required to
-use the global optimization features of pygmin.  It is derived from BasePotential, which will
+use the global optimization features of pele.  It is derived from BasePotential, which will
 calculate gradient numerically.  However, Defining an analytical gradient will
 make things run a lot faster::
 
-  from pygmin.potentials import BasePotential
+  from pele.potentials import BasePotential
   import numpy as np
   class My1DPot(BasePotential):
       """1d potential"""
@@ -46,7 +46,7 @@ From this point you can jump in and use BasinHopping to find the global minimum.
 The best way to do this is to use the convience wrapper, the :ref:`system class <system_class>`.
 As a first start, all we must do is tell the system class what our potential is ::
 
-  from pygmin.systems import BaseSystem
+  from pele.systems import BaseSystem
   class My1DSystem(BaseSystem):
       def get_potential(self):
           return My1DPot()
@@ -69,10 +69,10 @@ atomic pair potential
 +++++++++++++++++++++
 We now look at a more involved system.
 Lets create a system of atoms interacting via a pair potential similar to
-the Lennard-Jones potential.  See pygmin/examples/new_potential/ for the code
+the Lennard-Jones potential.  See pele/examples/new_potential/ for the code
 related to this example::
 
-  from pygmin.potentials import BasePotential
+  from pele.potentials import BasePotential
   class MyPot(BasePotential):
       """a Lennard Jones potential with altered exponents
       
@@ -112,11 +112,11 @@ ready to use.
   Loops in python are very slow.  The above functions getEnergy() and
   getEnergyGradient() will run *a lot* faster in a compiled language.  Good
   choices might be cython or fortran (using f2py).  See the included potential
-  pygmin.potentials.LJ for an example of how to do this.
+  pele.potentials.LJ for an example of how to do this.
 
 We are now ready to define the system class. ::
 
-    from pygmin.systems import BaseSystem
+    from pele.systems import BaseSystem
     class MySystem(BaseSystem):
         def __init__(self, natoms):
             super(MySystem, self).__init__()
@@ -197,7 +197,7 @@ Some common symmetries are
 3. reflection symmetry
 4. permutational invariance
 
-pygmin has all the utilities necessary for handling these cases, but they are,
+pele has all the utilities necessary for handling these cases, but they are,
 by definition system dependent, so you must manually specify them for your
 system.  These should be implemented in the system class by overloading 
 MySystem.get_mindist().  See :ref:`Structure Alignment <structure_alignment>` for
@@ -209,7 +209,7 @@ symmetries listed above.  Assuming the atoms are indistinguishable we also have
 permutational symmetry.  The mindist class which deals with these 4 symmetries
 is minPermDistStochastic() ::
 
-  from pygmin.mindist import MinPermDistAtomicCluster
+  from pele.mindist import MinPermDistAtomicCluster
   class MySystem(BaseSystem):
     ...    
     def get_mindist(self):
@@ -233,7 +233,7 @@ for translational symmetries and 3 zero eigenvectors for rotational symmetries.
 The routine which takes care of this is called `orthogopt`
 :: 
 
-  from pygmin.transition_states import orthogopt
+  from pele.transition_states import orthogopt
   class MySystem(BaseSystem):
       ...    
       def get_orthogonalize_to_zero_eigenvectors(self):
@@ -257,8 +257,8 @@ short, so we may not have found the global minimum yet).
 As a final step, let's plot the connectivity in the database using a :ref:`disconnectivity
 graph <disconnectivity_graph>` ::
 
-    from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-    from pygmin.landscape import TSGraph
+    from pele.utils.disconnectivity_graph import DisconnectivityGraph
+    from pele.landscape import TSGraph
     import matplotlib.pyplot as plt
     #convert the database to a networkx graph
     graph = TSGraph(database).graph

@@ -1,14 +1,14 @@
 import numpy as np
 import time
-import pygmin.utils.readAmberParam as readAmb
+import pele.utils.readAmberParam as readAmb
 import ambgmin_ as GMIN
-import pygmin.potentials.gminpotential as gminpot
-import pygmin.basinhopping as bh
-from pygmin.storage import savenlowest
-from pygmin.NEB import NEB
-from pygmin.utils.rbtools import *
-from pygmin.takestep import generic
-from pygmin.takestep import displace
+import pele.potentials.gminpotential as gminpot
+import pele.basinhopping as bh
+from pele.storage import savenlowest
+from pele.NEB import NEB
+from pele.utils.rbtools import *
+from pele.takestep import generic
+from pele.takestep import displace
 
 class molSystem:
     def __init__(self):
@@ -68,5 +68,5 @@ class molSystem:
 
                
 if __name__ == "__main__":
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(molSystem)

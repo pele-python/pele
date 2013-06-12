@@ -1,3 +1,3 @@
 .. _landscape_module:
 
-.. automodule:: pygmin.landscape
+.. automodule:: pele.landscape
