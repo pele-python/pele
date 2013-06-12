@@ -5,6 +5,52 @@ routines to help with computing rates from one subset of a graph to another
 import networkx as nx
 import numpy as np
 
+def graph_from_rates(rates):
+    """create a graph for input to GraphReduction from a dictionary of rates
+    
+    Parameters
+    ----------
+    rates : dict
+        a dictionary of rates.  the keys are tuples of nodes (u,v), the
+        values are the rates.
+        
+            rate_uv = rate[(u,v)]
+    """
+    graph = nx.Graph()
+    sumk = dict()
+    
+    # compute the sum of the outgoing rates for each node
+    for edge, rate in rates.iteritems():
+        u, v = edge
+        try:
+            sumk[u] += rate
+        except KeyError:
+            sumk[u] = rate
+    
+    
+    # add nodes to the rate graph and assign waiting time and Puu
+    for u, sumk_u in sumk.iteritems():
+        tau = 1. / sumk_u
+        Puu = 0.
+        data = {"P":Puu, "tau":tau}
+        graph.add_node(u, attr_dict=data)
+    
+    # add edges to rate graph and assign transition probabilities
+    for edge, rate in rates.iteritems():
+        u, v = edge
+        tau_u = graph.node[u]["tau"]
+        Puv =  rate * tau_u
+        data = {GraphReduction.Pkey(u, v):Puv}
+        graph.add_edge(u, v, attr_dict=data)
+    
+    return graph
+        
+    
+    
+        
+        
+
+
 class GraphReduction(object):
     """
     class to apply the graph reduction method for finding transition rates between two groups of nodes
@@ -16,8 +62,8 @@ class GraphReduction(object):
         and the occupation times.  The graph must have all the data in the correct format.
         Each node must have the following keys in their attributes dictionary::
             
-            "P" : the probability to stay in this state
-            "tau" : occupation probability
+            "P"   : the probability to stay in this state
+            "tau" : occupation time
         
         Each edge between nodes u and v must have the following keys in their 
         attributes dictionary:
@@ -29,12 +75,12 @@ class GraphReduction(object):
         groups of nodes specifying the reactant and product groups.  The rates returned will be 
         the rate from A to B and vice versa.
     """
-    def __init__(self, graph, A, B):
+    def __init__(self, graph, A, B, debug=False):
         self.graph = graph
         self.A = set(A)
         self.B = set(B)
         
-        self.debug = False
+        self.debug = debug
         self.check_graph()
     
     def renormalize(self):
@@ -140,16 +186,18 @@ class GraphReduction(object):
         Pxu = uxdata[self.Pkey(x, u)]
         Pux = uxdata[self.Pkey(u, x)]
         
+        if self.debug:
+            tauold = udata["tau"]
+            Pold = udata["P"]
+
         # update the waiting time at u
         udata["tau"] += Pux * taux / (1.-Pxx)
         
         # update Puu
-        if self.debug:
-            Pold = udata["P"]
         udata["P"] += Pux * Pxu / (1.-Pxx)
         
         if self.debug:
-            print "updating node data", u, Pold, "->", udata["P"]
+            print "updating node data", u, "P", Pold, "->", udata["P"], "tau", tauold, "->", udata["tau"]
         
             
     
@@ -216,6 +264,28 @@ class GraphReduction(object):
 # only testing stuff below here
 #
 
+import unittest
+class TestGraphReduction(unittest.TestCase):
+    def setUp(self):
+        tmatrix = [ [0., 1., 1.,], [1., 0., 1.,], [1., 1., 0.] ]
+        rates = dict()
+        for i in range(3):
+            for j in range(3):
+                if i != j:
+                    rates[(i,j)] = tmatrix[i][j]
+    
+        self.graph = graph_from_rates(rates)
+
+    def test_rate(self):
+        reducer = GraphReduction(self.graph, [0], [1], debug=True)
+        reducer.check_graph()
+        rAB, rBA = reducer.renormalize()
+        print rAB, rBA
+        reducer.check_graph()
+        print reducer.graph.number_of_nodes(), reducer.graph.number_of_edges()
+
+        
+
 def _make_random_graph(nnodes=16):
     L = int(np.sqrt(nnodes))
     graph = nx.grid_graph([L,L], periodic=False)
@@ -246,6 +316,9 @@ def _make_random_graph(nnodes=16):
 #    tool.check_graph()
     return graph
 
+
+
+
 def test(nnodes=36):
     graph = _make_random_graph(nnodes)
     reducer = GraphReduction(graph, [], [])
@@ -270,6 +343,7 @@ def test(nnodes=36):
     print "rates", rAB, rBA
 
 if __name__ == "__main__":
-    test()
+    unittest.main()
+#    test()
     
     

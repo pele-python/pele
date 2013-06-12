@@ -559,8 +559,6 @@ class MainGUI(QtGui.QMainWindow):
         """
         from pele.utils.disconnectivity_graph import graph_constructor
         print "computing rates at temperature T =", T
-        # TODO: should properly deal with the situation where some of the
-        # minima and ts don't have thermodynamic data yet
         minima = [m for m in self.system.database.minima() if m.fvib is not None]
         tslist = [ts for ts in self.system.database.transition_states() if ts.fvib is not None]
         graph = graph_constructor(minima, tslist)
