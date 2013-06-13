@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 
 from pele.utils.disconnectivity_graph import database2graph
-from pele.rates._rate_calculations import GraphReduction
+from pele.rates._rate_calculations import GraphReduction, graph_from_rates
 
 __all__ = ["RateCalculation"]
 
@@ -86,12 +86,8 @@ class RateCalculation(object):
     
     def _make_rate_graph(self):
         """build the graph that will be used in the rate calculation"""
-        self.rate_graph = nx.Graph()
-        
+        # get rate constants over transition states
         rates = dict()
-        sumk = dict([(self._min2node(m), 0.) for m in self.tsgraph.nodes()])
-        
-        # get local transition rates
         for min1, min2, data in self.tsgraph.edges_iter(data=True):
             u = self._min2node(min1)
             v = self._min2node(min2)
@@ -100,31 +96,11 @@ class RateCalculation(object):
             kvu = self._get_local_rate(min2, min1, ts)
             rates[(u,v)] = kuv
             rates[(v,u)] = kvu
-            sumk[u] += kuv
-            sumk[v] += kvu
-            
-        # add nodes to rate graph and assign waiting time and Puu
-        for u, sumku in sumk.iteritems():
-            tau = 1. / sumku
-            Puu = 0.
-            data = {"P":Puu, "tau":tau}
-            self.rate_graph.add_node(u, attr_dict=data)
         
-        # add edges to rate graph and assign transition probabilities
-        for min1, min2 in self.tsgraph.edges_iter():
-            u = self._min2node(min1)
-            v = self._min2node(min2)
-            tauu = self.rate_graph.node[u]["tau"]
-            tauv = self.rate_graph.node[v]["tau"]
-            
-            Puv = tauu * rates[(u,v)]
-            Pvu = tauv * rates[(v,u)]
-            
-            data = {GraphReduction.Pkey(u, v):Puv,
-                    GraphReduction.Pkey(v, u):Pvu}
-            
-            self.rate_graph.add_edge(u, v, attr_dict=data)
+        # make the rate graph from the rate constants
+        self.rate_graph = graph_from_rates(rates)
 
+        # translate the product and reactant set into the new node definition  
         self.Anodes = set([self._min2node(m) for m in self.A]) 
         self.Bnodes = set([self._min2node(m) for m in self.B]) 
 
