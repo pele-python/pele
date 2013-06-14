@@ -264,18 +264,20 @@ class GraphReduction(object):
 # only testing stuff below here
 #
 
+def _three_state_graph():
+    tmatrix = [ [0., 1., 1.,], [1., 0., 1.,], [1., 1., 0.] ]
+    rates = dict()
+    for i in range(3):
+        for j in range(3):
+            if i != j:
+                rates[(i,j)] = tmatrix[i][j]
+
+    return graph_from_rates(rates)
+
 import unittest
 class TestGraphReduction(unittest.TestCase):
     def setUp(self):
-        # 3 nodes with rate of 1 between all nodes
-        tmatrix = [ [0., 1., 1.,], [1., 0., 1.,], [1., 1., 0.] ]
-        rates = dict()
-        for i in range(3):
-            for j in range(3):
-                if i != j:
-                    rates[(i,j)] = tmatrix[i][j]
-    
-        self.graph = graph_from_rates(rates)
+        graph = _three_state_graph()
         # all rates after graph renormalization should be 1.0
         self.final_rate = 1.0
 
