@@ -264,27 +264,41 @@ class GraphReduction(object):
 # only testing stuff below here
 #
 
+def _three_state_graph():
+    tmatrix = [ [0., 1., 1.,], [1., 0., 1.,], [1., 1., 0.] ]
+    rates = dict()
+    for i in range(3):
+        for j in range(3):
+            if i != j:
+                rates[(i,j)] = tmatrix[i][j]
+
+    return graph_from_rates(rates)
+
 import unittest
 class TestGraphReduction(unittest.TestCase):
     def setUp(self):
-        tmatrix = [ [0., 1., 1.,], [1., 0., 1.,], [1., 1., 0.] ]
-        rates = dict()
-        for i in range(3):
-            for j in range(3):
-                if i != j:
-                    rates[(i,j)] = tmatrix[i][j]
-    
-        self.graph = graph_from_rates(rates)
+        graph = _three_state_graph()
+        # all rates after graph renormalization should be 1.0
+        self.final_rate = 1.0
 
-    def test_rate(self):
-        reducer = GraphReduction(self.graph, [0], [1], debug=True)
+    def _test_rate(self, i, j):
+        reducer = GraphReduction(self.graph, [i], [j], debug=False)
         reducer.check_graph()
         rAB, rBA = reducer.renormalize()
-        print rAB, rBA
         reducer.check_graph()
-        print reducer.graph.number_of_nodes(), reducer.graph.number_of_edges()
+        self.assertEqual(reducer.graph.number_of_nodes(), 2)
+        self.assertEqual(reducer.graph.number_of_edges(), 1)
+        self.assertAlmostEqual(rAB, self.final_rate, 7)
+        self.assertAlmostEqual(rBA, self.final_rate, 7)
 
-        
+    def test01(self):
+        self._test_rate(0,1)
+
+    def test12(self):
+        self._test_rate(1,2)
+
+    def test02(self):
+        self._test_rate(0,2)
 
 def _make_random_graph(nnodes=16):
     L = int(np.sqrt(nnodes))

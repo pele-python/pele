@@ -14,5 +14,6 @@ from pele.utils.hessian import TestEig
 from pele.accept_tests.tests import *
 from pele.storage.tests import *
 from pele._test_basinhopping import TestBasinhopping
+from pele.rates._rate_calculations import TestGraphReduction
 
 unittest.main()
