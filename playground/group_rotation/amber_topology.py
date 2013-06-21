@@ -44,13 +44,13 @@ class AmberTopology():
         self.bonds = []
         topology_bonds_list = topology_data["BONDS_INC_HYDROGEN"] + topology_data["BONDS_WITHOUT_HYDROGEN"]
         if by_type is True:
-            for bond_set in topology_bonds_list:
+            while topology_bonds_list:
                 atom_1    = topology_bonds_list.pop(0) / 3
                 atom_2    = topology_bonds_list.pop(0) / 3
                 bond_type = topology_bonds_list.pop(0)
                 self.bonds.append((atom_1, atom_2, bond_type))
         else:
-            for bond_set in topology_bonds_list:
+            while topology_bonds_list:
                 atom_1    = topology_bonds_list.pop(0) / 3
                 atom_2    = topology_bonds_list.pop(0) / 3
                 bond_type = topology_bonds_list.pop(0)
@@ -62,14 +62,14 @@ class AmberTopology():
         self.angles = []
         topology_angles_list = topology_data["ANGLES_INC_HYDROGEN"] + topology_data["ANGLES_WITHOUT_HYDROGEN"]
         if by_type is True:
-            for angle in topology_angles_list:
+            while topology_angles_list:
                 atom_1    = topology_angles_list.pop(0) / 3
                 atom_2    = topology_angles_list.pop(0) / 3
                 atom_3    = topology_angles_list.pop(0) / 3
                 bond_type = topology_angles_list.pop(0)
                 self.angles.append((atom_1, atom_2, atom_3, bond_type))
         else:
-            for bond_set in topology_angles_list:
+            while topology_angles_list:
                 atom_1    = topology_angles_list.pop(0) / 3
                 atom_2    = topology_angles_list.pop(0) / 3
                 atom_3    = topology_angles_list.pop(0) / 3
@@ -82,7 +82,7 @@ class AmberTopology():
         self.dihedrals = []
         topology_dihedrals_list = topology_data["DIHEDRALS_INC_HYDROGEN"] + topology_data["DIHEDRALS_WITHOUT_HYDROGEN"]
         if by_type is True:
-            for bond_set in topology_dihedrals_list:
+            while topology_dihedrals_list:
                 atom_1    = topology_dihedrals_list.pop(0) / 3
                 atom_2    = topology_dihedrals_list.pop(0) / 3
                 atom_3    = topology_dihedrals_list.pop(0) / 3
@@ -90,14 +90,17 @@ class AmberTopology():
                 bond_type = topology_dihedrals_list.pop(0)
                 self.dihedrals.append((atom_1, atom_2, atom_3, atom_4, bond_type))
         else:
-            for bond_set in topology_dihedrals_list:
+            while topology_dihedrals_list:
                 atom_1    = topology_dihedrals_list.pop(0) / 3
                 atom_2    = topology_dihedrals_list.pop(0) / 3
                 atom_3    = topology_dihedrals_list.pop(0) / 3
                 atom_4    = topology_dihedrals_list.pop(0) / 3
                 bond_type = topology_dihedrals_list.pop(0)
                 self.dihedrals.append((atom_1, atom_2, atom_3, atom_4))
-        return self.dihedrals       
+        return self.dihedrals
+
+#################################################### MAIN ####################################################
+
 if __name__ == "__main__":
     amber_top = AmberTopology()
     topology_data = amber_top.import_from_file("/home/khs26/coords.prmtop")
