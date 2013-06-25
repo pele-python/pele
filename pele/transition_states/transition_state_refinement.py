@@ -95,6 +95,10 @@ class FindTransitionState(object):
         eigenvector
     demand_initial_negative_vec : bool
         if True, abort if the initial lowest eigenvalue is positive
+    negatives_before_check : int
+        if start with positive eigenvector and demand_initial_negative_vec is False,
+        the check to make sure that the eigenvalue is enabled after having had so 
+        many negative eigenvalues before
     nsteps_tangent1, nsteps_tangent2 : int
         the number of iterations for tangent space minimization before and after
         the eigenvalue is deemed to be converged
@@ -128,6 +132,7 @@ class FindTransitionState(object):
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.1,
                  demand_initial_negative_vec=True,
+                 negatives_before_check = 10,
                  nsteps_tangent1=10,
                  nsteps_tangent2=100,
                  verbosity=1,
@@ -230,14 +235,22 @@ class FindTransitionState(object):
         coords = np.copy(self.coords)
         res = Result() #  return object
         res.message = []
+        
+        # if starting with positive curvature, disable negative eigenvalue check
+        # this will be reenabled as soon as the eigenvector becomes negative
+        negative_before_check =  10
+
         for i in xrange(self.nsteps):
             
             # get the lowest eigenvalue and eigenvector
             self.overlap = self._getLowestEigenVector(coords, i)
             overlap = self.overlap
             
+            if self.eigenval < 0:
+                negative_before_check -= 1
+            
             # check to make sure the eigenvector is ok
-            if i == 0 or self.eigenval <= 0:
+            if i == 0 or self.eigenval <= 0 or (negative_before_check > 0 and not self.demand_initial_negative_vec):
                 self._saveState(coords)
                 self.reduce_step = 0
             else:
