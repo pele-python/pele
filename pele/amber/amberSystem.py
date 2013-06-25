@@ -268,8 +268,8 @@ class AMBERSystem(BaseSystem):
         for atomPairs in self.potential.prmtop.topology.bonds():
             # note that atom numbers in topology start at 0
             if self.OpenMMVer == 5: 
-                xyz1 = coords[atomPairs[0].index] - com  
-                xyz2 = coords[atomPairs[1].index] - com
+                xyz1 = coords[atomPairs[0]] - com  
+                xyz2 = coords[atomPairs[1]] - com
             else: 
                 xyz1 = coords[atomPairs[0]] - com  
                 xyz2 = coords[atomPairs[1]] - com
@@ -595,6 +595,21 @@ class AMBERSystem(BaseSystem):
         dg.calculate()
         dg.plot()
         plt.show()
+
+    def test_BH_group_rotation(self, db, nsteps, parameters):
+        from playground.group_rotation.group_rotation import GroupRotation
+        take_step_gr = GroupRotation(parameters)
+        
+        self.params.basinhopping["temperature"] = 10.0
+        
+        bh = self.get_basinhopping(database=db, takestep = take_step_gr)
+        
+        print "Running BH with group rotation ..."
+        bh.run(nsteps)
+        
+        print "Number of minima found = ", len(db.minima())
+        min0 = db.minima()[0]
+        print "lowest minimum found has energy = ", min0.energy
             
     def test_BH(self,db,nsteps):
                         
