@@ -155,7 +155,7 @@ class FindTransitionState(object):
         self.demand_initial_negative_vec = demand_initial_negative_vec    
         self.npositive_max = max(10, self.nsteps / 5)
         
-        self.rmsnorm = 1./np.sqrt(float(len(coords))/3.)
+        self.rmsnorm = 1./np.sqrt(float(len(coords)))
         self.oldeigenvec = None
 
         #set tolerance for the tangent space minimization.  
@@ -245,6 +245,7 @@ class FindTransitionState(object):
             # get the lowest eigenvalue and eigenvector
             self.overlap = self._getLowestEigenVector(coords, i)
             overlap = self.overlap
+            #print self.eigenval
             
             if self.eigenval < 0:
                 negative_before_check -= 1
