@@ -9,7 +9,7 @@ logger = logging.getLogger("pele.connect")
 
 def determinePushoff(
             pot, coords, vec, gdiff=100., stepmin = 1e-5, stepmax = 0.2, verbose=False,
-            grad = None):
+            grad = None, rms_min=0.):
     """
     determine a good stepsize to step off a transition state
     
@@ -26,11 +26,12 @@ def determinePushoff(
     while True:
         coords1 = step * vec + coords
         e, grad = pot.getEnergyGradient(coords1)
+        rms = np.linalg.norm(grad) / np.sqrt(grad.size)
         gpar = np.dot(grad, vec) / vnorm
         finalstep = step
         if verbose:
             logger.debug("gpar %s %s %s %s", gpar, gpar0, abs((gpar-gpar0) / gpar0), step)
-        if abs((gpar-gpar0) / gpar0) > gdiff:
+        if abs((gpar-gpar0) / gpar0) > gdiff and rms > rms_min:
             break
         if step > stepmax:
             logger.debug("warning: taking maximum step size from transition state %s", step)
