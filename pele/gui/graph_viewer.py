@@ -93,7 +93,7 @@ class GraphViewWidget(QWidget):
             self.ui.label_status.setText(text)
             self.show_graph()
     
-    def show_graph(self, fixed=False):
+    def show_graph(self, fixed=False, show_ids=True):
         import pylab as pl
         if not hasattr(self, "graph"):
             self.make_graph()
@@ -119,10 +119,11 @@ class GraphViewWidget(QWidget):
         if not hasattr(self, "colorbar"):
             self.colorbar = self.fig.colorbar(points)
         
-        # label the nodes
-        ids = [n._id for n, xy in layoutlist]
-        for i in range(len(ids)):
-            ax.annotate( ids[i], xypos[i] )
+        if show_ids and False:
+            # label the nodes
+            ids = [n._id for n, xy in layoutlist]
+            for i in range(len(ids)):
+                ax.annotate( ids[i], xypos[i] )
         
         #plot the edges as lines
         for u, v in graph.edges():

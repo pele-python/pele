@@ -3,14 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pele's documentation!
-==================================
+pele : Python Energy Landscape Explorer
+=======================================
+
 
 The source code repository can be found at `<https://github.com/pele-python/pele>`_
 
 The documentation is hosted at `<http://pele-python.github.com/pele/>`_
 
-pele is a package of tools for exploring energy landscapes.  The core
+pele is a package of tools for calculations
+involving optimzation and exploration on energy landscapes.  The core
 routines are broken into two parts: :ref:`Basinhopping <global_optimization>`,
 for finding the global minimum of an energy landscape, and for building up
 databases of minima.  And :ref:`DoubleEndedConnect <landscape_module>`, for

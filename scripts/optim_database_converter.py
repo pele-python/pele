@@ -163,7 +163,7 @@ Other file names can optionally be passed.  Some fortran compilers use non-stand
 binary data.  If your coordinates are garbage, try changing the endianness.
     """, formatter_class=argparse.RawDescriptionHelpFormatter)
     
-    parser.add_argument('ndof', help='Number of degrees of freedom (e.g. 3*number of atoms)', type = int)
+    parser.add_argument('ndof', help='Number of total degrees of freedom (e.g. 3*number of atoms).  This is simply the length of a coordinates vector.', type = int)
     parser.add_argument('--Database','-d', help = 'Name of database to write into', type = str, default="optimdb.sqlite")
     parser.add_argument('--Mindata','-m', help = 'Name of min.data file', type = str, default="min.data")
     parser.add_argument('--Tsdata','-t', help = 'Name of ts.data file', type = str, default="ts.data")
