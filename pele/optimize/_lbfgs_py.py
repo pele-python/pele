@@ -349,7 +349,7 @@ class LBFGS(object):
                 i_am_done = rms < self.tol
             else:
                 i_am_done = self.alternate_stop_criterion(energy=e, gradient=G, 
-                                                          tol=self.tol)
+                                                          tol=self.tol, coords=X)
                 
             if i_am_done:
                 res.success = True
