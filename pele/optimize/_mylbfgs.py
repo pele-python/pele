@@ -71,7 +71,7 @@ class MYLBFGS(LBFGS):
 
         
         #print self.iter, self.point
-        self.stp = mylbfgs_updatestep(self.iter, self.M, G, self.W, self.H0vec, self.point, [self.N])
+        self.stp = mylbfgs_updatestep(self.iter, self.M, G, self.W, self.H0vec, self.point)
         
         #print "stp", np.linalg.norm(self.stp), self.stp
         #print "G", self.G

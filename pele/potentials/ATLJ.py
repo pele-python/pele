@@ -115,7 +115,7 @@ class ATLJ(BasePotential):
     def getEnergyFortran(self, coords):
         #grad,potel = axt(x,gradt,zstar,[n])
         natoms = len(coords)/3
-        garbage, e = ATfort.axt(coords, False, self.Z, [natoms])
+        garbage, e = ATfort.axt(coords, False, self.Z)
         
         Elj = self.lj.getEnergy(coords)
         return e + Elj
@@ -123,7 +123,7 @@ class ATLJ(BasePotential):
     def getEnergyGradientFortran(self, coords):
         #grad,potel = axt(x,gradt,zstar,[n])
         natoms = len(coords)/3
-        grad, e = ATfort.axt(coords, True, self.Z, [natoms])
+        grad, e = ATfort.axt(coords, True, self.Z)
         
         elj, gradlj = self.lj.getEnergyGradient(coords)
         return e + elj, grad + gradlj

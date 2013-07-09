@@ -20,12 +20,12 @@ class SoftSphere(BasePotential):
     
     def getEnergy(self, coords):
         natoms = len(coords)/self.dimen
-        energy, force = soft_sphere_pot(self.dimen, coords, self.diams, [natoms])
+        energy, force = soft_sphere_pot(self.dimen, coords, self.diams)
         return energy
     
     def getEnergyGradient(self, coords):
         natoms = len(coords)/self.dimen
-        energy, force = soft_sphere_pot(self.dimen, coords, self.diams, [natoms])
+        energy, force = soft_sphere_pot(self.dimen, coords, self.diams)
         return energy, force
 
 

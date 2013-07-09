@@ -20,36 +20,30 @@ class LJ(BasePotential):
             self.periodic = True
 
     def getEnergy(self, coords):
-        natoms = len(coords) / 3
         E = ljf.ljenergy(
-                coords, self.eps, self.sig, self.periodic, self.boxl, [natoms])
+                coords, self.eps, self.sig, self.periodic, self.boxl)
         return E
 
     def getEnergyGradient(self, coords):
-        natoms = len(coords) / 3
         E, grad = ljf.ljenergy_gradient(
-                coords, self.eps, self.sig, self.periodic, self.boxl, [natoms])
+                coords, self.eps, self.sig, self.periodic, self.boxl)
         return E, grad 
     
     def getEnergyList(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
         #ilist += 1 #fortran indexing
-        nlist = len(ilist)
-        natoms = len(coords) / 3
         E = ljf.energy_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
-                self.boxl, [natoms, nlist])
+                self.boxl)
         #ilist -= 1
         return E
     
     def getEnergyGradientList(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
         #ilist += 1 #fortran indexing
-        nlist = len(ilist)
-        natoms = len(coords) / 3
         E, grad = ljf.energy_gradient_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
-                self.boxl, [natoms, nlist])
+                self.boxl)
         #ilist -= 1
         return E, grad 
     

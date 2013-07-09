@@ -54,19 +54,17 @@ class LJpshift(BasePotential):
 
     def getEnergy(self, coords):
         #print "getting energy only"
-        V, E = ljpshiftfort.ljpshift(coords, False, False,\
-                self.boxl, self.boxl, self.boxl, \
-                self.AA.rcut, self.periodic, self.ntypeA, \
-                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig, \
-                [self.natoms])
+        V, E = ljpshiftfort.ljpshift(coords, False, False,
+                self.boxl, self.boxl, self.boxl,
+                self.AA.rcut, self.periodic, self.ntypeA,
+                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig)
         return E
 
     def getEnergyGradient(self, coords):
-        V, E = ljpshiftfort.ljpshift(coords, True, False,\
-                self.boxl, self.boxl, self.boxl, \
-                self.AA.rcut, self.periodic, self.ntypeA, \
-                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig, \
-                [self.natoms])
+        V, E = ljpshiftfort.ljpshift(coords, True, False,
+                self.boxl, self.boxl, self.boxl,
+                self.AA.rcut, self.periodic, self.ntypeA,
+                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig)
         return E, V
 
 
