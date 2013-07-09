@@ -26,10 +26,13 @@ class _ThermoWorker(mp.Process):
 
     def run(self):
         while True:
+            # run until the input queue is empty
             if self.input_queue.empty():
                 if self.verbose:
                     print "woker ending"
                 return
+            
+            # get the next minima / ts to evaluate
             mts, mid, coords = self.input_queue.get()
             if mts == "ts":
                 nnegative=1
@@ -38,6 +41,8 @@ class _ThermoWorker(mp.Process):
                 nnegative=0
             else:
                 raise Exception("mts must be 'm' or 'ts'")
+            
+            # do the computation
             pgorder = self.system.get_pgorder(coords)
             fvib = self.system.get_log_product_normalmode_freq(coords, nnegative=nnegative)
             if self.verbose:
@@ -61,10 +66,12 @@ class GetThermodynamicInfoParallel(object):
     only_minima : bool
         if True the transition state free energy will not be computed
     """
-    def __init__(self, system, database, npar=4, verbose=False, only_minima=False):
+    def __init__(self, system, database, npar=4, verbose=False, only_minima=False, 
+                  recalculate=False):
         self.system = system
         self.database = database
         self.verbose = verbose
+        self.recalculate = recalculate
 
         # initialize workers
         self.workers = []
@@ -80,12 +87,12 @@ class GetThermodynamicInfoParallel(object):
         """
         self.njobs = 0
         for m in self.database.minima():
-            if m.pgorder is None or m.fvib is None:
+            if self.recalculate or (m.pgorder is None or m.fvib is None):
                 self.njobs += 1
                 self.send_queue.put(("m", m._id, m.coords))
         
         for ts in self.database.transition_states():
-            if ts.pgorder is None or ts.fvib is None:
+            if self.recalculate or (ts.pgorder is None or ts.fvib is None):
                 self.njobs += 1
                 self.send_queue.put(("ts", ts._id, ts.coords))
     
@@ -110,18 +117,6 @@ class GetThermodynamicInfoParallel(object):
         for i in xrange(self.njobs):
             ret = self.done_queue.get()
             self._process_return_value(ret)
-#            if mts == "m":
-#                m = self.database.getMinimum(mid)
-#                m.fvib = fvib
-#                m.pgorder = pgorder
-#            elif mts == "ts":
-#                ts = self.database.getTransitionStateFromID(mid)
-#                ts.fvib = fvib
-#                ts.pgorder = pgorder
-#            else:
-#                raise Exception("mts must be 'm' or 'ts'")
-#            self.database.session.commit()
-##            print "got result", mid
     
     def finish(self):
         if self.verbose:
@@ -174,9 +169,9 @@ def get_thermodynamic_information_minimum(system, database, minimum, commit=True
     return changed
 
 
-def get_thermodynamic_information(system, database, nproc=None):
+def get_thermodynamic_information(system, database, nproc=4, recalculate=False):
     """
-    compute thermodynamic information for all minima in a database
+    compute thermodynamic information for all minima and transition states in a database
     
     Parameters
     ----------
@@ -190,7 +185,8 @@ def get_thermodynamic_information(system, database, nproc=None):
     log product of the squared normal mode frequencies (m.fvib).
     """
     if nproc is not None:
-        worker = GetThermodynamicInfoParallel(system, database, npar=nproc)
+        worker = GetThermodynamicInfoParallel(system, database, npar=nproc, 
+                                              recalculate=recalculate)
         worker.start()
         return
     changed = False
