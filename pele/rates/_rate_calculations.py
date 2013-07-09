@@ -277,7 +277,7 @@ def _three_state_graph():
 import unittest
 class TestGraphReduction(unittest.TestCase):
     def setUp(self):
-        graph = _three_state_graph()
+        self.graph = _three_state_graph()
         # all rates after graph renormalization should be 1.0
         self.final_rate = 1.0
 
