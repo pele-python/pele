@@ -122,35 +122,78 @@ standard location.
 Installing on Mac
 -----------------
 
-When I used macports, everything installed very easily.  However, at least on
-my machine the OpenGL / Qt implementation (necessary for the gui) was broken
-and I could never get it to work.  So I aborted using macports and installed
-everything by hand.  I eventually got (almost) everything working.  Here are a
-few hints
+Everything installed very easily on my Macbook Air OSX Version 10.75 except the
+things needed for the gui.  There is a problem (not related to pele) with the
+combination of PyQt4, Qt4, and OpenGL.  If you don't want the gui you should be
+golden, but if you do, you may have to install a few things from source.  Below
+are the steps I took to get everything working
 
-use the Enthought python distribution instead of the prepackaged one.  This
+I use the Enthought python distribution instead of the prepackaged one.  This
 seems to be standard, plus it includes numpy and scipy
 http://www.enthought.com/products/epd.php
 
-if you want to use the gui you have to install pyqt and its dependencies.  This
-is not as simple as it should be.  I roughly followed the instructions here
-http://www.noktec.be/python/how-to-install-pyqt4-on-osx .  Even though my mac is
-64 bit I had to compile things with --arch=i386.  I think I even had to install
-Qt from source to get it with the 32 bit architecture.    Also, when compiling
-pyqt, you have to point to the qmake in the Qt install folder, not
-/usr/bin/qmake as the website says.  Sorry for the vague instructions, I'm
-writing this from memory.  If you have more complete installation help please
-email or submit a pull request.
+If you want to use the gui you have to install PyQt4 and its dependencies.
+This is not as simple as it should be.  Even though my mac is 64 bit I had to
+compile everything with --arch=i386.  I even had to install Qt from source to
+get it with the 32 bit architecture.   Here are some rough instructions adapted
+from http://www.noktec.be/python/how-to-install-pyqt4-on-osx .  That website
+gives a good start, but it is not complete.
 
-Installing pymol was easy with macports, but since I've abandoned macports 
-I haven't gotten it installed and running (I haven't tried the pay version) 
+1. install Qt4.8 from source.  We cannot use the dmg file becuse we need to
+   install it for i386 architecture.  
+   http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
 
+   In the directory you unpack the tar.gz file run the following commands.
+   http://qt-project.org/doc/qt-4.8/install-x11.html .
+
+   ::
+
+     ./configure -arch i386
+     make
+     make install
+
+   Make a note of the location of the qmake file that this installs.  We
+   will need it for the PyQt4 installation.
+  
+2. install SIP from source.
+   http://www.riverbankcomputing.co.uk/software/sip/download
+
+   In the directory you unpack the tar.gz file run the following commands
+   ::
+
+     python configure.py --arch i386
+     make
+     make install
+
+   This will install SIP for the version of python you use to run configure.py,
+   so make sure you're using the correct python version.  Running python
+   configure.py --help will tell you which python directory it will be
+   installed to.  This should be the same as when you type `which python`
+   
+3. install PyQt4 from source
+   http://www.riverbankcomputing.co.uk/software/pyqt/download .
+
+   In the directory you unpack the tar.gz file run the following commands
+   ::
+
+     python configure.py -q <path to qmake in Qt4 folder>  --use-arch i386
+     make
+     make install
+
+   You must specify (I think) the qmake file that was installed along with Qt4.
+   It should be in the Qt4 install directory.
+
+   The same warning for which version of python you use to run configure.py
+   applies here as well.
+
+If you have updates or more complete installation instructions please email or
+submit a pull request.
 
 Running
 =======
 
-You can find examples of how to run pele in the examples folder.  More information
-can be found in the documentation at
+You can find examples of how to run pele in the examples folder.  More
+information can be found in the documentation at
 
 http://js850.github.com/pele/
 
