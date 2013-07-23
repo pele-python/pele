@@ -1,7 +1,7 @@
 import numpy as np
 import aatopology
-from pygmin.potentials.potential import potential
-from pygmin.mindist import StandardClusterAlignment, optimize_permutations, ExactMatchAtomicCluster
+from pele.potentials.potential import potential
+from pele.mindist import StandardClusterAlignment, optimize_permutations, ExactMatchAtomicCluster
 
 class RigidFragment(aatopology.AASiteType):
     ''' defines a single rigid fragment 
@@ -230,7 +230,7 @@ if __name__ == "__main__":
     system = RBTopology()
     nrigid = 1
     system.add_sites([deepcopy(water) for i in xrange(nrigid)])
-    from pygmin.utils import rotations
+    from pele.utils import rotations
     rbcoords=np.zeros(6)
     rbcoords[3:]= rotations.random_aa()
     
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     gp = rbgrad[3:]
     gx = rbgrad[:3]
     
-    from pygmin.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
+    from pele.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
     R, R1, R2, R3 = rotMatDeriv(p, True)        
     
     print "test1", np.linalg.norm(R1*gp[0])     

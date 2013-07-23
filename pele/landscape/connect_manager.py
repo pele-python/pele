@@ -9,9 +9,9 @@ import numpy as np
 import sqlalchemy
 import networkx as nx
 
-from pygmin.storage import Minimum
-from pygmin.landscape import TSGraph
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
+from pele.storage import Minimum
+from pele.landscape import TSGraph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph
 
 
 __all__ = ["ConnectManager"]
@@ -75,7 +75,7 @@ class ConnectManagerUntrap(BaseConnectManager):
     
     Parameters
     ----------
-    database : pygmin Database object
+    database : pele Database object
     list_len : int
         the class will create a list of minima pairs of length
         list_len.  When this list is empty the list will be rebuilt.
@@ -289,7 +289,7 @@ class ConnectManager(object):
     
     Parameters
     ----------
-    database : pygmin Database object
+    database : pele Database object
     strategy : string
         define the default strategy for the connect runs.  Can be one of 
         ["random", "combine", "untrap", "gmin"] 
@@ -385,7 +385,7 @@ class ConnectManager(object):
 #
 
 def test():
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     natoms = 13
     system = LJCluster(natoms)
     

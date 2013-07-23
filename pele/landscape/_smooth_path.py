@@ -1,6 +1,6 @@
 import numpy as np
 
-from pygmin.transition_states import InterpolatedPathDensity
+from pele.transition_states import InterpolatedPathDensity
 
 __all__ = ["smoothPath"]
 

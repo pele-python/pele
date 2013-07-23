@@ -3,9 +3,9 @@ Example 5: Adding a custom takestep routine.  This example
 takes 100 monte carlo steps as one basin hopping step
 """
 import numpy as np
-from pygmin.systems import LJCluster
-from pygmin.takestep import RandomDisplacement
-from pygmin.mc import MonteCarlo
+from pele.systems import LJCluster
+from pele.takestep import RandomDisplacement
+from pele.mc import MonteCarlo
 
 class TakeStepMonteCarlo:
     def __init__(self, pot, T = 10., nsteps = 100, stepsize=0.1):

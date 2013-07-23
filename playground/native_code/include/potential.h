@@ -6,7 +6,7 @@
 #include <iostream>
 #include "array.h"
 
-namespace pygmin {
+namespace pele {
 	/***
 	 * basic potential interface for native potentials
 	 */

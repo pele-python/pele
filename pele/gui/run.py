@@ -7,17 +7,19 @@ import numpy as np
 
 from PyQt4 import QtCore, QtGui, Qt
 
-from pygmin.gui.MainWindow import Ui_MainWindow 
-from pygmin.gui.bhrunner import BHRunner
-from pygmin.landscape import TSGraph
-from pygmin.gui.dlg_params import DlgParams
-from pygmin.config import config
-from pygmin.gui.ui.dgraph_dlg import DGraphDialog
-#from pygmin.gui.connect_explorer_dlg import ConnectExplorerDialog
-from pygmin.gui.connect_run_dlg import ConnectViewer
-from pygmin.gui.takestep_explorer import TakestepExplorer
-from pygmin.gui.normalmode_browser import NormalmodeBrowser
-from pygmin.gui._list_views import ListViewManager
+from pele.gui.MainWindow import Ui_MainWindow 
+from pele.gui.bhrunner import BHRunner
+from pele.landscape import TSGraph
+from pele.gui.dlg_params import DlgParams
+from pele.config import config
+from pele.gui.ui.dgraph_dlg import DGraphDialog
+#from pele.gui.connect_explorer_dlg import ConnectExplorerDialog
+from pele.gui.connect_run_dlg import ConnectViewer
+from pele.gui.takestep_explorer import TakestepExplorer
+from pele.gui.normalmode_browser import NormalmodeBrowser
+from pele.gui._list_views import ListViewManager
+from pele.gui._cv_viewer import HeatCapacityViewer
+from pele.rates import RateCalculation
 
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -46,7 +48,7 @@ class MySelection(object):
 
 class MainGUI(QtGui.QMainWindow):
     """
-    this is the main class for the pygmin gui
+    this is the main class for the pele gui
     
     Parameters
     ----------
@@ -132,7 +134,9 @@ class MainGUI(QtGui.QMainWindow):
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
         self.list_manager._sort_minima()
-        self.NewTS(self.system.database.transition_states())
+        self.NewTS(self.system.database.transition_states(order_energy=True))
+        self.list_manager.resize_columns_minima()
+        self.list_manager.resize_columns_ts()
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
         self.system.database.on_minimum_removed(self.RemoveMinimum)
@@ -292,7 +296,7 @@ class MainGUI(QtGui.QMainWindow):
         """
         if clicked is None: return
         self.pick_count = 0
-        from pygmin.gui.graph_viewer import GraphViewDialog
+        from pele.gui.graph_viewer import GraphViewDialog
         if not hasattr(self, "graphview"):
             self.graphview = GraphViewDialog(self.system.database, parent=self, app=self.app)
             self.graphview.widget.on_minima_picked.connect(self.on_minimum_picked)
@@ -310,22 +314,13 @@ class MainGUI(QtGui.QMainWindow):
         self.normalmode_explorer.set_coords(min1.coords)
         self.normalmode_explorer.show()
     
-    def get_selected_ts(self):
-        ts = self.ts_selected
-        if ts is None:
-            raise Exception("you must select a transition state first")
-        return ts
-    
     def on_pushNormalmodesTS_clicked(self, clicked=None):
         if clicked is None: return
         if not hasattr(self, "normalmode_explorer"):
             self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
-        ts = self.get_selected_ts()
+        ts = self.list_manager.get_selected_ts()
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
-    
-        
-                    
     
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
@@ -519,7 +514,7 @@ class MainGUI(QtGui.QMainWindow):
 
     def on_btn_connect_all_clicked(self, checked=None):
         if checked is None: return
-        from pygmin.gui.connect_all import ConnectAllDialog
+        from pele.gui.connect_all import ConnectAllDialog
 #        if hasattr(self, "connect_all"):
 #            if not self.connect_all.isVisible():
 #                self.connect_all.show()
@@ -535,6 +530,56 @@ class MainGUI(QtGui.QMainWindow):
                                                       database = self.system.database)
             
         self.takestep_explorer.show()
+    
+    def on_btn_heat_capacity_clicked(self, clicked=None):
+        if clicked is None: return 
+        self.cv_viewer = HeatCapacityViewer(self.system, self.system.database, parent=self)
+        self.cv_viewer.show()
+        self.cv_viewer.rebuild_cv_plot()
+    
+    def compute_thermodynamic_information(self, on_finish=None):
+        """compute thermodynamic information for minima and ts in the background
+        
+        call on_finish when the calculation is done
+        """
+        # TODO: deal carefuly with what will happen if this is called again
+        # before the first calculation is done.  if self.thermo_worker is overwritten will
+        # the first calculation stop?
+        from pele.gui._cv_viewer import GetThermodynamicInfoParallelQT
+        self.thermo_worker = GetThermodynamicInfoParallelQT(self.system, self.system.database, npar=1)
+        if on_finish is not None:
+            self.thermo_worker.on_finish.connect(on_finish)
+        self.thermo_worker.start()
+        njobs = self.thermo_worker.njobs
+        print "calculating thermodynamics for", njobs, "minima and transition states" 
+        
+
+    def _compute_rates(self, min1, min2, T=1.):
+        """compute rates without first calculating thermodynamics
+        """
+        from pele.utils.disconnectivity_graph import graph_constructor
+        print "computing rates at temperature T =", T
+        minima = [m for m in self.system.database.minima() if m.fvib is not None]
+        tslist = [ts for ts in self.system.database.transition_states() if ts.fvib is not None]
+        graph = graph_constructor(minima, tslist)
+        rcalc = RateCalculation(graph, [min1], [min2], T=T)
+        r12, r21 = rcalc.compute_rates()
+        print "rate from", min1._id, "to", min2._id, "=", r12
+        print "rate from", min2._id, "to", min1._id, "=", r21
+
+    def compute_rates(self, min1, min2, T=1.):
+        """compute the transition rate from min1 to min2 and vice versa"""
+        def on_finish():
+            print "thermodynamic calculation finished"
+            self._compute_rates(min1, min2)
+        self._on_finish_thermo_reference = on_finish # so it doeesn't get garbage collected
+        self.compute_thermodynamic_information(on_finish=on_finish)
+    
+    def on_btn_rates_clicked(self, clicked=None):
+        if clicked is None: return
+        
+        min1, min2 = self.get_selected_minima()
+        self.compute_rates(min1, min2)
         
 #def refresh_pl():
     #pl.pause(0.000001)    
@@ -546,7 +591,7 @@ def run_gui(system, db=None):
     Parameters
     ----------
     system : System class
-        A pygmin system, derived from BaseSystem.  All information 
+        A pele system, derived from BaseSystem.  All information 
         about the system is in this class.
     db : str, optional
         connect to the database at this file location

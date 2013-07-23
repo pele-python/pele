@@ -3,8 +3,8 @@ lj potential with the number of near neighbors restricted.
 """
 import numpy as np
 
-from pygmin.potentials import BasePotential
-from pygmin.systems import LJCluster
+from pele.potentials import BasePotential
+from pele.systems import LJCluster
 import fortran.maxneib_lj as fortranpot
 
 __all__ = ["MaxNeibsLJ", "MaxNeibsLJSystem"]
@@ -114,7 +114,7 @@ class MaxNeibsLJSystem(LJCluster):
 
 
 def run_gui(system):
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(system)
 
 

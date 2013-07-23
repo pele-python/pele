@@ -86,7 +86,7 @@
   <customwidget>
    <class>Show3D</class>
    <extends>QWidget</extends>
-   <header>pygmin/gui/show3d.h</header>
+   <header>pele/gui/show3d.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

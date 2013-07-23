@@ -4,7 +4,7 @@ import multiprocessing as mp
 import pymol
 
 
-from pygmin.utils.xyz import write_xyz
+from pele.utils.xyz import write_xyz
 
 
 class PymolViewer(object):

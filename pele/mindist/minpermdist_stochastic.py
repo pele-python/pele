@@ -1,6 +1,6 @@
 import numpy as np
 from exact_match import StandardClusterAlignment
-from pygmin.utils import rotations     
+from pele.utils import rotations     
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 
 __all__ = ["MinPermDistCluster"]
@@ -194,16 +194,16 @@ def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
     printlist.append((X2.copy(), "X2 final"))
 
 
-    import pygmin.printing.print_atoms_xyz as printxyz
+    import pele.printing.print_atoms_xyz as printxyz
     with open(fname, "w") as fout:
         for xyz, line2 in printlist:
             printxyz.printAtomsXYZ(fout, xyz, line2=line2 +" "+ str(lj.getEnergy(xyz)))
             
 def test_LJ(natoms = 12, **kwargs):
-    from pygmin.potentials.lj import LJ
-    from pygmin.optimize import mylbfgs
-    import pygmin.utils.rotations as rot
-    from pygmin.mindist.permutational_alignment import permuteArray
+    from pele.potentials.lj import LJ
+    from pele.optimize import mylbfgs
+    import pele.utils.rotations as rot
+    from pele.mindist.permutational_alignment import permuteArray
     import random
     
     quench = mylbfgs

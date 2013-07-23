@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 list( APPEND CMAKE_CXX_FLAGS "-std=c++0x" )
 find_package(PythonLibs)
 
-#file(GLOB sources _pygmin.cpp _lj.cpp)
+#file(GLOB sources _pele.cpp _lj.cpp)
 
 if(NOT CMAKE_BUILD_TYPE)
   #Release comes with -O3 by default
@@ -20,8 +20,8 @@ enable_language(CXX)
 add_library(_lj SHARED _lj.cpp ${sources} ${PYTHON_LIBS})
 set_target_properties(_lj PROPERTIES PREFIX "")
 
-add_library(_pygmin SHARED _pygmin.cpp ${sources} ${PYTHON_LIBS})
-set_target_properties(_pygmin PROPERTIES PREFIX "")
+add_library(_pele SHARED _pele.cpp ${sources} ${PYTHON_LIBS})
+set_target_properties(_pele PROPERTIES PREFIX "")
 
 include_directories(lbfgs)
 

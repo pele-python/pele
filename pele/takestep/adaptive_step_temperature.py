@@ -1,5 +1,5 @@
 import numpy as np
-from pygmin.takestep import TakestepInterface
+from pele.takestep import TakestepInterface
 
 __all__ = ["AdaptiveStepsizeTemperature"]
 
@@ -157,9 +157,9 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
 
 if __name__ == "__main__":
     import numpy as np
-    from pygmin.takestep import displace
-    from pygmin.systems import LJCluster
-    #from pygmin.takestep import adaptive
+    from pele.takestep import displace
+    from pele.systems import LJCluster
+    #from pele.takestep import adaptive
     
     natoms = 38
     sys = LJCluster(natoms=38)

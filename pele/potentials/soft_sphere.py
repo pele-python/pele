@@ -1,6 +1,6 @@
 import numpy as np
 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 from fortran.soft_sphere_pot import soft_sphere_pot
 
 __all__ = ["SoftSphere"]
@@ -20,12 +20,12 @@ class SoftSphere(BasePotential):
     
     def getEnergy(self, coords):
         natoms = len(coords)/self.dimen
-        energy, force = soft_sphere_pot(self.dimen, coords, self.diams, [natoms])
+        energy, force = soft_sphere_pot(self.dimen, coords, self.diams)
         return energy
     
     def getEnergyGradient(self, coords):
         natoms = len(coords)/self.dimen
-        energy, force = soft_sphere_pot(self.dimen, coords, self.diams, [natoms])
+        energy, force = soft_sphere_pot(self.dimen, coords, self.diams)
         return energy, force
 
 
@@ -59,14 +59,14 @@ def test_soft_sphere(natoms = 9):
     printlist.append((coords.copy(), "intial coords"))
     
     #test a quench with default lbfgs
-    from pygmin.optimize import mylbfgs as quench
+    from pele.optimize import mylbfgs as quench
     res = quench(coords, pot, iprint=-1)
     printlist.append((res.coords.copy(), "intial coords"))
     print "energy post quench", pot.getEnergy(coords)
 
     fname = "out.xyz"
     print "saving coordinates to", fname
-    from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     with open(fname, "w") as fout:
         for xyz,line2 in printlist:
             xyz = putInBox(xyz, boxl)

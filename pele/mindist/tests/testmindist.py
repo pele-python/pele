@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-#from pygmin.mindist import findBestPermutation
+#from pele.mindist import findBestPermutation
 
 class TestMinDist(unittest.TestCase):
     """

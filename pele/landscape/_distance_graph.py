@@ -5,7 +5,7 @@ import logging
 
 __all__ = []
 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 
 class _DistanceGraph(object):
     """
@@ -237,7 +237,7 @@ class _DistanceGraph(object):
 
     def _initializeDistances(self):
         """put all distances in the database into distance_map for faster access"""
-#        from pygmin.storage.database import Distance
+#        from pele.storage.database import Distance
 #        from sqlalchemy.sql import select
 #        conn = self.database.engine.connect()
 #        sql = select([Distance.__table__])
@@ -282,7 +282,8 @@ class _DistanceGraph(object):
             
             naccept += 1
             self.addMinimum(m)
-        logger.info("    found %s %s %s", naccept, "relevant minima out of", count)
+        if self.verbosity > 0:
+            logger.info("    found %s %s %s", naccept, "relevant minima out of", count)
 
 
     def initialize(self, minstart, minend, use_all_min=False, use_limited_min=True, load_no_distances=False):
@@ -293,7 +294,7 @@ class _DistanceGraph(object):
         minima that should be used in the connect routine.
         """
         #raw_input("Press Enter to continue:")
-        if not load_no_distances:
+        if not load_no_distances and self.verbosity > 0:
             logger.info("loading distances from database")
             self._initializeDistances()
         #raw_input("Press Enter to continue:")
@@ -303,13 +304,15 @@ class _DistanceGraph(object):
         if not load_no_distances:
             if use_all_min:
                 # add all minima in self.graph to self.Gdist
-                logger.info("adding all minima to distance graph (Gdist).")
-                logger.info( "    This might take a while.")
+                if self.verbosity > 0:
+                    logger.info("adding all minima to distance graph (Gdist).")
+                    logger.info( "    This might take a while.")
                 for m in self.graph.graph.nodes():
                     self.addMinimum(m)
             elif use_limited_min:
-                logger.info( "adding relevant minima to distance graph (Gdist).")
-                logger.info( "    This might take a while.")
+                if self.verbosity > 0:
+                    logger.info( "adding relevant minima to distance graph (Gdist).")
+                    logger.info( "    This might take a while.")
                 self._addRelevantMinima(minstart, minend)
         #raw_input("Press Enter to continue:")
 
@@ -416,11 +419,11 @@ class _DistanceGraph(object):
 import unittest
 class TestDistanceGraph(unittest.TestCase):
     def setUp(self):
-        from pygmin.landscape import DoubleEndedConnect
-        from pygmin.landscape._graph import create_random_database
-        from pygmin.systems import LJCluster
-#        from pygmin.mindist import minPermDistStochastic, MinDistWrapper
-#        from pygmin.potentials import LJ
+        from pele.landscape import DoubleEndedConnect
+        from pele.landscape._graph import create_random_database
+        from pele.systems import LJCluster
+#        from pele.mindist import minPermDistStochastic, MinDistWrapper
+#        from pele.potentials import LJ
         
         nmin = 10
         natoms=13
@@ -442,7 +445,7 @@ class TestDistanceGraph(unittest.TestCase):
         self.natoms = natoms
     
     def make_result(self, coords, energy):
-        from pygmin.optimize import Result
+        from pele.optimize import Result
         res = Result()
         res.coords = coords
         res.energy = energy
@@ -472,7 +475,7 @@ class TestDistanceGraph(unittest.TestCase):
         self.assertTrue(allok, "merging broke the distance graph")
         
     def test_add_TS_existing_minima(self):
-        from pygmin.optimize import Result
+        from pele.optimize import Result
         min3, min4 = list(self.db.minima())[4:6]
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "the distance graph is broken at the start")
@@ -577,11 +580,11 @@ class TestDistanceGraph(unittest.TestCase):
 
 
 def mytest(nmin=40, natoms=13):
-    from pygmin.landscape import DoubleEndedConnect
-    from pygmin.landscape._graph import create_random_database
-    from pygmin.mindist import minPermDistStochastic, MinDistWrapper
-    from pygmin.potentials import LJ
-    from pygmin.landscape import TSGraph
+    from pele.landscape import DoubleEndedConnect
+    from pele.landscape._graph import create_random_database
+    from pele.mindist import minPermDistStochastic, MinDistWrapper
+    from pele.potentials import LJ
+    from pele.landscape import TSGraph
     
     pot = LJ()
     mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)

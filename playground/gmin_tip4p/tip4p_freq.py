@@ -1,10 +1,10 @@
-from pygmin.thermodynamics import normalmode_frequencies, logproduct_freq2
+from pele.thermodynamics import normalmode_frequencies, logproduct_freq2
 from tip4p_system import TIP4PSystem
-from pygmin.angleaxis.aamindist import TransformAngleAxisCluster
-from pygmin.utils import rotations
+from pele.angleaxis.aamindist import TransformAngleAxisCluster
+from pele.utils import rotations
 import numpy as np
-from pygmin.mindist import PointGroupOrderCluster
-from pygmin.angleaxis import ExactMatchAACluster
+from pele.mindist import PointGroupOrderCluster
+from pele.angleaxis import ExactMatchAACluster
 
 system = TIP4PSystem()
 db = system.create_database(db="tip4p_8.sqlite")

@@ -3,8 +3,8 @@ from copy import copy
 from numpy import sin, cos
 import networkx as nx
 
-from pygmin.potentials import BasePotential
-import pygmin.utils.rotations as rotations
+from pele.potentials import BasePotential
+import pele.utils.rotations as rotations
 
 __all__ = ["HeisenbergModel"]
 
@@ -173,9 +173,9 @@ class HeisenbergModel(BasePotential):
 
 
 def test_basin_hopping(pot, angles):
-    from pygmin.basinhopping import BasinHopping
-    from pygmin.takestep.displace import RandomDisplacement
-    from pygmin.takestep.adaptive import AdaptiveStepsize
+    from pele.basinhopping import BasinHopping
+    from pele.takestep.displace import RandomDisplacement
+    from pele.takestep.adaptive import AdaptiveStepsize
     
     takestep = RandomDisplacement(stepsize = np.pi/4)
     takestepa = AdaptiveStepsize(takestep, frequency = 20)
@@ -236,7 +236,7 @@ def test():
 
     
     print "try a quench"
-    from pygmin.optimize import mylbfgs
+    from pele.optimize import mylbfgs
     ret = mylbfgs(coords, pot)
     
     print "quenched e = ", ret.energy, "funcalls", ret.nfev

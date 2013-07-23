@@ -1,12 +1,12 @@
 import logging
 
-from pygmin.optimize import Result
-from pygmin.transition_states import findTransitionState, minima_from_ts
-from pygmin.transition_states import NEBDriver
+from pele.optimize import Result
+from pele.transition_states import findTransitionState, minima_from_ts
+from pele.transition_states import NEBDriver
 
 __all__ = ["LocalConnect"]
 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 
 def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params=dict()):
     """
@@ -88,9 +88,9 @@ class LocalConnect(object):
     See Also
     --------
     DoubleEndedConnect : the routine from which local connect is generally called
-    pygmin.transition_states.NEB : one of the core routines
-    pygmin.transition_states.create_NEB : the wrapper which sets up NEB
-    pygmin.transition_states.findTransitionState : one of the core routine
+    pele.transition_states.NEB : one of the core routines
+    pele.transition_states.create_NEB : the wrapper which sets up NEB
+    pele.transition_states.findTransitionState : one of the core routine
     LocalConnectPar : parallel version of this class
     
     """
@@ -231,7 +231,7 @@ class LocalConnect(object):
 #####
 
 def getPairLJ(natoms=38):
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     system = LJCluster(natoms)
     ret1 = system.get_random_minimized_configuration()
     ret2 = system.get_random_minimized_configuration()
@@ -244,7 +244,7 @@ def getPairLJ(natoms=38):
     return coords1, coords2, system.get_potential(), mindist, E1, E2
 
 def test():
-    from pygmin.storage import Database
+    from pele.storage import Database
     coords1, coords2, pot, mindist, E1, E2 = getPairLJ()
     db = Database()
     min1 = db.addMinimum(E1, coords1)

@@ -5,7 +5,7 @@
 #include <list>
 #include "potential.h"
 
-namespace pygmin {
+namespace pele {
 
 	/**
 	 * Doubly-Nudged Elastic Band

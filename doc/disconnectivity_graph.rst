@@ -10,7 +10,7 @@ groups of minima (basins) that are connected by transition states of energy
 less than Elevel.
 
 
-.. currentmodule:: pygmin.utils.disconnectivity_graph
+.. currentmodule:: pele.utils.disconnectivity_graph
 .. autosummary:: 
   :toctree: generated/
   
@@ -23,15 +23,15 @@ states connecting them.  Assuming you already have a database, here is how
 you turn it into a disconnectivity graph.  
 
 First you must convert the database to a networkx graph. This can be done
-using pygmin's graph wrapper `TSGraph` ::
+using pele's graph wrapper `TSGraph` ::
 
-    from pygmin.landscape import TSGraph
+    from pele.landscape import TSGraph
     graphwrapper = TSGraph(database)
     graph = graphwrapper.graph
 
 Now we pass graphwrapper to the class DisconnectivityGraph ::
 
-  from pygmin.utils import DisconnectivityGraph 
+  from pele.utils import DisconnectivityGraph 
   dg = DisconnectivityGraph(graph)
   dg.calculate()
 
@@ -50,7 +50,7 @@ one here, saving the figure to a file.  ::
 
 disconnectivity graph script
 ----------------------------
-There is a handy script in pygmin which lets you create a disconnectivity
+There is a handy script in pele which lets you create a disconnectivity
 graph from a database file directly from the command line.  see the file
 
-pygmin/scripts/make_disconnectivity_graph.py
+pele/scripts/make_disconnectivity_graph.py

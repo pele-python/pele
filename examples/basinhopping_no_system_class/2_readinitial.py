@@ -3,9 +3,9 @@
 #Example 2: reading coords from file
 ############################################################
 import numpy as np
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
+import pele.potentials.lj as lj
+import pele.basinhopping as bh
+from pele.takestep import displace
 
 coords=np.loadtxt('coords')
 coords = coords.reshape(coords.size)

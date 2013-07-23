@@ -4,9 +4,9 @@
 ############################################################
 import numpy as np
 
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
+import pele.potentials.lj as lj
+import pele.basinhopping as bh
+from pele.takestep import displace
 
 natoms = 12
 
@@ -21,7 +21,7 @@ opt.run(100)
 
 # some visualization
 try: 
-    import pygmin.utils.pymolwrapper as pym
+    import pele.utils.pymolwrapper as pym
     pym.start()
     pym.draw_spheres(opt.coords, "A", 1)
 except:

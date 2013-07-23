@@ -1,12 +1,12 @@
 import numpy as np
 from copy import copy
-from pygmin.potentials.heisenberg_spin_RA import HeisenbergModelRA
-import pygmin.utils.rotations as rotations
+from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
+import pele.utils.rotations as rotations
 from numpy import sin, cos
 
 import networkx as nx
 
-from pygmin.potentials.heisenberg_spin import make3dVector,  make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
+from pele.potentials.heisenberg_spin import make3dVector,  make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
 
 def getm(coords2):
     coords3 = coords2ToCoords3( coords2 )
@@ -49,7 +49,7 @@ e = pot.getEnergy(coords)
 print "energy ", e
 
 print "try a quench"
-from pygmin.optimize import mylbfgs
+from pele.optimize import mylbfgs
 ret = mylbfgs(coords, pot)
 
 print "quenched e = ", ret.energy, "funcalls", ret.nfev
@@ -61,10 +61,10 @@ print "magnetization after quench", m
 
 #do basin hopping
 
-from pygmin.basinhopping import BasinHopping
-from pygmin.takestep.displace import RandomDisplacement
-from pygmin.takestep.adaptive import AdaptiveStepsize
-from pygmin.storage import savenlowest
+from pele.basinhopping import BasinHopping
+from pele.takestep.displace import RandomDisplacement
+from pele.takestep.adaptive import AdaptiveStepsize
+from pele.storage import savenlowest
 
 takestep = RandomDisplacement(stepsize = np.pi/4)
 takestepa = AdaptiveStepsize(takestep, frequency = 10)

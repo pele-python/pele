@@ -4,13 +4,13 @@ import copy
 import logging
 
 
-from pygmin.transition_states import InterpolatedPath
-from pygmin.optimize import Result
-from pygmin.optimize import mylbfgs
+from pele.transition_states import InterpolatedPath
+from pele.optimize import Result
+from pele.optimize import mylbfgs
         
 __all__ = ["NEB",]
 
-logger = logging.getLogger("pygmin.connect.neb")
+logger = logging.getLogger("pele.connect.neb")
 
 try:
     import scipy.linalg
@@ -179,7 +179,7 @@ class NEB(object):
         if quenchParams.has_key("iprint"):
             self.iprint = quenchParams["iprint"]
         if not quenchParams.has_key("logger"):
-            quenchParams["logger"] = logging.getLogger("pygmin.connect.neb.quench")
+            quenchParams["logger"] = logging.getLogger("pele.connect.neb.quench")
 
         if self.use_minimizer_callback:
             quenchParams["events"]=[self._step]
@@ -485,7 +485,7 @@ import nebtesting as test
 def nebtest(MyNEB=NEB, nimages=22):
     import pylab as pl
     from interpolate import InterpolatedPath
-    from pygmin.optimize import lbfgs_py
+    from pele.optimize import lbfgs_py
     NEBquenchParams = dict()
     NEBquenchParams["iprint"]=20
     NEBquenchParams["debug"]=True
@@ -504,7 +504,7 @@ def nebtest(MyNEB=NEB, nimages=22):
     #pl.show()
     initial = np.array([.75, 2.]) #np.random.random(3)
     final = np.array([2., .75]) #np.random.random(3)
-#    from pygmin.optimize import quench
+#    from pele.optimize import quench
 #    print "quench initial"
 #    ret = quench.lbfgs_py(initial, potential.getEnergyGradient)
 #    initial = ret[0]

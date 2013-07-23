@@ -154,5 +154,5 @@ class Ui_MainWindow(object):
         self.actionRandom_connect.setText(QtGui.QApplication.translate("MainWindow", "random connect", None, QtGui.QApplication.UnicodeUTF8))
         self.actionRandom_connect.setToolTip(QtGui.QApplication.translate("MainWindow", "connect random minima", None, QtGui.QApplication.UnicodeUTF8))
 
-from pygmin.gui.show3d_with_slider import Show3DWithSlider
+from pele.gui.show3d_with_slider import Show3DWithSlider
 import resources_rc

@@ -1,7 +1,7 @@
 from math import *
 import numpy as np #to access np.exp() not built int exp
 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 import fortran.lj as ljf
 
 
@@ -20,36 +20,30 @@ class LJ(BasePotential):
             self.periodic = True
 
     def getEnergy(self, coords):
-        natoms = len(coords) / 3
         E = ljf.ljenergy(
-                coords, self.eps, self.sig, self.periodic, self.boxl, [natoms])
+                coords, self.eps, self.sig, self.periodic, self.boxl)
         return E
 
     def getEnergyGradient(self, coords):
-        natoms = len(coords) / 3
         E, grad = ljf.ljenergy_gradient(
-                coords, self.eps, self.sig, self.periodic, self.boxl, [natoms])
+                coords, self.eps, self.sig, self.periodic, self.boxl)
         return E, grad 
     
     def getEnergyList(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
         #ilist += 1 #fortran indexing
-        nlist = len(ilist)
-        natoms = len(coords) / 3
         E = ljf.energy_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
-                self.boxl, [natoms, nlist])
+                self.boxl)
         #ilist -= 1
         return E
     
     def getEnergyGradientList(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
         #ilist += 1 #fortran indexing
-        nlist = len(ilist)
-        natoms = len(coords) / 3
         E, grad = ljf.energy_gradient_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
-                self.boxl, [natoms, nlist])
+                self.boxl)
         #ilist -= 1
         return E, grad 
     
@@ -97,7 +91,7 @@ class TestLJAfterQuench(unittest.TestCase):
     """do the tests after a short quench so that the energies are not crazy large
     """ 
     def setUp(self):
-        from pygmin.optimize import mylbfgs
+        from pele.optimize import mylbfgs
         self.natoms = 10
         self.coords = np.random.uniform(-1,1.,3*self.natoms) * self.natoms**(-1./3)
         self.pot = LJ()
@@ -145,7 +139,7 @@ def main():
     print V
 
     print "try a quench"
-    from pygmin.optimize import mylbfgs as quench
+    from pele.optimize import mylbfgs as quench
     quench( coords, lj, iprint=1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
 

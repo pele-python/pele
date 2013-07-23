@@ -2,7 +2,7 @@
 #include <assert.h>
 #include "neb.h"
 
-namespace pygmin {
+namespace pele {
 
 void NEB::initialize(void)
 {

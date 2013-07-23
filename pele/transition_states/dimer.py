@@ -1,6 +1,6 @@
 import numpy as np
-from pygmin.optimize import fire, lbfgs_py
-from pygmin.transition_states import gramm_schmidt
+from pele.optimize import fire, lbfgs_py
+from pele.transition_states import gramm_schmidt
 
 __all__ = ["findTransitionState_dimer", "DimerSearch"]
 

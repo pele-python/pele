@@ -249,8 +249,8 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE___pygmin
-#define __PYX_HAVE_API___pygmin
+#define __PYX_HAVE___pele
+#define __PYX_HAVE_API___pele
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -359,7 +359,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "_pygmin.pyx",
+  "_pele.pyx",
   "numpy.pxd",
   "type.pxd",
 };
@@ -609,7 +609,7 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 
 /*--- Type declarations ---*/
-struct __pyx_obj_7_pygmin_Potential;
+struct __pyx_obj_7_pele_Potential;
 
 /* "numpy.pxd":762
  * ctypedef npy_longdouble longdouble_t
@@ -647,16 +647,16 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
 
-/* "_pygmin.pxd":26
+/* "_pele.pxd":26
  *     cdef void _call_pot "call_pot" (cPotential *pot, Array &x, Array &grad, int n)
  * 
  * cdef class Potential:             # <<<<<<<<<<<<<<
  *     cdef cPotential *thisptr      # hold a C++ instance which we're wrapping
  * 
  */
-struct __pyx_obj_7_pygmin_Potential {
+struct __pyx_obj_7_pele_Potential {
   PyObject_HEAD
-  pygmin::Potential *thisptr;
+  pele::Potential *thisptr;
 };
 
 #ifndef CYTHON_REFNANNY
@@ -1007,21 +1007,21 @@ static PyTypeObject *__pyx_ptype_5numpy_ndarray = 0;
 static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, char *, char *, int *); /*proto*/
 
-/* Module declarations from '_pygmin' */
-static PyTypeObject *__pyx_ptype_7_pygmin_Potential = 0;
+/* Module declarations from '_pele' */
+static PyTypeObject *__pyx_ptype_7_pele_Potential = 0;
 static __Pyx_TypeInfo __Pyx_TypeInfo_double = { "double", NULL, sizeof(double), { 0 }, 0, 'R', 0, 0 };
-#define __Pyx_MODULE_NAME "_pygmin"
-int __pyx_module_is_main__pygmin = 0;
+#define __Pyx_MODULE_NAME "_pele"
+int __pyx_module_is_main__pele = 0;
 
-/* Implementation of '_pygmin' */
+/* Implementation of '_pele' */
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_RuntimeError;
-static int __pyx_pf_7_pygmin_9Potential___cinit__(struct __pyx_obj_7_pygmin_Potential *__pyx_v_self); /* proto */
-static void __pyx_pf_7_pygmin_9Potential_2__dealloc__(CYTHON_UNUSED struct __pyx_obj_7_pygmin_Potential *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(struct __pyx_obj_7_pygmin_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_grad); /* proto */
-static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_obj_7_pygmin_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_7_pygmin_9Potential_8get_energy(struct __pyx_obj_7_pygmin_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x); /* proto */
+static int __pyx_pf_7_pele_9Potential___cinit__(struct __pyx_obj_7_pele_Potential *__pyx_v_self); /* proto */
+static void __pyx_pf_7_pele_9Potential_2__dealloc__(CYTHON_UNUSED struct __pyx_obj_7_pele_Potential *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_7_pele_9Potential_4get_energy_gradient_inplace(struct __pyx_obj_7_pele_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_grad); /* proto */
+static PyObject *__pyx_pf_7_pele_9Potential_6get_energy_gradient(struct __pyx_obj_7_pele_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x); /* proto */
+static PyObject *__pyx_pf_7_pele_9Potential_8get_energy(struct __pyx_obj_7_pele_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static char __pyx_k_1[] = "ndarray is not C contiguous";
@@ -1084,20 +1084,20 @@ static PyObject *__pyx_k_tuple_10;
 static PyObject *__pyx_k_tuple_12;
 
 /* Python wrapper */
-static int __pyx_pw_7_pygmin_9Potential_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_7_pygmin_9Potential_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_7_pele_9Potential_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_7_pele_9Potential_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__ (wrapper)", 0);
   if (unlikely(PyTuple_GET_SIZE(__pyx_args) > 0)) {
     __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 0, 0, PyTuple_GET_SIZE(__pyx_args)); return -1;}
   if (unlikely(__pyx_kwds) && unlikely(PyDict_Size(__pyx_kwds) > 0) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "__cinit__", 0))) return -1;
-  __pyx_r = __pyx_pf_7_pygmin_9Potential___cinit__(((struct __pyx_obj_7_pygmin_Potential *)__pyx_v_self));
+  __pyx_r = __pyx_pf_7_pele_9Potential___cinit__(((struct __pyx_obj_7_pele_Potential *)__pyx_v_self));
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "_pygmin.pyx":13
+/* "_pele.pyx":13
  * # This is the base class for all potentials
  * cdef class Potential:
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
@@ -1105,16 +1105,16 @@ static int __pyx_pw_7_pygmin_9Potential_1__cinit__(PyObject *__pyx_v_self, PyObj
  *         self.thisptr = <cPotential*>new cPotential()
  */
 
-static int __pyx_pf_7_pygmin_9Potential___cinit__(struct __pyx_obj_7_pygmin_Potential *__pyx_v_self) {
+static int __pyx_pf_7_pele_9Potential___cinit__(struct __pyx_obj_7_pele_Potential *__pyx_v_self) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
-  pygmin::Potential *__pyx_t_1;
+  pele::Potential *__pyx_t_1;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "_pygmin.pyx":15
+  /* "_pele.pyx":15
  *     def __cinit__(self):
  *         # store an instance to the current c++ class, will be used in every call
  *         self.thisptr = <cPotential*>new cPotential()             # <<<<<<<<<<<<<<
@@ -1122,17 +1122,17 @@ static int __pyx_pf_7_pygmin_9Potential___cinit__(struct __pyx_obj_7_pygmin_Pote
  *     def __dealloc__(self):
  */
   try {
-    __pyx_t_1 = new pygmin::Potential();
+    __pyx_t_1 = new pele::Potential();
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_self->thisptr = ((pygmin::Potential *)__pyx_t_1);
+  __pyx_v_self->thisptr = ((pele::Potential *)__pyx_t_1);
 
   __pyx_r = 0;
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("_pygmin.Potential.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("_pele.Potential.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -1140,15 +1140,15 @@ static int __pyx_pf_7_pygmin_9Potential___cinit__(struct __pyx_obj_7_pygmin_Pote
 }
 
 /* Python wrapper */
-static void __pyx_pw_7_pygmin_9Potential_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
-static void __pyx_pw_7_pygmin_9Potential_3__dealloc__(PyObject *__pyx_v_self) {
+static void __pyx_pw_7_pele_9Potential_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
+static void __pyx_pw_7_pele_9Potential_3__dealloc__(PyObject *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_pf_7_pygmin_9Potential_2__dealloc__(((struct __pyx_obj_7_pygmin_Potential *)__pyx_v_self));
+  __pyx_pf_7_pele_9Potential_2__dealloc__(((struct __pyx_obj_7_pele_Potential *)__pyx_v_self));
   __Pyx_RefNannyFinishContext();
 }
 
-/* "_pygmin.pyx":17
+/* "_pele.pyx":17
  *         self.thisptr = <cPotential*>new cPotential()
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1156,11 +1156,11 @@ static void __pyx_pw_7_pygmin_9Potential_3__dealloc__(PyObject *__pyx_v_self) {
  * 
  */
 
-static void __pyx_pf_7_pygmin_9Potential_2__dealloc__(CYTHON_UNUSED struct __pyx_obj_7_pygmin_Potential *__pyx_v_self) {
+static void __pyx_pf_7_pele_9Potential_2__dealloc__(CYTHON_UNUSED struct __pyx_obj_7_pele_Potential *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "_pygmin.pyx":18
+  /* "_pele.pyx":18
  * 
  *     def __dealloc__(self):
  *         del self.thisptr             # <<<<<<<<<<<<<<
@@ -1173,8 +1173,8 @@ static void __pyx_pf_7_pygmin_9Potential_2__dealloc__(CYTHON_UNUSED struct __pyx
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7_pygmin_9Potential_5get_energy_gradient_inplace(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_7_pygmin_9Potential_5get_energy_gradient_inplace(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_7_pele_9Potential_5get_energy_gradient_inplace(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_7_pele_9Potential_5get_energy_gradient_inplace(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_x = 0;
   PyArrayObject *__pyx_v_grad = 0;
   PyObject *__pyx_r = 0;
@@ -1219,13 +1219,13 @@ static PyObject *__pyx_pw_7_pygmin_9Potential_5get_energy_gradient_inplace(PyObj
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("get_energy_gradient_inplace", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_pygmin.Potential.get_energy_gradient_inplace", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("_pele.Potential.get_energy_gradient_inplace", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_x), __pyx_ptype_5numpy_ndarray, 0, "x", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_grad), __pyx_ptype_5numpy_ndarray, 0, "grad", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(((struct __pyx_obj_7_pygmin_Potential *)__pyx_v_self), __pyx_v_x, __pyx_v_grad);
+  __pyx_r = __pyx_pf_7_pele_9Potential_4get_energy_gradient_inplace(((struct __pyx_obj_7_pele_Potential *)__pyx_v_self), __pyx_v_x, __pyx_v_grad);
   goto __pyx_L0;
   __pyx_L1_error:;
   __pyx_r = NULL;
@@ -1234,7 +1234,7 @@ static PyObject *__pyx_pw_7_pygmin_9Potential_5get_energy_gradient_inplace(PyObj
   return __pyx_r;
 }
 
-/* "_pygmin.pyx":20
+/* "_pele.pyx":20
  *         del self.thisptr
  * 
  *     def get_energy_gradient_inplace(self,             # <<<<<<<<<<<<<<
@@ -1242,7 +1242,7 @@ static PyObject *__pyx_pw_7_pygmin_9Potential_5get_energy_gradient_inplace(PyObj
  *                         np.ndarray[double, ndim=1] grad not None):
  */
 
-static PyObject *__pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(struct __pyx_obj_7_pygmin_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_grad) {
+static PyObject *__pyx_pf_7_pele_9Potential_4get_energy_gradient_inplace(struct __pyx_obj_7_pele_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_grad) {
   double __pyx_v_e;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_grad;
   __Pyx_Buffer __pyx_pybuffer_grad;
@@ -1252,8 +1252,8 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(struc
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   int __pyx_t_2;
-  pygmin::Array __pyx_t_3;
-  pygmin::Array __pyx_t_4;
+  pele::Array __pyx_t_3;
+  pele::Array __pyx_t_4;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -1277,7 +1277,7 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(struc
   }
   __pyx_pybuffernd_grad.diminfo[0].strides = __pyx_pybuffernd_grad.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_grad.diminfo[0].shape = __pyx_pybuffernd_grad.rcbuffer->pybuffer.shape[0];
 
-  /* "_pygmin.pyx":24
+  /* "_pele.pyx":24
  *                         np.ndarray[double, ndim=1] grad not None):
  *         # redirect the call to the c++ class
  *         e = self.thisptr.get_energy_gradient(Array(<double*> x.data, x.size),             # <<<<<<<<<<<<<<
@@ -1289,13 +1289,13 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(struc
   __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   try {
-    __pyx_t_3 = pygmin::Array(((double *)__pyx_v_x->data), __pyx_t_2);
+    __pyx_t_3 = pele::Array(((double *)__pyx_v_x->data), __pyx_t_2);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "_pygmin.pyx":25
+  /* "_pele.pyx":25
  *         # redirect the call to the c++ class
  *         e = self.thisptr.get_energy_gradient(Array(<double*> x.data, x.size),
  *                                              Array(<double*> grad.data, grad.size))             # <<<<<<<<<<<<<<
@@ -1307,14 +1307,14 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(struc
   __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   try {
-    __pyx_t_4 = pygmin::Array(((double *)__pyx_v_grad->data), __pyx_t_2);
+    __pyx_t_4 = pele::Array(((double *)__pyx_v_grad->data), __pyx_t_2);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_v_e = __pyx_v_self->thisptr->get_energy_gradient(__pyx_t_3, __pyx_t_4);
 
-  /* "_pygmin.pyx":26
+  /* "_pele.pyx":26
  *         e = self.thisptr.get_energy_gradient(Array(<double*> x.data, x.size),
  *                                              Array(<double*> grad.data, grad.size))
  *         return e             # <<<<<<<<<<<<<<
@@ -1337,7 +1337,7 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(struc
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_grad.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_x.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("_pygmin.Potential.get_energy_gradient_inplace", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("_pele.Potential.get_energy_gradient_inplace", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -1350,13 +1350,13 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_4get_energy_gradient_inplace(struc
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7_pygmin_9Potential_7get_energy_gradient(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static PyObject *__pyx_pw_7_pygmin_9Potential_7get_energy_gradient(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pw_7_pele_9Potential_7get_energy_gradient(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
+static PyObject *__pyx_pw_7_pele_9Potential_7get_energy_gradient(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_energy_gradient (wrapper)", 0);
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_x), __pyx_ptype_5numpy_ndarray, 0, "x", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_7_pygmin_9Potential_6get_energy_gradient(((struct __pyx_obj_7_pygmin_Potential *)__pyx_v_self), ((PyArrayObject *)__pyx_v_x));
+  __pyx_r = __pyx_pf_7_pele_9Potential_6get_energy_gradient(((struct __pyx_obj_7_pele_Potential *)__pyx_v_self), ((PyArrayObject *)__pyx_v_x));
   goto __pyx_L0;
   __pyx_L1_error:;
   __pyx_r = NULL;
@@ -1365,7 +1365,7 @@ static PyObject *__pyx_pw_7_pygmin_9Potential_7get_energy_gradient(PyObject *__p
   return __pyx_r;
 }
 
-/* "_pygmin.pyx":28
+/* "_pele.pyx":28
  *         return e
  * 
  *     def get_energy_gradient(self, np.ndarray[double, ndim=1] x not None):             # <<<<<<<<<<<<<<
@@ -1373,7 +1373,7 @@ static PyObject *__pyx_pw_7_pygmin_9Potential_7get_energy_gradient(PyObject *__p
  *         cdef np.ndarray[double, ndim=1] grad = x.copy()
  */
 
-static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_obj_7_pygmin_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x) {
+static PyObject *__pyx_pf_7_pele_9Potential_6get_energy_gradient(struct __pyx_obj_7_pele_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x) {
   PyArrayObject *__pyx_v_grad = 0;
   double __pyx_v_e;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_grad;
@@ -1386,8 +1386,8 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_
   PyObject *__pyx_t_2 = NULL;
   PyArrayObject *__pyx_t_3 = NULL;
   int __pyx_t_4;
-  pygmin::Array __pyx_t_5;
-  pygmin::Array __pyx_t_6;
+  pele::Array __pyx_t_5;
+  pele::Array __pyx_t_6;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -1406,7 +1406,7 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_
   }
   __pyx_pybuffernd_x.diminfo[0].strides = __pyx_pybuffernd_x.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_x.diminfo[0].shape = __pyx_pybuffernd_x.rcbuffer->pybuffer.shape[0];
 
-  /* "_pygmin.pyx":30
+  /* "_pele.pyx":30
  *     def get_energy_gradient(self, np.ndarray[double, ndim=1] x not None):
  *         # redirect the call to the c++ class
  *         cdef np.ndarray[double, ndim=1] grad = x.copy()             # <<<<<<<<<<<<<<
@@ -1432,7 +1432,7 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_
   __pyx_v_grad = ((PyArrayObject *)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "_pygmin.pyx":31
+  /* "_pele.pyx":31
  *         # redirect the call to the c++ class
  *         cdef np.ndarray[double, ndim=1] grad = x.copy()
  *         e = self.thisptr.get_energy_gradient(Array(<double*> x.data, x.size),             # <<<<<<<<<<<<<<
@@ -1444,13 +1444,13 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_
   __pyx_t_4 = __Pyx_PyInt_AsInt(__pyx_t_2); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   try {
-    __pyx_t_5 = pygmin::Array(((double *)__pyx_v_x->data), __pyx_t_4);
+    __pyx_t_5 = pele::Array(((double *)__pyx_v_x->data), __pyx_t_4);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "_pygmin.pyx":32
+  /* "_pele.pyx":32
  *         cdef np.ndarray[double, ndim=1] grad = x.copy()
  *         e = self.thisptr.get_energy_gradient(Array(<double*> x.data, x.size),
  *                                              Array(<double*> grad.data, grad.size))             # <<<<<<<<<<<<<<
@@ -1462,14 +1462,14 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_
   __pyx_t_4 = __Pyx_PyInt_AsInt(__pyx_t_2); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   try {
-    __pyx_t_6 = pygmin::Array(((double *)__pyx_v_grad->data), __pyx_t_4);
+    __pyx_t_6 = pele::Array(((double *)__pyx_v_grad->data), __pyx_t_4);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_v_e = __pyx_v_self->thisptr->get_energy_gradient(__pyx_t_5, __pyx_t_6);
 
-  /* "_pygmin.pyx":33
+  /* "_pele.pyx":33
  *         e = self.thisptr.get_energy_gradient(Array(<double*> x.data, x.size),
  *                                              Array(<double*> grad.data, grad.size))
  *         return e, grad             # <<<<<<<<<<<<<<
@@ -1501,7 +1501,7 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_grad.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_x.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("_pygmin.Potential.get_energy_gradient", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("_pele.Potential.get_energy_gradient", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -1515,13 +1515,13 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_6get_energy_gradient(struct __pyx_
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7_pygmin_9Potential_9get_energy(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static PyObject *__pyx_pw_7_pygmin_9Potential_9get_energy(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pw_7_pele_9Potential_9get_energy(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
+static PyObject *__pyx_pw_7_pele_9Potential_9get_energy(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_energy (wrapper)", 0);
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_x), __pyx_ptype_5numpy_ndarray, 0, "x", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_7_pygmin_9Potential_8get_energy(((struct __pyx_obj_7_pygmin_Potential *)__pyx_v_self), ((PyArrayObject *)__pyx_v_x));
+  __pyx_r = __pyx_pf_7_pele_9Potential_8get_energy(((struct __pyx_obj_7_pele_Potential *)__pyx_v_self), ((PyArrayObject *)__pyx_v_x));
   goto __pyx_L0;
   __pyx_L1_error:;
   __pyx_r = NULL;
@@ -1530,7 +1530,7 @@ static PyObject *__pyx_pw_7_pygmin_9Potential_9get_energy(PyObject *__pyx_v_self
   return __pyx_r;
 }
 
-/* "_pygmin.pyx":35
+/* "_pele.pyx":35
  *         return e, grad
  * 
  *     def get_energy(self, np.ndarray[double, ndim=1] x not None):             # <<<<<<<<<<<<<<
@@ -1538,14 +1538,14 @@ static PyObject *__pyx_pw_7_pygmin_9Potential_9get_energy(PyObject *__pyx_v_self
  *         return self.thisptr.get_energy(Array(<double*> x.data, x.size))
  */
 
-static PyObject *__pyx_pf_7_pygmin_9Potential_8get_energy(struct __pyx_obj_7_pygmin_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x) {
+static PyObject *__pyx_pf_7_pele_9Potential_8get_energy(struct __pyx_obj_7_pele_Potential *__pyx_v_self, PyArrayObject *__pyx_v_x) {
   __Pyx_LocalBuf_ND __pyx_pybuffernd_x;
   __Pyx_Buffer __pyx_pybuffer_x;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   int __pyx_t_2;
-  pygmin::Array __pyx_t_3;
+  pele::Array __pyx_t_3;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -1560,7 +1560,7 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_8get_energy(struct __pyx_obj_7_pyg
   }
   __pyx_pybuffernd_x.diminfo[0].strides = __pyx_pybuffernd_x.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_x.diminfo[0].shape = __pyx_pybuffernd_x.rcbuffer->pybuffer.shape[0];
 
-  /* "_pygmin.pyx":37
+  /* "_pele.pyx":37
  *     def get_energy(self, np.ndarray[double, ndim=1] x not None):
  *         # redirect the call to the c++ class
  *         return self.thisptr.get_energy(Array(<double*> x.data, x.size))             # <<<<<<<<<<<<<<
@@ -1573,7 +1573,7 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_8get_energy(struct __pyx_obj_7_pyg
   __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   try {
-    __pyx_t_3 = pygmin::Array(((double *)__pyx_v_x->data), __pyx_t_2);
+    __pyx_t_3 = pele::Array(((double *)__pyx_v_x->data), __pyx_t_2);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1592,7 +1592,7 @@ static PyObject *__pyx_pf_7_pygmin_9Potential_8get_energy(struct __pyx_obj_7_pyg
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_x.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("_pygmin.Potential.get_energy", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("_pele.Potential.get_energy", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -3578,21 +3578,21 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   return __pyx_r;
 }
 
-static PyObject *__pyx_tp_new_7_pygmin_Potential(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+static PyObject *__pyx_tp_new_7_pele_Potential(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
   PyObject *o = (*t->tp_alloc)(t, 0);
   if (!o) return 0;
-  if (__pyx_pw_7_pygmin_9Potential_1__cinit__(o, __pyx_empty_tuple, NULL) < 0) {
+  if (__pyx_pw_7_pele_9Potential_1__cinit__(o, __pyx_empty_tuple, NULL) < 0) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_7_pygmin_Potential(PyObject *o) {
+static void __pyx_tp_dealloc_7_pele_Potential(PyObject *o) {
   {
     PyObject *etype, *eval, *etb;
     PyErr_Fetch(&etype, &eval, &etb);
     ++Py_REFCNT(o);
-    __pyx_pw_7_pygmin_9Potential_3__dealloc__(o);
+    __pyx_pw_7_pele_9Potential_3__dealloc__(o);
     if (PyErr_Occurred()) PyErr_WriteUnraisable(o);
     --Py_REFCNT(o);
     PyErr_Restore(etype, eval, etb);
@@ -3600,10 +3600,10 @@ static void __pyx_tp_dealloc_7_pygmin_Potential(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_7_pygmin_Potential[] = {
-  {__Pyx_NAMESTR("get_energy_gradient_inplace"), (PyCFunction)__pyx_pw_7_pygmin_9Potential_5get_energy_gradient_inplace, METH_VARARGS|METH_KEYWORDS, __Pyx_DOCSTR(0)},
-  {__Pyx_NAMESTR("get_energy_gradient"), (PyCFunction)__pyx_pw_7_pygmin_9Potential_7get_energy_gradient, METH_O, __Pyx_DOCSTR(0)},
-  {__Pyx_NAMESTR("get_energy"), (PyCFunction)__pyx_pw_7_pygmin_9Potential_9get_energy, METH_O, __Pyx_DOCSTR(0)},
+static PyMethodDef __pyx_methods_7_pele_Potential[] = {
+  {__Pyx_NAMESTR("get_energy_gradient_inplace"), (PyCFunction)__pyx_pw_7_pele_9Potential_5get_energy_gradient_inplace, METH_VARARGS|METH_KEYWORDS, __Pyx_DOCSTR(0)},
+  {__Pyx_NAMESTR("get_energy_gradient"), (PyCFunction)__pyx_pw_7_pele_9Potential_7get_energy_gradient, METH_O, __Pyx_DOCSTR(0)},
+  {__Pyx_NAMESTR("get_energy"), (PyCFunction)__pyx_pw_7_pele_9Potential_9get_energy, METH_O, __Pyx_DOCSTR(0)},
   {0, 0, 0, 0}
 };
 
@@ -3705,12 +3705,12 @@ static PyBufferProcs __pyx_tp_as_buffer_Potential = {
   #endif
 };
 
-static PyTypeObject __pyx_type_7_pygmin_Potential = {
+static PyTypeObject __pyx_type_7_pele_Potential = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("_pygmin.Potential"), /*tp_name*/
-  sizeof(struct __pyx_obj_7_pygmin_Potential), /*tp_basicsize*/
+  __Pyx_NAMESTR("_pele.Potential"), /*tp_name*/
+  sizeof(struct __pyx_obj_7_pele_Potential), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_7_pygmin_Potential, /*tp_dealloc*/
+  __pyx_tp_dealloc_7_pele_Potential, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -3737,7 +3737,7 @@ static PyTypeObject __pyx_type_7_pygmin_Potential = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_7_pygmin_Potential, /*tp_methods*/
+  __pyx_methods_7_pele_Potential, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -3747,7 +3747,7 @@ static PyTypeObject __pyx_type_7_pygmin_Potential = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_7_pygmin_Potential, /*tp_new*/
+  __pyx_tp_new_7_pele_Potential, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -3772,7 +3772,7 @@ static struct PyModuleDef __pyx_moduledef = {
   #else
     PyModuleDef_HEAD_INIT,
   #endif
-    __Pyx_NAMESTR("_pygmin"),
+    __Pyx_NAMESTR("_pele"),
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -3897,11 +3897,11 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC init_pygmin(void); /*proto*/
-PyMODINIT_FUNC init_pygmin(void)
+PyMODINIT_FUNC init_pele(void); /*proto*/
+PyMODINIT_FUNC init_pele(void)
 #else
-PyMODINIT_FUNC PyInit__pygmin(void); /*proto*/
-PyMODINIT_FUNC PyInit__pygmin(void)
+PyMODINIT_FUNC PyInit__pele(void); /*proto*/
+PyMODINIT_FUNC PyInit__pele(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
@@ -3915,7 +3915,7 @@ PyMODINIT_FUNC PyInit__pygmin(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit__pygmin(void)", 0);
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit__pele(void)", 0);
   if ( __Pyx_check_binary_version() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -3937,7 +3937,7 @@ PyMODINIT_FUNC PyInit__pygmin(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4(__Pyx_NAMESTR("_pygmin"), __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4(__Pyx_NAMESTR("_pele"), __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -3945,8 +3945,8 @@ PyMODINIT_FUNC PyInit__pygmin(void)
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    if (!PyDict_GetItemString(modules, "_pygmin")) {
-      if (unlikely(PyDict_SetItemString(modules, "_pygmin", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyDict_GetItemString(modules, "_pele")) {
+      if (unlikely(PyDict_SetItemString(modules, "_pele", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
   #endif
@@ -3957,7 +3957,7 @@ PyMODINIT_FUNC PyInit__pygmin(void)
   if (__Pyx_SetAttrString(__pyx_m, "__builtins__", __pyx_b) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   /*--- Initialize various global constants etc. ---*/
   if (unlikely(__Pyx_InitGlobals() < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__pyx_module_is_main__pygmin) {
+  if (__pyx_module_is_main__pele) {
     if (__Pyx_SetAttrString(__pyx_m, "__name__", __pyx_n_s____main__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   /*--- Builtin init code ---*/
@@ -3968,9 +3968,9 @@ PyMODINIT_FUNC PyInit__pygmin(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_7_pygmin_Potential) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__Pyx_SetAttrString(__pyx_m, "Potential", (PyObject *)&__pyx_type_7_pygmin_Potential) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_7_pygmin_Potential = &__pyx_type_7_pygmin_Potential;
+  if (PyType_Ready(&__pyx_type_7_pele_Potential) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetAttrString(__pyx_m, "Potential", (PyObject *)&__pyx_type_7_pele_Potential) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_7_pele_Potential = &__pyx_type_7_pele_Potential;
   /*--- Type import code ---*/
   __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__Pyx_BUILTIN_MODULE_NAME, "type", 
   #if CYTHON_COMPILING_IN_PYPY
@@ -3988,7 +3988,7 @@ PyMODINIT_FUNC PyInit__pygmin(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "_pygmin.pyx":8
+  /* "_pele.pyx":8
  * # basic potential interface stuff
  * #
  * import numpy as np             # <<<<<<<<<<<<<<
@@ -4000,7 +4000,7 @@ PyMODINIT_FUNC PyInit__pygmin(void)
   if (PyObject_SetAttr(__pyx_m, __pyx_n_s__np, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_pygmin.pyx":1
+  /* "_pele.pyx":1
  * #cython: boundscheck=False             # <<<<<<<<<<<<<<
  * #cython: wraparound=False
  * ##aaacython: noncheck=True
@@ -4021,10 +4021,10 @@ PyMODINIT_FUNC PyInit__pygmin(void)
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
-    __Pyx_AddTraceback("init _pygmin", __pyx_clineno, __pyx_lineno, __pyx_filename);
+    __Pyx_AddTraceback("init _pele", __pyx_clineno, __pyx_lineno, __pyx_filename);
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init _pygmin");
+    PyErr_SetString(PyExc_ImportError, "init _pele");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

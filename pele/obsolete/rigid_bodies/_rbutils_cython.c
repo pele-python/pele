@@ -230,8 +230,8 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE__pygmin__potentials__rigid_bodies___rbutils_cython
-#define __PYX_HAVE_API__pygmin__potentials__rigid_bodies___rbutils_cython
+#define __PYX_HAVE__pele__potentials__rigid_bodies___rbutils_cython
+#define __PYX_HAVE_API__pele__potentials__rigid_bodies___rbutils_cython
 #include "stdio.h"
 #include "stdlib.h"
 #include "numpy/arrayobject.h"
@@ -874,12 +874,12 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *); /
 
 /* Module declarations from 'cython' */
 
-/* Module declarations from 'pygmin.potentials.rigid_bodies._rbutils_cython' */
+/* Module declarations from 'pele.potentials.rigid_bodies._rbutils_cython' */
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t = { "float64_t", NULL, sizeof(__pyx_t_5numpy_float64_t), 'R' };
-#define __Pyx_MODULE_NAME "pygmin.potentials.rigid_bodies._rbutils_cython"
-int __pyx_module_is_main_pygmin__potentials__rigid_bodies___rbutils_cython = 0;
+#define __Pyx_MODULE_NAME "pele.potentials.rigid_bodies._rbutils_cython"
+int __pyx_module_is_main_pele__potentials__rigid_bodies___rbutils_cython = 0;
 
-/* Implementation of 'pygmin.potentials.rigid_bodies._rbutils_cython' */
+/* Implementation of 'pele.potentials.rigid_bodies._rbutils_cython' */
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_RuntimeError;
@@ -889,7 +889,7 @@ static char __pyx_k_6[] = "Non-native byte order not supported";
 static char __pyx_k_8[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_9[] = "Format string allocated too short, see comment in numpy.pxd";
 static char __pyx_k_12[] = "Format string allocated too short.";
-static char __pyx_k_14[] = "pygmin.potentials.rigid_bodies._rbutils_cython";
+static char __pyx_k_14[] = "pele.potentials.rigid_bodies._rbutils_cython";
 static char __pyx_k_15[] = "_moleculeGetGradients";
 static char __pyx_k__B[] = "B";
 static char __pyx_k__H[] = "H";
@@ -954,7 +954,7 @@ static PyObject *__pyx_k_tuple_10;
 static PyObject *__pyx_k_tuple_11;
 static PyObject *__pyx_k_tuple_13;
 
-/* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":7
+/* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":7
  * 
  * @cython.boundscheck(False)
  * def _moleculeGetGradients(np.ndarray[np.float64_t, ndim=3] drmat,             # <<<<<<<<<<<<<<
@@ -962,9 +962,9 @@ static PyObject *__pyx_k_tuple_13;
  *                            np.ndarray[np.float64_t, ndim=2] sitegrad,
  */
 
-static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients = {__Pyx_NAMESTR("_moleculeGetGradients"), (PyCFunction)__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients, METH_VARARGS|METH_KEYWORDS, __Pyx_DOCSTR(0)};
-static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pf_6pele_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6pele_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients = {__Pyx_NAMESTR("_moleculeGetGradients"), (PyCFunction)__pyx_pf_6pele_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients, METH_VARARGS|METH_KEYWORDS, __Pyx_DOCSTR(0)};
+static PyObject *__pyx_pf_6pele_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_drmat = 0;
   PyArrayObject *__pyx_v_sitexyz_molframe = 0;
   PyArrayObject *__pyx_v_sitegrad = 0;
@@ -1077,7 +1077,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("_moleculeGetGradients", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 7; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("pygmin.potentials.rigid_bodies._rbutils_cython._moleculeGetGradients", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pele.potentials.rigid_bodies._rbutils_cython._moleculeGetGradients", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
@@ -1107,7 +1107,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
   __pyx_bstride_0_sitegrad = __pyx_bstruct_sitegrad.strides[0]; __pyx_bstride_1_sitegrad = __pyx_bstruct_sitegrad.strides[1];
   __pyx_bshape_0_sitegrad = __pyx_bstruct_sitegrad.shape[0]; __pyx_bshape_1_sitegrad = __pyx_bstruct_sitegrad.shape[1];
 
-  /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":11
+  /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":11
  *                            np.ndarray[np.float64_t, ndim=2] sitegrad,
  *                            Py_ssize_t nsites):
  *     cdef np.ndarray[np.float64_t, ndim=1] aagrad = np.zeros(3, dtype=np.float64)             # <<<<<<<<<<<<<<
@@ -1147,7 +1147,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
   __pyx_v_aagrad = ((PyArrayObject *)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":13
+  /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":13
  *     cdef np.ndarray[np.float64_t, ndim=1] aagrad = np.zeros(3, dtype=np.float64)
  *     cdef Py_ssize_t i, j, k, isite
  *     for k in range(3):             # <<<<<<<<<<<<<<
@@ -1157,7 +1157,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
   for (__pyx_t_6 = 0; __pyx_t_6 < 3; __pyx_t_6+=1) {
     __pyx_v_k = __pyx_t_6;
 
-    /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":14
+    /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":14
  *     cdef Py_ssize_t i, j, k, isite
  *     for k in range(3):
  *         for i in range(3):             # <<<<<<<<<<<<<<
@@ -1167,7 +1167,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
     for (__pyx_t_7 = 0; __pyx_t_7 < 3; __pyx_t_7+=1) {
       __pyx_v_i = __pyx_t_7;
 
-      /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":15
+      /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":15
  *     for k in range(3):
  *         for i in range(3):
  *             for j in range(3):             # <<<<<<<<<<<<<<
@@ -1177,7 +1177,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
       for (__pyx_t_8 = 0; __pyx_t_8 < 3; __pyx_t_8+=1) {
         __pyx_v_j = __pyx_t_8;
 
-        /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":16
+        /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":16
  *         for i in range(3):
  *             for j in range(3):
  *                 for isite in range(nsites):             # <<<<<<<<<<<<<<
@@ -1188,7 +1188,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
         for (__pyx_t_10 = 0; __pyx_t_10 < __pyx_t_9; __pyx_t_10+=1) {
           __pyx_v_isite = __pyx_t_10;
 
-          /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":17
+          /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":17
  *             for j in range(3):
  *                 for isite in range(nsites):
  *                     aagrad[k] += drmat[k,i,j] * sitexyz_molframe[isite,j] * sitegrad[isite,i]             # <<<<<<<<<<<<<<
@@ -1217,7 +1217,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
     }
   }
 
-  /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":19
+  /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":19
  *                     aagrad[k] += drmat[k,i,j] * sitexyz_molframe[isite,j] * sitegrad[isite,i]
  * 
  *     return aagrad             # <<<<<<<<<<<<<<
@@ -1241,7 +1241,7 @@ static PyObject *__pyx_pf_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython_
     __Pyx_SafeReleaseBuffer(&__pyx_bstruct_drmat);
     __Pyx_SafeReleaseBuffer(&__pyx_bstruct_sitexyz_molframe);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("pygmin.potentials.rigid_bodies._rbutils_cython._moleculeGetGradients", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pele.potentials.rigid_bodies._rbutils_cython._moleculeGetGradients", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -3248,7 +3248,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants");
 
-  /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":11
+  /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":11
  *                            np.ndarray[np.float64_t, ndim=2] sitegrad,
  *                            Py_ssize_t nsites):
  *     cdef np.ndarray[np.float64_t, ndim=1] aagrad = np.zeros(3, dtype=np.float64)             # <<<<<<<<<<<<<<
@@ -3409,7 +3409,7 @@ PyMODINIT_FUNC PyInit__rbutils_cython(void)
   if (__Pyx_SetAttrString(__pyx_m, "__builtins__", __pyx_b) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   /*--- Initialize various global constants etc. ---*/
   if (unlikely(__Pyx_InitGlobals() < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__pyx_module_is_main_pygmin__potentials__rigid_bodies___rbutils_cython) {
+  if (__pyx_module_is_main_pele__potentials__rigid_bodies___rbutils_cython) {
     if (__Pyx_SetAttrString(__pyx_m, "__name__", __pyx_n_s____main__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   /*--- Builtin init code ---*/
@@ -3430,7 +3430,7 @@ PyMODINIT_FUNC PyInit__rbutils_cython(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":1
+  /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
  * cimport cython
@@ -3440,19 +3440,19 @@ PyMODINIT_FUNC PyInit__rbutils_cython(void)
   if (PyObject_SetAttr(__pyx_m, __pyx_n_s__np, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":7
+  /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":7
  * 
  * @cython.boundscheck(False)
  * def _moleculeGetGradients(np.ndarray[np.float64_t, ndim=3] drmat,             # <<<<<<<<<<<<<<
  *                            np.ndarray[np.float64_t, ndim=2] sitexyz_molframe,
  *                            np.ndarray[np.float64_t, ndim=2] sitegrad,
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6pygmin_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients, NULL, __pyx_n_s_14); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 7; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6pele_10potentials_12rigid_bodies_15_rbutils_cython__moleculeGetGradients, NULL, __pyx_n_s_14); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 7; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (PyObject_SetAttr(__pyx_m, __pyx_n_s_15, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 7; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pygmin/potentials/rigid_bodies/_rbutils_cython.pyx":1
+  /* "pele/potentials/rigid_bodies/_rbutils_cython.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
  * cimport cython
@@ -3473,10 +3473,10 @@ PyMODINIT_FUNC PyInit__rbutils_cython(void)
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
-    __Pyx_AddTraceback("init pygmin.potentials.rigid_bodies._rbutils_cython", __pyx_clineno, __pyx_lineno, __pyx_filename);
+    __Pyx_AddTraceback("init pele.potentials.rigid_bodies._rbutils_cython", __pyx_clineno, __pyx_lineno, __pyx_filename);
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init pygmin.potentials.rigid_bodies._rbutils_cython");
+    PyErr_SetString(PyExc_ImportError, "init pele.potentials.rigid_bodies._rbutils_cython");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

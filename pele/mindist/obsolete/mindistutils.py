@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-import pygmin.utils.rotations as rot
+import pele.utils.rotations as rot
 import itertools
 
 __all__ = ["alignCoM", "CoMToOrigin", "getAlignRotation", "alignRotation", 

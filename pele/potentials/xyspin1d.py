@@ -1,5 +1,5 @@
 import numpy as np
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 
 
 class XYModel(BasePotential):
@@ -60,9 +60,9 @@ class XYModel(BasePotential):
 
 
 def test_basin_hopping(pot, angles):
-    from pygmin.basinhopping import BasinHopping
-    from pygmin.takestep.displace import RandomDisplacement
-    from pygmin.takestep.adaptive import AdaptiveStepsize
+    from pele.basinhopping import BasinHopping
+    from pele.takestep.displace import RandomDisplacement
+    from pele.takestep.adaptive import AdaptiveStepsize
     
     takestep = RandomDisplacement(stepsize = np.pi/4)
     takestepa = AdaptiveStepsize(takestep, frequency = 20)
@@ -94,7 +94,7 @@ def test():
     
     
     #try a quench
-    from pygmin.optimize import mylbfgs
+    from pele.optimize import mylbfgs
     ret = mylbfgs(angles, pot)
     
     print "quenched e = ", ret.energy

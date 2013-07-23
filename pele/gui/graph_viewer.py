@@ -3,9 +3,10 @@ import numpy as np
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QDialog, QWidget
 
-from pygmin.gui.ui.mplwidget import MPLWidget
-from pygmin.landscape import TSGraph
-from pygmin.utils.events import Signal
+#from pele.gui.ui.mplwidget import MPLWidgetWithToolbar
+from pele.gui.ui.graph_view_ui import Ui_Form
+from pele.landscape import TSGraph
+from pele.utils.events import Signal
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -13,16 +14,59 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class GraphViewWidget(MPLWidget):
+class GraphViewWidget(QWidget):
     def __init__(self, database=None, parent=None, app=None, minima=None):
-        MPLWidget.__init__(self, parent=parent)
+        QWidget.__init__(self, parent=parent)
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
 #        self.widget = GraphDisplayWidget(parent=parent)
         self.database = database
         self.minima = minima
         self.app = app
         
+        self.canvas = self.ui.canvas.canvas
+        
+        self.axes = self.canvas.axes
+        self.fig = self.canvas.fig
+        
         self.on_minima_picked = Signal()
         
+        self.from_minima = set()
+        self.positions = dict()
+    
+    
+    
+    def on_btn_show_all_clicked(self, clicked=None):
+        if clicked is None: return
+        self.show_all()
+        
+    def show_all(self):
+        self.ui.label_status.setText("showing full graph")
+        self.from_minima.clear()
+        self.positions.clear()
+        self.make_graph()
+        self.show_graph()
+    
+    def make_graph_from(self, minima, cutoff=1):
+        cutoff = cutoff + 1
+        self.from_minima.update(minima)
+        minima = self.from_minima
+        graph = self.full_graph
+        nodes = set()
+        # make a graph from the minima in self.minima and nearest neighbors
+        for m in minima:
+            nodesdir = nx.single_source_shortest_path(graph, m, cutoff=cutoff)
+            nodes.update(nodesdir)
+        
+        
+        self.graph = graph.subgraph(nodes)
+
+        # remove nodes not in the graph from the dictionary positions
+        difference = set(self.positions.viewkeys())
+        difference.difference_update(self.graph.nodes())
+        for m in difference:
+            self.positions.pop(m)
+    
     def make_graph(self, database=None, minima=None):
         if database is None:
             database = self.database
@@ -33,14 +77,23 @@ class GraphViewWidget(MPLWidget):
         #get the graph object, eliminate nodes without edges
         graphwrapper = TSGraph(database, minima)
         graph = graphwrapper.graph
+        self.full_graph = graph
         print graph.number_of_nodes()
         degree = graph.degree()
         nodes = [n for n, nedges in degree.items() if nedges > 0]
         self.graph = graph.subgraph(nodes)
         print self.graph.number_of_nodes(), self.graph.number_of_edges()
-        
     
-    def show_graph(self):
+    def on_minima_picked_local(self, min1):
+        if self.ui.checkBox_zoom.isChecked():
+            self.make_graph_from([min1])
+            text = "showing graph near minima "
+            for m in self.from_minima: 
+                text += " " + str(m._id)
+            self.ui.label_status.setText(text)
+            self.show_graph()
+    
+    def show_graph(self, fixed=False, show_ids=True):
         import pylab as pl
         if not hasattr(self, "graph"):
             self.make_graph()
@@ -51,7 +104,11 @@ class GraphViewWidget(MPLWidget):
         graph = self.graph
         
         #get the layout of the nodes from networkx
-        layout = nx.spring_layout(graph)
+        oldlayout = self.positions
+        layout = nx.spring_layout(graph, pos=oldlayout)#, fixed=fixed)
+        self.positions.update(layout)
+        layout = self.positions
+
         layoutlist = layout.items()
         xypos = np.array([xy for n, xy in layoutlist])
         #color the nodes by energy
@@ -62,10 +119,11 @@ class GraphViewWidget(MPLWidget):
         if not hasattr(self, "colorbar"):
             self.colorbar = self.fig.colorbar(points)
         
-        # label the nodes
-        ids = [n._id for n, xy in layoutlist]
-        for i in range(len(ids)):
-            ax.annotate( ids[i], xypos[i] )
+        if show_ids and False:
+            # label the nodes
+            ids = [n._id for n, xy in layoutlist]
+            for i in range(len(ids)):
+                ax.annotate( ids[i], xypos[i] )
         
         #plot the edges as lines
         for u, v in graph.edges():
@@ -89,36 +147,32 @@ class GraphViewWidget(MPLWidget):
             min1 = layoutlist[ind][0]
             print "you clicked on minimum with id", min1._id, "and energy", min1.energy
             self.on_minima_picked(min1)
+            self.on_minima_picked_local(min1)
 
         
         self.fig.canvas.mpl_connect('pick_event', on_pick)
 
         
-        self.draw()
+        self.canvas.draw()
         self.app.processEvents()
         
 
-class GraphViewDialog(QDialog):
+class GraphViewDialog(QtGui.QMainWindow):
     def __init__(self, database, parent=None, app=None):
-        QDialog.__init__(self, parent=parent)
+        QtGui.QMainWindow.__init__(self, parent=parent)
 
         self.widget = GraphViewWidget(database=database, parent=self, app=app)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.widget.setSizePolicy(sizePolicy)
-        self.widget.setObjectName(_fromUtf8("widget"))
-#        self.widget.show_graph()
-
-        self.retranslateUi(self)
-#        QtCore.QMetaObject.connectSlotsByName(self)
+        self.setCentralWidget(self.widget)
         
         self.app = app
 
-    def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
 
     def start(self):
-        self.widget.show_graph()
-        self.widget.show_graph()
+        self.widget.show_all()
+#        self.widget.make_graph()
+#        gmin = self.widget.database.minima()[0:1]
+#        self.widget.make_graph_from(gmin)
+#        self.widget.show_graph()
 
 def start():
     wnd.start()
@@ -130,7 +184,7 @@ if __name__ == "__main__":
     import pylab as pl
 
     app = QtGui.QApplication(sys.argv)
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     pl.ion()
     natoms = 13
     system = LJCluster(natoms)

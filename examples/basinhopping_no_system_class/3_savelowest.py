@@ -2,10 +2,10 @@
 #Example 3: Saving the coordinates as an xyz file
 ############################################################
 import numpy as np
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
-from pygmin.storage.savenlowest import SaveN as saveit
+import pele.potentials.lj as lj
+import pele.basinhopping as bh
+from pele.takestep import displace
+from pele.storage.savenlowest import SaveN as saveit
 
 
 natoms = 12
@@ -29,7 +29,7 @@ with open("lowest", "w") as fout:
 # some visualization
 ############################################################
 try: 
-    import pygmin.utils.pymolwrapper as pym
+    import pele.utils.pymolwrapper as pym
     pym.start()
     frame=1  
     print storage.data

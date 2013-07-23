@@ -1,6 +1,6 @@
 """
-.. currentmodule:: pygmin.angleaxis
-Angle Axis Systems (`pygmin.angleaxis`)
+.. currentmodule:: pele.angleaxis
+Angle Axis Systems (`pele.angleaxis`)
 ============================================
 
 This module implements routines for treating angle axis systems. An angle axis
@@ -20,7 +20,7 @@ The basis of each Angle Axis system is a topology
 """
 
 # dirty workaround. To not break the scripts import CoordsAdapter without moving it
-from pygmin.utils.rbtools import CoordsAdapter
+from pele.utils.rbtools import CoordsAdapter
 from aatopology import *
 from rigidbody import *
 from aamindist import *

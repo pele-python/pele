@@ -2,8 +2,8 @@ import numpy as np #to access np.exp() not built int exp
 from scipy import weave
 from scipy.weave import converters
 
-from pygmin.potentials import LJ
-from pygmin.potentials import BasePotential
+from pele.potentials import LJ
+from pele.potentials import BasePotential
 import fortran.AT as ATfort
 
 __all__ = ["ATLJ"]
@@ -115,7 +115,7 @@ class ATLJ(BasePotential):
     def getEnergyFortran(self, coords):
         #grad,potel = axt(x,gradt,zstar,[n])
         natoms = len(coords)/3
-        garbage, e = ATfort.axt(coords, False, self.Z, [natoms])
+        garbage, e = ATfort.axt(coords, False, self.Z)
         
         Elj = self.lj.getEnergy(coords)
         return e + Elj
@@ -123,7 +123,7 @@ class ATLJ(BasePotential):
     def getEnergyGradientFortran(self, coords):
         #grad,potel = axt(x,gradt,zstar,[n])
         natoms = len(coords)/3
-        grad, e = ATfort.axt(coords, True, self.Z, [natoms])
+        grad, e = ATfort.axt(coords, True, self.Z)
         
         elj, gradlj = self.lj.getEnergyGradient(coords)
         return e + elj, grad + gradlj
@@ -141,7 +141,7 @@ class TestATLJ(unittest.TestCase):
         natoms = 10
         coords = np.random.uniform(-1,1,natoms*3)*2
         
-        from pygmin.optimize import mylbfgs as quench
+        from pele.optimize import mylbfgs as quench
         lj = LJ()
         ret = quench(coords, lj)
         coords = ret.coords
@@ -197,14 +197,14 @@ def main():
     print V
 
     print "try a quench"
-    from pygmin.optimize import mylbfgs as quench
+    from pele.optimize import mylbfgs as quench
     ret = quench( coords, lj, iprint=-1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
     print "energy ", ret.energy
     print "rms gradient", ret.rms
     print "number of function calls", ret.nfev
 
-    from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     coords = ret.coords
 
     printlist = []

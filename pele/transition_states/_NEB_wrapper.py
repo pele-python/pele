@@ -1,6 +1,6 @@
 import numpy as np
 
-from pygmin.transition_states import NEB, NEBPar, InterpolatedPath
+from pele.transition_states import NEB, NEBPar, InterpolatedPath
 
 __all__ = ["create_NEB"]
 

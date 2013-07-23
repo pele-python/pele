@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pygmin documentation build configuration file, created by
+# pele documentation build configuration file, created by
 # sphinx-quickstart on Wed Aug  1 03:04:59 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -47,7 +47,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pygmin'
+project = u'pele'
 copyright = u'2012, Victor Rühle, Jacob Stevenson'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -91,7 +91,7 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-modindex_common_prefix = ['pygmin.']
+modindex_common_prefix = ['pele.']
 
 
 # -- Options for HTML output ---------------------------------------------------
@@ -172,7 +172,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pygmindoc'
+htmlhelp_basename = 'peledoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -186,7 +186,7 @@ htmlhelp_basename = 'pygmindoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'pygmin.tex', u'pygmin Documentation',
+  ('index', 'pele.tex', u'pele Documentation',
    u'Victor Rühle, Jacob Stevenson', 'manual'),
 ]
 
@@ -219,7 +219,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pygmin', u'pygmin Documentation',
+    ('index', 'pele', u'pele Documentation',
      [u'Victor Rühle, Jacob Stevenson'], 1)
 ]
 

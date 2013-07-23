@@ -1,7 +1,7 @@
 """
 Example 1: Simple basin hopping
 """
-from pygmin.systems import LJCluster
+from pele.systems import LJCluster
 
 natoms = 12
 niter = 100
@@ -15,7 +15,7 @@ print ""
 
 # some visualization
 try: 
-    import pygmin.utils.pymolwrapper as pym
+    import pele.utils.pymolwrapper as pym
     pym.start()
     pym.draw_spheres(bh.coords, "A", 1)
 except:

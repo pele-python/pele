@@ -1,9 +1,9 @@
 """
-.. currentmodule:: pygmin.utils.rbtools
+.. currentmodule:: pele.utils.rbtools
 .. autosummary:: 
     :toctree: generated/
 
-    pygmin.utils.rbtools.CoordsAdapter 
+    pele.utils.rbtools.CoordsAdapter 
 
 """
 
@@ -19,7 +19,7 @@ class CoordsAdapter():
     :Example:
 
     >>> import numpy as np
-    >>> from pygmin.utils.rbtools import CoordsAdapter
+    >>> from pele.utils.rbtools import CoordsAdapter
     >>> 
     >>> nrigid = 10
     >>> coords = np.zeros(6*nrigid)

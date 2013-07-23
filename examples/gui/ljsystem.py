@@ -2,11 +2,11 @@ from PyQt4 import QtGui
 import NewLJ
 import numpy as np
 
-from pygmin.config import config
+from pele.config import config
 
-#from pygmin.transition_states import dimer, tstools
+#from pele.transition_states import dimer, tstools
 
-from pygmin.systems import LJCluster
+from pele.systems import LJCluster
  
 class LJSystem(LJCluster):
     def __init__(self):
@@ -19,7 +19,7 @@ class LJSystem(LJCluster):
         self.params.gui.basinhopping_nsteps = 1000
     
     def get_optim_spawner(self, coords1, coords2):
-        from pygmin.systems.spawn_OPTIM import SpawnOPTIM_LJ
+        from pele.systems.spawn_OPTIM import SpawnOPTIM_LJ
         import os
 #        # TODO: this should be passable somehow
 #        optim = os.path.expanduser("~")+"/git/OPTIM/source/build/OPTIM"
@@ -40,5 +40,5 @@ class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
         return int(self.lineNsave.text())
         
 if __name__ == "__main__":
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(LJSystem)

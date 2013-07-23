@@ -1,4 +1,4 @@
-from pygmin.mindist import StandardClusterAlignment
+from pele.mindist import StandardClusterAlignment
 
 __all__= ["PointGroupOrderCluster"]
 
@@ -30,8 +30,8 @@ class PointGroupOrderCluster(object):
         inversion_multiplier = 1
         if self.exact_match.transform.can_invert():
             x2 = x1.copy()
-            self.exact_match.transform.invert(x2)       
-            if self.exact_match(x1, x2):
+            self.exact_match.transform.invert(x2)   
+            if self.exact_match(x1, x2, check_inversion=False):
                 inversion_multiplier = 2
                 
         pgorder = 0

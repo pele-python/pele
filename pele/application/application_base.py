@@ -1,5 +1,5 @@
 from optparse import OptionParser
-from pygmin.storage.database import Database
+from pele.storage.database import Database
 import sys
 
 class Application(object):   

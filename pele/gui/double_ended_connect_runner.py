@@ -12,7 +12,7 @@ import numpy as np
 
 from PyQt4 import QtCore, QtGui
 
-from pygmin.utils.events import Signal
+from pele.utils.events import Signal
 
 class UnboundMinimum(object):
     def __init__(self, minimum):
@@ -152,15 +152,15 @@ class DECProcess(mp.Process):
 #            print >> sys.stderr, "stderr"
             self.mylog = OutLog(self.comm)
             sys.stdout = self.mylog
-            logger = logging.getLogger("pygmin")
+            logger = logging.getLogger("pele")
             handles = logger.handlers
             for h in handles:
 #                print >> sys.stderr, "removing handler", h 
                 logger.removeHandler(h)
             sh = logging.StreamHandler(self.mylog)
             logger.addHandler(sh)
-#            import pygmin
-#            logger.removeHandler(pygmin.h)
+#            import pele
+#            logger.removeHandler(pele.h)
 #            print >> sys.stderr, "stderr2"
 
         self.do_double_ended_connect()

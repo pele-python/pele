@@ -1,9 +1,9 @@
 import numpy as np
 import oxdnagmin_ as GMIN
-from pygmin.potentials.gminpotential import GMINPotential
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
-from pygmin.storage.database import Database
+from pele.potentials.gminpotential import GMINPotential
+import pele.basinhopping as bh
+from pele.takestep import displace
+from pele.storage.database import Database
 
 
 # initialize GMIN

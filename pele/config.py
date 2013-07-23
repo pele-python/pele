@@ -10,5 +10,5 @@ config.set("exec", "OPTIM", value="OPTIM", )
 config.set("exec", "GMIN", value="GMIN")
 config.set("exec", "AMBOPTIM", value="AMBOPTIM")
 
-print "Open option file",expanduser("~")+'/.pygmin/pygmin.ini'
-config.read(expanduser("~")+'/.pygmin/pygmin.ini')
+print "Open option file",expanduser("~")+'/.pele/pele.ini'
+config.read(expanduser("~")+'/.pele/pele.ini')

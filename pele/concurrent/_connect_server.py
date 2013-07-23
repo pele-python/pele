@@ -1,6 +1,6 @@
 import Pyro4
 
-from pygmin.landscape import ConnectManager
+from pele.landscape import ConnectManager
 
 
 __all__ = ["ConnectServer", "ConnectWorker"]
@@ -20,9 +20,9 @@ class ConnectServer(object):
     
     Parameters
     ----------
-    system : pygmin.system.BaseSystem
+    system : pele.system.BaseSystem
         system class to process
-    database : pygmin.storage.Database
+    database : pele.storage.Database
         working database
     server_name : string, optional
         Unique name for clients to connect to this server on current host 
@@ -36,7 +36,7 @@ class ConnectServer(object):
     See Also
     --------
     ConnectWorker
-    pygmin.landscape.ConnectManager
+    pele.landscape.ConnectManager
     '''
     
     def __init__(self, system, database, server_name=None, host=None, port=0):
@@ -138,7 +138,7 @@ class ConnectWorker(object):
     See Also
     --------
     ConnectServer
-    pygmin.landscape.ConnectManager
+    pele.landscape.ConnectManager
     '''
     
     def __init__(self,uri, system=None, strategy="random"):

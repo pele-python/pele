@@ -2,9 +2,9 @@
 Wrapper for GMIN Amber potential     
 """
 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 import ambgmin_ as GMIN 
-from pygmin.potentials.gminpotential import GMINPotential
+from pele.potentials.gminpotential import GMINPotential
 
 # OpenMM - just read prmtop and crd file 
 from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile

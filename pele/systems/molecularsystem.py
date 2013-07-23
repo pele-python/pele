@@ -1,5 +1,5 @@
-from pygmin.systems import BaseSystem
-import pygmin.utils.elements.elements as elem # This is a dictionary of element parameters for atoms
+from pele.systems import BaseSystem
+import pele.utils.elements.elements as elem # This is a dictionary of element parameters for atoms
 
 class MolecularSystem(BaseSystem):
     """

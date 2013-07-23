@@ -3,7 +3,7 @@ Example 2: reading coords from file
 """
 import numpy as np
 
-from pygmin.systems import LJCluster
+from pele.systems import LJCluster
 
 natoms = 12
 niter = 100

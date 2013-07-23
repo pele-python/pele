@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 import sys
-from pygmin.mc import MonteCarlo
-from pygmin.optimize import mylbfgs
+from pele.mc import MonteCarlo
+from pele.optimize import mylbfgs
 
 class BasinHopping(MonteCarlo):
     """
@@ -17,8 +17,8 @@ class BasinHopping(MonteCarlo):
     
     See Also
     --------
-    pygmin.mc.MonteCarlo : base class
-    pygmin.potentials, pygmin.takestep, pygmin.storage, pygmin.accept_tests
+    pele.mc.MonteCarlo : base class
+    pele.potentials, pele.takestep, pele.storage, pele.accept_tests
 
 
     """
@@ -134,7 +134,7 @@ class BasinHopping(MonteCarlo):
 
 
 if __name__ == "__main__":
-    from pygmin.systems import LJCluster
+    from pele.systems import LJCluster
     natoms = 13
     sys = LJCluster(natoms)
     bh = sys.get_basinhopping()

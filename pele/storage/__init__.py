@@ -1,7 +1,7 @@
 """
-.. currentmodule:: pygmin.storage
+.. currentmodule:: pele.storage
 
-Database storage (`pygmin.storage`)
+Database storage (`pele.storage`)
 ===================================
 
 This module contains all the objects related to the Database class.

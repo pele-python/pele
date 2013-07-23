@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 
-import pygmin.utils.disconnectivity_graph as dg
-from pygmin.storage import Database
-from pygmin.landscape import TSGraph
-from pygmin.systems import LJCluster
+import pele.utils.disconnectivity_graph as dg
+from pele.storage import Database
+from pele.landscape import TSGraph
+from pele.systems import LJCluster
 
 def get_database(natoms=13, nconn=5):
     """create a database for a lennard jones system

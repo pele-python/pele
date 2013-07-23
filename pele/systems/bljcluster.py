@@ -1,10 +1,10 @@
 import tempfile
 import numpy as np
 
-from pygmin.systems import AtomicCluster
-from pygmin.potentials.ljpshiftfast import LJpshift
-from pygmin.utils.xyz import write_xyz
-from pygmin.mindist import CoMToOrigin
+from pele.systems import AtomicCluster
+from pele.potentials.ljpshiftfast import LJpshift
+from pele.utils.xyz import write_xyz
+from pele.mindist import CoMToOrigin
 
 __all__ = ["BLJCluster"]
 
@@ -114,7 +114,7 @@ class BLJCluster(AtomicCluster):
         fname = f.name
                 
         #write the coords into the xyz file
-        from pygmin.mindist import CoMToOrigin
+        from pele.mindist import CoMToOrigin
         labels = ["LA" for i in range(self.ntypeA)] + \
                  ["LB" for i in range(self.natoms - self.ntypeA)]
         for coords in coordslist:

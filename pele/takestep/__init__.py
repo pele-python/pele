@@ -1,11 +1,11 @@
 """
-.. currentmodule:: pygmin.takestep
+.. currentmodule:: pele.takestep
 
-Step Taking (`pygmin.takestep`)
+Step Taking (`pele.takestep`)
 ===============================
 
 The performance of the basin hopping critically depends on the step taking algorithm. 
-Pygmin comes with a set of basic takestep routines. For anything non-standard, the user is encouraged
+pele comes with a set of basic takestep routines. For anything non-standard, the user is encouraged
 to implement a custom takestep routine.
 
 Basic steptaking
@@ -33,13 +33,13 @@ Grouping moves + adaptive steptaking
 
 Writing custom steptaking routines
 ++++++++++++++++++++++++++++++++++
-Pygmin makes it very simple to design custom takestep routines. Any takestep class should have
+pele makes it very simple to design custom takestep routines. Any takestep class should have
 TakestepInterface as a parent class (directly derived from that or a child class of TakestepInterface).
 
 ::
 
-    from pygmin.takestep import TakestepInterface
-    from pygmin.takestep import buildingblocks as bb
+    from pele.takestep import TakestepInterface
+    from pele.takestep import buildingblocks as bb
     
     class MyStep(TakestepInterface):
         def takeStep(self, coords, **kwargs):

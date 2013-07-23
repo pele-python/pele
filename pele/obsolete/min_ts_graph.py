@@ -103,13 +103,13 @@ class MinTSGraph(object):
             return e2ts[(minkey2, minkey1)]
 
 def getSetOfMinLJ(natoms = 11): #for testing purposes
-    from pygmin.potentials.lj import LJ
+    from pele.potentials.lj import LJ
     pot = LJ()
     coords = np.random.uniform(-1,1,natoms*3)
-    from pygmin.basinhopping import BasinHopping
-    from pygmin.takestep.displace import RandomDisplacement
-    from pygmin.takestep.adaptive import AdaptiveStepsize
-    from pygmin.storage.savenlowest import SaveN
+    from pele.basinhopping import BasinHopping
+    from pele.takestep.displace import RandomDisplacement
+    from pele.takestep.adaptive import AdaptiveStepsize
+    from pele.storage.savenlowest import SaveN
     saveit = SaveN(10)
     takestep1 = RandomDisplacement()
     takestep = AdaptiveStepsize(takestep1, frequency=15)
@@ -118,8 +118,8 @@ def getSetOfMinLJ(natoms = 11): #for testing purposes
     return pot, saveit
 
 def test():
-    from pygmin.optimize import lbfgs_py as quench
-    from pygmin.storage.savenlowest import Minimum
+    from pele.optimize import lbfgs_py as quench
+    from pele.storage.savenlowest import Minimum
     natoms = 11
     #get min1
     pot, saveit = getSetOfMinLJ(natoms)

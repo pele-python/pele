@@ -206,7 +206,7 @@ class ExactMatchCluster(object):
                                    can_invert=self.transform.can_invert())
 
         
-    def __call__(self, coords1, coords2):
+    def __call__(self, coords1, coords2, check_inversion=True):
         com1 = self.measure.get_com(coords1)
         x1 = coords1.copy()
         self.transform.translate(x1, -com1)
@@ -216,6 +216,7 @@ class ExactMatchCluster(object):
         self.transform.translate(x2, -com2)
         
         for rot, invert in self.standard_alignments(x1, x2):
+            if invert and not check_inversion: continue
             if self.check_match(x1, x2, rot, invert):
                 return True
         return False
@@ -252,7 +253,7 @@ class ExactMatchCluster(object):
         self.transform.rotate(x2_trial, rot2)
         # use the maximum distance, not rms as cutoff criterion
         
-        
+        self._last_checked_rotation = np.dot(rot2, rot)
         if  self.measure.get_dist(x1, x2_trial) < self.tol:
             return True
         return False
@@ -260,7 +261,7 @@ class ExactMatchCluster(object):
     
 if __name__ == '__main__':
     natoms = 35
-    from pygmin.utils import rotations
+    from pele.utils import rotations
     
     for i in xrange(100):
         xx1 = np.random.random(3*natoms)*5

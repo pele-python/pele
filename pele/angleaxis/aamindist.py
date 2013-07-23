@@ -1,8 +1,8 @@
 import numpy as np
-from pygmin.utils import rotations
-from pygmin.mindist import ExactMatchCluster, MinPermDistCluster, StandardClusterAlignment
-from pygmin.mindist import TransformPolicy, MeasurePolicy
-from pygmin.mindist import findrotation, find_best_permutation
+from pele.utils import rotations
+from pele.mindist import ExactMatchCluster, MinPermDistCluster, StandardClusterAlignment
+from pele.mindist import TransformPolicy, MeasurePolicy
+from pele.mindist import findrotation, find_best_permutation
 from math import sqrt
 from math import pi
 

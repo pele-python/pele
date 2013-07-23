@@ -1,13 +1,13 @@
 
-from pygmin.storage.database import Database
+from pele.storage.database import Database
 import numpy as np
-from pygmin.potentials import GMINPotential
+from pele.potentials import GMINPotential
 import oxdnagmin_ as GMIN
-from pygmin import takestep
+from pele import takestep
 from math import pi
-from pygmin.utils.rbtools import CoordsAdapter
-from pygmin.utils import rotations
-from pygmin.basinhopping import BasinHopping
+from pele.utils.rbtools import CoordsAdapter
+from pele.utils import rotations
+from pele.basinhopping import BasinHopping
 import parameters
 import time
 

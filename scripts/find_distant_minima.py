@@ -1,9 +1,9 @@
-from pygmin.storage.database import Database, Minimum
-from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
+from pele.storage.database import Database, Minimum
+from pele.mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
 from random import choice
 import networkx as nx
 
-from  pygmin.NEB.graph import TSGraph
+from  pele.NEB.graph import TSGraph
 import time
 import pickle
 

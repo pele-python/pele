@@ -1,6 +1,6 @@
 import gmin_ as GMIN
-from pygmin.potentials import GMINPotential
-from pygmin.systems import LJCluster
+from pele.potentials import GMINPotential
+from pele.systems import LJCluster
 import numpy as np
 
 class GUPTASystem(LJCluster):
@@ -25,5 +25,5 @@ class GUPTASystem(LJCluster):
         return GMINPotential(GMIN)
     
 if __name__ == "__main__":
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(GUPTASystem)

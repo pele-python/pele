@@ -1,6 +1,6 @@
 import numpy as np #to access np.exp() not built int exp
 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 
 
 class LJ(BasePotential):
@@ -61,7 +61,7 @@ def main():
     print V
 
     print "try a quench"
-    from pygmin.optimize import mylbfgs as quench
+    from pele.optimize import mylbfgs as quench
     ret = quench( coords, lj, iprint=-1 )
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
     print "energy ", ret.energy

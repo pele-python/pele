@@ -1,7 +1,7 @@
 from random import choice
-from pygmin.systems import LJCluster
-from pygmin.storage import Minimum
-from pygmin.concurrent import ConnectServer
+from pele.systems import LJCluster
+from pele.storage import Minimum
+from pele.concurrent import ConnectServer
 
 server_name = "ljconnect_example"
 hostname="localhost"

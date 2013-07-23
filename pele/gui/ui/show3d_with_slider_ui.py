@@ -70,4 +70,4 @@ class Ui_show3d_with_slider(object):
         show3d_with_slider.setWindowTitle(QtGui.QApplication.translate("show3d_with_slider", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_animate.setText(QtGui.QApplication.translate("show3d_with_slider", "animate", None, QtGui.QApplication.UnicodeUTF8))
 
-from pygmin.gui.show3d import Show3D
+from pele.gui.show3d import Show3D

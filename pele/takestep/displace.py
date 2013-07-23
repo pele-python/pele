@@ -6,7 +6,7 @@ Created on Jun 6, 2012
 
 import numpy as np
 from generic import TakestepSlice, TakestepInterface
-from pygmin.utils import rotations
+from pele.utils import rotations
 
 __all__ = ["RandomDisplacement", "UniformDisplacement", 
            "RotationalDisplacement", "RandomCluster"]

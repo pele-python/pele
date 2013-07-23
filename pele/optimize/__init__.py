@@ -1,9 +1,9 @@
 """ 
-.. currentmodule:: pygmin.optimize
+.. currentmodule:: pele.optimize
 
-Optimizers (`pygmin.optimize`)
+Optimizers (`pele.optimize`)
 ================================
-This module contains all of the optimizers available in pygmin.  There are so 
+This module contains all of the optimizers available in pele.  There are so 
 many available for testing purposes and because sometimes different optimizers are
 more appropriate in different circumstances.  These optimizers are all local.  That
 is they find the nearest local minimum.  For global optimization see :ref:`global

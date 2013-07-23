@@ -1,12 +1,12 @@
 """
-.. currentmodule:: pygmin.systems
+.. currentmodule:: pele.systems
 
-System Class (`pygmin.systems`)
+System Class (`pele.systems`)
 ==================================
 
 The system class is a convenience wrapper for easily defining all the necessary
 information about a given system in one place.  It also makes using the tools in
-pygmin very simple.
+pele very simple.
 
 
 BaseSystem Class
@@ -70,7 +70,7 @@ Parameter Class
 ---------------
 The parameter class is what the system class uses for
 holding and maintaining global defaults for all the many adjustable
-parameters in pygmin.  
+parameters in pele.  
 
 If, in your new system class you want to change the default number of
 double ended connect iterations, you can do it by adding this line
@@ -134,7 +134,7 @@ parameter dictionary             passed as parameters to
 
 
 
-Note that the Parameters class doesn't hold the pygmin default values for
+Note that the Parameters class doesn't hold the pele default values for
 each algorithm.  These are defined in the algorithms themselves.  Instead,
 the Parameters class keeps track only of what has been overridden.
 
@@ -144,7 +144,7 @@ the Parameters class keeps track only of what has been overridden.
     BaseParameters
     Parameters
     
-For a translation between an OPTIM odata file and the pygmin Parameter tree, see
+For a translation between an OPTIM odata file and the pele Parameter tree, see
 :ref:`here <optim2params>`
 
 """

@@ -2,15 +2,15 @@ import numpy as np
 import copy
 import logging
 
-from pygmin.optimize import Result
-from pygmin.optimize import mylbfgs
-from pygmin.potentials.potential import potential as basepot
-from pygmin.transition_states import findLowestEigenVector
+from pele.optimize import Result
+from pele.optimize import mylbfgs
+from pele.potentials.potential import potential as basepot
+from pele.transition_states import findLowestEigenVector
 
 
 __all__ = ["findTransitionState", "FindTransitionState"]
 
-logger = logging.getLogger("pygmin.connect.findTS")
+logger = logging.getLogger("pele.connect.findTS")
 
 class TSRefinementPotential(basepot):
     """
@@ -95,6 +95,10 @@ class FindTransitionState(object):
         eigenvector
     demand_initial_negative_vec : bool
         if True, abort if the initial lowest eigenvalue is positive
+    negatives_before_check : int
+        if start with positive eigenvector and demand_initial_negative_vec is False,
+        the check to make sure that the eigenvalue is enabled after having had so 
+        many negative eigenvalues before
     nsteps_tangent1, nsteps_tangent2 : int
         the number of iterations for tangent space minimization before and after
         the eigenvalue is deemed to be converged
@@ -120,7 +124,7 @@ class FindTransitionState(object):
     --------
     findTransitionState : function wrapper for this class
     findLowestEigenVector : a core algorithm
-    pygmin.landscape.LocalConnect : the class which most often calls this routine
+    pele.landscape.LocalConnect : the class which most often calls this routine
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
                  nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
@@ -128,6 +132,7 @@ class FindTransitionState(object):
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.1,
                  demand_initial_negative_vec=True,
+                 negatives_before_check = 10,
                  nsteps_tangent1=10,
                  nsteps_tangent2=100,
                  verbosity=1,
@@ -150,7 +155,7 @@ class FindTransitionState(object):
         self.demand_initial_negative_vec = demand_initial_negative_vec    
         self.npositive_max = max(10, self.nsteps / 5)
         
-        self.rmsnorm = 1./np.sqrt(float(len(coords))/3.)
+        self.rmsnorm = 1./np.sqrt(float(len(coords)))
         self.oldeigenvec = None
 
         #set tolerance for the tangent space minimization.  
@@ -169,7 +174,7 @@ class FindTransitionState(object):
             self.maxstep_tangent = 0.1 #this should be determined in a better way
         
         if not self.tangent_space_quench_params.has_key("logger"):
-            self.tangent_space_quench_params["logger"] = logging.getLogger("pygmin.connect.findTS.tangent_space_quench")
+            self.tangent_space_quench_params["logger"] = logging.getLogger("pele.connect.findTS.tangent_space_quench")
 
 
         #set some parameters used in finding lowest eigenvector
@@ -230,14 +235,23 @@ class FindTransitionState(object):
         coords = np.copy(self.coords)
         res = Result() #  return object
         res.message = []
+        
+        # if starting with positive curvature, disable negative eigenvalue check
+        # this will be reenabled as soon as the eigenvector becomes negative
+        negative_before_check =  10
+
         for i in xrange(self.nsteps):
             
             # get the lowest eigenvalue and eigenvector
             self.overlap = self._getLowestEigenVector(coords, i)
             overlap = self.overlap
+            #print self.eigenval
+            
+            if self.eigenval < 0:
+                negative_before_check -= 1
             
             # check to make sure the eigenvector is ok
-            if i == 0 or self.eigenval <= 0:
+            if i == 0 or self.eigenval <= 0 or (negative_before_check > 0 and not self.demand_initial_negative_vec):
                 self._saveState(coords)
                 self.reduce_step = 0
             else:
@@ -452,7 +466,7 @@ def testgetcoordsLJ():
 
 
 def guesstsATLJ():
-    from pygmin.potentials.ATLJ import ATLJ
+    from pele.potentials.ATLJ import ATLJ
     pot = ATLJ(Z = 2.)
     a = 1.12 #2.**(1./6.)
     theta = 60./360*np.pi
@@ -462,13 +476,13 @@ def guesstsATLJ():
     coords2 = np.array([ 0., 0., 0., \
               -a, 0., 0., \
               a, 0., 0. ])
-    from pygmin.optimize import lbfgs_py as quench
-    from pygmin.transition_states import InterpolatedPath
+    from pele.optimize import lbfgs_py as quench
+    from pele.transition_states import InterpolatedPath
     ret1 = quench(coords1, pot.getEnergyGradient)
     ret2 = quench(coords2, pot.getEnergyGradient)
     coords1 = ret1[0]
     coords2 = ret2[0]
-    from pygmin.transition_states import NEB
+    from pele.transition_states import NEB
     neb = NEB(InterpolatedPath(coords1, coords2, 30), pot)
     neb.optimize()
     neb.MakeAllMaximaClimbing()
@@ -479,10 +493,10 @@ def guesstsATLJ():
     return pot, coords
 
 def guessts(coords1, coords2, pot):
-    from pygmin.optimize import lbfgs_py as quench
-#    from pygmin.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
-    from pygmin.transition_states import NEB
-    from pygmin.systems import LJCluster
+    from pele.optimize import lbfgs_py as quench
+#    from pele.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
+    from pele.transition_states import NEB
+    from pele.systems import LJCluster
     ret1 = quench(coords1, pot.getEnergyGradient)
     ret2 = quench(coords2, pot.getEnergyGradient)
     coords1 = ret1[0]
@@ -494,7 +508,7 @@ def guessts(coords1, coords2, pot):
     print "dist", dist
     print "energy coords1", pot.getEnergy(coords1)
     print "energy coords2", pot.getEnergy(coords2)
-    from pygmin.transition_states import InterpolatedPath
+    from pele.transition_states import InterpolatedPath
     neb = NEB(InterpolatedPath(coords1, coords2, 20), pot)
     #neb.optimize(quenchParams={"iprint" : 1})
     neb.optimize(iprint=-30, nsteps=100)
@@ -507,14 +521,14 @@ def guessts(coords1, coords2, pot):
 
 
 def guesstsLJ():
-    from pygmin.potentials.lj import LJ
+    from pele.potentials.lj import LJ
     pot = LJ()
     natoms = 9
     coords = np.random.uniform(-1,1,natoms*3)
-    from pygmin.basinhopping import BasinHopping
-    from pygmin.takestep.displace import RandomDisplacement
-    from pygmin.takestep.adaptive import AdaptiveStepsize
-    from pygmin.storage.savenlowest import SaveN
+    from pele.basinhopping import BasinHopping
+    from pele.takestep.displace import RandomDisplacement
+    from pele.takestep.adaptive import AdaptiveStepsize
+    from pele.storage.savenlowest import SaveN
     saveit = SaveN(10)
     takestep1 = RandomDisplacement()
     takestep = AdaptiveStepsize(takestep1, frequency=15)
@@ -540,7 +554,7 @@ def testgetcoordsATLJ():
 
 def testpot1():
     import itertools
-    from pygmin.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     pot, coords, coords1, coords2 = guesstsLJ()
     coordsinit = np.copy(coords)
     natoms = len(coords)/3
@@ -557,7 +571,7 @@ def testpot1():
 
     
     
-    from pygmin.printing.print_atoms_xyz import PrintEvent
+    from pele.printing.print_atoms_xyz import PrintEvent
 
     #print ret
     
@@ -595,7 +609,7 @@ def testpot1():
     
     if False:
         print "now try the same search with the dimer method"
-        from pygmin.NEB.dimer import findTransitionState as dimerfindTS
+        from pele.NEB.dimer import findTransitionState as dimerfindTS
         coords = coordsinit.copy()
         tau = np.random.uniform(-1,1,len(coords))
         tau /= np.linalg.norm(tau)

@@ -1,7 +1,7 @@
 """
 Create and print histograms.  Especially energy histograms.
 
-.. currentmodule:: pygmin.utils.histogram
+.. currentmodule:: pele.utils.histogram
 
 .. autosummary::
     :toctree: generated

@@ -1,14 +1,14 @@
 import time
 import numpy as np
-from pygmin.application import AppBasinHopping
-from pygmin.potentials import GMINPotential
+from pele.application import AppBasinHopping
+from pele.potentials import GMINPotential
 import oxdnagmin_ as GMIN
-from pygmin import takestep
+from pele import takestep
 from math import pi
-from pygmin.utils.rbtools import CoordsAdapter
-from pygmin.utils import rotations
-from pygmin.systems.oxdna import *
-from pygmin.optimize import mylbfgs 
+from pele.utils.rbtools import CoordsAdapter
+from pele.utils import rotations
+from pele.systems.oxdna import *
+from pele.optimize import mylbfgs 
 
 EDIFF=0.01
 t0=time.clock()

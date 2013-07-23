@@ -1,5 +1,5 @@
 import sys
-from pygmin.storage.database import Database
+from pele.storage.database import Database
 import os
 import getopt
 

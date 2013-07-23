@@ -1,5 +1,5 @@
 import numpy as np
-import pygmin.utils.rotations as rot
+import pele.utils.rotations as rot
 
 
 class RBTakeStep:

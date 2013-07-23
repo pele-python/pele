@@ -8,7 +8,7 @@ basin hopping run is a BasinHopping object. The step taking and various other cu
 routines (e.g. storage, acceptance criterion, ...) can be attached to this object to customize
 the behaviour of the basin hopping procedure.
 
-.. currentmodule:: pygmin.basinhopping
+.. currentmodule:: pele.basinhopping
 
 .. autosummary::
     :toctree: generated/
@@ -18,9 +18,9 @@ the behaviour of the basin hopping procedure.
 ::
 
   import numpy as np
-  import pygmin.potentials.lj as lj
-  import pygmin.basinhopping as bh
-  from pygmin.takestep import displace
+  import pele.potentials.lj as lj
+  import pele.basinhopping as bh
+  from pele.takestep import displace
 
   natoms = 12
  
@@ -34,7 +34,7 @@ the behaviour of the basin hopping procedure.
   opt.run(100)
 
 
-.. automodule:: pygmin.takestep
+.. automodule:: pele.takestep
 
 
 

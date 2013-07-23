@@ -1,14 +1,14 @@
 import numpy as np
-from pygmin.potentials import GMINPotential
+from pele.potentials import GMINPotential
 import gmin_ as GMIN
 from copy import deepcopy
 
-from pygmin.angleaxis import RigidFragment, RBTopology
-from pygmin.angleaxis import RBTopology, RBSystem
+from pele.angleaxis import RigidFragment, RBTopology
+from pele.angleaxis import RBTopology, RBSystem
 
 from math import sin, cos, pi
-from pygmin.optimize import fire
-from pygmin.angleaxis.aamindist import ExactMatchAACluster, MinPermDistAACluster 
+from pele.optimize import fire
+from pele.angleaxis.aamindist import ExactMatchAACluster, MinPermDistAACluster 
 
 def create_pap():
     pap = RigidFragment()
@@ -87,5 +87,5 @@ class PAPSystem(RBSystem):
         return self.potential
     
 if __name__ == "__main__":
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(PAPSystem, db="pap.sqlite")

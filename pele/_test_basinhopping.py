@@ -1,8 +1,8 @@
 import unittest
 from numpy import abs
 
-from pygmin.basinhopping import BasinHopping
-from pygmin.systems import LJCluster
+from pele.basinhopping import BasinHopping
+from pele.systems import LJCluster
 
 class TestBasinhopping(unittest.TestCase):
     def setUp(self):

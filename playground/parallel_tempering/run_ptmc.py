@@ -1,13 +1,13 @@
 import numpy as np
-import pygmin.potentials.lj as lj
+import pele.potentials.lj as lj
 #import potentials.ljcpp as lj
-from pygmin.mc import MonteCarlo 
-from pygmin.takestep import RandomDisplacement, AdaptiveStepsize
+from pele.mc import MonteCarlo 
+from pele.takestep import RandomDisplacement, AdaptiveStepsize
 from ptmc import PTMC, getTemps
 import copy
-from pygmin.utils.histogram import EnergyHistogram, PrintHistogram
-from pygmin.optimize import mylbfgs as quench
-from pygmin.accept_tests.spherical_container import SphericalContainer
+from pele.utils.histogram import EnergyHistogram, PrintHistogram
+from pele.optimize import mylbfgs as quench
+from pele.accept_tests.spherical_container import SphericalContainer
 
 def runptmc(nsteps_tot = 100000):
     natoms = 31
@@ -69,7 +69,7 @@ def runptmc(nsteps_tot = 100000):
     
     
     #attach an event to print xyz coords
-    from pygmin.printing.print_atoms_xyz import PrintEvent
+    from pele.printing.print_atoms_xyz import PrintEvent
     printxyzlist = []
     for n, rep in enumerate(replicas):
         outf = "dumpstruct.%d.xyz" % (n+1) 

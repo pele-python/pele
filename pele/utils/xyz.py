@@ -1,7 +1,7 @@
 """
 tools for reading from and writing to .xyz files
 
-.. currentmodule:: pygmin.utils.xyz
+.. currentmodule:: pele.utils.xyz
 
 .. autosummary::
     :toctree: generated/

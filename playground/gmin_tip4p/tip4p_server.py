@@ -1,7 +1,7 @@
 from random import choice
 from tip4p_system import TIP4PSystem
-from pygmin.storage import Minimum
-from pygmin.concurrent import RandomConnectServer
+from pele.storage import Minimum
+from pele.concurrent import RandomConnectServer
 
 server_name = "water8_connect"
 hostname="localhost"

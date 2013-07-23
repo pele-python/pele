@@ -6,8 +6,8 @@ from PyQt4.QtGui import QWidget, QVBoxLayout
 from matplotlib.figure import Figure
 import numpy as np
 
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from pygmin.storage import Database
+from pele.utils.disconnectivity_graph import DisconnectivityGraph
+from pele.storage import Database
 
 
 class MPLWidget(FigureCanvas):

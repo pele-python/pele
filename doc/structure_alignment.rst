@@ -1,3 +1,3 @@
 .. _structure_alignment:
 
-.. automodule:: pygmin.mindist
+.. automodule:: pele.mindist

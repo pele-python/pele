@@ -2,7 +2,7 @@
 an example of how to create a new potential.
 """
 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 
 class MyPot(BasePotential):
     """a Lennard Jones potential with altered expoenents
@@ -35,9 +35,9 @@ class MyPot(BasePotential):
                 grad[j,:] += g * dr/r
         return E, grad.reshape(-1)
 
-from pygmin.systems import BaseSystem
-from pygmin.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster
-from pygmin.transition_states import orthogopt
+from pele.systems import BaseSystem
+from pele.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster
+from pele.transition_states import orthogopt
 class MySystem(BaseSystem):
     def __init__(self, natoms):
         super(MySystem, self).__init__()
@@ -80,8 +80,8 @@ def run_double_ended_connect(sys, database):
         connect = sys.get_double_ended_connect(min1, min2, database)
         connect.connect()
 
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph
-from pygmin.landscape import TSGraph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph
+from pele.landscape import TSGraph
 import matplotlib.pyplot as plt
 
 def make_disconnectivity_graph(database):

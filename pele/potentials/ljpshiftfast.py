@@ -2,7 +2,7 @@ from math import *
 import numpy as np #to access np.exp() not built int exp
 import fortran.ljpshiftfort as ljpshiftfort
 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 
 __all__ = ["LJpshift"]
 
@@ -54,25 +54,23 @@ class LJpshift(BasePotential):
 
     def getEnergy(self, coords):
         #print "getting energy only"
-        V, E = ljpshiftfort.ljpshift(coords, False, False,\
-                self.boxl, self.boxl, self.boxl, \
-                self.AA.rcut, self.periodic, self.ntypeA, \
-                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig, \
-                [self.natoms])
+        V, E = ljpshiftfort.ljpshift(coords, False, False,
+                self.boxl, self.boxl, self.boxl,
+                self.AA.rcut, self.periodic, self.ntypeA,
+                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig)
         return E
 
     def getEnergyGradient(self, coords):
-        V, E = ljpshiftfort.ljpshift(coords, True, False,\
-                self.boxl, self.boxl, self.boxl, \
-                self.AA.rcut, self.periodic, self.ntypeA, \
-                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig, \
-                [self.natoms])
+        V, E = ljpshiftfort.ljpshift(coords, True, False,
+                self.boxl, self.boxl, self.boxl,
+                self.AA.rcut, self.periodic, self.ntypeA,
+                self.AB.eps, self.BB.eps, self.AB.sig, self.BB.sig)
         return E, V
 
 
 if __name__ == "__main__":
-    import pygmin.potentials.ljpshift as ljpshift
-    from pygmin.optimize import mylbfgs
+    import pele.potentials.ljpshift as ljpshift
+    from pele.optimize import mylbfgs
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench"
     fname = "/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords"
     #fname = "out.coords"

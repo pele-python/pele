@@ -4,11 +4,11 @@
 #takes 100 monte carlo steps as one basin hopping step
 ############################################################
 import numpy as np
-import pygmin.potentials.lj as lj
-import pygmin.basinhopping as bh
-from pygmin.takestep import displace
-from pygmin.takestep import group
-from pygmin.mc import MonteCarlo
+import pele.potentials.lj as lj
+import pele.basinhopping as bh
+from pele.takestep import displace
+from pele.takestep import group
+from pele.mc import MonteCarlo
 
 class TakeStepMonteCarlo:
     def __init__(self, pot, T = 10., nsteps = 100, stepsize=0.1):
@@ -46,7 +46,7 @@ opt.run(100)
 
 # some visualization
 try: 
-    import pygmin.utils.pymolwrapper as pym
+    import pele.utils.pymolwrapper as pym
     pym.start()
     pym.draw_spheres(opt.coords, "A", 1)
 except:

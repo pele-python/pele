@@ -1,9 +1,9 @@
 import scipy
 import numpy as np
-from pygmin.systems import LJCluster
-from pygmin.mindist import ExactMatchAtomicCluster
-from pygmin.mindist import PointGroupOrderCluster
-from pygmin.thermodynamics import normalmode_frequencies, logproduct_freq2
+from pele.systems import LJCluster
+from pele.mindist import ExactMatchAtomicCluster
+from pele.mindist import PointGroupOrderCluster
+from pele.thermodynamics import normalmode_frequencies, logproduct_freq2
     
 beta = 1.
 system = LJCluster(13)

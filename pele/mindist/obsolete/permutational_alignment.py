@@ -82,7 +82,7 @@ def findBestPermutationListMunkres( X1, X2, atomlist = None ):
     http://pypi.python.org/pypi/hungarian/
     When I first downloaded this package I got segfaults.  The problem for me
     was casing an integer pointer as (npy_intp *).  I may add the corrected 
-    version to pygmin at some point
+    version to pele at some point
     """
     nsites = len(X1) / 3
 
@@ -140,7 +140,7 @@ def findBestPermutationListHungarian( X1, X2, atomlist = None ):
     http://pypi.python.org/pypi/hungarian/
     When I first downloaded this package I got segfaults.  The problem for me
     was casing an integer pointer as (npy_intp *).  I may add the corrected 
-    version to pygmin at some point
+    version to pele at some point
     """
     nsites = len(X1) / 3
 
@@ -260,7 +260,7 @@ def findBestPermutation( X1, X2, permlist = None, user_algorithm=None):
     
     munkres : completely in python. scales roughly like natoms**3.  very slow for natoms > 10
     
-    in addition we have wrapped the OPTIM version for use in pygmin.  It uses the sparse 
+    in addition we have wrapped the OPTIM version for use in pele.  It uses the sparse 
     version of the Jonker-Volgenant algorithm.  Furthermore the cost matrix calculated in 
     a compiled language for an additional speed boost. It scales roughtly like natoms**2
 
@@ -288,9 +288,9 @@ class TestPermLJ(TestMinDist):
     test permutational optimization algorithms with the LJ potential
     """
     def setUp(self):
-        from pygmin.potentials import LJ
-        from pygmin import defaults
-        from pygmin.mindist import CoMToOrigin
+        from pele.potentials import LJ
+        from pele import defaults
+        from pele.mindist import CoMToOrigin
         
         self.natoms = 15
         self.pot = LJ(self.natoms)
@@ -303,7 +303,7 @@ class TestPermLJ(TestMinDist):
 
     def testLJ(self):
         """basic test to make sure everythings working right"""
-        import pygmin.defaults as defaults
+        import pele.defaults as defaults
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
@@ -315,7 +315,7 @@ class TestPermLJ(TestMinDist):
 
     def testLJ_OPTIM(self):
         """test findBestPermutationListOPTIM"""
-        import pygmin.defaults as defaults
+        import pele.defaults as defaults
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
@@ -327,7 +327,7 @@ class TestPermLJ(TestMinDist):
 
     def testLJ_munkres(self):
         """test findBestPermutationListOPTIM"""
-        import pygmin.defaults as defaults
+        import pele.defaults as defaults
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
@@ -339,7 +339,7 @@ class TestPermLJ(TestMinDist):
 
     def testLJ_hungarian(self):
         """test findBestPermutationListOPTIM"""
-        import pygmin.defaults as defaults
+        import pele.defaults as defaults
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
@@ -351,8 +351,8 @@ class TestPermLJ(TestMinDist):
 
     def test_multiple(self):
         """test hungarian, munkres, and OPTIM algorithms agains each other"""
-        import pygmin.defaults as defaults
-        from pygmin.mindist import CoMToOrigin
+        import pele.defaults as defaults
+        from pele.mindist import CoMToOrigin
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         X2 = CoMToOrigin(X2)
@@ -385,8 +385,8 @@ import unittest
 from testmindist import TestMinDist
 class TestMinDistUtils(TestMinDist):
     def setUp(self):
-        from pygmin.potentials.ljpshiftfast import LJpshift as BLJ
-        from pygmin import defaults
+        from pele.potentials.ljpshiftfast import LJpshift as BLJ
+        from pele import defaults
         
         self.natoms = 15
         self.ntypeA = int(self.natoms * .8)
@@ -399,7 +399,7 @@ class TestMinDistUtils(TestMinDist):
 
 
     def testBLJ(self):
-        import pygmin.defaults as defaults
+        import pele.defaults as defaults
         X1 = np.copy(self.X1)
         X2 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
@@ -436,8 +436,8 @@ class TestMinDistUtils(TestMinDist):
         self.assertAlmostEqual(distreturned, 0., 14, "didn't find isomer: dist = %g" % (distreturned) )
 
 def run_blj():
-    from pygmin.potentials.ljpshiftfast import LJpshift as BLJ
-    from pygmin import defaults
+    from pele.potentials.ljpshiftfast import LJpshift as BLJ
+    from pele import defaults
     
     natoms = 5000
     ntypeA = int(natoms * .8)

@@ -1,9 +1,9 @@
 import pickle
 import dmagmin_ as GMIN
-from pygmin.utils import crystals,dmagmin
-from pygmin.potentials import gminpotential 
+from pele.utils import crystals,dmagmin
+from pele.potentials import gminpotential 
 from optparse import OptionParser
-from pygmin.storage.database import Database
+from pele.storage.database import Database
 
 # add some program options
 parser = OptionParser(usage = "usage: %prog [options] database")

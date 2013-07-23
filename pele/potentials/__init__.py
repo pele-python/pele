@@ -1,10 +1,10 @@
 """
-.. currentmodule:: pygmin.potentials
+.. currentmodule:: pele.potentials
 
-Potentials (`pygmin.potentials`)
+Potentials (`pele.potentials`)
 =================================
 
-This module contains all the potentials that are included in pygmin.
+This module contains all the potentials that are included in pele.
 The list is not very long because we have made it very easy for you
 to write your own.
 
@@ -19,14 +19,14 @@ All potentials are derived from the base class
     BasePotential
 
 When creating your own potential, only member function which must absolutely
-be overloaded is getEnergy().  Many routines in pygmin 
+be overloaded is getEnergy().  Many routines in pele 
 also use gradient information, so it is highly recommended to also
 implement getEnergyGradient().  Otherwise the gradients will be calculated
 numerically and your system will run a lot slower.
 
-pygmin potentials
+pele potentials
 -----------------
-these are potentials that exist completely within the pygmin package
+these are potentials that exist completely within the pele package
 
 .. autosummary::
     :toctree: generated/

@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-import pygmin.exceptions as exc
-from pygmin.accept_tests.metropolis import \
+import pele.exceptions as exc
+from pele.accept_tests.metropolis import \
     Metropolis as metro, \
     MetropolisNonQuench as metro_nq
 

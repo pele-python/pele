@@ -1,15 +1,15 @@
 import numpy as np
-from pygmin import gui
+from pele import gui
 import oxdnagmin_ as GMIN
-import pygmin.gui.run as gr
-from pygmin.utils.rbtools import CoordsAdapter
-from pygmin import takestep
-from pygmin.utils import rotations
-from pygmin.potentials import GMINPotential
-from pygmin.transition_states import NEB, InterpolatedPath
-from pygmin.angleaxis import RBSystem
-from pygmin.angleaxis.molecules import create_water
-from pygmin.angleaxis import RBTopology, RigidFragment
+import pele.gui.run as gr
+from pele.utils.rbtools import CoordsAdapter
+from pele import takestep
+from pele.utils import rotations
+from pele.potentials import GMINPotential
+from pele.transition_states import NEB, InterpolatedPath
+from pele.angleaxis import RBSystem
+from pele.angleaxis.molecules import create_water
+from pele.angleaxis import RBTopology, RigidFragment
 from copy import deepcopy
 
 def create_base():
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     
     glutInit()
     app = QApplication(sys.argv)
-    from pygmin.gui.neb_explorer import NEBExplorer
+    from pele.gui.neb_explorer import NEBExplorer
     system = OXDNASystem()
     
     wnd = NEBExplorer(None, system, app)

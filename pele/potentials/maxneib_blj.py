@@ -3,10 +3,10 @@ lj potential with the number of near neighbors restricted.
 """
 import numpy as np
 
-from pygmin.potentials import BasePotential
-from pygmin.systems import BLJCluster
+from pele.potentials import BasePotential
+from pele.systems import BLJCluster
 import fortran.maxneib_blj as fortranpot
-from pygmin.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
+from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 
 __all__ = ["MaxNeibsBLJ", "MaxNeibsBLJSystem"]
 
@@ -170,7 +170,7 @@ class MaxNeibsBLJSystem(BLJCluster):
 
 
 def run_gui(system):
-    import pygmin.gui.run as gr
+    import pele.gui.run as gr
     gr.run_gui(system)
 
 

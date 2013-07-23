@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-from pygmin.takestep.generic import Takestep
+from pele.takestep.generic import Takestep
 
 __all__ = ["ParticleExchange"]
 

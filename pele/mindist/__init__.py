@@ -1,7 +1,7 @@
 """
-.. currentmodule:: pygmin.mindist
+.. currentmodule:: pele.mindist
 
-Structure Alignment (`pygmin.mindist`)
+Structure Alignment (`pele.mindist`)
 =========================================
 Tools for finding the best alignment between two structures.
 (a.k.a. minimum distance routines, mindist, minpermdist, etc.) When trying to

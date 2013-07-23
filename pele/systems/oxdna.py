@@ -1,8 +1,8 @@
 import numpy as np
-from pygmin import takestep
+from pele import takestep
 from math import pi
-from pygmin.utils.rbtools import CoordsAdapter
-from pygmin.utils import rotations
+from pele.utils.rbtools import CoordsAdapter
+from pele.utils import rotations
 
 # choose bond to displace with linear distribution from the sides of the chain.
 # The end bonds are always accepted, the middle one is accepted

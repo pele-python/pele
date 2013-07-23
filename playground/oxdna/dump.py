@@ -1,10 +1,10 @@
 import os
 from optparse import OptionParser
 import oxdnagmin_ as GMIN
-from pygmin.storage.database import Database
+from pele.storage.database import Database
 import numpy as np
-from pygmin.utils import rotations
-from pygmin.utils.rbtools import CoordsAdapter
+from pele.utils import rotations
+from pele.utils.rbtools import CoordsAdapter
     
 TO_PDB="python /home/vr274/opt/oxDNA/UTILS/traj2vis.py  pdb %s gmindnatop"
 

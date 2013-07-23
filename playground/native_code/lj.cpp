@@ -7,7 +7,7 @@ extern void ljenergy_gradient_(double *x, int *natoms, double *e, double *grad,
 		double *eps, double *sig, int *peridic, double *boxl);
 };
 
-namespace pygmin {
+namespace pele {
 
 double LJ::get_energy(Array &x)
 {

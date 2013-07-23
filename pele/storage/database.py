@@ -12,7 +12,7 @@ import sqlalchemy.orm
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, bindparam, case, insert
 from sqlalchemy.schema import Index
-from pygmin.utils.events import Signal
+from pele.utils.events import Signal
 import os
 
 __all__ = ["Minimum", "TransitionState", "Database", "Distance"]
@@ -291,7 +291,7 @@ class Database(object):
     Examples
     --------
     
-    >>> from pygmin.storage import Database
+    >>> from pele.storage import Database
     >>> db = Database(db="test.db")
     >>> for energy in np.random.random(10):
     >>>     a.addMinimum(energy, np.random.random(10))
@@ -332,7 +332,7 @@ class Database(object):
             conn.close()
             if _schema_version != schema:
                 raise IOError("database schema outdated, current (newest) version: "
-                              "%d (%d). Please use migrate_db.py in pygmin/scripts to update database"%(schema, _schema_version))
+                              "%d (%d). Please use migrate_db.py in pele/scripts to update database"%(schema, _schema_version))
             
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
@@ -372,7 +372,7 @@ class Database(object):
         candidates = self.session.query(Minimum).order_by(Minimum.energy.desc()).limit(1).all()
         return candidates[0]
     
-    def addMinimum(self, E, coords, commit=True, max_n_minima=-1):
+    def addMinimum(self, E, coords, commit=True, max_n_minima=-1, pgorder=None, fvib=None):
         """add a new minimum to database
         
         Parameters
@@ -418,7 +418,11 @@ class Database(object):
                 else:
                     #remove the minimum with the highest energy and continue
                     self.removeMinimum(mmax, commit=commit)
-                    
+        
+        if fvib is not None:
+            new.fvib = fvib
+        if pgorder is not None:
+            new.pgorder = pgorder
         self.session.add(new)
         if(commit):
             self.session.commit()
@@ -432,7 +436,8 @@ class Database(object):
         """return the minimum with a given id"""
         return self.session.query(Minimum).get(id)
         
-    def addTransitionState(self, energy, coords, min1, min2, commit=True, eigenval=None, eigenvec=None):
+    def addTransitionState(self, energy, coords, min1, min2, commit=True, 
+                              eigenval=None, eigenvec=None, pgorder=None, fvib=None):
         """Add transition state object
         
         Parameters
@@ -478,7 +483,11 @@ class Database(object):
         #if(m2.energy < m1.energy):
         #    m1,m2 = m2,m1
         new = TransitionState(energy, coords, m1, m2, eigenval=eigenval, eigenvec=eigenvec)
-            
+        
+        if fvib is not None:
+            new.fvib = fvib
+        if pgorder is not None:
+            new.pgorder = pgorder 
         self.session.add(new)
         if(commit):
             self.session.commit()
@@ -508,6 +517,10 @@ class Database(object):
             #self.lock.release()
             return m
         return None
+    
+    def getTransitionStateFromID(self, id_):
+        """return the transition state with id id_"""
+        return self.session.query(TransitionState).get(id_)
     
     def setDistance(self, dist, min1, min2):
         """set the distance between two minima
@@ -624,10 +637,13 @@ class Database(object):
         else:
             return self.session.query(Minimum).all()
     
-    def transition_states(self):
+    def transition_states(self, order_energy=False):
         '''return an iterator over all transition states in database
         '''
-        return self.session.query(TransitionState).all()
+        if order_energy:
+            return self.session.query(TransitionState).order_by(TransitionState.energy).all()
+        else:
+            return self.session.query(TransitionState).all()
     
     def minimum_adder(self, Ecut=None, max_n_minima=-1):
         '''wrapper class to add minima

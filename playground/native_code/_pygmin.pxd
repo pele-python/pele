@@ -5,17 +5,17 @@
 import numpy as np
 cimport numpy as np 
 
-cdef extern from "array.h" namespace "pygmin":
+cdef extern from "array.h" namespace "pele":
     cdef cppclass Array :
         Array(double*, int n) except +
 
-cdef extern from "potential.h" namespace "pygmin":
-    cdef cppclass  cPotential "pygmin::Potential":
+cdef extern from "potential.h" namespace "pele":
+    cdef cppclass  cPotential "pele::Potential":
         cPotential() except +
         double get_energy(Array &x)
         double get_energy_gradient(Array &x, Array &grad)
 
-    cdef cppclass  cPotentialFunction "pygmin::PotentialFunction":
+    cdef cppclass  cPotentialFunction "pele::PotentialFunction":
         cPotentialFunction(
         	double (*energy)(double *x, int n, void *userdata),
             double (*energy_gradient)(double *x, double *grad, int n, void *userdata),

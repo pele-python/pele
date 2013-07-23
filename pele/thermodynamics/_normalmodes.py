@@ -1,6 +1,6 @@
 import numpy as np
 
-from pygmin.utils.hessian import sort_eigs
+from pele.utils.hessian import sort_eigs
 
 __all__ = ["normalmode_frequencies", "normalmodes", "logproduct_freq2"]
 
@@ -93,24 +93,32 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
     -------
     tuple of number of considered frequencies and log product of frequencies
     '''
-    inegative = 0
-    izero = 0
+    negative_eigs = []
+    zero_eigs = []
     lnf = 0.
     n = 0
     for f in freqs:
         if np.abs(f) < eps:
-            izero += 1
+            zero_eigs.append(f)
             continue
         if f < 0.:
-            inegative += 1
+            negative_eigs.append(f)
             continue
         lnf += np.log(f)
         n+=1
+
+    izero = len(zero_eigs)
+    inegative = len(negative_eigs)
         
     if nzero != izero:
         raise ValueError("the number of zero eigenvalues (%d) differs from the expected value (%d)" % (izero, nzero))
     if nnegative != inegative:
-        raise ValueError("the number of negative eigenvalues differs from the expected "
-                         "number (not a minimum / transition state?)")
+        if nnegative > 0 and inegative > nnegative:
+            print "warning: the number of negative eigenvalues (%d) is greater than the expected " \
+                         "number (%d).  Is this a higher order saddle point? ignoring" % (inegative, nnegative)
+            lnf = None
+        else:
+            raise ValueError("the number of negative eigenvalues (%d) differs from the expected "
+                         "number (%d) (not a minimum / transition state?)" % (inegative, nnegative))
 
     return n, lnf

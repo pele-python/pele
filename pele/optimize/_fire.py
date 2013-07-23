@@ -8,11 +8,11 @@ import numpy as np
 import math
 import logging
 
-from pygmin.optimize import Result
+from pele.optimize import Result
 
 __all__ = ["Fire"]
 
-_logger = logging.getLogger("pygmin.optimize")
+_logger = logging.getLogger("pele.optimize")
 
 class Fire(object):
     '''
@@ -213,7 +213,7 @@ class Fire(object):
 
 
 if __name__ == "__main__":
-    import pygmin.potentials.lj as lj
+    import pele.potentials.lj as lj
     pot = lj.LJ()
     coords = 10.*np.random.random(300)
     opt = Fire(coords, pot.getEnergyGradient, dtmax=0.1, dt=0.01, maxstep=0.01, iprint=200)

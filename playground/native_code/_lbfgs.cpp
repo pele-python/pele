@@ -363,7 +363,7 @@ static const char *__pyx_f[] = {
   "_lbfgs.pyx",
   "numpy.pxd",
   "type.pxd",
-  "_pygmin.pxd",
+  "_pele.pxd",
 };
 #define IS_UNSIGNED(type) (((type) -1) > 0)
 struct __Pyx_StructField_;
@@ -611,7 +611,7 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 
 /*--- Type declarations ---*/
-struct __pyx_obj_10playground_11native_code_7_pygmin_Potential;
+struct __pyx_obj_10playground_11native_code_7_pele_Potential;
 struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS;
 
 /* "numpy.pxd":762
@@ -650,16 +650,16 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
 
-/* "_pygmin.pxd":26
+/* "_pele.pxd":26
  *     cdef void _call_pot "call_pot" (cPotential *pot, Array &x, Array &grad, int n)
  * 
  * cdef class Potential:             # <<<<<<<<<<<<<<
  *     cdef cPotential *thisptr      # hold a C++ instance which we're wrapping
  * 
  */
-struct __pyx_obj_10playground_11native_code_7_pygmin_Potential {
+struct __pyx_obj_10playground_11native_code_7_pele_Potential {
   PyObject_HEAD
-  pygmin::Potential *thisptr;
+  pele::Potential *thisptr;
 };
 
 
@@ -668,12 +668,12 @@ struct __pyx_obj_10playground_11native_code_7_pygmin_Potential {
  * # we just need to set a different c++ class instance
  * cdef class LBFGS:             # <<<<<<<<<<<<<<
  *     cdef cLBFGS *thisptr
- *     cdef _pygmin.Potential pot
+ *     cdef _pele.Potential pot
  */
 struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS {
   PyObject_HEAD
-  pygmin::LBFGS *thisptr;
-  struct __pyx_obj_10playground_11native_code_7_pygmin_Potential *pot;
+  pele::LBFGS *thisptr;
+  struct __pyx_obj_10playground_11native_code_7_pele_Potential *pot;
 };
 
 #ifndef CYTHON_REFNANNY
@@ -1024,8 +1024,8 @@ static PyTypeObject *__pyx_ptype_5numpy_ndarray = 0;
 static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, char *, char *, int *); /*proto*/
 
-/* Module declarations from 'playground.native_code._pygmin' */
-static PyTypeObject *__pyx_ptype_10playground_11native_code_7_pygmin_Potential = 0;
+/* Module declarations from 'playground.native_code._pele' */
+static PyTypeObject *__pyx_ptype_10playground_11native_code_7_pele_Potential = 0;
 
 /* Module declarations from 'playground.native_code._lbfgs' */
 static PyTypeObject *__pyx_ptype_10playground_11native_code_6_lbfgs_LBFGS = 0;
@@ -1037,7 +1037,7 @@ int __pyx_module_is_main_playground__native_code___lbfgs = 0;
 static PyObject *__pyx_builtin_RuntimeError;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_range;
-static int __pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS___cinit__(struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *__pyx_v_self, struct __pyx_obj_10playground_11native_code_7_pygmin_Potential *__pyx_v_pot); /* proto */
+static int __pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS___cinit__(struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *__pyx_v_self, struct __pyx_obj_10playground_11native_code_7_pele_Potential *__pyx_v_pot); /* proto */
 static void __pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS_2__dealloc__(CYTHON_UNUSED struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS_4run(struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *__pyx_v_self, PyArrayObject *__pyx_v_x); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
@@ -1075,7 +1075,7 @@ static char __pyx_k__sqrt[] = "sqrt";
 static char __pyx_k__numpy[] = "numpy";
 static char __pyx_k__range[] = "range";
 static char __pyx_k__linalg[] = "linalg";
-static char __pyx_k___pygmin[] = "_pygmin";
+static char __pyx_k___pele[] = "_pele";
 static char __pyx_k____main__[] = "__main__";
 static char __pyx_k____test__[] = "__test__";
 static char __pyx_k__ValueError[] = "ValueError";
@@ -1093,7 +1093,7 @@ static PyObject *__pyx_n_s__RuntimeError;
 static PyObject *__pyx_n_s__ValueError;
 static PyObject *__pyx_n_s____main__;
 static PyObject *__pyx_n_s____test__;
-static PyObject *__pyx_n_s___pygmin;
+static PyObject *__pyx_n_s___pele;
 static PyObject *__pyx_n_s__get_energy_gradient;
 static PyObject *__pyx_n_s__linalg;
 static PyObject *__pyx_n_s__norm;
@@ -1115,7 +1115,7 @@ static PyObject *__pyx_k_tuple_13;
 /* Python wrapper */
 static int __pyx_pw_10playground_11native_code_6_lbfgs_5LBFGS_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static int __pyx_pw_10playground_11native_code_6_lbfgs_5LBFGS_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  struct __pyx_obj_10playground_11native_code_7_pygmin_Potential *__pyx_v_pot = 0;
+  struct __pyx_obj_10playground_11native_code_7_pele_Potential *__pyx_v_pot = 0;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__ (wrapper)", 0);
@@ -1144,7 +1144,7 @@ static int __pyx_pw_10playground_11native_code_6_lbfgs_5LBFGS_1__cinit__(PyObjec
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
     }
-    __pyx_v_pot = ((struct __pyx_obj_10playground_11native_code_7_pygmin_Potential *)values[0]);
+    __pyx_v_pot = ((struct __pyx_obj_10playground_11native_code_7_pele_Potential *)values[0]);
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
@@ -1154,7 +1154,7 @@ static int __pyx_pw_10playground_11native_code_6_lbfgs_5LBFGS_1__cinit__(PyObjec
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pot), __pyx_ptype_10playground_11native_code_7_pygmin_Potential, 1, "pot", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pot), __pyx_ptype_10playground_11native_code_7_pele_Potential, 1, "pot", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS___cinit__(((struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *)__pyx_v_self), __pyx_v_pot);
   goto __pyx_L0;
   __pyx_L1_error:;
@@ -1165,17 +1165,17 @@ static int __pyx_pw_10playground_11native_code_6_lbfgs_5LBFGS_1__cinit__(PyObjec
 }
 
 /* "playground/native_code/_lbfgs.pyx":22
- *     cdef _pygmin.Potential pot
+ *     cdef _pele.Potential pot
  * 
- *     def __cinit__(self, _pygmin.Potential pot):             # <<<<<<<<<<<<<<
+ *     def __cinit__(self, _pele.Potential pot):             # <<<<<<<<<<<<<<
  *         self.thisptr = <cLBFGS*>new cLBFGS(pot.thisptr)
  *         self.pot = pot
  */
 
-static int __pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS___cinit__(struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *__pyx_v_self, struct __pyx_obj_10playground_11native_code_7_pygmin_Potential *__pyx_v_pot) {
+static int __pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS___cinit__(struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *__pyx_v_self, struct __pyx_obj_10playground_11native_code_7_pele_Potential *__pyx_v_pot) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
-  pygmin::LBFGS *__pyx_t_1;
+  pele::LBFGS *__pyx_t_1;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -1183,21 +1183,21 @@ static int __pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS___cinit__(struct _
 
   /* "playground/native_code/_lbfgs.pyx":23
  * 
- *     def __cinit__(self, _pygmin.Potential pot):
+ *     def __cinit__(self, _pele.Potential pot):
  *         self.thisptr = <cLBFGS*>new cLBFGS(pot.thisptr)             # <<<<<<<<<<<<<<
  *         self.pot = pot
  * 
  */
   try {
-    __pyx_t_1 = new pygmin::LBFGS(__pyx_v_pot->thisptr);
+    __pyx_t_1 = new pele::LBFGS(__pyx_v_pot->thisptr);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_self->thisptr = ((pygmin::LBFGS *)__pyx_t_1);
+  __pyx_v_self->thisptr = ((pele::LBFGS *)__pyx_t_1);
 
   /* "playground/native_code/_lbfgs.pyx":24
- *     def __cinit__(self, _pygmin.Potential pot):
+ *     def __cinit__(self, _pele.Potential pot):
  *         self.thisptr = <cLBFGS*>new cLBFGS(pot.thisptr)
  *         self.pot = pot             # <<<<<<<<<<<<<<
  * 
@@ -1272,7 +1272,7 @@ static PyObject *__pyx_pw_10playground_11native_code_6_lbfgs_5LBFGS_5run(PyObjec
  *         del self.thisptr
  * 
  *     def run(self, np.ndarray[double, ndim=1, mode="c"] x not None):             # <<<<<<<<<<<<<<
- *         ret = self.thisptr.run(_pygmin.Array(<double*> x.data, x.size))
+ *         ret = self.thisptr.run(_pele.Array(<double*> x.data, x.size))
  *         if ret != 0 and ret != -1001: # ignore rounding errors
  */
 
@@ -1286,7 +1286,7 @@ static PyObject *__pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS_4run(struct 
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   int __pyx_t_2;
-  pygmin::Array __pyx_t_3;
+  pele::Array __pyx_t_3;
   int __pyx_t_4;
   PyObject *__pyx_t_5 = NULL;
   PyObject *__pyx_t_6 = NULL;
@@ -1309,7 +1309,7 @@ static PyObject *__pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS_4run(struct 
   /* "playground/native_code/_lbfgs.pyx":30
  * 
  *     def run(self, np.ndarray[double, ndim=1, mode="c"] x not None):
- *         ret = self.thisptr.run(_pygmin.Array(<double*> x.data, x.size))             # <<<<<<<<<<<<<<
+ *         ret = self.thisptr.run(_pele.Array(<double*> x.data, x.size))             # <<<<<<<<<<<<<<
  *         if ret != 0 and ret != -1001: # ignore rounding errors
  *             raise RuntimeError("lbfgs failed with error code %d:"%self.thisptr.error_code(), self.thisptr.error_string())
  */
@@ -1318,7 +1318,7 @@ static PyObject *__pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS_4run(struct 
   __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   try {
-    __pyx_t_3 = pygmin::Array(((double *)__pyx_v_x->data), __pyx_t_2);
+    __pyx_t_3 = pele::Array(((double *)__pyx_v_x->data), __pyx_t_2);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1327,7 +1327,7 @@ static PyObject *__pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS_4run(struct 
 
   /* "playground/native_code/_lbfgs.pyx":31
  *     def run(self, np.ndarray[double, ndim=1, mode="c"] x not None):
- *         ret = self.thisptr.run(_pygmin.Array(<double*> x.data, x.size))
+ *         ret = self.thisptr.run(_pele.Array(<double*> x.data, x.size))
  *         if ret != 0 and ret != -1001: # ignore rounding errors             # <<<<<<<<<<<<<<
  *             raise RuntimeError("lbfgs failed with error code %d:"%self.thisptr.error_code(), self.thisptr.error_string())
  *         e, g = self.pot.get_energy_gradient(x)
@@ -1344,7 +1344,7 @@ static PyObject *__pyx_pf_10playground_11native_code_6_lbfgs_5LBFGS_4run(struct 
   if (__pyx_t_4) {
 
     /* "playground/native_code/_lbfgs.pyx":32
- *         ret = self.thisptr.run(_pygmin.Array(<double*> x.data, x.size))
+ *         ret = self.thisptr.run(_pele.Array(<double*> x.data, x.size))
  *         if ret != 0 and ret != -1001: # ignore rounding errors
  *             raise RuntimeError("lbfgs failed with error code %d:"%self.thisptr.error_code(), self.thisptr.error_string())             # <<<<<<<<<<<<<<
  *         e, g = self.pot.get_energy_gradient(x)
@@ -3515,7 +3515,7 @@ static PyObject *__pyx_tp_new_10playground_11native_code_6_lbfgs_LBFGS(PyTypeObj
   PyObject *o = (*t->tp_alloc)(t, 0);
   if (!o) return 0;
   p = ((struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *)o);
-  p->pot = ((struct __pyx_obj_10playground_11native_code_7_pygmin_Potential *)Py_None); Py_INCREF(Py_None);
+  p->pot = ((struct __pyx_obj_10playground_11native_code_7_pele_Potential *)Py_None); Py_INCREF(Py_None);
   if (__pyx_pw_10playground_11native_code_6_lbfgs_5LBFGS_1__cinit__(o, a, k) < 0) {
     Py_DECREF(o); o = 0;
   }
@@ -3552,7 +3552,7 @@ static int __pyx_tp_clear_10playground_11native_code_6_lbfgs_LBFGS(PyObject *o) 
   struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *p = (struct __pyx_obj_10playground_11native_code_6_lbfgs_LBFGS *)o;
   PyObject* tmp;
   tmp = ((PyObject*)p->pot);
-  p->pot = ((struct __pyx_obj_10playground_11native_code_7_pygmin_Potential *)Py_None); Py_INCREF(Py_None);
+  p->pot = ((struct __pyx_obj_10playground_11native_code_7_pele_Potential *)Py_None); Py_INCREF(Py_None);
   Py_XDECREF(tmp);
   return 0;
 }
@@ -3751,7 +3751,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s__ValueError, __pyx_k__ValueError, sizeof(__pyx_k__ValueError), 0, 0, 1, 1},
   {&__pyx_n_s____main__, __pyx_k____main__, sizeof(__pyx_k____main__), 0, 0, 1, 1},
   {&__pyx_n_s____test__, __pyx_k____test__, sizeof(__pyx_k____test__), 0, 0, 1, 1},
-  {&__pyx_n_s___pygmin, __pyx_k___pygmin, sizeof(__pyx_k___pygmin), 0, 0, 1, 1},
+  {&__pyx_n_s___pele, __pyx_k___pele, sizeof(__pyx_k___pele), 0, 0, 1, 1},
   {&__pyx_n_s__get_energy_gradient, __pyx_k__get_energy_gradient, sizeof(__pyx_k__get_energy_gradient), 0, 0, 1, 1},
   {&__pyx_n_s__linalg, __pyx_k__linalg, sizeof(__pyx_k__linalg), 0, 0, 1, 1},
   {&__pyx_n_s__norm, __pyx_k__norm, sizeof(__pyx_k__norm), 0, 0, 1, 1},
@@ -3946,7 +3946,7 @@ PyMODINIT_FUNC PyInit__lbfgs(void)
   __pyx_ptype_5numpy_broadcast = __Pyx_ImportType("numpy", "broadcast", sizeof(PyArrayMultiIterObject), 0); if (unlikely(!__pyx_ptype_5numpy_broadcast)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 169; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5numpy_ndarray = __Pyx_ImportType("numpy", "ndarray", sizeof(PyArrayObject), 0); if (unlikely(!__pyx_ptype_5numpy_ndarray)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5numpy_ufunc = __Pyx_ImportType("numpy", "ufunc", sizeof(PyUFuncObject), 0); if (unlikely(!__pyx_ptype_5numpy_ufunc)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 861; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_10playground_11native_code_7_pygmin_Potential = __Pyx_ImportType("playground.native_code._pygmin", "Potential", sizeof(struct __pyx_obj_10playground_11native_code_7_pygmin_Potential), 1); if (unlikely(!__pyx_ptype_10playground_11native_code_7_pygmin_Potential)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_10playground_11native_code_7_pele_Potential = __Pyx_ImportType("playground.native_code._pele", "Potential", sizeof(struct __pyx_obj_10playground_11native_code_7_pele_Potential), 1); if (unlikely(!__pyx_ptype_10playground_11native_code_7_pele_Potential)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   /*--- Variable import code ---*/
   /*--- Function import code ---*/
   /*--- Execution code ---*/
@@ -3954,7 +3954,7 @@ PyMODINIT_FUNC PyInit__lbfgs(void)
   /* "playground/native_code/_lbfgs.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
- * from playground.native_code import _pygmin
+ * from playground.native_code import _pele
  */
   __pyx_t_1 = __Pyx_Import(((PyObject *)__pyx_n_s__numpy), 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -3964,32 +3964,32 @@ PyMODINIT_FUNC PyInit__lbfgs(void)
   /* "playground/native_code/_lbfgs.pyx":3
  * import numpy as np
  * cimport numpy as np
- * from playground.native_code import _pygmin             # <<<<<<<<<<<<<<
- * cimport _pygmin
+ * from playground.native_code import _pele             # <<<<<<<<<<<<<<
+ * cimport _pele
  * 
  */
   __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 3; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_INCREF(((PyObject *)__pyx_n_s___pygmin));
-  PyList_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_n_s___pygmin));
-  __Pyx_GIVEREF(((PyObject *)__pyx_n_s___pygmin));
+  __Pyx_INCREF(((PyObject *)__pyx_n_s___pele));
+  PyList_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_n_s___pele));
+  __Pyx_GIVEREF(((PyObject *)__pyx_n_s___pele));
   __pyx_t_2 = __Pyx_Import(((PyObject *)__pyx_n_s_14), ((PyObject *)__pyx_t_1), -1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 3; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  __pyx_t_1 = PyObject_GetAttr(__pyx_t_2, __pyx_n_s___pygmin);
+  __pyx_t_1 = PyObject_GetAttr(__pyx_t_2, __pyx_n_s___pele);
   if (__pyx_t_1 == NULL) {
-    if (PyErr_ExceptionMatches(PyExc_AttributeError)) __Pyx_RaiseImportError(__pyx_n_s___pygmin);
+    if (PyErr_ExceptionMatches(PyExc_AttributeError)) __Pyx_RaiseImportError(__pyx_n_s___pele);
     if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 3; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyObject_SetAttr(__pyx_m, __pyx_n_s___pygmin, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 3; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttr(__pyx_m, __pyx_n_s___pele, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 3; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "playground/native_code/_lbfgs.pyx":1
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
- * from playground.native_code import _pygmin
+ * from playground.native_code import _pele
  */
   __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(((PyObject *)__pyx_t_2));

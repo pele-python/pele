@@ -1,4 +1,4 @@
-from pygmin.takestep import TakestepInterface
+from pele.takestep import TakestepInterface
 import playground.group_rotation.transforms as transforms
 import numpy as np
 

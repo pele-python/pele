@@ -1,15 +1,15 @@
 import numpy as np
 import logging
 
-from pygmin.optimize import mylbfgs
+from pele.optimize import mylbfgs
 
 __all__ = ["minima_from_ts"]
 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 
 def determinePushoff(
             pot, coords, vec, gdiff=100., stepmin = 1e-5, stepmax = 0.2, verbose=False,
-            grad = None):
+            grad = None, rms_min=0.):
     """
     determine a good stepsize to step off a transition state
     
@@ -26,11 +26,12 @@ def determinePushoff(
     while True:
         coords1 = step * vec + coords
         e, grad = pot.getEnergyGradient(coords1)
+        rms = np.linalg.norm(grad) / np.sqrt(grad.size)
         gpar = np.dot(grad, vec) / vnorm
         finalstep = step
         if verbose:
             logger.debug("gpar %s %s %s %s", gpar, gpar0, abs((gpar-gpar0) / gpar0), step)
-        if abs((gpar-gpar0) / gpar0) > gdiff:
+        if abs((gpar-gpar0) / gpar0) > gdiff and rms > rms_min:
             break
         if step > stepmax:
             logger.debug("warning: taking maximum step size from transition state %s", step)
@@ -40,8 +41,7 @@ def determinePushoff(
         logger.debug( "using pushoff of %s", finalstep)
     return coords1
 
-def minima_from_ts(pot, xt, n=None,
-                   quenchRoutine=None, quenchParams=dict(), **kwargs):
+def minima_from_ts(pot, xt, n=None, quench=None, **kwargs):
     """
     step off either side of a transition state and quench to find the minima
     
@@ -72,13 +72,8 @@ def minima_from_ts(pot, xt, n=None,
         # TODO: replace by better algorithm with uniform sampling
         n = np.random.random(xt.shape)-0.5
     
-    quenchParams = dict(quenchParams.items())
-    if quenchRoutine is None:
-        quenchRoutine = mylbfgs
-        #js850> this should be done more carefully
-        quenchParams = dict(quenchParams.items() +
-                                [("M",1)])
-        
+    if quench is None:
+        quench = lambda coords : mylbfgs(coords, pot)        
     
     #x1 = xt - displace*n
     x1 = determinePushoff(pot, xt, n, **kwargs)
@@ -87,12 +82,9 @@ def minima_from_ts(pot, xt, n=None,
     #e1,g1 = getEnergyGradient(x1)
     #e2,g2 = getEnergyGradient(x2)
     #print np.dot(g1,g2)
-    minimum1 = quenchRoutine(x1, pot, **quenchParams)
-    minimum2 = quenchRoutine(x2, pot, **quenchParams)
+    minimum1 = quench(x1)
+    minimum2 = quench(x2)
     return minimum1, minimum2
-
-    
-    
 
 if __name__ == '__main__':
     pass

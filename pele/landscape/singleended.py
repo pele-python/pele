@@ -8,8 +8,8 @@ __all__ = ["find_escape_paths"]
 
 import numpy as np
 
-from pygmin.transition_states import DimerSearch, minima_from_ts, zeroEV_cluster
-from pygmin.optimize import fire
+from pele.transition_states import DimerSearch, minima_from_ts, zeroEV_cluster
+from pele.optimize import fire
 
 def _uphill_search(x0, search, push, push_minrms):
     ev = search.tau
@@ -57,7 +57,7 @@ def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minr
         
         
 if __name__ == "__main__":
-    from pygmin.landscape import TSGraph
+    from pele.landscape import TSGraph
     from connect_min import getSetOfMinLJ
     
     natoms = 8

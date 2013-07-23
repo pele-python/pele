@@ -1,13 +1,13 @@
 import unittest
 import numpy as np
 from testmindist import TestMinDist
-from pygmin.mindist.minpermdist_stochastic import MinPermDistCluster
-from pygmin.mindist._minpermdist_policies import MeasureAtomicCluster
-from pygmin.optimize import mylbfgs
+from pele.mindist.minpermdist_stochastic import MinPermDistCluster
+from pele.mindist._minpermdist_policies import MeasureAtomicCluster
+from pele.optimize import mylbfgs
 
 class TestMinPermDistStochastic_BLJ(TestMinDist):
     def setUp(self):
-        from pygmin.potentials.ljpshiftfast import LJpshift as BLJ
+        from pele.potentials.ljpshiftfast import LJpshift as BLJ
         
         self.natoms = 25
         self.ntypeA = int(self.natoms * .8)
@@ -38,7 +38,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         
         test case where X2 is an isomer of X1.
         """
-        import pygmin.utils.rotations as rot
+        import pele.utils.rotations as rot
         X1i = np.copy(self.X1)
         X1 = np.copy(self.X1)        
         X2 = np.copy(X1)
@@ -52,7 +52,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         
         #permute X2
         import random, copy
-        from pygmin.mindist.permutational_alignment import permuteArray
+        from pele.mindist.permutational_alignment import permuteArray
         for atomlist in self.permlist:
             perm = copy.copy(atomlist)
             random.shuffle( perm )

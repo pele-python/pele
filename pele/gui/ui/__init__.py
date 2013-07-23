@@ -1,1 +1,1 @@
-from pygmin.gui.show3d import Show3D
+from pele.gui.show3d import Show3D

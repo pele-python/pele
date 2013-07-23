@@ -176,7 +176,7 @@ def create_random_database(nmin=20, nts=None, natoms=2):
     """
     create a database for test purposes
     """
-    from pygmin.storage import Database
+    from pele.storage import Database
     import numpy as np
     
     if nts is None:

@@ -8,8 +8,8 @@ basinhopping"
 import numpy as np
 import logging
 
-from pygmin.systems import LJCluster
-from pygmin.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
+from pele.systems import LJCluster
+from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
 
 
 natoms = 13
@@ -29,7 +29,7 @@ print "starting with a database of", len(db.minima()), "minima"
 
 # turn of status printing for the connect run
 # first use the logging module to turn off the status messages 
-logger = logging.getLogger("pygmin.connect")
+logger = logging.getLogger("pele.connect")
 logger.setLevel("WARNING")
 
 

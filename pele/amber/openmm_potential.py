@@ -9,7 +9,7 @@ Requires:
 
 
 # TODO: if BasePotential is imported after simtk imports, it gives a seg fault!! 
-from pygmin.potentials import BasePotential
+from pele.potentials import BasePotential
 
 from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
 from simtk.openmm import * 

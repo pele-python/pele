@@ -1,7 +1,7 @@
 import numpy as np
 
 import fortran.ljcut as _ljcut
-from pygmin.potentials import BasePotentialAtomistic
+from pele.potentials import BasePotentialAtomistic
 
 __all__ = ["LJCut"]
 
@@ -29,41 +29,38 @@ class LJCut(BasePotentialAtomistic):
                 print ""
         
     def getEnergy(self, coords):
-        natoms = len(coords) / 3
         E = _ljcut.ljenergy(
                 coords, self.eps, self.sig, self.periodic, self.boxl,
-                self.rcut, [natoms])
+                self.rcut)
         return E
 
     def getEnergyGradient(self, coords):
-        natoms = len(coords) / 3
         E, grad = _ljcut.ljenergy_gradient(
                 coords, self.eps, self.sig, self.periodic, self.boxl,
-                self.rcut, [natoms])
+                self.rcut)
         return E, grad 
     
     def getEnergyList(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
         #ilist += 1 #fortran indexing
-        nlist = len(ilist)
-        natoms = len(coords) / 3
         E = _ljcut.energy_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
-                self.boxl, self.rcut, [natoms, nlist])
+                self.boxl, self.rcut)
         #ilist -= 1
         return E
     
     def getEnergyGradientList(self, coords, ilist):
         #ilist = ilist_i.getNPilist()
         #ilist += 1 #fortran indexing
-        nlist = len(ilist)
-        natoms = len(coords) / 3
         E, grad = _ljcut.energy_gradient_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
-                self.boxl, self.rcut, [natoms, nlist])
+                self.boxl, self.rcut)
         #ilist -= 1
         return E, grad 
 
+#
+# only testing stuff below here
+#
 
 import unittest
 class LJCutTest(unittest.TestCase):
@@ -95,6 +92,16 @@ class LJCutTest(unittest.TestCase):
         gdiffmax = np.max(np.abs( g-self.grad )) / np.max(np.abs(self.grad))
         self.assertLess(gdiffmax, 1e-7)
 
+def test():
+    natoms = 10
+    coords = np.random.uniform(-1,1.,3*natoms) * natoms**(-1./3)
+    pot = LJCut()
+    E = pot.getEnergy(coords)
+    Egrad, grad = pot.getEnergyGradient(coords)
+    print E, Egrad
+    print grad
+
+
 if __name__ == "__main__":
     unittest.main()
-
+#    test()

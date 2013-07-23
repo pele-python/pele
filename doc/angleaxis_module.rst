@@ -1,3 +1,3 @@
 .. _angleaxis_module:
 
-.. automodule:: pygmin.angleaxis
+.. automodule:: pele.angleaxis

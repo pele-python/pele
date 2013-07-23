@@ -1,5 +1,5 @@
 """
-.. currentmodule:: pygmin.amber
+.. currentmodule:: pele.amber
 
 Module containing files for simulating bio-molecules using AMBER force-field
 

@@ -1,10 +1,10 @@
 import ambgmin_ as GMIN
-import pygmin.potentials.gminpotential as gminpot
-from pygmin.optimize import fire 
+import pele.potentials.gminpotential as gminpot
+from pele.optimize import fire 
 
 import numpy as np
 from copy import copy
-from pygmin.potentials.potential import potential as BasePotential
+from pele.potentials.potential import potential as BasePotential
 
 from simtk.openmm.app import * 
 from simtk.openmm import * 
