@@ -3,7 +3,7 @@ import exceptions as ex
 import itertools
 import re
 import playground.group_rotation.amino_acids as amino
-import pygmin.utils.elements as elem
+import pele.utils.elements as elem
 
 class Atom(object):
     """ Atom defined from the AMBER topology file. """
