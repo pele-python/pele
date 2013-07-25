@@ -50,7 +50,8 @@ class AMBERSystem(BaseSystem):
         
         super(AMBERSystem, self).__init__()
         
-        if os.path.exists('min.in') and os.path.exists('data') :
+#        if os.path.exists('min.in') and os.path.exists('data') :
+        if True:
 #            print '\nFiles min.in and data found. trying to import ambgmin_ now ..' 
             try:
                 import ambgmin_
@@ -63,8 +64,11 @@ class AMBERSystem(BaseSystem):
                 self.potential    = openmm_potential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
         else:
             # using OpenMM because min.in and data files not found 
-            print '\namberSystem> Using OpenMM amber potential ..'
+            print '\namberSystem> Using OpenMM amber potential because min.in and data files not found..'
             self.potential    = openmm_potential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
+        
+        self.prmtop_name = prmtopFname
+        self.inpcrd_name = inpcrdFname
         
         # check for openmm version
         # data structures changed between openmm4 and 5
