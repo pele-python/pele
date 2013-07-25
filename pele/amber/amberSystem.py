@@ -50,8 +50,7 @@ class AMBERSystem(BaseSystem):
         
         super(AMBERSystem, self).__init__()
         
-#        if os.path.exists('min.in') and os.path.exists('data') :
-        if True:
+        if os.path.exists('min.in') and os.path.exists('data') :
 #            print '\nFiles min.in and data found. trying to import ambgmin_ now ..' 
             try:
                 import ambgmin_
