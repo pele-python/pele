@@ -259,6 +259,11 @@ def read_amber_coords(filename):
         raise ex.RuntimeError("Number of coordinates in coords file and number of atoms are inconsistent.")
     return coords
 
+def default_parameters(topology_filename):
+    topology_data = read_topology(topology_filename)
+    parsed = create_atoms_and_residues(topology_data)
+    return group_rotation_dict(parsed, amino.def_parameters)
+
 if __name__ == "__main__":
     topology_data = read_topology("/home/khs26/coords.prmtop")
     parsed = create_atoms_and_residues(topology_data)
