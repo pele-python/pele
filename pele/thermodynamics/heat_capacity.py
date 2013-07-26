@@ -1,5 +1,14 @@
 import numpy as np
 
+import numpy as np
+
+def free_energy(energy, pgorder, fvib, kBT, kappa, h=1.0):  
+    beta = 1./kBT
+    Fpg = np.log(pgorder)/beta
+    Ffrq = kappa*np.log(beta) + 0.5*fvib /beta 
+    Ffrq = kappa*(np.log(beta) + np.log(h)) / beta + 0.5*fvib/beta 
+    return  energy + Ffrq + Fpg
+
 
 def dos_to_cv(energies, ldos, T, K=1.):
     """compute the heat capacity and other thermodynamic quantities from density of states
