@@ -372,6 +372,20 @@ class Database(object):
         candidates = self.session.query(Minimum).order_by(Minimum.energy.desc()).limit(1).all()
         return candidates[0]
     
+    def findMinimum(self, E, coords):
+        candidates = self.session.query(Minimum).\
+            filter(Minimum.energy > E-self.accuracy).\
+            filter(Minimum.energy < E+self.accuracy)
+        
+        new = Minimum(E, coords)
+        
+        for m in candidates:
+            if self.compareMinima:
+                if not self.compareMinima(new, m):
+                    continue
+            return True
+        return False
+        
     def addMinimum(self, E, coords, commit=True, max_n_minima=-1, pgorder=None, fvib=None):
         """add a new minimum to database
         
