@@ -64,4 +64,4 @@ def write_xyz(fout, coords, title="", atomtypes=["A"]):
     '''
     fout.write( "%d\n%s\n"%(coords.size/3, title))
     for x, atomtype in zip(coords.reshape(-1,3), cycle(atomtypes)):
-        fout.write( "%s %g %g %g\n"%(atomtype, x[0], x[1], x[2])) 
+        fout.write( "%s %.18g %.18g %.18g\n"%(atomtype, x[0], x[1], x[2])) 
