@@ -151,3 +151,15 @@ set_bondlength("H", "F",  0.0)
 set_bondlength("F", "F",  0.0)
 set_bondlength("O", "F",  0.0)
 set_bondlength("N", "F",  0.0)
+
+def lookup_element_by_mass(mass):
+    mass = float(mass)
+    closest_mass = min((value["mass"] for value in elements.values()), key = lambda x: abs(x - mass))
+    return (value["symbol"] for value in elements.values() if value["mass"] == closest_mass).next()
+
+if __name__ == "__main__":
+    import numpy as np
+    masses = np.random.uniform(low=1.0, high=150.0, size=1000)
+    for mass in masses:
+        element = lookup_element_by_mass(mass)
+        print element, mass, elements[element]["mass"]

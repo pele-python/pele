@@ -76,9 +76,9 @@
 !       Matrix elements of row i
       integer*8 kk(n*maxnei), first(n+1), x(n), y(n)
       integer*8 cc(n*maxnei), u(n), v(n), h
-      integer   m, i, j, k, l, l2, t, a, i3, j3
+      integer   m, i, j, k, l, l2, t, a
       integer*8 n8, sz8, d
-      INTEGER NDONE, J1, J2
+      INTEGER J1
 
 !     Distance function
       double precision permdist

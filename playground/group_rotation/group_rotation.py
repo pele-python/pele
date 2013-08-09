@@ -61,8 +61,6 @@ class GroupRotation(TakestepInterface):
             step[group]["post_coords"] = coords.copy()
         return step
 
-#############################################
-
 def averages(parameters, coords, n_trials, attribute):
     group_rotation = GroupRotation(parameters)
     attribute_average = {}
@@ -95,43 +93,14 @@ def measure_dihedral(coords, atoms):
     return angle
     
 if __name__ == "__main__":
-    test_params = {}
-    test_params["OME"] = {}
-    test_params["OME"]["bond_atom_1"] = 2
-    test_params["OME"]["bond_atom_2"] = 3
-    test_params["OME"]["group_atoms"] = 4, 5, 8
-    test_params["OME"]["max_angle_magnitude"] = 0.5
-    test_params["OME"]["selection_probability"] = 1.0
-    test_params["ME"] = {}
-    test_params["ME"]["bond_atom_1"] = 0
-    test_params["ME"]["bond_atom_2"] = 1
-    test_params["ME"]["group_atoms"] = 6, 7, 9
-    test_params["ME"]["max_angle_magnitude"] = 0.3
-    test_params["ME"]["selection_probability"] = 0.8
-    test_coords = np.random.rand(30) * 10
+    import playground.group_rotation.read_amber as amber
+    import playground.group_rotation.amino_acids as amino
+    
+    topology_data = amber.read_topology("/home/khs26/coords.prmtop")
+    parsed = amber.create_atoms_and_residues(topology_data)
+    test_params = amber.group_rotation_dict(parsed, amino.def_parameters)
+    test_coords = np.array(amber.read_amber_coords("/home/khs26/coords.inpcrd"))
     testGR = GroupRotation(test_params)
-    ang1 = measure_dihedral(test_coords, (1, 2, 3, 4))
-    ang2 = measure_dihedral(test_coords, (1, 2, 3, 5))
-    ang3 = measure_dihedral(test_coords, (1, 2, 3, 8))
+    pre_coords = test_coords.copy()
     result = testGR.takeStep(test_coords)
-    ang1_after = measure_dihedral(test_coords, (1, 2, 3, 4))
-    ang2_after = measure_dihedral(test_coords, (1, 2, 3, 5))
-    ang3_after = measure_dihedral(test_coords, (1, 2, 3, 8))
-    print ang3_after - ang3, ang2_after - ang2, ang1_after - ang1, result["OME"]["angle"]
-#    average, variance = averages(test_params, test_coords, 1000, "happened")
-#    for group in average:
-#        print group, average[group], variance[group]
-#    cumulative_prob = {}
-#    for group in test_params:
-#        cumulative_prob[group] = 0
-#    for i in range(1000):
-#        step_result = testGR.takeStep(test_coords)
-#        for group in test_params:
-#            cumulative_prob[group] = ((i) * cumulative_prob[group] +
-#                                     step_result[group]["happened"]) / float(i + 1)
-#    print cumulative_prob
-#    for group in step_result:
-#        print group
-#        for key in step_result[group]:
-#            print key
-#            print step_result[group][key]
+    print test_coords-pre_coords

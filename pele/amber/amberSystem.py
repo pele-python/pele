@@ -63,8 +63,11 @@ class AMBERSystem(BaseSystem):
                 self.potential    = openmm_potential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
         else:
             # using OpenMM because min.in and data files not found 
-            print '\namberSystem> Using OpenMM amber potential ..'
+            print '\namberSystem> Using OpenMM amber potential because min.in and data files not found..'
             self.potential    = openmm_potential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
+        
+        self.prmtop_name = prmtopFname
+        self.inpcrd_name = inpcrdFname
         
         # check for openmm version
         # data structures changed between openmm4 and 5
@@ -93,7 +96,8 @@ class AMBERSystem(BaseSystem):
 
         self.params.basinhopping.insert_rejected = False 
         
-        self.sanitycheck = True  # todo: this should be part of params and show up in GUI 
+#        self.sanitycheck = True  # todo: this should be part of params and show up in GUI
+        self.sanitycheck = False
         
         if self.sanitycheck:
 #            self.params.basinhopping.confCheck = [self.check_cistrans_wrapper, self.check_CAchirality_wrapper]
@@ -159,11 +163,14 @@ class AMBERSystem(BaseSystem):
         
     def get_random_configuration(self):
         """a starting point for basinhopping, etc."""
-        from simtk.openmm.app import pdbfile as openmmpdbReader
-        pdb = openmmpdbReader.PDBFile('coords.pdb')  # todo: coords.pdb is hardcoded 
+#        from simtk.openmm.app import pdbfile as openmmpdbReader
+#        pdb = openmmpdbReader.PDBFile('coords.pdb')  # todo: coords.pdb is hardcoded
+        from playground.group_rotation.read_amber import read_amber_coords  
         
-        coords = pdb.getPositions() / openmm_angstrom
-        coords = np.reshape(np.transpose(coords), 3*len(coords), 1)
+        coords = read_amber_coords(self.inpcrdFname)
+        print "Number of coordinates:", len(coords)
+#        pdb.getPositions() / openmm_angstrom
+#        coords = np.reshape(np.transpose(coords), 3*len(coords), 1)
         return coords 
 
     def get_metric_tensor(self, coords):
@@ -402,10 +409,10 @@ class AMBERSystem(BaseSystem):
             if i.name == 'CB':
                 listofCB.append(i.index)  
                 
-        #print '---amberSystem> list of CA = ' , listofCA              
-        #print '---amberSystem> list of  C = ' , listofC              
-        #print '---amberSystem> list of  N = ' , listofN              
-        #print '---amberSystem> list of CB = ' , listofCB      
+#        print '---amberSystem> list of CA = ' , listofCA              
+#        print '---amberSystem> list of  C = ' , listofC              
+#        print '---amberSystem> list of  N = ' , listofN              
+#        print '---amberSystem> list of CB = ' , listofCB      
         
         # atom numbers of peptide bond 
         self.CAneighborList = [] 
@@ -415,7 +422,7 @@ class AMBERSystem(BaseSystem):
             neighborlist = []                        
                  
             for b in self.potential.prmtop.topology.bonds(): 
-                print b                                
+#                print b                                
                 if b[0] == i:
                     neighborlist.append(b[1])
                 if b[1] == i:
