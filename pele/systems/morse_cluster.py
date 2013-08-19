@@ -40,7 +40,7 @@ class MorseCluster(AtomicCluster):
     #below here is stuff only for the gui
     #
 
-    def draw(self, coordslinear, index):
+    def draw(self, coordslinear, index, subtract_com=True):
         """
         tell the gui how to represent your system using openGL objects
         
@@ -53,8 +53,11 @@ class MorseCluster(AtomicCluster):
             visually distinct, e.g. different colors.  accepted values are 1 or 2        
         """
         from OpenGL import GL,GLUT
-        coords = coordslinear.reshape(coordslinear.size/3, 3)
-        com=np.mean(coords, axis=0)
+        coords = coordslinear.reshape([-1, 3])
+        if subtract_com:
+            com = np.mean(coords, axis=0)
+        else:
+            com = np.ones(3)
         size = 0.5 * self.r0          
         for xx in coords:
             x=xx-com
@@ -141,11 +144,11 @@ def run():
 
 def rungui():
     from pele.gui import run_gui
-    natoms = 13
-    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102)
+    natoms = 17
+#    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102)
     system = MorseCluster(natoms, rho=3., r0=1., A=1.)
     db = system.create_database()
-    run_gui(system, db)
+    run_gui(system)
 
 if __name__ == "__main__":
     rungui()

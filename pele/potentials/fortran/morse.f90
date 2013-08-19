@@ -24,89 +24,49 @@
 !
 !*************************************************************************
 !
-      SUBROUTINE MORSE(X,V,EMORSE,GTEST, natoms, rho, R0, A)
+      SUBROUTINE MORSE(X,V,EMORSE,GTEST, natoms, rho, R0, A, periodic, boxvec)
       ! R0 is the position of the bottom of the well
       ! rho is the width of the well and has units of inverse length
       ! A is the energy scale
 !      USE commons
       IMPLICIT NONE 
-      LOGICAL GTEST
-      INTEGER J1, J2, J3, J4
+      LOGICAL, intent(IN) :: GTEST, periodic
       integer, intent(IN) :: NATOMS
-      DOUBLE PRECISION, intent(IN) :: X(3*NATOMS), rho, R0, A
+      DOUBLE PRECISION, intent(IN) :: X(3*NATOMS), rho, R0, A, boxvec(3)
       DOUBLE PRECISION, intent(OUT) :: V(3*NATOMS), EMORSE
+      INTEGER J1, J2, J3, J4
       DOUBLE PRECISION DIST, R, DUMMY, &
-                       RR(NATOMS,NATOMS), DUMMYX,  &
-                       DUMMYY, DUMMYZ, XMUL2
+                       RR(NATOMS,NATOMS), &
+                       XMUL2, iboxvec(3), dx(3)
 !     LOGICAL EVAP, evapreject
 !     COMMON /EV/ EVAP, evapreject
+      if (periodic) iboxvec(:) = 1.d0 / boxvec(:)
 
 !     EVAP=.FALSE.
       V(:) = 0.D0
       EMORSE=0.0D0
-      IF (GTEST) THEN
-         DO J1=1,NATOMS
-            J3=3*J1
-            !DIST=X(J3-2)**2+X(J3-1)**2+X(J3)**2
-!           IF (DIST.GT.RADIUS) THEN
-!              EVAP=.TRUE.
-!              EMORSE=EMORSE+(DIST-RADIUS)**2
-!           ENDIF
-            RR(J1,J1)=0.0D0
-            DO J2=J1+1,NATOMS
-               J4=3*J2
-               DIST=MAX(DSQRT((X(J3-2)-X(J4-2))**2 + (X(J3-1)-X(J4-1))**2 &
-                        + (X(J3)-X(J4))**2),1.0D-5)
-!              DIST=DSQRT((X(J3-2)-X(J4-2))**2 + (X(J3-1)-X(J4-1))**2 
-!    1                  + (X(J3)-X(J4))**2)
-               R=DEXP(RHO*R0-RHO*DIST)
-               RR(J2,J1)=2.0D0*R*(R-1.0D0)/DIST
-               RR(J1,J2)=RR(J2,J1)
-               DUMMY=R*(R-2.0D0)
-               EMORSE=EMORSE+DUMMY
-            ENDDO
-         ENDDO
-      ELSE
-         DO J1=1,NATOMS
-            J3=3*J1
-            DIST=X(J3-2)**2+X(J3-1)**2+X(J3)**2
-!           IF (DIST.GT.RADIUS) THEN
-!              EVAP=.TRUE.
-!              EMORSE=EMORSE+(DIST-RADIUS)**2
-!           ENDIF
-            DO J2=J1+1,NATOMS
-               J4=3*J2
-               DIST=DSQRT((X(J3-2)-X(J4-2))**2 + (X(J3-1)-X(J4-1))**2 &
-                        + (X(J3)-X(J4))**2)
-               R=DEXP(RHO*R0-RHO*DIST)
-               DUMMY=R*(R-2.0D0)
-               EMORSE=EMORSE+DUMMY
-            ENDDO
-         ENDDO
-      ENDIF
-      EMORSE = EMORSE * A
-
-      IF (.NOT.GTEST) RETURN
- 
       DO J1=1,NATOMS
          J3=3*J1
-         DUMMYX=0.0D0
-         DUMMYY=0.0D0
-         DUMMYZ=0.0D0
-         DO J4=1,NATOMS
-            J2=3*J4
-            XMUL2=RR(J4,J1)
-            DUMMYX=DUMMYX-(X(J3-2)-X(J2-2))*XMUL2
-            DUMMYY=DUMMYY-(X(J3-1)-X(J2-1))*XMUL2
-            DUMMYZ=DUMMYZ-(X(J3)-X(J2))*XMUL2
-         ENDDO
-         DIST=X(J3-2)**2+X(J3-1)**2+X(J3)**2
-         V(J3-2)=DUMMYX
-         V(J3-1)=DUMMYY
-         V(J3)=DUMMYZ
-      ENDDO
+         RR(J1,J1)=0.0D0
+         DO J2=J1+1,NATOMS
+            J4=3*J2
+            dx(:) = X(J3-2:j3)-X(J4-2:j4)
+            if (periodic) then
+               dx = dx - boxvec * nint(dx * iboxvec)
+            endif
+            dist = max(sqrt(sum(dx**2)), 1.d-5)
+            R=DEXP(RHO*R0-RHO*DIST)
+            DUMMY=R*(R-2.0D0)
+            EMORSE=EMORSE+DUMMY
 
-      V(:) = V(:) * A
+            if (gtest) then
+               xmul2 = 2.0D0*R*(R-1.0D0)/DIST * A
+               V(J3-2:j2) = V(j3-2:j2) - xmul2 * dx
+               V(J4-2:j2) = V(j4-2:j2) + xmul2 * dx
+            endif
+         ENDDO
+      ENDDO
+      EMORSE = EMORSE * A
 
       RETURN
       END
