@@ -19,18 +19,22 @@ class MorseCluster(AtomicCluster):
     --------
     BaseSystem, AtomicCluster
     """
-    def __init__(self, natoms):
+    def __init__(self, natoms, rho=2., r0=1., A=1.):
         super(MorseCluster, self).__init__()
         self.natoms = natoms
+        self.rho = rho
+        self.r0 = r0
+        self.A = 1.
         
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.0
+        self.params.gui.basinhopping_nsteps = 10000
     
     def get_permlist(self):
         return [range(self.natoms)]
     
     def get_potential(self):
-        return Morse()
+        return Morse(rho=self.rho, r0=self.r0, A=self.A)
 
     #
     #below here is stuff only for the gui
@@ -50,12 +54,13 @@ class MorseCluster(AtomicCluster):
         """
         from OpenGL import GL,GLUT
         coords = coordslinear.reshape(coordslinear.size/3, 3)
-        com=np.mean(coords, axis=0)                  
+        com=np.mean(coords, axis=0)
+        size = 0.5 * self.r0          
         for xx in coords:
             x=xx-com
             GL.glPushMatrix()            
             GL.glTranslate(x[0],x[1],x[2])
-            GLUT.glutSolidSphere(0.5,30,30)
+            GLUT.glutSolidSphere(size, 30, 30)
             GL.glPopMatrix()
     
     def load_coords_pymol(self, coordslist, oname, index=1):
@@ -125,7 +130,7 @@ def run():
     db = sys.create_database()
     
     #do a short basinhopping run
-    bh = sys.get_basinhopping(database=db, outstream=None)
+    bh = sys.get_basinhopping(database=db)#, outstream=None)
     while len(db.minima()) < 2:
         bh.run(100)
     
@@ -133,7 +138,14 @@ def run():
     min1, min2 = db.minima()[:2]
     connect = sys.get_double_ended_connect(min1, min2, db)
     connect.connect()
-    
+
+def rungui():
+    from pele.gui import run_gui
+    natoms = 13
+    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102)
+    system = MorseCluster(natoms, rho=3., r0=1., A=1.)
+    db = system.create_database()
+    run_gui(system, db)
 
 if __name__ == "__main__":
-    run()
+    rungui()

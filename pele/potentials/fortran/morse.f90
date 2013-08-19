@@ -24,13 +24,16 @@
 !
 !*************************************************************************
 !
-      SUBROUTINE MORSE(X,V,EMORSE,GTEST, natoms, rho)
+      SUBROUTINE MORSE(X,V,EMORSE,GTEST, natoms, rho, R0, A)
+      ! R0 is the position of the bottom of the well
+      ! rho is the width of the well and has units of inverse length
+      ! A is the energy scale
 !      USE commons
       IMPLICIT NONE 
       LOGICAL GTEST
       INTEGER J1, J2, J3, J4
       integer, intent(IN) :: NATOMS
-      DOUBLE PRECISION, intent(IN) :: X(3*NATOMS), rho
+      DOUBLE PRECISION, intent(IN) :: X(3*NATOMS), rho, R0, A
       DOUBLE PRECISION, intent(OUT) :: V(3*NATOMS), EMORSE
       DOUBLE PRECISION DIST, R, DUMMY, &
                        RR(NATOMS,NATOMS), DUMMYX,  &
@@ -44,7 +47,7 @@
       IF (GTEST) THEN
          DO J1=1,NATOMS
             J3=3*J1
-            DIST=X(J3-2)**2+X(J3-1)**2+X(J3)**2
+            !DIST=X(J3-2)**2+X(J3-1)**2+X(J3)**2
 !           IF (DIST.GT.RADIUS) THEN
 !              EVAP=.TRUE.
 !              EMORSE=EMORSE+(DIST-RADIUS)**2
@@ -56,7 +59,7 @@
                         + (X(J3)-X(J4))**2),1.0D-5)
 !              DIST=DSQRT((X(J3-2)-X(J4-2))**2 + (X(J3-1)-X(J4-1))**2 
 !    1                  + (X(J3)-X(J4))**2)
-               R=DEXP(RHO-RHO*DIST)
+               R=DEXP(RHO*R0-RHO*DIST)
                RR(J2,J1)=2.0D0*R*(R-1.0D0)/DIST
                RR(J1,J2)=RR(J2,J1)
                DUMMY=R*(R-2.0D0)
@@ -75,12 +78,13 @@
                J4=3*J2
                DIST=DSQRT((X(J3-2)-X(J4-2))**2 + (X(J3-1)-X(J4-1))**2 &
                         + (X(J3)-X(J4))**2)
-               R=DEXP(RHO-RHO*DIST)
+               R=DEXP(RHO*R0-RHO*DIST)
                DUMMY=R*(R-2.0D0)
                EMORSE=EMORSE+DUMMY
             ENDDO
          ENDDO
       ENDIF
+      EMORSE = EMORSE * A
 
       IF (.NOT.GTEST) RETURN
  
@@ -101,6 +105,8 @@
          V(J3-1)=DUMMYY
          V(J3)=DUMMYZ
       ENDDO
+
+      V(:) = V(:) * A
 
       RETURN
       END
