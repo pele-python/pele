@@ -69,3 +69,4 @@ from ljcut import *
 from soft_sphere import *
 #from stockmeyer import *
 from xyspin import *
+from morse import Morse
