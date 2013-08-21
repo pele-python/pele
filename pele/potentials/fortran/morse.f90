@@ -24,23 +24,29 @@
 !
 !*************************************************************************
 !
-      SUBROUTINE MORSE(X,V,EMORSE,GTEST, natoms, rho, R0, A, periodic, boxvec)
+      SUBROUTINE MORSE(X,V,EMORSE,GTEST, natoms, rho, R0, A, periodic, &
+         boxvec, use_cutoff, rcut)
       ! R0 is the position of the bottom of the well
       ! rho is the width of the well and has units of inverse length
       ! A is the energy scale
 !      USE commons
       IMPLICIT NONE 
-      LOGICAL, intent(IN) :: GTEST, periodic
+      LOGICAL, intent(IN) :: GTEST, periodic, use_cutoff
       integer, intent(IN) :: NATOMS
-      DOUBLE PRECISION, intent(IN) :: X(3*NATOMS), rho, R0, A, boxvec(3)
+      DOUBLE PRECISION, intent(IN) :: X(3*NATOMS), rho, R0, A, boxvec(3), rcut
       DOUBLE PRECISION, intent(OUT) :: V(3*NATOMS), EMORSE
       INTEGER J1, J2, J3, J4
       DOUBLE PRECISION DIST, R, DUMMY, &
                        RR(NATOMS,NATOMS), &
-                       XMUL2, iboxvec(3), dx(3)
+                       XMUL2, iboxvec(3), dx(3), eshift
 !     LOGICAL EVAP, evapreject
 !     COMMON /EV/ EVAP, evapreject
       if (periodic) iboxvec(:) = 1.d0 / boxvec(:)
+
+      if (use_cutoff) then
+         Eshift = (1.d0 - exp(rho * (r0 - rcut)))**2 - 1.d0
+         !write(*,*) "Eshift", eshift, rcut
+      endif
 
 !     EVAP=.FALSE.
       V(:) = 0.D0
@@ -55,9 +61,12 @@
                dx = dx - boxvec * nint(dx * iboxvec)
             endif
             dist = max(sqrt(sum(dx**2)), 1.d-5)
+
+            if (use_cutoff .and. dist.ge.rcut) cycle
+
             R=DEXP(RHO*R0-RHO*DIST)
             DUMMY=R*(R-2.0D0)
-            EMORSE=EMORSE+DUMMY
+            EMORSE=EMORSE+DUMMY - Eshift
 
             if (gtest) then
                xmul2 = 2.0D0*R*(R-1.0D0)/DIST * A

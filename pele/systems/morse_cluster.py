@@ -19,22 +19,23 @@ class MorseCluster(AtomicCluster):
     --------
     BaseSystem, AtomicCluster
     """
-    def __init__(self, natoms, rho=2., r0=1., A=1.):
+    def __init__(self, natoms, rho=2., r0=1., A=1., rcut=None):
         super(MorseCluster, self).__init__()
         self.natoms = natoms
         self.rho = rho
         self.r0 = r0
         self.A = 1.
+        self.rcut = rcut
         
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.0
-        self.params.gui.basinhopping_nsteps = 10000
+        self.params.gui.basinhopping_nsteps = 100
     
     def get_permlist(self):
         return [range(self.natoms)]
     
     def get_potential(self):
-        return Morse(rho=self.rho, r0=self.r0, A=self.A)
+        return Morse(rho=self.rho, r0=self.r0, A=self.A, rcut=self.rcut)
 
     #
     #below here is stuff only for the gui
@@ -57,7 +58,7 @@ class MorseCluster(AtomicCluster):
         if subtract_com:
             com = np.mean(coords, axis=0)
         else:
-            com = np.ones(3)
+            com = np.zeros(3)
         size = 0.5 * self.r0          
         for xx in coords:
             x=xx-com

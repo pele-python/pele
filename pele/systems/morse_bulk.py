@@ -5,6 +5,7 @@ from morse_cluster import MorseCluster
 from pele.potentials import Morse
 from pele.potentials.soft_sphere import putInBox
 from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
+from pele.mindist import optimize_permutations
 
 def put_in_box(x, boxvec):
     x = x.reshape(-1, boxvec.size)
@@ -12,8 +13,8 @@ def put_in_box(x, boxvec):
     
 class MorseBulk(MorseCluster):
     """morse potential with periodic boundary conditions"""
-    def __init__(self, natoms, boxvec, rho=2., r0=1., A=1.):
-        super(MorseBulk, self).__init__(natoms, rho=rho, r0=r0, A=A)
+    def __init__(self, natoms, boxvec, rho=2., r0=1., A=1., rcut=None):
+        super(MorseBulk, self).__init__(natoms, rho=rho, r0=r0, A=A, rcut=rcut)
         
         self.boxvec = boxvec
         self.periodic = True
@@ -25,29 +26,37 @@ class MorseBulk(MorseCluster):
         return x.flatten()
 
     def get_potential(self):
-        return Morse(rho=self.rho, r0=self.r0, A=self.A, boxvec=self.boxvec)
+        return Morse(rho=self.rho, r0=self.r0, A=self.A, boxvec=self.boxvec, rcut=self.rcut)
 
     def draw(self, coordslinear, index):
+        print "draw length", coordslinear.size
         put_in_box(coordslinear, self.boxvec)
         MorseCluster.draw(self, coordslinear, index, subtract_com=False)
     
     def get_mindist(self):
-        raise NotImplementedError
-    
+        return lambda x1, x2: optimize_permutations(x1, x2, permlist=self.get_permlist(),
+                                                    box_lengths=self.boxvec)
+
     def get_compare_exact(self):
         accuracy = self.params.database.accuracy
         measure = MeasurePeriodic(self.boxvec, self.get_permlist())
         compare = ExactMatchPeriodic(measure, accuracy=accuracy)
         return compare
 
+    def get_orthogonalize_to_zero_eigenvectors(self):
+        # TODO: there are some zero eigenvectors which can be removed 
+        return None
+        def do_nothing(v, *args, **kwargs):
+            return v
+        return do_nothing
 
 def rungui():
     from pele.gui import run_gui
     natoms = 17
     boxl = 2.
     boxvec = np.ones(3) * boxl
-#    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102)
-    system = MorseBulk(natoms, boxvec, rho=3., r0=1., A=1.)
+    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
+#    system = MorseBulk(natoms, boxvec, rho=3., r0=1., A=1.)
     db = system.create_database()
     run_gui(system)
 
