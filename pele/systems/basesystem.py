@@ -201,7 +201,7 @@ class BaseSystem(object):
         return Database(**kwargs)
     
 
-    def get_takestep(self, stepsize=0.6, **kwargs):
+    def get_takestep(self, **kwargs):
         """return the takestep object for use in basinhopping, etc.
         
         default is random displacement with adaptive step size 
@@ -211,7 +211,12 @@ class BaseSystem(object):
         --------
         pele.takestep
         """
-        kwargs = dict_copy_update(self.params["takestep"], kwargs)        
+        kwargs = dict_copy_update(self.params["takestep"], kwargs)
+        try:
+            stepsize = kwargs.pop("stepsize")
+        except KeyError:
+            stepsize = 0.6
+        print "stepsize", stepsize
         takeStep = RandomDisplacement(stepsize=stepsize)
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
         return tsAdaptive

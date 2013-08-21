@@ -49,7 +49,7 @@ class TransformPeriodic(TransformPolicy):
     '''
     def translate(self, X, d):
         Xtmp = X.reshape([-1,3])
-        Xtmp+=d
+        Xtmp += d
     
     def can_invert(self):
         ''' returns True or False if an inversion can be performed'''

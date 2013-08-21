@@ -261,7 +261,7 @@ class FindTransitionState(object):
                     res.message.append( "positive eigenvalue found too many times %d" % self.npositive )
                     break
                 if self.verbosity > 2:
-                    logger.info("the eigenvalue turned positive.", self.eigenval, "Resetting last good values and taking smaller steps")
+                    logger.info("the eigenvalue turned positive. %s %s", self.eigenval, "Resetting last good values and taking smaller steps")
                 coords = self._resetState(coords)
                 self.reduce_step += 1
             
