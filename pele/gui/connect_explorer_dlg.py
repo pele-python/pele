@@ -123,7 +123,8 @@ class ConnectExplorerDialog(QDialog):
             pcoordslist.append(coords)
             pdata.append((energy, rms))
         pushoff_params = self.local_connect.pushoff_params.copy()
-        pushoff_params["quenchParams"]["events"] = [pushoff_callback]
+        quencher = self.system.get_minimizer(events=[pushoff_callback])
+        pushoff_params["quench"] = quencher
 
         
         success, tsret, min1ret, min2ret = _refineTS(self.system.get_potential(), coords,

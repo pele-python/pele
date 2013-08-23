@@ -97,6 +97,7 @@ class NEBDriver(object):
         self.distance = distance
         self.factor = factor
         self.max_images = max_images
+        self.min_images = 3
         self.image_density = image_density
         self.iter_density = iter_density
         self.update_event = Signal()
@@ -256,6 +257,8 @@ class NEBDriver(object):
         nimages = int(max(1., dist) * self.image_density * self.factor)
         if self.max_images > 0:
             nimages = min(nimages, self.max_images)
+        if nimages < self.min_images:
+            nimages = self.min_images
         path = InterpolatedPath(coords1, coords2, nimages, interpolator=self.interpolator)
 
         return [x for x in path]

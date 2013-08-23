@@ -103,6 +103,7 @@ class NEB(object):
         
         nimages = len(path)
         self.nimages = nimages
+        assert self.nimages >= 3
         self.copy_potential = copy_potential
         if self.copy_potential:
             self.potential_list = [copy.deepcopy(self.potential) for i in range(nimages)]
