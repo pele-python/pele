@@ -149,6 +149,10 @@
 <span class="sd">        eigenvector</span>
 <span class="sd">    demand_initial_negative_vec : bool</span>
 <span class="sd">        if True, abort if the initial lowest eigenvalue is positive</span>
+<span class="sd">    negatives_before_check : int</span>
+<span class="sd">        if start with positive eigenvector and demand_initial_negative_vec is False,</span>
+<span class="sd">        the check to make sure that the eigenvalue is enabled after having had so </span>
+<span class="sd">        many negative eigenvalues before</span>
 <span class="sd">    nsteps_tangent1, nsteps_tangent2 : int</span>
 <span class="sd">        the number of iterations for tangent space minimization before and after</span>
 <span class="sd">        the eigenvalue is deemed to be converged</span>
@@ -182,6 +186,7 @@
                  <span class="n">tangentSpaceQuenchParams</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> 
                  <span class="n">max_uphill_step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
                  <span class="n">demand_initial_negative_vec</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">negatives_before_check</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                  <span class="n">nsteps_tangent1</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                  <span class="n">nsteps_tangent2</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                  <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -204,7 +209,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span> <span class="o">=</span> <span class="n">demand_initial_negative_vec</span>    
         <span class="bp">self</span><span class="o">.</span><span class="n">npositive_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">rmsnorm</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rmsnorm</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">oldeigenvec</span> <span class="o">=</span> <span class="bp">None</span>
 
         <span class="c">#set tolerance for the tangent space minimization.  </span>
@@ -284,14 +289,23 @@
         <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span> <span class="c">#  return object</span>
         <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c"># if starting with positive curvature, disable negative eigenvalue check</span>
+        <span class="c"># this will be reenabled as soon as the eigenvector becomes negative</span>
+        <span class="n">negative_before_check</span> <span class="o">=</span>  <span class="mi">10</span>
+
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
             
             <span class="c"># get the lowest eigenvalue and eigenvector</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span>
+            <span class="c">#print self.eigenval</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">negative_before_check</span> <span class="o">-=</span> <span class="mi">1</span>
             
             <span class="c"># check to make sure the eigenvector is ok</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span><span class="n">negative_before_check</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_saveState</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">else</span><span class="p">:</span>
@@ -301,7 +315,7 @@
                     <span class="n">res</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s">&quot;positive eigenvalue found too many times </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">npositive</span> <span class="p">)</span>
                     <span class="k">break</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;the eigenvalue turned positive.&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="s">&quot;Resetting last good values and taking smaller steps&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;the eigenvalue turned positive. </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="s">&quot;Resetting last good values and taking smaller steps&quot;</span><span class="p">)</span>
                 <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resetState</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">+=</span> <span class="mi">1</span>
             

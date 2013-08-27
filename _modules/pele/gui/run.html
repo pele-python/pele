@@ -72,6 +72,8 @@
 <span class="kn">from</span> <span class="nn">pele.gui.takestep_explorer</span> <span class="kn">import</span> <span class="n">TakestepExplorer</span>
 <span class="kn">from</span> <span class="nn">pele.gui.normalmode_browser</span> <span class="kn">import</span> <span class="n">NormalmodeBrowser</span>
 <span class="kn">from</span> <span class="nn">pele.gui._list_views</span> <span class="kn">import</span> <span class="n">ListViewManager</span>
+<span class="kn">from</span> <span class="nn">pele.gui._cv_viewer</span> <span class="kn">import</span> <span class="n">HeatCapacityViewer</span>
+<span class="kn">from</span> <span class="nn">pele.rates</span> <span class="kn">import</span> <span class="n">RateCalculation</span>
 
 
 <span class="k">def</span> <span class="nf">excepthook</span><span class="p">(</span><span class="n">ex_type</span><span class="p">,</span> <span class="n">ex_value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">):</span>
@@ -366,22 +368,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span><span class="o">.</span><span class="n">set_coords</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     
-    <span class="k">def</span> <span class="nf">get_selected_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_selected</span>
-        <span class="k">if</span> <span class="n">ts</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;you must select a transition state first&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ts</span>
-    
     <span class="k">def</span> <span class="nf">on_pushNormalmodesTS_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;normalmode_explorer&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span> <span class="o">=</span> <span class="n">NormalmodeBrowser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_ts</span><span class="p">()</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">get_selected_ts</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span><span class="o">.</span><span class="n">set_coords</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalmode_explorer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-    
-        
-                    
     
     <span class="k">def</span> <span class="nf">NewMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">sort_items</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; add a new minimum to the system &quot;&quot;&quot;</span>
@@ -591,6 +584,56 @@
                                                       <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">)</span>
             
         <span class="bp">self</span><span class="o">.</span><span class="n">takestep_explorer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">on_btn_heat_capacity_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_viewer</span> <span class="o">=</span> <span class="n">HeatCapacityViewer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_viewer</span><span class="o">.</span><span class="n">rebuild_cv_plot</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">compute_thermodynamic_information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">on_finish</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;compute thermodynamic information for minima and ts in the background</span>
+<span class="sd">        </span>
+<span class="sd">        call on_finish when the calculation is done</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># TODO: deal carefuly with what will happen if this is called again</span>
+        <span class="c"># before the first calculation is done.  if self.thermo_worker is overwritten will</span>
+        <span class="c"># the first calculation stop?</span>
+        <span class="kn">from</span> <span class="nn">pele.gui._cv_viewer</span> <span class="kn">import</span> <span class="n">GetThermodynamicInfoParallelQT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thermo_worker</span> <span class="o">=</span> <span class="n">GetThermodynamicInfoParallelQT</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">on_finish</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">thermo_worker</span><span class="o">.</span><span class="n">on_finish</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">on_finish</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thermo_worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">njobs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thermo_worker</span><span class="o">.</span><span class="n">njobs</span>
+        <span class="k">print</span> <span class="s">&quot;calculating thermodynamics for&quot;</span><span class="p">,</span> <span class="n">njobs</span><span class="p">,</span> <span class="s">&quot;minima and transition states&quot;</span> 
+        
+
+    <span class="k">def</span> <span class="nf">_compute_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;compute rates without first calculating thermodynamics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pele.utils.disconnectivity_graph</span> <span class="kn">import</span> <span class="n">graph_constructor</span>
+        <span class="k">print</span> <span class="s">&quot;computing rates at temperature T =&quot;</span><span class="p">,</span> <span class="n">T</span>
+        <span class="n">minima</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">fvib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+        <span class="n">tslist</span> <span class="o">=</span> <span class="p">[</span><span class="n">ts</span> <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">transition_states</span><span class="p">()</span> <span class="k">if</span> <span class="n">ts</span><span class="o">.</span><span class="n">fvib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">graph_constructor</span><span class="p">(</span><span class="n">minima</span><span class="p">,</span> <span class="n">tslist</span><span class="p">)</span>
+        <span class="n">rcalc</span> <span class="o">=</span> <span class="n">RateCalculation</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="p">[</span><span class="n">min1</span><span class="p">],</span> <span class="p">[</span><span class="n">min2</span><span class="p">],</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">r12</span><span class="p">,</span> <span class="n">r21</span> <span class="o">=</span> <span class="n">rcalc</span><span class="o">.</span><span class="n">compute_rates</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&quot;rate from&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="s">&quot;to&quot;</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="s">&quot;=&quot;</span><span class="p">,</span> <span class="n">r12</span>
+        <span class="k">print</span> <span class="s">&quot;rate from&quot;</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="s">&quot;to&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="s">&quot;=&quot;</span><span class="p">,</span> <span class="n">r21</span>
+
+    <span class="k">def</span> <span class="nf">compute_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;compute the transition rate from min1 to min2 and vice versa&quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">on_finish</span><span class="p">():</span>
+            <span class="k">print</span> <span class="s">&quot;thermodynamic calculation finished&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_finish_thermo_reference</span> <span class="o">=</span> <span class="n">on_finish</span> <span class="c"># so it doeesn&#39;t get garbage collected</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_thermodynamic_information</span><span class="p">(</span><span class="n">on_finish</span><span class="o">=</span><span class="n">on_finish</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">on_btn_rates_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        
+        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_minima</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_rates</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
         
 <span class="c">#def refresh_pl():</span>
     <span class="c">#pl.pause(0.000001)    </span>

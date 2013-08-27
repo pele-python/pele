@@ -83,41 +83,38 @@
                 <span class="k">print</span> <span class="s">&quot;&quot;</span>
         
 <div class="viewcode-block" id="LJCut.getEnergy"><a class="viewcode-back" href="../../../generated/pele.potentials.LJCut.getEnergy.html#pele.potentials.LJCut.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-        <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
         <span class="n">E</span> <span class="o">=</span> <span class="n">_ljcut</span><span class="o">.</span><span class="n">ljenergy</span><span class="p">(</span>
                 <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">,</span> <span class="p">[</span><span class="n">natoms</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">E</span>
 </div>
 <div class="viewcode-block" id="LJCut.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.potentials.LJCut.getEnergyGradient.html#pele.potentials.LJCut.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-        <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
         <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">_ljcut</span><span class="o">.</span><span class="n">ljenergy_gradient</span><span class="p">(</span>
                 <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">,</span> <span class="p">[</span><span class="n">natoms</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> 
     </div>
 <div class="viewcode-block" id="LJCut.getEnergyList"><a class="viewcode-back" href="../../../generated/pele.potentials.LJCut.getEnergyList.html#pele.potentials.LJCut.getEnergyList">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">ilist</span><span class="p">):</span>
         <span class="c">#ilist = ilist_i.getNPilist()</span>
         <span class="c">#ilist += 1 #fortran indexing</span>
-        <span class="n">nlist</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ilist</span><span class="p">)</span>
-        <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
         <span class="n">E</span> <span class="o">=</span> <span class="n">_ljcut</span><span class="o">.</span><span class="n">energy_ilist</span><span class="p">(</span>
                 <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">ilist</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> 
-                <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">,</span> <span class="p">[</span><span class="n">natoms</span><span class="p">,</span> <span class="n">nlist</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">)</span>
         <span class="c">#ilist -= 1</span>
         <span class="k">return</span> <span class="n">E</span>
     </div>
 <div class="viewcode-block" id="LJCut.getEnergyGradientList"><a class="viewcode-back" href="../../../generated/pele.potentials.LJCut.getEnergyGradientList.html#pele.potentials.LJCut.getEnergyGradientList">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradientList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">ilist</span><span class="p">):</span>
         <span class="c">#ilist = ilist_i.getNPilist()</span>
         <span class="c">#ilist += 1 #fortran indexing</span>
-        <span class="n">nlist</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ilist</span><span class="p">)</span>
-        <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
         <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">_ljcut</span><span class="o">.</span><span class="n">energy_gradient_ilist</span><span class="p">(</span>
                 <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">ilist</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> 
-                <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">,</span> <span class="p">[</span><span class="n">natoms</span><span class="p">,</span> <span class="n">nlist</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">)</span>
         <span class="c">#ilist -= 1</span>
         <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> 
 
+<span class="c">#</span>
+<span class="c"># only testing stuff below here</span>
+<span class="c">#</span>
 </div></div>
 <span class="kn">import</span> <span class="nn">unittest</span>
 <span class="k">class</span> <span class="nc">LJCutTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
@@ -149,8 +146,19 @@
         <span class="n">gdiffmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="n">g</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertLess</span><span class="p">(</span><span class="n">gdiffmax</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">)</span>
 
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
+    <span class="n">natoms</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="mi">3</span><span class="o">*</span><span class="n">natoms</span><span class="p">)</span> <span class="o">*</span> <span class="n">natoms</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">LJCut</span><span class="p">()</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">Egrad</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">E</span><span class="p">,</span> <span class="n">Egrad</span>
+    <span class="k">print</span> <span class="n">grad</span>
+
+
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+<span class="c">#    test()</span>
 </pre></div>
 
           </div>

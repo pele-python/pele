@@ -403,7 +403,7 @@
                 <span class="n">i_am_done</span> <span class="o">=</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">i_am_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alternate_stop_criterion</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">G</span><span class="p">,</span> 
-                                                          <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">)</span>
+                                                          <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
                 
             <span class="k">if</span> <span class="n">i_am_done</span><span class="p">:</span>
                 <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>

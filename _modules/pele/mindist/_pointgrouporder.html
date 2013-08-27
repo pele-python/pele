@@ -84,8 +84,8 @@
         <span class="n">inversion_multiplier</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">can_invert</span><span class="p">():</span>
             <span class="n">x2</span> <span class="o">=</span> <span class="n">x1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span>       
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span>   
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
                 <span class="n">inversion_multiplier</span> <span class="o">=</span> <span class="mi">2</span>
                 
         <span class="n">pgorder</span> <span class="o">=</span> <span class="mi">0</span>

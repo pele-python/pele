@@ -426,6 +426,20 @@
         <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">desc</span><span class="p">())</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     
+<div class="viewcode-block" id="Database.findMinimum"><a class="viewcode-back" href="../../../generated/pele.storage.Database.findMinimum.html#pele.storage.Database.findMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">findMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span>\
+            <span class="nb">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span> <span class="o">&gt;</span> <span class="n">E</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">)</span><span class="o">.</span>\
+            <span class="nb">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span> <span class="o">&lt;</span> <span class="n">E</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">)</span>
+        
+        <span class="n">new</span> <span class="o">=</span> <span class="n">Minimum</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">compareMinima</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compareMinima</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+                    <span class="k">continue</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+        </div>
 <div class="viewcode-block" id="Database.addMinimum"><a class="viewcode-back" href="../../../generated/pele.storage.Database.addMinimum.html#pele.storage.Database.addMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">addMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">pgorder</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fvib</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;add a new minimum to database</span>
 <span class="sd">        </span>
@@ -571,6 +585,10 @@
             <span class="c">#self.lock.release()</span>
             <span class="k">return</span> <span class="n">m</span>
         <span class="k">return</span> <span class="bp">None</span>
+    </div>
+<div class="viewcode-block" id="Database.getTransitionStateFromID"><a class="viewcode-back" href="../../../generated/pele.storage.Database.getTransitionStateFromID.html#pele.storage.Database.getTransitionStateFromID">[docs]</a>    <span class="k">def</span> <span class="nf">getTransitionStateFromID</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the transition state with id id_&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="Database.setDistance"><a class="viewcode-back" href="../../../generated/pele.storage.Database.setDistance.html#pele.storage.Database.setDistance">[docs]</a>    <span class="k">def</span> <span class="nf">setDistance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;set the distance between two minima</span>

@@ -72,11 +72,12 @@
 <tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>graph</strong> : a networkx graph</p>
 <blockquote>
 <div><p>a graph with Minimum objects as nodes and transition
-states defining the edges.  You can use
-pele.landscape.TSGraph to create this from a database.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">graphwrapper</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dg</span> <span class="o">=</span> <span class="n">DisconnectivityGraph</span><span class="p">(</span><span class="n">graphwrapper</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+states defining the edges.  You can use the function
+database2graph() defined in this module to create this 
+from a database.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pele.utils.disconnectivity_graph</span> <span class="kn">import</span> <span class="n">database2graph</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span> <span class="o">=</span> <span class="n">database2graph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dg</span> <span class="o">=</span> <span class="n">DisconnectivityGraph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>

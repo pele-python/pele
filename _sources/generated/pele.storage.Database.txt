@@ -14,10 +14,12 @@ pele.storage.Database
          ~Database.addMinimum
          ~Database.addTransitionState
          ~Database.distances
+         ~Database.findMinimum
          ~Database.getDistance
          ~Database.getDistanceORM
          ~Database.getMinimum
          ~Database.getTransitionState
+         ~Database.getTransitionStateFromID
          ~Database.mergeMinima
          ~Database.minima
          ~Database.minimum_adder

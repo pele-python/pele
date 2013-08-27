@@ -255,7 +255,7 @@
         <span class="k">return</span> <span class="n">Database</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     
 </div>
-<div class="viewcode-block" id="BaseSystem.get_takestep"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_takestep.html#pele.systems.BaseSystem.get_takestep">[docs]</a>    <span class="k">def</span> <span class="nf">get_takestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepsize</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystem.get_takestep"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_takestep.html#pele.systems.BaseSystem.get_takestep">[docs]</a>    <span class="k">def</span> <span class="nf">get_takestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the takestep object for use in basinhopping, etc.</span>
 <span class="sd">        </span>
 <span class="sd">        default is random displacement with adaptive step size </span>
@@ -265,7 +265,12 @@
 <span class="sd">        --------</span>
 <span class="sd">        pele.takestep</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">dict_copy_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&quot;takestep&quot;</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>        
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">dict_copy_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&quot;takestep&quot;</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stepsize</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;stepsize&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">stepsize</span> <span class="o">=</span> <span class="mf">0.6</span>
+        <span class="k">print</span> <span class="s">&quot;stepsize&quot;</span><span class="p">,</span> <span class="n">stepsize</span>
         <span class="n">takeStep</span> <span class="o">=</span> <span class="n">RandomDisplacement</span><span class="p">(</span><span class="n">stepsize</span><span class="o">=</span><span class="n">stepsize</span><span class="p">)</span>
         <span class="n">tsAdaptive</span> <span class="o">=</span> <span class="n">AdaptiveStepsizeTemperature</span><span class="p">(</span><span class="n">takeStep</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tsAdaptive</span>
