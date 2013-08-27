@@ -41,7 +41,6 @@ fmodules.add_module("pele/transition_states/_orthogoptf.f90")
 fmodules.add_module("pele/transition_states/_NEB_utils.f90")
 fmodules.add_module("pele/angleaxis/_aadist.f90")
 fmodules.add_module("pele/accept_tests/_spherical_container.f90")
-fmodules.add_module("pele/wham/_wham_utils.f90")
 
 cxx_modules = [ ]
 
@@ -65,7 +64,6 @@ setup(name='pele',
                 "pele.printing",
                 "pele.takestep",
                 "pele.utils",
-                "pele.wham",
                 "pele.storage",
                 "pele.potentials.fortran",
                 "pele.accept_tests",
