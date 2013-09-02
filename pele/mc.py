@@ -63,13 +63,11 @@ class MonteCarlo(object):
     
     insert_rejected = False
   
-    def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[],
-            acceptTest=None,
-            temperature=1.0,
-            confCheck=[],
-            outstream = sys.stdout, store_initial=True,
-            iprint=1,
-            ):
+    def __init__(self, coords, potential, takeStep, storage=None,
+                 event_after_step=[], acceptTest=None, temperature=1.0,
+                 confCheck=[], outstream=sys.stdout, store_initial=True,
+                 iprint=1,
+                ):
         #note: make a local copy of lists of events so that an inputted list is not modified.
         self.coords = np.copy(coords)
         self.storage = storage
@@ -156,7 +154,8 @@ class MonteCarlo(object):
         #false then reject step.
         #########################################################################
         if self.acceptstep:
-            self.acceptstep = self.acceptTest(self.markovE, self.trial_energy, self.coords, self.trial_coords)
+            self.acceptstep = self.acceptTest(self.markovE, self.trial_energy,
+                                              self.coords, self.trial_coords)
             
         #########################################################################
         #return new coords and energy and whether or not they were accepted
@@ -199,7 +198,8 @@ class MonteCarlo(object):
     def printStep(self):
         if self.stepnum % self.printfrq == 0:
             if self.outstream != None:
-                self.outstream.write( "MCstep    %12d  E= %20.12g  markov E= %20.12g accepted= %s\n" % (self.stepnum, self.trial_energy, self.markovE_old, str(self.acceptstep) )  )
+                self.outstream.write("MCstep    %12d  E= %20.12g  markov E= %20.12g accepted= %s\n" 
+                        % (self.stepnum, self.trial_energy, self.markovE_old, str(self.acceptstep) )  )
 
 
 

@@ -23,24 +23,19 @@ class BasinHopping(MonteCarlo):
 
     """
 
-    def __init__(self, coords, potential, takeStep, storage=None, event_after_step=[], \
-            acceptTest=None,  \
-            temperature=1.0, \
-            quench = None, \
-            confCheck = [], \
-            outstream = sys.stdout,
-            insert_rejected = False
-            ):
+    def __init__(self, coords, potential, takeStep, storage=None,
+                 event_after_step=[], acceptTest=None, temperature=1.0,
+                 quench=None, confCheck=[], outstream=sys.stdout,
+                 insert_rejected=False
+                 ):
         #########################################################################
         #initialize MonteCarlo base class
         #########################################################################
-        MonteCarlo.__init__(self, coords, potential, takeStep, \
-                            storage=storage, \
-                            event_after_step=event_after_step, \
-                            acceptTest=acceptTest,  \
-                            temperature=temperature, \
-                            confCheck = confCheck, \
-                            outstream=outstream,store_initial=False)
+        MonteCarlo.__init__(self, coords, potential, takeStep, storage=storage,
+                            event_after_step=event_after_step,
+                            acceptTest=acceptTest, temperature=temperature,
+                            confCheck=confCheck, outstream=outstream,
+                            store_initial=False)
 
         if quench is None:
             quench = lambda coords : mylbfgs(coords, self.potential)
@@ -109,7 +104,8 @@ class BasinHopping(MonteCarlo):
         #false then reject step.
         #########################################################################
         if self.acceptstep:
-            self.acceptstep = self.acceptTest(self.markovE, self.trial_energy, self.coords, self.trial_coords)
+            self.acceptstep = self.acceptTest(self.markovE, self.trial_energy,
+                                              self.coords, self.trial_coords)
 
         #########################################################################
         #return new coords and energy and whether or not they were accepted
@@ -120,7 +116,11 @@ class BasinHopping(MonteCarlo):
     def printStep(self):
         if self.stepnum % self.printfrq == 0:
             if self.outstream != None:
-                self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(self.trial_energy) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE_old) + " accepted= " + str(self.acceptstep) + "\n" )
+                self.outstream.write("Qu   " + str(self.stepnum) + " E= " +
+                                     str(self.trial_energy) + " quench_steps= " +
+                                     str(self.funcalls) + " RMS= " + str(self.rms) + 
+                                     " Markov E= " + str(self.markovE_old) + 
+                                     " accepted= " + str(self.acceptstep) + "\n" )
     
     def __getstate__(self):
         ddict = self.__dict__.copy();
