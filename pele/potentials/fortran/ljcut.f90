@@ -34,8 +34,8 @@ do j1 = 1,natoms
    do j2 = 1,j1-1
       dr(:) = coords(3*(j1-1)+1 : 3*(j1-1) + 3) - coords(3*(j2-1)+1 : 3*(j2-1) + 3)
       if (periodic)  dr(:) = dr(:) - nint( dr(:) * iboxl ) * boxl
+      r2 = sum( dr(:)**2 )
       if (r2 .le. rcut2) then
-         r2 = sum( dr(:)**2 )
          ir2 = 1.d0/r2
          ir6 = ir2**3
          ir12 = ir6**2
