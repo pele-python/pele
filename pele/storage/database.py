@@ -531,7 +531,22 @@ class Database(object):
             #self.lock.release()
             return m
         return None
-    
+
+    def getTransitionStatesMinimum(self, min1):
+        """return all transition states connected to a minimum
+        
+        Returns
+        -------
+        ts : None or TransitionState
+        """
+        candidates = self.session.query(TransitionState).\
+            filter(or_(TransitionState.minimum1==min1, 
+                       TransitionState.minimum2==min1
+                       ))
+
+        return candidates.all()
+
+
     def getTransitionStateFromID(self, id_):
         """return the transition state with id id_"""
         return self.session.query(TransitionState).get(id_)
