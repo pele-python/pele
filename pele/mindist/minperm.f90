@@ -43,7 +43,7 @@
 !       p,q: Coordinate vectors (n particles)
 !       s  : Box lengths (or dummy if open B.C.)
 !       pbc: Periodic boundary conditions?
-      integer, intent(in) :: n
+      integer*8, intent(in) :: n
       double precision, intent(in) :: p(3*n), q(3*n), sx, sy, sz
       logical, intent(in) :: pbc
       double precision s(3)
@@ -52,7 +52,7 @@
 !       perm: Permutation so that p(i) <--> q(perm(i))
 !       dist: Minimum attainable distance
 !     We have
-      integer, intent(out) :: perm(n)
+      integer*8, intent(out) :: perm(n)
       double precision, intent(out) :: dist, worstdist, worstradius
       double precision DUMMY
       
@@ -60,7 +60,7 @@
 !       scale : Precision
 !       maxnei: Maximum number of closest neighbours
       double precision scale
-      integer maxnei
+      integer*8 maxnei
 
       parameter (scale = 1.0d6   )
       parameter (maxnei = 60     )
@@ -76,9 +76,9 @@
 !       Matrix elements of row i
       integer*8 kk(n*maxnei), first(n+1), x(n), y(n)
       integer*8 cc(n*maxnei), u(n), v(n), h
-      integer   m, i, j, k, l, l2, t, a
+      integer*8   m, i, j, k, l, l2, t, a
       integer*8 n8, sz8, d
-      INTEGER J1
+      integer*8 J1
 
 !     Distance function
       double precision permdist
@@ -101,7 +101,7 @@
          do i=1,n
             k = first(i)-1
             do j=1,n
-               cc(k+j) = permdist(p(3*i-2), q(3*j-2), s, pbc)*scale
+               cc(k+j) = int(permdist(p(3*i-2), q(3*j-2), s, pbc)*scale, 8)
                kk(k+j) = j
 !              write(*,*) i, j, '-->', cc(k+j)
             enddo
@@ -115,7 +115,7 @@
         do i=1,n
            k = first(i)-1
            do j=1,m
-              cc(k+j) = permdist(p(3*i-2), q(3*j-2), s, pbc)*scale
+              cc(k+j) = int(permdist(p(3*i-2), q(3*j-2), s, pbc)*scale, 8)
               kk(k+j) = j
               l = j
 10            if(l .le. 1) goto 11
@@ -133,7 +133,7 @@
 11         enddo
            
            do j=m+1,n
-              d = permdist(p(3*i-2), q(3*j-2), s, pbc)*scale
+              d = int(permdist(p(3*i-2), q(3*j-2), s, pbc)*scale, 8)
               if(d .lt. cc(k+1)) then
                  cc(k+1) = d
                  kk(k+1) = j
@@ -263,7 +263,7 @@
       logical pbc
 
       double precision t, d
-      integer i
+      integer*8 i
 
       d = 0.0d0
       IF (PBC) THEN
@@ -297,6 +297,8 @@
       LOGICAL OK(N)
       INTEGER*8 J, I, J0, L, J1, MIN, K, I0
       INTEGER*8 BIGINT
+      J1 = -1
+      J0 = -1
 
 !     I don't know how to make g77 read integer*8 constants/parameters.
 !       PARAMETER (BIGINT = 10**12) does not work(!)
@@ -419,6 +421,10 @@
       IF (V0.LT.VJ) THEN
         V(J0)=V(J0)-VJ+V0
       ELSE
+         if (j1 .lt. 0) then
+            write(*,*) "error j1 is being used uninitialized"
+            stop
+         endif
         IF (I0.EQ.0) GOTO 43
         J0=J1
         I0=Y(J1)
