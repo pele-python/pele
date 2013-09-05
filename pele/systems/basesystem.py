@@ -216,7 +216,6 @@ class BaseSystem(object):
             stepsize = kwargs.pop("stepsize")
         except KeyError:
             stepsize = 0.6
-        print "stepsize", stepsize
         takeStep = RandomDisplacement(stepsize=stepsize)
         tsAdaptive = AdaptiveStepsizeTemperature(takeStep, **kwargs)
         return tsAdaptive
