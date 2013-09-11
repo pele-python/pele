@@ -25,6 +25,10 @@ class TestSphericalContainer(unittest.TestCase):
         self.sphere_20 = sphere(20.0)
         self.sphere_100 = sphere(100.0)
 
+        # containers nocenter
+        self.sphere_1_nc = sphere(1.0, nocenter=True)
+        self.sphere_20_nc = sphere(20.0, nocenter=True)
+
     def test_accept(self):
         """
         test that coordinates with radius smaller than the container are accepted
@@ -35,18 +39,24 @@ class TestSphericalContainer(unittest.TestCase):
         self.assertTrue(self.sphere_10.accept(self.coords_0_1))
         self.assertTrue(self.sphere_20.accept(self.coords_0_1))
         self.assertTrue(self.sphere_100.accept(self.coords_0_1))
+        self.assertTrue(self.sphere_1_nc.accept(self.coords_0_1))
+        self.assertTrue(self.sphere_20_nc.accept(self.coords_0_1))
         # Coords radius 1
         self.assertTrue(self.sphere_1.accept(self.coords))
         self.assertTrue(self.sphere_10.accept(self.coords))
         self.assertTrue(self.sphere_20.accept(self.coords))
         self.assertTrue(self.sphere_100.accept(self.coords))
+        self.assertTrue(self.sphere_1_nc.accept(self.coords))
+        self.assertTrue(self.sphere_20_nc.accept(self.coords))
         # Coords radius 10
         self.assertTrue(self.sphere_10.accept(self.coords_10))
         self.assertTrue(self.sphere_20.accept(self.coords_10))
         self.assertTrue(self.sphere_100.accept(self.coords_10))
+        self.assertTrue(self.sphere_20_nc.accept(self.coords_10))
         # Coords radius 20
         self.assertTrue(self.sphere_20.accept(self.coords_20))
         self.assertTrue(self.sphere_100.accept(self.coords_20))
+        self.assertTrue(self.sphere_20_nc.accept(self.coords_20))
         # Coords radius 100
         self.assertTrue(self.sphere_100.accept(self.coords_100))
 
@@ -59,15 +69,19 @@ class TestSphericalContainer(unittest.TestCase):
         # Coords radius 10
         self.assertFalse(self.sphere_0_1.accept(self.coords_10))
         self.assertFalse(self.sphere_1.accept(self.coords_10))
+        self.assertFalse(self.sphere_1_nc.accept(self.coords_10))
         # Coords radius 20
         self.assertFalse(self.sphere_0_1.accept(self.coords_20))
         self.assertFalse(self.sphere_1.accept(self.coords_20))
         self.assertFalse(self.sphere_10.accept(self.coords_20))
+        self.assertFalse(self.sphere_1_nc.accept(self.coords_20))
         # Coords radius 100
         self.assertFalse(self.sphere_0_1.accept(self.coords_100))
         self.assertFalse(self.sphere_1.accept(self.coords_100))
         self.assertFalse(self.sphere_10.accept(self.coords_100))
         self.assertFalse(self.sphere_20.accept(self.coords_100))
+        self.assertFalse(self.sphere_1_nc.accept(self.coords_100))
+        self.assertFalse(self.sphere_20_nc.accept(self.coords_100))
     
     def test_positiveRadius(self):
         """

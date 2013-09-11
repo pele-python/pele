@@ -111,7 +111,7 @@ class MinPermDistCluster(object):
     def _standard_alignments(self, x1, x2):
         ''' get iterator for standard alignments '''
         return StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
-                                                    can_invert=self.transform.can_invert())
+                                        can_invert=self.transform.can_invert())
     def __call__(self, coords1, coords2):        
         '''
         Parameters
@@ -124,8 +124,8 @@ class MinPermDistCluster(object):
         -------
         a tripple of (dist, coords1, coords2). coords1 are the unchanged coords1
         and coords2 are brought in best alignment with coords2
-    '''
-    # we don't want to change the given coordinates
+        '''
+        # we don't want to change the given coordinates
         check_inversion = False
         x1 = np.copy(coords1)
         x2 = np.copy(coords2)
