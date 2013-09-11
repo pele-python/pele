@@ -93,6 +93,7 @@ class MinPermDistCluster(object):
         if dist < self.distbest:
             self.distbest = dist
             self.rotbest = np.dot(rot2, rot)
+            self.invbest = invert
             self.x2_best = x2_trial    
     
     def finalize_best_match(self, x1):
