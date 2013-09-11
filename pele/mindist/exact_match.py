@@ -1,4 +1,6 @@
 import numpy as np
+from collections import namedtuple
+
 from permutational_alignment import find_best_permutation
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 import rmsfit
@@ -9,7 +11,7 @@ class StandardClusterAlignment(object):
     '''
     class to iterate over standard alignments for atomic clusters
     
-    Quickly determines possible alignments of clusters which exactly match.
+    Quickly determines alignments of clusters which are possible exact matches.
     It uses atoms which are far away from the center to determine possible
     rotations. The algorithm does the following:
     
@@ -202,11 +204,27 @@ class ExactMatchCluster(object):
         self.measure = measure
         
     def standard_alignments(self, coords1, coords2):
+        """return an iterator over the standard alignments"""
         return StandardClusterAlignment(coords1, coords2, accuracy = self.accuracy,
                                    can_invert=self.transform.can_invert())
 
         
     def __call__(self, coords1, coords2, check_inversion=True):
+        """return True if the structures are an exact mach, False otherwise"""
+        alignment = self.get_alignment(coords1, coords2, check_inversion=check_inversion)
+        return alignment is not None
+
+    def get_alignment(self, coords1, coords2, check_inversion=True):
+        """Return None if the two structures are different, else return the transformations that brings them into alignment
+        
+        Returns
+        -------
+        None:
+            if the two structures are different
+        namedtuple:
+            with fields: rotation, permutation, inversion
+        """  
+        
         com1 = self.measure.get_com(coords1)
         x1 = coords1.copy()
         self.transform.translate(x1, -com1)
@@ -217,12 +235,14 @@ class ExactMatchCluster(object):
         
         for rot, invert in self.standard_alignments(x1, x2):
             if invert and not check_inversion: continue
-            if self.check_match(x1, x2, rot, invert):
-                return True
-        return False
+            ret = self.check_match(x1, x2, rot, invert)
+            if ret is not None:
+                Alignment = namedtuple("Alignment", ret._fields + ("inversion",))
+                return Alignment(permutation=ret.permutation, rotation=ret.rotation, inversion=bool(invert))
+        return None
                         
     def check_match(self, x1, x2, rot, invert):
-        ''' Make a more detailed comparison if the 2 structures match
+        '''Give a rotation and inversion, make a more detailed comparison if the 2 structures match
         
         Parameters
         ----------
@@ -255,8 +275,12 @@ class ExactMatchCluster(object):
         
         self._last_checked_rotation = np.dot(rot2, rot)
         if  self.measure.get_dist(x1, x2_trial) < self.tol:
-            return True
-        return False
+            # return the rotation and permutation as a named tupple
+            ret = namedtuple("alignment", ["permutation", "rotation"])
+            ret.permutation = perm
+            ret.rotation = rot2
+            return ret
+        return None
                         
     
 if __name__ == '__main__':
