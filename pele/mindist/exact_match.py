@@ -168,7 +168,7 @@ class ClusterTransoformation(object):
     rotation = None
     permutation = None
     invert = False
-
+    
 
 
 class ExactMatchCluster(object):
@@ -243,7 +243,7 @@ class ExactMatchCluster(object):
         x2 = coords2.copy()
         self.transform.translate(x2, -com2)
 
-        self.exact_transformation.translate = com1
+        self.exact_transformation.translation = com1 - com2
 
         for rot, invert in self.standard_alignments(x1, x2):
             if invert and not check_inversion: continue
@@ -279,7 +279,6 @@ class ExactMatchCluster(object):
 
         # apply the rotation to x2_trial
         self.transform.rotate(x2_trial, rot)
-
 
         # get the best permutation
         dist, perm = self.measure.find_permutation(x1, x2_trial)
