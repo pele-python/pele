@@ -161,7 +161,16 @@ class StandardClusterAlignment(object):
                       x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
         
         return rot, self.invert
-    
+
+class ClusterTransoformation(object):
+    """an object that defines a transformation on a cluster"""
+    translation = None
+    rotation = None
+    permutation = None
+    invert = False
+        
+        
+   
 class ExactMatchCluster(object):
     ''' Deterministic check if 2 clusters are a perfect match
     
@@ -211,10 +220,10 @@ class ExactMatchCluster(object):
         
     def __call__(self, coords1, coords2, check_inversion=True):
         """return True if the structures are an exact mach, False otherwise"""
-        alignment = self.get_alignment(coords1, coords2, check_inversion=check_inversion)
+        alignment = self.find_transformation(coords1, coords2, check_inversion=check_inversion)
         return alignment is not None
 
-    def get_alignment(self, coords1, coords2, check_inversion=True):
+    def find_transformation(self, coords1, coords2, check_inversion=True):
         """Return None if the two structures are different, else return the transformations that brings them into alignment
         
         Returns
@@ -223,7 +232,8 @@ class ExactMatchCluster(object):
             if the two structures are different
         namedtuple:
             with fields: rotation, permutation, inversion
-        """  
+        """
+        self.exact_transformation = ClusterTransoformation()
         
         com1 = self.measure.get_com(coords1)
         x1 = coords1.copy()
@@ -233,12 +243,16 @@ class ExactMatchCluster(object):
         x2 = coords2.copy()
         self.transform.translate(x2, -com2)
         
+        self.exact_transformation.translate = com1
+        
         for rot, invert in self.standard_alignments(x1, x2):
             if invert and not check_inversion: continue
             ret = self.check_match(x1, x2, rot, invert)
             if ret is not None:
-                Alignment = namedtuple("Alignment", ret._fields + ("inversion",))
-                return Alignment(permutation=ret.permutation, rotation=ret.rotation, inversion=bool(invert))
+                self.exact_transformation.invert = invert
+                self.exact_transformation.rotation = ret.rotation
+                self.exact_transformation.permutation = ret.permutation
+                return self.exact_transformation
         return None
                         
     def check_match(self, x1, x2, rot, invert):
@@ -256,10 +270,14 @@ class ExactMatchCluster(object):
             True or False for match
             
         '''    
-        # apply the rotation
         x2_trial = x2.copy()
+        
+        #apply the inversion
+        # note that inversion happens before rotation.  this is important as they are not commutative (I think)
         if(invert):
             self.transform.invert(x2_trial)
+        
+        # apply the rotation to x2_trial
         self.transform.rotate(x2_trial, rot)
 
         
@@ -270,6 +288,7 @@ class ExactMatchCluster(object):
         # now find best rotational alignment, this is more reliable than just
         # aligning the 2 reference atoms
         dist, rot2 = self.measure.find_rotation(x1, x2_trial)
+        # further rotate x2_trial by rot2
         self.transform.rotate(x2_trial, rot2)
         # use the maximum distance, not rms as cutoff criterion
         
@@ -278,12 +297,39 @@ class ExactMatchCluster(object):
             # return the rotation and permutation as a named tupple
             ret = namedtuple("alignment", ["permutation", "rotation"])
             ret.permutation = perm
-            ret.rotation = rot2
+            ret.rotation = np.dot(rot2, rot)
             return ret
         return None
-                        
-    
-if __name__ == '__main__':
+
+    def apply_transformation(self, x, tform):
+        # apply permutation
+        if tform.permutation is not None:
+            self.transform.permute(x, tform.permutation)
+
+        # subtract center of mass
+        com = self.measure.get_com(x)
+        self.transform.translate(x, -com)
+
+        # invert
+        if tform.invert and self.transform.can_invert():
+            self.transform.invert(x)
+
+        # rotate
+        if tform.rotation is not None:
+            self.transform.rotate(x, tform.rotation)
+
+        # translate
+        if tform.translation is not None:
+            self.transform.translate(x, tform.translation)
+
+        # add back in center of mass
+        self.transform.translate(x, com)
+
+#
+# only testing below here
+#           
+
+def test():
     natoms = 35
     from pele.utils import rotations
     
@@ -301,3 +347,6 @@ if __name__ == '__main__':
         #print dist
         print i,ExactMatchCluster()(xx1.flatten(), xx2.flatten())
     
+
+if __name__ == '__main__':
+    test()
