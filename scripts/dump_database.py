@@ -70,17 +70,17 @@ def main():
         long_summary(db)
         
     if(args.writeMinima):
-        print "List of minima:"
+        print "List of minima: energy id fvib pgorder"
         print "---------------"
         for m in db.minima():
-            print "%f\t\tid %d"%(m.energy, m._id)
+            print "%f\t\tid %d %s %s" % (m.energy, m._id, str(m.fvib), str(m.pgorder))
         print "END\n"
     
     if(args.writeTS):
         print "List of transition states:"
         print "--------------------------"
         for ts in db.transition_states():
-            print "%d\t<->\t%d\tid %d\tenergies %f %f %f"%\
+            print "%d\t<->\t%d\tid %d\tenergies %f %f %f" % \
                 (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
         print "END\n"
     if(args.write_distances):
