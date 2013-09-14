@@ -1,6 +1,5 @@
 import numpy as np
-
-import numpy as np
+from collections import namedtuple
 
 def free_energy(energy, pgorder, fvib, kBT, kappa, h=1.0):  
     beta = 1./kBT
@@ -107,4 +106,7 @@ def minima_to_cv(minima, kT, k):
 
     lZ = np.log(Z) + lZmax
     
-    return lZ, U, U2, Cv
+    Ret = namedtuple("CvReturn", "lZ U U2 Cv")
+    return Ret(lZ=lZ, U=U, U2=U2, Cv=Cv)
+
+#    return lZ, U, U2, Cv
