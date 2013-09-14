@@ -127,6 +127,9 @@ class MinPermDistCluster(object):
         '''
         # we don't want to change the given coordinates
         check_inversion = False
+        coords1 = coords1.copy()
+        coords2 = coords2.copy()
+        
         x1 = np.copy(coords1)
         x2 = np.copy(coords2)
     
@@ -142,7 +145,8 @@ class MinPermDistCluster(object):
         self.x2_best = x2.copy()
         
         if self.distbest < self.tol:
-            return self.distbest, x1, x2
+            dist, x2 = self.finalize_best_match(coords1)
+            return self.distbest, coords1, x2
         
         for rot, invert in self._standard_alignments(x1, x2):
             self.check_match(x1, x2, rot, invert)
