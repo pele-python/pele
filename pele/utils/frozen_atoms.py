@@ -18,7 +18,7 @@ from pele.potentials.ljcut import LJCut
 from pele.utils.neighbor_list import NeighborListSubsetBuild, NeighborListPotentialBuild
 from pele.utils.neighbor_list import NeighborListPotentialMulti
 
-__all__ = ["makeBLJNeighborListPotFreeze", "FreezePot"]
+__all__ = ["makeBLJNeighborListPotFreeze", "FreezePot", "FrozenPotWrapper"]
 
 
 class MultiComponentSystemFreeze(basepot):
@@ -248,7 +248,159 @@ class FreezePot(basepot):
             x[i] = xbkup
         return hess
 
+class FrozenCoordsConverter(object):
+    """a tool to convert to and from the reduce set of coordinate in a system with frozen atoms
+    
+        Parameters
+        ----------
+        reference_coords : numpy array
+            a set of reference coordinates.  This defines the positions of the frozen 
+            coordinates and the total number of degrees of freedom
+        frozen_dof : list
+            a list of the frozen degrees of freedom
+     
+    """
+    def __init__(self, reference_coords, frozen_dof):
+        # remove duplicates
+        frset = set(frozen_dof)
+        frozen_dof = np.array(list(frset), np.integer)
+        frozen_dof.sort()
+        self.frozen_dof = frozen_dof.copy()
 
+        self.reference_coords = reference_coords.copy()
+        
+        self.mobile_dof = np.array([i for i in xrange(len(reference_coords)) if i not in frset])
+
+        self.frozen_coords = self.reference_coords[self.frozen_dof].copy()
+    
+    def get_frozen_coords(self):
+        return self.frozen_coords.copy()
+    
+    def get_reduced_coords(self, fullcoords):
+        assert len(fullcoords) == len(self.reference_coords)
+        return fullcoords[self.mobile_dof].copy()
+
+    def get_full_coords(self, coords):
+        assert len(coords) == len(self.mobile_dof)
+        fullcoords = self.reference_coords.copy()
+        fullcoords[self.mobile_dof] = coords
+        return fullcoords
+    
+    def get_frozen_dof(self):
+        return self.frozen_dof.copy()
+    
+    def get_mobile_dof(self):
+        return self.mobile_dof.copy()
+    
+    def get_reduced_hessian(self, H):
+        assert H.shape == (self.reference_coords.size, self.reference_coords.size)
+        Hreduced = np.zeros([len(self.mobile_dof), len(self.mobile_dof)])
+        for ired, ifull in enumerate(self.mobile_dof):
+            for jred, jfull in enumerate(self.mobile_dof):
+                Hreduced[ired,jred] = H[ifull, jfull]
+        return Hreduced
+
+class FrozenPotWrapper(object):
+    def __init__(self, potential, reference_coords, frozen_dof):
+        """Wrapper for a potenital object for freezing degrees of freedom
+        
+        Parameters
+        ----------
+        potential : object
+            the pele potential object to be wrapped
+        reference_coords : numpy array
+            a set of reference coordinates.  This defines the positions of the frozen 
+            coordinates and the total number of degrees of freedom
+        frozen_dof : list
+            a list of the frozen degrees of freedom
+            
+        Notes
+        -----
+        
+        This uses class FrozenCoordsConverter to convert back and forth between the full
+        set of coordinates and the reduced set of coordinates (those that are still mobile).
+        
+        The functions getEnergy and getEnergyGradient accept a reduced set of coordinates,
+        adds passes it to the wrapped potential for calculation of the energy.  
+        
+        You can convert between the full and reduced representation using the functions
+        `coords_converter.get_reduced_coords()` and `coords_converter.get_full_coords()`.
+        
+        Examples
+        --------
+        The following example show how to wrap the lennard jones potential and freeze
+        the first 6 degrees of freedom (2 atoms).  It then does a minimization on the 
+        reduced coordinates and prints off some information
+        
+            import numpy as np
+            from pele.potentials import LJ
+            from pele.utils.frozen_atoms import FrozenPotWrapper
+            from pele.optimize import mylbfgs
+            natoms = 4
+            pot = LJ()
+            
+            reference_coords = np.random.uniform(-1, 1, [3*natoms])
+            print reference_coords
+            
+            #freeze the first two atoms (6 degrees of freedom)
+            frozen_dof = range(6)
+            
+            fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)
+            
+            reduced_coords = fpot.coords_converter.get_reduced_coords(reference_coords)
+            
+            print "the energy in the full representation:" 
+            print pot.getEnergy(reference_coords)
+            print "is the same as the energy in the reduced representation:"
+            print fpot.getEnergy(reduced_coords)
+            
+            ret = mylbfgs(reduced_coords, fpot)
+            print "after a minimization the energy is ", ret.energy, "and the rms gradient is", ret.rms
+            print "the coordinates of the frozen degrees of freedom are unchanged"
+            print "starting coords:", reference_coords
+            print "minimized coords:", fpot.coords_converter.get_full_coords(ret.coords)
+
+        """
+        self.underlying_pot = potential
+        self.coords_converter = FrozenCoordsConverter(reference_coords, frozen_dof)
+
+    def getEnergy(self, coords):
+        fullcoords = self.coords_converter.get_full_coords(coords)
+        e = self.underlying_pot.getEnergy(fullcoords)
+        return e
+    
+    def getEnergyGradient(self, coords):
+        fullcoords = self.coords_converter.get_full_coords(coords)
+        e, grad = self.underlying_pot.getEnergyGradient(fullcoords)
+        grad = self.coords_converter.get_reduced_coords(grad)
+        return e, grad
+
+#    def NumericalHessian(self, coords, eps=1e-6):
+        
+#        """return the Hessian matrix of second derivatives computed numerically
+#        
+#        this takes 2*len(coords) calls to getGradient
+#        """
+#        return base_pote
+#        x = self.coords_converter.get_full_coords(coords)
+#        ndof = len(x)
+#        mobile_dof = self.coords_converter.mobile_dof
+#        hess = np.zeros([len(mobile_dof), len(mobile_dof)])
+#        for i in self.mobile_dof:
+#            xbkup = x[i]
+#            x[i] += eps
+#            g1 = self.underlying_pot.getGradient(x)
+#            x[i] = xbkup - eps
+#            g2 = self.underlying_pot.getGradient(x)            
+#            hess[i,:] = (g1 - g2) / (2. * eps)
+#            x[i] = xbkup
+#        return hess
+
+    def getHessian(self, coords):
+        fullcoords = self.coords_converter.get_full_coords(coords)
+        H = self.underlying_pot.getHessian(fullcoords)
+        Hred = self.coords_converter.get_reduced_hessian(H)
+        return Hred
 
 
 #########################################################
@@ -317,5 +469,35 @@ def test(natoms = 40, boxl=4.):
         except ImportError:
             print "Could not draw using pymol, skipping this step" 
 
+def test2():
+    import numpy as np
+    from pele.potentials import LJ
+    from pele.utils.frozen_atoms import FrozenPotWrapper
+    from pele.optimize import mylbfgs
+    natoms = 4
+    pot = LJ()
+    
+    reference_coords = np.random.uniform(-1, 1, [3*natoms])
+    print reference_coords
+    
+    #freeze the first two atoms (6 degrees of freedom)
+    frozen_dof = range(6)
+    
+    fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)
+    
+    reduced_coords = fpot.coords_converter.get_reduced_coords(reference_coords)
+    
+    print "the energy in the full representation:" 
+    print pot.getEnergy(reference_coords)
+    print "is the same as the energy in the reduced representation:"
+    print fpot.getEnergy(reduced_coords)
+    
+    ret = mylbfgs(reduced_coords, fpot)
+    print "after a minimization the energy is ", ret.energy, "and the rms gradient is", ret.rms
+    print "the coordinates of the frozen degrees of freedom are unchanged"
+    print "starting coords:", reference_coords
+    print "minimized coords:", fpot.coords_converter.get_full_coords(ret.coords)
+    
+
 if __name__ == "__main__":
-    test()
+    test2()

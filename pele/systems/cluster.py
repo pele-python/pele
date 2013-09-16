@@ -52,7 +52,7 @@ class AtomicCluster(BaseSystem):
 
     def get_metric_tensor(self, coords):
         """ metric tensor for all masses m_i=1.0 """
-        return np.identity(coords.size)
+        return None
     
     def get_pgorder(self, coords):
         calculator = PointGroupOrderCluster(self.get_compare_exact())

@@ -25,6 +25,7 @@ class LJCluster(AtomicCluster):
         
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.0
+#        self.params.double_ended_connect.NEBparams.reinterpolate = 1
     
     def get_permlist(self):
         return [range(self.natoms)]
@@ -48,15 +49,17 @@ class LJCluster(AtomicCluster):
             which one to draw.  They are viewed at the same time, so they should be
             visually distinct, e.g. different colors.  accepted values are 1 or 2        
         """
-        from OpenGL import GL,GLUT
-        coords = coordslinear.reshape(coordslinear.size/3, 3)
-        com=np.mean(coords, axis=0)                  
-        for xx in coords:
-            x=xx-com
-            GL.glPushMatrix()            
-            GL.glTranslate(x[0],x[1],x[2])
-            GLUT.glutSolidSphere(0.5,30,30)
-            GL.glPopMatrix()
+        from _opengl_tools import draw_atomic_single_atomtype
+        draw_atomic_single_atomtype(coordslinear, index, subtract_com=True)
+#        from OpenGL import GL,GLUT
+#        coords = coordslinear.reshape(coordslinear.size/3, 3)
+#        com=np.mean(coords, axis=0)                  
+#        for xx in coords:
+#            x=xx-com
+#            GL.glPushMatrix()            
+#            GL.glTranslate(x[0],x[1],x[2])
+#            GLUT.glutSolidSphere(0.5,30,30)
+#            GL.glPopMatrix()
     
     def load_coords_pymol(self, coordslist, oname, index=1):
         """load the coords into pymol
