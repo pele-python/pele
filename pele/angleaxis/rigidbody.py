@@ -96,7 +96,7 @@ class RigidFragment(aatopology.AASiteType):
 
 
     def _determine_inversion(self, permlist):
-        x = np.array(self.atom_positions)
+        x = np.array(self.atom_positions).flatten()
         xi = -x
         exact = ExactMatchAtomicCluster(permlist=permlist, can_invert=False)
         
@@ -106,7 +106,7 @@ class RigidFragment(aatopology.AASiteType):
                 return 
 
     def _determine_rotational_symmetry(self, permlist):
-        x = np.array(self.atom_positions)
+        x = np.array(self.atom_positions).flatten()
         exact = ExactMatchAtomicCluster(permlist=permlist, can_invert=False)
         for rot, invert in exact.standard_alignments(x, x):
             if exact.check_match(x, x, rot, invert):
