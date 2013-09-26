@@ -5,6 +5,7 @@ from pele.optimize.tests import *
 from pele.mindist.tests import *
 #from pele.mindist.minpermdist_rbmol import TestMinPermDistRBMol_OTP
 #from pele.mindist.permutational_alignment import TestMinDistUtils
+from pele.potentials.tests import *
 from pele.potentials.ATLJ import TestATLJ
 from pele.potentials.lj import LJTest
 from pele.potentials.ljcut import LJCutTest

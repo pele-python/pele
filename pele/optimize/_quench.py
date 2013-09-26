@@ -126,7 +126,7 @@ def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
 
 
 def steepest_descent(x0, pot, iprint=-1, dx=1e-4, nsteps=100000,
-                      tol=1e-3, maxstep=-1., event=None):
+                      tol=1e-3, maxstep=-1., events=None):
     if not hasattr(pot, "getEnergyGradient"):
         # for compatibility with old quenchers.
         # assume pot is a getEnergyGradient function
@@ -148,8 +148,9 @@ def steepest_descent(x0, pot, iprint=-1, dx=1e-4, nsteps=100000,
         if iprint > 0:
             if funcalls % iprint == 0: 
                 print "step %8d energy %20.12g rms gradient %20.12g" % (funcalls, E, rms)
-        if event != None:
-            event(E, x, rms)
+        if events is not None:
+            for event in events:
+                event(energy=E, coords=x, rms=rms)
         if rms < tol:
             break
     res = Result()
