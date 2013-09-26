@@ -1,6 +1,7 @@
 import unittest
 
 #from pele.mindist.aamindist import aaDistTest
+from pele.optimize.tests import *
 from pele.mindist.tests import *
 #from pele.mindist.minpermdist_rbmol import TestMinPermDistRBMol_OTP
 #from pele.mindist.permutational_alignment import TestMinDistUtils
