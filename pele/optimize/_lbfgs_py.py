@@ -101,10 +101,8 @@ class LBFGS(object):
         
         self.s = np.zeros([self.M, self.N])  #position updates
         self.y = np.zeros([self.M, self.N])  #gradient updates
-        self.a = np.zeros(self.M)  #approximation for the inverse hessian
+#        self.a = np.zeros(self.M)  #approximation for the inverse hessian
         #self.beta = np.zeros(M) #working space
-        
-        self.q = np.zeros(self.N)  #working space
         
         if H0 is None:
             self.H0 = 1.
@@ -121,22 +119,13 @@ class LBFGS(object):
         self.y[0,:] = self.G
         self.rho[0] = 0. #1. / np.dot(X,G)
         
-        self.stp = np.zeros(self.N)
-
         self.Xold = self.X.copy()
         self.Gold = self.G.copy()
         
         self.nfailed = 0
-        self.nfail_reset = 0
         
         self.iter_number = 0
         self.result = Result()
-    
-#    def getEnergyGradient(self, x):
-#        e, g = self.pot.getEnergyGradient(x)
-#        self.funcalls += 1
-#        self.rms = np.linalg.norm(g) / np.sqrt(self.N)
-#        return e, g
     
     def getStep(self, X, G):
         """
@@ -152,8 +141,6 @@ class LBFGS(object):
         
         s = self.s
         y = self.y
-        a = self.a
-        q = self.q
         rho = self.rho
         M = self.M
         
@@ -189,7 +176,8 @@ class LBFGS(object):
         self.Gold[:] = G[:]
 
         
-        q[:] = G[:]
+        q = G.copy()
+        a = np.zeros(self.M)
         myrange = [ i % M for i in range(max([0, k - M]), k, 1) ]
         #print "myrange", myrange, ki, k
         for i in reversed(myrange):
@@ -203,19 +191,15 @@ class LBFGS(object):
             beta = rho[i] * np.dot( y[i,:], z )
             z += s[i,:] * (a[i] - beta)
         
-        self.stp[:] = -z[:]
+        stp = -z.copy()
         
         if k == 0:
             #make first guess for the step length cautious
             gnorm = np.linalg.norm(G)
-            self.stp *= min(gnorm, 1. / gnorm)
-        
-        #we now have the step direction.  now take the step
-        #self.takeStep(X, self.stp)
-        #print "step size", np.linalg.norm(self.stp)
+            stp *= min(gnorm, 1. / gnorm)
         
         self.k += 1
-        return self.stp
+        return stp
 
     def adjustStepSize(self, X, E, G, stp):
         """
@@ -243,16 +227,14 @@ class LBFGS(object):
         X0 = X.copy()
         G0 = G.copy()
         E0 = E
-        maxErise = self.maxErise
         
         if np.dot(G, stp) > 0:
             #print "overlap was negative, reversing step direction"
             stp = -stp
-            self.stp = stp
         
         stepsize = np.linalg.norm(stp)
         
-        if f*stepsize > self.maxstep:
+        if f * stepsize > self.maxstep:
             f = self.maxstep / stepsize
         #print "dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
 
@@ -262,14 +244,17 @@ class LBFGS(object):
             X = X0 + f * stp
             E, G = self.pot.getEnergyGradient(X)
             self.funcalls += 1
-            
+
+            # get the increase in energy            
             if self.rel_energy: 
                 if E == 0: E = 1e-100
                 dE = (E - E0)/abs(E)
                 #print dE
             else:
                 dE = E - E0
-            if dE <= maxErise:
+
+            # if the increase is greater than maxErise reduce the step size
+            if dE <= self.maxErise:
                 break
             else:
                 if self.debug:
@@ -283,26 +268,17 @@ class LBFGS(object):
             self.nfailed += 1
             if self.nfailed > 10:
                 raise(LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
-            if True:
-                #print "lbfgs: having trouble finding a good step size. dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
-                self.logger.warning("lbfgs: having trouble finding a good step size. %s %s", f*stepsize, stepsize)
-                #print "resetting H0"
-                #print self.H0
-                #self.nfail_reset += 1
-                if self.nfail_reset > 10:
-                    raise(LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
-                self.reset()
-                #self.nfailed = 0
-                E = E0
-                G = G0
-                X = X0
+
+            # abort the linesearch, reset the memory and reset the coordinates            
+            #print "lbfgs: having trouble finding a good step size. dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
+            self.logger.warning("lbfgs: having trouble finding a good step size. %s %s", f*stepsize, stepsize)
+            self.reset()
+            E = E0
+            G = G0
+            X = X0
+            f = 0.
         
-        if False and self.k <= 1:
-            print G0
-            print stp
-            print G
-            
-        self.stepsize = f*stepsize
+        self.stepsize = f * stepsize
         return X, E, G
     
     def reset(self):
