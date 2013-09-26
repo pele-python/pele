@@ -70,18 +70,23 @@ class LBFGS(object):
     lbfgs_py : a function wrapper
     
     """
-    def __init__(self, X, pot, maxstep = 0.1, maxErise = 1e-4, M=4, 
-                 rel_energy = False, H0=1., events=[],
+    def __init__(self, X, pot, maxstep=0.1, maxErise=1e-4, M=4, 
+                 rel_energy=False, H0=1., events=None,
                  alternate_stop_criterion=None, debug=False,
                  iprint=-1, nsteps=10000, tol=1e-6, logger=None):
         self.X = X
+        self.N = len(X)
+        self.M = M 
         self.pot = pot
-        e, self.G = self.pot.getEnergyGradient(self.X)
+        self.energy, self.G = self.pot.getEnergyGradient(self.X)
+        self.rms = np.linalg.norm(self.G) / np.sqrt(self.N)
+
         self.funcalls = 1
         self.maxstep = maxstep
         self.maxErise = maxErise
         self.rel_energy = rel_energy #use relative energy comparison for maxErise 
         self.events = events #a list of events to run during the optimization
+        if self.events is None: self.events = []
         self.iprint = iprint
         self.nsteps = nsteps
         self.tol = tol
@@ -93,17 +98,13 @@ class LBFGS(object):
         self.alternate_stop_criterion = alternate_stop_criterion
         self.debug = debug #print debug messages
         
-        self.N = len(X)
-        self.M = M 
-        N = self.N
-        M = self.M
         
-        self.s = np.zeros([M,N])  #position updates
-        self.y = np.zeros([M,N])  #gradient updates
-        self.a = np.zeros(M)  #approximation for the inverse hessian
+        self.s = np.zeros([self.M, self.N])  #position updates
+        self.y = np.zeros([self.M, self.N])  #gradient updates
+        self.a = np.zeros(self.M)  #approximation for the inverse hessian
         #self.beta = np.zeros(M) #working space
         
-        self.q = np.zeros(N)  #working space
+        self.q = np.zeros(self.N)  #working space
         
         if H0 is None:
             self.H0 = 1.
@@ -120,13 +121,22 @@ class LBFGS(object):
         self.y[0,:] = self.G
         self.rho[0] = 0. #1. / np.dot(X,G)
         
-        self.stp = np.zeros(N)
+        self.stp = np.zeros(self.N)
 
         self.Xold = self.X.copy()
         self.Gold = self.G.copy()
         
         self.nfailed = 0
         self.nfail_reset = 0
+        
+        self.iter_number = 0
+        self.result = Result()
+    
+#    def getEnergyGradient(self, x):
+#        e, g = self.pot.getEnergyGradient(x)
+#        self.funcalls += 1
+#        self.rms = np.linalg.norm(g) / np.sqrt(self.N)
+#        return e, g
     
     def getStep(self, X, G):
         """
@@ -180,7 +190,7 @@ class LBFGS(object):
 
         
         q[:] = G[:]
-        myrange = [ i % M for i in range(max([0,k-M]), k, 1) ]
+        myrange = [ i % M for i in range(max([0, k - M]), k, 1) ]
         #print "myrange", myrange, ki, k
         for i in reversed(myrange):
             a[i] = rho[i] * np.dot( s[i,:], q )
@@ -198,7 +208,7 @@ class LBFGS(object):
         if k == 0:
             #make first guess for the step length cautious
             gnorm = np.linalg.norm(G)
-            self.stp *= min(gnorm, 1./gnorm)
+            self.stp *= min(gnorm, 1. / gnorm)
         
         #we now have the step direction.  now take the step
         #self.takeStep(X, self.stp)
@@ -301,8 +311,50 @@ class LBFGS(object):
     
     def attachEvent(self, event):
         self.events.append(event)
-                
+    
+    def one_iteration(self):
+        """do one iteration of the lbfgs loop
+        """
+        stp = self.getStep(self.X, self.G)
+        
+        self.X, self.energy, self.G = self.adjustStepSize(self.X, self.energy, self.G, stp)
+        
+        self.rms = np.linalg.norm(self.G) / np.sqrt(self.N)
+
+        
+        if self.iprint > 0 and self.iter_number % self.iprint == 0:
+            self.logger.info("lbfgs: %s %s %s %s %s %s %s %s %s", self.iter_number, "E", self.energy, 
+                             "rms", self.rms, "funcalls", self.funcalls, "stepsize", self.stepsize)
+        for event in self.events:
+            event(coords=self.X, energy=self.energy, rms=self.rms)
+  
+        self.iter_number += 1
+        return True
+
+    def stop_criterion_satisfied(self):
+        if self.alternate_stop_criterion is None:
+            return self.rms < self.tol
+        else:
+            return self.alternate_stop_criterion(energy=self.energy, gradient=self.G, 
+                                                 tol=self.tol, coords=self.X)
+
+    
     def run(self):
+        while self.iter_number < self.nsteps and not self.stop_criterion_satisfied():
+            try:
+                self.one_iteration()
+            except LineSearchError:
+                self.logger.error("problem with adjustStepSize, ending quench")
+                self.rms = np.linalg.norm(self.G) / np.sqrt(self.N)
+                self.logger.error("    on failure: quench step %s %s %s %s", self.iter_number, self.energy, self.rms, self.funcalls)
+                self.result.message.append( "problem with adjustStepSize" )
+                break
+        
+        return self.get_result()
+            
+
+    
+    def run_old(self):
         """
         the main loop of the algorithm
         """
@@ -329,14 +381,14 @@ class LBFGS(object):
                 X, e, G = self.adjustStepSize(X, e, G, stp)
             except LineSearchError:
                 self.logger.error("problem with adjustStepSize, ending quench")
-                rms = np.linalg.norm(G) / sqrtN
+                rms = np.linalg.norm(G) / np.sqrt(self.N)
                 self.logger.error("    on failure: quench step %s %s %s %s", i, e, rms, self.funcalls)
                 res.message.append( "problem with adjustStepSize" )
                 break
             #e, G = self.pot.getEnergyGradient(X)
             
-            rms = np.linalg.norm(G) / sqrtN
-
+            rms = np.linalg.norm(G) / np.sqrt(self.N)
+    
             
             if iprint > 0:
                 if i % iprint == 0:
@@ -355,7 +407,7 @@ class LBFGS(object):
                 res.success = True
                 break
             i += 1
-        
+
         res.nsteps = i
         res.nfev = self.funcalls
         res.coords = X
@@ -363,6 +415,18 @@ class LBFGS(object):
         res.rms = rms
         res.grad = G
         res.H0 = self.H0
+        return res
+    
+    def get_result(self):
+        res = self.result
+        res.nsteps = self.iter_number
+        res.nfev = self.funcalls
+        res.coords = self.X
+        res.energy = self.energy
+        res.rms = self.rms
+        res.grad = self.G
+        res.H0 = self.H0
+        res.success = self.stop_criterion_satisfied()
         return res
 
 #
@@ -431,7 +495,7 @@ def runtest(X, pot, natoms = 100, iprint=-1):
         import pele.utils.pymolwrapper as pym
         pym.start()
         for n, coords in enumerate(printevent.coordslist):
-            coords=coords.reshape(natoms, 3)
+            coords = coords.reshape([-1, 3])
             pym.draw_spheres(coords, "A", n)
     except ImportError:
         print "error loading pymol"
