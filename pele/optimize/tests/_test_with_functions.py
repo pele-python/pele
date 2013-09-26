@@ -11,9 +11,6 @@ class TestOptimizersBeale(unittest.TestCase):
         self.pot = self.system.get_potential()
         
         
-        self.minimizers = [_quench.mylbfgs, _quench.lbfgs_py,
-                           _quench.bfgs_scipy, _quench.fire
-                           ]
         self.x = self.pot.target_coords.copy() 
         self.x += np.random.uniform(-0.2, 0.2, self.x.shape)
 
@@ -38,6 +35,17 @@ class TestOptimizersBeale(unittest.TestCase):
     def test_bfgs_scipy(self):
         self.do_test(_quench.bfgs_scipy)
 
+
+class TestOptimizeBooth(TestOptimizersBeale):
+    def setUp(self):
+#        np.random.seed(0)
+        self.system = test_functions.BoothSystem()
+        self.pot = self.system.get_potential()
+        
+        
+        self.x = self.pot.target_coords.copy() 
+#        self.x += np.random.uniform(-0.1, 0.1, self.x.shape)
+        self.x = self.system.get_random_configuration()
 
 
 

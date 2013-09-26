@@ -1,13 +1,13 @@
 import unittest
 import numpy as np
-from pele.potentials.test_functions import BealeSystem
+from pele.potentials.test_functions import BoothSystem
 
 import _base_test
 
 
-class TestBeale(_base_test._BaseTest):
+class TestBooth(_base_test._BaseTest):
     def setUp(self):
-        self.system = BealeSystem()
+        self.system = BoothSystem()
         self.pot = self.system.get_potential()
         self.xmin = self.pot.target_coords
         self.Emin = self.pot.target_E
