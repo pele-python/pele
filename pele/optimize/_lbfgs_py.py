@@ -1,5 +1,6 @@
 import numpy as np
 import logging
+from collections import namedtuple
 
 #from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
@@ -127,6 +128,28 @@ class LBFGS(object):
         self.iter_number = 0
         self.result = Result()
     
+    def get_state(self):
+        State = namedtuple("State", "s y rho k H0 Xold Gold")
+        state = State(s=self.s.copy(), y=self.y.copy(),
+                      rho=self.rho.copy(), k=self.k, H0=self.H0,
+                      Xold=self.Xold.copy(), Gold=self.Gold.copy())
+        return state
+    
+    def set_state(self, state):
+        self.s = state.s
+        self.y = state.y
+        self.rho = state.rho
+        self.k = state.k
+        self.H0 = state.H0
+        self.Xold = state.Xold
+        self.Gold = state.Gold
+        assert self.s.shape == (self.M, self.N)
+        assert self.y.shape == (self.M, self.N)
+        assert self.rho.shape == (self.M,)
+        assert self.Xold.shape == (self.N,)
+        assert self.Gold.shape == (self.N,)
+        
+    
     def getStep(self, X, G):
         """
         Calculate a step direction and step size using the 
@@ -137,7 +160,7 @@ class LBFGS(object):
         Liu and Nocedal 1989
         http://dx.doi.org/10.1007/BF01589116
         """
-        self.G = G #saved for the line search
+#        self.G = G #saved for the line search
         
         s = self.s
         y = self.y
