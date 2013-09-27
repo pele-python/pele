@@ -39,7 +39,7 @@ class LowestEigPot(basepot):
     def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-3):
         self.coords = np.copy(coords)
         self.pot = pot
-        self.E, self.G = self.pot.getEnergyGradient(self.coords)
+#        self.E, self.G = self.pot.getEnergyGradient(self.coords)
         if orthogZeroEigs == 0:
             self.orthogZeroEigs = orthogopt
         else:
