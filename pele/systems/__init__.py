@@ -155,4 +155,5 @@ from cluster import *
 from ljcluster import *
 from bljcluster import *
 from morse_cluster import MorseCluster
+from ljcluster_frozen import LJClusterFrozen
 

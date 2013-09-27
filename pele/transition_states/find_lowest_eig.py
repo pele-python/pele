@@ -4,16 +4,16 @@ import logging
 from pele.optimize import Result
 
 from pele.transition_states import orthogopt
-from pele.potentials.potential import potential as basepot
+from pele.potentials.potential import BasePotential
 #from pele.optimize.lbfgs_py import LBFGS
 from pele.optimize import MYLBFGS
 import pele.utils.rotations as rotations
 
-__all__ = ["findLowestEigenVector"]
+__all__ = ["findLowestEigenVector", "analyticalLowestEigenvalue", "FindLowestEigenVector"]
 
 #logger = logging.getLogger("pele.connect.findTS")
 
-class LowestEigPot(basepot):
+class LowestEigPot(BasePotential):
     """
     this is a potential wrapper designed to use optimization to find the eigenvector
     which corresponds to the lowest eigenvalue
@@ -48,6 +48,29 @@ class LowestEigPot(basepot):
                 
         self.diff = dx
     
+    def update_coords(self, coords):
+        self.coords = coords.copy()
+    
+    def getEnergy(self, vec_in):
+        vecl = 1.
+        vec_in /= np.linalg.norm(vec_in)
+        if self.orthogZeroEigs is not None:
+            vec_in = self.orthogZeroEigs(vec_in, self.coords)
+            #vec_in /= np.linalg.norm(vec_in)
+
+        #now normalize
+        vec = vec_in / np.linalg.norm(vec_in)
+        coordsnew = self.coords - self.diff * vec
+        Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
+        
+        coordsnew = self.coords + self.diff * vec
+        Eplus, Gplus = self.pot.getEnergyGradient(coordsnew)
+        
+        #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
+        
+        diag2 = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
+        return diag2
+        
     
     def getEnergyGradient(self, vec_in):
         """
@@ -70,25 +93,65 @@ class LowestEigPot(basepot):
         
         #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
         
-        diag2 = np.sum((Gplus - Gminus) * vec) / (2.0 * self.diff)
+        # use first order central difference method.
+        diag2 = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
         
-        """
-        DIAG3=2*(DIAG-DIAG2/2)
-        C  Although DIAG3 is a more accurate estimate of the diagonal second derivative, it
-        C  cannot be differentiated analytically.
-        """
-        
+        # second order central differences would be more accurate but it cannot be differentiated analytically
+        # DIAG = (EPLUS + EMINUS - 2. * ENERGY) / (self.diff)
+        # DIAG3=2*(DIAG-DIAG2/2)
+        # C  Although DIAG3 is a more accurate estimate of the diagonal second derivative, it
+        # C  cannot be differentiated analytically.
+
+        # compute the analytical derivative of the curvature with respect to vec        
         #GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2
         grad = (Gplus - Gminus) / (self.diff * vecl**2) - 2.0 * diag2 * vec / vecl**2
         if self.orthogZeroEigs is not None:
             grad = self.orthogZeroEigs(grad, self.coords)
-        """
-        C  Project out any component of the gradient along vec (which is a unit vector)
-        C  This is a big improvement for DFTB.
-        """
+        
+        # Project out any component of the gradient along vec (which is a unit vector)
+        # This is a big improvement for DFTB.
         grad -= np.dot(grad, vec) * vec
         
         return diag2, grad
+
+class FindLowestEigenVector(object):
+    def __init__(self, coords, pot, eigenvec0=None, orthogZeroEigs=0, dx=1e-3, **minimizer_kwargs):
+        
+        self.minimizer_kwargs = minimizer_kwargs
+        
+        if eigenvec0 is None:
+            #this random vector should be distributed uniformly on a hypersphere.
+            eigenvec0 = rotations.vec_random_ndim(coords.shape)
+        eigenvec0 = eigenvec0 / np.linalg.norm(eigenvec0)
+
+        self.eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx)
+        self.minimizer = MYLBFGS(eigenvec0, self.eigpot, rel_energy=True, 
+                                 **self.minimizer_kwargs)
+
+    
+    def update_coords(self, coords, energy=None, grad=None):
+        self.eigpot.update_coords(coords)
+        state = self.minimizer.get_state()
+        ret = self.get_result()
+        self.minimizer = MYLBFGS(ret.eigenvec, self.eigpot, rel_energy=True, 
+                                 **self.minimizer_kwargs)
+        self.minimizer.set_state(state)
+    
+    def run(self, niter):
+        for i in xrange(niter):
+            if self.minimizer.stop_criterion_satisfied():
+                break
+            self.minimizer.one_iteration()
+        return self.get_result()
+        
+    def get_result(self):
+        res = self.minimizer.get_result()
+        res.eigenval = res.energy
+        res.eigenvec = res.coords / np.linalg.norm(res.coords)
+        delattr(res, "energy")
+        delattr(res, "coords")
+        res.minimizer_state = self.minimizer.get_state()
+        return res
 
 def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=None, orthogZeroEigs=0, dx=1e-3, **kwargs):
     """
@@ -163,6 +226,15 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=
     #res.success = res.rms <= tol
     return res
 
+def analyticalLowestEigenvalue(coords, pot):
+    """return the lowest eigenvalue and eigenvector of the hessian computed directly"""
+    from pele.utils.hessian import get_sorted_eig
+    """for testing"""
+    hess = pot.getHessian(coords)
+    vals, vecs = get_sorted_eig(hess)
+    
+    return vals[0], vecs[:,0]
+    
 
 #
 #
@@ -170,30 +242,6 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=
 #
 #
 
-def _analyticalLowestEigenvalue(coords, pot):
-    """for testing"""
-    e, g, hess = pot.getEnergyGradientHessian(coords)
-    #print "shape hess", np.shape(hess)
-    #print "hessian", hess
-    u, v = np.linalg.eig(hess)
-    #print "max imag value", np.max(np.abs(u.imag))
-    #print "max imag vector", np.max(np.abs(v.imag))
-    u = u.real
-    v = v.real
-    #print "eigenvalues", u
-    #for i in range(len(u)):
-    #    print "eigenvalue", u[i], "eigenvector", v[:,i]
-    #find minimum eigenvalue, vector
-    imin = 0
-    umin = 10.
-    for i in range(len(u)):
-        if np.abs(u[i]) < 1e-10: continue
-        if u[i] < umin:
-            umin = u[i]
-            imin = i
-    #print "analytical lowest eigenvalue ", umin, imin
-    #print "lowest eigenvector", v[:,imin]
-    return umin, v[:,imin]
 
 
   
