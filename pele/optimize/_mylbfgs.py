@@ -1,5 +1,6 @@
 import numpy as np
 import logging
+from collections import namedtuple
 
 #from bfgs import lineSearch, BFGS
 from pele.optimize import LBFGS
@@ -34,11 +35,11 @@ class MYLBFGS(LBFGS):
         M = self.M
         
         #in fortran mylbfgs H0 is a vector of length N with all the elements the same
-        self.H0vec = np.ones(N) * self.H0 #initial guess for the hessian
+        self.H0vec = np.ones(N) * self.H0 # initial guess for the hessian
 
-        self.W = np.zeros(N*(2*M+1)+2*M) #mylbfgs working space
-        self.iter = 0
-        self.point = 0
+        self.W = np.zeros(N * (2 * M + 1) + 2 * M) # mylbfgs working space
+        self._iter = 0
+        self._point = 0
         
     
     def getStep(self, X, G):
@@ -49,7 +50,7 @@ class MYLBFGS(LBFGS):
         self.X = X
         self.G = G
         #save the position and gradient change
-        if self.iter > 0:
+        if self._iter > 0:
             N = self.N
             M = self.M
             
@@ -60,7 +61,7 @@ class MYLBFGS(LBFGS):
             ISPT= N + 2*M     # index for storage of search steps
             IYPT= ISPT + N*M  # index for storage of gradient differences
 
-            NPT = N*((self.point + M - 1) % M)  
+            NPT = N*((self._point + M - 1) % M)  
             #s = X - self.Xold
             #y = G - self.Gold
             #print "YS YY py", np.dot( y, s ), np.dot( y,y ), ISPT+NPT
@@ -70,18 +71,39 @@ class MYLBFGS(LBFGS):
         self.Gold = G.copy()
 
         
-        #print self.iter, self.point
-        self.stp = mylbfgs_updatestep(self.iter, self.M, G, self.W, self.H0vec, self.point)
+        #print self._iter, self._point
+        self.stp = mylbfgs_updatestep(self._iter, self.M, G, self.W, self.H0vec, self._point)
         
         #print "stp", np.linalg.norm(self.stp), self.stp
         #print "G", self.G
         #print "overlap", np.dot(self.stp, self.G)
         #print "H0", self.H0
         self.H0 = self.H0vec[0]
-        self.iter += 1
-        self.point = self.iter % self.M
+        self._iter += 1
+        self._point = self._iter % self.M
         
         return self.stp
+
+    def get_state(self):
+        State = namedtuple("State", "W Xold Gold iter point H0")
+        state = State(W=self.W.copy(), Xold=self.Xold.copy(), Gold=self.Gold.copy(),
+                      iter=self._iter, point=self._point, H0=self.H0vec[0]
+                      )
+        return state
+    
+    def set_state(self, state):
+        self.W = state.W
+        self.Xold = state.Xold
+        self.Gold = state.Gold
+        self._iter = state.iter
+        self._point = state.point
+        self.H0 = state.H0
+        self.H0vec = np.ones(self.N) * self.H0
+        assert self.Xold.shape == (self.N,)
+        assert self.Gold.shape == (self.N,)
+        assert self.W.size == (self.N * (2 * self.M + 1) + 2 * self.M)
+        
+        
 
 
 #class LBFGS(MYLBFGS):
