@@ -1,23 +1,36 @@
 import numpy as np
 
-from pele.transition_states import findLowestEigenVector
+from pele.transition_states import FindLowestEigenVector, analyticalLowestEigenvalue
 from pele.optimize import MYLBFGS, Result
 from pele.utils import rotations
 
-def _run_dimer(dimer, minimizer):
+def _run_dimer(dimer, minimizer, find_lowest_eigenvec):
+    # find the lowest eigenvector for the first time
+    ret = find_lowest_eigenvec.run(100)
+    dimer.update_eigenvec(ret.eigenvec, ret.eigenval)
+
+    print "trans rot", dimer.n_translational_steps, dimer.n_rotational_steps
     while True:
+        print "translating dimer"
         for i in xrange(dimer.n_translational_steps):
             if minimizer.stop_criterion_satisfied() or minimizer.iter_number >= minimizer.nsteps:
                 return
             minimizer.one_iteration()
-        ret = minimizer.get_result()
-        dimer.update_eigenvec(ret.coords)
+        
+        # update the eigenvector
+        print "updating eigenvector"
+        mret = minimizer.get_result()
+        find_lowest_eigenvec.update_coords(mret.coords)
+        ret = find_lowest_eigenvec.run(dimer.n_rotational_steps)
+        dimer.update_eigenvec(ret.eigenvec, ret.eigenval)
 
 
 def find_TS_generalized_dimer(coords, potential, eigenvec0=None, minimizer_class=MYLBFGS,
+                              leig_kwargs=None,
                               dimer_kwargs=None, minimizer_kwargs=None):
     if dimer_kwargs is None: dimer_kwargs = {}
     if minimizer_kwargs is None: minimizer_kwargs = {}
+    if leig_kwargs is None: leig_kwargs = {}
     if eigenvec0 is None:
         eigenvec0 = rotations.vec_random_ndim(coords.shape)
     eigenvec0 /= np.linalg.norm(eigenvec0)
@@ -25,12 +38,13 @@ def find_TS_generalized_dimer(coords, potential, eigenvec0=None, minimizer_class
     
     dimer_kwargs["auto_rotate"] = False
 
+    find_lowest_eigenvec = FindLowestEigenVector(coords, potential, eigenvec0=eigenvec0, orthogZeroEigs=0, **leig_kwargs)
+
     dimer = GeneralizedDimer(potential, eigenvec0, **dimer_kwargs)
     
     
     minimizer = minimizer_class(coords, dimer, **minimizer_kwargs)
-    dimer.update_eigenvec(coords)
-    _run_dimer(dimer, minimizer)
+    _run_dimer(dimer, minimizer, find_lowest_eigenvec)
     
     qres = minimizer.get_result()
     
@@ -54,12 +68,11 @@ def find_TS_generalized_dimer(coords, potential, eigenvec0=None, minimizer_class
 class GeneralizedDimer(object):
     """
     """
-    def __init__(self, potential, eigenvec0, find_lowest_eigenvector=findLowestEigenVector,
+    def __init__(self, potential, eigenvec0,
                  n_translational_steps=5, n_rotational_steps=20, leig_H0=None,
                  leig_kwargs=None, auto_rotate=True,
                  ):
         self.potential = potential
-        self.find_lowest_eigenvector = find_lowest_eigenvector
         self.eigenvec = eigenvec0 / np.linalg.norm(eigenvec0)
     
         self.n_translational_steps = n_translational_steps
@@ -83,25 +96,33 @@ class GeneralizedDimer(object):
         self.nfev += 1
         return e, g
 
-    def update_eigenvec(self, x, n_rotational_steps=None):
-        if n_rotational_steps is None:
-            n_rotational_steps = self.n_rotational_steps
-        ret = self.find_lowest_eigenvector(x, self.potential, eigenvec0=self.eigenvec, H0=self._H0, 
-                                           minimizer_state=self._leig_minimizer_state,
-                                           nsteps=n_rotational_steps, 
-                                           **self.leig_kwargs)
-        self._H0 = ret.H0
-        self._leig_minimizer_state = ret.minimizer_state
-        self.eigenvec = ret.eigenvec
-        self.eigenval = ret.eigenval
-        self.nfev += ret.nfev
+    def update_eigenvec_analytical(self, x, **kwargs):
+        self.eigenval, self.eigenvec = analyticalLowestEigenvalue(x, self.potential)
+        self.nfev += 1
+
+#    def update_eigenvec(self, x, n_rotational_steps=None):
+#        if n_rotational_steps is None:
+#            n_rotational_steps = self.n_rotational_steps
+#        ret = self.find_lowest_eigenvector(x, self.potential, eigenvec0=self.eigenvec, H0=self._H0, 
+#                                           minimizer_state=self._leig_minimizer_state,
+#                                           nsteps=n_rotational_steps, 
+#                                           **self.leig_kwargs)
+#        self._H0 = ret.H0
+#        self._leig_minimizer_state = ret.minimizer_state
+#        self.eigenvec = ret.eigenvec
+#        self.eigenval = ret.eigenval
+#        self.nfev += ret.nfev
+    
+    def update_eigenvec(self, eigenvec, eigenval):
+        self.eigenvec = eigenvec
+        self.eigenval = eigenval
     
     def getEnergyGradient(self, x):
         """this is the main loop of the program.  it will be called by the optimizer
         
         """
-        if self.iter_number % self.n_translational_steps == 0 and self.auto_rotate:
-            self.update_eigenvec(x)
+#        if self.iter_number % self.n_translational_steps == 0 and self.auto_rotate:
+#            self.update_eigenvec(x)
         
         self.iter_number += 1
         e, g = self.getEnergyGradientInverted(x)
