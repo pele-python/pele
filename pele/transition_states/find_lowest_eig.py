@@ -110,6 +110,7 @@ class LowestEigPot(BasePotential):
         
         # Project out any component of the gradient along vec (which is a unit vector)
         # This is a big improvement for DFTB.
+        # js850> this has no effect.  grad should already be perpendicular to vec
         grad -= np.dot(grad, vec) * vec
         
         return diag2, grad
@@ -129,11 +130,12 @@ class FindLowestEigenVector(object):
                                  **self.minimizer_kwargs)
 
     
-    def update_coords(self, coords, energy=None, grad=None):
+    def update_coords(self, coords, energy=None, gradient=None):
+        """update the position at which to compute the eigenvector"""
         self.eigpot.update_coords(coords)
         state = self.minimizer.get_state()
         ret = self.get_result()
-        self.minimizer = MYLBFGS(ret.eigenvec, self.eigpot, rel_energy=True, 
+        self.minimizer = MYLBFGS(ret.eigenvec, self.eigpot, rel_energy=True,
                                  **self.minimizer_kwargs)
         self.minimizer.set_state(state)
     

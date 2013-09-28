@@ -50,6 +50,10 @@ class LBFGS(object):
         print debugging information
     logger : logger object
         messages will be passed to this logger rather than the default
+    energy, gradient : float, float array
+        the initial energy and gradient.  If these are both not None then the
+        energy and gradient of the initial point will not be calculated, saving
+        one potential call.
          
     Notes
     -----
@@ -74,12 +78,18 @@ class LBFGS(object):
     def __init__(self, X, pot, maxstep=0.1, maxErise=1e-4, M=4, 
                  rel_energy=False, H0=1., events=None,
                  alternate_stop_criterion=None, debug=False,
-                 iprint=-1, nsteps=10000, tol=1e-6, logger=None):
+                 iprint=-1, nsteps=10000, tol=1e-6, logger=None,
+                 energy=None, gradient=None,
+                 ):
         self.X = X
         self.N = len(X)
         self.M = M 
         self.pot = pot
-        self.energy, self.G = self.pot.getEnergyGradient(self.X)
+        if energy is not None and gradient is not None:
+            self.energy = energy
+            self.G = gradient
+        else:
+            self.energy, self.G = self.pot.getEnergyGradient(self.X)
         self.rms = np.linalg.norm(self.G) / np.sqrt(self.N)
 
         self.funcalls = 1

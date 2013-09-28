@@ -4,30 +4,32 @@ from pele.transition_states import FindLowestEigenVector, analyticalLowestEigenv
 from pele.optimize import MYLBFGS, Result
 from pele.utils import rotations
 
-def _run_dimer(dimer, minimizer, find_lowest_eigenvec):
+def _run_dimer(dimer, translator, rotator):
     # find the lowest eigenvector for the first time
-    ret = find_lowest_eigenvec.run(100)
+    ret = rotator.run(100)
     dimer.update_eigenvec(ret.eigenvec, ret.eigenval)
 
     print "trans rot", dimer.n_translational_steps, dimer.n_rotational_steps
     while True:
+        # translate the dimer
         print "translating dimer"
         for i in xrange(dimer.n_translational_steps):
-            if minimizer.stop_criterion_satisfied() or minimizer.iter_number >= minimizer.nsteps:
+            if translator.stop_criterion_satisfied() or translator.iter_number >= translator.nsteps:
                 return
-            minimizer.one_iteration()
+            translator.one_iteration()
         
-        # update the eigenvector
-        print "updating eigenvector"
-        mret = minimizer.get_result()
-        find_lowest_eigenvec.update_coords(mret.coords)
-        ret = find_lowest_eigenvec.run(dimer.n_rotational_steps)
+        # update the eigenvector (rotate the dimer)
+        print "rotating dimer"
+        mret = translator.get_result()
+        rotator.update_coords(mret.coords)#, energy=dimer.energy, gradient=dimer.true_gradient)
+        ret = rotator.run(dimer.n_rotational_steps)
         dimer.update_eigenvec(ret.eigenvec, ret.eigenval)
 
 
 def find_TS_generalized_dimer(coords, potential, eigenvec0=None, minimizer_class=MYLBFGS,
                               leig_kwargs=None,
                               dimer_kwargs=None, minimizer_kwargs=None):
+    # check the keyword dictionaries
     if dimer_kwargs is None: dimer_kwargs = {}
     if minimizer_kwargs is None: minimizer_kwargs = {}
     if leig_kwargs is None: leig_kwargs = {}
@@ -38,15 +40,19 @@ def find_TS_generalized_dimer(coords, potential, eigenvec0=None, minimizer_class
     
     dimer_kwargs["auto_rotate"] = False
 
-    find_lowest_eigenvec = FindLowestEigenVector(coords, potential, eigenvec0=eigenvec0, orthogZeroEigs=0, **leig_kwargs)
+    # set up the object that will maintain the rotation of the dimer
+    rotator = FindLowestEigenVector(coords, potential, eigenvec0=eigenvec0, orthogZeroEigs=0, **leig_kwargs)
 
+    # set up the dimer potential
     dimer = GeneralizedDimer(potential, eigenvec0, **dimer_kwargs)
     
+    # set up the optimizer that will translate the dimer
+    translator = minimizer_class(coords, dimer, **minimizer_kwargs)
     
-    minimizer = minimizer_class(coords, dimer, **minimizer_kwargs)
-    _run_dimer(dimer, minimizer, find_lowest_eigenvec)
+    # optimize the dimer
+    _run_dimer(dimer, translator, rotator)
     
-    qres = minimizer.get_result()
+    qres = translator.get_result()
     
     res = Result()
     res.eigenval = dimer.eigenval
@@ -114,7 +120,7 @@ class GeneralizedDimer(object):
 #        self.nfev += ret.nfev
     
     def update_eigenvec(self, eigenvec, eigenval):
-        self.eigenvec = eigenvec
+        self.eigenvec = eigenvec.copy()
         self.eigenval = eigenval
     
     def getEnergyGradient(self, x):

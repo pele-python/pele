@@ -21,6 +21,7 @@ class TestEigPot(unittest.TestCase):
         e, g = self.eigpot.getEnergyGradient(self.x)
         gnum = self.eigpot.NumericalDerivative(self.x)
         
+        print np.max(np.abs(g)), np.max(np.abs(gnum))
         self.assertLess(np.max(np.abs(g-gnum)) / np.max(np.abs(g)), 1e-6)
         self.assertAlmostEqual(e, e1, 6)
         
