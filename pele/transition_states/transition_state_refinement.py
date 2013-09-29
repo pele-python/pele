@@ -136,6 +136,7 @@ class FindTransitionState(object):
                  nsteps_tangent1=10,
                  nsteps_tangent2=100,
                  verbosity=1,
+                 first_order=False,
                  ):
         self.pot = pot
         self.coords = np.copy(coords)
@@ -154,6 +155,7 @@ class FindTransitionState(object):
         self.tangent_space_quench_params = dict(tangentSpaceQuenchParams.items())
         self.demand_initial_negative_vec = demand_initial_negative_vec    
         self.npositive_max = max(10, self.nsteps / 5)
+        self.first_order = first_order
         
         self.rmsnorm = 1./np.sqrt(float(len(coords)))
         self.oldeigenvec = None
@@ -343,7 +345,7 @@ class FindTransitionState(object):
         
     def _getLowestEigenVector(self, coords, i):
         res = findLowestEigenVector(coords, self.pot, H0=self.H0_leig, eigenvec0=self.eigenvec, 
-                                    orthogZeroEigs=self.orthogZeroEigs,
+                                    orthogZeroEigs=self.orthogZeroEigs, first_order=self.first_order,
                                     **self.lowestEigenvectorQuenchParams)
         self.leig_result = res
         

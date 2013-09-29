@@ -180,7 +180,8 @@ class FindLowestEigenVector(object):
         res.minimizer_state = self.minimizer.get_state()
         return res
 
-def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=None, orthogZeroEigs=0, dx=1e-3, **kwargs):
+def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=None,
+                          first_order=False, gradient=None, orthogZeroEigs=0, dx=1e-3, **kwargs):
     """
     find the eigenvector corresponding to the lowest eigenvalue using
     LowestEigPot and the LBFGS minimizer
@@ -232,7 +233,8 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=
         eigenvec0 = rotations.vec_random_ndim(coords.shape)
     
     #set up potential for minimization    
-    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx)
+    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx,
+                          first_order=first_order, gradient=gradient)
     
     #minimize, using the last eigenvector as a starting point
     #and starting with H0 from last minimization 
