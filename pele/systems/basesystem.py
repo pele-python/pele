@@ -139,9 +139,9 @@ class BaseSystem(object):
         """a starting point for basinhopping, etc."""
         raise NotImplementedError
     
-    def get_random_minimized_configuration(self):
+    def get_random_minimized_configuration(self, **kwargs):
         coords = self.get_random_configuration()
-        quencher = self.get_minimizer()
+        quencher = self.get_minimizer(**kwargs)
         return quencher(coords)
     
     def get_minimizer(self, **kwargs):

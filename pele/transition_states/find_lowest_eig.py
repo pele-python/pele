@@ -36,7 +36,7 @@ class LowestEigPot(BasePotential):
     dx : float
         the local curvature is approximated using 3 points separated by dx
     """
-    def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-3):
+    def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6):
         self.coords = np.copy(coords)
         self.pot = pot
 #        self.E, self.G = self.pot.getEnergyGradient(self.coords)
@@ -110,7 +110,7 @@ class LowestEigPot(BasePotential):
         
         # Project out any component of the gradient along vec (which is a unit vector)
         # This is a big improvement for DFTB.
-        # js850> this has no effect.  grad should already be perpendicular to vec
+        # js850> grad should already be perpendicular to vec.  this helps with any numerical errors
         grad -= np.dot(grad, vec) * vec
         
         return diag2, grad

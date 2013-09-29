@@ -13,17 +13,42 @@ class TestEigPot(unittest.TestCase):
 #        self.system = LJClusterFrozen(13, range(nfrozen), reference_coords)
         self.system = LJCluster(natoms)
         self.x = self.system.get_random_configuration()
+        #ret = self.system.get_random_minimized_configuration(tol=100.)
+        #self.x = ret.coords
         self.pot = self.system.get_potential()
         self.eigpot = LowestEigPot(self.x, self.pot, orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors())
     
     def test_gradient(self):
-        e1 = self.eigpot.getEnergy(self.x)
-        e, g = self.eigpot.getEnergyGradient(self.x)
-        gnum = self.eigpot.NumericalDerivative(self.x)
+        vec = np.random.rand(self.x.size)
+        vec /= np.linalg.norm(vec)
+        e1 = self.eigpot.getEnergy(vec)
+        e, g = self.eigpot.getEnergyGradient(vec)
+        gnum = self.eigpot.NumericalDerivative(vec, eps=1e-6)
+        gnum -= np.dot(gnum, vec)
         
-        print np.max(np.abs(g)), np.max(np.abs(gnum))
-        self.assertLess(np.max(np.abs(g-gnum)) / np.max(np.abs(g)), 1e-6)
-        self.assertAlmostEqual(e, e1, 6)
+        self.assertLess(np.max(np.abs(g-gnum)) / np.max(np.abs(g)), 1e-2)
+        self.assertAlmostEqual(e, e1, delta=e * 1e-4)
+        self.assertAlmostEqual(1., np.dot(g, gnum) / np.linalg.norm(g) / np.linalg.norm(gnum), 3)
+        
+    def test_ts(self):
+        from pele.utils.xyz import read_xyz
+        xyz = read_xyz(open("lj18_ts.xyz", "r"))
+        x = xyz.coords.flatten()
+        
+        vec = np.random.rand(x.size)
+        vec /= np.linalg.norm(vec)
+        self.eigpot = LowestEigPot(x, self.pot, orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors())
+
+        e1 = self.eigpot.getEnergy(vec)
+        e, g = self.eigpot.getEnergyGradient(vec)
+        gnum = self.eigpot.NumericalDerivative(vec, eps=1e-4)
+        gnum -= np.dot(gnum, vec)
+        
+        self.assertLess(np.max(np.abs(g-gnum)) / np.max(np.abs(g)), 1e-3)
+        self.assertAlmostEqual(e, e1, delta=e * 1e-4)
+        self.assertAlmostEqual(1., np.dot(g, gnum) / np.linalg.norm(g) / np.linalg.norm(gnum), 3)
+
+        
         
 if __name__ == "__main__":
     unittest.main()
