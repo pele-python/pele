@@ -36,10 +36,17 @@ class LowestEigPot(BasePotential):
     dx : float
         the local curvature is approximated using 3 points separated by dx
     """
-    def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6):
+    def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6,
+                  first_order=False, energy=None, gradient=None):
         self.coords = np.copy(coords)
         self.pot = pot
-#        self.E, self.G = self.pot.getEnergyGradient(self.coords)
+        self.first_order = first_order
+        if self.first_order:
+            if energy is not None and gradient is not None:
+                self.true_energy = energy
+                self.true_gradient = gradient.copy()
+            else:
+                self.true_energy, self.true_gradient = self.pot.getEnergyGradient(self.coords)
         if orthogZeroEigs == 0:
             self.orthogZeroEigs = orthogopt
         else:
@@ -57,19 +64,23 @@ class LowestEigPot(BasePotential):
         if self.orthogZeroEigs is not None:
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
             #vec_in /= np.linalg.norm(vec_in)
+            vec = vec_in / np.linalg.norm(vec_in)
 
-        #now normalize
-        vec = vec_in / np.linalg.norm(vec_in)
-        coordsnew = self.coords - self.diff * vec
-        Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
         
         coordsnew = self.coords + self.diff * vec
         Eplus, Gplus = self.pot.getEnergyGradient(coordsnew)
+
+        if self.first_order:
+            curvature = np.dot((Gplus - self.true_gradient), vec) / self.diff
+            
+        else:
+            coordsnew = self.coords - self.diff * vec
+            Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
         
-        #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
-        
-        diag2 = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
-        return diag2
+            #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
+            
+            curvature = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
+        return curvature
         
     
     def getEnergyGradient(self, vec_in):
@@ -82,21 +93,20 @@ class LowestEigPot(BasePotential):
         if self.orthogZeroEigs is not None:
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
             #vec_in /= np.linalg.norm(vec_in)
+            vec = vec_in / np.linalg.norm(vec_in)
 
-        #now normalize
-        vec = vec_in / np.linalg.norm(vec_in)
-        coordsnew = self.coords - self.diff * vec
-        Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
-        
         coordsnew = self.coords + self.diff * vec
         Eplus, Gplus = self.pot.getEnergyGradient(coordsnew)
+        if self.first_order:
+            curvature = np.dot((Gplus - self.true_gradient), vec) / self.diff
+        else:
+            coordsnew = self.coords - self.diff * vec
+            Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
+            #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
+            # use second order central difference method.
+            curvature = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
         
-        #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
-        
-        # use first order central difference method.
-        diag2 = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
-        
-        # second order central differences would be more accurate but it cannot be differentiated analytically
+        # higher order central differences would be more accurate but it cannot be differentiated analytically
         # DIAG = (EPLUS + EMINUS - 2. * ENERGY) / (self.diff)
         # DIAG3=2*(DIAG-DIAG2/2)
         # C  Although DIAG3 is a more accurate estimate of the diagonal second derivative, it
@@ -104,7 +114,10 @@ class LowestEigPot(BasePotential):
 
         # compute the analytical derivative of the curvature with respect to vec        
         #GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2
-        grad = (Gplus - Gminus) / (self.diff * vecl**2) - 2.0 * diag2 * vec / vecl**2
+        if self.first_order:
+            grad = (Gplus - self.true_gradient) * 2.0 / self.diff - 2. * curvature * vec
+        else:
+            grad = (Gplus - Gminus) / (self.diff * vecl**2) - 2.0 * curvature * vec / vecl**2
         if self.orthogZeroEigs is not None:
             grad = self.orthogZeroEigs(grad, self.coords)
         
@@ -113,7 +126,7 @@ class LowestEigPot(BasePotential):
         # js850> grad should already be perpendicular to vec.  this helps with any numerical errors
         grad -= np.dot(grad, vec) * vec
         
-        return diag2, grad
+        return curvature, grad
 
 class FindLowestEigenVector(object):
     def __init__(self, coords, pot, eigenvec0=None, orthogZeroEigs=0, dx=1e-3, **minimizer_kwargs):
