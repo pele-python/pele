@@ -21,7 +21,7 @@ def _run_dimer(dimer, translator, rotator):
         # update the eigenvector (rotate the dimer)
         print "rotating dimer"
         mret = translator.get_result()
-        rotator.update_coords(mret.coords)#, energy=dimer.energy, gradient=dimer.true_gradient)
+        rotator.update_coords(mret.coords, gradient=dimer.true_gradient)
         ret = rotator.run(dimer.n_rotational_steps)
         dimer.update_eigenvec(ret.eigenvec, ret.eigenval)
 

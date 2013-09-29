@@ -37,16 +37,17 @@ class LowestEigPot(BasePotential):
         the local curvature is approximated using 3 points separated by dx
     """
     def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6,
-                  first_order=False, energy=None, gradient=None):
-        self.coords = np.copy(coords)
+                  first_order=False, gradient=None):
         self.pot = pot
         self.first_order = first_order
-        if self.first_order:
-            if energy is not None and gradient is not None:
-                self.true_energy = energy
-                self.true_gradient = gradient.copy()
-            else:
-                self.true_energy, self.true_gradient = self.pot.getEnergyGradient(self.coords)
+        self.update_coords(coords, gradient=gradient)
+#        self.coords = coords.copy()
+#        if self.first_order:
+#            if gradient is not None:
+##                self.true_energy = energy
+#                self.true_gradient = gradient.copy()
+#            else:
+#                true_energy, self.true_gradient = self.pot.getEnergyGradient(self.coords)
         if orthogZeroEigs == 0:
             self.orthogZeroEigs = orthogopt
         else:
@@ -55,9 +56,17 @@ class LowestEigPot(BasePotential):
                 
         self.diff = dx
     
-    def update_coords(self, coords):
+    def update_coords(self, coords, gradient=None):
         self.coords = coords.copy()
-    
+        if self.first_order:
+            if gradient is not None:
+#                self.true_energy = energy
+                self.true_gradient = gradient.copy()
+            else:
+                print "computing gradient unnecessarily"
+                true_energy, self.true_gradient = self.pot.getEnergyGradient(self.coords)
+
+
     def getEnergy(self, vec_in):
         vecl = 1.
         vec_in /= np.linalg.norm(vec_in)
@@ -129,7 +138,8 @@ class LowestEigPot(BasePotential):
         return curvature, grad
 
 class FindLowestEigenVector(object):
-    def __init__(self, coords, pot, eigenvec0=None, orthogZeroEigs=0, dx=1e-3, **minimizer_kwargs):
+    def __init__(self, coords, pot, eigenvec0=None, orthogZeroEigs=0, dx=1e-3,
+                  first_order=False, gradient=None, **minimizer_kwargs):
         
         self.minimizer_kwargs = minimizer_kwargs
         
@@ -138,14 +148,16 @@ class FindLowestEigenVector(object):
             eigenvec0 = rotations.vec_random_ndim(coords.shape)
         eigenvec0 = eigenvec0 / np.linalg.norm(eigenvec0)
 
-        self.eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx)
+        self.eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx,
+                                   gradient=gradient,
+                                   first_order=first_order)
         self.minimizer = MYLBFGS(eigenvec0, self.eigpot, rel_energy=True, 
                                  **self.minimizer_kwargs)
 
     
     def update_coords(self, coords, energy=None, gradient=None):
         """update the position at which to compute the eigenvector"""
-        self.eigpot.update_coords(coords)
+        self.eigpot.update_coords(coords, gradient=gradient)
         state = self.minimizer.get_state()
         ret = self.get_result()
         self.minimizer = MYLBFGS(ret.eigenvec, self.eigpot, rel_energy=True,
