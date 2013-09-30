@@ -111,7 +111,7 @@ class GeneralizedDimer(object):
     
     def one_iteration(self):
         # update the eigenvector (rotate the dimer)
-        print "rotating dimer"
+#        print "rotating dimer"
         self.rotator.update_coords(self.get_coords(), gradient=self.get_true_gradient())
         ret = self.rotator.run(self.rotational_steps)
 
@@ -119,7 +119,7 @@ class GeneralizedDimer(object):
         self.dimer_potential.update_eigenvec(ret.eigenvec)
 
         # translate the dimer
-        print "translating dimer"
+#        print "translating dimer"
         for i in xrange(self.translational_steps):
             if self.stop_criterion_satisfied():
                 break

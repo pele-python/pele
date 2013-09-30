@@ -85,3 +85,4 @@ from transition_state_refinement import *
 from tstools import *
 from _NEB_wrapper import *
 from _nebdriver import *
+from _generalized_dimer import GeneralizedDimer
