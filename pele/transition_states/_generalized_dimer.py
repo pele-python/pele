@@ -4,133 +4,191 @@ from pele.transition_states import FindLowestEigenVector, analyticalLowestEigenv
 from pele.optimize import MYLBFGS, Result
 from pele.utils import rotations
 
-def _run_dimer(dimer, translator, rotator):
-    # find the lowest eigenvector for the first time
-    ret = rotator.run(100)
-    dimer.update_eigenvec(ret.eigenvec, ret.eigenval)
 
-    print "trans rot", dimer.n_translational_steps, dimer.n_rotational_steps
-    while True:
-        # translate the dimer
-        print "translating dimer"
-        for i in xrange(dimer.n_translational_steps):
-            if translator.stop_criterion_satisfied() or translator.iter_number >= translator.nsteps:
-                return
-            translator.one_iteration()
-        
-        # update the eigenvector (rotate the dimer)
-        print "rotating dimer"
-        mret = translator.get_result()
-        rotator.update_coords(mret.coords, gradient=dimer.true_gradient)
-        ret = rotator.run(dimer.n_rotational_steps)
-        dimer.update_eigenvec(ret.eigenvec, ret.eigenval)
-
-
-def find_TS_generalized_dimer(coords, potential, eigenvec0=None, minimizer_class=MYLBFGS,
-                              leig_kwargs=None,
-                              dimer_kwargs=None, minimizer_kwargs=None):
-    # check the keyword dictionaries
-    if dimer_kwargs is None: dimer_kwargs = {}
-    if minimizer_kwargs is None: minimizer_kwargs = {}
-    if leig_kwargs is None: leig_kwargs = {}
-    if eigenvec0 is None:
-        eigenvec0 = rotations.vec_random_ndim(coords.shape)
-    eigenvec0 /= np.linalg.norm(eigenvec0)
-    assert coords.shape == eigenvec0.shape
-    
-    dimer_kwargs["auto_rotate"] = False
-
-    # set up the object that will maintain the rotation of the dimer
-    rotator = FindLowestEigenVector(coords, potential, eigenvec0=eigenvec0, orthogZeroEigs=0, **leig_kwargs)
-
-    # set up the dimer potential
-    dimer = GeneralizedDimer(potential, eigenvec0, **dimer_kwargs)
-    
-    # set up the optimizer that will translate the dimer
-    translator = minimizer_class(coords, dimer, **minimizer_kwargs)
-    
-    # optimize the dimer
-    _run_dimer(dimer, translator, rotator)
-    
-    qres = translator.get_result()
-    
-    res = Result()
-    res.eigenval = dimer.eigenval
-    res.eigenvec = dimer.eigenvec 
-    res.coords = qres.coords
-    res.energy = dimer.energy
-    res.grad = dimer.true_gradient
-    res.rms = qres.rms
-    res.nfev = dimer.nfev
-    res.nsteps = qres.nsteps
-    res.success = qres.success
-    
-    if res.eigenval > 0:
-        res.success = False
-    
-    return res
-    
 
 class GeneralizedDimer(object):
+    """Use the generalized dimer method to optimize find a saddle point
+    
+    Parameters
+    ----------
+    coords : array
+        The starting point for the optimization
+    potential : the potential object
+    eigenvec0 : array
+        An initial guess for the smallest eigenvector (dimer direction)
+    rotational_steps : int
+        The number of iterations for optimizing the smallest eigenvector
+        (rotating the dimer) between translational moves
+    translational_steps : int
+        The number of translational steps before re-optimizing the 
+        smallest eigenvector 
+    maxiter : int
+        the maximum number of iterations
+    minimizer_class : optimizer class
+        This optimizer will be used to perform the translational steps
+    minimizer_kwargs : dict
+        these keyword arguments are passed to minimizer_class
+    leig_kwargs : dict
+        these keyword arguments are passed to the class for optimizing 
+        the smallest eigenvector
+        
+    Notes
+    -----
+    The dimer method defines a way of walking along an energy surface
+    towards a saddle point.  The dimer is defined by a location and 
+    a direction, vec.  vec will point along the direction of largest
+    negative curvature, which corresponds to the eigenvector of the Hessian
+    matrix with the smallest eigenvalue.  The eigenvalue is the 
+    curvature.  The eigenvector can be computed analytically if the 
+    Hessian is available, but this is often computationally expensive
+    normally you would use gradients and an optimization function to 
+    converge towards the direction of largest curvature.  If the
+    gradient is inverted along the direction of the largest negative
+    curvature then following that gradient will lead you towards a
+    saddle point.  As you walk towards the saddle point the direction
+    of largest negative curvature will change, so it will need to be 
+    periodically re-optimized.  Thus the main iteration loop is
+    
+    1. Optimize the rotation of the dimer so that it is aligned with
+    the direction of largest negative curvature.
+    
+    2. Translate the dimer uphill following the direction of largest
+    negative curvature while simultaneously walking downhill in all
+    perpendicular directions.
+    
+    3. If converged, then end, else go to 1.   
+    
     """
+    def __init__(self, coords, potential, eigenvec0=None, 
+                  rotational_steps=20,
+                  translational_steps=10,
+                  maxiter=500,
+                  minimizer_class=MYLBFGS,
+                  leig_kwargs=None,
+                  minimizer_kwargs=None,
+                  ):
+        self.rotational_steps = rotational_steps
+        self.translational_steps = translational_steps
+        self.maxiter= maxiter
+        self.iter_number = 0
+
+        # check the keyword dictionaries
+        if minimizer_kwargs is None: minimizer_kwargs = {}
+        if leig_kwargs is None: leig_kwargs = {}
+
+        # set up the initial guess for the eigenvector
+        if eigenvec0 is None:
+            eigenvec0 = rotations.vec_random_ndim(coords.shape)
+        eigenvec0 /= np.linalg.norm(eigenvec0)
+        assert coords.shape == eigenvec0.shape
+
+        # set up the object that will maintain the rotation of the dimer
+        self.rotator = FindLowestEigenVector(coords, potential, eigenvec0=eigenvec0, **leig_kwargs)
+
+        # set up the dimer potential
+        self.dimer_potential = _DimerPotential(potential, eigenvec0)
+
+        # set up the optimizer that will translate the dimer
+        self.translator = minimizer_class(coords, self.dimer_potential, **minimizer_kwargs)
+
+    def get_true_energy(self):
+        """return the true energy"""
+        return self.dimer_potential.true_energy
+
+    def get_true_gradient(self):
+        """return the true gradient"""
+        # these are stored in dimer_potential
+        return self.dimer_potential.true_gradient
+
+    def get_coords(self):
+        """return the current location of the dimer"""
+        mret = self.translator.get_result()
+        return mret.coords
+
+    def stop_criterion_satisfied(self):
+        """return True if the stop criterion is satisfied"""
+        return self.translator.stop_criterion_satisfied()
+    
+    def one_iteration(self):
+        # update the eigenvector (rotate the dimer)
+        print "rotating dimer"
+        self.rotator.update_coords(self.get_coords(), gradient=self.get_true_gradient())
+        ret = self.rotator.run(self.rotational_steps)
+
+        # update the eigenvector and eigenvalue in the dimer_potential
+        self.dimer_potential.update_eigenvec(ret.eigenvec)
+
+        # translate the dimer
+        print "translating dimer"
+        for i in xrange(self.translational_steps):
+            if self.stop_criterion_satisfied():
+                break
+            self.translator.one_iteration()
+        
+        self.iter_number += 1
+
+
+    def run(self):
+        """the main iteration loop"""
+        while not self.stop_criterion_satisfied() and self.iter_number < self.maxiter:
+            self.one_iteration()
+        
+        return self.get_result()
+            
+    
+    def get_result(self):
+        """return a results object"""
+        trans_res = self.translator.get_result()
+        
+        rot_result = self.rotator.get_result()
+        
+        res = Result()
+        res.eigenval = rot_result.eigenval
+        res.eigenvec = rot_result.eigenvec 
+        res.coords = trans_res.coords
+        res.energy = self.get_true_energy()
+        res.grad = self.get_true_gradient()
+        res.rms = trans_res.rms
+        res.nfev = rot_result.nfev + trans_res.nfev
+        res.nsteps = self.iter_number
+        res.success = self.stop_criterion_satisfied()
+        
+        if res.eigenval > 0:
+            res.success = False
+        
+        return res
+    
+
+class _DimerPotential(object):
+    """Wrapper for a Potential object where the gradient is inverted along the direction of the eigenvector
+    
+    this is used to optimize towards a saddle point
     """
     def __init__(self, potential, eigenvec0,
-                 n_translational_steps=5, n_rotational_steps=20, leig_H0=None,
-                 leig_kwargs=None, auto_rotate=True,
-                 ):
+                  leig_kwargs=None,
+                  ):
         self.potential = potential
-        self.eigenvec = eigenvec0 / np.linalg.norm(eigenvec0)
-    
-        self.n_translational_steps = n_translational_steps
-        self.n_rotational_steps = n_rotational_steps
-        self.iter_number = 0
-        self.auto_rotate = auto_rotate
-        
-        self._H0 = leig_H0
+        self.update_eigenvec(eigenvec0)
         self.nfev = 0
-        
-        self._leig_minimizer_state = None
-        self.leig_kwargs = leig_kwargs
-        if self.leig_kwargs is None:
-            self.leig_kwargs = dict()
     
     def getEnergyGradientInverted(self, x):
+        """return the energy and the gradient at x with the gradient inverted along the eigenvector"""
         e, g = self.potential.getEnergyGradient(x)
-        self.energy = e
+        self.true_energy = e
         self.true_gradient = g.copy()
         g -= 2. * np.dot(g, self.eigenvec) * self.eigenvec
         self.nfev += 1
         return e, g
 
-    def update_eigenvec_analytical(self, x, **kwargs):
-        self.eigenval, self.eigenvec = analyticalLowestEigenvalue(x, self.potential)
-        self.nfev += 1
-
-#    def update_eigenvec(self, x, n_rotational_steps=None):
-#        if n_rotational_steps is None:
-#            n_rotational_steps = self.n_rotational_steps
-#        ret = self.find_lowest_eigenvector(x, self.potential, eigenvec0=self.eigenvec, H0=self._H0, 
-#                                           minimizer_state=self._leig_minimizer_state,
-#                                           nsteps=n_rotational_steps, 
-#                                           **self.leig_kwargs)
-#        self._H0 = ret.H0
-#        self._leig_minimizer_state = ret.minimizer_state
-#        self.eigenvec = ret.eigenvec
-#        self.eigenval = ret.eigenval
-#        self.nfev += ret.nfev
-    
-    def update_eigenvec(self, eigenvec, eigenval):
+    def update_eigenvec(self, eigenvec):
         self.eigenvec = eigenvec.copy()
-        self.eigenval = eigenval
+        self.eigenvec /= np.linalg.norm(self.eigenvec)
     
     def getEnergyGradient(self, x):
-        """this is the main loop of the program.  it will be called by the optimizer
+        """gradient at x with the gradient inverted along the eigenvector
         
+        the returned energy is 0 because we are not minimizing in the energy 
         """
-#        if self.iter_number % self.n_translational_steps == 0 and self.auto_rotate:
-#            self.update_eigenvec(x)
-        
-        self.iter_number += 1
         e, g = self.getEnergyGradientInverted(x)
         return 0., g
         
@@ -178,12 +236,13 @@ def get_x0():
 def test():
     system, x0, evec0 = get_x0() 
     
-    ret = find_TS_generalized_dimer(x0.copy(), system.get_potential(), 
+    dimer = GeneralizedDimer(x0.copy(), system.get_potential(), 
                                     eigenvec0=evec0, 
-                                    dimer_kwargs=dict(n_translational_steps=5,
-                                                      n_rotational_steps=20), 
-                                    minimizer_kwargs=dict(iprint=1, tol=4e-5, nsteps=2000)
+#                                    dimer_kwargs=dict(n_translational_steps=5,
+#                                                      n_rotational_steps=20), 
+#                                    minimizer_kwargs=dict(iprint=1, tol=4e-5, nsteps=2000)
                                     )
+    ret = dimer.run()
     
     print "eigenvalue", ret.eigenval
     print "function evaluations", ret.nfev

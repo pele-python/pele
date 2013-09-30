@@ -51,7 +51,7 @@ class LBFGS(object):
     logger : logger object
         messages will be passed to this logger rather than the default
     energy, gradient : float, float array
-        the initial energy and gradient.  If these are both not None then the
+        The initial energy and gradient.  If these are both not None then the
         energy and gradient of the initial point will not be calculated, saving
         one potential call.
          

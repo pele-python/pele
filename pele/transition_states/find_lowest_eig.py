@@ -69,11 +69,11 @@ class LowestEigPot(BasePotential):
 
     def getEnergy(self, vec_in):
         vecl = 1.
-        vec_in /= np.linalg.norm(vec_in)
         if self.orthogZeroEigs is not None:
+            vec_in /= np.linalg.norm(vec_in)
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
             #vec_in /= np.linalg.norm(vec_in)
-            vec = vec_in / np.linalg.norm(vec_in)
+        vec = vec_in / np.linalg.norm(vec_in)
 
         
         coordsnew = self.coords + self.diff * vec
@@ -98,11 +98,11 @@ class LowestEigPot(BasePotential):
             A guess for the lowest eigenvector.  It should be normalized
         """
         vecl = 1.
-        vec_in /= np.linalg.norm(vec_in)
         if self.orthogZeroEigs is not None:
+            vec_in /= np.linalg.norm(vec_in)
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
             #vec_in /= np.linalg.norm(vec_in)
-            vec = vec_in / np.linalg.norm(vec_in)
+        vec = vec_in / np.linalg.norm(vec_in)
 
         coordsnew = self.coords + self.diff * vec
         Eplus, Gplus = self.pot.getEnergyGradient(coordsnew)
