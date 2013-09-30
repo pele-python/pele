@@ -17,19 +17,18 @@
 \begin{document}
 \maketitle
 
-This describes a method for computing the smallest eigenvector of a Hessian matrix
-$H_{ij} = \partial E(\vec{x}) / (\partial{x_i}\partial x_j)$ 
-of an energy function $E(\vec{x})$.  In this method the gradients $\vec{g} = \partial
-E(\vec{x}) / \partial \vec{x}$
-of the energy function are used, but the exact Hessian is not.  The lowest eigenvector is found
-by estimating the curvature at a give point $\vec{x}$ along a direction $\vec{v}$ using finite differences and then
-using an optimization algorithm to minimizing the curvature with respect
+This describes a method for computing the smallest eigenvector of a Hessian
+matrix $\hat{H}_{ij} = \partial E(\vec{x}) / (\partial{x_i}\partial x_j)$ of an
+energy function $E(\vec{x})$.  In this method the gradients $\vec{g} = \partial
+E(\vec{x}) / \partial \vec{x}$ of the energy function are used, but the exact
+Hessian is not.  The lowest eigenvector is found by estimating the curvature at
+a give point $\vec{x}$ along a direction $\vec{v}$ using finite differences and
+then using an optimization algorithm to minimizing the curvature with respect
 to $\vec{v}$.  
 
 \section{Central differences}
-The curvature
-is estimated by the the central differences formula, which is accurate up to
-order $\delta^2$ where $\delta$ is a small parameter.
+The curvature is estimated by the the central differences formula, which is
+accurate up to order $\delta^2$ where $\delta$ is a small parameter.
 \begin{equation}
 \mu(\vec{x}, \vec{v}) = \frac{1}{\delta} 
 \left[ \vec{g}(\vec{x} + \frac{\delta}{2}  \vec{v}) - 
@@ -87,8 +86,8 @@ To second order in $\delta$ we can replace the second term with
 \sum_i v_i
 \frac{\partial g_i(\vec{x})}{\partial x_k}
 \end{equation}
-\sout{We can now use the eigenvalue equation $\vec{v} \cdot H = \mu \vec{v}$ to further simplify the second term.}
-We use the fact that the Hessian is symmetric to slightly rewrite the second term
+We use the fact that the Hessian is
+symmetric to slightly rewrite the second term
 \begin{equation}
 \frac{\partial \mu(\vec{x}, \vec{v})} {\partial v_k} = 
 \frac{1}{\delta} 
@@ -98,7 +97,9 @@ We use the fact that the Hessian is symmetric to slightly rewrite the second ter
 \sum_i v_i
 \frac{\partial g_k(\vec{x})}{\partial x_i}
 \end{equation}
-The second term is now the change in the derivative along the direction $\vec{v}$.  We know how to write this using the central difference method, which gives exactly the first term and we end up with.
+The second term is now the change in the derivative along the direction
+$\vec{v}$.  We know how to write this using the central difference method,
+which gives exactly the first term and we end up with.
 \begin{equation}
 \frac{\partial \mu(\vec{x}, \vec{v})} {\partial v_k} = 
 \frac{2}{\delta} 
@@ -106,7 +107,8 @@ The second term is now the change in the derivative along the direction $\vec{v}
 - g_k(\vec{x} - \frac{\delta}{2} \vec{v}) \right]
 \end{equation}
 
-We want to maintain the constraint $\left|\vec{v} \right| = 1$, so we subtract out the parallel component of the derivative
+We want to maintain the constraint $\left|\vec{v} \right| = 1$, so we subtract
+out the parallel component of the derivative
 \begin{equation}
 \frac{\partial \mu(\vec{x}, \vec{v})} {\partial \vec{v}} - 
 \left(
@@ -147,9 +149,9 @@ is estimated by the the forward finite differences method.
 \left[ \vec{g}(\vec{x} + \delta \vec{v}) - 
 \vec{g}(\vec{x}) \right] \cdot \vec{v}
 \end{equation}
-This is accurate only up to which is accurate up to
-order $\delta$, however each calculation of $\mu$ for a different $\vec{v}$ requires
-only one additional gradient evaluation.   
+This is accurate only up to which is accurate up to order $\delta$, however
+each calculation of $\mu$ for a different $\vec{v}$ requires only one
+additional gradient evaluation.   
 
 The gradients of the above function can be computed analytically to aid in the
 optimization.
@@ -164,7 +166,8 @@ optimization.
 \sum_i v_i
 \frac{\partial g_i(\vec{x} + \delta \vec{v})}{\partial v_k} 
 \end{equation}
-Following the arguments from the central differences method this can be reduced to
+Following the arguments from the central differences method this can be reduced
+to
 \begin{equation}
 \frac{\partial \mu(\vec{x}, \vec{v})} {\partial v_k} = 
 \frac{1}{\delta} 
@@ -184,9 +187,9 @@ To first order in $\delta$ the second term simplifies to
 \sum_i v_i
 \frac{\partial g_k(\vec{x})}{\partial x_i} 
 \end{equation}
-In the above we also used the fact that the Hessian is symmetric.
-Expanding the derivative in the second term using forward finite differences
-gives the same equation as the first term and we're left with
+In the above we also used the fact that the Hessian is symmetric.  Expanding
+the derivative in the second term using forward finite differences gives the
+same equation as the first term and we're left with
 \begin{equation}
 \frac{\partial \mu(\vec{x}, \vec{v})} {\partial v_k} = 
 \frac{2}{\delta} 
@@ -207,5 +210,36 @@ Subtracting out the component parallel to $\vec{v}$ gives finally
 2 \mu \vec{v}
 \end{equation}
 
+\section{Rayleigh-Ritz}
+The procedure described above is often referred to as Rayleigh-Ritz
+optimization, or Rayleigh-Ritz variational procedure.  This is because the
+equations above for the curvature along a given direction is an expansion of
+the equation sometimes called the Rayleigh quotient or the Rayleigh-Ritz ratio
+\url{http://en.wikipedia.org/wiki/Rayleigh_quotient}. 
+\begin{equation}
+  \mu(\vec{x}, \vec{v}) = \frac{\vec{v}^T \cdot \hat{H}(\vec{x}) \cdot \vec{v}  }{ | \vec{v} |^2}
+\end{equation}
+In fact the derivatives of $\mu$ are much easier to perform if we do them
+before expanding in $\delta$
+\begin{equation}
+\frac{\partial \mu(\vec{x}, \vec{v})} {\partial v_k} = 
+\frac{ 2 \sum_j v_j H_{jk}}{|\vec{v}|^2}
+-
+\frac{2 \mu(\vec{x}, \vec{v}) v_k}{|\vec{v}|^2}
+\end{equation}
+Which, once you replace $\sum_j v_j H_{jk} =  \sum_j v_j \partial g_k(\vec{x})
+/ \partial x_j$ and expand the derivative in powers of $\delta$, gives exactly
+the equations we found above.
+
+
+
+\section{Dimer}
+If the expansion of $\mu$ is interpreted literally as a rigid dimer with
+one end at 
+$\vec{x} + \frac{\delta}{2} \vec{v}$
+and the other end at 
+$\vec{x} - \frac{\delta}{2} \vec{v}$
+Then you can write down the forces and torques acting on this dimer.  The
+torques give rotation equations analogous to the above gradients of $\mu$.
 
 \end{document}
