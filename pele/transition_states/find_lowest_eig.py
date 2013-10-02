@@ -154,6 +154,8 @@ class FindLowestEigenVector(object):
         self.minimizer = MYLBFGS(eigenvec0, self.eigpot, rel_energy=True, 
                                  **self.minimizer_kwargs)
 
+    def stop_criterion_satisfied(self):
+        return self.minimizer.stop_criterion_satisfied()
     
     def update_coords(self, coords, energy=None, gradient=None):
         """update the position at which to compute the eigenvector"""

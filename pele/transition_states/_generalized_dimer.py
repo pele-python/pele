@@ -3,6 +3,7 @@ import numpy as np
 from pele.transition_states import FindLowestEigenVector, analyticalLowestEigenvalue
 from pele.optimize import MYLBFGS, Result
 from pele.utils import rotations
+from pele.transition_states._generalized_hef import _HybridEigenvectorWalker
 
 
 
@@ -65,15 +66,17 @@ class GeneralizedDimer(object):
                   maxiter=500,
                   minimizer_class=MYLBFGS,
                   leig_kwargs=None,
-                  minimizer_kwargs=None,
+                  translator_kwargs=None,
+                  dimer=True,
                   ):
+        coords = coords.copy()
         self.rotational_steps = rotational_steps
         self.translational_steps = translational_steps
         self.maxiter= maxiter
         self.iter_number = 0
 
         # check the keyword dictionaries
-        if minimizer_kwargs is None: minimizer_kwargs = {}
+        if translator_kwargs is None: translator_kwargs = {}
         if leig_kwargs is None: leig_kwargs = {}
 
         # set up the initial guess for the eigenvector
@@ -85,20 +88,20 @@ class GeneralizedDimer(object):
         # set up the object that will maintain the rotation of the dimer
         self.rotator = FindLowestEigenVector(coords, potential, eigenvec0=eigenvec0, **leig_kwargs)
 
-        # set up the dimer potential
-        self.dimer_potential = _DimerPotential(potential, eigenvec0)
-
-        # set up the optimizer that will translate the dimer
-        self.translator = minimizer_class(coords, self.dimer_potential, **minimizer_kwargs)
+        # set up the object that will translate the dimer
+        if dimer:
+            self.translator = _DimerTranslator(coords, potential, eigenvec0, **translator_kwargs)
+        else:
+            self.translator = _HybridEigenvectorWalker(coords, potential, eigenvec0, **translator_kwargs)
 
     def get_true_energy(self):
         """return the true energy"""
-        return self.dimer_potential.true_energy
+        return self.translator.get_energy()
 
     def get_true_gradient(self):
         """return the true gradient"""
         # these are stored in dimer_potential
-        return self.dimer_potential.true_gradient
+        return self.translator.get_gradient()
 
     def get_coords(self):
         """return the current location of the dimer"""
@@ -107,7 +110,7 @@ class GeneralizedDimer(object):
 
     def stop_criterion_satisfied(self):
         """return True if the stop criterion is satisfied"""
-        return self.translator.stop_criterion_satisfied()
+        return self.translator.stop_criterion_satisfied() and self.rotator.stop_criterion_satisfied()
     
     def one_iteration(self):
         # update the eigenvector (rotate the dimer)
@@ -116,15 +119,12 @@ class GeneralizedDimer(object):
         ret = self.rotator.run(self.rotational_steps)
 
         # update the eigenvector and eigenvalue in the dimer_potential
-        self.dimer_potential.update_eigenvec(ret.eigenvec)
+        self.translator.update_eigenvec(ret.eigenvec, ret.eigenval)
 
         # translate the dimer
 #        print "translating dimer"
-        for i in xrange(self.translational_steps):
-            if self.stop_criterion_satisfied():
-                break
-            self.translator.one_iteration()
-        
+        self.translator.run(self.translational_steps)
+                
         self.iter_number += 1
 
 
@@ -157,7 +157,37 @@ class GeneralizedDimer(object):
             res.success = False
         
         return res
+
+class _DimerTranslator(object):
+    """object to manage the translation of the dimer using a optimization algorithm
+    """
+    def __init__(self, coords, potential, eigenvec, **minimizer_kwargs):
+        self.dimer_potential = _DimerPotential(potential, eigenvec)
+        self.minimizer = MYLBFGS(coords, self.dimer_potential, **minimizer_kwargs)
     
+    def stop_criterion_satisfied(self):
+        return self.minimizer.stop_criterion_satisfied()
+
+    def get_energy(self):
+        """return the true energy"""
+        return self.dimer_potential.true_energy
+
+    def get_gradient(self):
+        """return the true gradient"""
+        return self.dimer_potential.true_gradient
+    
+    def update_eigenvec(self, eigenvec, eigenval):
+        self.dimer_potential.update_eigenvec(eigenvec)
+    
+    def run(self, niter):
+        for i in xrange(niter):
+            if self.stop_criterion_satisfied():
+                break
+            self.minimizer.one_iteration()
+    
+    def get_result(self):
+        return self.minimizer.get_result()
+
 
 class _DimerPotential(object):
     """Wrapper for a Potential object where the gradient is inverted along the direction of the eigenvector

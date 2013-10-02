@@ -2,9 +2,9 @@ import numpy as np
 import copy
 import logging
 
-from pele.optimize import Result
+from pele.optimize import Result, MYLBFGS
 from pele.optimize import mylbfgs
-from pele.potentials.potential import potential as basepot
+from pele.potentials.potential import BasePotential
 from pele.transition_states import findLowestEigenVector
 
 
@@ -12,31 +12,26 @@ __all__ = ["findTransitionState", "FindTransitionState"]
 
 logger = logging.getLogger("pele.connect.findTS")
 
-class TSRefinementPotential(basepot):
-    """
-    this is a potential wrapper for use in an optimization package.  The intent
-    is to try to locate the nearest transition state of the system.
+class _TransversePotential(BasePotential):
+    """This wraps a potential and returns the gradient with the component parallel to a vector removed
     
-    Usage:
-
-    getEnergyGradient():
-        will return the gradient with the component along the eigenvector
-        removed.  This is for energy minimization in the space tangent to the
-        gradient    
-    """
-    def __init__(self, pot, eigenvec):
-        """
-        Parameters
-        ----------
+    Parameters
+    ----------
+    
+    
         
-        orthogZeroEigs : callable
-            The function which makes a vector orthogonal to known zero
-            eigenvectors.  The default value is 0, which means use the default
-            function orthogopt which assumes rotational and translational
-            invariance.  If None is pass then no function will be used
+    """
+    def __init__(self, potential, vector):
         """
-        self.pot = pot
-        self.eigenvec = eigenvec
+        """
+        self.pot = potential
+        self.update_vector(vector)
+        self.nfev = 0
+    
+    def update_vector(self, vector):
+        self.vector = vector.copy()
+        # normalize
+        self.vector /= np.linalg.norm(vector)
 
     def getEnergyGradient(self, coords):
         """
@@ -44,16 +39,19 @@ class TSRefinementPotential(basepot):
         eigenvec removed.  For use in energy minimization in the space
         perpendicular to eigenvec
         """
+        self.nfev += 1
         e, grad = self.pot.getEnergyGradient(coords)
+        self.true_gradient = grad.copy()
+        self.true_energy = e
         #norm = np.sum(self.eigenvec)
-        grad -= np.dot(grad, self.eigenvec) * self.eigenvec
+        grad -= np.dot(grad, self.vector) * self.vector
         return e, grad
 
 
 
 class FindTransitionState(object):
     """
-    This class implements the routine for finding the nearest transition state
+    This class implements the hybrid eigenvector following routine for finding the nearest transition state
     
     ***orthogZeroEigs is system dependent, don't forget to set it***
     
@@ -399,7 +397,7 @@ class FindTransitionState(object):
 
 
 
-        tspot = TSRefinementPotential(self.pot, self.eigenvec)
+        tspot = _TransversePotential(self.pot, self.eigenvec)
         coords1 = np.copy(coords)
         ret = self.tangent_space_quencher(coords, tspot, 
                                           nsteps=nstepsperp, tol=self.tol_tangent,
@@ -449,6 +447,9 @@ def findTransitionState(*args, **kwargs):
     return finder.run()
 
 
+
+        
+        
 
 ###################################################################
 #below here only stuff for testing
@@ -540,11 +541,6 @@ def guesstsLJ():
     coords2 = saveit.data[1].coords
     
     return guessts(coords1, coords2, pot)
-
-
-
-
-    
 
 def testgetcoordsATLJ():
     a = 1.12 #2.**(1./6.)
