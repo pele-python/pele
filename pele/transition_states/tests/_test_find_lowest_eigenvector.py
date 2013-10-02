@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from pele.systems import LJCluster
-from pele.transition_states.find_lowest_eig import FindLowestEigenVector, analyticalLowestEigenvalue, findLowestEigenVector
+from pele.transition_states._find_lowest_eig import FindLowestEigenVector, analyticalLowestEigenvalue, findLowestEigenVector
 
 class TestFindLowestEigenvector(unittest.TestCase):
     def setUp(self):

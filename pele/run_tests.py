@@ -12,6 +12,7 @@ from pele.potentials.ljcut import LJCutTest
 from pele.landscape._graph import TestGraph
 from pele.landscape._distance_graph import TestDistanceGraph
 from pele.transition_states._orthogopt import TestOrthogopt
+from pele.transition_states.tests import *
 from pele.utils.hessian import TestEig
 from pele.accept_tests.tests import *
 from pele.storage.tests import *

@@ -1,8 +1,9 @@
 import unittest
 import numpy as np
+import os
 
 from pele.systems import LJCluster, LJClusterFrozen, ljcluster_frozen
-from pele.transition_states.find_lowest_eig import LowestEigPot
+from pele.transition_states._find_lowest_eig import LowestEigPot
 
 class TestEigPot(unittest.TestCase):
     def setUp(self):
@@ -39,7 +40,8 @@ class TestEigPot(unittest.TestCase):
         
     def test_ts(self):
         from pele.utils.xyz import read_xyz
-        xyz = read_xyz(open("lj18_ts.xyz", "r"))
+        path = os.path.dirname(os.path.abspath(__file__))
+        xyz = read_xyz(open(path + "/lj18_ts.xyz", "r"))
         x = xyz.coords.flatten()
         
         vec = np.random.rand(x.size)

@@ -5,7 +5,7 @@ from pele.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
 from pele.transition_states import interpolate_linear
 from math import pi
 from pele import takestep
-from pele.transition_states import zeroev
+from pele.transition_states import _zeroev as zeroev
 from pele.angleaxis.aamindist import TransformAngleAxisCluster
 import _aadist
 

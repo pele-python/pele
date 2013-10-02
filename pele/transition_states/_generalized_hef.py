@@ -3,7 +3,7 @@ routines for a generalized hybrid eigenvector following
 """
 import numpy as np
 
-from pele.transition_states.transition_state_refinement import _TransversePotential
+from pele.transition_states._transition_state_refinement import _TransversePotential
 from pele.optimize import MYLBFGS, Result
 
 class _HybridEigenvectorWalker(object):

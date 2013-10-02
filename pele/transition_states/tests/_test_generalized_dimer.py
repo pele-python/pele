@@ -1,4 +1,5 @@
 import unittest
+import os
 
 from pele.systems import LJCluster
 from pele.transition_states import GeneralizedDimer
@@ -22,7 +23,9 @@ class TestGeneralizedDimer(unittest.TestCase):
         self.assertTrue(res.success)
 
     def test2(self):
-        xyz = read_xyz(open("lj18_ts.xyz", "r"))
+        # get the path of the file directory
+        path = os.path.dirname(os.path.abspath(__file__))
+        xyz = read_xyz(open(path+"/lj18_ts.xyz", "r"))
         x = xyz.coords.flatten()
         dimer = self.make_dimer(x)
         res = dimer.run()

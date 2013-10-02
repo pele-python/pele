@@ -3,7 +3,7 @@ import numpy as np
 
 from pele.transition_states import NEB, NEBPar
 from pele.transition_states._NEB import distance_cart
-from interpolate import InterpolatedPath, interpolate_linear
+from _interpolate import InterpolatedPath, interpolate_linear
 from pele.utils.events import Signal
 
 all = ["NEBDriver"]

@@ -190,6 +190,7 @@ def make_sparse(hess, **kwargs):
 import unittest
 class TestEig(unittest.TestCase):
     def setUp(self):
+        np.random.seed(0)
         from pele.systems import LJCluster
         natoms = 10
         self.system = LJCluster(natoms)

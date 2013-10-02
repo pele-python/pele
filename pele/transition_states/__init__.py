@@ -74,15 +74,15 @@ the minima which the transition state connects.  This routine controls that proc
 
 """
 
-from zeroev import *
+from _zeroev import *
 from _orthogopt import *
-from interpolate import *
+from _interpolate import *
 from _NEB import *
 from _NEB_parallel import *
 from dimer import *
-from find_lowest_eig import *
-from transition_state_refinement import *
-from tstools import *
+from _find_lowest_eig import *
+from _transition_state_refinement import *
+from _tstools import *
 from _NEB_wrapper import *
 from _nebdriver import *
 from _generalized_dimer import GeneralizedDimer

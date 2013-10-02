@@ -1,7 +1,7 @@
 import numpy as np
 
 from _orthogoptf import orthogopt as orthogoptf
-from pele.transition_states.zeroev import zeroEV_translation, zeroEV_rotation
+from pele.transition_states._zeroev import zeroEV_translation, zeroEV_rotation
 
 __all__ = ["orthogopt", "orthogopt_translation_only"]
 

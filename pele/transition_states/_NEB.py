@@ -485,7 +485,7 @@ import nebtesting as test
 
 def nebtest(MyNEB=NEB, nimages=22):
     import pylab as pl
-    from interpolate import InterpolatedPath
+    from _interpolate import InterpolatedPath
     from pele.optimize import lbfgs_py
     NEBquenchParams = dict()
     NEBquenchParams["iprint"]=20
