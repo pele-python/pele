@@ -33,6 +33,11 @@ class _TransversePotential(BasePotential):
         # normalize
         self.vector /= np.linalg.norm(vector)
 
+    def projected_energy_gradient(self, true_energy, true_gradient):
+        grad = true_gradient - np.dot(true_gradient, self.vector) * self.vector
+        return true_energy, grad
+
+        
     def getEnergyGradient(self, coords):
         """
         return the energy and the gradient with the component along the
@@ -44,8 +49,7 @@ class _TransversePotential(BasePotential):
         self.true_gradient = grad.copy()
         self.true_energy = e
         #norm = np.sum(self.eigenvec)
-        grad -= np.dot(grad, self.vector) * self.vector
-        return e, grad
+        return self.projected_energy_gradient(e, grad)
 
 
 
@@ -218,9 +222,11 @@ class FindTransitionState(object):
         self.saved_overlap = self.overlap
         self.saved_H0_leig = self.H0_leig
         self.saved_H0_transverse = self.H0_transverse
+        self.saved_energy = self.energy
+        self.saved_gradient = self.gradient.copy()
         #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
 
-    def _resetState(self, coords):
+    def _resetState(self):
         coords = np.copy(self.saved_coords)
         self.eigenvec = np.copy(self.saved_eigenvec)
         self.eigenval = self.saved_eigenval
@@ -228,7 +234,25 @@ class FindTransitionState(object):
         self.overlap = self.saved_overlap
         self.H0_leig = self.saved_H0_leig
         self.H0_transverse = self.saved_H0_transverse
+        self.energy = self.saved_energy
+        self.gradient = self.saved_gradient.copy()
         return coords
+
+    def _compute_gradients(self, coords):
+#        self._transverse_energy, self._transverse_gradient = self.transverse_potential.getEnergyGradient(coords)
+#        self.energy = self.transverse_potential.true_energy
+#        self.gradient = self.transverse_potential.true_gradient.copy()
+        self.energy, self.gradient = self.pot.getEnergyGradient(coords)
+
+    def _set_energy_gradient(self, energy, gradient):
+        self.energy = energy
+        self.gradient = gradient.copy()
+
+    def get_energy(self):
+        return self.energy
+    
+    def get_gradient(self):
+        return self.gradient
 
     def run(self):
         """The main loop of the algorithm"""
@@ -240,6 +264,7 @@ class FindTransitionState(object):
         # this will be reenabled as soon as the eigenvector becomes negative
         negative_before_check =  10
 
+        self._compute_gradients(coords)
         for i in xrange(self.nsteps):
             
             # get the lowest eigenvalue and eigenvector
@@ -262,23 +287,23 @@ class FindTransitionState(object):
                     break
                 if self.verbosity > 2:
                     logger.info("the eigenvalue turned positive. %s %s", self.eigenval, "Resetting last good values and taking smaller steps")
-                coords = self._resetState(coords)
+                coords = self._resetState()
                 self.reduce_step += 1
             
             # step uphill along the direction of the lowest eigenvector
             coords = self._stepUphill(coords)
-
-            if False:
-                # maybe we want to update the lowest eigenvector now that we've moved?
-                # david thinks this is a bad idea
-                overlap = self._getLowestEigenVector(coords, i)
+            self._compute_gradients(coords)
 
             # minimize the coordinates in the space perpendicular to the lowest eigenvector
-            coords, tangentrms = self._minimizeTangentSpace(coords)
+            tangent_ret = self._minimizeTangentSpace(coords, energy=self.get_energy(), gradient=self.get_gradient())
+            coords = tangent_ret.coords
+            tangentrms = tangent_ret.rms
 
 
             # check if we are done and print some stuff
-            E, grad = self.pot.getEnergyGradient(coords)
+#            self._compute_gradients(coords) # this is unnecessary
+            E = self.get_energy()
+            grad = self.get_gradient()
             rms = np.linalg.norm(grad) * self.rmsnorm
             gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
             
@@ -341,9 +366,10 @@ class FindTransitionState(object):
 
 
         
-    def _getLowestEigenVector(self, coords, i):
+    def _getLowestEigenVector(self, coords, i, gradient=None):
         res = findLowestEigenVector(coords, self.pot, H0=self.H0_leig, eigenvec0=self.eigenvec, 
                                     orthogZeroEigs=self.orthogZeroEigs, first_order=self.first_order,
+                                    gradient=None,
                                     **self.lowestEigenvectorQuenchParams)
         self.leig_result = res
         
@@ -370,7 +396,7 @@ class FindTransitionState(object):
         self.oldeigenvec = self.eigenvec.copy()
         return overlap
     
-    def _minimizeTangentSpace(self, coords):
+    def _minimizeTangentSpace(self, coords, energy=None, gradient=None):
         """
         now minimize the energy in the space perpendicular to eigenvec.
         There's no point in spending much effort on this until 
@@ -398,25 +424,38 @@ class FindTransitionState(object):
 
 
         tspot = _TransversePotential(self.pot, self.eigenvec)
+        transverse_energy, transverse_gradient = tspot.projected_energy_gradient(energy, gradient) 
         coords1 = np.copy(coords)
         ret = self.tangent_space_quencher(coords, tspot, 
                                           nsteps=nstepsperp, tol=self.tol_tangent,
                                           maxstep=maxstep,
                                           H0 = self.H0_transverse,
+                                          energy=transverse_energy, gradient=transverse_gradient,
                                           **self.tangent_space_quench_params)
         coords = ret.coords
         self.tangent_move_step = np.linalg.norm(coords - coords1)
         rms = ret.rms
         self.tangent_result = ret
         self.H0_transverse = self.tangent_result.H0
-        return coords, rms
+        self.energy = ret.energy
+        try:
+            self.gradient = tspot.true_gradient
+        except AttributeError:
+            # tspot was never called, use the same gradient
+            if gradient is None:
+                self._compute_gradients(coords)
+            else:
+                self.gradient = gradient
+        return ret
 
     def _stepUphill(self, coords):
         """
         step uphill in the direction of self.eigenvec.  self.eigenval is used
         to determine the best stepsize
         """
-        e, grad = self.pot.getEnergyGradient(coords)
+        # the energy and gradient are already known
+        e = self.get_energy()
+        grad = self.get_gradient()
         F = np.dot(grad, self.eigenvec) 
         h = 2.*F/ np.abs(self.eigenval) / (1. + np.sqrt(1.+4.*F**2/self.eigenval**2 ))
 

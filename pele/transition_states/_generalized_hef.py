@@ -42,7 +42,7 @@ class _HybridEigenvectorWalker(object):
         self._transverse_walker_state = None
         
 #        self.energy, self.grad = self.potential.getEnergyGradient(self.coords)
-        self._compute_gradients(coords)
+        self._update_coords(coords)
         
         self.iter_number = 0
         self.debug = True
@@ -52,8 +52,14 @@ class _HybridEigenvectorWalker(object):
         return rms < self.tol
         
     
-    def _compute_gradients(self, coords):
-        self._transverse_energy, self._transverse_gradient = self.transverse_potential.getEnergyGradient(coords)
+    def _update_coords(self, coords, transverse_energy=None, 
+                         transverse_gradient=None):
+        self.coords = coords
+        if transverse_energy is None or transverse_gradient is None:
+            self._transverse_energy, self._transverse_gradient = self.transverse_potential.getEnergyGradient(coords)
+        else:
+            self._transverse_energy = transverse_energy
+            self._transverse_gradient = transverse_gradient
         self.energy = self.transverse_potential.true_energy
         self.gradient = self.transverse_potential.true_gradient.copy()
 
@@ -123,18 +129,20 @@ class _HybridEigenvectorWalker(object):
         
     
     def one_iteration(self):
-        self.coords = self._step_uphill(self.coords, self.gradient, 
+        coords = self._step_uphill(self.coords, self.gradient, 
                                        self.get_eigenvector(), self.eigenval)
-        self._compute_gradients(self.coords)
+        self._update_coords(coords)
         ret = self._minimize_transverse(self.nsteps_tangent, transverse_energy=self._transverse_energy, 
-                                       transverse_gradient=self._transverse_gradient)
+                                        transverse_gradient=self._transverse_gradient)
         
         # update some values for the next iteration
-        self.coords = ret.coords.copy()
-        self._transverse_energy = ret.energy
-        self._transverse_gradient = ret.grad
-        self.energy = self.transverse_potential.true_energy
-        self.gradient = self.transverse_potential.true_gradient
+        self._update_coords(ret.coords.copy(), transverse_energy=ret.energy, 
+                            transverse_gradient=ret.grad)
+#        self.coords = ret.coords.copy()
+#        self._transverse_energy = ret.energy
+#        self._transverse_gradient = ret.grad
+#        self.energy = self.transverse_potential.true_energy
+#        self.gradient = self.transverse_potential.true_gradient
         
         self._print_status()
     

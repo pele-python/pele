@@ -138,7 +138,7 @@ class LowestEigPot(BasePotential):
         return curvature, grad
 
 class FindLowestEigenVector(object):
-    def __init__(self, coords, pot, eigenvec0=None, orthogZeroEigs=0, dx=1e-3,
+    def __init__(self, coords, pot, eigenvec0=None, orthogZeroEigs=0, dx=1e-6,
                   first_order=False, gradient=None, **minimizer_kwargs):
         
         self.minimizer_kwargs = minimizer_kwargs
@@ -183,7 +183,8 @@ class FindLowestEigenVector(object):
         return res
 
 def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=None,
-                          first_order=False, gradient=None, orthogZeroEigs=0, dx=1e-3, **kwargs):
+                          first_order=False, gradient=None, orthogZeroEigs=0, dx=1e-3,
+                          **kwargs):
     """
     find the eigenvector corresponding to the lowest eigenvalue using
     LowestEigPot and the LBFGS minimizer
