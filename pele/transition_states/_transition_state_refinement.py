@@ -139,6 +139,7 @@ class FindTransitionState(object):
                  nsteps_tangent2=100,
                  verbosity=1,
                  first_order=False,
+                 check_negative=False,
                  ):
         self.pot = pot
         self.coords = np.copy(coords)
@@ -158,6 +159,7 @@ class FindTransitionState(object):
         self.demand_initial_negative_vec = demand_initial_negative_vec    
         self.npositive_max = max(10, self.nsteps / 5)
         self.first_order = first_order
+        self.check_negative = check_negative
         
         self.rmsnorm = 1./np.sqrt(float(len(coords)))
         self.oldeigenvec = None
@@ -276,7 +278,8 @@ class FindTransitionState(object):
                 negative_before_check -= 1
             
             # check to make sure the eigenvector is ok
-            if i == 0 or self.eigenval <= 0 or (negative_before_check > 0 and not self.demand_initial_negative_vec):
+            if (i == 0 or self.eigenval <= 0 or not self.check_negative or 
+                (negative_before_check > 0 and not self.demand_initial_negative_vec)):
                 self._saveState(coords)
                 self.reduce_step = 0
             else:
@@ -466,7 +469,7 @@ class FindTransitionState(object):
 
         if np.abs(h) > maxstep:
             if self.verbosity >= 5:
-                logger.debug("reducing step from %s %s %s", h, "to", maxstep) 
+                logger.debug("reducing uphill step from %s %s %s", h, "to", maxstep) 
             h *= maxstep / abs(h)
         self.uphill_step_size = h
         coords += h * self.eigenvec
