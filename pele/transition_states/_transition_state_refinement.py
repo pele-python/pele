@@ -6,6 +6,7 @@ from pele.optimize import Result, MYLBFGS
 from pele.optimize import mylbfgs
 from pele.potentials.potential import BasePotential
 from pele.transition_states import findLowestEigenVector
+from pele.transition_states._dimer_translator import _DimerTranslator, _DimerPotential
 
 
 __all__ = ["findTransitionState", "FindTransitionState"]
@@ -140,6 +141,7 @@ class FindTransitionState(object):
                  verbosity=1,
                  first_order=False,
                  check_negative=False,
+                 inverted_gradient=False,
                  ):
         self.pot = pot
         self.coords = np.copy(coords)
@@ -160,6 +162,7 @@ class FindTransitionState(object):
         self.npositive_max = max(10, self.nsteps / 5)
         self.first_order = first_order
         self.check_negative = check_negative
+        self.inverted_gradient = inverted_gradient
         
         self.rmsnorm = 1./np.sqrt(float(len(coords)))
         self.oldeigenvec = None
@@ -398,6 +401,56 @@ class FindTransitionState(object):
         
         self.oldeigenvec = self.eigenvec.copy()
         return overlap
+
+    def _walk_inverted_gradient(self, coords, energy=None, gradient=None):
+        """
+        now minimize the energy in the space perpendicular to eigenvec.
+        There's no point in spending much effort on this until 
+        we've gotten close to the transition state.  So limit the number of steps
+        to 10 until we get close.
+        """
+        #determine the number of steps
+        #i.e. if the eigenvector is deemed to have converged
+        eigenvec_converged = self.overlap > .999 
+        
+        nstepsperp = self.nsteps_tangent1
+        if eigenvec_converged:
+            nstepsperp = self.nsteps_tangent2
+
+        maxstep = self.maxstep_tangent
+        if self.reduce_step > 0:
+            maxstep *= (self.step_factor)**self.reduce_step
+
+        
+        coords_backup = coords.copy()
+        
+        _dimer_pot = _DimerPotential(self.pot, self.eigenvec)
+        transverse_energy, transverse_gradient = _dimer_pot.projected_energy_gradient(energy, gradient) 
+        dimer = _DimerTranslator(coords, self.pot, self.eigenvec,
+                                 nsteps=nstepsperp, tol=self.tol_tangent,
+                                 maxstep=maxstep,
+                                 H0 = self.H0_transverse,
+                                 energy=transverse_energy, gradient=transverse_gradient,
+                                 **self.tangent_space_quench_params)
+        ret = dimer.run(nstepsperp)
+        
+        coords = ret.coords
+        self.tangent_move_step = np.linalg.norm(coords - coords_backup)
+        rms = ret.rms
+        self.tangent_result = ret
+        self.H0_transverse = self.tangent_result.H0
+        try:
+            self.energy = dimer.get_energy()
+            self.gradient = dimer.get_gradient()
+        except AttributeError:
+            # tspot was never called, use the same gradient
+            if gradient is None or energy is None:
+                self._compute_gradients(coords)
+            else:
+                self.energy = energy
+                self.gradient = gradient
+        return ret
+
     
     def _minimizeTangentSpace(self, coords, energy=None, gradient=None):
         """
@@ -406,6 +459,8 @@ class FindTransitionState(object):
         we've gotten close to the transition state.  So limit the number of steps
         to 10 until we get close.
         """
+        if self.inverted_gradient:
+            return self._walk_inverted_gradient(coords, energy=energy, gradient=gradient)
         #determine the number of steps
         #i.e. if the eigenvector is deemed to have converged
         use_gradpar = False
