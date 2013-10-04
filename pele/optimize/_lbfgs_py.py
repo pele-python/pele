@@ -79,12 +79,16 @@ class LBFGS(object):
                  rel_energy=False, H0=1., events=None,
                  alternate_stop_criterion=None, debug=False,
                  iprint=-1, nsteps=10000, tol=1e-6, logger=None,
-                 energy=None, gradient=None,
+                 energy=None, gradient=None, wolfe=False, wolfe1=1e-5,
+                 wolfe2=0.99,
                  ):
         self.X = X
         self.N = len(X)
         self.M = M 
         self.pot = pot
+        self._use_wolfe = bool(wolfe)
+        self._wolfe1 = wolfe1
+        self._wolfe2 = wolfe2
         if energy is not None and gradient is not None:
             self.energy = energy
             self.G = gradient
@@ -262,7 +266,8 @@ class LBFGS(object):
         E0 = E
         
         if np.dot(G, stp) > 0:
-            #print "overlap was negative, reversing step direction"
+            if self.debug:
+                self.logger.warn("overlap was negative, reversing step direction: overlap %g" % (np.dot(G, stp)))
             stp = -stp
         
         stepsize = np.linalg.norm(stp)
@@ -287,11 +292,11 @@ class LBFGS(object):
                 dE = E - E0
 
             # if the increase is greater than maxErise reduce the step size
-            if dE <= self.maxErise:
+            if self._accept_step(E, E0, G, G0, f * stp):
                 break
             else:
                 if self.debug:
-                    self.logger.info("warning: energy increased, trying a smaller step %s %s %s %s", E, E0, f*stepsize, nincrease)
+                    self.logger.warn("energy increased, trying a smaller step %s %s %s %s", E, E0, f*stepsize, nincrease)
                 f /= 10.
                 nincrease += 1
                 if nincrease > 10:
@@ -313,6 +318,49 @@ class LBFGS(object):
         
         self.stepsize = f * stepsize
         return X, E, G
+    
+    def _accept_step(self, Enew, Eold, Gnew, Gold, step, strong=True):
+        if self._use_wolfe:
+            return self._wolfe_conditions(Enew, Eold, Gnew, Gold, step, strong)
+        else:
+            # get the increase in energy            
+            if self.rel_energy: 
+                if Enew == 0: 
+                    Enew = 1e-100
+                dE = (Enew - Eold) / abs(Eold)
+                #print dE
+            else:
+                dE = Enew - Eold
+
+            # if the increase is greater than maxErise reduce the step size
+            return dE <= self.maxErise
+            
+    
+    def _wolfe_conditions(self, Enew, Eold, Gnew, Gold, step, strong=False):
+        """return True if the Wolfe conditions are satisfied, False otherwise
+        
+        wolfe1 : the energy cannot rise more than an amount dependent on the 
+                 dot product of the gradient and the step
+        
+        wolfe2 : the overlap of the gradient with the step direction cannot 
+        decrease by more than a given factor 
+        """
+        stepsize = np.linalg.norm(step)
+        overlap_old = np.dot(Gold, step)
+        wolfe1 = Enew <= Eold + overlap_old * self._wolfe1
+        if not wolfe1:
+            print self.iter_number, "rejecting step due to energy", Enew, Enew-Eold, overlap_old * self._wolfe1, "stepsize", stepsize
+            return False
+        
+        overlap_new = np.dot(Gnew, step)
+        if strong:
+            wolfe2 = np.abs(overlap_new) <= np.abs(overlap_old) * self._wolfe2
+        else:
+            wolfe2 = overlap_new >= overlap_old * self._wolfe2
+        if not wolfe2:
+            print self.iter_number, "rejecting step due to gradient", overlap_new, overlap_old, self._wolfe2, "stepsize", stepsize
+        return wolfe1 and wolfe2
+          
     
     def reset(self):
         self.H0 = 1.
