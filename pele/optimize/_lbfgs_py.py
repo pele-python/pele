@@ -114,8 +114,8 @@ class LBFGS(object):
         self.debug = debug #print debug messages
         
         
-        self.s = np.zeros([self.M, self.N])  #position updates
-        self.y = np.zeros([self.M, self.N])  #gradient updates
+        self.s = np.zeros([self.M, self.N])  # position updates
+        self.y = np.zeros([self.M, self.N])  # gradient updates
 #        self.a = np.zeros(self.M)  #approximation for the inverse hessian
         #self.beta = np.zeros(M) #working space
         
@@ -136,6 +136,7 @@ class LBFGS(object):
         
         self.Xold = self.X.copy()
         self.Gold = self.G.copy()
+        self._have_Xold = False
         
         self.nfailed = 0
         
@@ -143,10 +144,11 @@ class LBFGS(object):
         self.result = Result()
     
     def get_state(self):
-        State = namedtuple("State", "s y rho k H0 Xold Gold")
+        State = namedtuple("State", "s y rho k H0 Xold Gold have_Xold")
         state = State(s=self.s.copy(), y=self.y.copy(),
                       rho=self.rho.copy(), k=self.k, H0=self.H0,
-                      Xold=self.Xold.copy(), Gold=self.Gold.copy())
+                      Xold=self.Xold.copy(), Gold=self.Gold.copy(),
+                      have_Xold=self._have_Xold)
         return state
     
     def set_state(self, state):
@@ -157,12 +159,81 @@ class LBFGS(object):
         self.H0 = state.H0
         self.Xold = state.Xold
         self.Gold = state.Gold
+        self._have_Xold = state.have_Xold
         assert self.s.shape == (self.M, self.N)
         assert self.y.shape == (self.M, self.N)
         assert self.rho.shape == (self.M,)
         assert self.Xold.shape == (self.N,)
         assert self.Gold.shape == (self.N,)
+    
+    def _add_step_to_memory(self, dX, dG):
+        """
+        add a step to the LBFGS memory
         
+        Parameters
+        ----------
+        dX : ndarray
+            the step: X - Xold
+        dG : ndarray 
+            the change in gradient along the step: G - Gold
+        """
+        klocal = (self.k + self.M) % self.M  #=k  cyclical
+        self.s[klocal,:] = dX
+        self.y[klocal,:] = dG
+        
+        # the local curvature along direction s is np.dot(y, s) / norm(s)
+        YS = np.dot(dX, dG)
+        if YS == 0.:
+            self.logger.warning("resetting YS to 1 in lbfgs %s", YS)
+            YS = 1.            
+        self.rho[klocal] = 1. / YS
+        
+        # update the approximation for the diagonal inverse hessian
+        # scale H0 according to
+        # H_k = YS/YY * H_0 
+        # this is described in Liu and Nocedal 1989 
+        # http://dx.doi.org/10.1007/BF01589116
+        # note: for this step we assume H0 is always the identity
+        YY = np.linalg.norm(dG)**2
+        if YY == 0.:
+            self.logger.warning("warning: resetting YY to 1 in lbfgs %s", YY)
+            YY = 1.
+        self.H0 = YS / YY
+        
+        # increment k
+        self.k += 1
+           
+    def _get_LBFGS_step(self, G):
+        """use the LBFGS algorithm to compute a suggested step from the memory
+        """
+        s = self.s
+        y = self.y
+        rho = self.rho
+        k = self.k
+        
+        q = G.copy()
+        a = np.zeros(self.M)
+        myrange = [ i % self.M for i in range(max([0, k - self.M]), k, 1) ]
+        #print "myrange", myrange, ki, k
+        for i in reversed(myrange):
+            a[i] = rho[i] * np.dot( s[i,:], q )
+            q -= a[i] * y[i,:]
+        
+        #z[:] = self.H0[ki] * q[:]
+        z = q #q is not used anymore after this, so we can use it as workspace
+        z *= self.H0
+        for i in myrange:
+            beta = rho[i] * np.dot( y[i,:], z )
+            z += s[i,:] * (a[i] - beta)
+        
+        stp = -z
+        
+        if k == 0:
+            #make first guess for the step length cautious
+            gnorm = np.linalg.norm(G)
+            stp *= min(gnorm, 1. / gnorm)
+        
+        return stp
     
     def getStep(self, X, G):
         """
@@ -176,64 +247,15 @@ class LBFGS(object):
         """
 #        self.G = G #saved for the line search
         
-        s = self.s
-        y = self.y
-        rho = self.rho
-        M = self.M
-        
-        k = self.k
-        ki = k % M #the index corresponding to k
-        
-        
         #we have a new X and G, save in s and y
-        if k > 0:
-            km1 = (k + M - 1) % M  #=k-1  cyclical
-            s[km1,:] = X - self.Xold
-            y[km1,:] = G - self.Gold
-            
-            YS = np.dot(s[km1,:], y[km1,:])
-            if YS == 0.:
-                self.logger.warning("resetting YS to 1 in lbfgs %s", YS)
-                YS = 1.            
-            rho[km1] = 1. / YS
-            
-            # update the approximation for the diagonal inverse hessian
-            # scale H0 according to
-            # H_k = YS/YY * H_0 
-            # this is described in Liu and Nocedal 1989 
-            # http://dx.doi.org/10.1007/BF01589116
-            # note: for this step we assume H0 is always the identity
-            YY = np.dot( y[km1,:], y[km1,:] )
-            if YY == 0.:
-                self.logger.warning("warning: resetting YY to 1 in lbfgs %s", YY)
-                YY = 1.
-            self.H0 = YS / YY
+        if self._have_Xold:
+            self._add_step_to_memory(X - self.Xold, G - self.Gold)
 
-        self.Xold[:] = X[:]
-        self.Gold[:] = G[:]
+        self.Xold = X.copy()
+        self.Gold = G.copy()
+        self._have_Xold = True
 
-        
-        q = G.copy()
-        a = np.zeros(self.M)
-        myrange = [ i % M for i in range(max([0, k - M]), k, 1) ]
-        #print "myrange", myrange, ki, k
-        for i in reversed(myrange):
-            a[i] = rho[i] * np.dot( s[i,:], q )
-            q -= a[i] * y[i,:]
-        
-        #z[:] = self.H0[ki] * q[:]
-        z = q #q is not used anymore after this, so we can use it as workspace
-        z *= self.H0
-        for i in myrange:
-            beta = rho[i] * np.dot( y[i,:], z )
-            z += s[i,:] * (a[i] - beta)
-        
-        stp = -z.copy()
-        
-        if k == 0:
-            #make first guess for the step length cautious
-            gnorm = np.linalg.norm(G)
-            stp *= min(gnorm, 1. / gnorm)
+        stp = self._get_LBFGS_step(G)
         
         self.k += 1
         return stp
@@ -267,7 +289,8 @@ class LBFGS(object):
         
         if np.dot(G, stp) > 0:
             if self.debug:
-                self.logger.warn("overlap was negative, reversing step direction: overlap %g" % (np.dot(G, stp)))
+                overlap = np.dot(G, stp) / np.linalg.norm(G) / np.linalg.norm(stp)
+                self.logger.warn("LBFGS returned uphill step, reversing step direction: overlap %g" % (overlap))
             stp = -stp
         
         stepsize = np.linalg.norm(stp)

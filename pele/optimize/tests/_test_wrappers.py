@@ -28,7 +28,7 @@ class TestMinimizers(unittest.TestCase):
         self.assertTrue(hasattr(res, "success"))
     
     def test_lbfgs_py(self):
-        res = _quench.lbfgs_py(self.x0, self.pot, tol=1e-7)
+        res = _quench.lbfgs_py(self.x0, self.pot, tol=1e-7, debug=True)
         self.assertTrue(res.success)
         self.assertAlmostEqual(self.E, res.energy, 4)
         self.check_attributes(res)
