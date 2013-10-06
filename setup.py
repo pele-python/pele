@@ -1,7 +1,12 @@
 from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
 from numpy.distutils.misc_util import has_cxx_sources
+import numpy as np
 import os
+
+## Numpy header files 
+numpy_lib = os.path.split(np.__file__)[0] 
+numpy_include = os.path.join(numpy_lib, 'core/include') 
 
 class ModuleList:
     def __init__(self, **kwargs):
@@ -42,7 +47,13 @@ fmodules.add_module("pele/transition_states/_NEB_utils.f90")
 fmodules.add_module("pele/angleaxis/_aadist.f90")
 fmodules.add_module("pele/accept_tests/_spherical_container.f90")
 
-cxx_modules = [ ]
+cxx_modules = [
+            Extension("pele.optimize._cython_lbfgs", ["pele/optimize/_cython_lbfgs.c"],
+                      include_dirs=[numpy_include],
+                      extra_compile_args=['-Wextra','-pedantic','-funroll-loops','-O2',],
+                      ),
+
+               ]
 
 fortran_modules = fmodules.module_list
 ext_modules = fortran_modules + cxx_modules

@@ -80,7 +80,7 @@ class LBFGS(object):
                  alternate_stop_criterion=None, debug=False,
                  iprint=-1, nsteps=10000, tol=1e-6, logger=None,
                  energy=None, gradient=None, wolfe=False, wolfe1=1e-5,
-                 wolfe2=0.99,
+                 wolfe2=0.99, cython=False
                  ):
         self.X = X
         self.N = len(X)
@@ -89,6 +89,7 @@ class LBFGS(object):
         self._use_wolfe = bool(wolfe)
         self._wolfe1 = wolfe1
         self._wolfe2 = wolfe2
+        self._cython = cython
         if energy is not None and gradient is not None:
             self.energy = energy
             self.G = gradient
@@ -142,7 +143,7 @@ class LBFGS(object):
         
         self.iter_number = 0
         self.result = Result()
-    
+        
     def get_state(self):
         State = namedtuple("State", "s y rho k H0 Xold Gold have_Xold")
         state = State(s=self.s.copy(), y=self.y.copy(),
@@ -203,9 +204,16 @@ class LBFGS(object):
         # increment k
         self.k += 1
            
+    def _get_LBFGS_step_cython(self, G):
+        import _cython_lbfgs
+        return _cython_lbfgs._compute_LBFGS_step(G, self.s, self.y, self.rho,
+                                                 self.k, self.H0)
+        
     def _get_LBFGS_step(self, G):
         """use the LBFGS algorithm to compute a suggested step from the memory
         """
+        if self._cython:
+            return self._get_LBFGS_step_cython(G)
         s = self.s
         y = self.y
         rho = self.rho

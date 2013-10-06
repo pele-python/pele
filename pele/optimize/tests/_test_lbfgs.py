@@ -47,25 +47,40 @@ class TestLBFGS_State(unittest.TestCase):
         self.assertEqual(state1.H0, state2.H0)
         self.assertEqual(state1.k, state2.k)
         
-class TestLBFGS_wolfe(unittest.TestCase):
+#class TestLBFGS_wolfe(unittest.TestCase):
+#    def setUp(self):
+#        self.system = LJCluster(13)
+#        self.x = self.system.get_random_configuration()
+#        self.pot = self.system.get_potential()
+#    
+#    def test(self):
+#        minimizer = LBFGS(self.x.copy(), self.pot, wolfe=True, debug=True)
+#        ret = minimizer.run()
+#        self.assertTrue(ret.success)
+#        
+#        print "\n\n"
+#        minimizer = LBFGS(self.x.copy(), self.pot, wolfe=False, debug=True)
+#        ret_nowolfe = minimizer.run()
+#        self.assertTrue(ret_nowolfe.success)
+#        
+#        print "nfev wolfe, nowolfe", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy
+  
+
+class TestLBFGSCython(unittest.TestCase):
     def setUp(self):
         self.system = LJCluster(13)
         self.x = self.system.get_random_configuration()
         self.pot = self.system.get_potential()
     
     def test(self):
-        minimizer = LBFGS(self.x.copy(), self.pot, wolfe=True, debug=True)
+        minimizer = LBFGS(self.x.copy(), self.pot, cython=True, debug=True)
         ret = minimizer.run()
-        self.assertTrue(ret.success)
+        m2 = LBFGS(self.x.copy(), self.pot, cython=False, debug=True)
+        ret2 = m2.run()
         
-        print "\n\n"
-        minimizer = LBFGS(self.x.copy(), self.pot, wolfe=False, debug=True)
-        ret_nowolfe = minimizer.run()
-        self.assertTrue(ret_nowolfe.success)
-        
-        print "nfev wolfe, nowolfe", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy
-  
-
+        print "cython", ret.nfev, ret2.nfev
+        self.assertEqual(ret.nfev, ret2.nfev)
+        self.assertAlmostEqual(ret.energy, ret2.energy, 5)
 
 if __name__ == "__main__":
     unittest.main()
