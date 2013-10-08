@@ -64,6 +64,25 @@ class TestLBFGS_State(unittest.TestCase):
 #        self.assertTrue(ret_nowolfe.success)
 #        
 #        print "nfev wolfe, nowolfe", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy
+
+class TestLBFGS_armijo(unittest.TestCase):
+    def setUp(self):
+        self.system = LJCluster(13)
+        self.x = self.system.get_random_configuration()
+        self.pot = self.system.get_potential()
+    
+    def test(self):
+        minimizer = LBFGS(self.x.copy(), self.pot, armijo=True, debug=True)
+        ret = minimizer.run()
+        self.assertTrue(ret.success)
+        
+        print "\n\n"
+        minimizer = LBFGS(self.x.copy(), self.pot, armijo=False, debug=True)
+        ret_nowolfe = minimizer.run()
+        self.assertTrue(ret_nowolfe.success)
+        
+        print "nfev armijo, noarmijo", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy
+  
   
 
 class TestLBFGSCython(unittest.TestCase):
