@@ -83,6 +83,7 @@ class LBFGS(object):
                  wolfe1=1e-5,
                  wolfe2=0.99, cython=False, fortran=False
                  ):
+        X = X.copy()
         self.X = X
         self.N = len(X)
         self.M = M 
@@ -91,16 +92,17 @@ class LBFGS(object):
         self._armijo = armijo
         self._wolfe1 = wolfe1
         self._wolfe2 = wolfe2
-        self._cython = cython
-        self._fortran = fortran
+        self._cython = bool(cython)
+        self._fortran = bool(fortran)
+        self.funcalls = 0
         if energy is not None and gradient is not None:
             self.energy = energy
             self.G = gradient
         else:
             self.energy, self.G = self.pot.getEnergyGradient(self.X)
+            self.funcalls =+ 1
         self.rms = np.linalg.norm(self.G) / np.sqrt(self.N)
 
-        self.funcalls = 1
         self.maxstep = maxstep
         self.maxErise = maxErise
         self.rel_energy = rel_energy #use relative energy comparison for maxErise 
@@ -467,68 +469,68 @@ class LBFGS(object):
             
 
     
-    def run_old(self):
-        """
-        the main loop of the algorithm
-        """
-        res = Result()
-        res.message = []
-        tol = self.tol
-        iprint = self.iprint
-        nsteps = self.nsteps
-                
-        #iprint =40
-        X = self.X
-        sqrtN = np.sqrt(self.N)
-        
-        
-        i = 1
-        self.funcalls += 1
-        e, G = self.pot.getEnergyGradient(X)
-        rms = np.linalg.norm(G) / sqrtN
-        res.success = False
-        while i < nsteps:
-            stp = self.getStep(X, G)
-            
-            try:
-                X, e, G = self.adjustStepSize(X, e, G, stp)
-            except LineSearchError:
-                self.logger.error("problem with adjustStepSize, ending quench")
-                rms = np.linalg.norm(G) / np.sqrt(self.N)
-                self.logger.error("    on failure: quench step %s %s %s %s", i, e, rms, self.funcalls)
-                res.message.append( "problem with adjustStepSize" )
-                break
-            #e, G = self.pot.getEnergyGradient(X)
-            
-            rms = np.linalg.norm(G) / np.sqrt(self.N)
-    
-            
-            if iprint > 0:
-                if i % iprint == 0:
-                    self.logger.info("lbfgs: %s %s %s %s %s %s %s %s %s", i, "E", e, 
-                                     "rms", rms, "funcalls", self.funcalls, "stepsize", self.stepsize)
-            for event in self.events:
-                event(coords=X, energy=e, rms=rms)
-      
-            if self.alternate_stop_criterion is None:
-                i_am_done = rms < self.tol
-            else:
-                i_am_done = self.alternate_stop_criterion(energy=e, gradient=G, 
-                                                          tol=self.tol, coords=X)
-                
-            if i_am_done:
-                res.success = True
-                break
-            i += 1
-
-        res.nsteps = i
-        res.nfev = self.funcalls
-        res.coords = X
-        res.energy = e
-        res.rms = rms
-        res.grad = G
-        res.H0 = self.H0
-        return res
+#    def run_old(self):
+#        """
+#        the main loop of the algorithm
+#        """
+#        res = Result()
+#        res.message = []
+#        tol = self.tol
+#        iprint = self.iprint
+#        nsteps = self.nsteps
+#                
+#        #iprint =40
+#        X = self.X
+#        sqrtN = np.sqrt(self.N)
+#        
+#        
+#        i = 1
+#        self.funcalls += 1
+#        e, G = self.pot.getEnergyGradient(X)
+#        rms = np.linalg.norm(G) / sqrtN
+#        res.success = False
+#        while i < nsteps:
+#            stp = self.getStep(X, G)
+#            
+#            try:
+#                X, e, G = self.adjustStepSize(X, e, G, stp)
+#            except LineSearchError:
+#                self.logger.error("problem with adjustStepSize, ending quench")
+#                rms = np.linalg.norm(G) / np.sqrt(self.N)
+#                self.logger.error("    on failure: quench step %s %s %s %s", i, e, rms, self.funcalls)
+#                res.message.append( "problem with adjustStepSize" )
+#                break
+#            #e, G = self.pot.getEnergyGradient(X)
+#            
+#            rms = np.linalg.norm(G) / np.sqrt(self.N)
+#    
+#            
+#            if iprint > 0:
+#                if i % iprint == 0:
+#                    self.logger.info("lbfgs: %s %s %s %s %s %s %s %s %s", i, "E", e, 
+#                                     "rms", rms, "funcalls", self.funcalls, "stepsize", self.stepsize)
+#            for event in self.events:
+#                event(coords=X, energy=e, rms=rms)
+#      
+#            if self.alternate_stop_criterion is None:
+#                i_am_done = rms < self.tol
+#            else:
+#                i_am_done = self.alternate_stop_criterion(energy=e, gradient=G, 
+#                                                          tol=self.tol, coords=X)
+#                
+#            if i_am_done:
+#                res.success = True
+#                break
+#            i += 1
+#
+#        res.nsteps = i
+#        res.nfev = self.funcalls
+#        res.coords = X
+#        res.energy = e
+#        res.rms = rms
+#        res.grad = G
+#        res.H0 = self.H0
+#        return res
     
     def get_result(self):
         res = self.result

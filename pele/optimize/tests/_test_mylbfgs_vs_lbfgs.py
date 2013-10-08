@@ -6,7 +6,7 @@ from pele.optimize import MYLBFGS, LBFGS, lbfgs_py
 
 class TestMYLBFGS_LBFGS(unittest.TestCase):
     def setUp(self):
-        self.setUp1()
+        self.setUp1(verbose=False)
 
     def setUp1(self, verbose=False, **kwargs):
         np.random.seed(0)
@@ -20,16 +20,20 @@ class TestMYLBFGS_LBFGS(unittest.TestCase):
         self.kwargs = kwargs
         self.verbose = verbose
     
-    def test(self):
-        N = self.x.size
-        M = 4
+        self.M = 4
         if self.verbose: iprint=1
         else: iprint = -1
-        myo = MYLBFGS(self.x, self.pot, iprint=iprint, debug=True, M=M)
-        o = LBFGS(self.x, self.pot, iprint=iprint, debug=True, M=M, **self.kwargs)
+        self.myo = MYLBFGS(self.x, self.pot, iprint=iprint, debug=True, M=self.M)
+        self.o = LBFGS(self.x, self.pot, iprint=iprint, debug=True, M=self.M, **self.kwargs)
+
+    def test(self):
+        N = self.x.size
+        M = self.M
+        myo = self.myo
+        o = self.o
 
         # do one iteration
-        for i in xrange(3*M):   
+        for i in xrange(3 * self.M):   
             myo.one_iteration()
             o.one_iteration()
             if self.verbose:
@@ -58,6 +62,16 @@ class TestMYLBFGS_LBFGS(unittest.TestCase):
 
         self.assertAlmostEqual(ret.energy, myret.energy, 4)
         self.assertLess(np.max(np.abs(myret.coords - ret.coords)), 1e-6)
+    
+    def test_complete(self):
+        myret = self.myo.run()
+        ret = self.o.run()
+        self.assertEqual(ret.nfev, myret.nfev)
+        self.assertEqual(ret.nsteps, myret.nsteps)
+        self.assertAlmostEqual(ret.energy, myret.energy, 4)
+        self.assertLess(np.max(np.abs(myret.coords - ret.coords)), 1e-6)
+#        print "ediff", ret.energy - myret.energy
+        
 
 class TestMYLBFGS_LBFGS_Cython(TestMYLBFGS_LBFGS):
     def setUp(self):
