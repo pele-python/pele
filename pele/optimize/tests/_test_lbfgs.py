@@ -82,6 +82,22 @@ class TestLBFGSCython(unittest.TestCase):
         self.assertEqual(ret.nfev, ret2.nfev)
         self.assertAlmostEqual(ret.energy, ret2.energy, 5)
 
+class TestLBFGSFortran(unittest.TestCase):
+    def setUp(self):
+        self.system = LJCluster(13)
+        self.x = self.system.get_random_configuration()
+        self.pot = self.system.get_potential()
+    
+    def test(self):
+        minimizer = LBFGS(self.x.copy(), self.pot, fortran=True, debug=True)
+        ret = minimizer.run()
+        m2 = LBFGS(self.x.copy(), self.pot, fortran=False, debug=True)
+        ret2 = m2.run()
+        
+        print "fortran", ret.nfev, ret2.nfev
+        self.assertEqual(ret.nfev, ret2.nfev)
+        self.assertAlmostEqual(ret.energy, ret2.energy, 5)
+
 if __name__ == "__main__":
     unittest.main()
         

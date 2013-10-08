@@ -248,3 +248,74 @@
          DY(:) = DY(:) + DA*DX(:)
       END SUBROUTINE DAXPY
 
+subroutine lbfgs_get_step( G, s, y, rho, k, H0, N, M, step)
+implicit none
+integer, intent(IN) :: N, M, k
+double precision, intent(IN) :: G(N)
+double precision, intent(IN) :: s(N,M)
+double precision, intent(IN) :: y(N,M)
+double precision, intent(IN) :: rho(M)
+double precision, intent(IN) :: H0
+double precision, intent(OUT) :: step(N)
+
+double precision :: a(N), sq, yz, beta, gnorm
+integer i, j1, jstart, jstop
+
+step(:) = G(:)
+
+if (k.eq.0) then
+   gnorm = sqrt(sum(g(:) * g(:)))
+   gnorm = min(gnorm, 1.d0 / gnorm)
+   step(:) = -gnorm * H0 * step(:)
+   return
+endif
+
+jstart = max(1, k - M + 1)
+jstop = k 
+
+! loop through the history, most recent first
+do j1 = jstop, jstart, -1
+   i = mod(j1, M) + 1
+   sq = sum(s(:,i) * step(:)) 
+   a(i) = rho(i) * sq
+   step(:) = step(:) - a(i) * y(:,i)
+enddo
+
+! include our estimate for diagonal component of the inverse hessian
+step(:) = step(:) * H0
+
+! loop through the history, most recent last
+   !write(*,*) " "
+do j1 = jstart, jstop
+   !write(*,*) "j1"
+   i = mod(j1, M) + 1
+   yz = sum(y(:,i) * step(:))
+   beta = rho(i) * yz
+   step(:) = step(:) + s(:,i) * (a(i) - beta)
+enddo
+   !write(*,*) " "
+
+! step should point downhill
+step(:) = -step(:)
+
+! make first guess for the step length cautious
+!if (k .eq. 0) then
+   !gnorm = sqrt(sum(g(:) * g(:)))
+   !gnorm = min(gnorm, 1.d0 / gnorm)
+   !step(:) = step(:) * gnorm
+!endif
+
+end subroutine lbfgs_get_step
+
+subroutine lbfgs_get_step_wrapper( G, s, y, rho, k, H0, N, M, step)
+! wrap lbfgs_get_step so that only 1d arrays are passed
+implicit none
+integer, intent(IN) :: N, M, k
+double precision, intent(IN) :: G(N)
+double precision, intent(IN) :: s(N*M)
+double precision, intent(IN) :: y(N*M)
+double precision, intent(IN) :: rho(M)
+double precision, intent(IN) :: H0
+double precision, intent(OUT) :: step(N)
+call lbfgs_get_step( G, s, y, rho, k, H0, N, M, step)
+end subroutine lbfgs_get_step_wrapper

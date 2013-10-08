@@ -76,11 +76,11 @@ class LBFGS(object):
     
     """
     def __init__(self, X, pot, maxstep=0.1, maxErise=1e-4, M=4, 
-                 rel_energy=False, H0=1., events=None,
+                 rel_energy=False, H0=0.1, events=None,
                  alternate_stop_criterion=None, debug=False,
                  iprint=-1, nsteps=10000, tol=1e-6, logger=None,
                  energy=None, gradient=None, wolfe=False, wolfe1=1e-5,
-                 wolfe2=0.99, cython=False
+                 wolfe2=0.99, cython=False, fortran=False
                  ):
         self.X = X
         self.N = len(X)
@@ -90,6 +90,7 @@ class LBFGS(object):
         self._wolfe1 = wolfe1
         self._wolfe2 = wolfe2
         self._cython = cython
+        self._fortran = fortran
         if energy is not None and gradient is not None:
             self.energy = energy
             self.G = gradient
@@ -121,7 +122,7 @@ class LBFGS(object):
         #self.beta = np.zeros(M) #working space
         
         if H0 is None:
-            self.H0 = 1.
+            self.H0 = 0.1
         else:
             self.H0 = H0
         if self.H0 < 1e-10:
@@ -208,12 +209,20 @@ class LBFGS(object):
         import _cython_lbfgs
         return _cython_lbfgs._compute_LBFGS_step(G, self.s, self.y, self.rho,
                                                  self.k, self.H0)
-        
+
+    def _get_LBFGS_step_fortran(self, G):
+        import mylbfgs_updatestep
+        return mylbfgs_updatestep.lbfgs_get_step_wrapper(G, self.s.flatten(), self.y.flatten(), self.rho,
+                                                 self.k, self.H0)
+
+
     def _get_LBFGS_step(self, G):
         """use the LBFGS algorithm to compute a suggested step from the memory
         """
         if self._cython:
             return self._get_LBFGS_step_cython(G)
+        elif self._fortran:
+            return self._get_LBFGS_step_fortran(G)
         s = self.s
         y = self.y
         rho = self.rho
@@ -222,6 +231,7 @@ class LBFGS(object):
         q = G.copy()
         a = np.zeros(self.M)
         myrange = [ i % self.M for i in range(max([0, k - self.M]), k, 1) ]
+        assert len(myrange) == min(self.M, k)
         #print "myrange", myrange, ki, k
         for i in reversed(myrange):
             a[i] = rho[i] * np.dot( s[i,:], q )
