@@ -200,7 +200,7 @@ class LBFGS(object):
         # this is described in Liu and Nocedal 1989 
         # http://dx.doi.org/10.1007/BF01589116
         # note: for this step we assume H0 is always the identity
-        YY = np.linalg.norm(dG)**2
+        YY = np.dot(dG, dG)
         if YY == 0.:
             self.logger.warning("warning: resetting YY to 1 in lbfgs %s", YY)
             YY = 1.
@@ -216,8 +216,9 @@ class LBFGS(object):
 
     def _get_LBFGS_step_fortran(self, G):
         import mylbfgs_updatestep
-        return mylbfgs_updatestep.lbfgs_get_step_wrapper(G, self.s.flatten(), self.y.flatten(), self.rho,
+        ret = mylbfgs_updatestep.lbfgs_get_step_wrapper(G, self.s.reshape(-1), self.y.reshape(-1), self.rho,
                                                  self.k, self.H0)
+        return ret 
 
 
     def _get_LBFGS_step(self, G):
