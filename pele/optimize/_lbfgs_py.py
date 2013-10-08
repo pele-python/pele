@@ -277,7 +277,6 @@ class LBFGS(object):
 
         stp = self._get_LBFGS_step(G)
         
-        self.k += 1
         return stp
 
     def adjustStepSize(self, X, E, G, stp):
