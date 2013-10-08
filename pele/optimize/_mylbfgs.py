@@ -85,7 +85,7 @@ class MYLBFGS(LBFGS):
         return self.stp
 
     def get_state(self):
-        State = namedtuple("State", "W Xold Gold iter point H0")
+        State = namedtuple("State", "W Xold Gold iter point H0 have_Xold")
         state = State(W=self.W.copy(), Xold=self.Xold.copy(), Gold=self.Gold.copy(),
                       iter=self._iter, point=self._point, H0=self.H0vec[0],
                       have_Xold=self._have_Xold

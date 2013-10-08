@@ -271,11 +271,12 @@ if (k.eq.0) then
 endif
 
 jstart = max(1, k - M + 1)
-jstop = k 
+jstop = k
 
 ! loop through the history, most recent first
 do j1 = jstop, jstart, -1
-   i = mod(j1, M) + 1
+   i = mod(j1, M)
+   if (i .eq. 0) i = M
    sq = sum(s(:,i) * step(:)) 
    a(i) = rho(i) * sq
    step(:) = step(:) - a(i) * y(:,i)
@@ -288,7 +289,8 @@ step(:) = step(:) * H0
    !write(*,*) " "
 do j1 = jstart, jstop
    !write(*,*) "j1"
-   i = mod(j1, M) + 1
+   i = mod(j1, M)
+   if (i .eq. 0) i = M
    yz = sum(y(:,i) * step(:))
    beta = rho(i) * yz
    step(:) = step(:) + s(:,i) * (a(i) - beta)
