@@ -65,10 +65,10 @@ class MYLBFGS(LBFGS):
             #s = X - self.Xold
             #y = G - self.Gold
             #print "YS YY py", np.dot( y, s ), np.dot( y,y ), ISPT+NPT
-            self.W[ISPT+NPT : ISPT+NPT +N] = X - self.Xold
-            self.W[IYPT+NPT : IYPT+NPT +N] = G - self.Gold    
-        self.Xold = X.copy()
-        self.Gold = G.copy()
+            self.W[ISPT+NPT : ISPT+NPT +N] = self.dXold
+            self.W[IYPT+NPT : IYPT+NPT +N] = self.dGold    
+#        self.Xold = X.copy()
+#        self.Gold = G.copy()
 
         
         #print self._iter, self._point
@@ -85,24 +85,24 @@ class MYLBFGS(LBFGS):
         return self.stp
 
     def get_state(self):
-        State = namedtuple("State", "W Xold Gold iter point H0 have_Xold")
-        state = State(W=self.W.copy(), Xold=self.Xold.copy(), Gold=self.Gold.copy(),
+        State = namedtuple("State", "W dXold dGold iter point H0 have_dXold")
+        state = State(W=self.W.copy(), dXold=self.dXold.copy(), dGold=self.dGold.copy(),
                       iter=self._iter, point=self._point, H0=self.H0vec[0],
-                      have_Xold=self._have_Xold
+                      have_dXold=self._have_dXold
                       )
         return state
     
     def set_state(self, state):
         self.W = state.W
-        self.Xold = state.Xold
-        self.Gold = state.Gold
-        self._have_Xold = state.have_Xold
+        self.dXold = state.dXold
+        self.dGold = state.dGold
+        self._have_dXold = state.have_dXold
         self._iter = state.iter
         self._point = state.point
         self.H0 = state.H0
         self.H0vec = np.ones(self.N) * self.H0
-        assert self.Xold.shape == (self.N,)
-        assert self.Gold.shape == (self.N,)
+        assert self.dXold.shape == (self.N,)
+        assert self.dGold.shape == (self.N,)
         assert self.W.size == (self.N * (2 * self.M + 1) + 2 * self.M)
         
         

@@ -42,8 +42,8 @@ class TestLBFGS_State(unittest.TestCase):
         self.assertTrue((state1.y == state2.y).all())
         self.assertTrue((state1.s == state2.s).all())
         self.assertTrue((state1.rho == state2.rho).all())
-        self.assertTrue((state1.Xold == state2.Xold).all())
-        self.assertTrue((state1.Gold == state2.Gold).all())
+        self.assertTrue((state1.dXold == state2.dXold).all())
+        self.assertTrue((state1.dGold == state2.dGold).all())
         self.assertEqual(state1.H0, state2.H0)
         self.assertEqual(state1.k, state2.k)
         

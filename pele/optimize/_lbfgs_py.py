@@ -140,9 +140,9 @@ class LBFGS(object):
         self.y[0,:] = self.G
         self.rho[0] = 0. #1. / np.dot(X,G)
         
-        self.Xold = self.X.copy()
-        self.Gold = self.G.copy()
-        self._have_Xold = False
+        self.dXold = np.zeros(self.X.size)
+        self.dGold = np.zeros(self.X.size)
+        self._have_dXold = False
         
         self.nfailed = 0
         
@@ -150,11 +150,11 @@ class LBFGS(object):
         self.result = Result()
         
     def get_state(self):
-        State = namedtuple("State", "s y rho k H0 Xold Gold have_Xold")
+        State = namedtuple("State", "s y rho k H0 dXold dGold have_dXold")
         state = State(s=self.s.copy(), y=self.y.copy(),
                       rho=self.rho.copy(), k=self.k, H0=self.H0,
-                      Xold=self.Xold.copy(), Gold=self.Gold.copy(),
-                      have_Xold=self._have_Xold)
+                      dXold=self.dXold.copy(), dGold=self.dGold.copy(),
+                      have_dXold=self._have_dXold)
         return state
     
     def set_state(self, state):
@@ -163,14 +163,14 @@ class LBFGS(object):
         self.rho = state.rho
         self.k = state.k
         self.H0 = state.H0
-        self.Xold = state.Xold
-        self.Gold = state.Gold
-        self._have_Xold = state.have_Xold
+        self.dXold = state.dXold
+        self.dGold = state.dGold
+        self._have_dXold = state.have_dXold
         assert self.s.shape == (self.M, self.N)
         assert self.y.shape == (self.M, self.N)
         assert self.rho.shape == (self.M,)
-        assert self.Xold.shape == (self.N,)
-        assert self.Gold.shape == (self.N,)
+        assert self.dXold.shape == (self.N,)
+        assert self.dGold.shape == (self.N,)
     
     def _add_step_to_memory(self, dX, dG):
         """
@@ -271,12 +271,8 @@ class LBFGS(object):
 #        self.G = G #saved for the line search
         
         #we have a new X and G, save in s and y
-        if self._have_Xold:
-            self._add_step_to_memory(X - self.Xold, G - self.Gold)
-
-        self.Xold = X.copy()
-        self.Gold = G.copy()
-        self._have_Xold = True
+        if self._have_dXold:
+            self._add_step_to_memory(self.dXold, self.dGold)
 
         stp = self._get_LBFGS_step(G)
         
@@ -433,7 +429,12 @@ class LBFGS(object):
         """
         stp = self.getStep(self.X, self.G)
         
-        self.X, self.energy, self.G = self.adjustStepSize(self.X, self.energy, self.G, stp)
+        Xnew, self.energy, Gnew = self.adjustStepSize(self.X, self.energy, self.G, stp)
+        self.dXold = Xnew - self.X
+        self.dGold = Gnew - self.G
+        self._have_dXold = True
+        self.X = Xnew
+        self.G = Gnew
         
         self.rms = np.linalg.norm(self.G) / np.sqrt(self.N)
 

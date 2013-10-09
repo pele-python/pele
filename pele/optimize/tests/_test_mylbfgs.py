@@ -40,8 +40,8 @@ class TestMYLBFGS_State(unittest.TestCase):
         state2 = minimizer2.get_state()
         
         self.assertTrue((state1.W == state2.W).all())
-        self.assertTrue((state1.Xold == state2.Xold).all())
-        self.assertTrue((state1.Gold == state2.Gold).all())
+        self.assertTrue((state1.dXold == state2.dXold).all())
+        self.assertTrue((state1.dGold == state2.dGold).all())
         self.assertEqual(state1.H0, state2.H0)
         self.assertEqual(state1.point, state2.point)
         self.assertEqual(state1.iter, state2.iter)
