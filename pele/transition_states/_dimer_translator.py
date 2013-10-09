@@ -55,6 +55,7 @@ class _DimerPotential(object):
     def projected_energy_gradient(self, energy, gradient):
         """return the energy and the gradient at x with the gradient inverted along the eigenvector"""
         projgrad = gradient - 2. * np.dot(gradient, self.eigenvec) * self.eigenvec
+#        print "overlap of g and eigenvec", np.dot(gradient, self.eigenvec)
         return 0., projgrad
 
 #    def getEnergyGradientInverted(self, x):

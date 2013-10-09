@@ -133,7 +133,7 @@ class FindTransitionState(object):
                  nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
-                 max_uphill_step=0.1,
+                 max_uphill_step=0.5,
                  demand_initial_negative_vec=True,
                  negatives_before_check = 10,
                  nsteps_tangent1=10,
@@ -188,13 +188,19 @@ class FindTransitionState(object):
 
         #set some parameters used in finding lowest eigenvector
         #initial guess for Hermitian
-        self.H0_leig = None 
+        self.H0_leig = None
         
         self.H0_transverse = None
         
         self.reduce_step = 0
         self.step_factor = .1
         self.npositive = 0
+        
+        self._trust_radius = 2.
+        self._max_uphill = .2
+        self._max_uphill_min = .01
+        self._max_uphill_max = max_uphill_step
+#        self._max_uphill
         
     @classmethod
     def params(cls, obj = None):
@@ -298,7 +304,6 @@ class FindTransitionState(object):
             
             # step uphill along the direction of the lowest eigenvector
             coords = self._stepUphill(coords)
-            self._compute_gradients(coords)
 
             # minimize the coordinates in the space perpendicular to the lowest eigenvector
             tangent_ret = self._minimizeTangentSpace(coords, energy=self.get_energy(), gradient=self.get_gradient())
@@ -411,6 +416,8 @@ class FindTransitionState(object):
         """
         #determine the number of steps
         #i.e. if the eigenvector is deemed to have converged
+        if self.verbosity > 1:
+            print "inverting the gradient and minimizing"
         eigenvec_converged = self.overlap > .999 
         
         nstepsperp = self.nsteps_tangent1
@@ -506,6 +513,24 @@ class FindTransitionState(object):
                 self.gradient = gradient
         return ret
 
+    def _update_max_uphill_step(self, Fold, stepsize):
+        Fnew = np.dot(self.eigenvec, self.get_gradient())
+        # EPER=MIN(DABS(1.0D0-(FOBNEW-FOB)/(PSTEP*EVALMIN)),DABS(1.0D0-(-FOBNEW-FOB)/(PSTEP*EVALMIN)))
+        a1 = 1. - (Fnew - Fold) / (stepsize * self.eigenval)
+        a2 = 1. - (-Fnew - Fold) / (stepsize * self.eigenval)
+        eper = min(np.abs(a1), np.abs(a2))
+        if eper > self._trust_radius:
+            # reduce the maximum step size
+            self._max_uphill = max(self._max_uphill / 1.1, self._max_uphill_min)
+            if self.verbosity > 2:
+                print "decreasing max uphill step to", self._max_uphill, Fold, Fnew, a1, a2
+        else:
+            # increase the maximum step size
+            self._max_uphill = min(self._max_uphill * 1.1, self._max_uphill_max)
+            if self.verbosity > 2:
+                print "increasing max uphill step to", self._max_uphill, Fold, Fnew, a1, a2
+
+
     def _stepUphill(self, coords):
         """
         step uphill in the direction of self.eigenvec.  self.eigenval is used
@@ -517,7 +542,8 @@ class FindTransitionState(object):
         F = np.dot(grad, self.eigenvec) 
         h = 2.*F/ np.abs(self.eigenval) / (1. + np.sqrt(1.+4.*F**2/self.eigenval**2 ))
 
-        maxstep = self.max_uphill_step
+        # get the maxstep and scale it if necessary
+        maxstep = self._max_uphill
         if self.reduce_step > 0:
             maxstep *= (self.step_factor)**self.reduce_step
 
@@ -528,6 +554,16 @@ class FindTransitionState(object):
             h *= maxstep / abs(h)
         self.uphill_step_size = h
         coords += h * self.eigenvec
+
+        # recompute the energy and gradient
+        self._compute_gradients(coords)
+        
+        # update the maximum step using a trust ratio
+        if self.eigenval < 0:
+            self._update_max_uphill_step(F, h)
+
+        if self.verbosity > 2:
+            print "stepping uphill with stepsize", h
 
         return coords
 

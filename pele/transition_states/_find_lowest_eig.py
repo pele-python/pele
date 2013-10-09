@@ -6,7 +6,7 @@ from pele.optimize import Result
 from pele.transition_states import orthogopt
 from pele.potentials.potential import BasePotential
 #from pele.optimize.lbfgs_py import LBFGS
-from pele.optimize import MYLBFGS
+from pele.optimize import MYLBFGS, LBFGS
 import pele.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector", "analyticalLowestEigenvalue", "FindLowestEigenVector"]
@@ -240,8 +240,8 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=
                           first_order=first_order, gradient=gradient)
     
     #minimize, using the last eigenvector as a starting point
-    #and starting with H0 from last minimization 
-    quencher = MYLBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
+    #and starting with H0 from last minimization
+    quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
                      **kwargs)
     if minimizer_state is not None:
         quencher.set_state(minimizer_state)

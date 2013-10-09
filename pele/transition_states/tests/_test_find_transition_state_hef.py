@@ -13,6 +13,7 @@ class TestFindTransitionState(unittest.TestCase):
     def make_dimer(self, x):
         return FindTransitionState(x, self.pot,
                                 orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
+                                verbosity=10
                                 )
     
     def test1(self):
