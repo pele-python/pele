@@ -2,7 +2,7 @@ import numpy as np
 import copy
 import logging
 
-from pele.optimize import Result, MYLBFGS
+from pele.optimize import Result, MYLBFGS, LBFGS
 from pele.optimize import mylbfgs
 from pele.potentials.potential import BasePotential
 from pele.transition_states import findLowestEigenVector
@@ -134,6 +134,7 @@ class FindTransitionState(object):
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.5,
+                 max_uphill_step_initial=0.2,
                  demand_initial_negative_vec=True,
                  negatives_before_check = 10,
                  nsteps_tangent1=10,
@@ -168,8 +169,8 @@ class FindTransitionState(object):
         self.oldeigenvec = None
 
         #set tolerance for the tangent space minimization.  
-        #Be sure it is tighter tolerance than self.tol
-        self.tol_tangent = self.tol * 0.2
+        #Be sure it is at least as tight as self.tol
+        self.tol_tangent = self.tol# * 0.2
         if self.tangent_space_quench_params.has_key("tol"):
             self.tol_tangent = min(self.tol_tangent, 
                                    self.tangent_space_quench_params["tol"])
@@ -179,7 +180,7 @@ class FindTransitionState(object):
         if self.tangent_space_quench_params.has_key("maxstep"):
             self.maxstep_tangent = self.tangent_space_quench_params["maxstep"]
             del self.tangent_space_quench_params["maxstep"]
-        else:            
+        else:
             self.maxstep_tangent = 0.1 #this should be determined in a better way
         
         if not self.tangent_space_quench_params.has_key("logger"):
@@ -188,19 +189,26 @@ class FindTransitionState(object):
 
         #set some parameters used in finding lowest eigenvector
         #initial guess for Hermitian
-        self.H0_leig = None
+        try:
+            self.H0_leig = self.lowestEigenvectorQuenchParams.pop("H0")
+        except KeyError:
+            self.H0_leig = None
         
-        self.H0_transverse = None
+        try:
+            self.H0_transverse = self.tangent_space_quench_params.pop("H0")
+        except KeyError:
+            self.H0_transverse = None
+        self._transverse_state = None
         
         self.reduce_step = 0
         self.step_factor = .1
         self.npositive = 0
         
         self._trust_radius = 2.
-        self._max_uphill = .2
+        self._max_uphill = max_uphill_step_initial
         self._max_uphill_min = .01
         self._max_uphill_max = max_uphill_step
-#        self._max_uphill
+        
         
     @classmethod
     def params(cls, obj = None):
@@ -224,15 +232,14 @@ class FindTransitionState(object):
         # event=None, eigenvec0=None, orthogZeroEigs=0,
         return params
     
-    
-    
     def _saveState(self, coords):
         self.saved_coords = np.copy(coords)
         self.saved_eigenvec = np.copy(self.eigenvec)
         self.saved_eigenval = self.eigenval
         self.saved_overlap = self.overlap
         self.saved_H0_leig = self.H0_leig
-        self.saved_H0_transverse = self.H0_transverse
+#        self.saved_H0_transverse = self.H0_transverse
+        self.saved_transverse_state = copy.deepcopy(self._transverse_state)
         self.saved_energy = self.energy
         self.saved_gradient = self.gradient.copy()
         #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
@@ -247,6 +254,7 @@ class FindTransitionState(object):
         self.H0_transverse = self.saved_H0_transverse
         self.energy = self.saved_energy
         self.gradient = self.saved_gradient.copy()
+        self._transverse_state = self.saved_transverse_state
         return coords
 
     def _compute_gradients(self, coords):
@@ -491,12 +499,16 @@ class FindTransitionState(object):
         tspot = _TransversePotential(self.pot, self.eigenvec)
         transverse_energy, transverse_gradient = tspot.projected_energy_gradient(energy, gradient) 
         coords1 = np.copy(coords)
-        ret = self.tangent_space_quencher(coords, tspot, 
+        optimizer= LBFGS(coords, tspot, 
                                           nsteps=nstepsperp, tol=self.tol_tangent,
                                           maxstep=maxstep,
                                           H0 = self.H0_transverse,
                                           energy=transverse_energy, gradient=transverse_gradient,
                                           **self.tangent_space_quench_params)
+        if self._transverse_state is not None:
+            optimizer.set_state(self._transverse_state)
+        ret = optimizer.run()
+        self._transverse_state = optimizer.get_state()
         coords = ret.coords
         self.tangent_move_step = np.linalg.norm(coords - coords1)
         rms = ret.rms
