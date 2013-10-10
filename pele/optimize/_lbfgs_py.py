@@ -172,6 +172,12 @@ class LBFGS(object):
         assert self.dXold.shape == (self.N,)
         assert self.dGold.shape == (self.N,)
     
+    def update_coords(self, X, E, G):
+        self.X = X.copy()
+        self.energy = float(E)
+        self.G = G.copy()
+        self.rms = np.linalg.norm(self.G) / np.sqrt(self.G.size)
+    
     def _add_step_to_memory(self, dX, dG):
         """
         add a step to the LBFGS memory

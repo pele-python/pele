@@ -32,10 +32,6 @@ class TestFindLowestEigenvector(unittest.TestCase):
         ret = findLowestEigenVector(self.x.copy(), self.pot)
         self.assertLess(np.abs(ret.eigenval - lval) / np.abs(lval), 1e-2)
 
-class TestHEF_InvertedGradient(TestFindLowestEigenvector):
-    def setUp(self):
-        self.setUp1(inverted_gradient=True)
-  
     
         
 if __name__ == "__main__":

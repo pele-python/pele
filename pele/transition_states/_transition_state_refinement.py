@@ -7,50 +7,13 @@ from pele.optimize import mylbfgs
 from pele.potentials.potential import BasePotential
 from pele.transition_states import findLowestEigenVector
 from pele.transition_states._dimer_translator import _DimerTranslator, _DimerPotential
+from pele.transition_states._transverse_walker import _TransverseWalker
 
 
 __all__ = ["findTransitionState", "FindTransitionState"]
 
 logger = logging.getLogger("pele.connect.findTS")
 
-class _TransversePotential(BasePotential):
-    """This wraps a potential and returns the gradient with the component parallel to a vector removed
-    
-    Parameters
-    ----------
-    
-    
-        
-    """
-    def __init__(self, potential, vector):
-        """
-        """
-        self.pot = potential
-        self.update_vector(vector)
-        self.nfev = 0
-    
-    def update_vector(self, vector):
-        self.vector = vector.copy()
-        # normalize
-        self.vector /= np.linalg.norm(vector)
-
-    def projected_energy_gradient(self, true_energy, true_gradient):
-        grad = true_gradient - np.dot(true_gradient, self.vector) * self.vector
-        return true_energy, grad
-
-        
-    def getEnergyGradient(self, coords):
-        """
-        return the energy and the gradient with the component along the
-        eigenvec removed.  For use in energy minimization in the space
-        perpendicular to eigenvec
-        """
-        self.nfev += 1
-        e, grad = self.pot.getEnergyGradient(coords)
-        self.true_gradient = grad.copy()
-        self.true_energy = e
-        #norm = np.sum(self.eigenvec)
-        return self.projected_energy_gradient(e, grad)
 
 
 
@@ -175,8 +138,13 @@ class FindTransitionState(object):
             self.tol_tangent = min(self.tol_tangent, 
                                    self.tangent_space_quench_params["tol"])
             del self.tangent_space_quench_params["tol"]
+        self.tangent_space_quench_params["tol"] = self.tol
+        
+        
         self.nsteps_tangent1 = nsteps_tangent1
         self.nsteps_tangent2 = nsteps_tangent2
+        
+        
         if self.tangent_space_quench_params.has_key("maxstep"):
             self.maxstep_tangent = self.tangent_space_quench_params["maxstep"]
             del self.tangent_space_quench_params["maxstep"]
@@ -194,9 +162,10 @@ class FindTransitionState(object):
         except KeyError:
             self.H0_leig = None
         
-        try:
-            self.H0_transverse = self.tangent_space_quench_params.pop("H0")
-        except KeyError:
+#        try:
+#            self.H0_transverse = self.tangent_space_quench_params.pop("H0")
+#        except KeyError:
+#            self.H0_transverse = None
             self.H0_transverse = None
         self._transverse_state = None
         
@@ -208,6 +177,8 @@ class FindTransitionState(object):
         self._max_uphill = max_uphill_step_initial
         self._max_uphill_min = .01
         self._max_uphill_max = max_uphill_step
+        
+        self._transverse_walker = None
         
         
     @classmethod
@@ -468,7 +439,6 @@ class FindTransitionState(object):
                 self.gradient = gradient
         return ret
 
-    
     def _minimizeTangentSpace(self, coords, energy=None, gradient=None):
         """
         now minimize the energy in the space perpendicular to eigenvec.
@@ -476,55 +446,45 @@ class FindTransitionState(object):
         we've gotten close to the transition state.  So limit the number of steps
         to 10 until we get close.
         """
+        assert gradient is not None
         if self.inverted_gradient:
             return self._walk_inverted_gradient(coords, energy=energy, gradient=gradient)
+        if self._transverse_walker is None:
+            self._transverse_walker = _TransverseWalker(coords, self.pot, self.eigenvec, energy, gradient)
+        else:
+            self._transverse_walker.update_eigenvec(self.eigenvec, self.eigenval)
+            self._transverse_walker.update_coords(coords, energy, gradient)
+        
         #determine the number of steps
         #i.e. if the eigenvector is deemed to have converged
-        use_gradpar = False
-        if use_gradpar:
-            E, grad = self.pot.getEnergyGradient(coords)
-            gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
-            eigenvec_converged = np.abs(gradpar) <= self.tol*2.
-        else:
-            eigenvec_converged = self.overlap > .999 
-        
+        eigenvec_converged = self.overlap > .999 
         nstepsperp = self.nsteps_tangent1
         if eigenvec_converged:
             nstepsperp = self.nsteps_tangent2
 
+        # reduce the maximum step size if necessary
         maxstep = self.maxstep_tangent
         if self.reduce_step > 0:
             maxstep *= (self.step_factor)**self.reduce_step
+        self._transverse_walker.update_maxstep(maxstep)
 
+        coords_old = coords.copy()
+        ret = self._transverse_walker.run(nstepsperp)
 
-
-        tspot = _TransversePotential(self.pot, self.eigenvec)
-        transverse_energy, transverse_gradient = tspot.projected_energy_gradient(energy, gradient) 
-        coords1 = np.copy(coords)
-        optimizer= LBFGS(coords, tspot, 
-                                          nsteps=nstepsperp, tol=self.tol_tangent,
-                                          maxstep=maxstep,
-                                          H0 = self.H0_transverse,
-                                          energy=transverse_energy, gradient=transverse_gradient,
-                                          **self.tangent_space_quench_params)
-        if self._transverse_state is not None:
-            optimizer.set_state(self._transverse_state)
-        ret = optimizer.run()
-        self._transverse_state = optimizer.get_state()
         coords = ret.coords
-        self.tangent_move_step = np.linalg.norm(coords - coords1)
-        rms = ret.rms
+        self.tangent_move_step = np.linalg.norm(coords - coords_old)
         self.tangent_result = ret
-        self.H0_transverse = self.tangent_result.H0
-        self.energy = ret.energy
+#        self.H0_transverse = self.tangent_result.H0
         try:
-            self.gradient = tspot.true_gradient
+            self.energy = self._transverse_walker.get_energy()
+            self.gradient = self._transverse_walker.get_gradient()
         except AttributeError:
-            # tspot was never called, use the same gradient
-            if gradient is None:
-                self._compute_gradients(coords)
-            else:
-                self.gradient = gradient
+            print "waas tspot was never called? use the same gradient"
+            raise
+#            if gradient is None:
+#                self._compute_gradients(coords)
+#            else:
+#                self.gradient = gradient
         return ret
 
     def _update_max_uphill_step(self, Fold, stepsize):
