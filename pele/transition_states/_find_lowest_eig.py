@@ -40,6 +40,7 @@ class LowestEigPot(BasePotential):
                   first_order=False, gradient=None):
         self.pot = pot
         self.first_order = first_order
+        self.nfev = 0
         self.update_coords(coords, gradient=gradient)
 #        self.coords = coords.copy()
 #        if self.first_order:
@@ -56,6 +57,10 @@ class LowestEigPot(BasePotential):
                 
         self.diff = dx
     
+    def _get_true_energy_gradient(self, coords):
+        self.nfev += 1
+        return self.pot.getEnergyGradient(coords)
+    
     def update_coords(self, coords, gradient=None):
         self.coords = coords.copy()
         if self.first_order:
@@ -64,8 +69,7 @@ class LowestEigPot(BasePotential):
                 self.true_gradient = gradient.copy()
             else:
                 print "computing gradient unnecessarily"
-                true_energy, self.true_gradient = self.pot.getEnergyGradient(self.coords)
-
+                true_energy, self.true_gradient = self._get_true_energy_gradient(self.coords)
 
     def getEnergy(self, vec_in):
         vecl = 1.
@@ -77,14 +81,14 @@ class LowestEigPot(BasePotential):
 
         
         coordsnew = self.coords + self.diff * vec
-        Eplus, Gplus = self.pot.getEnergyGradient(coordsnew)
+        Eplus, Gplus = self._get_true_energy_gradient(coordsnew)
 
         if self.first_order:
             curvature = np.dot((Gplus - self.true_gradient), vec) / self.diff
             
         else:
             coordsnew = self.coords - self.diff * vec
-            Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
+            Eminus, Gminus = self._get_true_energy_gradient(coordsnew)
         
             #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
             
@@ -105,12 +109,12 @@ class LowestEigPot(BasePotential):
         vec = vec_in / np.linalg.norm(vec_in)
 
         coordsnew = self.coords + self.diff * vec
-        Eplus, Gplus = self.pot.getEnergyGradient(coordsnew)
+        Eplus, Gplus = self._get_true_energy_gradient(coordsnew)
         if self.first_order:
             curvature = np.dot((Gplus - self.true_gradient), vec) / self.diff
         else:
             coordsnew = self.coords - self.diff * vec
-            Eminus, Gminus = self.pot.getEnergyGradient(coordsnew)
+            Eminus, Gminus = self._get_true_energy_gradient(coordsnew)
             #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
             # use second order central difference method.
             curvature = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
@@ -180,6 +184,7 @@ class FindLowestEigenVector(object):
         delattr(res, "energy")
         delattr(res, "coords")
         res.minimizer_state = self.minimizer.get_state()
+        res.nfev = self.eigpot.nfev
         return res
 
 def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=None,
@@ -255,6 +260,7 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, minimizer_state=
     delattr(res, "coords")
     res.H0 = quencher.H0
     res.minimizer_state = quencher.get_state()
+    res.nfev = eigpot.nfev
     #res.success = res.rms <= tol
     return res
 
