@@ -68,7 +68,7 @@ class LowestEigPot(BasePotential):
 #                self.true_energy = energy
                 self.true_gradient = gradient.copy()
             else:
-                print "computing gradient unnecessarily"
+                print "possibly computing gradient unnecessarily"
                 true_energy, self.true_gradient = self._get_true_energy_gradient(self.coords)
 
     def getEnergy(self, vec_in):
@@ -170,11 +170,14 @@ class FindLowestEigenVector(object):
                                  **self.minimizer_kwargs)
         self.minimizer.set_state(state)
     
+    def one_iteration(self):
+        self.minimizer.one_iteration()
+    
     def run(self, niter):
         for i in xrange(niter):
             if self.minimizer.stop_criterion_satisfied():
                 break
-            self.minimizer.one_iteration()
+            self.one_iteration()
         return self.get_result()
         
     def get_result(self):

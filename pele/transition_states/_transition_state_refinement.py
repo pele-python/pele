@@ -5,7 +5,7 @@ import logging
 from pele.optimize import Result, MYLBFGS, LBFGS
 from pele.optimize import mylbfgs
 from pele.potentials.potential import BasePotential
-from pele.transition_states import findLowestEigenVector
+from pele.transition_states import findLowestEigenVector, FindLowestEigenVector
 from pele.transition_states._dimer_translator import _DimerTranslator, _DimerPotential
 from pele.transition_states._transverse_walker import _TransverseWalker
 
@@ -343,12 +343,30 @@ class FindTransitionState(object):
 
         
     def _getLowestEigenVector(self, coords, i, gradient=None):
-        res = findLowestEigenVector(coords, self.pot, 
+#        res = findLowestEigenVector(coords, self.pot,
+##                                    H0=self.H0_leig, 
+#                                    eigenvec0=self.eigenvec, 
+#                                    orthogZeroEigs=self.orthogZeroEigs, first_order=self.first_order,
+#                                    gradient=gradient,
+#                                    **self.lowestEigenvectorQuenchParams)
+        if "nsteps" in self.lowestEigenvectorQuenchParams:
+            niter = self.lowestEigenvectorQuenchParams["nsteps"]
+        else:
+            niter = 10
+            print "warning, using default of", niter, "steps for finding lowest eigenvalue"
+        optimizer = FindLowestEigenVector(coords, self.pot,
 #                                    H0=self.H0_leig, 
-                                    eigenvec0=self.eigenvec, 
-                                    orthogZeroEigs=self.orthogZeroEigs, first_order=self.first_order,
-                                    gradient=gradient,
-                                    **self.lowestEigenvectorQuenchParams)
+                            eigenvec0=self.eigenvec, 
+                            orthogZeroEigs=self.orthogZeroEigs, 
+                            first_order=self.first_order,
+                            gradient=gradient,
+                            **self.lowestEigenvectorQuenchParams)
+        res = optimizer.run(niter)
+        if res.nsteps == 0:
+            print "eigenvector converged, but doing one iteration anyway"
+            optimizer.one_iteration()
+            res = optimizer.get_result()
+
         self.leig_result = res
         
 #        if res.eigenval > 0.:
