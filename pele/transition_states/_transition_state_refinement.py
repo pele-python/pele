@@ -14,9 +14,6 @@ __all__ = ["findTransitionState", "FindTransitionState"]
 
 logger = logging.getLogger("pele.connect.findTS")
 
-
-
-
 class FindTransitionState(object):
     """
     This class implements the hybrid eigenvector following routine for finding the nearest transition state
@@ -157,17 +154,10 @@ class FindTransitionState(object):
 
         #set some parameters used in finding lowest eigenvector
         #initial guess for Hermitian
-        try:
-            self.H0_leig = self.lowestEigenvectorQuenchParams.pop("H0")
-        except KeyError:
-            self.H0_leig = None
-        
 #        try:
-#            self.H0_transverse = self.tangent_space_quench_params.pop("H0")
+#            self.H0_leig = self.lowestEigenvectorQuenchParams.pop("H0")
 #        except KeyError:
-#            self.H0_transverse = None
-            self.H0_transverse = None
-        self._transverse_state = None
+#            self.H0_leig = None
         
         self.reduce_step = 0
         self.step_factor = .1
@@ -208,9 +198,7 @@ class FindTransitionState(object):
         self.saved_eigenvec = np.copy(self.eigenvec)
         self.saved_eigenval = self.eigenval
         self.saved_overlap = self.overlap
-        self.saved_H0_leig = self.H0_leig
-#        self.saved_H0_transverse = self.H0_transverse
-        self.saved_transverse_state = copy.deepcopy(self._transverse_state)
+#        self.saved_H0_leig = self.H0_leig
         self.saved_energy = self.energy
         self.saved_gradient = self.gradient.copy()
         #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
@@ -221,11 +209,9 @@ class FindTransitionState(object):
         self.eigenval = self.saved_eigenval
         self.oldeigenvec = np.copy(self.eigenvec)
         self.overlap = self.saved_overlap
-        self.H0_leig = self.saved_H0_leig
-        self.H0_transverse = self.saved_H0_transverse
+#        self.H0_leig = self.saved_H0_leig
         self.energy = self.saved_energy
         self.gradient = self.saved_gradient.copy()
-        self._transverse_state = self.saved_transverse_state
         return coords
 
     def _compute_gradients(self, coords):
@@ -369,7 +355,7 @@ class FindTransitionState(object):
 #            print "warning transition state search found positive lowest eigenvalue", res.eigenval, \
 #                "step", i
         
-        self.H0_leig = res.H0
+#        self.H0_leig = res.H0
         self.eigenvec = res.eigenvec
         self.eigenval = res.eigenval
         
@@ -417,7 +403,7 @@ class FindTransitionState(object):
         dimer = _DimerTranslator(coords, self.pot, self.eigenvec,
                                  nsteps=nstepsperp, tol=self.tol_tangent,
                                  maxstep=maxstep,
-                                 H0 = self.H0_transverse,
+#                                 H0 = self.H0_transverse,
                                  energy=transverse_energy, gradient=transverse_gradient,
                                  **self.tangent_space_quench_params)
         ret = dimer.run(nstepsperp)
@@ -426,7 +412,7 @@ class FindTransitionState(object):
         self.tangent_move_step = np.linalg.norm(coords - coords_backup)
         rms = ret.rms
         self.tangent_result = ret
-        self.H0_transverse = self.tangent_result.H0
+#        self.H0_transverse = self.tangent_result.H0
         try:
             self.energy = dimer.get_energy()
             self.gradient = dimer.get_gradient()
@@ -450,7 +436,8 @@ class FindTransitionState(object):
         if self.inverted_gradient:
             return self._walk_inverted_gradient(coords, energy=energy, gradient=gradient)
         if self._transverse_walker is None:
-            self._transverse_walker = _TransverseWalker(coords, self.pot, self.eigenvec, energy, gradient)
+            self._transverse_walker = _TransverseWalker(coords, self.pot, self.eigenvec, energy, gradient,
+                                                        **self.tangent_space_quench_params)
         else:
             self._transverse_walker.update_eigenvec(self.eigenvec, self.eigenval)
             self._transverse_walker.update_coords(coords, energy, gradient)
@@ -474,7 +461,6 @@ class FindTransitionState(object):
         coords = ret.coords
         self.tangent_move_step = np.linalg.norm(coords - coords_old)
         self.tangent_result = ret
-#        self.H0_transverse = self.tangent_result.H0
         try:
             self.energy = self._transverse_walker.get_energy()
             self.gradient = self._transverse_walker.get_gradient()
