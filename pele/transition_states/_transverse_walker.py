@@ -27,7 +27,6 @@ class _TransversePotential(BasePotential):
     def projected_energy_gradient(self, true_energy, true_gradient):
         grad = true_gradient - np.dot(true_gradient, self.vector) * self.vector
         return true_energy, grad
-
         
     def getEnergyGradient(self, coords):
         """

@@ -433,11 +433,15 @@ class FindTransitionState(object):
         to 10 until we get close.
         """
         assert gradient is not None
-        if self.inverted_gradient:
-            return self._walk_inverted_gradient(coords, energy=energy, gradient=gradient)
         if self._transverse_walker is None:
-            self._transverse_walker = _TransverseWalker(coords, self.pot, self.eigenvec, energy, gradient,
-                                                        **self.tangent_space_quench_params)
+            if self.inverted_gradient:
+                # note: if we pass transverse energy and gradient here we can save 1 potential call
+                self._transverse_walker = _DimerTranslator(coords, self.pot, self.eigenvec,
+#                                         energy=transverse_energy, gradient=transverse_gradient,
+                                         **self.tangent_space_quench_params)
+            else:
+                self._transverse_walker = _TransverseWalker(coords, self.pot, self.eigenvec, energy, gradient,
+                                                            **self.tangent_space_quench_params)
         else:
             self._transverse_walker.update_eigenvec(self.eigenvec, self.eigenval)
             self._transverse_walker.update_coords(coords, energy, gradient)
@@ -461,16 +465,13 @@ class FindTransitionState(object):
         coords = ret.coords
         self.tangent_move_step = np.linalg.norm(coords - coords_old)
         self.tangent_result = ret
-        try:
-            self.energy = self._transverse_walker.get_energy()
-            self.gradient = self._transverse_walker.get_gradient()
-        except AttributeError:
-            print "waas tspot was never called? use the same gradient"
-            raise
-#            if gradient is None:
-#                self._compute_gradients(coords)
-#            else:
-#                self.gradient = gradient
+        if self.tangent_move_step > 1e-16:
+            try:
+                self.energy = self._transverse_walker.get_energy()
+                self.gradient = self._transverse_walker.get_gradient()
+            except AttributeError:
+                print "was tspot was never called? use the same gradient"
+                raise
         return ret
 
     def _update_max_uphill_step(self, Fold, stepsize):

@@ -33,12 +33,12 @@ class TestFindTransitionState(unittest.TestCase):
         self.assertLess(res.nsteps, 5)
 #        print res
 
-#class TestHEF_InvertedGradient(TestFindTransitionState):
-#    def make_dimer(self, x):
-#        return FindTransitionState(x, self.pot,
-#                                orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
-#                                inverted_gradient=True,
-#                                )
+class TestHEF_InvertedGradient(TestFindTransitionState):
+    def make_dimer(self, x):
+        return FindTransitionState(x, self.pot,
+                                orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
+                                inverted_gradient=True,
+                                )
 
 
 if __name__ == "__main__":

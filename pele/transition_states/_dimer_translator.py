@@ -3,15 +3,15 @@ tools to invert the gradient along the a given direction and optimize in that sp
 """
 import numpy as np
 
-from pele.optimize import MYLBFGS
+from pele.optimize import MYLBFGS, LBFGS
 
 class _DimerTranslator(object):
     """object to manage the translation of the dimer using a optimization algorithm
     """
     def __init__(self, coords, potential, eigenvec, **minimizer_kwargs):
         self.dimer_potential = _DimerPotential(potential, eigenvec)
-        self.minimizer = MYLBFGS(coords, self.dimer_potential, **minimizer_kwargs)
-    
+        self.minimizer = LBFGS(coords, self.dimer_potential, **minimizer_kwargs)
+
     def stop_criterion_satisfied(self):
         return self.minimizer.stop_criterion_satisfied()
 
@@ -26,6 +26,17 @@ class _DimerTranslator(object):
     def update_eigenvec(self, eigenvec, eigenval):
         self.dimer_potential.update_eigenvec(eigenvec)
     
+    def update_coords(self, coords, true_energy, true_gradient):
+        """update the position of the optimizer
+        
+        this must be called after update_eigenvec
+        """
+        energy, gradient = self.dimer_potential.projected_energy_gradient(true_energy, true_gradient)
+        self.minimizer.update_coords(coords, energy, gradient)
+
+    def update_maxstep(self, maxstep):
+        self.minimizer.maxstep = float(maxstep)
+
     def run(self, niter):
         for i in xrange(niter):
             if self.stop_criterion_satisfied():
