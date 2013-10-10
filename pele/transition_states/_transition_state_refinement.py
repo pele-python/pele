@@ -403,7 +403,7 @@ class FindTransitionState(object):
         #i.e. if the eigenvector is deemed to have converged
         if self.verbosity > 1:
             print "inverting the gradient and minimizing"
-        eigenvec_converged = self.overlap > .999 
+        eigenvec_converged = self.overlap > .9999
         
         nstepsperp = self.nsteps_tangent1
         if eigenvec_converged:
