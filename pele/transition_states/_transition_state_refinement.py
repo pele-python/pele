@@ -386,9 +386,11 @@ class FindTransitionState(object):
 
         
     def _getLowestEigenVector(self, coords, i, gradient=None):
-        res = findLowestEigenVector(coords, self.pot, H0=self.H0_leig, eigenvec0=self.eigenvec, 
+        res = findLowestEigenVector(coords, self.pot, 
+#                                    H0=self.H0_leig, 
+                                    eigenvec0=self.eigenvec, 
                                     orthogZeroEigs=self.orthogZeroEigs, first_order=self.first_order,
-                                    gradient=None,
+                                    gradient=gradient,
                                     **self.lowestEigenvectorQuenchParams)
         self.leig_result = res
         
@@ -535,12 +537,12 @@ class FindTransitionState(object):
             # reduce the maximum step size
             self._max_uphill = max(self._max_uphill / 1.1, self._max_uphill_min)
             if self.verbosity > 2:
-                print "decreasing max uphill step to", self._max_uphill, Fold, Fnew, a1, a2
+                print "decreasing max uphill step to", self._max_uphill, "Fold", Fold, "Fnew", Fnew, "eper", eper, "eval", self.eigenval 
         else:
             # increase the maximum step size
             self._max_uphill = min(self._max_uphill * 1.1, self._max_uphill_max)
             if self.verbosity > 2:
-                print "increasing max uphill step to", self._max_uphill, Fold, Fnew, a1, a2
+                print "increasing max uphill step to", self._max_uphill, "Fold", Fold, "Fnew", Fnew, "eper", eper, "eval", self.eigenval
 
 
     def _stepUphill(self, coords):
@@ -552,7 +554,7 @@ class FindTransitionState(object):
         e = self.get_energy()
         grad = self.get_gradient()
         F = np.dot(grad, self.eigenvec) 
-        h = 2.*F/ np.abs(self.eigenval) / (1. + np.sqrt(1.+4.*F**2/self.eigenval**2 ))
+        h = 2. * F / np.abs(self.eigenval) / (1. + np.sqrt(1. + 4. * (F / self.eigenval)**2))
 
         # get the maxstep and scale it if necessary
         maxstep = self._max_uphill
@@ -563,7 +565,7 @@ class FindTransitionState(object):
         if np.abs(h) > maxstep:
             if self.verbosity >= 5:
                 logger.debug("reducing uphill step from %s %s %s", h, "to", maxstep) 
-            h *= maxstep / abs(h)
+            h *= maxstep / np.abs(h)
         self.uphill_step_size = h
         coords += h * self.eigenvec
 
