@@ -303,7 +303,8 @@ class FindTransitionState(object):
                 break
 
             if i == 0 and self.eigenval > 0.:
-                logger.warning("initial eigenvalue is positive - increase NEB spring constant?")
+                if self.verbosity > 1:
+                    logger.warning("initial eigenvalue is positive - increase NEB spring constant?")
                 if self.demand_initial_negative_vec:
                     logger.warning("            aborting transition state search")
                     res.message.append( "initial eigenvalue is positive %f" % self.eigenval )
@@ -313,7 +314,8 @@ class FindTransitionState(object):
         self._getLowestEigenVector(coords, i)
 
         # print some data
-        logger.info("findTransitionState done: %s %s %s %s %s", i, E, rms, "eigenvalue", self.eigenval)
+        if self.verbosity > 0 or self.iprint > 0:
+            logger.info("findTransitionState done: %s %s %s %s %s", i, E, rms, "eigenvalue", self.eigenval)
     
         success = True
         # check if results make sense
@@ -363,7 +365,8 @@ class FindTransitionState(object):
                             **self.lowestEigenvectorQuenchParams)
         res = optimizer.run(niter)
         if res.nsteps == 0:
-            print "eigenvector converged, but doing one iteration anyway"
+            if self.verbosity > 2:
+                print "eigenvector converged, but doing one iteration anyway"
             optimizer.one_iteration()
             res = optimizer.get_result()
 
