@@ -192,6 +192,13 @@ class FindLowestEigenVector(object):
             eigenvec0 = rotations.vec_random_ndim(coords.shape)
         eigenvec0 = eigenvec0 / np.linalg.norm(eigenvec0)
 
+        # change some default in the minimizer unless manually set
+        if "nsteps" not in minimizer_kwargs:
+            minimizer_kwargs["nsteps"] = 500
+        if "logger" not in minimizer_kwargs:
+            minimizer_kwargs["logger"] = logging.getLogger("pele.connect.findTS.leig_quench")
+
+
         self.eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx,
                                    gradient=gradient,
                                    first_order=first_order)
@@ -215,13 +222,17 @@ class FindLowestEigenVector(object):
         """do one iteration of the minimizer"""
         self.minimizer.one_iteration()
     
-    def run(self, niter):
+    def run(self, niter=None):
         """do niter iterations, or until the stop criterion is satisfied"""
-        for i in xrange(niter):
-            if self.minimizer.stop_criterion_satisfied():
-                break
-            self.one_iteration()
-        return self.get_result()
+        if niter is None:
+            self.minimizer.run()
+            return self.get_result()
+        else:
+            for i in xrange(niter):
+                if self.minimizer.stop_criterion_satisfied():
+                    break
+                self.one_iteration()
+            return self.get_result()
         
     def get_result(self):
         """return the results object"""
@@ -235,7 +246,8 @@ class FindLowestEigenVector(object):
         return res
 
 def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, dx=1e-3,
-                          minimizer_state=None, first_order=False, gradient=None, 
+#                          minimizer_state=None, 
+                          first_order=False, gradient=None, 
                           **minimizer_kwargs):
     """Compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization
 
@@ -267,10 +279,6 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     gradient : float array
         the true gradient at coords.  If first_order is true and gradient
         is not None then one potential call will be saved.
-    minimizer_state : object
-        the state the the minimizer to start from.  This can be used to start
-        from a known lbfgs memory
-
     minimizer_kwargs : 
         any additional keyword arguments are passed to the minimizer
     
@@ -278,43 +286,44 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     --------
     FindTransitionState : uses this class
     """
+    minimizer_kwargs = minimizer_kwargs.copy()
     if "iprint" not in minimizer_kwargs:
         minimizer_kwargs["iprint"] = 400
     if "tol" not in minimizer_kwargs:
         minimizer_kwargs["tol"] = 1e-6
-    if "nsteps" not in minimizer_kwargs:
-        minimizer_kwargs["nsteps"] = 500
-    
-    if not minimizer_kwargs.has_key("logger"):
-        minimizer_kwargs["logger"] = logging.getLogger("pele.connect.findTS.leig_quench")
 
-    
-    if eigenvec0 is None:
-        #this random vector should be distributed uniformly on a hypersphere.
-        eigenvec0 = rotations.vec_random_ndim(coords.shape)
-    
-    #set up potential for minimization    
-    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx,
-                          first_order=first_order, gradient=gradient)
-    
-    #and starting with H0 from last minimization
-    quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
-                     **minimizer_kwargs)
-    if minimizer_state is not None:
-        quencher.set_state(minimizer_state)
-        
-    res = quencher.run()
-
-    #res = Result()
-    res.eigenval = res.energy
-    res.eigenvec = res.coords / np.linalg.norm(res.coords)
-    delattr(res, "energy")
-    delattr(res, "coords")
-    res.H0 = quencher.H0
-    res.minimizer_state = quencher.get_state()
-    res.nfev = eigpot.nfev
-    #res.success = res.rms <= tol
-    return res
+    optimizer = FindLowestEigenVector(coords, pot, eigenvec0=eigenvec0, H0=H0, orthogZeroEigs=orthogZeroEigs, 
+                          dx=dx, first_order=first_order, gradient=gradient, **minimizer_kwargs)
+    result = optimizer.run()
+    return result
+#
+#    
+#    if eigenvec0 is None:
+#        #this random vector should be distributed uniformly on a hypersphere.
+#        eigenvec0 = rotations.vec_random_ndim(coords.shape)
+#    
+#    #set up potential for minimization    
+#    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx,
+#                          first_order=first_order, gradient=gradient)
+#    
+#    #and starting with H0 from last minimization
+#    quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
+#                     **minimizer_kwargs)
+#    if minimizer_state is not None:
+#        quencher.set_state(minimizer_state)
+#        
+#    res = quencher.run()
+#
+#    #res = Result()
+#    res.eigenval = res.energy
+#    res.eigenvec = res.coords / np.linalg.norm(res.coords)
+#    delattr(res, "energy")
+#    delattr(res, "coords")
+#    res.H0 = quencher.H0
+#    res.minimizer_state = quencher.get_state()
+#    res.nfev = eigpot.nfev
+#    #res.success = res.rms <= tol
+#    return res
 
 def analyticalLowestEigenvalue(coords, pot):
     """return the lowest eigenvalue and eigenvector of the hessian computed directly"""
