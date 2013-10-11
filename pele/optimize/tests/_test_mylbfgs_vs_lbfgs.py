@@ -74,8 +74,9 @@ class TestMYLBFGS_LBFGS(unittest.TestCase):
         
 
 class TestMYLBFGS_LBFGS_Cython(TestMYLBFGS_LBFGS):
-    def setUp(self):
-        self.setUp1(cython=True)
+    def setUp1(self, verbose=False, **kwargs):
+        TestMYLBFGS_LBFGS.setUp1(self, verbose=verbose, **kwargs)
+        self.o._cython=True
 
 class TestMYLBFGS_LBFGS_fortran(TestMYLBFGS_LBFGS):
     def setUp(self):

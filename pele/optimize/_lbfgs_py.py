@@ -54,6 +54,16 @@ class LBFGS(object):
         The initial energy and gradient.  If these are both not None then the
         energy and gradient of the initial point will not be calculated, saving
         one potential call.
+    armijo : bool
+        Use the Armijo criterion instead of maxErise as the criterion for 
+        accepting a step size.  The Armijo criterion is the first wolfe criterion
+        and is a condition that the energy decrease sufficiently
+    armijo_c : float
+        This adjusts how strong the armijo rule is.  0 < armijo_c < 1.  Default 
+        1e-4
+    fortran : bool
+        use the fortran version of the LBFGS.  Only the step which computes
+        the step size and direction from the memory is in fortran.
          
     Notes
     -----
@@ -79,20 +89,20 @@ class LBFGS(object):
                  rel_energy=False, H0=0.1, events=None,
                  alternate_stop_criterion=None, debug=False,
                  iprint=-1, nsteps=10000, tol=1e-6, logger=None,
-                 energy=None, gradient=None, armijo=False, wolfe=False, 
-                 wolfe1=1e-5,
-                 wolfe2=0.99, cython=False, fortran=False
+                 energy=None, gradient=None, armijo=False, 
+                 armijo_c=1e-4,
+                 fortran=False,
                  ):
         X = X.copy()
         self.X = X
         self.N = len(X)
         self.M = M 
         self.pot = pot
-        self._use_wolfe = bool(wolfe)
-        self._armijo = armijo
-        self._wolfe1 = wolfe1
-        self._wolfe2 = wolfe2
-        self._cython = bool(cython)
+        self._use_wolfe = False # this didn't work very well.  should probably remove
+        self._armijo = bool(armijo)
+        self._wolfe1 = armijo_c
+        self._wolfe2 = 0.99
+        self._cython = False # we could make this passable
         self._fortran = bool(fortran)
         self.funcalls = 0
         if energy is not None and gradient is not None:
@@ -150,6 +160,7 @@ class LBFGS(object):
         self.result = Result()
         
     def get_state(self):
+        """return the state of the LBFGS memory"""
         State = namedtuple("State", "s y rho k H0 dXold dGold have_dXold")
         state = State(s=self.s.copy(), y=self.y.copy(),
                       rho=self.rho.copy(), k=self.k, H0=self.H0,
@@ -158,6 +169,7 @@ class LBFGS(object):
         return state
     
     def set_state(self, state):
+        """set the LBFGS memory from the passed state"""
         self.s = state.s
         self.y = state.y
         self.rho = state.rho
@@ -173,6 +185,11 @@ class LBFGS(object):
         assert self.dGold.shape == (self.N,)
     
     def update_coords(self, X, E, G):
+        """change the location of the minimizer manually
+        
+        If the position change is too great the LBFGS memory will not accurately
+        represent the local curvature. 
+        """
         self.X = X.copy()
         self.energy = float(E)
         self.G = G.copy()
@@ -265,9 +282,7 @@ class LBFGS(object):
         return stp
     
     def getStep(self, X, G):
-        """
-        Calculate a step direction and step size using the 
-        LBFGS algorithm
+        """update the LBFGS memory and compute a step direction and size
         
         http://en.wikipedia.org/wiki/Limited-memory_BFGS
         
@@ -287,9 +302,12 @@ class LBFGS(object):
     def adjustStepSize(self, X, E, G, stp):
         """
         We now have a proposed step.  This function will make sure it is 
-        a good step and then take it.
+        a good step and then take it.  This is known as a Backtracking linesearch
         
-        1) if the step is not anti-aligned with the gradient (i.e. downhill), then reverse the step
+        http://en.wikipedia.org/wiki/Backtracking_line_search
+        
+        1) if the step is not anti-aligned with the gradient (i.e. downhill), 
+           then reverse the step
         
         2) if the step is larger than maxstep, then rescale the step
         
@@ -298,13 +316,12 @@ class LBFGS(object):
         4) if the step increases the energy by more than maxErise, 
             then reduce the step size and go to 3)
         
-        5) if the step is reduced more than 10 times and the energy is still not acceptable
-            increment nfail, reset the lbfgs optimizer and continue
+        5) if the step is reduced more than 10 times and the energy is still 
+           not acceptable, then increment nfail, reset the lbfgs optimizer and 
+           continue
             
         6) if nfail is greater than 5 abort the quench
                 
-        *The below is not implemented yet.  It's on the TODO list
-        
         """
         f = 1.
         X0 = X.copy()
@@ -367,6 +384,7 @@ class LBFGS(object):
         return X, E, G
     
     def _accept_step(self, Enew, Eold, Gnew, Gold, step, strong=False):
+        """determine whether the step is acceptable"""
         if self._use_wolfe:
             return self._wolfe_conditions(Enew, Eold, Gnew, Gold, step, strong)
         elif self._armijo:
@@ -424,14 +442,16 @@ class LBFGS(object):
           
     
     def reset(self):
-        self.H0 = 1.
+        """reset the LBFGS memory and H0"""
+        self.H0 = 0.1
         self.k = 0
+        self._have_dXold = False
     
     def attachEvent(self, event):
         self.events.append(event)
     
     def one_iteration(self):
-        """do one iteration of the lbfgs loop
+        """do one iteration of the LBFGS loop
         """
         stp = self.getStep(self.X, self.G)
         
@@ -455,6 +475,7 @@ class LBFGS(object):
         return True
 
     def stop_criterion_satisfied(self):
+        """test the stop criterion"""
         if self.alternate_stop_criterion is None:
             return self.rms < self.tol
         else:
@@ -463,6 +484,15 @@ class LBFGS(object):
 
     
     def run(self):
+        """run the LBFGS minimizer
+        
+        stop when the stop criterion is satisfied or  when the maximum number 
+        of steps is reached
+        
+        Returns
+        -------
+        return a results object
+        """
         while self.iter_number < self.nsteps and not self.stop_criterion_satisfied():
             try:
                 self.one_iteration()
@@ -474,73 +504,9 @@ class LBFGS(object):
                 break
         
         return self.get_result()
-            
 
-    
-#    def run_old(self):
-#        """
-#        the main loop of the algorithm
-#        """
-#        res = Result()
-#        res.message = []
-#        tol = self.tol
-#        iprint = self.iprint
-#        nsteps = self.nsteps
-#                
-#        #iprint =40
-#        X = self.X
-#        sqrtN = np.sqrt(self.N)
-#        
-#        
-#        i = 1
-#        self.funcalls += 1
-#        e, G = self.pot.getEnergyGradient(X)
-#        rms = np.linalg.norm(G) / sqrtN
-#        res.success = False
-#        while i < nsteps:
-#            stp = self.getStep(X, G)
-#            
-#            try:
-#                X, e, G = self.adjustStepSize(X, e, G, stp)
-#            except LineSearchError:
-#                self.logger.error("problem with adjustStepSize, ending quench")
-#                rms = np.linalg.norm(G) / np.sqrt(self.N)
-#                self.logger.error("    on failure: quench step %s %s %s %s", i, e, rms, self.funcalls)
-#                res.message.append( "problem with adjustStepSize" )
-#                break
-#            #e, G = self.pot.getEnergyGradient(X)
-#            
-#            rms = np.linalg.norm(G) / np.sqrt(self.N)
-#    
-#            
-#            if iprint > 0:
-#                if i % iprint == 0:
-#                    self.logger.info("lbfgs: %s %s %s %s %s %s %s %s %s", i, "E", e, 
-#                                     "rms", rms, "funcalls", self.funcalls, "stepsize", self.stepsize)
-#            for event in self.events:
-#                event(coords=X, energy=e, rms=rms)
-#      
-#            if self.alternate_stop_criterion is None:
-#                i_am_done = rms < self.tol
-#            else:
-#                i_am_done = self.alternate_stop_criterion(energy=e, gradient=G, 
-#                                                          tol=self.tol, coords=X)
-#                
-#            if i_am_done:
-#                res.success = True
-#                break
-#            i += 1
-#
-#        res.nsteps = i
-#        res.nfev = self.funcalls
-#        res.coords = X
-#        res.energy = e
-#        res.rms = rms
-#        res.grad = G
-#        res.H0 = self.H0
-#        return res
-    
     def get_result(self):
+        """return a results object"""
         res = self.result
         res.nsteps = self.iter_number
         res.nfev = self.funcalls

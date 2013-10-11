@@ -44,8 +44,7 @@ class MYLBFGS(LBFGS):
     
     def getStep(self, X, G):
         """
-        use the Fortran LBFGS code from GMIN to get the step
-        size and direction.
+        use the Fortran MYLBFGS code from GMIN to update the LBFGS memory and get the step size and direction.
         """
         self.X = X
         self.G = G
@@ -104,13 +103,13 @@ class MYLBFGS(LBFGS):
         assert self.dXold.shape == (self.N,)
         assert self.dGold.shape == (self.N,)
         assert self.W.size == (self.N * (2 * self.M + 1) + 2 * self.M)
-        
+    
+    def reset(self):
+        LBFGS.reset(self)
+        self._iter = 0
         
 
 
-#class LBFGS(MYLBFGS):
-#    """for backward compatibility """
-#    pass
 
 #
 #only testing stuff below here

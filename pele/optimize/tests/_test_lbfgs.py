@@ -92,9 +92,11 @@ class TestLBFGSCython(unittest.TestCase):
         self.pot = self.system.get_potential()
     
     def test(self):
-        minimizer = LBFGS(self.x.copy(), self.pot, cython=True, debug=True)
+        minimizer = LBFGS(self.x.copy(), self.pot, debug=True)
+        minimizer._cython = True
         ret = minimizer.run()
-        m2 = LBFGS(self.x.copy(), self.pot, cython=False, debug=True)
+        m2 = LBFGS(self.x.copy(), self.pot, debug=True)
+        minimizer._cython = True
         ret2 = m2.run()
         
         print "cython", ret.nfev, ret2.nfev
