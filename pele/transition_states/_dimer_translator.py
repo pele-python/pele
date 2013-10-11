@@ -6,7 +6,17 @@ import numpy as np
 from pele.optimize import MYLBFGS, LBFGS
 
 class _DimerTranslator(object):
-    """object to manage the translation of the dimer using a optimization algorithm
+    """object to manage the translation of the dimer using an optimization algorithm
+    
+    Parameters
+    ----------
+    coords : float array
+        the starting point of the dimer
+    potential : Potential object
+    eigenvec : float array
+        the initial direction along which the dimer lies
+    minimizer_kwargs : kwargs
+        these kwargs are passed to the optimizer
     """
     def __init__(self, coords, potential, eigenvec, **minimizer_kwargs):
         self.dimer_potential = _DimerPotential(potential, eigenvec)
@@ -24,10 +34,11 @@ class _DimerTranslator(object):
         return self.dimer_potential.true_gradient
     
     def update_eigenvec(self, eigenvec, eigenval):
+        """update the direction (rotation) of the dimer"""
         self.dimer_potential.update_eigenvec(eigenvec)
     
     def update_coords(self, coords, true_energy, true_gradient):
-        """update the position of the optimizer
+        """update the position of the dimer
         
         this must be called after update_eigenvec
         """
@@ -35,9 +46,11 @@ class _DimerTranslator(object):
         self.minimizer.update_coords(coords, energy, gradient)
 
     def update_maxstep(self, maxstep):
+        """change the maximum step size of the optimizer"""
         self.minimizer.maxstep = float(maxstep)
 
     def run(self, niter):
+        """do a specified number of iterations, or until the stop criterion is satisfied"""
         for i in xrange(niter):
             if self.stop_criterion_satisfied():
                 break
@@ -45,9 +58,11 @@ class _DimerTranslator(object):
         return self.get_result()
     
     def get_result(self):
+        """return the results object"""
         return self.minimizer.get_result()
     
     def projected_energy_gradient(self, energy, gradient):
+        """return the projected energy and gradient"""
         return self.dimer_potential.projected_energy_gradient(energy, gradient)
 
 
@@ -75,13 +90,17 @@ class _DimerPotential(object):
 #        return e, g
 
     def update_eigenvec(self, eigenvec):
+        """update the direction (rotation) of the dimer"""
         self.eigenvec = eigenvec.copy()
         self.eigenvec /= np.linalg.norm(self.eigenvec)
     
     def getEnergyGradient(self, x):
-        """gradient at x with the gradient inverted along the eigenvector
+        """gradient at x with the gradient along the eigenvector inverted
         
-        the returned energy is 0 because we are not minimizing in the energy 
+        Notes
+        -----
+        The returned energy is 0 because we are not minimizing in the energy.  The
+        true energy and gradient are stored at each call
         """
         e, g = self.potential.getEnergyGradient(x)
         self.true_energy = e

@@ -9,7 +9,7 @@ from pele.transition_states._dimer_translator import _DimerTranslator
 
 
 class GeneralizedDimer(object):
-    """Use the generalized dimer method to optimize find a saddle point
+    """Use the generalized dimer method to find a saddle point
     
     Parameters
     ----------
@@ -26,10 +26,9 @@ class GeneralizedDimer(object):
         smallest eigenvector 
     maxiter : int
         the maximum number of iterations
-    minimizer_class : optimizer class
-        This optimizer will be used to perform the translational steps
     minimizer_kwargs : dict
-        these keyword arguments are passed to minimizer_class
+        these keyword arguments are passed to the minimizer that does the 
+        translational steps
     leig_kwargs : dict
         these keyword arguments are passed to the class for optimizing 
         the smallest eigenvector
@@ -65,7 +64,6 @@ class GeneralizedDimer(object):
                   rotational_steps=20,
                   translational_steps=10,
                   maxiter=500,
-                  minimizer_class=MYLBFGS,
                   leig_kwargs=None,
                   translator_kwargs=None,
                   dimer=True,
@@ -114,6 +112,7 @@ class GeneralizedDimer(object):
         return self.translator.stop_criterion_satisfied() and self.rotator.stop_criterion_satisfied()
     
     def one_iteration(self):
+        """do one iteration"""
         # update the eigenvector (rotate the dimer)
 #        print "rotating dimer"
         self.rotator.update_coords(self.get_coords(), gradient=self.get_true_gradient())
