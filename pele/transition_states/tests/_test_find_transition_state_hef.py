@@ -43,19 +43,19 @@ class TestHEF_InvertedGradient(TestFindTransitionState):
                                 invert_gradient=True,
                                 )
 
-class TestFindTransitionState_NFEV(unittest.TestCase):
-    def setUp(self):
-        from pele.optimize.tests._test_nfev import _PotWrapper
-        self.system = LJCluster(18)
-        self.pot = _PotWrapper(self.system.get_potential())
-    
-    def test(self):
-        x = self.system.get_random_configuration()
-        opt = FindTransitionState(x, self.pot)
-        ret = opt.run()
-        self.assertEqual(ret.nfev, self.pot.nfev)
-        self.assertTrue(ret.success)
-        self.assertGreater(ret.nfev, 0)
+#class TestFindTransitionState_NFEV(unittest.TestCase):
+#    def setUp(self):
+#        from pele.optimize.tests._test_nfev import _PotWrapper
+#        self.system = LJCluster(18)
+#        self.pot = _PotWrapper(self.system.get_potential())
+#    
+#    def test(self):
+#        x = self.system.get_random_configuration()
+#        opt = FindTransitionState(x, self.pot)
+#        ret = opt.run()
+#        self.assertEqual(ret.nfev, self.pot.nfev)
+#        self.assertTrue(ret.success)
+#        self.assertGreater(ret.nfev, 0)
  
 
 

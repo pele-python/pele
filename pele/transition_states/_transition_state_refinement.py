@@ -361,10 +361,10 @@ class FindTransitionState(object):
         res.rms = rms
         res.nsteps = i
         res.success = success
-        res.nfev = self.nfev
-        if self._transverse_walker is not None:
-            twres = self._transverse_walker.get_result()
-            self.nfev += twres.nfev 
+#        res.nfev = self.nfev
+#        if self._transverse_walker is not None:
+#            twres = self._transverse_walker.get_result()
+#            self.nfev += twres.nfev 
         return res
 
     def _getLowestEigenVector(self, coords, i, gradient=None):
