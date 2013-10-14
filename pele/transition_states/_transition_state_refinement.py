@@ -6,7 +6,7 @@ from pele.optimize import Result, MYLBFGS, LBFGS
 from pele.optimize import mylbfgs
 from pele.potentials.potential import BasePotential
 from pele.transition_states import findLowestEigenVector, FindLowestEigenVector
-from pele.transition_states._dimer_translator import _DimerTranslator, _DimerPotential
+from pele.transition_states._dimer_translator import _DimerTranslator
 from pele.transition_states._transverse_walker import _TransverseWalker
 
 
@@ -116,6 +116,7 @@ class FindTransitionState(object):
                  ):
         self.pot = pot
         self.coords = np.copy(coords)
+        self.nfev = 0
         self.tol = tol
         self.nsteps = nsteps
         self.event = event
@@ -133,7 +134,6 @@ class FindTransitionState(object):
         self.npositive_max = max(10, self.nsteps / 5)
         self.check_negative = check_negative
         self.invert_gradient = invert_gradient
-        self.nfev = 0
 
         
         self.rmsnorm = 1./np.sqrt(float(len(coords)))
@@ -233,9 +233,6 @@ class FindTransitionState(object):
 
     def _compute_gradients(self, coords):
         """compute the energy and gradient at the current position and store them for later use"""
-#        self._transverse_energy, self._transverse_gradient = self.transverse_potential.getEnergyGradient(coords)
-#        self.energy = self.transverse_potential.true_energy
-#        self.gradient = self.transverse_potential.true_gradient.copy()
         self.nfev += 1
         self.energy, self.gradient = self.pot.getEnergyGradient(coords)
 
@@ -351,6 +348,10 @@ class FindTransitionState(object):
         if i >= self.nsteps:
             res.message.append( "maximum iterations reached %d" % i )
             
+        # update nfev with the number of calls from the transverse walker
+        if self._transverse_walker is not None:
+            twres = self._transverse_walker.get_result()
+            self.nfev += twres.nfev 
 
         #return results
         res.coords = coords
@@ -361,10 +362,7 @@ class FindTransitionState(object):
         res.rms = rms
         res.nsteps = i
         res.success = success
-#        res.nfev = self.nfev
-#        if self._transverse_walker is not None:
-#            twres = self._transverse_walker.get_result()
-#            self.nfev += twres.nfev 
+        res.nfev = self.nfev
         return res
 
     def _getLowestEigenVector(self, coords, i, gradient=None):
@@ -376,12 +374,6 @@ class FindTransitionState(object):
         i : the iteration number
         gradient : the gradient at coords
         """
-#        res = findLowestEigenVector(coords, self.pot,
-##                                    H0=self.H0_leig, 
-#                                    eigenvec0=self.eigenvec, 
-#                                    orthogZeroEigs=self.orthogZeroEigs, first_order=self.first_order,
-#                                    gradient=gradient,
-#                                    **self.lowestEigenvectorQuenchParams)
         if "nsteps" in self.lowestEigenvectorQuenchParams:
             niter = self.lowestEigenvectorQuenchParams["nsteps"]
         else:
@@ -402,10 +394,7 @@ class FindTransitionState(object):
             res = optimizer.get_result()
 
         self.leig_result = res
-        
-#        if res.eigenval > 0.:
-#            print "warning transition state search found positive lowest eigenvalue", res.eigenval, \
-#                "step", i
+        self.nfev += res.nfev
         
 #        self.H0_leig = res.H0
         self.eigenvec = res.eigenvec
@@ -422,61 +411,10 @@ class FindTransitionState(object):
             self.nfail = 0
         else:
             self.nfail += 1
-        self.nfev += res.nfev
         
         self.oldeigenvec = self.eigenvec.copy()
         return overlap
 
-#    def _walk_inverted_gradient(self, coords, energy=None, gradient=None):
-#        """
-#        now minimize the energy in the space perpendicular to eigenvec.
-#        There's no point in spending much effort on this until 
-#        we've gotten close to the transition state.  So limit the number of steps
-#        to 10 until we get close.
-#        """
-#        #determine the number of steps
-#        #i.e. if the eigenvector is deemed to have converged
-#        if self.verbosity > 1:
-#            print "inverting the gradient and minimizing"
-#        eigenvec_converged = self.overlap > .9999
-#        
-#        nstepsperp = self.nsteps_tangent1
-#        if eigenvec_converged:
-#            nstepsperp = self.nsteps_tangent2
-#
-#        maxstep = self.maxstep_tangent
-#        if self.reduce_step > 0:
-#            maxstep *= (self.step_factor)**self.reduce_step
-#
-#        
-#        coords_backup = coords.copy()
-#        
-#        _dimer_pot = _DimerPotential(self.pot, self.eigenvec)
-#        transverse_energy, transverse_gradient = _dimer_pot.projected_energy_gradient(energy, gradient) 
-#        dimer = _DimerTranslator(coords, self.pot, self.eigenvec,
-#                                 nsteps=nstepsperp, tol=self.tol_tangent,
-#                                 maxstep=maxstep,
-##                                 H0 = self.H0_transverse,
-#                                 energy=transverse_energy, gradient=transverse_gradient,
-#                                 **self.tangent_space_quench_params)
-#        ret = dimer.run(nstepsperp)
-#        
-#        coords = ret.coords
-#        self.tangent_move_step = np.linalg.norm(coords - coords_backup)
-#        rms = ret.rms
-#        self.tangent_result = ret
-##        self.H0_transverse = self.tangent_result.H0
-#        try:
-#            self.energy = dimer.get_energy()
-#            self.gradient = dimer.get_gradient()
-#        except AttributeError:
-#            # tspot was never called, use the same gradient
-#            if gradient is None or energy is None:
-#                self._compute_gradients(coords)
-#            else:
-#                self.energy = energy
-#                self.gradient = gradient
-#        return ret
 
     def _minimizeTangentSpace(self, coords, energy=None, gradient=None):
         """minimize the energy in the space perpendicular to eigenvec.
