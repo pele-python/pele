@@ -120,6 +120,7 @@ def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
         if warnflag == 2:
             print "Gradient and/or function calls not changing"
     res.energy, res.grad = pot.getEnergyGradient(res.coords)
+    res.nfev += 1
     g = res.grad
     res.rms = np.linalg.norm(g)/np.sqrt(len(g))
     return res 

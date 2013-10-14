@@ -119,6 +119,8 @@ class Fire(object):
         else:
             self.events = events
         
+        self.nfev = 0
+        
     def initialize(self):
         self.v = None
         
@@ -165,6 +167,7 @@ class Fire(object):
         res.success = False
         while step < steps:
             E, f = self.potential.getEnergyGradient(self.coords)
+            self.nfev += 1
             #self.call_observers()
             #print E
             if self.alternate_stop_criterion is None:
@@ -187,7 +190,7 @@ class Fire(object):
             step += 1
             
         res.nsteps = step
-        res.nfev = step
+        res.nfev = self.nfev
         res.coords = self.coords
         res.energy = E
         res.grad = -f
