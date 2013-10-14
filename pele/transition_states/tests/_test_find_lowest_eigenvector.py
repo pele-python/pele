@@ -32,7 +32,22 @@ class TestFindLowestEigenvector(unittest.TestCase):
         ret = findLowestEigenVector(self.x.copy(), self.pot)
         self.assertLess(np.abs(ret.eigenval - lval) / np.abs(lval), 1e-2)
 
+class TestFindLowestEigenvector_NFEV(unittest.TestCase):
+    def setUp(self, **kwargs):
+        from pele.optimize.tests._test_nfev import _PotWrapper
+        natoms = 18
+        self.system = LJCluster(natoms)
+        self.x = self.system.get_random_configuration()
+        self.pot = _PotWrapper(self.system.get_potential())
+        
     
+    def test(self):
+        self.pot.nfev = 0
+        ret = findLowestEigenVector(self.x, self.pot)
+        self.assertEqual(ret.nfev, self.pot.nfev)
+        self.assertTrue(ret.success)
+        self.assertGreater(ret.nfev, 0)
+ 
         
 if __name__ == "__main__":
     unittest.main()

@@ -80,9 +80,12 @@ class _TransverseWalker(object):
         these kwargs are passed to the minimizer
     
     """
-    def __init__(self, coords, potential, eigenvec, energy, gradient, **minimizer_kwargs):
+    def __init__(self, coords, potential, eigenvec, energy=None, gradient=None, **minimizer_kwargs):
         self.tspot = _TransversePotential(potential, eigenvec)
-        transverse_energy, transverse_gradient = self.tspot.projected_energy_gradient(energy, gradient) 
+        if energy is not None and gradient is not None:
+            transverse_energy, transverse_gradient = self.tspot.projected_energy_gradient(energy, gradient)
+        else:
+            transverse_energy, transverse_gradient = None, None
 
         self.walker = LBFGS(coords, self.tspot,
                             energy=transverse_energy, gradient=transverse_gradient,

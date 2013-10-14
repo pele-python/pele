@@ -133,6 +133,8 @@ class FindTransitionState(object):
         self.npositive_max = max(10, self.nsteps / 5)
         self.check_negative = check_negative
         self.invert_gradient = invert_gradient
+        self.nfev = 0
+
         
         self.rmsnorm = 1./np.sqrt(float(len(coords)))
         self.oldeigenvec = None
@@ -178,6 +180,7 @@ class FindTransitionState(object):
         self._max_uphill_max = max_uphill_step
         
         self._transverse_walker = None
+        
         
         
     @classmethod
@@ -233,6 +236,7 @@ class FindTransitionState(object):
 #        self._transverse_energy, self._transverse_gradient = self.transverse_potential.getEnergyGradient(coords)
 #        self.energy = self.transverse_potential.true_energy
 #        self.gradient = self.transverse_potential.true_gradient.copy()
+        self.nfev += 1
         self.energy, self.gradient = self.pot.getEnergyGradient(coords)
 
     def _set_energy_gradient(self, energy, gradient):
@@ -357,10 +361,12 @@ class FindTransitionState(object):
         res.rms = rms
         res.nsteps = i
         res.success = success
+        res.nfev = self.nfev
+        if self._transverse_walker is not None:
+            twres = self._transverse_walker.get_result()
+            self.nfev += twres.nfev 
         return res
 
-
-        
     def _getLowestEigenVector(self, coords, i, gradient=None):
         """compute the lowest eigenvector at position coords
         
@@ -416,6 +422,7 @@ class FindTransitionState(object):
             self.nfail = 0
         else:
             self.nfail += 1
+        self.nfev += res.nfev
         
         self.oldeigenvec = self.eigenvec.copy()
         return overlap
