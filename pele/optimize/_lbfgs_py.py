@@ -158,6 +158,7 @@ class LBFGS(object):
         
         self.iter_number = 0
         self.result = Result()
+        self.result.message = []
         
     def get_state(self):
         """return the state of the LBFGS memory"""
