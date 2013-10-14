@@ -15,7 +15,7 @@ class TestFindLowestEigenvector(unittest.TestCase):
 #        reference_coords = s.get_random_configuration()
 #        self.system = LJClusterFrozen(13, range(nfrozen), reference_coords)
         self.system = LJCluster(natoms)
-        self.x = self.system.get_random_configuration()
+        self.x = self.system.get_random_minimized_configuration(tol=100.).coords
         self.pot = self.system.get_potential()
         
         self.finder = FindLowestEigenVector(self.x.copy(), self.pot, **kwargs)
@@ -37,13 +37,13 @@ class TestFindLowestEigenvector_NFEV(unittest.TestCase):
         from pele.optimize.tests._test_nfev import _PotWrapper
         natoms = 18
         self.system = LJCluster(natoms)
-        self.x = self.system.get_random_configuration()
+        self.x = self.system.get_random_minimized_configuration(tol=100.).coords
         self.pot = _PotWrapper(self.system.get_potential())
         
     
     def test(self):
         self.pot.nfev = 0
-        ret = findLowestEigenVector(self.x, self.pot)
+        ret = findLowestEigenVector(self.x.copy(), self.pot)
         self.assertEqual(ret.nfev, self.pot.nfev)
         self.assertTrue(ret.success)
         self.assertGreater(ret.nfev, 0)

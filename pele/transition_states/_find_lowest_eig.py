@@ -245,7 +245,7 @@ class FindLowestEigenVector(object):
         res.eigenvec = res.coords / np.linalg.norm(res.coords)
         delattr(res, "energy")
         delattr(res, "coords")
-        res.minimizer_state = self.minimizer.get_state()
+#        res.minimizer_state = self.minimizer.get_state()
         res.nfev = self.eigpot.nfev
         return res
 
