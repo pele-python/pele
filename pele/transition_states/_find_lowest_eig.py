@@ -1,3 +1,7 @@
+"""tools for finding the smallest eigenvalue and associated eigenvector
+using Rayleigh-Ritz minimization
+"""
+
 import numpy as np
 import logging
 

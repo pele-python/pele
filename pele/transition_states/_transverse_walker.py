@@ -20,7 +20,7 @@ class _TransversePotential(BasePotential):
         self.pot = potential
         self.update_vector(vector)
         self.nfev = 0
-    
+
     def update_vector(self, vector):
         """update the vector"""
         self.vector = vector.copy()
@@ -31,17 +31,35 @@ class _TransversePotential(BasePotential):
         """return the projected energy and gradient without computing the gradient"""
         grad = true_gradient - np.dot(true_gradient, self.vector) * self.vector
         return true_energy, grad
+
+    def _get_true_energy_gradient(self, coords):
+        """compute the true energy and gradient at coords"""
+        self.nfev += 1
+        e, grad = self.pot.getEnergyGradient(coords)
+        self._true_gradient = grad.copy()
+        self._true_energy = e
+        self._true_coords = coords.copy()
+        return e, grad
+
+    def get_true_energy_gradient(self, coords):
+        """return the true energy and gradient at coords
         
+        this should primarily be used to access the energy and gradient that have
+        already been computed
+        """
+        if (coords == self._true_coords).all():
+            return self._true_energy, self._true_gradient.copy()
+        else:
+            print "warning: get_true_gradient should only be used to access precomputed energies and gradients"
+            raise Exception("get_true_gradient should only be used to access precomputed energies and gradients")
+            return self._get_true_energy_gradient(coords)
+    
     def getEnergyGradient(self, coords):
         """return the energy and the gradient with the component along the self.vector removed.  
         
         For use in energy minimization in the space perpendicular to eigenvec
         """
-        self.nfev += 1
-        e, grad = self.pot.getEnergyGradient(coords)
-        self.true_gradient = grad.copy()
-        self.true_energy = e
-        #norm = np.sum(self.eigenvec)
+        e, grad = self._get_true_energy_gradient(coords)
         return self.projected_energy_gradient(e, grad)
 
 class _TransverseWalker(object):
@@ -90,21 +108,25 @@ class _TransverseWalker(object):
         """test if the stop criterion is satisfied"""
         return self.walker.stop_criterion_satisfied()
 
-    def get_energy(self):
-        """return the true energy
-        
-        warning it's possible for this to return the wrong energy if the minimizer
-        had an aborted line search on the last iteration.
-        """
-        return self.tspot.true_energy
+    def get_true_energy_gradient(self, coords):
+        """return the true energy and gradient"""
+        return self.tspot.get_true_energy_gradient(coords)
 
-    def get_gradient(self):
-        """return the true gradient
-        
-        warning it's possible for this to return the wrong energy if the minimizer
-        had an aborted line search on the last iteration.
-        """
-        return self.tspot.true_gradient
+#    def get_energy(self):
+#        """return the true energy
+#        
+#        warning it's possible for this to return the wrong energy if the minimizer
+#        had an aborted line search on the last iteration.
+#        """
+#        return self.tspot.true_energy
+#
+#    def get_gradient(self):
+#        """return the true gradient
+#        
+#        warning it's possible for this to return the wrong energy if the minimizer
+#        had an aborted line search on the last iteration.
+#        """
+#        return self.tspot.true_gradient
 
     def get_result(self):
         """return the results object"""

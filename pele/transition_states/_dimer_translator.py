@@ -26,13 +26,17 @@ class _DimerTranslator(object):
         """test if the stop criterion is satisfied"""
         return self.minimizer.stop_criterion_satisfied()
 
-    def get_energy(self):
-        """return the true energy"""
-        return self.dimer_potential.true_energy
+    def get_true_energy_gradient(self, coords):
+        """return the true energy and gradient"""
+        return self.dimer_potential.get_true_energy_gradient(coords)
 
-    def get_gradient(self):
-        """return the true gradient"""
-        return self.dimer_potential.true_gradient
+#    def get_energy(self):
+#        """return the true energy"""
+#        return self.dimer_potential.true_energy
+#
+#    def get_gradient(self):
+#        """return the true gradient"""
+#        return self.dimer_potential.true_gradient
     
     def update_eigenvec(self, eigenvec, eigenval):
         """update the direction (rotation) of the dimer"""
@@ -90,6 +94,29 @@ class _DimerPotential(object):
         self.eigenvec = eigenvec.copy()
         self.eigenvec /= np.linalg.norm(self.eigenvec)
     
+    def _get_true_energy_gradient(self, coords):
+        """compute the true energy and gradient at coords"""
+        self.nfev += 1
+        e, grad = self.potential.getEnergyGradient(coords)
+        self._true_gradient = grad.copy()
+        self._true_energy = e
+        self._true_coords = coords.copy()
+        return e, grad
+
+    def get_true_energy_gradient(self, coords):
+        """return the true energy and gradient at coords
+        
+        this should primarily be used to access the energy and gradient that have
+        already been computed
+        """
+        if (coords == self._true_coords).all():
+            return self._true_energy, self._true_gradient.copy()
+        else:
+            print "warning: get_true_gradient should only be used to access precomputed energies and gradients"
+            raise Exception("get_true_gradient should only be used to access precomputed energies and gradients")
+            return self._get_true_energy_gradient(coords)
+
+    
     def getEnergyGradient(self, x):
         """return the energy and gradient at x with the gradient along the eigenvector inverted
         
@@ -98,10 +125,7 @@ class _DimerPotential(object):
         The returned energy is 0 because we are not minimizing in the energy.  The
         true energy and gradient are stored at each call
         """
-        e, g = self.potential.getEnergyGradient(x)
-        self.true_energy = e
-        self.true_gradient = g.copy()
-        self.nfev += 1
+        e, g = self._get_true_energy_gradient(x)
         return self.projected_energy_gradient(e, g)
     
 

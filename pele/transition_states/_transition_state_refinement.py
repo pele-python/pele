@@ -514,8 +514,7 @@ class FindTransitionState(object):
         self.tangent_result = ret
         if self.tangent_move_step > 1e-16:
             try:
-                self.energy = self._transverse_walker.get_energy()
-                self.gradient = self._transverse_walker.get_gradient()
+                self.energy, self.gradient = self._transverse_walker.get_true_energy_gradient(coords)
             except AttributeError:
                 print "was tspot was never called? use the same gradient"
                 raise

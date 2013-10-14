@@ -93,14 +93,19 @@ class GeneralizedDimer(object):
         else:
             self.translator = _HybridEigenvectorWalker(coords, potential, eigenvec0, **translator_kwargs)
 
-    def get_true_energy(self):
-        """return the true energy"""
-        return self.translator.get_energy()
+    def get_true_energy_gradient(self, coords):
+        """return the true energy and gradient"""
+        return self.translator.get_true_energy_gradient(coords)
+        
 
-    def get_true_gradient(self):
-        """return the true gradient"""
-        # these are stored in dimer_potential
-        return self.translator.get_gradient()
+#    def get_true_energy(self):
+#        """return the true energy"""
+#        return self.translator.get_energy()
+#
+#    def get_true_gradient(self):
+#        """return the true gradient"""
+#        # these are stored in dimer_potential
+#        return self.translator.get_gradient()
 
     def get_coords(self):
         """return the current location of the dimer"""
@@ -115,7 +120,8 @@ class GeneralizedDimer(object):
         """do one iteration"""
         # update the eigenvector (rotate the dimer)
 #        print "rotating dimer"
-        self.rotator.update_coords(self.get_coords(), gradient=self.get_true_gradient())
+        energy, gradient = self.get_true_energy_gradient(self.get_coords())
+        self.rotator.update_coords(self.get_coords(), gradient=gradient)
         ret = self.rotator.run(self.rotational_steps)
 
         # update the eigenvector and eigenvalue in the dimer_potential
@@ -146,8 +152,7 @@ class GeneralizedDimer(object):
         res.eigenval = rot_result.eigenval
         res.eigenvec = rot_result.eigenvec 
         res.coords = trans_res.coords
-        res.energy = self.get_true_energy()
-        res.grad = self.get_true_gradient()
+        res.energy, res.grad = self.get_true_energy_gradient(res.coords)
         res.rms = trans_res.rms
         res.nfev = rot_result.nfev + trans_res.nfev
         res.nsteps = self.iter_number
