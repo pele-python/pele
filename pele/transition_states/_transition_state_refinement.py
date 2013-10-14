@@ -28,17 +28,19 @@ class FindTransitionState(object):
         the potential class
     tol : 
         the tolerance for the rms gradient
-    event : callable
-        This will be called after each step
     nsteps : 
         number of iterations
-    nfail_max :
-        if the lowest eigenvector search fails this many times in a row
-        than the algorithm ends
     eigenvec0 : 
         a guess for the initial lowest eigenvector
+    nsteps_tangent1, nsteps_tangent2 : int
+        the number of iterations for tangent space minimization before and after
+        the eigenvalue is deemed to be converged
+    event : callable
+        This will be called after each step
     iprint :
         the interval at which to print status messages
+    verbosity : int
+        how much debugging information to print (only partially implemented)
     orthogZeroEigs : callable
         this function makes a vector orthogonal to the known zero
         eigenvectors
@@ -52,36 +54,45 @@ class FindTransitionState(object):
         eigenvector search 
     tangentSpaceQuenchParams : dict 
         these parameters are passed quench routine for the minimization in
-        the space tabgent to the lowest eigenvector 
-    max_uphill_step : 
-        the maximum step uphill along the direction of the lowest
-        eigenvector
+        the space tabgent to the lowest eigenvector
+    max_uphill_step_initial : float
+        The initial maximum uphill step along the direction of the lowest 
+        eigenvector.  The maximum uphill step is adjusted dynamically using a 
+        trust radius
+    max_uphill_step : float 
+        The maximum value of the maximum uphill step. The maximum uphill step 
+        is adjusted using a trust radius, but it can never become larger than 
+        this.  
+    check_negative : bool
+        If True then the sign of the lowest eigenvalue is required to remain negative.
+        If the sign becomes positive, then the step is retaken with smaller step size
     demand_initial_negative_vec : bool
-        if True, abort if the initial lowest eigenvalue is positive
+        if True, and check_negative is True, then abort if the initial 
+        lowest eigenvalue is positive
     negatives_before_check : int
-        if start with positive eigenvector and demand_initial_negative_vec is False,
-        the check to make sure that the eigenvalue is enabled after having had so 
-        many negative eigenvalues before
-    nsteps_tangent1, nsteps_tangent2 : int
-        the number of iterations for tangent space minimization before and after
-        the eigenvalue is deemed to be converged
-    verbosity : int
-        how much debugging information to print (only partially implemented)
+        If the run starts with a positive eigenvalue and demand_initial_negative_vec is False,
+        then check to make sure that the eigenvalue is enabled after having had so 
+        many negative eigenvalues before.  If check_negative is False this has no affect.
+    nfail_max :
+        if the lowest eigenvector search fails this many times in a row
+        than the algorithm ends
         
     
     Notes
     -----
     
-    It is composed of the following steps
+    It is composed of the following steps:
+    
         1) Find eigenvector corresponding to the lowest *nonzero*
-        eigenvector.  
+           eigenvector.  
         
         2) Step uphill in the direction of the lowest eigenvector
         
         3) minimize in the space tangent to the lowest eigenvector
         
     The tolerances for the various steps of this algorithm must be correlated.
-    if the tol for tangent space search is lower than the total tol, then it will never finish
+    if the tolerance for tangent space search is lower than the total tolerance, 
+    then it will never finish
     
     See Also
     --------
@@ -91,18 +102,17 @@ class FindTransitionState(object):
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
                  nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
+                 nsteps_tangent1=10,
+                 nsteps_tangent2=100,
                  lowestEigenvectorQuenchParams=dict(),
                  tangentSpaceQuenchParams=dict(), 
                  max_uphill_step=0.5,
                  max_uphill_step_initial=0.2,
-                 demand_initial_negative_vec=True,
+                 demand_initial_negative_vec=False,
                  negatives_before_check = 10,
-                 nsteps_tangent1=10,
-                 nsteps_tangent2=100,
                  verbosity=1,
-                 first_order=False,
                  check_negative=False,
-                 inverted_gradient=False,
+                 invert_gradient=False,
                  ):
         self.pot = pot
         self.coords = np.copy(coords)
@@ -121,9 +131,8 @@ class FindTransitionState(object):
         self.tangent_space_quench_params = dict(tangentSpaceQuenchParams.items())
         self.demand_initial_negative_vec = demand_initial_negative_vec    
         self.npositive_max = max(10, self.nsteps / 5)
-        self.first_order = first_order
         self.check_negative = check_negative
-        self.inverted_gradient = inverted_gradient
+        self.invert_gradient = invert_gradient
         
         self.rmsnorm = 1./np.sqrt(float(len(coords)))
         self.oldeigenvec = None
@@ -184,16 +193,20 @@ class FindTransitionState(object):
         params["nsteps"] = obj.nsteps
         params["nfail_max"] = obj.nfail_max
         params["iprint"] = obj.iprint
-        params["max_uphill_step"]=obj.max_uphill_step
-        params["demand_initial_negative_vec"]=obj.demand_initial_negative_vec
         params["nsteps_tangent1"]=obj.nsteps_tangent1
         params["nsteps_tangent2"]=obj.nsteps_tangent2
+        params["max_uphill_step"]=obj._max_uphill_max
+        params["max_uphill_step_initial"]=obj._max_uphill
+        params["demand_initial_negative_vec"]=obj.demand_initial_negative_vec
+        params["check_negative"]=obj.check_negative
+        params["invert_gradient"]=obj.invert_gradient
         params["verbosity"]=obj.verbosity
         
         # event=None, eigenvec0=None, orthogZeroEigs=0,
         return params
     
     def _saveState(self, coords):
+        """save the state in order to revert a step"""
         self.saved_coords = np.copy(coords)
         self.saved_eigenvec = np.copy(self.eigenvec)
         self.saved_eigenval = self.eigenval
@@ -204,6 +217,7 @@ class FindTransitionState(object):
         #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
 
     def _resetState(self):
+        """restore from a state"""
         coords = np.copy(self.saved_coords)
         self.eigenvec = np.copy(self.saved_eigenvec)
         self.eigenval = self.saved_eigenval
@@ -215,6 +229,7 @@ class FindTransitionState(object):
         return coords
 
     def _compute_gradients(self, coords):
+        """compute the energy and gradient at the current position and store them for later use"""
 #        self._transverse_energy, self._transverse_gradient = self.transverse_potential.getEnergyGradient(coords)
 #        self.energy = self.transverse_potential.true_energy
 #        self.gradient = self.transverse_potential.true_gradient.copy()
@@ -225,9 +240,11 @@ class FindTransitionState(object):
         self.gradient = gradient.copy()
 
     def get_energy(self):
+        """return the already computed energy at the current position"""
         return self.energy
     
     def get_gradient(self):
+        """return the already computed gradient at the current position"""
         return self.gradient
 
     def run(self):
@@ -345,6 +362,14 @@ class FindTransitionState(object):
 
         
     def _getLowestEigenVector(self, coords, i, gradient=None):
+        """compute the lowest eigenvector at position coords
+        
+        Parameters
+        ----------
+        coords : the current position
+        i : the iteration number
+        gradient : the gradient at coords
+        """
 #        res = findLowestEigenVector(coords, self.pot,
 ##                                    H0=self.H0_leig, 
 #                                    eigenvec0=self.eigenvec, 
@@ -354,13 +379,13 @@ class FindTransitionState(object):
         if "nsteps" in self.lowestEigenvectorQuenchParams:
             niter = self.lowestEigenvectorQuenchParams["nsteps"]
         else:
-            niter = 10
-            print "warning, using default of", niter, "steps for finding lowest eigenvalue"
+            niter = 100
+            if self.verbosity > 3:
+                print "Using default of", niter, "steps for finding lowest eigenvalue"
         optimizer = FindLowestEigenVector(coords, self.pot,
 #                                    H0=self.H0_leig, 
                             eigenvec0=self.eigenvec, 
                             orthogZeroEigs=self.orthogZeroEigs, 
-                            first_order=self.first_order,
                             gradient=gradient,
                             **self.lowestEigenvectorQuenchParams)
         res = optimizer.run(niter)
@@ -395,67 +420,68 @@ class FindTransitionState(object):
         self.oldeigenvec = self.eigenvec.copy()
         return overlap
 
-    def _walk_inverted_gradient(self, coords, energy=None, gradient=None):
-        """
-        now minimize the energy in the space perpendicular to eigenvec.
-        There's no point in spending much effort on this until 
-        we've gotten close to the transition state.  So limit the number of steps
-        to 10 until we get close.
-        """
-        #determine the number of steps
-        #i.e. if the eigenvector is deemed to have converged
-        if self.verbosity > 1:
-            print "inverting the gradient and minimizing"
-        eigenvec_converged = self.overlap > .9999
-        
-        nstepsperp = self.nsteps_tangent1
-        if eigenvec_converged:
-            nstepsperp = self.nsteps_tangent2
-
-        maxstep = self.maxstep_tangent
-        if self.reduce_step > 0:
-            maxstep *= (self.step_factor)**self.reduce_step
-
-        
-        coords_backup = coords.copy()
-        
-        _dimer_pot = _DimerPotential(self.pot, self.eigenvec)
-        transverse_energy, transverse_gradient = _dimer_pot.projected_energy_gradient(energy, gradient) 
-        dimer = _DimerTranslator(coords, self.pot, self.eigenvec,
-                                 nsteps=nstepsperp, tol=self.tol_tangent,
-                                 maxstep=maxstep,
-#                                 H0 = self.H0_transverse,
-                                 energy=transverse_energy, gradient=transverse_gradient,
-                                 **self.tangent_space_quench_params)
-        ret = dimer.run(nstepsperp)
-        
-        coords = ret.coords
-        self.tangent_move_step = np.linalg.norm(coords - coords_backup)
-        rms = ret.rms
-        self.tangent_result = ret
-#        self.H0_transverse = self.tangent_result.H0
-        try:
-            self.energy = dimer.get_energy()
-            self.gradient = dimer.get_gradient()
-        except AttributeError:
-            # tspot was never called, use the same gradient
-            if gradient is None or energy is None:
-                self._compute_gradients(coords)
-            else:
-                self.energy = energy
-                self.gradient = gradient
-        return ret
+#    def _walk_inverted_gradient(self, coords, energy=None, gradient=None):
+#        """
+#        now minimize the energy in the space perpendicular to eigenvec.
+#        There's no point in spending much effort on this until 
+#        we've gotten close to the transition state.  So limit the number of steps
+#        to 10 until we get close.
+#        """
+#        #determine the number of steps
+#        #i.e. if the eigenvector is deemed to have converged
+#        if self.verbosity > 1:
+#            print "inverting the gradient and minimizing"
+#        eigenvec_converged = self.overlap > .9999
+#        
+#        nstepsperp = self.nsteps_tangent1
+#        if eigenvec_converged:
+#            nstepsperp = self.nsteps_tangent2
+#
+#        maxstep = self.maxstep_tangent
+#        if self.reduce_step > 0:
+#            maxstep *= (self.step_factor)**self.reduce_step
+#
+#        
+#        coords_backup = coords.copy()
+#        
+#        _dimer_pot = _DimerPotential(self.pot, self.eigenvec)
+#        transverse_energy, transverse_gradient = _dimer_pot.projected_energy_gradient(energy, gradient) 
+#        dimer = _DimerTranslator(coords, self.pot, self.eigenvec,
+#                                 nsteps=nstepsperp, tol=self.tol_tangent,
+#                                 maxstep=maxstep,
+##                                 H0 = self.H0_transverse,
+#                                 energy=transverse_energy, gradient=transverse_gradient,
+#                                 **self.tangent_space_quench_params)
+#        ret = dimer.run(nstepsperp)
+#        
+#        coords = ret.coords
+#        self.tangent_move_step = np.linalg.norm(coords - coords_backup)
+#        rms = ret.rms
+#        self.tangent_result = ret
+##        self.H0_transverse = self.tangent_result.H0
+#        try:
+#            self.energy = dimer.get_energy()
+#            self.gradient = dimer.get_gradient()
+#        except AttributeError:
+#            # tspot was never called, use the same gradient
+#            if gradient is None or energy is None:
+#                self._compute_gradients(coords)
+#            else:
+#                self.energy = energy
+#                self.gradient = gradient
+#        return ret
 
     def _minimizeTangentSpace(self, coords, energy=None, gradient=None):
-        """
-        now minimize the energy in the space perpendicular to eigenvec.
-        There's no point in spending much effort on this until 
-        we've gotten close to the transition state.  So limit the number of steps
-        to 10 until we get close.
+        """minimize the energy in the space perpendicular to eigenvec.
+        
+        Parameters
+        ----------
+        coords : the current position
+        energy, gradient : the energy and gradient at the current position
         """
         assert gradient is not None
         if self._transverse_walker is None:
-            if self.inverted_gradient:
+            if self.invert_gradient:
                 # note: if we pass transverse energy and gradient here we can save 1 potential call
                 self._transverse_walker = _DimerTranslator(coords, self.pot, self.eigenvec,
 #                                         energy=transverse_energy, gradient=transverse_gradient,
@@ -496,6 +522,7 @@ class FindTransitionState(object):
         return ret
 
     def _update_max_uphill_step(self, Fold, stepsize):
+        """use a trust radius to update the maximum uphill step size"""
         Fnew = np.dot(self.eigenvec, self.get_gradient())
         # EPER=MIN(DABS(1.0D0-(FOBNEW-FOB)/(PSTEP*EVALMIN)),DABS(1.0D0-(-FOBNEW-FOB)/(PSTEP*EVALMIN)))
         a1 = 1. - (Fnew - Fold) / (stepsize * self.eigenval)
@@ -514,9 +541,9 @@ class FindTransitionState(object):
 
 
     def _stepUphill(self, coords):
-        """
-        step uphill in the direction of self.eigenvec.  self.eigenval is used
-        to determine the best stepsize
+        """step uphill in the direction of self.eigenvec.  
+        
+        self.eigenval is used to determine the best stepsize
         """
         # the energy and gradient are already known
         e = self.get_energy()

@@ -16,6 +16,9 @@ class TestFindTransitionState(unittest.TestCase):
                                 verbosity=10
                                 )
     
+    def test_params(self):
+        params = FindTransitionState.params()
+    
     def test1(self):
         x = self.system.get_random_configuration()
         dimer = self.make_dimer(x)
@@ -37,7 +40,7 @@ class TestHEF_InvertedGradient(TestFindTransitionState):
     def make_dimer(self, x):
         return FindTransitionState(x, self.pot,
                                 orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
-                                inverted_gradient=True,
+                                invert_gradient=True,
                                 )
 
 

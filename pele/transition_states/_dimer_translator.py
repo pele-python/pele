@@ -23,6 +23,7 @@ class _DimerTranslator(object):
         self.minimizer = LBFGS(coords, self.dimer_potential, **minimizer_kwargs)
 
     def stop_criterion_satisfied(self):
+        """test if the stop criterion is satisfied"""
         return self.minimizer.stop_criterion_satisfied()
 
     def get_energy(self):
@@ -79,15 +80,10 @@ class _DimerPotential(object):
         self.nfev = 0
     
     def projected_energy_gradient(self, energy, gradient):
-        """return the energy and the gradient at x with the gradient inverted along the eigenvector"""
+        """return the energy and the gradient with the gradient inverted along the eigenvector"""
         projgrad = gradient - 2. * np.dot(gradient, self.eigenvec) * self.eigenvec
 #        print "overlap of g and eigenvec", np.dot(gradient, self.eigenvec)
         return 0., projgrad
-
-#    def getEnergyGradientInverted(self, x):
-#        """return the energy and the gradient at x with the gradient inverted along the eigenvector"""
-#        g -= 2. * np.dot(g, self.eigenvec) * self.eigenvec
-#        return e, g
 
     def update_eigenvec(self, eigenvec):
         """update the direction (rotation) of the dimer"""
@@ -95,7 +91,7 @@ class _DimerPotential(object):
         self.eigenvec /= np.linalg.norm(self.eigenvec)
     
     def getEnergyGradient(self, x):
-        """gradient at x with the gradient along the eigenvector inverted
+        """return the energy and gradient at x with the gradient along the eigenvector inverted
         
         Notes
         -----
