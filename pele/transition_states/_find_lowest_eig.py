@@ -49,10 +49,11 @@ class LowestEigPot(BasePotential):
         is not None then one potential call will be saved. 
     """
     def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6,
-                  first_order=False, gradient=None):
+                  first_order=False, gradient=None, verbosity=1):
         self.pot = pot
         self.first_order = first_order
         self.nfev = 0
+        self.verbosity=verbosity
         self.update_coords(coords, gradient=gradient)
 #        self.coords = coords.copy()
 #        if self.first_order:
@@ -66,7 +67,6 @@ class LowestEigPot(BasePotential):
         else:
             self.orthogZeroEigs = orthogZeroEigs
         #print "orthogZeroEigs", self.orthogZeroEigs
-                
         self.diff = dx
     
     def _get_true_energy_gradient(self, coords):
@@ -82,7 +82,8 @@ class LowestEigPot(BasePotential):
 #                self.true_energy = energy
                 self.true_gradient = gradient.copy()
             else:
-                print "possibly computing gradient unnecessarily"
+                if self.verbosity > 1:
+                    print "possibly computing gradient unnecessarily"
                 true_energy, self.true_gradient = self._get_true_energy_gradient(self.coords)
 
     def getEnergy(self, vec_in):
