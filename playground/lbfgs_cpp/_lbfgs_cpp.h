@@ -12,6 +12,7 @@ namespace LBFGS_ns{
       double maxstep_;
       int nfev_;
       double max_f_rise_;
+      int iter_number_;
 
       // variables representing the state of the system
       std::vector<double> x_;

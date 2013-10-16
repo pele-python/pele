@@ -59,6 +59,7 @@ LBFGS::LBFGS(double const * x0, int N, int M)
   // initialize parameters
   k_ = 0;
   nfev_ = 0;
+  iter_number_ = 0;
 
   // set up the current location
   for (int j2 = 0; j2 < N_; ++j2){ 
@@ -82,13 +83,14 @@ void LBFGS::one_iteration()
   backtracking_linesearch();
 
   update_memory(x_old, g_old, x_, g_);
-  cout << "energy " << f_ << " g[0] " << g_[0] << " gold[0] " << g_old[0]<< "\n";
+  cout << iter_number_ << " energy " << f_ 
+      << g_old[0]<< "\n";
+  iter_number_ += 1;
 }
 
 void LBFGS::run()
 {
-  int iter = 0;
-  for (iter = 0; iter < maxiter_; ++iter)
+  while (iter_number_ < maxiter_)
   {
     if (stop_criterion_satisfied()){
       break;
@@ -169,7 +171,7 @@ void LBFGS::compute_lbfgs_step()
     i = j % M_;
     beta = rho_[i] * vecdot(y_[i], step_, N_);
     for (int j2 = 0; j2 < N_; ++j2){
-      step_[j2] +=  s_[i][j2] * (alpha[i] - beta);
+      step_[j2] += s_[i][j2] * (alpha[i] - beta);
     }
   }
 
