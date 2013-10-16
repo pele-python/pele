@@ -25,9 +25,6 @@ namespace LBFGS_ns{
       std::vector<double> rho_;
       double H0_;
 
-      // temporary storage
-      std::vector<double> alpha_;
-
       // 
       std::vector<double> step_;
 
