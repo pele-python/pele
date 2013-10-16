@@ -113,7 +113,7 @@ class _DimerPotential(object):
             return self._true_energy, self._true_gradient.copy()
         else:
             print "warning: get_true_gradient should only be used to access precomputed energies and gradients"
-            raise Exception("get_true_gradient should only be used to access precomputed energies and gradients")
+#            raise Exception("get_true_gradient should only be used to access precomputed energies and gradients")
             return self._get_true_energy_gradient(coords)
 
     
