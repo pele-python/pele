@@ -43,7 +43,7 @@ namespace LBFGS_ns{
           std::vector<double> & gnew
           );
       void compute_lbfgs_step();
-      void backtracking_linesearch();
+      double backtracking_linesearch();
       int stop_criterion_satisfied();
       void compute_func_gradient(std::vector<double> & x, double & energy,
           std::vector<double> & gradient);

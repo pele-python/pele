@@ -40,12 +40,11 @@ LBFGS::LBFGS(double const * x0, int N, int M)
   M_ = M;
   N_ = N;
   // these should be passed
-  maxiter_ = 1000;
+  maxiter_ = 100;
   H0_ = 0.1;
   tol_ = 1e-4;
   maxstep_ = 0.2;
   max_f_rise_ = 1e-4;
-
 
   // allocate arrays
   x_ = std::vector<double>(N_);
@@ -80,11 +79,12 @@ void LBFGS::one_iteration()
 
   compute_lbfgs_step();
 
-  backtracking_linesearch();
+  double stepsize = backtracking_linesearch();
 
   update_memory(x_old, g_old, x_, g_);
   cout << iter_number_ << " energy " << f_ 
-      << g_old[0]<< "\n";
+      << " rms " << rms_
+      << " stepsize " << stepsize << "\n";
   iter_number_ += 1;
 }
 
@@ -128,6 +128,10 @@ void LBFGS::update_memory(
     yy = 1.;
   }
   H0_ = ys / yy;
+  //cout << "    setting H0 " << H0_ 
+    //<< " ys " << ys 
+    //<< " yy " << yy 
+    //<< "\n";
 
   k_ += 1;
   
@@ -147,14 +151,15 @@ void LBFGS::compute_lbfgs_step()
   step_ = g_;
 
   int jmin = std::max(0, k_ - M_);
-  int jmax = std::max(M_, k_);
+  int jmax = k_;
   int i;
   double beta;
-  vector<double> alpha(N_);
+  vector<double> alpha(M_);
 
   // loop backwards through the memory
   for (int j = jmax - 1; j >= jmin; --j){
     i = j % M_;
+    //cout << "    i " << i << " j " << j << "\n";
     alpha[i] = rho_[i] * vecdot(s_[i], step_, N_);
     for (int j2 = 0; j2 < N_; ++j2){
       step_[j2] -= alpha[i] * y_[i][j2];
@@ -169,6 +174,7 @@ void LBFGS::compute_lbfgs_step()
   // loop forwards through the memory
   for (int j = jmin; j < jmax; ++j){
     i = j % M_;
+    //cout << "    i " << i << " j " << j << "\n";
     beta = rho_[i] * vecdot(y_[i], step_, N_);
     for (int j2 = 0; j2 < N_; ++j2){
       step_[j2] += s_[i][j2] * (alpha[i] - beta);
@@ -182,7 +188,7 @@ void LBFGS::compute_lbfgs_step()
 
 }
 
-void LBFGS::backtracking_linesearch()
+double LBFGS::backtracking_linesearch()
 {
   vector<double> xnew(N_);
   vector<double> gnew(N_);
@@ -216,8 +222,11 @@ void LBFGS::backtracking_linesearch()
     if (df < max_f_rise_){
       break;
     } else {
-      cout << "reducing step size to " << factor * stepsize << " df " << df << "\n";
       factor /= 10.;
+      cout 
+        << "energy increased: " << df 
+        << " reducing step size to " << factor * stepsize 
+        << " H0 " << H0_ << "\n";
     }
   }
 
@@ -230,6 +239,7 @@ void LBFGS::backtracking_linesearch()
   g_ = gnew;
   f_ = fnew;
   rms_ = vecnorm(gnew, N_) / sqrt(N_);
+  return stepsize * factor;
 }
 
 int LBFGS::stop_criterion_satisfied()
