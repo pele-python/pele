@@ -1,4 +1,6 @@
 #include "_lbfgs.h"
+#include "potential.h"
+#include "array.h"
 #include <vector>
 #include <math.h>
 #include <algorithm>
@@ -32,9 +34,8 @@ double vecnorm(std::vector<double> const v, size_t N)
 }
 
 LBFGS::LBFGS(
-    double (*func)(double *, double *, int), 
-    double const * x0, 
-    int N, 
+    pele::Potential * potential,
+    pele::Array & x0, 
     int M
     //double tol,
     //double maxstep,
@@ -43,8 +44,8 @@ LBFGS::LBFGS(
     //int maxiter
     )
   :
-    func_f_grad_(func),
-    N_(N),
+    potential_(potential),
+    N_(int(x0.size())),
     M_(M),
     tol_(1e-4),
     maxstep_(0.2),
@@ -268,7 +269,12 @@ void LBFGS::compute_func_gradient(std::vector<double> & x, double & func,
       std::vector<double> & gradient)
 {
   nfev_ += 1;
-  func = (*func_f_grad_)(&x[0], &gradient[0], N_);
+  // wrap the vectors as pele::Array objects
+  pele::Array xarray(&x[0], N_);
+  pele::Array garray(&gradient[0], N_);
+
+  // pass the arrays to the potential
+  func = potential_->get_energy_gradient(xarray, garray);
 }
 
 void LBFGS::set_H0(double H0)
