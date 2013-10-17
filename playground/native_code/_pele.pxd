@@ -10,6 +10,7 @@ cdef extern from "array.h" namespace "pele":
         Array() except +
         Array(double*, int n) except +
         size_t size()
+        double *data()
 
 cdef extern from "potential.h" namespace "pele":
     cdef cppclass  cPotential "pele::Potential":

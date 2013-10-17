@@ -88,8 +88,9 @@ namespace LBFGS_ns{
       void set_iprint(int iprint) { iprint_ = iprint; }
 
       // functions for accessing the results
-      pele::Array & get_x() { return pele::Array(&x_[0], N_); }
-      pele::Array & get_g() { return pele::Array(&g_[0], N_); }
+      double * get_x() { return x_.data(); }
+      double * get_g() { return g_.data(); }
+      int get_N() { return N_; }
       double get_f() { return f_; }
       double get_rms() { return rms_; }
       int get_nfev() { return nfev_; }

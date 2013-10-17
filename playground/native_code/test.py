@@ -8,32 +8,29 @@ import sys
 import _lj
 import _lbfgs
 from pele.optimize import mylbfgs
-N=10 # int(sys.argv[2])
-natoms=38 #int(sys.argv[1])
+N=int(sys.argv[2])
+natoms=int(sys.argv[1])
 
 print "benchmarking lennard jones potential, %d atoms, %d calls", natoms, N
 pot_old = LJ()
 pot = _lj.LJ()
 
-clbfgs = _lbfgs.LBFGS(pot)
 
 t0 = time.time()
 for i in xrange(100):
     x = 1.*(np.random.random(3*natoms) - 0.5)
-    ret = clbfgs.run(x)
-    #print ret
-    #print ret[0]
-    #print pot.get_energy(ret[0])
+    clbfgs = _lbfgs.LBFGS(pot, x)
+    ret = clbfgs.run()
     e, g = pot.get_energy_gradient(ret[0])
-    print "C", np.linalg.norm(g)
+    # print "C", np.linalg.norm(g)
 
 t1 = time.time()
 for i in xrange(100):
-    x = 1.*np.random.random(3*natoms)
-    ret = mylbfgs(x, pot_old, tol=1e-5)
-    print "PY:", np.linalg.norm(pot_old.getEnergyGradient(ret[0])[1])
+    x = 1.*(np.random.random(3*natoms)-0.5)
+    ret = mylbfgs(x, pot_old, tol=1e-4)
+    # print "PY:", np.linalg.norm(pot_old.getEnergyGradient(ret[0])[1])
 
-print time.time()-t1, t1-t0
+print "timing", time.time()-t1, t1-t0
 
 t0 = time.time()
 for i in xrange(N):

@@ -7,10 +7,11 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
     cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
         cppLBFGS(_pele.cPotential *, _pele.Array &, int) except +
 
-        int run() except +
+        void run() except +
         double get_f()
-        _pele.Array & get_x()
-        _pele.Array & get_g()
+        double* get_x()
+        double* get_g()
+        int get_N()
 
 
 # we just need to set a different c++ class instance
@@ -30,9 +31,9 @@ cdef class LBFGS(object):
         
     def run(self):
         self.thisptr.run()
-        #N = self.thisptr.get_N()
-        cdef _pele.Array xi = self.thisptr.get_x()
-        N = int(xi.size())
+        N = self.thisptr.get_N()
+        cdef double* xi = self.thisptr.get_x()
+        N = int(self.thisptr.get_N())
         x = np.zeros(N)
         for i in xrange(N):
             x[i] = xi[i]

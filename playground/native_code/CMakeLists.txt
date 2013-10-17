@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 list( APPEND CMAKE_CXX_FLAGS "-std=c++0x" )
 find_package(PythonLibs)
 
-#file(GLOB sources _pele.cpp _lj.cpp)
+#file(GLOB sources include/)
 
 if(NOT CMAKE_BUILD_TYPE)
   #Release comes with -O3 by default
@@ -25,5 +25,5 @@ set_target_properties(_pele PROPERTIES PREFIX "")
 
 #include_directories(lbfgs)
 
-add_library(_lbfgs SHARED _lbfgs.cpp  ${PYTHON_LIBS})
+add_library(_lbfgs SHARED _lbfgs.cpp  include/_lbfgs.cpp ${PYTHON_LIBS})
 set_target_properties(_lbfgs PROPERTIES PREFIX "")
