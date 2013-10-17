@@ -3,6 +3,7 @@
 #include <math.h>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 
 using namespace LBFGS_ns;
 using std::vector;
@@ -45,6 +46,8 @@ LBFGS::LBFGS(double const * x0, int N, int M)
   tol_ = 1e-4;
   maxstep_ = 0.2;
   max_f_rise_ = 1e-4;
+
+  cout << std::setprecision(12);
 
   // allocate arrays
   x_ = std::vector<double>(N_);
@@ -108,8 +111,8 @@ void LBFGS::update_memory(
 {
   int klocal = k_ % M_;
   for (int j2 = 0; j2 < N_; ++j2){ 
-    s_[klocal][j2] = gnew[j2] - gold[j2];
-    y_[klocal][j2] = xnew[j2] - xold[j2];
+    y_[klocal][j2] = gnew[j2] - gold[j2];
+    s_[klocal][j2] = xnew[j2] - xold[j2];
   }
 
   double ys = vecdot(y_[klocal], s_[klocal], N_);
@@ -128,10 +131,11 @@ void LBFGS::update_memory(
     yy = 1.;
   }
   H0_ = ys / yy;
-  //cout << "    setting H0 " << H0_ 
-    //<< " ys " << ys 
-    //<< " yy " << yy 
-    //<< "\n";
+//  cout << "    setting H0 " << H0_ 
+//    << " ys " << ys 
+//    << " yy " << yy 
+//    << " rho[i] " << rho_[klocal] 
+//    << "\n";
 
   k_ += 1;
   
