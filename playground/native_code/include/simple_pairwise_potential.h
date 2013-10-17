@@ -29,7 +29,7 @@ namespace pele
 
 		for(int i=1; i<natoms; ++i) {
 			int i1 = 3*i;
-			for(int j=0; j<i; ++j) {
+			for(int j=i+1; j<natoms; ++j) {
 				int i2 = 3*j;
 				for(int k=0; k<3; ++k)
 					dr[k] = x[i1+k] - x[i2+k];

@@ -21,16 +21,17 @@ for i in xrange(100):
     x = 1.*(np.random.random(3*natoms) - 0.5)
     clbfgs = _lbfgs.LBFGS(pot, x)
     ret = clbfgs.run()
-    e, g = pot.get_energy_gradient(ret[0])
+#e, g = pot.get_energy_gradient(ret[0])
     # print "C", np.linalg.norm(g)
 
 t1 = time.time()
+#x = 1.*(np.random.random(3*natoms)-0.5)
 for i in xrange(100):
-    x = 1.*(np.random.random(3*natoms)-0.5)
+    x = 1.*(np.random.random(3*natoms) - 0.5)
     ret = mylbfgs(x, pot_old, tol=1e-4)
     # print "PY:", np.linalg.norm(pot_old.getEnergyGradient(ret[0])[1])
 
-print "timing", time.time()-t1, t1-t0
+print "timing", time.time()-t1, t1-t0, ( time.time()-t1)/(t1-t0)
 
 t0 = time.time()
 for i in xrange(N):
