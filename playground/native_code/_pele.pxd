@@ -7,7 +7,9 @@ cimport numpy as np
 
 cdef extern from "array.h" namespace "pele":
     cdef cppclass Array :
+        Array() except +
         Array(double*, int n) except +
+        size_t size()
 
 cdef extern from "potential.h" namespace "pele":
     cdef cppclass  cPotential "pele::Potential":

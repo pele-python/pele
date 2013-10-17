@@ -23,7 +23,7 @@ set_target_properties(_lj PROPERTIES PREFIX "")
 add_library(_pele SHARED _pele.cpp ${sources} ${PYTHON_LIBS})
 set_target_properties(_pele PROPERTIES PREFIX "")
 
-include_directories(lbfgs)
+#include_directories(lbfgs)
 
-add_library(_lbfgs SHARED _lbfgs.cpp lbfgs_wrapper.cpp lbfgs/lbfgs.c ${PYTHON_LIBS})
+add_library(_lbfgs SHARED _lbfgs.cpp  ${PYTHON_LIBS})
 set_target_properties(_lbfgs PROPERTIES PREFIX "")
