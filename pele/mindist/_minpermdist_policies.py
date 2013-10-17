@@ -67,30 +67,23 @@ class TransformAtomicCluster(TransformPolicy):
     
     def __init__(self, can_invert=True):
         self._can_invert = can_invert
-    
-    @staticmethod
-    def translate(X, d):
+        
+    def translate(self, X, d):
         Xtmp = X.reshape([-1,3])
         Xtmp+=d
-    
-    @staticmethod
-    def rotate(X, mx,):
+        
+    def rotate(self, X, mx,):
         Xtmp = X.reshape([-1,3])
         Xtmp = np.dot(mx, Xtmp.transpose()).transpose()
         X[:] = Xtmp.reshape(X.shape)
-    
-    @staticmethod        
-    def permute(X, perm):
-        a = X.reshape(-1,3)[perm].flatten()
-        # now modify the passed object, X
-        X[:] = a[:]
-        return X
+        
+    def permute(self, X, perm):
+        return X.reshape(-1,3)[perm].flatten()
         
     def can_invert(self):
         return self._can_invert
     
-    @staticmethod
-    def invert(X):
+    def invert(self, X):
         X[:] = -X
         
 class MeasureAtomicCluster(MeasurePolicy):
