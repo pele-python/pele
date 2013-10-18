@@ -19,7 +19,7 @@ pot = _lj.LJ()
 t0 = time.time()
 for i in xrange(100):
     x = 1.*(np.random.random(3*natoms) - 0.5)
-    clbfgs = _lbfgs.LBFGS(pot, x)
+    clbfgs = _lbfgs.LBFGS(pot, x, tol=1e-4)
     ret = clbfgs.run()
 #e, g = pot.get_energy_gradient(ret[0])
     # print "C", np.linalg.norm(g)
