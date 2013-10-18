@@ -16,7 +16,7 @@ from pele.angleaxis import TakestepAA
 from pele.landscape import smoothPath
 from pele.utils.elements import elements
 from pele.utils.xyz import write_xyz
-
+from pele.mindist import PointGroupOrderCluster
 
 class AASystem(BaseSystem):
     def __init__(self):
@@ -78,6 +78,9 @@ class AASystem(BaseSystem):
         kwargs = dict_copy_update(self.params["takestep"], kwargs)
         return TakestepAA(self.aasystem, **kwargs)
     
+    def get_pgorder(self, coords):
+        return PointGroupOrderCluster(self.get_compare_exact())(coords)
+    
     def get_compare_exact(self, **kwargs):
         return ExactMatchAACluster(self.aasystem, accuracy=0.1, **kwargs)
     
@@ -93,6 +96,9 @@ class AASystem(BaseSystem):
     
     def get_metric_tensor(self, coords):
         return self.aasystem.metric_tensor(coords)
+    
+    def get_nzero_modes(self):
+        return 6
     
 class RBSystem(AASystem):
     def drawCylinder(self, X1, X2):
