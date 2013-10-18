@@ -90,6 +90,7 @@ namespace LBFGS_ns{
       pele::Array get_g() { return g_; }
       double get_f() { return f_; }
       double get_rms() { return rms_; }
+      double get_H0() { return H0_; }
       int get_nfev() { return nfev_; }
       int get_niter() { return iter_number_; }
       bool success() { return stop_criterion_satisfied(); }

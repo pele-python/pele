@@ -2,6 +2,7 @@ import numpy as np
 cimport numpy as np
 from playground.native_code import _pele
 cimport _pele
+from pele.optimize import Result
 
 cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
     cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
@@ -19,6 +20,13 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
         void set_max_iter(int)
         void set_iprint(int)
         void set_verbosity(int)
+
+        double get_f()
+        double get_rms()
+        double get_H0()
+        int get_nfev()
+        int get_niter()
+        int success()
 
 
 # we just need to set a different c++ class instance
@@ -47,15 +55,32 @@ cdef class LBFGS(object):
         
     def run(self):
         self.thisptr.run()
+                       
+#       x = np.ctypeslib.as_array(xptr, size=N)
+#        if ret != 0 and ret != -1001: # ignore rounding errors
+#            raise RuntimeError("lbfgs failed with error code %d:"%self.thisptr.error_code(), self.thisptr.error_string())    
+        return self.get_result()
+
+    def get_result(self):
+        """return a results object"""
+        res = Result()
+        
         cdef _pele.Array xi = self.thisptr.get_x()
         cdef double *data = xi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] x = np.zeros(xi.size())
         for i in xrange(xi.size()):
             x[i] = data[i]
         
-#       x = np.ctypeslib.as_array(xptr, size=N)
-#        if ret != 0 and ret != -1001: # ignore rounding errors
-#            raise RuntimeError("lbfgs failed with error code %d:"%self.thisptr.error_code(), self.thisptr.error_string())
         e, g = self.pot.get_energy_gradient(x)
-        return x, e, np.linalg.norm(g) / np.sqrt(g.size), -1
+
+        res.energy = e
+        res.coords = x
+        res.grad = g
         
+        res.rms = self.thisptr.get_rms()        
+        res.nsteps = self.thisptr.get_niter()
+        res.nfev = self.thisptr.get_nfev()
+        res.H0 = self.thisptr.get_H0()
+        res.success = self.thisptr.success()
+        return res
+
