@@ -230,8 +230,8 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE__playground__native_code___lj
-#define __PYX_HAVE_API__playground__native_code___lj
+#define __PYX_HAVE__playground__native_code___lj_cython
+#define __PYX_HAVE_API__playground__native_code___lj_cython
 #include "stdio.h"
 #include "stdlib.h"
 #include "numpy/arrayobject.h"
@@ -242,7 +242,6 @@
 #include "stdexcept"
 #include "typeinfo"
 #include "potential.h"
-#include "lj.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* _OPENMP */
@@ -348,7 +347,7 @@ static const char *__pyx_filename;
 #endif
 
 static const char *__pyx_f[] = {
-  "_lj.pyx",
+  "_lj_cython.pyx",
   "numpy.pxd",
 };
 
@@ -563,7 +562,7 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 /*--- Type declarations ---*/
 struct __pyx_obj_10playground_11native_code_5_pele_Potential;
-struct __pyx_obj_10playground_11native_code_3_lj_LJ;
+struct __pyx_obj_10playground_11native_code_10_lj_cython_LJ_cython;
 
 /* "numpy.pxd":758
  * ctypedef npy_longdouble longdouble_t
@@ -614,15 +613,16 @@ struct __pyx_obj_10playground_11native_code_5_pele_Potential {
 };
 
 
-/* "playground/native_code/_lj.pyx":9
+/* "playground/native_code/_lj_cython.pyx":38
  * 
- * # we just need to set a different c++ class instance
- * cdef class LJ(_pele.Potential):             # <<<<<<<<<<<<<<
- *     def __cinit__(self, eps=1.0, sigma=1.0):
- *         self.thisptr = <_pele.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
+ * # define the potential class
+ * cdef class LJ_cython(_pele.Potential):             # <<<<<<<<<<<<<<
+ *     cdef double _data[2]
+ * 
  */
-struct __pyx_obj_10playground_11native_code_3_lj_LJ {
+struct __pyx_obj_10playground_11native_code_10_lj_cython_LJ_cython {
   struct __pyx_obj_10playground_11native_code_5_pele_Potential __pyx_base;
+  double _data[2];
 };
 
 
@@ -665,6 +665,8 @@ struct __pyx_obj_10playground_11native_code_3_lj_LJ {
   #define __Pyx_XGOTREF(r)
   #define __Pyx_XGIVEREF(r)
 #endif /* CYTHON_REFNANNY */
+
+static CYTHON_INLINE long __Pyx_div_long(long, long); /* proto */
 
 static void __Pyx_RaiseDoubleKeywordsError(
     const char* func_name, PyObject* kw_name); /*proto*/
@@ -875,8 +877,6 @@ static void __Pyx_AddTraceback(const char *funcname, int __pyx_clineno,
 
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t); /*proto*/
 
-/* Module declarations from 'playground.native_code' */
-
 /* Module declarations from 'cpython.buffer' */
 
 /* Module declarations from 'cpython.ref' */
@@ -907,12 +907,15 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *); /
 /* Module declarations from 'playground.native_code._pele' */
 static PyTypeObject *__pyx_ptype_10playground_11native_code_5_pele_Potential = 0;
 
-/* Module declarations from 'playground.native_code._lj' */
-static PyTypeObject *__pyx_ptype_10playground_11native_code_3_lj_LJ = 0;
-#define __Pyx_MODULE_NAME "playground.native_code._lj"
-int __pyx_module_is_main_playground__native_code___lj = 0;
+/* Module declarations from 'playground.native_code._lj_cython' */
+static PyTypeObject *__pyx_ptype_10playground_11native_code_10_lj_cython_LJ_cython = 0;
+__PYX_EXTERN_C DL_IMPORT(void) ljenergy_gradient_(double *, int *, double *, double *, double *, double *, int *, double *); /*proto*/
+static double __pyx_f_10playground_11native_code_10_lj_cython_lj_grad(double *, double *, int, void *); /*proto*/
+static double __pyx_f_10playground_11native_code_10_lj_cython_lj_energy(double *, int, void *); /*proto*/
+#define __Pyx_MODULE_NAME "playground.native_code._lj_cython"
+int __pyx_module_is_main_playground__native_code___lj_cython = 0;
 
-/* Implementation of 'playground.native_code._lj' */
+/* Implementation of 'playground.native_code._lj_cython' */
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_RuntimeError;
@@ -939,9 +942,9 @@ static char __pyx_k__q[] = "q";
 static char __pyx_k__Zd[] = "Zd";
 static char __pyx_k__Zf[] = "Zf";
 static char __pyx_k__Zg[] = "Zg";
-static char __pyx_k__eps[] = "eps";
 static char __pyx_k__range[] = "range";
 static char __pyx_k__sigma[] = "sigma";
+static char __pyx_k__epsilon[] = "epsilon";
 static char __pyx_k____main__[] = "__main__";
 static char __pyx_k____test__[] = "__test__";
 static char __pyx_k__ValueError[] = "ValueError";
@@ -956,11 +959,9 @@ static PyObject *__pyx_n_s__RuntimeError;
 static PyObject *__pyx_n_s__ValueError;
 static PyObject *__pyx_n_s____main__;
 static PyObject *__pyx_n_s____test__;
-static PyObject *__pyx_n_s__eps;
+static PyObject *__pyx_n_s__epsilon;
 static PyObject *__pyx_n_s__range;
 static PyObject *__pyx_n_s__sigma;
-static PyObject *__pyx_int_6;
-static PyObject *__pyx_int_12;
 static PyObject *__pyx_int_15;
 static PyObject *__pyx_k_1;
 static PyObject *__pyx_k_2;
@@ -971,29 +972,143 @@ static PyObject *__pyx_k_tuple_11;
 static PyObject *__pyx_k_tuple_12;
 static PyObject *__pyx_k_tuple_14;
 
-/* "playground/native_code/_lj.pyx":10
- * # we just need to set a different c++ class instance
- * cdef class LJ(_pele.Potential):
- *     def __cinit__(self, eps=1.0, sigma=1.0):             # <<<<<<<<<<<<<<
- *         self.thisptr = <_pele.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
+/* "playground/native_code/_lj_cython.pyx":21
+ * # the wrapping can be simplified a lot with little modification to
+ * # fortran code (change to c type declaration)
+ * cdef double lj_grad(double *x, double *grad, int n, void *userdata):             # <<<<<<<<<<<<<<
+ *     cdef double *data = <double*>userdata
+ *     cdef double sigma=data[0]
  */
 
-static int __pyx_pf_10playground_11native_code_3_lj_2LJ___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pf_10playground_11native_code_3_lj_2LJ___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  PyObject *__pyx_v_eps = 0;
+static double __pyx_f_10playground_11native_code_10_lj_cython_lj_grad(double *__pyx_v_x, double *__pyx_v_grad, int __pyx_v_n, void *__pyx_v_userdata) {
+  double *__pyx_v_data;
+  double __pyx_v_sigma;
+  double __pyx_v_eps;
+  double __pyx_v_boxl;
+  int __pyx_v_natoms;
+  double __pyx_v_e;
+  int __pyx_v_periodic;
+  double __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("lj_grad");
+
+  /* "playground/native_code/_lj_cython.pyx":22
+ * # fortran code (change to c type declaration)
+ * cdef double lj_grad(double *x, double *grad, int n, void *userdata):
+ *     cdef double *data = <double*>userdata             # <<<<<<<<<<<<<<
+ *     cdef double sigma=data[0]
+ *     cdef double eps=data[1]
+ */
+  __pyx_v_data = ((double *)__pyx_v_userdata);
+
+  /* "playground/native_code/_lj_cython.pyx":23
+ * cdef double lj_grad(double *x, double *grad, int n, void *userdata):
+ *     cdef double *data = <double*>userdata
+ *     cdef double sigma=data[0]             # <<<<<<<<<<<<<<
+ *     cdef double eps=data[1]
+ *     cdef double boxl=-1.0
+ */
+  __pyx_v_sigma = (__pyx_v_data[0]);
+
+  /* "playground/native_code/_lj_cython.pyx":24
+ *     cdef double *data = <double*>userdata
+ *     cdef double sigma=data[0]
+ *     cdef double eps=data[1]             # <<<<<<<<<<<<<<
+ *     cdef double boxl=-1.0
+ *     cdef int natoms = n / 3
+ */
+  __pyx_v_eps = (__pyx_v_data[1]);
+
+  /* "playground/native_code/_lj_cython.pyx":25
+ *     cdef double sigma=data[0]
+ *     cdef double eps=data[1]
+ *     cdef double boxl=-1.0             # <<<<<<<<<<<<<<
+ *     cdef int natoms = n / 3
+ *     cdef double e
+ */
+  __pyx_v_boxl = -1.0;
+
+  /* "playground/native_code/_lj_cython.pyx":26
+ *     cdef double eps=data[1]
+ *     cdef double boxl=-1.0
+ *     cdef int natoms = n / 3             # <<<<<<<<<<<<<<
+ *     cdef double e
+ *     cdef int periodic = 0
+ */
+  __pyx_v_natoms = __Pyx_div_long(__pyx_v_n, 3);
+
+  /* "playground/native_code/_lj_cython.pyx":28
+ *     cdef int natoms = n / 3
+ *     cdef double e
+ *     cdef int periodic = 0             # <<<<<<<<<<<<<<
+ *     ljenergy_gradient_(x, &natoms, &e, grad,
+ *                        &eps, &sigma, &periodic, &boxl)
+ */
+  __pyx_v_periodic = 0;
+
+  /* "playground/native_code/_lj_cython.pyx":30
+ *     cdef int periodic = 0
+ *     ljenergy_gradient_(x, &natoms, &e, grad,
+ *                        &eps, &sigma, &periodic, &boxl)             # <<<<<<<<<<<<<<
+ *     return e
+ * 
+ */
+  ljenergy_gradient_(__pyx_v_x, (&__pyx_v_natoms), (&__pyx_v_e), __pyx_v_grad, (&__pyx_v_eps), (&__pyx_v_sigma), (&__pyx_v_periodic), (&__pyx_v_boxl));
+
+  /* "playground/native_code/_lj_cython.pyx":31
+ *     ljenergy_gradient_(x, &natoms, &e, grad,
+ *                        &eps, &sigma, &periodic, &boxl)
+ *     return e             # <<<<<<<<<<<<<<
+ * 
+ * # energy callback not yet implemented
+ */
+  __pyx_r = __pyx_v_e;
+  goto __pyx_L0;
+
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "playground/native_code/_lj_cython.pyx":34
+ * 
+ * # energy callback not yet implemented
+ * cdef double lj_energy(double *x, int n, void *userdata):             # <<<<<<<<<<<<<<
+ *     pass
+ * 
+ */
+
+static double __pyx_f_10playground_11native_code_10_lj_cython_lj_energy(double *__pyx_v_x, int __pyx_v_n, void *__pyx_v_userdata) {
+  double __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("lj_energy");
+
+  __pyx_r = 0;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "playground/native_code/_lj_cython.pyx":41
+ *     cdef double _data[2]
+ * 
+ *     def __cinit__(self, sigma=1.0, epsilon=1.0):             # <<<<<<<<<<<<<<
+ *         self._data[0] = sigma
+ *         self._data[1] = epsilon
+ */
+
+static int __pyx_pf_10playground_11native_code_10_lj_cython_9LJ_cython___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pf_10playground_11native_code_10_lj_cython_9LJ_cython___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_sigma = 0;
+  PyObject *__pyx_v_epsilon = 0;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  double __pyx_t_4;
-  double __pyx_t_5;
-  pele::LJ *__pyx_t_6;
+  double __pyx_t_1;
+  pele::PotentialFunction *__pyx_t_2;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
-  static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__eps,&__pyx_n_s__sigma,0};
+  static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__sigma,&__pyx_n_s__epsilon,0};
   __Pyx_RefNannySetupContext("__cinit__");
   {
     PyObject* values[2] = {0,0};
@@ -1011,17 +1126,17 @@ static int __pyx_pf_10playground_11native_code_3_lj_2LJ___cinit__(PyObject *__py
       switch (PyTuple_GET_SIZE(__pyx_args)) {
         case  0:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__eps);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__sigma);
           if (value) { values[0] = value; kw_args--; }
         }
         case  1:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__sigma);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__epsilon);
           if (value) { values[1] = value; kw_args--; }
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, PyTuple_GET_SIZE(__pyx_args), "__cinit__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, PyTuple_GET_SIZE(__pyx_args), "__cinit__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -1031,59 +1146,58 @@ static int __pyx_pf_10playground_11native_code_3_lj_2LJ___cinit__(PyObject *__py
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_eps = values[0];
-    __pyx_v_sigma = values[1];
+    __pyx_v_sigma = values[0];
+    __pyx_v_epsilon = values[1];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__cinit__", 0, 0, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__cinit__", 0, 0, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("playground.native_code._lj.LJ.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("playground.native_code._lj_cython.LJ_cython.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
 
-  /* "playground/native_code/_lj.pyx":11
- * cdef class LJ(_pele.Potential):
- *     def __cinit__(self, eps=1.0, sigma=1.0):
- *         self.thisptr = <_pele.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)             # <<<<<<<<<<<<<<
+  /* "playground/native_code/_lj_cython.pyx":42
+ * 
+ *     def __cinit__(self, sigma=1.0, epsilon=1.0):
+ *         self._data[0] = sigma             # <<<<<<<<<<<<<<
+ *         self._data[1] = epsilon
+ *         # PotentialFunction uses lj_energy and lj_grad as callback
  */
-  __pyx_t_1 = PyFloat_FromDouble(4.); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyNumber_Multiply(__pyx_t_1, __pyx_v_eps); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyNumber_Power(__pyx_v_sigma, __pyx_int_6, Py_None); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyNumber_Multiply(__pyx_t_2, __pyx_t_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_4 = __pyx_PyFloat_AsDouble(__pyx_t_3); if (unlikely((__pyx_t_4 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyFloat_FromDouble(4.); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_1 = PyNumber_Multiply(__pyx_t_3, __pyx_v_eps); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_Power(__pyx_v_sigma, __pyx_int_12, Py_None); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_2 = PyNumber_Multiply(__pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  try {__pyx_t_6 = new pele::LJ(__pyx_t_4, __pyx_t_5);} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 11; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  ((struct __pyx_obj_10playground_11native_code_3_lj_LJ *)__pyx_v_self)->__pyx_base.thisptr = ((pele::Potential *)__pyx_t_6);
+  __pyx_t_1 = __pyx_PyFloat_AsDouble(__pyx_v_sigma); if (unlikely((__pyx_t_1 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  (((struct __pyx_obj_10playground_11native_code_10_lj_cython_LJ_cython *)__pyx_v_self)->_data[0]) = __pyx_t_1;
+
+  /* "playground/native_code/_lj_cython.pyx":43
+ *     def __cinit__(self, sigma=1.0, epsilon=1.0):
+ *         self._data[0] = sigma
+ *         self._data[1] = epsilon             # <<<<<<<<<<<<<<
+ *         # PotentialFunction uses lj_energy and lj_grad as callback
+ *         # and self._data is passed to each function call
+ */
+  __pyx_t_1 = __pyx_PyFloat_AsDouble(__pyx_v_epsilon); if (unlikely((__pyx_t_1 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  (((struct __pyx_obj_10playground_11native_code_10_lj_cython_LJ_cython *)__pyx_v_self)->_data[1]) = __pyx_t_1;
+
+  /* "playground/native_code/_lj_cython.pyx":49
+ *                                            &lj_energy,
+ *                                            &lj_grad,
+ *                                            <void*>self._data)             # <<<<<<<<<<<<<<
+ */
+  try {__pyx_t_2 = new pele::PotentialFunction((&__pyx_f_10playground_11native_code_10_lj_cython_lj_energy), (&__pyx_f_10playground_11native_code_10_lj_cython_lj_grad), ((void *)((struct __pyx_obj_10playground_11native_code_10_lj_cython_LJ_cython *)__pyx_v_self)->_data));} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
+
+  /* "playground/native_code/_lj_cython.pyx":46
+ *         # PotentialFunction uses lj_energy and lj_grad as callback
+ *         # and self._data is passed to each function call
+ *         self.thisptr = <_pele.cPotential*>new _pele.cPotentialFunction(             # <<<<<<<<<<<<<<
+ *                                            &lj_energy,
+ *                                            &lj_grad,
+ */
+  ((struct __pyx_obj_10playground_11native_code_10_lj_cython_LJ_cython *)__pyx_v_self)->__pyx_base.thisptr = ((pele::Potential *)__pyx_t_2);
 
   __pyx_r = 0;
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("playground.native_code._lj.LJ.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("playground.native_code._lj_cython.LJ_cython.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -3026,24 +3140,24 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   return __pyx_r;
 }
 
-static PyObject *__pyx_tp_new_10playground_11native_code_3_lj_LJ(PyTypeObject *t, PyObject *a, PyObject *k) {
+static PyObject *__pyx_tp_new_10playground_11native_code_10_lj_cython_LJ_cython(PyTypeObject *t, PyObject *a, PyObject *k) {
   PyObject *o = __pyx_ptype_10playground_11native_code_5_pele_Potential->tp_new(t, a, k);
   if (!o) return 0;
-  if (__pyx_pf_10playground_11native_code_3_lj_2LJ___cinit__(o, a, k) < 0) {
+  if (__pyx_pf_10playground_11native_code_10_lj_cython_9LJ_cython___cinit__(o, a, k) < 0) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_10playground_11native_code_3_lj_LJ(PyObject *o) {
+static void __pyx_tp_dealloc_10playground_11native_code_10_lj_cython_LJ_cython(PyObject *o) {
   __pyx_ptype_10playground_11native_code_5_pele_Potential->tp_dealloc(o);
 }
 
-static PyMethodDef __pyx_methods_10playground_11native_code_3_lj_LJ[] = {
+static PyMethodDef __pyx_methods_10playground_11native_code_10_lj_cython_LJ_cython[] = {
   {0, 0, 0, 0}
 };
 
-static PyNumberMethods __pyx_tp_as_number_LJ = {
+static PyNumberMethods __pyx_tp_as_number_LJ_cython = {
   0, /*nb_add*/
   0, /*nb_subtract*/
   0, /*nb_multiply*/
@@ -3101,7 +3215,7 @@ static PyNumberMethods __pyx_tp_as_number_LJ = {
   #endif
 };
 
-static PySequenceMethods __pyx_tp_as_sequence_LJ = {
+static PySequenceMethods __pyx_tp_as_sequence_LJ_cython = {
   0, /*sq_length*/
   0, /*sq_concat*/
   0, /*sq_repeat*/
@@ -3114,13 +3228,13 @@ static PySequenceMethods __pyx_tp_as_sequence_LJ = {
   0, /*sq_inplace_repeat*/
 };
 
-static PyMappingMethods __pyx_tp_as_mapping_LJ = {
+static PyMappingMethods __pyx_tp_as_mapping_LJ_cython = {
   0, /*mp_length*/
   0, /*mp_subscript*/
   0, /*mp_ass_subscript*/
 };
 
-static PyBufferProcs __pyx_tp_as_buffer_LJ = {
+static PyBufferProcs __pyx_tp_as_buffer_LJ_cython = {
   #if PY_MAJOR_VERSION < 3
   0, /*bf_getreadbuffer*/
   #endif
@@ -3141,12 +3255,12 @@ static PyBufferProcs __pyx_tp_as_buffer_LJ = {
   #endif
 };
 
-static PyTypeObject __pyx_type_10playground_11native_code_3_lj_LJ = {
+static PyTypeObject __pyx_type_10playground_11native_code_10_lj_cython_LJ_cython = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("playground.native_code._lj.LJ"), /*tp_name*/
-  sizeof(struct __pyx_obj_10playground_11native_code_3_lj_LJ), /*tp_basicsize*/
+  __Pyx_NAMESTR("playground.native_code._lj_cython.LJ_cython"), /*tp_name*/
+  sizeof(struct __pyx_obj_10playground_11native_code_10_lj_cython_LJ_cython), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_10playground_11native_code_3_lj_LJ, /*tp_dealloc*/
+  __pyx_tp_dealloc_10playground_11native_code_10_lj_cython_LJ_cython, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -3156,15 +3270,15 @@ static PyTypeObject __pyx_type_10playground_11native_code_3_lj_LJ = {
   0, /*reserved*/
   #endif
   0, /*tp_repr*/
-  &__pyx_tp_as_number_LJ, /*tp_as_number*/
-  &__pyx_tp_as_sequence_LJ, /*tp_as_sequence*/
-  &__pyx_tp_as_mapping_LJ, /*tp_as_mapping*/
+  &__pyx_tp_as_number_LJ_cython, /*tp_as_number*/
+  &__pyx_tp_as_sequence_LJ_cython, /*tp_as_sequence*/
+  &__pyx_tp_as_mapping_LJ_cython, /*tp_as_mapping*/
   0, /*tp_hash*/
   0, /*tp_call*/
   0, /*tp_str*/
   0, /*tp_getattro*/
   0, /*tp_setattro*/
-  &__pyx_tp_as_buffer_LJ, /*tp_as_buffer*/
+  &__pyx_tp_as_buffer_LJ_cython, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE, /*tp_flags*/
   0, /*tp_doc*/
   0, /*tp_traverse*/
@@ -3173,7 +3287,7 @@ static PyTypeObject __pyx_type_10playground_11native_code_3_lj_LJ = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_10playground_11native_code_3_lj_LJ, /*tp_methods*/
+  __pyx_methods_10playground_11native_code_10_lj_cython_LJ_cython, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -3183,7 +3297,7 @@ static PyTypeObject __pyx_type_10playground_11native_code_3_lj_LJ = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_10playground_11native_code_3_lj_LJ, /*tp_new*/
+  __pyx_tp_new_10playground_11native_code_10_lj_cython_LJ_cython, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -3204,7 +3318,7 @@ static PyMethodDef __pyx_methods[] = {
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef __pyx_moduledef = {
     PyModuleDef_HEAD_INIT,
-    __Pyx_NAMESTR("_lj"),
+    __Pyx_NAMESTR("_lj_cython"),
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -3226,7 +3340,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s__ValueError, __pyx_k__ValueError, sizeof(__pyx_k__ValueError), 0, 0, 1, 1},
   {&__pyx_n_s____main__, __pyx_k____main__, sizeof(__pyx_k____main__), 0, 0, 1, 1},
   {&__pyx_n_s____test__, __pyx_k____test__, sizeof(__pyx_k____test__), 0, 0, 1, 1},
-  {&__pyx_n_s__eps, __pyx_k__eps, sizeof(__pyx_k__eps), 0, 0, 1, 1},
+  {&__pyx_n_s__epsilon, __pyx_k__epsilon, sizeof(__pyx_k__epsilon), 0, 0, 1, 1},
   {&__pyx_n_s__range, __pyx_k__range, sizeof(__pyx_k__range), 0, 0, 1, 1},
   {&__pyx_n_s__sigma, __pyx_k__sigma, sizeof(__pyx_k__sigma), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
@@ -3336,8 +3450,6 @@ static int __Pyx_InitCachedConstants(void) {
 
 static int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
-  __pyx_int_6 = PyInt_FromLong(6); if (unlikely(!__pyx_int_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
-  __pyx_int_12 = PyInt_FromLong(12); if (unlikely(!__pyx_int_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __pyx_int_15 = PyInt_FromLong(15); if (unlikely(!__pyx_int_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   return 0;
   __pyx_L1_error:;
@@ -3345,11 +3457,11 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC init_lj(void); /*proto*/
-PyMODINIT_FUNC init_lj(void)
+PyMODINIT_FUNC init_lj_cython(void); /*proto*/
+PyMODINIT_FUNC init_lj_cython(void)
 #else
-PyMODINIT_FUNC PyInit__lj(void); /*proto*/
-PyMODINIT_FUNC PyInit__lj(void)
+PyMODINIT_FUNC PyInit__lj_cython(void); /*proto*/
+PyMODINIT_FUNC PyInit__lj_cython(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
@@ -3363,7 +3475,7 @@ PyMODINIT_FUNC PyInit__lj(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit__lj(void)");
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit__lj_cython(void)");
   if ( __Pyx_check_binary_version() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -3379,7 +3491,7 @@ PyMODINIT_FUNC PyInit__lj(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4(__Pyx_NAMESTR("_lj"), __pyx_methods, 0, 0, PYTHON_API_VERSION);
+  __pyx_m = Py_InitModule4(__Pyx_NAMESTR("_lj_cython"), __pyx_methods, 0, 0, PYTHON_API_VERSION);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -3392,7 +3504,7 @@ PyMODINIT_FUNC PyInit__lj(void)
   if (__Pyx_SetAttrString(__pyx_m, "__builtins__", __pyx_b) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   /*--- Initialize various global constants etc. ---*/
   if (unlikely(__Pyx_InitGlobals() < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__pyx_module_is_main_playground__native_code___lj) {
+  if (__pyx_module_is_main_playground__native_code___lj_cython) {
     if (__Pyx_SetAttrString(__pyx_m, "__name__", __pyx_n_s____main__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   /*--- Builtin init code ---*/
@@ -3404,10 +3516,10 @@ PyMODINIT_FUNC PyInit__lj(void)
   /*--- Function export code ---*/
   /*--- Type init code ---*/
   __pyx_ptype_10playground_11native_code_5_pele_Potential = __Pyx_ImportType("playground.native_code._pele", "Potential", sizeof(struct __pyx_obj_10playground_11native_code_5_pele_Potential), 1); if (unlikely(!__pyx_ptype_10playground_11native_code_5_pele_Potential)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_type_10playground_11native_code_3_lj_LJ.tp_base = __pyx_ptype_10playground_11native_code_5_pele_Potential;
-  if (PyType_Ready(&__pyx_type_10playground_11native_code_3_lj_LJ) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 9; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__Pyx_SetAttrString(__pyx_m, "LJ", (PyObject *)&__pyx_type_10playground_11native_code_3_lj_LJ) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 9; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_10playground_11native_code_3_lj_LJ = &__pyx_type_10playground_11native_code_3_lj_LJ;
+  __pyx_type_10playground_11native_code_10_lj_cython_LJ_cython.tp_base = __pyx_ptype_10playground_11native_code_5_pele_Potential;
+  if (PyType_Ready(&__pyx_type_10playground_11native_code_10_lj_cython_LJ_cython) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetAttrString(__pyx_m, "LJ_cython", (PyObject *)&__pyx_type_10playground_11native_code_10_lj_cython_LJ_cython) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_10playground_11native_code_10_lj_cython_LJ_cython = &__pyx_type_10playground_11native_code_10_lj_cython_LJ_cython;
   /*--- Type import code ---*/
   __pyx_ptype_5numpy_dtype = __Pyx_ImportType("numpy", "dtype", sizeof(PyArray_Descr), 0); if (unlikely(!__pyx_ptype_5numpy_dtype)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5numpy_flatiter = __Pyx_ImportType("numpy", "flatiter", sizeof(PyArrayIterObject), 0); if (unlikely(!__pyx_ptype_5numpy_flatiter)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -3418,27 +3530,28 @@ PyMODINIT_FUNC PyInit__lj(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "playground/native_code/_lj.pyx":10
- * # we just need to set a different c++ class instance
- * cdef class LJ(_pele.Potential):
- *     def __cinit__(self, eps=1.0, sigma=1.0):             # <<<<<<<<<<<<<<
- *         self.thisptr = <_pele.cPotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
+  /* "playground/native_code/_lj_cython.pyx":41
+ *     cdef double _data[2]
+ * 
+ *     def __cinit__(self, sigma=1.0, epsilon=1.0):             # <<<<<<<<<<<<<<
+ *         self._data[0] = sigma
+ *         self._data[1] = epsilon
  */
-  __pyx_t_1 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_k_1 = __pyx_t_1;
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 10; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_k_2 = __pyx_t_1;
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "playground/native_code/_lj.pyx":1
- * from playground.native_code cimport _pele             # <<<<<<<<<<<<<<
- * 
- * # use external c++ class
+  /* "playground/native_code/_lj_cython.pyx":1
+ * # This file demonstrates a pure cython wrapper for a fortran function             # <<<<<<<<<<<<<<
+ * #
+ * # I didn't figure out yet how to declare inherited c++ classes in python,
  */
   __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(((PyObject *)__pyx_t_1));
@@ -3456,10 +3569,10 @@ PyMODINIT_FUNC PyInit__lj(void)
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
-    __Pyx_AddTraceback("init playground.native_code._lj", __pyx_clineno, __pyx_lineno, __pyx_filename);
+    __Pyx_AddTraceback("init playground.native_code._lj_cython", __pyx_clineno, __pyx_lineno, __pyx_filename);
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init playground.native_code._lj");
+    PyErr_SetString(PyExc_ImportError, "init playground.native_code._lj_cython");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -3487,6 +3600,13 @@ end:
     return (__Pyx_RefNannyAPIStruct *)r;
 }
 #endif /* CYTHON_REFNANNY */
+
+static CYTHON_INLINE long __Pyx_div_long(long a, long b) {
+    long q = a / b;
+    long r = a - q*b;
+    q -= ((r != 0) & ((r ^ b) < 0));
+    return q;
+}
 
 static void __Pyx_RaiseDoubleKeywordsError(
     const char* func_name,
