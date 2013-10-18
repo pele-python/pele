@@ -28,6 +28,7 @@ namespace LBFGS_ns{
                            */
       int maxiter_; /**< The maximum number of iterations */
       int iprint_;
+      int verbosity_;
 
       int iter_number_; /**< The current iteration number */
       int nfev_; /**< The number of function evaluations */
@@ -86,6 +87,7 @@ namespace LBFGS_ns{
       void set_max_f_rise(double max_f_rise) { max_f_rise_ = max_f_rise; }
       void set_max_iter(int max_iter) { maxiter_ = max_iter; }
       void set_iprint(int iprint) { iprint_ = iprint; }
+      void set_verbosity(int verbosity) { verbosity_ = verbosity; }
 
       // functions for accessing the results
       double * get_x() { return x_.data(); }

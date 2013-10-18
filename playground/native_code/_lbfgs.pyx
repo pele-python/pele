@@ -12,6 +12,7 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
         double* get_x()
         double* get_g()
         int get_N()
+        int set_verbosity()
 
 
 # we just need to set a different c++ class instance

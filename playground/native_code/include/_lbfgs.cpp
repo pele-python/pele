@@ -52,6 +52,7 @@ LBFGS::LBFGS(
     max_f_rise_(1e-4),
     maxiter_(1000),
     iprint_(-1),
+    verbosity_(0),
     iter_number_(0),
     nfev_(0),
     H0_(0.1),
@@ -131,8 +132,11 @@ void LBFGS::update_memory(
   double ys = vecdot(y_[klocal], s_[klocal], N_);
   if (ys == 0.) {
     // should print a warning here
-    cout << "warning: resetting YS to 1.\n";
+    if (verbosity_ > 0) {
+      cout << "warning: resetting YS to 1.\n";
+    }
     ys = 1.;
+
   }
 
   rho_[klocal] = 1. / ys;
@@ -140,7 +144,9 @@ void LBFGS::update_memory(
   double yy = vecdot(y_[klocal], y_[klocal], N_);
   if (yy == 0.) {
     // should print a warning here
-    cout << "warning: resetting YY to 1.\n";
+    if (verbosity_ > 0) {
+      cout << "warning: resetting YY to 1.\n";
+    }
     yy = 1.;
   }
   H0_ = ys / yy;
@@ -214,7 +220,9 @@ double LBFGS::backtracking_linesearch()
 
   // if the step is pointing uphill, invert it
   if (vecdot(step_, g_, N_) > 0.){
-    cout << "warning: step direction was uphill.  inverting\n";
+    if (verbosity_ > 1) {
+      cout << "warning: step direction was uphill.  inverting\n";
+    }
     for (int j2 = 0; j2 < N_; ++j2){
       step_[j2] *= -1;
     }
@@ -241,16 +249,20 @@ double LBFGS::backtracking_linesearch()
       break;
     } else {
       factor /= 10.;
-      cout 
-        << "energy increased: " << df 
-        << " reducing step size to " << factor * stepsize 
-        << " H0 " << H0_ << "\n";
+      if (verbosity_ > 2) {
+        cout 
+          << "energy increased: " << df 
+          << " reducing step size to " << factor * stepsize 
+          << " H0 " << H0_ << "\n";
+      }
     }
   }
 
   if (nred >= nred_max){
     // possibly raise an error here
-    cout << "warning: the line search backtracked too many times\n";
+    if (verbosity_ > 0) {
+      cout << "warning: the line search backtracked too many times\n";
+    }
   }
 
   x_ = xnew;

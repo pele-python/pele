@@ -31,7 +31,9 @@ for i in xrange(100):
     ret = mylbfgs(x, pot_old, tol=1e-4)
     # print "PY:", np.linalg.norm(pot_old.getEnergyGradient(ret[0])[1])
 
-print "timing", time.time()-t1, t1-t0, ( time.time()-t1)/(t1-t0)
+print "time for mylbfgs  ", time.time()-t1
+print "time for cpp lbfgs", t1-t0
+print "speedup",  ( time.time()-t1)/(t1-t0)
 
 t0 = time.time()
 for i in xrange(N):
