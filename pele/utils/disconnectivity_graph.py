@@ -166,6 +166,8 @@ class _MakeTree(object):
         self._equal_colors = set()
         self._minimum_to_color = dict()
         self._color_to_minima = dict() 
+        self.minimum_to_leave = dict()
+
     
     def _color_minima_initialize(self, minima):
         """give a color to all the minima"""
@@ -229,7 +231,7 @@ class _MakeTree(object):
             leaf.data["minimum"] = m 
             leaf.data["ilevel"] = 0 
             leaf.data["ethresh"] = ethresh 
-#            self.minimum_to_leave[m] = leaf
+            self.minimum_to_leave[m] = leaf
             trees.append(leaf)
         
         # build the tree up starting at the lowest level
@@ -429,7 +431,6 @@ class DisconnectivityGraph(object):
             self.min0list.append(self.gmin0)
 #            print "min0", self.min0.energy, self.min0._id
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
-        self.minimum_to_leave = dict()
         self.tree_list = [[] for x in range(self.nlevels)]
 
     def _getEnergy(self, node):
@@ -477,6 +478,7 @@ class DisconnectivityGraph(object):
         maketree = _MakeTree(minima, transition_states, energy_levels, 
                              get_energy=self._getEnergy)
         trees = maketree.make_tree()
+        self.minimum_to_leave = maketree.minimum_to_leave
         return trees
         
     ##########################################################
