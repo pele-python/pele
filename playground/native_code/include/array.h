@@ -31,7 +31,7 @@ namespace pele {
 
 		Array(std::vector<double> &x) : _data(x.data()), _size(x.size()), _owner(false) {}
 
-		~Array() { if(_owner) delete[] _data; _data = NULL; _size = 0; }
+		~Array() { if(_owner && _data != NULL) delete[] _data; _data = NULL; _size = 0; }
 
 		/// return pointer to data
 		double *data() { return _data; }

@@ -18,7 +18,6 @@ namespace LBFGS_ns{
        */
       pele::Potential * potential_;
 
-      int N_; /**< The number of elements in the search space */
       int M_; /**< The lenth of the LBFGS memory */
       double tol_; /**< The tolerance for the rms gradient */
       double maxstep_; /**< The maximum step size */
