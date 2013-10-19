@@ -3,6 +3,7 @@ cimport numpy as np
 from playground.native_code import _pele
 cimport _pele
 from pele.optimize import Result
+cimport cython
 
 cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
     cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
@@ -21,7 +22,6 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
         void set_iprint(int)
         void set_verbosity(int)
 
-        double get_f()
         double get_rms()
         double get_H0()
         int get_nfev()
@@ -61,19 +61,30 @@ cdef class LBFGS(object):
 #            raise RuntimeError("lbfgs failed with error code %d:"%self.thisptr.error_code(), self.thisptr.error_string())    
         return self.get_result()
 
+    @cython.boundscheck(False)
     def get_result(self):
         """return a results object"""
         res = Result()
         
         cdef _pele.Array xi = self.thisptr.get_x()
-        cdef double *data = xi.data()
+        cdef _pele.Array gi = self.thisptr.get_g()
+        cdef double *xdata = xi.data()
+        cdef double *gdata = gi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] x = np.zeros(xi.size())
+        cdef np.ndarray[double, ndim=1, mode="c"] g = np.zeros(xi.size())
+        cdef size_t i
         for i in xrange(xi.size()):
-            x[i] = data[i]
-        
-        e, g = self.pot.get_energy_gradient(x)
+            x[i] = xdata[i]
+            g[i] = gdata[i]
 
-        res.energy = e
+        #jake> it's anoying having to copy the data manually like this.
+        # We can possibly use np.frombuffer(), thought I haven't gotten it to work.
+        # We can also maybe use the c function PyArray_SimpleNewFromData.
+        # In the meantime the loop won't be too slow if we use cython properly to speed it up.
+        #cdef np.ndarray[double, ndim=1, mode="c"] g2
+        #g2 = np.frombuffer(xi.data(), dtype=np.float64, count=xi.size())
+        
+        res.energy = self.thisptr.get_f()
         res.coords = x
         res.grad = g
         

@@ -7,5 +7,5 @@ cython --cplus _lj.pyx
 echo "Compiling _lj_cython.pyx"
 cython --cplus _lj_cython.pyx 
 echo "Compiling _lbfgs.pyx"
-cython --cplus _lbfgs.pyx 
+cython --cplus -a _lbfgs.pyx 
 
