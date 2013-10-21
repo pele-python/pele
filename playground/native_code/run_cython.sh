@@ -8,4 +8,6 @@ echo "Compiling _lj_cython.pyx"
 cython --cplus _lj_cython.pyx 
 echo "Compiling _lbfgs.pyx"
 cython --cplus -a _lbfgs.pyx 
+echo "Compiling _pythonpotential.pyx"
+cython --cplus -a _pythonpotential.pyx 
 

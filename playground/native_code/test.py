@@ -44,6 +44,10 @@ print "time for cpp lbfgs", t1-t0
 print "speedup",  ( time.time()-t1)/(t1-t0)
 print "time for cpp lbfgs with fortran lj", t3-t2
 
+import _pythonpotential
+clbfgs = _lbfgs.LBFGS_CPP(_pythonpotential.PythonPotential(), x, tol=1e-4)
+ret = clbfgs.run()
+
 t0 = time.time()
 for i in xrange(N):
     e, g = pot_old.getEnergyGradient(x)

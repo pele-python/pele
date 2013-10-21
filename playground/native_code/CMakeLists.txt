@@ -32,3 +32,6 @@ set_target_properties(_lj_cython PROPERTIES PREFIX "")
 
 add_library(_lbfgs SHARED _lbfgs.cpp  include/_lbfgs.cpp ${PYTHON_LIBS})
 set_target_properties(_lbfgs PROPERTIES PREFIX "")
+
+add_library(_pythonpotential SHARED _pythonpotential.cpp  ${PYTHON_LIBS})
+set_target_properties(_pythonpotential PROPERTIES PREFIX "")
