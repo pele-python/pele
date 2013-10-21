@@ -32,6 +32,10 @@ cxx_modules = [
                       include_dirs=[numpy_include, "include/"],
                       extra_compile_args=extra_compile_args,
                       ),
+            Extension("_pythonpotential", ["_pythonpotential.cpp"] + include_sources,
+                      include_dirs=[numpy_include, "include/"],
+                      extra_compile_args=extra_compile_args,
+                      ),
 
                ]
 
