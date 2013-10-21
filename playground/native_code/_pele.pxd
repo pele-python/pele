@@ -23,7 +23,8 @@ cdef extern from "potential.h" namespace "pele":
         	double (*energy)(double *x, int n, void *userdata),
             double (*energy_gradient)(double *x, double *grad, int n, void *userdata),
             void *userdata) except +
-            
+
+	#this should be removed            
     cdef void _call_pot "call_pot" (cPotential *pot, Array &x, Array &grad, int n)
     
 cdef class Potential:

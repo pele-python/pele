@@ -19,6 +19,9 @@ class TestLBFGS_CPP(unittest.TestCase):
         self.assertLess(np.max(np.abs(g - ret.grad)), 1e-6)
         rms = np.linalg.norm(g) / np.sqrt(g.size)
         self.assertAlmostEqual(rms, ret.rms, 1e-6)
+        
+        self.assertGreater(ret.nfev, 0)
+        self.assertGreater(ret.nsteps, 0)
 
 if __name__ == "__main__":
     unittest.main()

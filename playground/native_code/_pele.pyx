@@ -9,7 +9,9 @@ import numpy as np
 cimport numpy as np
 
 # This is the base class for all potentials
-cdef class Potential:
+cdef class Potential(object):
+    """this class defines the python interface for c++ potentials 
+    """
     def __cinit__(self):
         # store an instance to the current c++ class, will be used in every call
         self.thisptr = <cPotential*>new cPotential()
