@@ -18,7 +18,6 @@ namespace LBFGS_ns{
        */
       pele::Potential * potential_;
 
-      int N_; /**< The number of elements in the search space */
       int M_; /**< The lenth of the LBFGS memory */
       double tol_; /**< The tolerance for the rms gradient */
       double maxstep_; /**< The maximum step size */
@@ -55,14 +54,10 @@ namespace LBFGS_ns{
        */
       LBFGS(
           pele::Potential * potential,
-          pele::Array & x0, 
-          int M);
-          //double tol,
-          //double maxstep,
-          //double max_f_rise,
-          //double H0,
-          //int maxiter
-          //);
+          const pele::Array & x0,
+          double tol=1e-4,
+          int M=4
+          );
 
       /**
        * Destructor
@@ -90,14 +85,14 @@ namespace LBFGS_ns{
       void set_verbosity(int verbosity) { verbosity_ = verbosity; }
 
       // functions for accessing the results
-      double * get_x() { return x_.data(); }
-      double * get_g() { return g_.data(); }
-      int get_N() { return N_; }
+      pele::Array get_x() { return x_; }
+      pele::Array get_g() { return g_; }
       double get_f() { return f_; }
       double get_rms() { return rms_; }
+      double get_H0() { return H0_; }
       int get_nfev() { return nfev_; }
       int get_niter() { return iter_number_; }
-      int success() { return stop_criterion_satisfied(); }
+      bool success() { return stop_criterion_satisfied(); }
 
     private :
 
@@ -127,7 +122,7 @@ namespace LBFGS_ns{
       /**
        * Return true if the termination condition is satisfied, false otherwise
        */
-      int stop_criterion_satisfied();
+      bool stop_criterion_satisfied();
 
       /**
        * Compute the energy and gradient of the objective function
