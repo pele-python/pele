@@ -18,6 +18,7 @@ import threading as th
 import time
 from PyQt4 import QtCore,QtGui
 import numpy as np
+from pele.utils.events import Signal
 
 class _BHProcess(mp.Process):
     """do basinhopping in a different process
@@ -25,11 +26,12 @@ class _BHProcess(mp.Process):
     this class actually does the basinhopping run and the minima it finds to 
     it's parent through a communication pipe
     """
-    def __init__(self, system, comm):
+    def __init__(self, system, comm, nsteps=None):
         mp.Process.__init__(self)
         #QtCore.QThread.__init__(self)
         self.comm = comm
         self.system = system
+        self.nsteps = nsteps
     
     def run(self):
         seed = int(time.time())#*100.)
@@ -39,15 +41,17 @@ class _BHProcess(mp.Process):
         db = self.system.create_database()
         db.on_minimum_added.connect(self.insert)
         opt = self.system.get_basinhopping(database=db, outstream=None)
-        try:
-            nsteps = self.system.params.gui.basinhopping_nsteps
-        except AttributeError or KeyError:
-            nsteps = 100
+        if self.nsteps is None:
+            try:
+                self.nsteps = self.system.params.gui.basinhopping_nsteps
+            except AttributeError or KeyError:
+                self.nsteps = 100
+        
 
         
         #while(True):
         #print 'bhrunner.py: number of BH steps set to 1'
-        for i in xrange(nsteps):
+        for i in xrange(self.nsteps):
             opt.run(1)
             if self._should_die():
                 return
@@ -85,14 +89,19 @@ class BHRunner(QtCore.QObject):
     This class spawns the basinhopping job in a separate process and receives
     the minima found through a pipe
     """
-    def __init__(self, system, database):
+    def __init__(self, system, database, nsteps=None, on_finish=None):
         QtCore.QObject.__init__(self)
         self.system = system
         self.database = database
         self.daemon = True
+        self.nsteps = nsteps
         
         #child_conn = self
         self.bhprocess = None
+        
+        self.on_finish = Signal()
+        if on_finish is not None:
+            self.on_finish.connect(on_finish)
 #        self.lock = th.Lock()
         
 #    def send(self, minimum):
@@ -108,10 +117,11 @@ class BHRunner(QtCore.QObject):
         return self.bhprocess.is_alive()
     
     def poll(self):
-        if not self.bhprocess.is_alive():
-            self.refresh_timer.stop()
-            return
         if not self.parent_conn.poll():
+            if not self.bhprocess.is_alive():
+                self.refresh_timer.stop()
+                self.on_finish
+                return
             return
         
         minimum = self.parent_conn.recv()
@@ -123,7 +133,7 @@ class BHRunner(QtCore.QObject):
                 return
         parent_conn, child_conn = mp.Pipe()
         
-        self.bhprocess = _BHProcess(self.system, child_conn)
+        self.bhprocess = _BHProcess(self.system, child_conn, nsteps=self.nsteps)
         self.bhprocess.daemon = self.daemon
         self.bhprocess.start()
 #        self.poll_thread = PollThread(self, parent_conn)
@@ -141,19 +151,41 @@ class BHRunner(QtCore.QObject):
             self.bhprocess.join()
 
 class BHManager(object):
-    def __init__(self, system, database):
+    def __init__(self, system, database, on_number_alive_changed=None):
         self.system = system
         self.database = database
         self.workers = []
-    
+        self._old_nalive = -1
+        
+        self.on_number_alive_changed = Signal()
+        if on_number_alive_changed is not None:
+            self.on_number_alive_changed.connect(on_number_alive_changed)
+
+        self.refresh_timer = QtCore.QTimer()
+        self.refresh_timer.timeout.connect(self._check_number)
+
+        
     def _remove_dead(self):
         self.workers = [w for w in self.workers if w.is_alive()]
+        if self._old_nalive != len(self.workers):
+            self._old_nalive = len(self.workers)
+            self.on_number_alive_changed(len(self.workers))
     
-    def start_worker(self):
+    def _check_number(self):
         self._remove_dead()
-        worker = BHRunner(self.system, self.database)
+        if len(self.workers) == 0:
+            self.refresh_timer.stop()
+    
+    def start_worker(self, nsteps=None):
+        self._remove_dead()
+        worker = BHRunner(self.system, self.database, nsteps=nsteps)
+        worker.on_finish.connect(self._remove_dead)
         worker.start()
         self.workers.append(worker)
+    
+        if not self.refresh_timer.isActive():
+            self.refresh_timer.start(1000.) # time in msec
+
     
     def kill_all_workers(self):
         for worker in self.workers:

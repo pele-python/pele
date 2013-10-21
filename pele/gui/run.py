@@ -346,13 +346,22 @@ class MainGUI(QtGui.QMainWindow):
             if i.tsid == tsid:
                 obj.takeItem(obj.row(i))
 
+    def set_basinhopping_number_alive(self, nalive):
+        self.ui.label_bh_nproc.setText("%d B.H. processes" % nalive)
   
-                     
     def on_btn_start_basinhopping_clicked(self, clicked=None):
         if clicked is None: return
         if self.bhmanager is None:
-            self.bhmanager = BHManager(self.system, self.system.database)
-        self.bhmanager.start_worker()
+            self.bhmanager = BHManager(self.system, self.system.database,
+                                       on_number_alive_changed=self.set_basinhopping_number_alive)
+        nstepsstr = self.ui.lineEdit_bh_nsteps.text()
+        nsteps = None
+        try:
+            nsteps = int(nstepsstr)
+        except ValueError:
+            if "steps" not in nstepsstr:
+                sys.stderr.write("can't convert %s to integer\n" % nstepsstr)
+        self.bhmanager.start_worker(nsteps=nsteps)
         print self.bhmanager.number_of_workers(), "basinhopping processes running"
 #        db = self.system.database
 #        self.system.database = None
