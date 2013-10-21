@@ -13,12 +13,12 @@ namespace pele
 		SimplePairwisePotential(pairwise_interaction *interaction) : _interaction(interaction) {}
 
 	public:
-		virtual double get_energy(const Array &x);
-		virtual double get_energy_gradient(const Array &x, Array grad);
+		virtual double get_energy(Array x);
+		virtual double get_energy_gradient(Array x, Array grad);
 	};
 
 	template<typename pairwise_interaction>
-	inline double SimplePairwisePotential<pairwise_interaction>::get_energy_gradient(const Array &x, Array grad)
+	inline double SimplePairwisePotential<pairwise_interaction>::get_energy_gradient(Array x, Array grad)
 	{
 		double e=0.;
 		double gij, dr[3];
@@ -27,7 +27,7 @@ namespace pele
 		for(int i=0; i<x.size(); ++i)
 			grad[i] = 0.;
 
-		for(int i=1; i<natoms; ++i) {
+		for(int i=0; i<natoms; ++i) {
 			int i1 = 3*i;
 			for(int j=i+1; j<natoms; ++j) {
 				int i2 = 3*j;
@@ -48,12 +48,12 @@ namespace pele
 	}
 
 	template<typename pairwise_interaction>
-	inline double SimplePairwisePotential<pairwise_interaction>::get_energy(const Array &x)
+	inline double SimplePairwisePotential<pairwise_interaction>::get_energy(Array x)
 	{
 		double e=0.;
 		int natoms = x.size()/3;
 
-		for(int i=1; i<natoms; ++i) {
+		for(int i=0; i<natoms; ++i) {
 			int i1 = 3*i;
 			for(int j=i+1; natoms; ++j) {
 				int i2 = 3*j;

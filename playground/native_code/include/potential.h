@@ -14,8 +14,8 @@ namespace pele {
 	public:
 		virtual ~Potential() {}
 
-		virtual double get_energy(const Array &x) {} ;
-		virtual double get_energy_gradient(const Array &x, Array grad) {} ;
+		virtual double get_energy(Array x) {} ;
+		virtual double get_energy_gradient(Array x, Array grad) {} ;
 	};
 }
 

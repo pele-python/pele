@@ -19,21 +19,30 @@ pot = _lj.LJ()
 t0 = time.time()
 for i in xrange(100):
     x = 1.*(np.random.random(3*natoms) - 0.5)
-    clbfgs = _lbfgs.LBFGS(pot, x, tol=1e-4)
+    clbfgs = _lbfgs.LBFGS(pot, x, tol=1e-6)
     ret = clbfgs.run()
-#e, g = pot.get_energy_gradient(ret[0])
-    # print "C", np.linalg.norm(g)
+    print ret.energy
 
 t1 = time.time()
-#x = 1.*(np.random.random(3*natoms)-0.5)
 for i in xrange(100):
     x = 1.*(np.random.random(3*natoms) - 0.5)
-    ret = mylbfgs(x, pot_old, tol=1e-4)
+    ret = mylbfgs(x, pot_old, tol=1e-6)
     # print "PY:", np.linalg.norm(pot_old.getEnergyGradient(ret[0])[1])
 
-print "time for mylbfgs  ", time.time()-t1
+t2 = time.time()
+import _lj_cython
+for i in xrange(100):
+    x = 1.*(np.random.random(3*natoms) - 0.5)
+    clbfgs = _lbfgs.LBFGS(_lj_cython.LJ_cython(), x, tol=1e-6)
+    ret = clbfgs.run()
+    print ret.energy
+
+t3 = time.time()
+
+print "time for mylbfgs  ", t2-t1
 print "time for cpp lbfgs", t1-t0
 print "speedup",  ( time.time()-t1)/(t1-t0)
+print "time for cpp lbfgs with fortran lj", t3-t2
 
 t0 = time.time()
 for i in xrange(N):

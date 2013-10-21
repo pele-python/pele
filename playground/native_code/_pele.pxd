@@ -17,14 +17,13 @@ cdef extern from "potential.h" namespace "pele":
         cPotential() except +
         double get_energy(Array &x)
         double get_energy_gradient(Array &x, Array &grad)
-
+            
+cdef extern from "potentialfunction.h" namespace "pele":
     cdef cppclass  cPotentialFunction "pele::PotentialFunction":
         cPotentialFunction(
-        	double (*energy)(double *x, int n, void *userdata),
-            double (*energy_gradient)(double *x, double *grad, int n, void *userdata),
+        	double (*energy)(Array x, void *userdata),
+            double (*energy_gradient)(Array x, Array grad, void *userdata),
             void *userdata) except +
-            
-    cdef void _call_pot "call_pot" (cPotential *pot, Array &x, Array &grad, int n)
     
 cdef class Potential:
     cdef cPotential *thisptr      # hold a C++ instance which we're wrapping

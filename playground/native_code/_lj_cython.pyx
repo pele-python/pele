@@ -18,20 +18,20 @@ cdef extern:
 # we need to do some wrapping or arguments
 # the wrapping can be simplified a lot with little modification to 
 # fortran code (change to c type declaration)
-cdef double lj_grad(double *x, double *grad, int n, void *userdata):
+cdef double lj_grad(_pele.Array x, _pele.Array grad, void *userdata):
     cdef double *data = <double*>userdata
     cdef double sigma=data[0]
     cdef double eps=data[1]
     cdef double boxl=-1.0
-    cdef int natoms = n / 3
+    cdef int natoms = x.size() / 3
     cdef double e
     cdef int periodic = 0
-    ljenergy_gradient_(x, &natoms, &e, grad,
+    ljenergy_gradient_(x.data(), &natoms, &e, grad.data(),
                        &eps, &sigma, &periodic, &boxl)
     return e
 
 # energy callback not yet implemented
-cdef double lj_energy(double *x, int n, void *userdata):
+cdef double lj_energy(_pele.Array x, void *userdata):
     pass
 
 # define the potential class
