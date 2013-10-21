@@ -19,7 +19,7 @@ pot = _lj.LJ()
 t0 = time.time()
 for i in xrange(100):
     x = 1.*(np.random.random(3*natoms) - 0.5)
-    clbfgs = _lbfgs.LBFGS(pot, x, tol=1e-4)
+    clbfgs = _lbfgs.LBFGS_CPP(pot, x, tol=1e-4)
     ret = clbfgs.run()
 #e, g = pot.get_energy_gradient(ret[0])
     # print "C", np.linalg.norm(g)
@@ -43,7 +43,7 @@ print "f2py potential",e,"time",time.time() - t0
 
 t0 = time.time()
 for i in xrange(N):
-    e, g = pot.get_energy_gradient(x)
+    e, g = pot.getEnergyGradient(x)
 time_cython = time.time() - t0
 print "cython potential",e,"time",time.time() - t0
 

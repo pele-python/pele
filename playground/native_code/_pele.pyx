@@ -17,7 +17,7 @@ cdef class Potential:
     def __dealloc__(self):
         del self.thisptr
     
-    def get_energy_gradient_inplace(self,
+    def getEnergyGradientInplace(self,
                         np.ndarray[double, ndim=1] x not None,
                         np.ndarray[double, ndim=1] grad not None):
         # redirect the call to the c++ class
@@ -25,14 +25,14 @@ cdef class Potential:
                                              Array(<double*> grad.data, grad.size))
         return e
         
-    def get_energy_gradient(self, np.ndarray[double, ndim=1] x not None):
+    def getEnergyGradient(self, np.ndarray[double, ndim=1] x not None):
         # redirect the call to the c++ class
         cdef np.ndarray[double, ndim=1] grad = x.copy()
         e = self.thisptr.get_energy_gradient(Array(<double*> x.data, x.size),
                                              Array(<double*> grad.data, grad.size))
         return e, grad
     
-    def get_energy(self, np.ndarray[double, ndim=1] x not None):
+    def getEnergy(self, np.ndarray[double, ndim=1] x not None):
         # redirect the call to the c++ class
         return self.thisptr.get_energy(Array(<double*> x.data, x.size))
                 

@@ -30,17 +30,17 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
 
 
 # we just need to set a different c++ class instance
-cdef class LBFGS(object):
+cdef class LBFGS_CPP(object):
     cdef cppLBFGS *thisptr
     cdef _pele.Potential pot
     
-    def __cinit__(self, _pele.Potential pot, np.ndarray[double, ndim=1, mode="c"] x0, tol=1e-4, int M=4,
-                   double maxstep=0.1, double maxErise=1e-4, 
-                   double H0=0.1, int iprint=-1, int nsteps=10000, int verbosity=0):
+    def __cinit__(self, _pele.Potential pot, np.ndarray[double, ndim=1,
+                  mode="c"] x0, tol=1e-4, int M=4, double maxstep=0.1, 
+                  double maxErise=1e-4, double H0=0.1, int iprint=-1, 
+                  int nsteps=10000, int verbosity=0):
         self.thisptr = <cppLBFGS*>new cppLBFGS(pot.thisptr, 
                                                _pele.Array(<double*> x0.data, x0.size),
-                                               tol,
-                                               M)
+                                               tol, M)
         opt = self.thisptr
         opt.set_H0(H0)
         opt.set_maxstep(maxstep)
