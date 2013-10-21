@@ -1,7 +1,9 @@
 cimport _pele
 import numpy as np
 cimport numpy as np
+cimport cython
 
+@cython.boundscheck(False)
 cdef double _python_grad(_pele.Array x, _pele.Array grad, void *userdata) except *:
     cdef double *xdata = x.data()
     cdef double *gdata = grad.data()
@@ -20,6 +22,7 @@ cdef double _python_grad(_pele.Array x, _pele.Array grad, void *userdata) except
     return e
 
 # energy callback not yet implemented
+@cython.boundscheck(False)
 cdef double _python_energy(_pele.Array x, void *userdata) except *:
     cdef double *xdata = x.data()
     cdef np.ndarray[double, ndim=1, mode="c"] px = np.zeros(x.size())
