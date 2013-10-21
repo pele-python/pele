@@ -19,7 +19,12 @@ import time
 from PyQt4 import QtCore,QtGui
 import numpy as np
 
-class BHProcess(mp.Process):
+class _BHProcess(mp.Process):
+    """do basinhopping in a different process
+    
+    this class actually does the basinhopping run and the minima it finds to 
+    it's parent through a communication pipe
+    """
     def __init__(self, system, comm):
         mp.Process.__init__(self)
         #QtCore.QThread.__init__(self)
@@ -42,10 +47,24 @@ class BHProcess(mp.Process):
         
         #while(True):
         #print 'bhrunner.py: number of BH steps set to 1'
-        opt.run(nsteps)
-        
+        for i in xrange(nsteps):
+            opt.run(1)
+            if self._should_die():
+                return
+    
+    def _should_die(self):
+        """check if we have received a message telling us to die"""
+        if self.comm.poll():
+            message = self.comm.recv()
+            if message == "kill":
+                return True
+            else:
+#                print self.__classname__, ": don't understand message", message, "ignoring"
+                print "don't understand message", message, "ignoring"
+        return False
+       
     def insert(self, m):
-            self.comm.send([m.energy,m.coords])
+        self.comm.send([m.energy,m.coords])
         
 class PollThread(QtCore.QThread):
     def __init__(self, bhrunner, conn):
@@ -61,9 +80,15 @@ class PollThread(QtCore.QThread):
 
 
 class BHRunner(QtCore.QObject):
-    def __init__(self, system, onMinimumAdded=None, onMinimumRemoved=None, daemon=True):
+    """manage a single basinhopping run in a separate process
+    
+    This class spawns the basinhopping job in a separate process and receives
+    the minima found through a pipe
+    """
+    def __init__(self, system, database):
         QtCore.QObject.__init__(self)
         self.system = system
+        self.database = database
         self.daemon = True
         
         #child_conn = self
@@ -79,6 +104,9 @@ class BHRunner(QtCore.QObject):
 #    def contiue(self):
 #        pass
     
+    def is_alive(self):
+        return self.bhprocess.is_alive()
+    
     def poll(self):
         if not self.bhprocess.is_alive():
             self.refresh_timer.stop()
@@ -87,15 +115,15 @@ class BHRunner(QtCore.QObject):
             return
         
         minimum = self.parent_conn.recv()
-        self.system.database.addMinimum(minimum[0],minimum[1])        
-    
+        self.database.addMinimum(minimum[0],minimum[1])        
+
     def start(self):
         if(self.bhprocess):
             if(self.bhprocess.is_alive()):
                 return
         parent_conn, child_conn = mp.Pipe()
         
-        self.bhprocess = BHProcess(self.system, child_conn)
+        self.bhprocess = _BHProcess(self.system, child_conn)
         self.bhprocess.daemon = self.daemon
         self.bhprocess.start()
 #        self.poll_thread = PollThread(self, parent_conn)
@@ -105,6 +133,35 @@ class BHRunner(QtCore.QObject):
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
         self.refresh_timer.start(50.) # time in msec
+    
+    def kill(self):
+        """kill the job that is running"""
+        if self.is_alive():
+            self.parent_conn.send("kill")
+            self.bhprocess.join()
+
+class BHManager(object):
+    def __init__(self, system, database):
+        self.system = system
+        self.database = database
+        self.workers = []
+    
+    def _remove_dead(self):
+        self.workers = [w for w in self.workers if w.is_alive()]
+    
+    def start_worker(self):
+        self._remove_dead()
+        worker = BHRunner(self.system, self.database)
+        worker.start()
+        self.workers.append(worker)
+    
+    def kill_all_workers(self):
+        for worker in self.workers:
+            worker.kill()
+    
+    def number_of_workers(self):
+        self._remove_dead()
+        return len(self.workers)
         
         
 #    def minimum_found(self,minimum):

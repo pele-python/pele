@@ -8,7 +8,7 @@ import numpy as np
 from PyQt4 import QtCore, QtGui, Qt
 
 from pele.gui.MainWindow import Ui_MainWindow 
-from pele.gui.bhrunner import BHRunner
+from pele.gui.bhrunner import BHManager
 from pele.landscape import TSGraph
 from pele.gui.dlg_params import DlgParams
 from pele.config import config
@@ -97,6 +97,8 @@ class MainGUI(QtGui.QMainWindow):
             #must call it.
             from OpenGL.GLUT import glutInit
             glutInit()
+        
+        self.bhmanager = None
         
     def NewSystem(self):
         """
@@ -348,11 +350,15 @@ class MainGUI(QtGui.QMainWindow):
                      
     def on_btn_start_basinhopping_clicked(self, clicked=None):
         if clicked is None: return
-        db = self.system.database
-        self.system.database = None
-        self.bhrunner = BHRunner(self.system)
-        self.bhrunner.start()
-        self.system.database = db
+        if self.bhmanager is None:
+            self.bhmanager = BHManager(self.system, self.system.database)
+        self.bhmanager.start_worker()
+        print self.bhmanager.number_of_workers(), "basinhopping processes running"
+#        db = self.system.database
+#        self.system.database = None
+#        self.bhrunner = BHRunner(self.system, self.system.database)
+#        self.bhrunner.start()
+#        self.system.database = db
         
 #    def tsSearch(self):
 #        ts = self.system.findTS(self.ui.oglTS.coords[1])
@@ -361,6 +367,10 @@ class MainGUI(QtGui.QMainWindow):
 #    def showFrameTS(self, i):
 #        if self.transition:
 #            self.ui.oglTS.setCoords(self.transition[i])
+
+    def on_btn_stop_basinhopping_clicked(self, clicked=None):
+        if clicked is None: return
+        self.bhmanager.kill_all_workers()
 
     def on_action_delete_minimum_triggered(self, checked=None):
         if checked is None: return

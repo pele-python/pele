@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Mon Jun 10 12:06:08 2013
+# Created: Mon Oct 21 17:01:08 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -76,6 +76,9 @@ class Ui_MainWindow(object):
         self.btn_start_basinhopping = QtGui.QPushButton(self.BHTab)
         self.btn_start_basinhopping.setObjectName(_fromUtf8("btn_start_basinhopping"))
         self.verticalLayout_3.addWidget(self.btn_start_basinhopping)
+        self.btn_stop_basinhopping = QtGui.QPushButton(self.BHTab)
+        self.btn_stop_basinhopping.setObjectName(_fromUtf8("btn_stop_basinhopping"))
+        self.verticalLayout_3.addWidget(self.btn_stop_basinhopping)
         self.horizontalLayout_3.addLayout(self.verticalLayout_3)
         self.verticalLayout_4.addLayout(self.horizontalLayout_3)
         self.tabWidget.addTab(self.BHTab, _fromUtf8(""))
@@ -261,6 +264,7 @@ class Ui_MainWindow(object):
         self.pushNormalmodesMin.setText(QtGui.QApplication.translate("MainWindow", "Normalmodes", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_start_basinhopping.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Start a short basinhopping run</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_start_basinhopping.setText(QtGui.QApplication.translate("MainWindow", "Run Basinhopping", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_stop_basinhopping.setText(QtGui.QApplication.translate("MainWindow", "Stop Basinhopping", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.BHTab), QtGui.QApplication.translate("MainWindow", "Basin Hopping", None, QtGui.QApplication.UnicodeUTF8))
         self.btnAlign.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Find best alignment between two structures</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnAlign.setText(QtGui.QApplication.translate("MainWindow", "Align", None, QtGui.QApplication.UnicodeUTF8))

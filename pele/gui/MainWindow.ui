@@ -122,6 +122,13 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QPushButton" name="btn_stop_basinhopping">
+              <property name="text">
+               <string>Stop Basinhopping</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
