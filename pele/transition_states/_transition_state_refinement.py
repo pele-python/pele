@@ -485,7 +485,13 @@ class FindTransitionState(object):
 
 
     def _stepUphill(self, coords):
-        """step uphill in the direction of self.eigenvec.  
+        """step uphill in the direction of self.eigenvec.
+        
+        this is an eigenvector following step uphill.  The equation for the step size
+        is described in 
+        
+        DJ Wales, J chem phys, 1994, 101, 3750--3762
+        Rearrangements of 55-atom lennard-jones and (c-60)(55) clusters
         
         self.eigenval is used to determine the best stepsize
         """
