@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 echo "Compiling _pele.pyx"
 cython --cplus _pele.pyx 

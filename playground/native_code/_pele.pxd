@@ -15,8 +15,8 @@ cdef extern from "array.h" namespace "pele":
 cdef extern from "potential.h" namespace "pele":
     cdef cppclass  cPotential "pele::Potential":
         cPotential() except +
-        double get_energy(Array &x)
-        double get_energy_gradient(Array &x, Array &grad)
+        double get_energy(Array &x) except +
+        double get_energy_gradient(Array &x, Array &grad) except +
             
 cdef extern from "potentialfunction.h" namespace "pele":
     cdef cppclass  cPotentialFunction "pele::PotentialFunction":
