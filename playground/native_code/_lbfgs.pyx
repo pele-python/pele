@@ -10,7 +10,7 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
     cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
         cppLBFGS(_pele.cPotential *, _pele.Array &, double, int) except +
 
-        void run() except +
+        void run() except *
         double get_f()
         _pele.Array get_x()
         _pele.Array get_g()
