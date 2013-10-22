@@ -1,17 +1,16 @@
 import sys
 import time
 import numpy as np
-import sqlalchemy
 
 from PyQt4 import QtGui, QtCore, Qt
 
 from pele.gui.double_ended_connect_runner import DECRunner
-from pele.landscape import TSGraph
+from pele.landscape import ConnectManager
 from pele.gui.connect_run_dlg import ConnectViewer
 from pele.gui.ui.dgraph_dlg import DGraphWidget
-from pele.storage import Minimum
 
-class ConnectAttempt(object):
+class _ConnectAttempt(object):
+    """store the results of a single connect attempt"""
     def __init__(self, min1, min2, success, minima, transition_states, elapsed_time=None):
         self.min1 = min1
         self.min2 = min2
@@ -21,12 +20,13 @@ class ConnectAttempt(object):
         self.time = elapsed_time
  
 
-class ConnectAllSummary(object):
+class _ConnectAllSummary(object):
+    """gather data about the connect jobs and write summaries"""
     def __init__(self):
         self.attempts = []
     
     def add(self, min1, min2, success, minima, transition_states, **kwargs):
-        attempt = ConnectAttempt(min1, min2, success, minima, transition_states, **kwargs)
+        attempt = _ConnectAttempt(min1, min2, success, minima, transition_states, **kwargs)
         self.attempts.append(attempt)
     
     def get_summary(self):
@@ -51,10 +51,18 @@ class ConnectAllSummary(object):
         
 
 class ConnectAllDialog(ConnectViewer):
+    """define the Connect All dialog
+    
+    This class manages connecting minima in the database.  It selects which
+    minima to connect and submits the job in a separate process.  It deals with
+    any messages (such as new minima and transition states) sent from that process.
+    When the process ends it starts a new one.
+    """
     def __init__(self, system, database, parent=None, app=None):
         super(ConnectAllDialog, self).__init__(system, database, app=app, parent=parent)
 
         self.wgt_dgraph = DGraphWidget(database=self.database, parent=self)
+        self.connect_manager = ConnectManager(database)
         self.view_dgraph = self.new_view("Disconnectivity Graph", self.wgt_dgraph, QtCore.Qt.TopDockWidgetArea)
         self.view_dgraph.hide()
         self.ui.actionD_Graph.setVisible(True)
@@ -63,13 +71,10 @@ class ConnectAllDialog(ConnectViewer):
         self.textEdit_summary = QtGui.QTextEdit(parent=self)
         self.textEdit_summary.setReadOnly(True)
         self.view_summary = self.new_view("Summary", self.textEdit_summary, pos=QtCore.Qt.TopDockWidgetArea)
-        self.connect_summary = ConnectAllSummary()
+        self.connect_summary = _ConnectAllSummary()
         self.ui.actionSummary.setVisible(True)
         self.view_summary.hide()
         self.ui.actionSummary.setChecked(False)
-        self.ui.actionRandom_connect.setVisible(True)
-        self.ui.actionRandom_connect.setChecked(False)
-
         
 
         self.ui.action3D.setChecked(False)
@@ -83,10 +88,19 @@ class ConnectAllDialog(ConnectViewer):
         self.is_running = False
         
         self.failed_pairs = set()
-    
-
+        
+        # add combo box to toolbar
+        self.combobox = Qt.QComboBox()
+        self.ui.toolBar.addWidget(self.combobox)
+        self.combobox.addItems(["connect strategy:",
+                                "random",
+                                "global min",
+                                "untrap",
+                                "combine"])
+        self.combobox.setToolTip("the strategy used to select which minima to connect")
 
     def do_one_connection(self, min1, min2):
+        """start one connect job with the given minima"""
         self.textEdit.insertPlainText("\n\n")
         self.textEdit_summary.insertPlainText("\nNow connecting minima %d %d\n" % (self.min1._id, self.min2._id))
         self.decrunner = DECRunner(self.system, self.database, min1, min2, outstream=self.textEdit_writer,
@@ -95,44 +109,29 @@ class ConnectAllDialog(ConnectViewer):
         self.tstart = time.clock()
         self.decrunner.start()
 
-    def get_next_pair_gmin(self):
-        minima = self.database.minima()
-        min1 = minima[0]
-        graph = TSGraph(self.database)
-        all_connected = True
-        for m2 in minima[1:]:
-            if not graph.areConnected(min1, m2):
-                if (min1, m2) in self.failed_pairs or (m2, min1) in self.failed_pairs:
-                    continue
-                all_connected = False
-                break
-        if all_connected:
-            print "minima are all connected, ending"
-            self.textEdit_summary.insertPlainText("minima are all connected, ending\n")
-            return None, None
-        return min1, m2
-
-    def get_next_pair_random(self):
-        ''' get a new connect job '''
-        query =  self.database.session.query(Minimum)
-#        if self.Emax is not None:
-#            query.filter(Minimum.energy < self.Emax)
-        
-        while True:
-            min1 = query.order_by(sqlalchemy.func.random()).first()
-            min2 = query.order_by(sqlalchemy.func.random()).first()
-            if (min1, min2) not in self.failed_pairs and (min2, min1) not in self.failed_pairs:
-                return min1, min2
-        
-        
-
+    def _get_connect_strategy(self):
+        """read from the combobox which connect strategy to use"""
+        text = self.combobox.currentText()
+        if "random" in text:
+            return "random"
+        elif "global" in text:
+            return "gmin"
+        elif "untrap" in text:
+            return "untrap"
+        elif "combine" in text:
+            return "combine"
+        else:
+            return "random"
 
     def do_next_connect(self):
+        """do another connect job"""
         self.is_running = True
-        if self.ui.actionRandom_connect.isChecked():
-            self.min1, self.min2 = self.get_next_pair_random()
-        else:
-            self.min1, self.min2 = self.get_next_pair_gmin()
+        strategy = self._get_connect_strategy()
+        
+        self.min1, self.min2 = self.connect_manager.get_connect_job(strategy=strategy)
+#        if self.ui.actionRandom_connect.isChecked():
+#        else:
+#            self.min1, self.min2 = self.connect_manager.get_connect_job(strategy="gmin")
         
         if self.min1 is None or self.min2 is None:
             self.is_running = False
@@ -141,29 +140,32 @@ class ConnectAllDialog(ConnectViewer):
         
 
     def start(self):
+        """this is called to start submitting jobs again"""
         self.do_next_connect()
 
     def update_energy_view(self):
-        # plot the energies
+        """plot the energies"""
         if self.view_energies.isVisible():
             self.wgt_energies.update_gui(self.S, self.energies)
 
     def update_graph_view(self):
-        # show the graph view
+        """show the graph view"""
         if self.view_graphview.isVisible():
             self.wgt_graphview.make_graph()
             self.wgt_graphview.show_graph()
 
     def update_3D_view(self):
-        # show the smoothed path in the ogl viewer
+        """show the smoothed path in the ogl viewer"""
         if self.view_3D.isVisible():
             self.ogl.setCoordsPath(self.smoothed_path)
 
     def update_dgraph_view(self):
+        """update the disconnectivity graph"""
         if self.view_dgraph.isVisible():
             self.wgt_dgraph.rebuild_disconnectivity_graph()
 
     def update_summary_view(self):
+        """update the summary text"""
         self.textEdit_summary.clear()
         summary = self.connect_summary.get_summary()
         self.textEdit_summary.insertPlainText(summary)

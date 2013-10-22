@@ -347,35 +347,28 @@ class MainGUI(QtGui.QMainWindow):
                 obj.takeItem(obj.row(i))
 
     def set_basinhopping_number_alive(self, nalive):
+        """set the label that shows how many basinhopping processes are alive"""
         self.ui.label_bh_nproc.setText("%d B.H. processes" % nalive)
   
     def on_btn_start_basinhopping_clicked(self, clicked=None):
+        """this is run when the start basinhopping button is clicked"""
         if clicked is None: return
+        # set up the basinhopping manager if not already done
         if self.bhmanager is None:
             self.bhmanager = BHManager(self.system, self.system.database,
                                        on_number_alive_changed=self.set_basinhopping_number_alive)
+        # get the number of steps from the input box
         nstepsstr = self.ui.lineEdit_bh_nsteps.text()
         nsteps = None
         try:
             nsteps = int(nstepsstr)
         except ValueError:
+            # ignore the text if it is the default text
             if "steps" not in nstepsstr:
                 sys.stderr.write("can't convert %s to integer\n" % nstepsstr)
-        self.bhmanager.start_worker(nsteps=nsteps)
-        print self.bhmanager.number_of_workers(), "basinhopping processes running"
-#        db = self.system.database
-#        self.system.database = None
-#        self.bhrunner = BHRunner(self.system, self.system.database)
-#        self.bhrunner.start()
-#        self.system.database = db
         
-#    def tsSearch(self):
-#        ts = self.system.findTS(self.ui.oglTS.coords[1])
-#        self.transition = [ts[1][0], ts[0][0], ts[2][0]]
-
-#    def showFrameTS(self, i):
-#        if self.transition:
-#            self.ui.oglTS.setCoords(self.transition[i])
+        # start a basinhopping run
+        self.bhmanager.start_worker(nsteps=nsteps)
 
     def on_btn_stop_basinhopping_clicked(self, clicked=None):
         if clicked is None: return
