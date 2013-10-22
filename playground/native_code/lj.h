@@ -22,7 +22,7 @@ namespace pele {
 		lj_interaction(double C6, double C12) : _C6(C6), _C12(C12) {}
 
 		/* calculate energy from distance squared */
-		double energy(double r2) {
+		double energy(double r2) const {
 			double ir2 = 1.0/r2;
 			double ir6 = ir2*ir2*ir2;
 			double ir12 = ir6*ir6;
@@ -31,7 +31,7 @@ namespace pele {
 		}
 
 		/* calculate energy and gradient from distance squared, gradient is in g/|rij| */
-		double energy_gradient(double r2, double *gij) {
+		double energy_gradient(double r2, double *gij) const {
 			double ir2 = 1.0/r2;
 			double ir6 = ir2*ir2*ir2;
 			double ir12 = ir6*ir6;

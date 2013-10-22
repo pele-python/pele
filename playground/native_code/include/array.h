@@ -54,7 +54,7 @@ namespace pele {
 		double operator()(size_t i) const { return _data[i]; }
 
 		Array &operator=(double d) {
-			for(int i=0; i<_size; ++i)
+			for(size_t i=0; i<_size; ++i)
 				_data[i] = d;
 			return *this;
 		}
@@ -63,11 +63,12 @@ namespace pele {
 	// for array printing
 	inline std::ostream &operator<<(std::ostream &out, const Array &a) {
 		out << "[ ";
-		for(int i=0; i<a.size();++i) {
+		for(size_t i=0; i<a.size();++i) {
 			if(i>0) out << ", ";
 			out << a(i);
 		}
 		out << " ]";
+		return out;
 	}
 }
 
