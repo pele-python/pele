@@ -197,6 +197,7 @@ void LBFGS::compute_lbfgs_step()
   for (int j = jmin; j < jmax; ++j){
     i = j % M_;
     //cout << "    i " << i << " j " << j << "\n";
+    beta = rho_[i] * vecdot(y_[i], step_);
     for (size_t j2 = 0; j2 < step_.size(); ++j2){
       step_[j2] += s_[i][j2] * (alpha[i] - beta);
     }
