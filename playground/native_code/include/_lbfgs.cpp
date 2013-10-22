@@ -69,7 +69,7 @@ LBFGS::LBFGS(
   step_ = std::vector<double>(N);
 
   // set up the current location
-  for (int j2 = 0; j2 < N; ++j2){
+  for (size_t j2 = 0; j2 < N; ++j2){
     x_[j2] = x0(j2);
   }
   compute_func_gradient(x_, f_, g_);
@@ -122,7 +122,7 @@ void LBFGS::update_memory(
   // update the lbfgs memory
   // This updates s_, y_, rho_, and H0_, and k_
   int klocal = k_ % M_;
-  for (int j2 = 0; j2 < x_.size(); ++j2){
+  for (size_t j2 = 0; j2 < x_.size(); ++j2){
     y_[klocal][j2] = gnew[j2] - gold[j2];
     s_[klocal][j2] = xnew[j2] - xold[j2];
   }
@@ -164,7 +164,7 @@ void LBFGS::compute_lbfgs_step()
   if (k_ == 0){ 
     double gnorm = vecnorm(g_);
     if (gnorm > 1.) gnorm = 1. / gnorm;
-    for (int j2 = 0; j2 < x_.size(); ++j2){
+    for (size_t j2 = 0; j2 < x_.size(); ++j2){
       step_[j2] = - gnorm * H0_ * g_[j2];
     }
     return;
@@ -183,13 +183,13 @@ void LBFGS::compute_lbfgs_step()
     i = j % M_;
     //cout << "    i " << i << " j " << j << "\n";
     alpha[i] = rho_[i] * vecdot(s_[i], step_);
-    for (int j2 = 0; j2 < step_.size(); ++j2){
+    for (size_t j2 = 0; j2 < step_.size(); ++j2){
       step_[j2] -= alpha[i] * y_[i][j2];
     }
   }
 
   // scale the step size by H0
-  for (int j2 = 0; j2 < step_.size(); ++j2){
+  for (size_t j2 = 0; j2 < step_.size(); ++j2){
     step_[j2] *= H0_;
   }
 
@@ -197,13 +197,13 @@ void LBFGS::compute_lbfgs_step()
   for (int j = jmin; j < jmax; ++j){
     i = j % M_;
     //cout << "    i " << i << " j " << j << "\n";
-    for (int j2 = 0; j2 < step_.size(); ++j2){
+    for (size_t j2 = 0; j2 < step_.size(); ++j2){
       step_[j2] += s_[i][j2] * (alpha[i] - beta);
     }
   }
 
   // invert the step to point downhill
-  for (int j2 = 0; j2 < x_.size(); ++j2){
+  for (size_t j2 = 0; j2 < x_.size(); ++j2){
     step_[j2] *= -1;
   }
 
@@ -220,7 +220,7 @@ double LBFGS::backtracking_linesearch()
     if (verbosity_ > 1) {
       cout << "warning: step direction was uphill.  inverting\n";
     }
-    for (int j2 = 0; j2 < step_.size(); ++j2){
+    for (size_t j2 = 0; j2 < step_.size(); ++j2){
       step_[j2] *= -1;
     }
   }
@@ -236,7 +236,7 @@ double LBFGS::backtracking_linesearch()
   int nred;
   int nred_max = 10;
   for (nred = 0; nred < nred_max; ++nred){
-    for (int j2 = 0; j2 < xnew.size(); ++j2){
+    for (size_t j2 = 0; j2 < xnew.size(); ++j2){
       xnew[j2] = x_[j2] + factor * step_[j2];
     }
     compute_func_gradient(xnew, fnew, gnew);

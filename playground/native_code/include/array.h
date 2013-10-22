@@ -68,6 +68,7 @@ namespace pele {
 			out << a(i);
 		}
 		out << " ]";
+		return out;
 	}
 }
 

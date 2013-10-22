@@ -22,17 +22,19 @@ namespace pele
 	{
 		double e=0.;
 		double gij, dr[3];
-		size_t const natoms = x.size()/3;
+		const size_t n = x.size();
+		const size_t natoms = x.size()/3;
 
-		for(size_t i=0; i<x.size(); ++i)
+		for(size_t i=0; i<n; ++i)
 			grad[i] = 0.;
 
-		for(int i=0; i<natoms; ++i) {
+		for(size_t i=0; i<natoms; ++i) {
 			int i1 = 3*i;
-			for(int j=i+1; j<natoms; ++j) {
+			for(size_t j=i+1; j<natoms; ++j) {
 				int i2 = 3*j;
+
 				for(int k=0; k<3; ++k)
-					dr[k] = x(i1+k) - x(i2+k);
+					dr[k] = x[i1+k] - x[i2+k];
 
 				double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
 
