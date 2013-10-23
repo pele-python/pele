@@ -39,15 +39,9 @@ for i in xrange(N):
 
 t3 = time.time()
 
-class PotentialWrapper(_pythonpotential.PythonPotential):
-    def __init__(self, pot):
-        self.pot = pot
-        self.getEnergy = pot.getEnergy
-        self.getEnergyGradient = pot.getEnergyGradient
-
 for i in xrange(N):
     x = 1.*(np.random.random(3*natoms) - 0.5)
-    clbfgs = _lbfgs.LBFGS_CPP(PotentialWrapper(pot_old), x, tol=1e-4)
+    clbfgs = _lbfgs.LBFGS_CPP(pot_old, x, tol=1e-4)
     ret = clbfgs.run()
 
 t4 = time.time()
@@ -66,7 +60,6 @@ potentials = dict(
               lj_old=LJ(),
               lj_cython=_lj_cython.LJ_cython(),
               lj_cpp=_lj.LJ(),
-              lj_wrapped=PotentialWrapper(pot_old),
               )
 x = np.random.uniform(-1,1,[3*natoms]) * natoms**(1./3)
 for name, pot in potentials.iteritems():

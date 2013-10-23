@@ -4,6 +4,12 @@ from playground.native_code import _pele
 cimport _pele
 from pele.optimize import Result
 cimport cython
+import _pythonpotential
+
+class _PotentialWrapper(_pythonpotential.PythonPotential):
+    def __init__(self, pot):
+        self.pot = pot
+        self.getEnergyGradient = pot.getEnergyGradient
 
 # import the externally defined ljbfgs implementation
 cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
@@ -11,6 +17,7 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
         cppLBFGS(_pele.cPotential *, _pele.Array &, double, int) except +
 
         void run() except *
+        void one_iteration() except *
         double get_f()
         _pele.Array get_x()
         _pele.Array get_g()
@@ -36,10 +43,14 @@ cdef class LBFGS_CPP(object):
     cdef cppLBFGS *thisptr
     cdef _pele.Potential pot
     
-    def __cinit__(self, _pele.Potential pot, np.ndarray[double, ndim=1,
+    def __cinit__(self, potential, np.ndarray[double, ndim=1,
                   mode="c"] x0, double tol=1e-4, int M=4, double maxstep=0.1, 
                   double maxErise=1e-4, double H0=0.1, int iprint=-1, 
                   int nsteps=10000, int verbosity=0):
+        if not issubclass(potential.__class__, _pele.Potential):
+            print "LBFGS_cpp: potential is not subcass of Potential; wrapping it.", potential
+            potential = _PotentialWrapper(potential)
+        cdef _pele.Potential pot = potential
         self.thisptr = <cppLBFGS*>new cppLBFGS(pot.thisptr, 
                                                _pele.Array(<double*> x0.data, x0.size),
                                                tol, M)
@@ -96,4 +107,8 @@ cdef class LBFGS_CPP(object):
         res.H0 = self.thisptr.get_H0()
         res.success = self.thisptr.success()
         return res
+    
+    def one_iteration(self):
+        self.thisptr.one_iteration()
+        return self.get_result()
 
