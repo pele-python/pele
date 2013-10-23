@@ -3,6 +3,13 @@
 
 namespace pele {
 
+/**
+ * This class wraps a get_energy function and a get_energy_gradient function in
+ * a class that derives from BasePotential.  This is necessary to be able to use
+ * the functions in the pele c++ interface.  This is a backup method, the
+ * preferred method is to define a class separately for each potential, which
+ * eliminates the need to pass around the void * userdata parameter.
+ */
 class PotentialFunction : public BasePotential
 {
 public:
