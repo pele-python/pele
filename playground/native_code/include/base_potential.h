@@ -10,9 +10,9 @@ namespace pele {
 	/***
 	 * basic potential interface for native potentials
 	 */
-	class Potential {
+	class BasePotential {
 	public:
-		virtual ~Potential() {}
+		virtual ~BasePotential() {}
 
 		virtual double get_energy(Array x) { return 0.0; }
 		virtual double get_energy_gradient(Array x, Array grad) { return 0.0; }

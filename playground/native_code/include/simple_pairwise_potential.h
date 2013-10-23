@@ -1,12 +1,12 @@
 #ifndef PYGMIN_SIMPLE_PAIRWISE_POTENTIAL_H
 #define PYGMIN_SIMPLE_PAIRWISE_POTENTIAL_H
 
-#include "potential.h"
+#include "base_potential.h"
 
 namespace pele
 {
 	template<typename pairwise_interaction>
-	class SimplePairwisePotential : public Potential
+	class SimplePairwisePotential : public BasePotential
 	{
 	protected:
 		pairwise_interaction *_interaction;

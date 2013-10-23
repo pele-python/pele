@@ -34,9 +34,9 @@ cdef double _python_energy(_pele.Array x, void *userdata) except *:
     return pot.getEnergy(px)
 
 # define the potential class
-cdef class PythonPotential(_pele.Potential):   
+cdef class PythonPotential(_pele.BasePotential):   
     def __cinit__(self):
-        self.thisptr = <_pele.cPotential*>new _pele.cPotentialFunction(
+        self.thisptr = <_pele.cBasePotential*>new _pele.cPotentialFunction(
                                            &_python_energy,
                                            &_python_grad,
                                            <void*>self)

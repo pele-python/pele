@@ -46,7 +46,7 @@ cdef double _lj_energy(_pele.Array x, void *userdata) except *:
 
 
 # define the potential class
-cdef class LJ_cython(_pele.Potential):
+cdef class LJ_cython(_pele.BasePotential):
     cdef double _data[2]
     
     def __cinit__(self, sigma=1.0, epsilon=1.0):
@@ -54,7 +54,7 @@ cdef class LJ_cython(_pele.Potential):
         self._data[1] = epsilon
         # PotentialFunction uses lj_energy and lj_grad as callback
         # and self._data is passed to each function call
-        self.thisptr = <_pele.cPotential*>new _pele.cPotentialFunction(
+        self.thisptr = <_pele.cBasePotential*>new _pele.cPotentialFunction(
                                            &_lj_energy,
                                            &_lj_energy_grad,
                                            <void*>self._data)

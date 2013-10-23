@@ -1,9 +1,9 @@
 #include "include/array.h"
-#include "include/potential.h"
+#include "include/base_potential.h"
 
 namespace pele {
 
-class PotentialFunction : public Potential
+class PotentialFunction : public BasePotential
 {
 public:
 	typedef double EnergyCallback(Array, void *);

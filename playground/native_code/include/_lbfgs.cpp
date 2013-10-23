@@ -1,7 +1,7 @@
 #include <assert.h>
 
 #include "_lbfgs.h"
-#include "potential.h"
+#include "base_potential.h"
 #include "array.h"
 #include <vector>
 #include <math.h>
@@ -36,7 +36,7 @@ double vecnorm(std::vector<double> const v)
 }
 
 LBFGS::LBFGS(
-    pele::Potential * potential,
+    pele::BasePotential * potential,
     const pele::Array & x0,
     double tol,
     int M

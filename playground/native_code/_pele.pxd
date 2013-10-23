@@ -12,9 +12,9 @@ cdef extern from "array.h" namespace "pele":
         size_t size()
         double *data()
 
-cdef extern from "potential.h" namespace "pele":
-    cdef cppclass  cPotential "pele::Potential":
-        cPotential() except +
+cdef extern from "base_potential.h" namespace "pele":
+    cdef cppclass  cBasePotential "pele::BasePotential":
+        cBasePotential() except +
         double get_energy(Array &x) except *
         double get_energy_gradient(Array &x, Array &grad) except *
             
@@ -25,6 +25,6 @@ cdef extern from "potentialfunction.h" namespace "pele":
             double (*energy_gradient)(Array x, Array grad, void *userdata) except *,
             void *userdata) except +
     
-cdef class Potential:
-    cdef cPotential *thisptr      # hold a C++ instance which we're wrapping
+cdef class BasePotential:
+    cdef cBasePotential *thisptr      # hold a C++ instance which we're wrapping
     

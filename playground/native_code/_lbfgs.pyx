@@ -14,7 +14,7 @@ class _PotentialWrapper(_pythonpotential.PythonPotential):
 # import the externally defined ljbfgs implementation
 cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
     cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
-        cppLBFGS(_pele.cPotential *, _pele.Array &, double, int) except +
+        cppLBFGS(_pele.cBasePotential *, _pele.Array &, double, int) except +
 
         void run() except *
         void one_iteration() except *
@@ -41,16 +41,16 @@ cdef class LBFGS_CPP(object):
     """This class is the python interface for the c++ LBFGS implementation
     """
     cdef cppLBFGS *thisptr
-    cdef _pele.Potential pot
+    cdef _pele.BasePotential pot
     
     def __cinit__(self, potential, np.ndarray[double, ndim=1,
                   mode="c"] x0, double tol=1e-4, int M=4, double maxstep=0.1, 
                   double maxErise=1e-4, double H0=0.1, int iprint=-1, 
                   int nsteps=10000, int verbosity=0):
-        if not issubclass(potential.__class__, _pele.Potential):
+        if not issubclass(potential.__class__, _pele.BasePotential):
             print "LBFGS_cpp: potential is not subcass of Potential; wrapping it.", potential
             potential = _PotentialWrapper(potential)
-        cdef _pele.Potential pot = potential
+        cdef _pele.BasePotential pot = potential
         self.thisptr = <cppLBFGS*>new cppLBFGS(pot.thisptr, 
                                                _pele.Array(<double*> x0.data, x0.size),
                                                tol, M)

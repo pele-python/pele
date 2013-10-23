@@ -5,7 +5,7 @@
  * implemenation uses a backtracking linesearch.
  */
 #include <vector>
-#include "potential.h"
+#include "base_potential.h"
 #include "array.h"
 
 using std::vector;
@@ -16,7 +16,7 @@ namespace LBFGS_ns{
       /**
        * A pointer to the function that computes the function and gradient
        */
-      pele::Potential * potential_;
+      pele::BasePotential * potential_;
 
       int M_; /**< The lenth of the LBFGS memory */
       double tol_; /**< The tolerance for the rms gradient */
@@ -53,7 +53,7 @@ namespace LBFGS_ns{
        * Constructor
        */
       LBFGS(
-          pele::Potential * potential,
+          pele::BasePotential * potential,
           const pele::Array & x0,
           double tol=1e-4,
           int M=4
