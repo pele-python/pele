@@ -48,7 +48,7 @@ cdef class LBFGS_CPP(object):
                   double maxErise=1e-4, double H0=0.1, int iprint=-1, 
                   int nsteps=10000, int verbosity=0):
         if not issubclass(potential.__class__, _pele.BasePotential):
-            print "LBFGS_cpp: potential is not subcass of Potential; wrapping it.", potential
+            print "LBFGS_cpp: potential is not subclass of BasePotential; wrapping it.", potential
             potential = _PotentialWrapper(potential)
         cdef _pele.BasePotential pot = potential
         self.thisptr = <cppLBFGS*>new cppLBFGS(pot.thisptr, 
@@ -110,5 +110,4 @@ cdef class LBFGS_CPP(object):
     
     def one_iteration(self):
         self.thisptr.one_iteration()
-        return self.get_result()
 
