@@ -14,11 +14,13 @@ cimport _pele
 cdef extern:
     void ljenergy_gradient_(double *x, int *natoms, double *e, double *grad,
         double *eps, double *sig, int *periodic, double *boxl)
+    void ljenergy_(double *x, int *natoms, double *e,
+        double *eps, double *sig, int *periodic, double *boxl)
 
 # we need to do some wrapping or arguments
 # the wrapping can be simplified a lot with little modification to 
 # fortran code (change to c type declaration)
-cdef double lj_grad(_pele.Array x, _pele.Array grad, void *userdata) except *:
+cdef double _lj_energy_grad(_pele.Array x, _pele.Array grad, void *userdata) except *:
     cdef double *data = <double*>userdata
     cdef double sigma=data[0]
     cdef double eps=data[1]
@@ -30,9 +32,18 @@ cdef double lj_grad(_pele.Array x, _pele.Array grad, void *userdata) except *:
                        &eps, &sigma, &periodic, &boxl)
     return e
 
-# energy callback not yet implemented
-cdef double lj_energy(_pele.Array x, void *userdata) except *:
-    pass
+cdef double _lj_energy(_pele.Array x, void *userdata) except *:
+    cdef double *data = <double*>userdata
+    cdef double sigma=data[0]
+    cdef double eps=data[1]
+    cdef double boxl=-1.0
+    cdef int natoms = x.size() / 3
+    cdef double e
+    cdef int periodic = 0
+    ljenergy_(x.data(), &natoms, &e,
+                       &eps, &sigma, &periodic, &boxl)
+    return e
+
 
 # define the potential class
 cdef class LJ_cython(_pele.Potential):
@@ -44,6 +55,6 @@ cdef class LJ_cython(_pele.Potential):
         # PotentialFunction uses lj_energy and lj_grad as callback
         # and self._data is passed to each function call
         self.thisptr = <_pele.cPotential*>new _pele.cPotentialFunction(
-                                           &lj_energy,
-                                           &lj_grad,
+                                           &_lj_energy,
+                                           &_lj_energy_grad,
                                            <void*>self._data)
