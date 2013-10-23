@@ -1,5 +1,5 @@
-#include "include/array.h"
-#include "include/base_potential.h"
+#include "array.h"
+#include "base_potential.h"
 
 namespace pele {
 
