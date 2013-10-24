@@ -20,5 +20,4 @@ cdef class LJInteractionList(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
     def __cinit__(self, np.ndarray[int, ndim=1] ilist, eps=1.0, sigma=1.0):
-        print "ilist.data is cast as <double*> rather than as <int*>.  this should be changed"
         self.thisptr = <_pele.cBasePotential*>new cLJ_Ilist( _pele.Array[int](<int*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12)

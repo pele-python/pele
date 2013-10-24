@@ -53,7 +53,7 @@ namespace pele {
 	// define lennard jones potential as a pairwise interaction
 	class LJ_interaction_list : public SimplePairwiseInteractionList< lj_interaction > {
 	public:
-		LJ_interaction_list(Array<int> const & ilist, double C6, double C12)
+		LJ_interaction_list(Array<int> & ilist, double C6, double C12)
 			:  SimplePairwiseInteractionList< lj_interaction > ( new lj_interaction(C6, C12), ilist) {}
 	};
 }

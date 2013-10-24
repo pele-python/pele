@@ -1,9 +1,13 @@
 #ifndef PYGMIN_SIMPLE_PAIRWISE_ILIST_H
 #define PYGMIN_SIMPLE_PAIRWISE_ILIST_H
 
+#include <assert.h>
 #include <vector>
 #include "base_potential.h"
 #include "base_potential.h"
+#include <iostream>
+
+using std::cout;
 
 namespace pele
 {
@@ -22,16 +26,20 @@ namespace pele
 	protected:
 		pairwise_interaction *_interaction;
     std::vector<int> _ilist;
-		SimplePairwiseInteractionList(pairwise_interaction *interaction, Array<int> const & ilist ) : 
-      _interaction(interaction),
-      _ilist(&(ilist.data()[0]), &(ilist.data()[ilist.size()]))
+		SimplePairwiseInteractionList(pairwise_interaction *interaction, Array<int> & ilist ) : 
+      _interaction(interaction)
+      //, _ilist(&(ilist.data()[0]), &(ilist.data()[ilist.size()]))
     {
+      _ilist = std::vector<int>(ilist.size());
+      for (size_t i=0; i<ilist.size(); ++i){
+        _ilist[i] = ilist[i];
+      }
     }
-		~SimplePairwiseInteractionList(){ if (_interaction != NULL) delete _interaction; }
 
 	public:
 		virtual double get_energy(Array<double> x);
 		virtual double get_energy_gradient(Array<double> x, Array<double> grad);
+		~SimplePairwiseInteractionList(){ if (_interaction != NULL) delete _interaction; }
 	};
 
 	template<typename pairwise_interaction>
@@ -46,9 +54,14 @@ namespace pele
 		for(size_t i=0; i<n; ++i)
 			grad[i] = 0.;
 
+#ifdef DEBUG
+		for(size_t i=0; i<nlist; ++i)
+      assert(_ilist[i] < natoms);
+#endif
+
 		for(size_t i=0; i<nlist; i+=2) {
-			size_t i1 = 3*i;
-      size_t i2 = 3*(i+1);
+			size_t i1 = 3*_ilist[i];
+      size_t i2 = 3*_ilist[i+1];
 
       for(size_t k=0; k<3; ++k)
         dr[k] = x[i1+k] - x[i2+k];
@@ -73,8 +86,8 @@ namespace pele
 		size_t const nlist = _ilist.size();
 
 		for(size_t i=0; i<nlist; i+=2) {
-			size_t i1 = 3*i;
-      size_t i2 = 3*(i+1);
+			size_t i1 = 3*_ilist[i];
+      size_t i2 = 3*_ilist[i+1];
       double dr[3];
       for(size_t k=0; k<3; ++k)
         dr[k] = x(i1+k) - x(i2+k);
