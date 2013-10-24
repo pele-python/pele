@@ -36,6 +36,7 @@ namespace pele {
 
 		/// return pointer to data
 		dtype *data() { return _data; }
+		dtype const *data() const { return _data; }
 		/// return size of array
 		size_t size() const { return _size; }
 

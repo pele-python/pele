@@ -21,6 +21,7 @@ namespace pele
 	protected:
 		pairwise_interaction *_interaction;
 		SimplePairwisePotential(pairwise_interaction *interaction) : _interaction(interaction) {}
+		~SimplePairwisePotential() { if (_interaction != NULL) delete _interaction; }
 
 	public:
 		virtual double get_energy(Array<double> x);
