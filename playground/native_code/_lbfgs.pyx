@@ -14,13 +14,13 @@ class _PotentialWrapper(_pythonpotential.PythonPotential):
 # import the externally defined ljbfgs implementation
 cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
     cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
-        cppLBFGS(_pele.cBasePotential *, _pele.Array &, double, int) except +
+        cppLBFGS(_pele.cBasePotential *, _pele.Array[double] &, double, int) except +
 
         void run() except *
         void one_iteration() except *
         double get_f()
-        _pele.Array get_x()
-        _pele.Array get_g()
+        _pele.Array[double] get_x()
+        _pele.Array[double] get_g()
         
         void set_H0(double)
         void set_tol(double)
@@ -52,7 +52,7 @@ cdef class LBFGS_CPP(object):
             potential = _PotentialWrapper(potential)
         cdef _pele.BasePotential pot = potential
         self.thisptr = <cppLBFGS*>new cppLBFGS(pot.thisptr, 
-                                               _pele.Array(<double*> x0.data, x0.size),
+                                               _pele.Array[double](<double*> x0.data, x0.size),
                                                tol, M)
         opt = self.thisptr
         opt.set_H0(H0)
@@ -79,8 +79,8 @@ cdef class LBFGS_CPP(object):
         """return a results object"""
         res = Result()
         
-        cdef _pele.Array xi = self.thisptr.get_x()
-        cdef _pele.Array gi = self.thisptr.get_g()
+        cdef _pele.Array[double] xi = self.thisptr.get_x()
+        cdef _pele.Array[double] gi = self.thisptr.get_g()
         cdef double *xdata = xi.data()
         cdef double *gdata = gi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] x = np.zeros(xi.size())

@@ -37,7 +37,7 @@ double vecnorm(std::vector<double> const v)
 
 LBFGS::LBFGS(
     pele::BasePotential * potential,
-    const pele::Array & x0,
+    const pele::Array<double> & x0,
     double tol,
     int M
     )
@@ -280,8 +280,8 @@ void LBFGS::compute_func_gradient(std::vector<double> & x, double & func,
 {
   nfev_ += 1;
   // wrap the vectors as pele::Array objects
-  pele::Array xarray(&x[0], x.size());
-  pele::Array garray(&gradient[0], gradient.size());
+  pele::Array<double> xarray(&x[0], x.size());
+  pele::Array<double> garray(&gradient[0], gradient.size());
 
   // pass the arrays to the potential
   func = potential_->get_energy_gradient(x, gradient);

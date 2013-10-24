@@ -54,7 +54,7 @@ namespace LBFGS_ns{
        */
       LBFGS(
           pele::BasePotential * potential,
-          const pele::Array & x0,
+          const pele::Array<double> & x0,
           double tol=1e-4,
           int M=4
           );
@@ -85,8 +85,8 @@ namespace LBFGS_ns{
       void set_verbosity(int verbosity) { verbosity_ = verbosity; }
 
       // functions for accessing the results
-      pele::Array get_x() { return x_; }
-      pele::Array get_g() { return g_; }
+      pele::Array<double> get_x() { return x_; }
+      pele::Array<double> get_g() { return g_; }
       double get_f() { return f_; }
       double get_rms() { return rms_; }
       double get_H0() { return H0_; }

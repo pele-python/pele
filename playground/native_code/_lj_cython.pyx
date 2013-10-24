@@ -20,7 +20,7 @@ cdef extern:
 # we need to do some wrapping or arguments
 # the wrapping can be simplified a lot with little modification to 
 # fortran code (change to c type declaration)
-cdef double _lj_energy_grad(_pele.Array x, _pele.Array grad, void *userdata) except *:
+cdef double _lj_energy_grad(_pele.Array[double] x, _pele.Array[double] grad, void *userdata) except *:
     cdef double *data = <double*>userdata
     cdef double sigma=data[0]
     cdef double eps=data[1]
@@ -32,7 +32,7 @@ cdef double _lj_energy_grad(_pele.Array x, _pele.Array grad, void *userdata) exc
                        &eps, &sigma, &periodic, &boxl)
     return e
 
-cdef double _lj_energy(_pele.Array x, void *userdata) except *:
+cdef double _lj_energy(_pele.Array[double] x, void *userdata) except *:
     cdef double *data = <double*>userdata
     cdef double sigma=data[0]
     cdef double eps=data[1]

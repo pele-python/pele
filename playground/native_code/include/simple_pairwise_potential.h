@@ -2,9 +2,19 @@
 #define PYGMIN_SIMPLE_PAIRWISE_POTENTIAL_H
 
 #include "base_potential.h"
+#include "array.h"
 
 namespace pele
 {
+  /**
+   * Define a base class for potentials with simple pairwise interactions that
+   * depend only on magnitude of the atom separation
+   *
+   * This class loops though atom pairs, computes the distances and get's the
+   * value of the energy and gradient from the class pairwise_interaction.
+   * pairwise_interaction is a passed parameter and defines the actual
+   * potential function.
+   */
 	template<typename pairwise_interaction>
 	class SimplePairwisePotential : public BasePotential
 	{
@@ -13,12 +23,12 @@ namespace pele
 		SimplePairwisePotential(pairwise_interaction *interaction) : _interaction(interaction) {}
 
 	public:
-		virtual double get_energy(Array x);
-		virtual double get_energy_gradient(Array x, Array grad);
+		virtual double get_energy(Array<double> x);
+		virtual double get_energy_gradient(Array<double> x, Array<double> grad);
 	};
 
 	template<typename pairwise_interaction>
-	inline double SimplePairwisePotential<pairwise_interaction>::get_energy_gradient(Array x, Array grad)
+	inline double SimplePairwisePotential<pairwise_interaction>::get_energy_gradient(Array<double> x, Array<double> grad)
 	{
 		double e=0.;
 		double gij, dr[3];
@@ -50,7 +60,7 @@ namespace pele
 	}
 
 	template<typename pairwise_interaction>
-	inline double SimplePairwisePotential<pairwise_interaction>::get_energy(Array x)
+	inline double SimplePairwisePotential<pairwise_interaction>::get_energy(Array<double> x)
 	{
 		double e=0.;
 		size_t const natoms = x.size()/3;

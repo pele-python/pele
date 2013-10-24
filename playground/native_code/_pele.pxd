@@ -6,7 +6,7 @@ import numpy as np
 cimport numpy as np 
 
 cdef extern from "array.h" namespace "pele":
-    cdef cppclass Array :
+    cdef cppclass Array[dtype] :
         Array() except +
         Array(double*, int n) except +
         size_t size()
@@ -15,14 +15,14 @@ cdef extern from "array.h" namespace "pele":
 cdef extern from "base_potential.h" namespace "pele":
     cdef cppclass  cBasePotential "pele::BasePotential":
         cBasePotential() except +
-        double get_energy(Array &x) except *
-        double get_energy_gradient(Array &x, Array &grad) except *
+        double get_energy(Array[double] &x) except *
+        double get_energy_gradient(Array[double] &x, Array[double] &grad) except *
             
 cdef extern from "potentialfunction.h" namespace "pele":
     cdef cppclass  cPotentialFunction "pele::PotentialFunction":
         cPotentialFunction(
-            double (*energy)(Array x, void *userdata) except *,
-            double (*energy_gradient)(Array x, Array grad, void *userdata) except *,
+            double (*energy)(Array[double] x, void *userdata) except *,
+            double (*energy_gradient)(Array[double] x, Array[double] grad, void *userdata) except *,
             void *userdata) except +
     
 cdef class BasePotential:
