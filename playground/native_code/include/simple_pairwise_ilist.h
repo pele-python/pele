@@ -4,7 +4,8 @@
 #include <assert.h>
 #include <vector>
 #include "base_potential.h"
-#include "base_potential.h"
+#include "array.h"
+#include "distance.h"
 #include <iostream>
 
 using std::cout;
@@ -20,16 +21,22 @@ namespace pele
    * pairwise_interaction is a passed parameter and defines the actual
    * potential function.
    */
-	template<typename pairwise_interaction>
+	template<typename pairwise_interaction, 
+                 typename distance_policy = cartesian_distance >
 	class SimplePairwiseInteractionList : public BasePotential
 	{
 	protected:
 		pairwise_interaction *_interaction;
+    distance_policy *_dist;
     std::vector<int> _ilist;
-		SimplePairwiseInteractionList(pairwise_interaction *interaction, Array<long int> & ilist ) : 
-      _interaction(interaction)
+    SimplePairwiseInteractionList(pairwise_interaction *interaction, 
+        Array<long int> & ilist, distance_policy *dist=NULL ) : 
+      _interaction(interaction), 
+      _dist(dist) 
       //, _ilist(&(ilist.data()[0]), &(ilist.data()[ilist.size()]))
     {
+      if(_dist == 0) _dist = new distance_policy;
+
       _ilist = std::vector<int>(ilist.size());
       for (size_t i=0; i<ilist.size(); ++i){
         _ilist[i] = (int)ilist[i];
@@ -39,11 +46,15 @@ namespace pele
 	public:
 		virtual double get_energy(Array<double> x);
 		virtual double get_energy_gradient(Array<double> x, Array<double> grad);
-		~SimplePairwiseInteractionList(){ if (_interaction != NULL) delete _interaction; }
+		~SimplePairwiseInteractionList()
+    { 
+      if (_interaction != NULL) delete _interaction; 
+      if (_dist != NULL) delete _dist; 
+    }
 	};
 
-	template<typename pairwise_interaction>
-	inline double SimplePairwiseInteractionList<pairwise_interaction>::get_energy_gradient(Array<double> x, Array<double> grad)
+	template<typename pairwise_interaction, typename distance_policy>
+	inline double SimplePairwiseInteractionList<pairwise_interaction, distance_policy>::get_energy_gradient(Array<double> x, Array<double> grad)
 	{
 		double e=0.;
 		double gij, dr[3];
@@ -54,7 +65,7 @@ namespace pele
 		for(size_t i=0; i<n; ++i)
 			grad[i] = 0.;
 
-#ifdef DEBUG
+#ifndef NDEBUG
 		for(size_t i=0; i<nlist; ++i)
       assert(_ilist[i] < natoms);
 #endif
@@ -78,8 +89,8 @@ namespace pele
 		return e;
 	}
 
-	template<typename pairwise_interaction>
-	inline double SimplePairwiseInteractionList<pairwise_interaction>::get_energy(Array<double> x)
+	template<typename pairwise_interaction, typename distance_policy>
+	inline double SimplePairwiseInteractionList<pairwise_interaction, distance_policy>::get_energy(Array<double> x)
 	{
 		double e=0.;
 		size_t const natoms = x.size()/3;

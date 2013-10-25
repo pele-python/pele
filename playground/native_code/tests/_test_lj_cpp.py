@@ -25,6 +25,27 @@ class TestLJ_CPP(unittest.TestCase):
         self.assertAlmostEqual(e, et, delta=1e-6)
         self.assertLess(np.max(np.abs(g - gt)), 1e-6)
 
+class TestLJ_CPP_Periodic(TestLJ_CPP):
+    def setUp(self):
+        self.natoms = 18
+        boxl = 1.
+        self.boxvec = [boxl] * 3
+        self.pot = _lj.LJ(boxvec=self.boxvec)
+        
+        self.pot_comp = LJ(boxl=boxl)
+        x = np.random.uniform(-1,1, 3*self.natoms)
+        ret = mylbfgs(x, self.pot_comp, tol=10.)
+        self.x = ret.coords
+        
+    
+    def test(self):
+        eonly = self.pot.getEnergy(self.x)
+        e, g = self.pot.getEnergyGradient(self.x)
+        self.assertAlmostEqual(e, eonly, delta=1e-6)
+        et, gt = self.pot_comp.getEnergyGradient(self.x)
+        self.assertAlmostEqual(e, et, delta=1e-6)
+        self.assertLess(np.max(np.abs(g - gt)), 1e-6)
+
         
 
 if __name__ == "__main__":

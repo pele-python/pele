@@ -15,6 +15,7 @@
 
 #include "simple_pairwise_potential.h"
 #include "simple_pairwise_ilist.h"
+#include "distance.h"
 namespace pele {
 
 	/* define a pairwise interaction for lennard jones */
@@ -49,6 +50,16 @@ namespace pele {
 		LJ(double C6, double C12)
 			: SimplePairwisePotential< lj_interaction > ( new lj_interaction(C6, C12) ) {}
 	};
+
+	class LJPeriodic : public SimplePairwisePotential< lj_interaction, periodic_distance > {
+	public:
+		LJPeriodic(double C6, double C12, double const *boxvec)
+			: SimplePairwisePotential< lj_interaction, periodic_distance> ( 
+          new lj_interaction(C6, C12), 
+          new periodic_distance(boxvec[0], boxvec[1], boxvec[2])
+          ) {}
+	};
+
 
 	// define lennard jones potential as a pairwise interaction
 	class LJ_interaction_list : public SimplePairwiseInteractionList< lj_interaction > {
