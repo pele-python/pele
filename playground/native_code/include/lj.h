@@ -20,8 +20,12 @@ namespace pele {
 
 	/* define a pairwise interaction for lennard jones */
 	struct lj_interaction {
-		double _C6, _C12;
-		lj_interaction(double C6, double C12) : _C6(C6), _C12(C12) {}
+		double const _C6, _C12;
+		double const _6C6, _12C12;
+		lj_interaction(double C6, double C12) : 
+      _C6(C6), _C12(C12),
+      _6C6(6.*_C6), _12C12(12.*_C12) 
+    {}
 
 		/* calculate energy from distance squared */
 		double energy(double r2) const {
@@ -38,7 +42,7 @@ namespace pele {
 			double ir6 = ir2*ir2*ir2;
 			double ir12 = ir6*ir6;
 
-			*gij = (12.0 * _C12 * ir12 -  6.0 * _C6 * ir6) * ir2;
+			*gij = (_12C12 * ir12 - _6C6 * ir6) * ir2;
 			return -_C6*ir6 + _C12*ir12;
 		}
 	};
@@ -49,19 +53,22 @@ namespace pele {
    * polynomial.
    */
 	struct lj_interaction_cut_smooth {
-		double _C6, _C12;
-    double _rcut2;
-    double _A0;
-    double _A2;
+		double const _C6, _C12;
+		double const _6C6, _12C12;
+    double const _rcut2;
+    double const _A0;
+    double const _A2;
+    double const _2A2;
 		lj_interaction_cut_smooth(double C6, double C12, double rcut) 
       : 
-        _C6(C6), 
-        _C12(C12), 
+        _C6(C6), _C12(C12), 
+        _6C6(6.*_C6), _12C12(12.*_C12),
         _rcut2(rcut*rcut),
         //A0 = 4.0*(sig**6/rcut**6) - 7.0*(sig**12/rcut**12)
         _A0( 4.*_C6 / (_rcut2*_rcut2*_rcut2) - 7.*_C12/(_rcut2*_rcut2*_rcut2*_rcut2*_rcut2*_rcut2)),
         //A2 = (-3.0*(sig6/rcut**8) + 6.0*(sig12/rcut**14))
-        _A2( -3.*_C6 / (_rcut2*_rcut2*_rcut2*_rcut2) + 6.*_C12/(_rcut2*_rcut2*_rcut2*_rcut2*_rcut2*_rcut2*_rcut2))
+        _A2( -3.*_C6 / (_rcut2*_rcut2*_rcut2*_rcut2) + 6.*_C12/(_rcut2*_rcut2*_rcut2*_rcut2*_rcut2*_rcut2*_rcut2)),
+        _2A2(2.*_A2)
     {}
 
 		/* calculate energy from distance squared */
@@ -86,7 +93,7 @@ namespace pele {
 			double ir6 = ir2*ir2*ir2;
 			double ir12 = ir6*ir6;
 
-			*gij = (12.0 * _C12 * ir12 -  6.0 * _C6 * ir6) * ir2 - 2. * _A2;
+			*gij = (_12C12 * ir12 - _6C6 * ir6) * ir2 - _2A2;
 			return -_C6*ir6 + _C12*ir12 + _A0 + _A2*r2;
 		}
   };
