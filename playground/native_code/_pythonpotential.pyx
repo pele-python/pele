@@ -14,7 +14,9 @@ cdef double _python_grad(_pele.Array[double] x, _pele.Array[double] grad, void *
 
     pot = <PythonPotential>(userdata)
     
+    cdef np.ndarray[double, ndim=1] g
     e, g = pot.getEnergyGradient(px)
+
     
     for i in xrange(x.size()):
         gdata[i] = g[i]
