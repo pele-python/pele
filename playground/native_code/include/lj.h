@@ -13,8 +13,8 @@
 #ifndef PYGMIN_LJ_H
 #define PYGMIN_LJ_H
 
-#include "include/simple_pairwise_potential.h"
-#include "include/simple_pairwise_ilist.h"
+#include "simple_pairwise_potential.h"
+#include "simple_pairwise_ilist.h"
 namespace pele {
 
 	/* define a pairwise interaction for lennard jones */
@@ -53,7 +53,7 @@ namespace pele {
 	// define lennard jones potential as a pairwise interaction
 	class LJ_interaction_list : public SimplePairwiseInteractionList< lj_interaction > {
 	public:
-		LJ_interaction_list(Array<int> & ilist, double C6, double C12)
+		LJ_interaction_list(Array<long int> & ilist, double C6, double C12)
 			:  SimplePairwiseInteractionList< lj_interaction > ( new lj_interaction(C6, C12), ilist) {}
 	};
 }

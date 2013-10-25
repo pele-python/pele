@@ -26,13 +26,13 @@ namespace pele
 	protected:
 		pairwise_interaction *_interaction;
     std::vector<int> _ilist;
-		SimplePairwiseInteractionList(pairwise_interaction *interaction, Array<int> & ilist ) : 
+		SimplePairwiseInteractionList(pairwise_interaction *interaction, Array<long int> & ilist ) : 
       _interaction(interaction)
       //, _ilist(&(ilist.data()[0]), &(ilist.data()[ilist.size()]))
     {
       _ilist = std::vector<int>(ilist.size());
       for (size_t i=0; i<ilist.size(); ++i){
-        _ilist[i] = ilist[i];
+        _ilist[i] = (int)ilist[i];
       }
     }
 
