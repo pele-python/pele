@@ -27,19 +27,19 @@ namespace pele
         protected:
             pairwise_interaction *_interaction;
             distance_policy *_dist;
-            std::vector<int> _ilist;
+            std::vector<long int> const _ilist;
             SimplePairwiseInteractionList(pairwise_interaction *interaction, 
-                    Array<long int> & ilist, distance_policy *dist=NULL ) : 
+                    Array<long int> const & ilist, distance_policy *dist=NULL ) : 
                 _interaction(interaction), 
-                _dist(dist) 
-                //, _ilist(&(ilist.data()[0]), &(ilist.data()[ilist.size()]))
+                _dist(dist),
+                _ilist(&(ilist.data()[0]), &(ilist.data()[ilist.size()]))
         {
             if(_dist == 0) _dist = new distance_policy;
 
-            _ilist = std::vector<int>(ilist.size());
-            for (size_t i=0; i<ilist.size(); ++i){
-                _ilist[i] = (int)ilist[i];
-            }
+            //_ilist = std::vector<long int>(ilist.size());
+            //for (size_t i=0; i<ilist.size(); ++i){
+                //_ilist[i] = ilist[i];
+            //}
         }
 
         public:
