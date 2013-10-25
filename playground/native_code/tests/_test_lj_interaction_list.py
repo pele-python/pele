@@ -6,7 +6,7 @@ from pele.systems import LJCluster
 from pele.potentials import LJ
 from pele.optimize import mylbfgs
 
-class TestLBFGS_CPP(unittest.TestCase):
+class TestLJ_CPP_Ilist(unittest.TestCase):
     def setUp(self):
         self.natoms = 18
         self.ilist = np.array([(i,j) for i in xrange(self.natoms) for j in xrange(i+1,self.natoms)]).reshape(-1)

@@ -6,7 +6,7 @@ from pele.systems import LJCluster
 from pele.potentials import LJ
 from pele.optimize import mylbfgs
 
-class TestLBFGS_CPP(unittest.TestCase):
+class TestLJ_CPP(unittest.TestCase):
     def setUp(self):
         self.natoms = 18
         self.pot = _lj.LJ() 
