@@ -9,6 +9,8 @@ cdef extern from "lj.h" namespace "pele":
         cLJ(double C6, double C12) except +
     cdef cppclass  cLJPeriodic "pele::LJPeriodic":
         cLJPeriodic(double C6, double C12, double * boxvec) except +
+    cdef cppclass  cLJCut "pele::LJCut":
+        cLJCut(double C6, double C12, double rcut) except +
     cdef cppclass  cLJ_Ilist "pele::LJ_interaction_list":
         cLJ_Ilist(_pele.Array[np.int64_t] & ilist, double C6, double C12) except +
 
@@ -26,6 +28,22 @@ cdef class LJ(_pele.BasePotential):
             bv = np.array(boxvec)
             self.thisptr = <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12,
                                                                   <double*> bv.data)
+
+cdef class LJCut(_pele.BasePotential):
+    """define the python interface to the c++ LJ implementation
+    """
+    cpdef bool periodic 
+    def __cinit__(self, eps=1.0, sigma=1.0, rcut=2.5, boxvec=None):
+#        cdef np.ndarray[double, ndim=1] bv
+        if boxvec is None:
+            self.periodic = False
+            self.thisptr = <_pele.cBasePotential*>new cLJCut(4.*eps*sigma**6, 4.*eps*sigma**12, rcut)
+        else:
+#            raise NotImplementedError
+            self.periodic = True
+#            bv = np.array(boxvec)
+#            self.thisptr = <_pele.cBasePotential*>new cLJCut(4.*eps*sigma**6, 4.*eps*sigma**12,
+#                                                                  <double*> bv.data)
 
 
 cdef class LJInteractionList(_pele.BasePotential):
