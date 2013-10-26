@@ -84,7 +84,7 @@ namespace pele {
         /**
          * return a copy of the array.
          */
-        Array<dtype> copy()
+        Array<dtype> const copy()
         {
             Array<dtype> newarray(_size);
             for (size_t i=0; i<_size; ++i){
