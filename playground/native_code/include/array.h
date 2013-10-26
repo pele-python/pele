@@ -1,51 +1,118 @@
 #ifndef PYGMIN_ARRAY_H
 #define PYGMIN_ARRAY_H
 
+#include <assert.h>
 #include <vector>
 #include <stdexcept>
 #include <iostream>
 
 namespace pele {
-	/**
-	 * Simple wrapper class for arrays
-	 *
-	 * The Array class should provide a simple array handling interface
-	 * and allow to efficiently transfer data between C++/Fortran/Python
-	 */
-  template<typename dtype>
-	class Array {
-		dtype *_data;
-		size_t _size;
+    /**
+     * Simple wrapper class for arrays
+     *
+     * The Array class should provide a simple array handling interface
+     * and allow to efficiently transfer data between C++/Fortran/Python
+     */
+    template<typename dtype>
+    class Array {
+        dtype *_data;
+        dtype *_allocated_memory;
+        size_t _size;
 
-		bool _owner;
-	public:
-		Array() : _data(NULL), _size(0), _owner(true) {}
+        long int *_reference_count;
+    public:
+        Array() : _data(NULL), _allocated_memory(NULL), _size(0), _reference_count(NULL) {}
 
-		/// create array with specific size and allocate memory
-		Array(size_t size) : _size(size) { _data = new dtype[size]; _owner=true; }
+        /** 
+         * create array with specific size and allocate memory
+         */
+        Array(size_t size) : _size(size) 
+        { 
+            _data = new dtype[size]; 
+            _allocated_memory = NULL;
+            _reference_count = new long int[1];
+            *_reference_count = 1;
+        }
 
-		/// allocate memory with existing data
-		///
-		/// if owner is true the data will be deleted in the destructor
-		Array(dtype *data, size_t size, bool owner=false)
-			: _data(data), _size(size), _owner(owner) {}
+        /** 
+         * wrap another array
+         */
+        Array(Array<dtype> const &x) : 
+            _data(x._data), _allocated_memory(x._allocated_memory),
+            _size(x._size), _reference_count(x._reference_count) 
+        {
+            if (_data == NULL){
+                throw std::runtime_error("cannot wrap an array with no data");
+            }
+            assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
+            if (_reference_count != NULL){
+                *_reference_count += 1;
+            }
+        }
 
-        // wrap a vector
-		Array(std::vector<dtype> &x) : _data(x.data()), _size(x.size()), _owner(false) { }
+        /**
+         * wrap some data that is passed.  Do not take ownership of the data.
+         */
+        Array(dtype *data, size_t size)
+            : _data(data), _allocated_memory(NULL), _size(size), _reference_count(NULL) {}
 
-        // wrap another array
-		//Array(Array<dtype> &x) : _data(x.data()), _size(x.size()), _owner(false) { }
+        /**
+         * wrap a vector.  This memory should never be deleted.  
+         */
+        Array(std::vector<dtype> &x) : _data(x.data()), _allocated_memory(NULL), _size(x.size()), _reference_count(NULL) { }
 
+        /** 
+         * destructor
+         */
+        ~Array() 
+        { 
+            if (_reference_count != NULL && _allocated_memory != NULL){
+                *_reference_count -= 1;
+                if (*_reference_count < 0) throw;
+                if (*_reference_count == 0){
+                    if (_data == NULL) throw;
+                    delete[] _data; 
+                    delete[] _reference_count; 
+                    _data = NULL; 
+                    _reference_count = NULL;
+                    _size = 0; 
+                }
+            }
+        }
+        
+        /**
+         * return a copy of the array.
+         */
+        Array<dtype> copy()
+        {
+            Array<dtype> newarray(_size);
+            for (size_t i=0; i<_size; ++i){
+                newarray[i] = _data[i];
+            }
+            return newarray;
+        }
 
-        // destructor
-		~Array() { if(_owner && _data != NULL) delete[] _data; _data = NULL; _size = 0; }
+        /**
+         * return a view of the array.
+         */
+        Array<dtype> view(size_t ibegin, size_t iend)
+        {
+            assert(iend > ibegin);
+            Array<dtype> newarray();
+            newarray._data = &_data[ibegin];
+            newarray._allocated_memory = _allocated_memory;
+            newarray._size = iend - ibegin;
+            newarray._reference_count = _reference_count;
+            *_reference_count += 1;
+            return newarray;
+        }
 
-		/// return pointer to data
-		dtype *data() { return _data; }
-		dtype const *data() const { return _data; }
+        /// return pointer to data
+        dtype *data() { return _data; }
+        dtype const *data() const { return _data; }
 
-		/// return size of array
-		size_t size() const { return _size; }
+        /// return size of array
+        size_t size() const { return _size; }
 
         // return iterators over data
         typedef dtype * iterator;
@@ -56,39 +123,57 @@ namespace pele {
         const_iterator end() const { return &_data[_size]; }
 
 
-		/// resize the array
-		void resize(size_t size) {
-			if(!_owner)
-				throw std::runtime_error("Array: cannot resize Arrays if not owner of data");
-			delete [] _data;
-			_size = size;
-			_data = new dtype[_size];
-		}
+        /**
+         * Resize the array.  Only allowed if we are the sole owner of this
+         * data or if the data has not been allocated yet.
+         */
+        void resize(size_t size) {
+            // do sanity checks
+            if (_allocated_memory == NULL && _data != NULL){
+                // this instance can occur if you wrap data that was not allocated by the Array class.
+                // e.g. if this wraps data in a std::vector.
+                throw std::runtime_error("Array: cannot resize Arrays if not sole owner of data");
+            }
+            if (_reference_count == NULL && _data != NULL){
+                // this should not happen
+                throw;
+            }
+            if (_reference_count != NULL){
+                if (*_reference_count != 1){
+                    throw std::runtime_error("Array: cannot resize Arrays if not sole owner of data");
+                }
+            }
+            // all seems ok. resize the array
+            if (_data != NULL) delete [] _data;
+            _size = size;
+            _data = new dtype[_size];
+            _allocated_memory = _data;
+        }
 
-		/// access an element in the array
-		dtype &operator[](size_t i) { return _data[i]; }
-		dtype operator[](size_t i) const { return _data[i]; }
+        /// access an element in the array
+        dtype &operator[](size_t i) { return _data[i]; }
+        dtype operator[](size_t i) const { return _data[i]; }
 
-		/// read only access to element in array
-		dtype operator()(size_t i) const { return _data[i]; }
+        /// read only access to element in array
+        dtype operator()(size_t i) const { return _data[i]; }
 
-		Array<dtype> &operator=(dtype d) {
-			for(size_t i=0; i<_size; ++i)
-				_data[i] = d;
-			return *this;
-		}
-	};
+        Array<dtype> &operator=(dtype d) {
+            for(size_t i=0; i<_size; ++i)
+                _data[i] = d;
+            return *this;
+        }
+    };
 
-	// for array printing
-	inline std::ostream &operator<<(std::ostream &out, const Array<double> &a) {
-		out << "[ ";
-		for(size_t i=0; i<a.size();++i) {
-			if(i>0) out << ", ";
-			out << a(i);
-		}
-		out << " ]";
-		return out;
-	}
+    // for array printing
+    inline std::ostream &operator<<(std::ostream &out, const Array<double> &a) {
+        out << "[ ";
+        for(size_t i=0; i<a.size();++i) {
+            if(i>0) out << ", ";
+            out << a(i);
+        }
+        out << " ]";
+        return out;
+    }
 }
 
 //Array newa(old);  Array newa; newa.view(old)
