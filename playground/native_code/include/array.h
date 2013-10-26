@@ -65,7 +65,7 @@ namespace pele {
          * destructor
          */
         ~Array() 
-        { 
+        {
             if (_reference_count != NULL && _allocated_memory != NULL){
                 *_reference_count -= 1;
                 if (*_reference_count < 0) throw;
@@ -103,7 +103,10 @@ namespace pele {
             newarray._allocated_memory = _allocated_memory;
             newarray._size = iend - ibegin;
             newarray._reference_count = _reference_count;
-            *_reference_count += 1;
+            if (_allocated_memory != NULL){
+                assert(_reference_count != NULL);
+                *_reference_count += 1;
+            }
             return newarray;
         }
 
