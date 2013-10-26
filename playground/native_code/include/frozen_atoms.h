@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <set>
 #include <assert.h>
+#include "base_potential.h"
 
 using std::vector;
 
@@ -88,6 +89,39 @@ namespace pele{
                 return full_coords;
             }
 
+    };
+
+
+    template<typename PotentialType>
+    class FrozenPotentialWrapper : public BasePotential{
+        protected:
+            PotentialType *_underlying_potential;
+            FrozenCoordsConverter _coords_converter;
+
+            FrozenPotentialWrapper(PotentialType *potential, 
+                    Array<double> &reference_coords, 
+                    Array<long int> & frozen_dof) :
+                _underlying_potential(potential),
+                _coords_converter(reference_coords, frozen_dof) {}
+
+        public:
+            ~FrozenPotentialWrapper() 
+            {
+                if (_underlying_potential != NULL) { delete _underlying_potential; }
+            }
+
+            
+            inline double get_energy(Array<double> reduced_coords) 
+            {
+                Array<double> full_coords(_coords_converter.get_full_coords(reduced_coords));
+                return _underlying_potential->get_energy(full_coords);
+            }
+
+            inline double get_energy_gradient(Array<double> reduced_coords, Array<double> grad) 
+            {
+                Array<double> full_coords(_coords_converter.get_full_coords(reduced_coords));
+                return _underlying_potential->get_energy_gradient(full_coords, grad);
+            }
     };
 }
 

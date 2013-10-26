@@ -22,23 +22,23 @@ namespace pele
 	{
 	protected:
 		pairwise_interaction *_interaction;
-                distance_policy *_dist;
+        distance_policy *_dist;
 
-    SimplePairwisePotential(pairwise_interaction *interaction, 
-        distance_policy *dist=NULL) : 
-      _interaction(interaction), _dist(dist) 
-    {
-      if(_dist == 0) _dist = new distance_policy;
-    }
+        SimplePairwisePotential(pairwise_interaction *interaction,
+                distance_policy *dist=NULL) : 
+            _interaction(interaction), _dist(dist) 
+        {
+            if(_dist == 0) _dist = new distance_policy;
+        }
 
 	public:
 		virtual double get_energy(Array<double> x);
 		virtual double get_energy_gradient(Array<double> x, Array<double> grad);
 		~SimplePairwisePotential() 
-    { 
-      if (_interaction != NULL) delete _interaction; 
-      if (_dist != NULL) delete _dist; 
-    }
+        { 
+            if (_interaction != NULL) delete _interaction; 
+            if (_dist != NULL) delete _dist; 
+        }
 	};
 
 	template<typename pairwise_interaction, typename distance_policy>

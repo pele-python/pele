@@ -16,6 +16,8 @@
 #include "simple_pairwise_potential.h"
 #include "simple_pairwise_ilist.h"
 #include "distance.h"
+#include "frozen_atoms.h"
+
 namespace pele {
 
     /**
@@ -98,16 +100,16 @@ namespace pele {
             *gij = (_12C12 * ir12 - _6C6 * ir6) * ir2 - _2A2;
             return -_C6*ir6 + _C12*ir12 + _A0 + _A2*r2;
         }
-  };
+    };
 
-  //
-  // combine the components (interaction, looping method, distance function) into
-  // defined classes
-  //
+    //
+    // combine the components (interaction, looping method, distance function) into
+    // defined classes
+    //
 
     /**
-   * Pairwise Lennard-Jones potential
-   */
+     * Pairwise Lennard-Jones potential
+     */
     class LJ : public SimplePairwisePotential< lj_interaction > {
         public:
             LJ(double C6, double C12)
@@ -115,8 +117,8 @@ namespace pele {
     };
 
     /**
-   * Pairwise Lennard-Jones potential in a rectangular box
-   */
+     * Pairwise Lennard-Jones potential in a rectangular box
+     */
     class LJPeriodic : public SimplePairwisePotential< lj_interaction, periodic_distance > {
         public:
             LJPeriodic(double C6, double C12, double const *boxvec)
@@ -128,8 +130,8 @@ namespace pele {
     };
 
     /**
-   * Pairwise Lennard-Jones potential with smooth cutoff
-   */
+     * Pairwise Lennard-Jones potential with smooth cutoff
+     */
     class LJCut : public SimplePairwisePotential< lj_interaction_cut_smooth > {
         public:
             LJCut(double C6, double C12, double rcut)
@@ -137,8 +139,8 @@ namespace pele {
     };
 
     /**
-   * Pairwise Lennard-Jones potential with smooth cutoff in a rectangular box
-   */
+     * Pairwise Lennard-Jones potential with smooth cutoff in a rectangular box
+     */
     class LJCutPeriodic : public SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance > {
         public:
             LJCutPeriodic(double C6, double C12, double rcut, double const *boxvec)
@@ -149,10 +151,17 @@ namespace pele {
             {}
     };
 
+    class LJFrozen : public FrozenPotentialWrapper<LJ> {
+        public:
+            LJFrozen(double C6, double C12, Array<double> & reference_coords, Array<long int> & frozen_dof)
+                : FrozenPotentialWrapper< LJ > 
+                  ( new LJ(C6, C12), reference_coords, frozen_dof ) {}
+    };
+
 
     /**
-   * Pairwise Lennard-Jones potential with interaction lists
-   */
+     * Pairwise Lennard-Jones potential with interaction lists
+     */
     class LJ_interaction_list : public SimplePairwiseInteractionList< lj_interaction > {
         public:
             LJ_interaction_list(Array<long int> & ilist, double C6, double C12)
