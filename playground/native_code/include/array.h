@@ -30,15 +30,31 @@ namespace pele {
 		Array(dtype *data, size_t size, bool owner=false)
 			: _data(data), _size(size), _owner(owner) {}
 
-		Array(std::vector<dtype> &x) : _data(x.data()), _size(x.size()), _owner(false) {}
+        // wrap a vector
+		Array(std::vector<dtype> &x) : _data(x.data()), _size(x.size()), _owner(false) { }
 
+        // wrap another array
+		//Array(Array<dtype> &x) : _data(x.data()), _size(x.size()), _owner(false) { }
+
+
+        // destructor
 		~Array() { if(_owner && _data != NULL) delete[] _data; _data = NULL; _size = 0; }
 
 		/// return pointer to data
 		dtype *data() { return _data; }
 		dtype const *data() const { return _data; }
+
 		/// return size of array
 		size_t size() const { return _size; }
+
+        // return iterators over data
+        typedef dtype * iterator;
+        typedef dtype const * const_iterator;
+        iterator begin() { return &_data[0]; }
+        iterator end() { return &_data[_size]; }
+        const_iterator begin() const { return &_data[0]; }
+        const_iterator end() const { return &_data[_size]; }
+
 
 		/// resize the array
 		void resize(size_t size) {
@@ -51,6 +67,7 @@ namespace pele {
 
 		/// access an element in the array
 		dtype &operator[](size_t i) { return _data[i]; }
+		dtype operator[](size_t i) const { return _data[i]; }
 
 		/// read only access to element in array
 		dtype operator()(size_t i) const { return _data[i]; }
@@ -74,6 +91,12 @@ namespace pele {
 	}
 }
 
-
+//Array newa(old);  Array newa; newa.view(old)
+//Array newa = old; 
+//Array newa(old.copy()); Array newa(old); 
+//Array newa(old.view(0, 100)); Array newai; newa.view(old, 0, 100);
+//
+//newa.reference(old);
+//newa.copy(old);
 
 #endif

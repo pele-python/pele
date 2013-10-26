@@ -32,7 +32,7 @@ namespace pele
                     Array<long int> const & ilist, distance_policy *dist=NULL ) : 
                 _interaction(interaction), 
                 _dist(dist),
-                _ilist(&(ilist.data()[0]), &(ilist.data()[ilist.size()]))
+                _ilist(ilist.begin(), ilist.end())
         {
             if(_dist == 0) _dist = new distance_policy;
 
