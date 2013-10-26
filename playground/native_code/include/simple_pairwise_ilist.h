@@ -62,6 +62,7 @@ namespace pele
         const size_t n = x.size();
         const size_t natoms = x.size()/3;
         const size_t nlist = _ilist.size();
+        assert(x.size() == grad.size());
 
         for(size_t i=0; i<n; ++i)
             grad[i] = 0.;

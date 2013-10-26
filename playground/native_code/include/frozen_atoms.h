@@ -1,14 +1,17 @@
 #ifndef _PELE_FROZEN_ATOMS_H
 #define _PELE_FROZEN_ATOMS_H
 
-#include "array.h"
 #include <vector>
 #include <algorithm>
 #include <set>
 #include <assert.h>
+#include <iostream>
+
+#include "array.h"
 #include "base_potential.h"
 
 using std::vector;
+using std::cout;
 
 namespace pele{
     /**
@@ -26,7 +29,6 @@ namespace pele{
             FrozenCoordsConverter(Array<double> const & reference_coords, 
                     Array<long int> const & frozen_dof) :
                 _reference_coords(reference_coords.begin(), reference_coords.end())
-                //_frozen_dof(frozen_dof.begin(), frozen_dof.end())
             {
                 //populate _frozen_dof after removing duplicates and sorting
                 std::set<long int> frozenset(frozen_dof.begin(), frozen_dof.end());
@@ -45,11 +47,21 @@ namespace pele{
                     // if degree of freedom i is not in frozen, add it to _mobile_dof
                     if (frozenset.count(i) == 0){
                         _mobile_dof[imobile] = i;
+                        ++imobile;
                     }
-                    ++imobile;
                 }
                 assert(imobile == _mobile_dof.size());
 
+                cout << "ndof " << ndof()
+                    << " ndof_frozen " << ndof_frozen()
+                    << " ndof_mobile " << ndof_mobile() 
+                    << "\n";
+                //for (size_t i=0; i < _frozen_dof.size(); ++i){
+                    //cout << _frozen_dof[i] << "\n";
+                //}
+                //for (size_t i=0; i < _mobile_dof.size(); ++i){
+                    //cout << _mobile_dof[i] << "\n";
+                //}
             }
 
             size_t ndof() const { return _reference_coords.size(); }
@@ -83,8 +95,8 @@ namespace pele{
                     full_coords[i] = _reference_coords[i];
                 }
                 // replace the mobile degrees of freedom with those in reduced_coords
-                for (size_t i=0; i < ndof(); ++i){
-                    full_coords[i] = reduced_coords[_mobile_dof[i]];
+                for (size_t i=0; i < _mobile_dof.size(); ++i){
+                    full_coords[_mobile_dof[i]] = reduced_coords[i];
                 }
                 return full_coords;
             }
@@ -117,10 +129,17 @@ namespace pele{
                 return _underlying_potential->get_energy(full_coords);
             }
 
-            inline double get_energy_gradient(Array<double> reduced_coords, Array<double> grad) 
+            inline double get_energy_gradient(Array<double> reduced_coords, Array<double> reduced_grad) 
             {
+                assert(reduced_grad.size() == _coords_converter.ndof_mobile());
                 Array<double> full_coords(_coords_converter.get_full_coords(reduced_coords));
-                return _underlying_potential->get_energy_gradient(full_coords, grad);
+                Array<double> gfull(_coords_converter.ndof());
+                double energy = _underlying_potential->get_energy_gradient(full_coords, gfull);
+                Array<double> gred = _coords_converter.get_reduced_coords(gfull);
+                for (size_t i = 0; i < gred.size(); ++i){
+                    reduced_grad[i] = gred[i];
+                }
+                return energy;
             }
     };
 }
