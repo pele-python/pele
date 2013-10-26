@@ -30,7 +30,7 @@ namespace pele {
         { 
             _data = new dtype[size]; 
             _allocated_memory = NULL;
-            _reference_count = new long int[1];
+            _reference_count = new long int;
             *_reference_count = 1;
         }
 
@@ -66,13 +66,13 @@ namespace pele {
          */
         ~Array() 
         {
-            if (_reference_count != NULL && _allocated_memory != NULL){
+            assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
+            if (_allocated_memory != NULL){
                 *_reference_count -= 1;
                 if (*_reference_count < 0) throw;
                 if (*_reference_count == 0){
-                    if (_data == NULL) throw;
                     delete[] _allocated_memory; 
-                    delete[] _reference_count; 
+                    delete _reference_count; 
                     _data = NULL; 
                     _allocated_memory = NULL; 
                     _reference_count = NULL;
@@ -133,14 +133,11 @@ namespace pele {
          */
         void resize(size_t size) {
             // do sanity checks
+            assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
             if (_allocated_memory == NULL && _data != NULL){
                 // this instance can occur if you wrap data that was not allocated by the Array class.
                 // e.g. if this wraps data in a std::vector.
                 throw std::runtime_error("Array: cannot resize Arrays if not sole owner of data");
-            }
-            if (_reference_count == NULL && _data != NULL){
-                // this should not happen
-                throw;
             }
             if (_reference_count != NULL){
                 if (*_reference_count != 1){
@@ -148,10 +145,13 @@ namespace pele {
                 }
             }
             // all seems ok. resize the array
-            if (_data != NULL) delete [] _data;
+            if (_allocated_memory != NULL) delete[] _allocated_memory;
+            if (_reference_count != NULL) delete _reference_count;
             _size = size;
-            _data = new dtype[_size];
-            _allocated_memory = _data;
+            _allocated_memory = new dtype[_size];
+            _data = _allocated_memory;
+            _reference_count = new long int;
+            *_reference_count = 1
         }
 
         /// access an element in the array
