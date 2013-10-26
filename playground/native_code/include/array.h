@@ -151,7 +151,7 @@ namespace pele {
             _allocated_memory = new dtype[_size];
             _data = _allocated_memory;
             _reference_count = new long int;
-            *_reference_count = 1
+            *_reference_count = 1;
         }
 
         /// access an element in the array
