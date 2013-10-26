@@ -71,9 +71,10 @@ namespace pele {
                 if (*_reference_count < 0) throw;
                 if (*_reference_count == 0){
                     if (_data == NULL) throw;
-                    delete[] _data; 
+                    delete[] _allocated_memory; 
                     delete[] _reference_count; 
                     _data = NULL; 
+                    _allocated_memory = NULL; 
                     _reference_count = NULL;
                     _size = 0; 
                 }
