@@ -66,6 +66,14 @@ namespace pele {
          */
         ~Array() 
         {
+        	free();
+        }
+
+        /**
+         * free all the memory and resize to zero
+         */
+        void free()
+        {
             assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
             if (_allocated_memory != NULL){
                 *_reference_count -= 1;
@@ -79,6 +87,20 @@ namespace pele {
                     _size = 0; 
                 }
             }
+
+        }
+
+        /*
+         * wrap another array
+         */
+        void wrap(Array<dtype> x)
+        {
+        	free();
+        	_size = x._size;
+        	_reference_count = x._reference_count;
+        	_data = x._data;
+        	_allocated_memory = x._allocated_memory;
+        	*_reference_count += 1;
         }
         
         /**

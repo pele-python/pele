@@ -16,6 +16,11 @@ namespace pele {
 
 		virtual double get_energy(Array<double> x) { return 0.0; }
 		virtual double get_energy_gradient(Array<double> x, Array<double> grad) { return 0.0; }
+
+		/**
+		 * compute the energy and gradient, but don't intialize the gradient to zero
+		 */
+		virtual double add_energy_gradient(Array<double> x, Array<double> grad) { return 0.0; }
 	};
 }
 
