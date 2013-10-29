@@ -1,5 +1,0 @@
-if(WITH_BOOST)
-  add_library(stockaa_ stockaa.cpp stockaa.f90 rigidbaa.f90)
-  target_link_libraries(stockaa_ ${Boost_PYTHON_LIBRARY})
-  set_target_properties(stockaa_ PROPERTIES PREFIX "")
-endif(WITH_BOOST)
