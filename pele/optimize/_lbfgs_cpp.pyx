@@ -1,10 +1,10 @@
 import numpy as np
 cimport numpy as np
-from playground.native_code import _pele
-cimport _pele
+from pele.potentials import _pele
+from pele.potentials cimport _pele
 from pele.optimize import Result
 cimport cython
-import _pythonpotential
+from pele.potentials import _pythonpotential
 
 class _PotentialWrapper(_pythonpotential.PythonPotential):
     def __init__(self, pot):

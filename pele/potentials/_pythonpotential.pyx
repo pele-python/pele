@@ -1,4 +1,4 @@
-cimport _pele
+from pele.potentials cimport _pele
 import numpy as np
 cimport numpy as np
 cimport cython

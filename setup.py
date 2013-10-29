@@ -85,6 +85,46 @@ setup(name='pele',
       ext_modules=ext_modules
         )
 
+#
+# now build the c++ files
+#
+
+include_sources = [
+#               "include/array.h",
+#               "include/potential.h",
+#               "include/simple_pairwise_potential.h",
+               "source/_lbfgs.cpp",
+                  ]
+include_dirs = [numpy_include, "source/"]
+
+
+extra_compile_args=['-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
+
+cxx_modules = [
+            Extension("pele.potentials._lj_cpp", ["pele/potentials/_lj_cpp.cpp"] + include_sources,
+                      include_dirs=include_dirs,
+                      extra_compile_args=extra_compile_args,
+                      language="c++",
+                      ),
+
+            Extension("pele.potentials._pele", ["pele/potentials/_pele.cpp"] + include_sources,
+                      include_dirs=include_dirs,
+                      extra_compile_args=extra_compile_args,
+                      ),
+
+            Extension("pele.optimize._lbfgs_cpp", ["pele/optimize/_lbfgs_cpp.cpp"] + include_sources,
+                      include_dirs=include_dirs,
+                      extra_compile_args=extra_compile_args,
+                      ),
+            Extension("pele.potentials._pythonpotential", ["pele/potentials/_pythonpotential.cpp"] + include_sources,
+                      include_dirs=include_dirs,
+                      extra_compile_args=extra_compile_args,
+                      ),
+               ]
+
+setup(ext_modules=cxx_modules,
+      )
+
 
 #
 # we have no cython files any more.  so the following is commented

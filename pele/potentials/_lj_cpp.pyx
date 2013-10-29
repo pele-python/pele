@@ -1,4 +1,4 @@
-from playground.native_code cimport _pele
+cimport pele.potentials._pele as _pele
 import numpy as np
 cimport numpy as np
 from cpython cimport bool
