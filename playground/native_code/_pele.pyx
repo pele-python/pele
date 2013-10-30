@@ -41,6 +41,15 @@ cdef class BasePotential(object):
     def getEnergy(self, np.ndarray[double, ndim=1] x not None):
         # redirect the call to the c++ class
         return self.thisptr.get_energy(Array[double](<double*> x.data, x.size))
+    
+    def NumericalDerivative(self, np.ndarray[double, ndim=1] x not None, double eps=1e-6):
+        # redirect the call to the c++ class
+        cdef np.ndarray[double, ndim=1] grad = np.zeros([x.size])
+        self.thisptr.numerical_gradient(Array[double](<double*> x.data, x.size),
+                                       Array[double](<double*> grad.data, grad.size),
+                                       eps
+                                       )
+        return grad
                 
 # This is a little test function to benchmark potential evaluation in a loop
 # in native code    
