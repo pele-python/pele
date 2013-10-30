@@ -29,12 +29,15 @@ class TestLJ_CPP(unittest.TestCase):
         e, g = self.pot.getEnergyGradient(self.x)
         gnum = self.pot.NumericalDerivative(self.x)
         gnum_old = self.pot_comp.NumericalDerivative(self.x)
-#        print gnum, gnum_old
         self.assertLess(np.max(np.abs(gnum_old - gnum)), 1e-6)        
         self.assertLess(np.max(np.abs(g - gnum)), 1e-6)
-#        self.assertAlmostEqual(e, eonly, delta=1e-6)
-#        et, gt = self.pot_comp.getEnergyGradient(self.x)
-#        self.assertAlmostEqual(e, et, delta=1e-6)
+
+    def test_numerical_hessian(self):
+#        e, g = self.pot.getEnergyGradient(self.x)
+        h = self.pot.NumericalHessian(self.x)
+        h_old = self.pot_comp.NumericalHessian(self.x)
+        self.assertLess(np.max(np.abs(h_old - h)), 1e-6)        
+#        self.assertLess(np.max(np.abs(g - gnum)), 1e-6)
 
 
 class TestLJ_CPP_Periodic(TestLJ_CPP):

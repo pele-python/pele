@@ -51,6 +51,16 @@ cdef class BasePotential(object):
                                        )
         return grad
                 
+    def NumericalHessian(self, np.ndarray[double, ndim=1] x not None, double eps=1e-6):
+        # redirect the call to the c++ class
+        cdef np.ndarray[double, ndim=1] hess = np.zeros([x.size**2])
+        self.thisptr.numerical_hessian(Array[double](<double*> x.data, x.size),
+                                       Array[double](<double*> hess.data, hess.size),
+                                       eps
+                                       )
+#        newhess = hess;
+        return np.reshape(hess, [x.size, x.size])
+                
 # This is a little test function to benchmark potential evaluation in a loop
 # in native code    
 #def call_pot(Potential pot, np.ndarray[double, ndim=1, mode="c"] x not None,
