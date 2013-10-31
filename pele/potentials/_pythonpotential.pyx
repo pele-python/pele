@@ -12,7 +12,9 @@ cdef double _python_grad(_pele.Array[double] x, _pele.Array[double] grad, void *
     for i in xrange(x.size()):
         px[i] = xdata[i]
 
+#    print "casting as pythonpotential"
     pot = <PythonPotential>(userdata)
+#    print "computing energy"
     
     cdef np.ndarray[double, ndim=1] g
     e, g = pot.getEnergyGradient(px)
@@ -20,7 +22,8 @@ cdef double _python_grad(_pele.Array[double] x, _pele.Array[double] grad, void *
     
     for i in xrange(x.size()):
         gdata[i] = g[i]
-        
+    
+#    print "returning"
     return e
 
 # energy callback not yet implemented
@@ -37,12 +40,17 @@ cdef double _python_energy(_pele.Array[double] x, void *userdata) except *:
 
 # define the potential class
 cdef class PythonPotential(_pele.BasePotential):   
-    def __cinit__(self):
+    def __cinit__(self, *args, **kwargs):
         self.thisptr = <_pele.cBasePotential*>new _pele.cPotentialFunction(
                                            &_python_energy,
                                            &_python_grad,
                                            <void*>self)
-        
+    
+    def __dealloc__(self):
+        if self.thisptr != NULL:
+            del self.thisptr
+            self.thisptr = NULL
+    
     def getEnergy(self, x):
         raise NotImplementedError        
 

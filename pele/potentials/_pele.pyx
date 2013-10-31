@@ -16,12 +16,14 @@ cdef class BasePotential(object):
     -----
     for direct access to the underlying c++ potential use self.thisptr
     """
-    def __cinit__(self):
+    def __cinit__(self, *args, **kwargs):
         # store an instance to the current c++ class, will be used in every call
-        self.thisptr = <cBasePotential*>new cBasePotential()
+        self.thisptr = NULL#<cBasePotential*>new cBasePotential()
     
     def __dealloc__(self):
-        del self.thisptr
+        if self.thisptr != NULL:
+            del self.thisptr
+            self.thisptr = NULL
     
 #    def getEnergyGradientInplace(self,
 #                        np.ndarray[double, ndim=1] x not None,

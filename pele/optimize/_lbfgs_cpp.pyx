@@ -5,10 +5,12 @@ from pele.potentials cimport _pele
 from pele.optimize import Result
 cimport cython
 from pele.potentials import _pythonpotential
+import sys
 
 class _PotentialWrapper(_pythonpotential.PythonPotential):
     def __init__(self, pot):
         self.pot = pot
+#        self.getEnergy = pot.getEnergy
         self.getEnergyGradient = pot.getEnergyGradient
 
 # import the externally defined ljbfgs implementation
@@ -16,8 +18,8 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
     cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
         cppLBFGS(_pele.cBasePotential *, _pele.Array[double] &, double, int) except +
 
-        void run() except +
-        void one_iteration() except +
+        void run() except *
+        void one_iteration() except *
         double get_f()
         _pele.Array[double] get_x()
         _pele.Array[double] get_g()
@@ -41,13 +43,13 @@ cdef class LBFGS_CPP(object):
     """This class is the python interface for the c++ LBFGS implementation
     """
     cdef cppLBFGS *thisptr
-#    cdef _pele.BasePotential pot
+    cdef _pele.BasePotential pot # this is stored so that the memory is not freed
     
     def __cinit__(self, x0, potential, double tol=1e-4, int M=4, double maxstep=0.1, 
                   double maxErise=1e-4, double H0=0.1, int iprint=-1, 
                   int nsteps=10000, int verbosity=0):
         if not issubclass(potential.__class__, _pele.BasePotential):
-            print "LBFGS_cpp: potential is not subclass of BasePotential; wrapping it.", potential
+            print "LBFGS_CPP: potential is not subclass of BasePotential; wrapping it.", potential
             potential = _PotentialWrapper(potential)
         cdef _pele.BasePotential pot = potential
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
@@ -61,17 +63,15 @@ cdef class LBFGS_CPP(object):
         opt.set_max_iter(nsteps)
         opt.set_verbosity(verbosity)
         opt.set_iprint(iprint)
-#        self.pot = pot
+        self.pot = pot # so that the memory is not freed
         
     def __dealloc__(self):
-        del self.thisptr
+        if self.thisptr != NULL:
+            del self.thisptr
+            self.thisptr = NULL
         
     def run(self):
         self.thisptr.run()
-                       
-#       x = np.ctypeslib.as_array(xptr, size=N)
-#        if ret != 0 and ret != -1001: # ignore rounding errors
-#            raise RuntimeError("lbfgs failed with error code %d:"%self.thisptr.error_code(), self.thisptr.error_string())    
         return self.get_result()
 
     @cython.boundscheck(False)

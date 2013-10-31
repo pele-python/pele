@@ -5,7 +5,7 @@ from pele import basinhopping
 from pele.storage import Database
 from pele.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 from pele.utils.xyz import write_xyz
-from pele.optimize import mylbfgs
+from pele.optimize import lbfgs_cpp
 from pele.transition_states._nebdriver import NEBDriver
 from pele.transition_states import FindTransitionState
 from pele.thermodynamics import logproduct_freq2, normalmodes
@@ -148,7 +148,7 @@ class BaseSystem(object):
         """return a function to minimize the structure"""
         pot = self.get_potential()
         kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
-        return lambda coords: mylbfgs(coords, pot, **kwargs)
+        return lambda coords: lbfgs_cpp(coords, pot, **kwargs)
     
     def get_compare_exact(self):
         """object that returns True if two structures are exact.

@@ -51,6 +51,24 @@ class TestOptimizeBooth(TestOptimizersBeale):
         self.x = self.system.get_random_configuration()
 
 
+def mytest():
+    system = test_functions.BealeSystem()
+    print "do pot"
+    pot = system.get_potential()
+    print "done pot"
+    x = pot.target_coords.copy() 
+    x += np.random.uniform(-0.2, 0.2, x.shape)
+    from pele.optimize import LBFGS_CPP
+    lbfgs = LBFGS_CPP(x, pot, verbosity=100)
+    print "done setting up"
+    res = lbfgs.run()
+    res = _quench.lbfgs_cpp(x, pot, verbosity=100)
+#    print res
+    print res
+    
+
 
 if __name__ == "__main__":
+#    mytest()
+#    print "totally finished!!!"
     unittest.main()
