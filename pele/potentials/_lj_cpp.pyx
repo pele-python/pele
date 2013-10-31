@@ -36,15 +36,18 @@ cdef class LJ(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
     cpdef bool periodic 
-    def __cinit__(self, eps=1.0, sigma=1.0, boxvec=None):
+    def __cinit__(self, eps=1.0, sig=1.0, boxvec=None, boxl=None):
+        assert not (boxvec is not None and boxl is not None)
+        if boxl is not None:
+            boxvec = [boxl] * 3
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
             self.periodic = False
-            self.thisptr = <_pele.cBasePotential*>new cLJ(4.*eps*sigma**6, 4.*eps*sigma**12)
+            self.thisptr = <_pele.cBasePotential*>new cLJ(4.*eps*sig**6, 4.*eps*sig**12)
         else:
             self.periodic = True
-            bv = np.array(boxvec)
-            self.thisptr = <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12,
+            bv = np.array(boxvec, dypte=float)
+            self.thisptr = <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sig**6, 4.*eps*sig**12,
                                                                   <double*> bv.data)
 
 cdef class LJCut(_pele.BasePotential):

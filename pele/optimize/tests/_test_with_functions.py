@@ -23,6 +23,9 @@ class TestOptimizersBeale(unittest.TestCase):
     def test_lbfgs_py(self):
         self.do_test(_quench.lbfgs_py)
 
+    def test_lbfgs_cpp(self):
+        self.do_test(_quench.lbfgs_cpp)
+
     def test_mylbfgs(self):
         self.do_test(_quench.mylbfgs)
 
