@@ -19,12 +19,18 @@ namespace pele {
 		 * Return the energy of configuration x.  This is the only function which
 		 * must be overloaded
 		 */
-		virtual double get_energy(Array<double> x) { return 0.0; }
+		virtual double get_energy(Array<double> x)
+		{
+			throw std::runtime_error("BasePotential::get_energy must be overloaded");
+		}
 
 		/**
 		 * compute the energy and gradient, but don't intialize the gradient to zero
 		 */
-		virtual double add_energy_gradient(Array<double> x, Array<double> grad) { return 0.0; }
+		virtual double add_energy_gradient(Array<double> x, Array<double> grad)
+		{
+			throw std::runtime_error("BasePotential::add_energy_gradient must be overloaded");
+		}
 
 		/**
 		 * compute the energy and gradient.  If not overloaded it will compute the numerical gradient
@@ -33,6 +39,7 @@ namespace pele {
 		{
 			double energy = get_energy(x);
 			numerical_gradient(x, grad);
+//			std::cout << "get_energy_gradient " << energy << " grad[0] " << grad[0] << "\n";
 			return energy;
 		}
 

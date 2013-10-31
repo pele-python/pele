@@ -169,7 +169,7 @@ class TestATLJ(unittest.TestCase):
         atlj = ATLJ(Z=3.)
         
         e, Gf = atlj.getEnergyGradientFortran(coords)
-        e, Gn = atlj.getEnergyGradientNumerical(coords)
+        Gn = atlj.NumericalDerivative(coords)
         print Gf
         print Gn
         maxdiff = np.max(np.abs(Gf-Gn))

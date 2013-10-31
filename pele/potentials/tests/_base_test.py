@@ -9,7 +9,8 @@ class _BaseTest(unittest.TestCase):
     
     def grad_test(self, x):
         e, g = self.pot.getEnergyGradient(x)
-        e1, numerical_g = self.pot.getEnergyGradientNumerical(x)
+        e1 = self.pot.getEnergy(x)
+        numerical_g = self.pot.NumericalDerivative(x)
         self.assertLess(np.max(np.abs(g - numerical_g)), 1e-3)
         self.assertAlmostEqual(e, e1, 4)
     

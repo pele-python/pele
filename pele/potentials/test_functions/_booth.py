@@ -12,7 +12,7 @@ class Booth(BasePotential):
     xmax = np.array([10., 10.])
     def getEnergy(self, coords):
         x, y = coords
-        return (x + 2*y - 7)**2 + (2*x + y - 5)**2
+        return (x + 2.*y - 7.)**2 + (2.*x + y - 5.)**2
 
 
 class BoothSystem(BaseSystem):

@@ -1,7 +1,7 @@
 import numpy as np
 
 import fortran.ljcut as _ljcut
-from pele.potentials import BasePotentialAtomistic
+from pele.potentials.potential import BasePotentialAtomistic
 
 __all__ = ["LJCut"]
 
