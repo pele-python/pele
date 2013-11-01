@@ -5,7 +5,6 @@ import os
 import _base_test
 from pele.potentials._pythonpotential import CppPotentialWrapper
 from pele.potentials import BasePotential
-from rpy2.robjects.lib.grid import Unit
 
 ndof = 4
 _xrand = np.random.uniform(-1,1,[ndof])
@@ -56,7 +55,6 @@ class TestEGWrapped(_base_test._BaseTest):
 class TestRaised(unittest.TestCase):
     """test the raised errors are transmitted properly through c++"""
     def setUp(self):
-        self.pot = CppPotentialWrapper(_Raise())
         self.xrandom = _xrand
     
     def test_raises(self):
