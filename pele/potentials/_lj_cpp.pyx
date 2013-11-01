@@ -97,7 +97,8 @@ cdef class LJInteractionList(_pele.BasePotential):
         self.thisptr = <_pele.cBasePotential*>new cLJ_Ilist( _pele.Array[long](<long*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12)
 
 cdef class BLJCut(_pele.BasePotential):
-    def __cinit__(self, natoms, ntypeA, boxl=None, rcut=2.5, epsBB=0.5, sigBB=0.88, epsAB=1.5, sigAB=0.8):
+    def __cinit__(self, natoms, ntypeA, boxl=None, rcut=2.5, epsAA=1., sigAA=1., 
+                   epsBB=0.5, sigBB=0.88, epsAB=1.5, sigAB=0.8):
         sigAA = 1.
         epsAA = 1.
         cdef np.ndarray[size_t, ndim=1] atomsAnp = np.array([range(ntypeA)],         dtype=np.uintp).reshape(-1)
