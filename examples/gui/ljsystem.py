@@ -16,18 +16,18 @@ class LJSystem(LJCluster):
         if dlg.result() == QtGui.QDialog.Rejected:
             raise BaseException("Aborted parameter dialog")
         super(LJSystem, self).__init__(self.natoms)
-        self.params.gui.basinhopping_nsteps = 1000
+#        self.params.gui.basinhopping_nsteps = 1000
     
-    def get_optim_spawner(self, coords1, coords2):
-        from pele.systems.spawn_OPTIM import SpawnOPTIM_LJ
-        import os
-#        # TODO: this should be passable somehow
-#        optim = os.path.expanduser("~")+"/git/OPTIM/source/build/OPTIM"
-##        optim = "OPTIM"
-        optim = config.get("exec", "OPTIM")
-        optim = os.path.expandvars(os.path.expanduser(optim))
-        print "optim executable", optim
-        return SpawnOPTIM_LJ(coords1, coords2, self, OPTIM=optim, tempdir=True)
+#    def get_optim_spawner(self, coords1, coords2):
+#        from pele.systems.spawn_OPTIM import SpawnOPTIM_LJ
+#        import os
+##        # TODO: this should be passable somehow
+##        optim = os.path.expanduser("~")+"/git/OPTIM/source/build/OPTIM"
+###        optim = "OPTIM"
+#        optim = config.get("exec", "OPTIM")
+#        optim = os.path.expandvars(os.path.expanduser(optim))
+#        print "optim executable", optim
+#        return SpawnOPTIM_LJ(coords1, coords2, self, OPTIM=optim, tempdir=True)
 
 
 class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):

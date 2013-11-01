@@ -80,7 +80,6 @@ namespace pele {
 				get_energy_gradient(x, gplus);
 				x[i] = xbackup;
 
-				size_t i1 = N*i;
 				for (size_t j=0; j<x.size(); ++j){
 		            // hess[i,:] = (g1 - g2) / (2. * eps)
 					hess[N*i + j] = (gplus[j] - gminus[j]) / (2.*eps);

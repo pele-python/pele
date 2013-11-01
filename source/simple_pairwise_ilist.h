@@ -69,7 +69,7 @@ namespace pele
 
 #ifndef NDEBUG
         for(size_t i=0; i<nlist; ++i)
-            assert(_ilist[i] < natoms);
+            assert(_ilist[i] < (long int)natoms);
 #endif
 
         for(size_t i=0; i<nlist; i+=2) {
@@ -96,7 +96,7 @@ namespace pele
            distance_policy>::get_energy(Array<double> x)
     {
         double e=0.;
-        size_t const natoms = x.size()/3;
+//        size_t const natoms = x.size()/3;
         size_t const nlist = _ilist.size();
 
         for(size_t i=0; i<nlist; i+=2) {
@@ -104,7 +104,7 @@ namespace pele
             size_t i2 = 3*_ilist[i+1];
             double dr[3];
             for(size_t k=0; k<3; ++k)
-                dr[k] = x(i1+k) - x(i2+k);
+                dr[k] = x[i1+k] - x[i2+k];
             double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
             e += _interaction->energy(r2);
         }

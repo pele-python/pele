@@ -25,7 +25,7 @@ namespace pele {
 					_atoms2(atoms2.copy()),
 					_one_list(false)
 		{
-			cout << "using two lists with natoms " << _atoms1.size() << " " << _atoms2.size() << "\n";
+            std::cout << "using two lists with natoms " << _atoms1.size() << " " << _atoms2.size() << "\n";
 		}
 		AtomListPotential(pairwise_interaction * interaction, distance_policy * dist,
 				Array<size_t> & atoms1) :
@@ -35,7 +35,7 @@ namespace pele {
 					_atoms2(_atoms1),
 					_one_list(true)
 		{
-			cout << "using one list with natoms " << _atoms2.size() << "\n";
+            std::cout << "using one list with natoms " << _atoms2.size() << "\n";
 		}
 
 

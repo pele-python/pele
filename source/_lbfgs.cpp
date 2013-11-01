@@ -70,7 +70,7 @@ LBFGS::LBFGS(
 
   // set up the current location
   for (size_t j2 = 0; j2 < N; ++j2){
-    x_[j2] = x0(j2);
+    x_[j2] = x0[j2];
   }
   compute_func_gradient(x_, f_, g_);
   rms_ = vecnorm(g_) / sqrt(N);

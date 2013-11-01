@@ -182,7 +182,7 @@ namespace pele {
         dtype operator[](size_t i) const { return _data[i]; }
 
         /// read only access to element in array
-        dtype operator()(size_t i) const { return _data[i]; }
+//        dtype operator()(size_t i) const { return _data[i]; }
 
         Array<dtype> &operator=(dtype d) {
             for(size_t i=0; i<_size; ++i)
@@ -196,7 +196,7 @@ namespace pele {
         out << "[ ";
         for(size_t i=0; i<a.size();++i) {
             if(i>0) out << ", ";
-            out << a(i);
+            out << a[i];
         }
         out << " ]";
         return out;

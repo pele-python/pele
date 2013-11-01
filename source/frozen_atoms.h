@@ -37,7 +37,7 @@ namespace pele{
 
                 // do a sanity check
                 if (_frozen_dof.size() > 0){
-                    assert(_frozen_dof[_frozen_dof.size()-1] < ndof());
+                    assert(_frozen_dof[_frozen_dof.size()-1] < (long int)ndof());
                 }
 
                 //populate _mobile_dof
