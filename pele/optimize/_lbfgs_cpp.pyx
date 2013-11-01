@@ -14,23 +14,23 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
 
         void run() except *
         void one_iteration() except *
-        double get_f()
-        _pele.Array[double] get_x()
-        _pele.Array[double] get_g()
+        double get_f() except +
+        _pele.Array[double] get_x() except +
+        _pele.Array[double] get_g() except +
         
-        void set_H0(double)
-        void set_tol(double)
-        void set_maxstep(double)
-        void set_max_f_rise(double)
-        void set_max_iter(int)
-        void set_iprint(int)
-        void set_verbosity(int)
+        void set_H0(double) except +
+        void set_tol(double) except +
+        void set_maxstep(double) except +
+        void set_max_f_rise(double) except +
+        void set_max_iter(int) except +
+        void set_iprint(int) except +
+        void set_verbosity(int) except +
 
-        double get_rms()
-        double get_H0()
-        int get_nfev()
-        int get_niter()
-        int success()
+        double get_rms() except +
+        double get_H0() except +
+        int get_nfev() except +
+        int get_niter() except +
+        int success() except +
 
 
 cdef class LBFGS_CPP(object):

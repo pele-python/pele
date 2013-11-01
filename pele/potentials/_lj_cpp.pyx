@@ -121,4 +121,9 @@ cdef class BLJCut(_pele.BasePotential):
         self.thisptr = <_pele.cBasePotential*> combpot
 
     
-    
+cdef class _ErrorPotential(_pele.BasePotential):
+    """this is a test potential which should raise an exception when called
+    """
+    def __cinit__(self):
+        self.thisptr = <_pele.cBasePotential*>new _pele.cBasePotential()
+  

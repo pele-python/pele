@@ -15,10 +15,10 @@ cdef extern from "array.h" namespace "pele":
 cdef extern from "base_potential.h" namespace "pele":
     cdef cppclass  cBasePotential "pele::BasePotential":
         cBasePotential() except +
-        double get_energy(Array[double] &x) except *
-        double get_energy_gradient(Array[double] &x, Array[double] &grad) except *
-        void numerical_gradient(Array[double] &x, Array[double] &grad, double eps) except *
-        void numerical_hessian(Array[double] &x, Array[double] &hess, double eps) except *
+        double get_energy(Array[double] &x) except +
+        double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
+        void numerical_gradient(Array[double] &x, Array[double] &grad, double eps) except +
+        void numerical_hessian(Array[double] &x, Array[double] &hess, double eps) except +
             
 cdef extern from "potentialfunction.h" namespace "pele":
     cdef cppclass  cPotentialFunction "pele::PotentialFunction":
@@ -34,7 +34,7 @@ cdef class BasePotential:
 cdef extern from "combine_potentials.h" namespace "pele":
     cdef cppclass  cCombinedPotential "pele::CombinedPotential":
         cCombinedPotential()
-        double get_energy(Array[double] &x) except *
-        double get_energy_gradient(Array[double] &x, Array[double] &grad) except *
+        double get_energy(Array[double] &x) except +
+        double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
         void add_potential(cBasePotential * potential) except *
     
