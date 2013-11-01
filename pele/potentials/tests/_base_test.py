@@ -21,13 +21,13 @@ class _BaseTest(unittest.TestCase):
     def test_grad_min(self):
         e, g = self.pot.getEnergyGradient(self.xmin)
         self.assertAlmostEqual(e, self.Emin, 4)
-        self.assertLess(np.max(np.abs(g)), 1e-4)
+        self.assertLess(np.max(np.abs(g)), 1e-3)
         self.grad_test(self.xmin)
 
     def test_hess_min(self):
         h = self.pot.getHessian(self.xmin)
         eigenvals = np.linalg.eigvals(h)
-        self.assertGreater(np.min(eigenvals), 0.)
+        self.assertGreater(np.min(eigenvals), -1e-4)
     
     def test_random(self):
         self.grad_test(self.xrandom)
