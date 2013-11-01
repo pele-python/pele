@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 from pele.potentials._pythonpotential import CppPotentialWrapper
-from pele.potentials import BasePotential
+from pele.potentials import BasePotential, _lj_cpp
 from pele.optimize import LBFGS_CPP
 
 ndof = 4
@@ -23,10 +23,17 @@ class _EG(object):
 
 class _Raise(BasePotential):
     def getEnergy(self, x):
+        print "get ener grad"
         raise NotImplementedError
+    def getEnergyGradient(self, x):
+        print "get ener grad"
+        raise NotImplementedError
+        print "no go"
 
 class TestLBFGS_CPP_PP(unittest.TestCase):
     def test_raises(self):
+#        with self.assertRaises(BaseException):
+#            lbfgs = LBFGS_CPP(_xrand, _Raise())
         with self.assertRaises(NotImplementedError):
             lbfgs = LBFGS_CPP(_xrand, _Raise())
             lbfgs.run()
@@ -46,6 +53,14 @@ class TestLBFGS_CPP(unittest.TestCase):
     def test_EG(self):
         self.do_test(_EG())
 
+class TestLBFGS_CPP_Raises(unittest.TestCase):
+    def test_raises(self):
+        pot = _lj_cpp._ErrorPotential()
+        with self.assertRaises(BaseException):
+            lbfgs = LBFGS_CPP(_xrand, pot)
+        with self.assertRaises(BaseException):
+            lbfgs = LBFGS_CPP(_xrand, pot)
+            lbfgs.run()
 
 
 if __name__ == "__main__":
