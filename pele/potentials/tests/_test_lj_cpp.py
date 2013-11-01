@@ -15,6 +15,7 @@ class TestLJ_CPP(_base_test._BaseTest):
         xyz = read_xyz(open(current_dir + "/_lj13_gmin.xyz", "r"))
         self.xmin = xyz.coords.reshape(-1).copy()
         self.Emin = float(xyz.title)
+    
 
 if __name__ == "__main__":
     unittest.main()

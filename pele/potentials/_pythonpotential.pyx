@@ -55,4 +55,13 @@ cdef class PythonPotential(_pele.BasePotential):
         raise NotImplementedError        
 
     def getEnergyGradient(self, x):
-        raise NotImplementedError        
+        raise NotImplementedError
+
+class CppPotentialWrapper(PythonPotential):
+    """wrap a python potential to be used in c++"""
+    def __init__(self, pot):
+        self.pot = pot
+        self.getEnergy = pot.getEnergy
+        self.getEnergyGradient = pot.getEnergyGradient
+
+

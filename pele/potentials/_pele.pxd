@@ -36,5 +36,5 @@ cdef extern from "combine_potentials.h" namespace "pele":
         cCombinedPotential()
         double get_energy(Array[double] &x) except *
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except *
-        void add_potential(cBasePotential * potential)
+        void add_potential(cBasePotential * potential) except *
     

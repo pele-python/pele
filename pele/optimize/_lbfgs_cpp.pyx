@@ -1,17 +1,11 @@
 import numpy as np
 cimport numpy as np
-from pele.potentials import _pele
+from pele.potentials import _pele, _pythonpotential
 from pele.potentials cimport _pele
 from pele.optimize import Result
 cimport cython
 from pele.potentials import _pythonpotential
 import sys
-
-class _PotentialWrapper(_pythonpotential.PythonPotential):
-    def __init__(self, pot):
-        self.pot = pot
-#        self.getEnergy = pot.getEnergy
-        self.getEnergyGradient = pot.getEnergyGradient
 
 # import the externally defined ljbfgs implementation
 cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
@@ -50,7 +44,7 @@ cdef class LBFGS_CPP(object):
                   int nsteps=10000, int verbosity=0):
         if not issubclass(potential.__class__, _pele.BasePotential):
             print "LBFGS_CPP: potential is not subclass of BasePotential; wrapping it.", potential
-            potential = _PotentialWrapper(potential)
+            potential = _pythonpotential.CppPotentialWrapper(potential)
         cdef _pele.BasePotential pot = potential
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
         self.thisptr = <cppLBFGS*>new cppLBFGS(pot.thisptr, 
