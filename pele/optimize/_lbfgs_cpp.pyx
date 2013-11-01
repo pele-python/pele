@@ -12,8 +12,8 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
     cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
         cppLBFGS(_pele.cBasePotential *, _pele.Array[double] &, double, int) except +
 
-        void run() except *
-        void one_iteration() except *
+        void run() except +
+        void one_iteration() except +
         double get_f() except +
         _pele.Array[double] get_x() except +
         _pele.Array[double] get_g() except +
@@ -44,6 +44,7 @@ cdef class LBFGS_CPP(object):
                   int nsteps=10000, int verbosity=0):
         if not issubclass(potential.__class__, _pele.BasePotential):
             print "LBFGS_CPP: potential is not subclass of BasePotential; wrapping it.", potential
+            print "           Wrapping the potential like this is dangerous.  All python exceptions will be ignored"
             potential = _pythonpotential.CppPotentialWrapper(potential)
         cdef _pele.BasePotential pot = potential
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)

@@ -9,8 +9,8 @@ cdef extern from "array.h" namespace "pele":
     cdef cppclass Array[dtype] :
         Array() except +
         Array(dtype*, size_t n) except +
-        size_t size()
-        dtype *data()
+        size_t size() except +
+        dtype *data() except +
 
 cdef extern from "base_potential.h" namespace "pele":
     cdef cppclass  cBasePotential "pele::BasePotential":
@@ -33,8 +33,8 @@ cdef class BasePotential:
     
 cdef extern from "combine_potentials.h" namespace "pele":
     cdef cppclass  cCombinedPotential "pele::CombinedPotential":
-        cCombinedPotential()
+        cCombinedPotential() except +
         double get_energy(Array[double] &x) except +
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
-        void add_potential(cBasePotential * potential) except *
+        void add_potential(cBasePotential * potential) except +
     
