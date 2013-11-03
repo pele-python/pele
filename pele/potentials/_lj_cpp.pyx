@@ -2,6 +2,7 @@ cimport pele.potentials._pele as _pele
 import numpy as np
 cimport numpy as np
 from cpython cimport bool
+from ctypes import c_size_t as size_t
 
 # use external c++ class
 cdef extern from "lj.h" namespace "pele":
@@ -101,8 +102,8 @@ cdef class BLJCut(_pele.BasePotential):
                    epsBB=0.5, sigBB=0.88, epsAB=1.5, sigAB=0.8):
         sigAA = 1.
         epsAA = 1.
-        cdef np.ndarray[size_t, ndim=1] atomsAnp = np.array([range(ntypeA)],         dtype=np.uintp).reshape(-1)
-        cdef np.ndarray[size_t, ndim=1] atomsBnp = np.array([range(ntypeA, natoms)], dtype=np.uintp).reshape(-1)
+        cdef np.ndarray[size_t, ndim=1] atomsAnp = np.array([range(ntypeA)],         dtype=size_t).reshape(-1)
+        cdef np.ndarray[size_t, ndim=1] atomsBnp = np.array([range(ntypeA, natoms)], dtype=size_t).reshape(-1)
         cdef _pele.Array[size_t] atomsA = _pele.Array[size_t](<size_t*> atomsAnp.data, <size_t>atomsAnp.size)
         cdef _pele.Array[size_t] atomsB = _pele.Array[size_t](<size_t*> atomsBnp.data, <size_t>atomsBnp.size)
         cdef _pele.cCombinedPotential* combpot = new _pele.cCombinedPotential()
