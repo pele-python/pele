@@ -13,10 +13,12 @@ _emin = 0.
 
 class _Eonly(BasePotential):
     def getEnergy(self, x):
+#         print "getting energy"
         return np.dot(x, x)
 
 class _EG(_Eonly):
     def getEnergyGradient(self, x):
+        print "in python getEnergyGradient"
         return self.getEnergy(x), 2. * x
 
 class _Raise(BasePotential):
@@ -71,5 +73,19 @@ class TestRaised(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             p.getEnergyGradient(_xrand)
 
+
+def simplertest():
+    pot = CppPotentialWrapper(_Eonly())
+    e = pot.getEnergy(_xrand)
+    print "energy", e
+    e, g = pot.getEnergyGradient(_xrand)
+    print "energy", e
+    print "grad", g
+    print "hess", pot.NumericalHessian(_xrand)
+
+    print pot.NumericalDerivative(_xrand)
+    print "done done done"
+
 if __name__ == "__main__":
+#     simplertest()
     unittest.main()

@@ -2,7 +2,12 @@ from pele.potentials cimport _pele
 import numpy as np
 cimport numpy as np
 cimport cython
+from cpython.ref cimport PyObject
 
+cdef extern from "potentialfunction.h" namespace "pele":
+    cdef cppclass  cPythonPotentialNew "pele::PythonPotential":
+        cPythonPotentialNew(PyObject *potential) except +
+    
 @cython.boundscheck(False)
 cdef double _python_grad(_pele.Array[double] x, _pele.Array[double] grad, void *userdata) except *:
     cdef double *xdata = x.data()
@@ -57,11 +62,28 @@ cdef class PythonPotential(_pele.BasePotential):
     def getEnergyGradient(self, x):
         raise NotImplementedError
 
-class CppPotentialWrapper(PythonPotential):
+class CppPotentialWrapperOld(PythonPotential):
     """wrap a python potential to be used in c++"""
     def __init__(self, pot):
         self.pot = pot
         self.getEnergy = pot.getEnergy
         self.getEnergyGradient = pot.getEnergyGradient
+
+cdef class CppPotentialWrapper1(_pele.BasePotential):
+#     cdef potential 
+    def __cinit__(self, *args, **kwargs):
+        self.thisptr = <_pele.cBasePotential*>new cPythonPotentialNew(
+                                           <PyObject*>self)
+#         self.potential = potential
+#         self.getEnergy = potential.getEnergy
+#         self.getEnergyGradient = potential.getEnergyGradient
+
+class CppPotentialWrapper(CppPotentialWrapper1):
+    """wrap a python potential to be used in c++"""
+    def __init__(self, pot):
+        self.pot = pot
+        self.getEnergy = pot.getEnergy
+        self.getEnergyGradient = pot.getEnergyGradient
+#         self.NumericalGradient = pot.NumericalGradient
 
 
