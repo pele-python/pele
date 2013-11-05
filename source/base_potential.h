@@ -48,7 +48,6 @@ namespace pele {
 		 */
 		virtual void numerical_gradient(Array<double> x, Array<double> grad, double eps=1e-6)
 		{
-            std::cout << "in cpp numerical_gradient\n";
 			assert(x.size() == grad.size());
 
 			Array<double> xnew(x.copy());

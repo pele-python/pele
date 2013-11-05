@@ -49,9 +49,14 @@ namespace pele {
                 :    _potential(potential)
             {
                 Py_XINCREF(_potential);
+
+                // import the the numpy array API.  This is not the correct way
+                // to do it, this function should be called in the
+                // initialization routine of the module file.   Aslo, it should only be called 
                 import_array();
-                std::cout << "in constructor: done calling numpy import_array()\n";
+                //std::cout << "in constructor: done calling numpy import_array()\n";
             }
+
             ~PythonPotential() { 
                 Py_XDECREF(_potential); 
             }
@@ -60,14 +65,14 @@ namespace pele {
             { 
                 // create a numpy array from x
                 // this wraps the data which is unsafe becase the python object might live longer than the data in x.data
-                std::cout << "creating numpy array\n";
+                //std::cout << "creating numpy array\n";
                 npy_intp N = (npy_intp) x.size();
                 PyObject * numpyx = PyArray_SimpleNewFromData(1, &N, NPY_DOUBLE, static_cast<void*>(x.data()));
                 if (!numpyx){
                     cerr << "created numpy object is NULL\n";
                     throw std::runtime_error("created numpy object is NULL\n");
                 }
-                
+
                 // call the function getEnergy
                 PyObject * name = PyString_FromString("getEnergy");
                 PyObject * returnval = PyObject_CallMethodObjArgs(_potential, name, numpyx, NULL);
@@ -76,9 +81,9 @@ namespace pele {
                 if (!returnval){
                     //parse error
                     cout << "getEnergy returned a NULL pointer\n";
-                    throw std::runtime_error("getEnergy return is NULL");
+                    throw std::runtime_error("getEnergy returned NULL");
                 }
-                std::cout << "    done calling get energy\n";
+                //std::cout << "    done calling get energy\n";
 
                 // parse the returned tuple
                 double energy = PyFloat_AsDouble(returnval);
@@ -95,38 +100,42 @@ namespace pele {
 
                 // create a numpy array from x
                 // this wraps the data which is unsafe becase the python object might live longer than the data in x.data
-                std::cout << "in get_energy_gradient\n";
+                //std::cout << "in get_energy_gradient\n";
                 npy_intp N = (npy_intp) x.size();
                 PyObject * numpyx = PyArray_SimpleNewFromData(1, &N, NPY_DOUBLE, static_cast<void*>(x.data()));
+                if (!numpyx){
+                    cerr << "created numpy object is NULL\n";
+                    throw std::runtime_error("created numpy object is NULL\n");
+                }
                 
                 // call the function getEnergy
                 PyObject * name = PyString_FromString("getEnergyGradient");
                 PyObject * returnval = PyObject_CallMethodObjArgs(_potential, name, numpyx, NULL);
+                Py_XDECREF(numpyx); 
+                Py_XDECREF(name); 
                 if (!returnval){
                     //parse error
                     throw std::runtime_error("getEnergyGradient return is NULL");
                 }
-                std::cout << "    done calling get energy gradient\n";
+                //std::cout << "    done calling get energy gradient\n";
 
-                // parse the returned tuple
+                // parse the returned tuple into a doulbe and a numpy array
                 double energy;
                 PyObject * numpy_grad; //the reference count for this does not need to be decreased
-                if (!PyArg_ParseTuple(returnval, "dO", &energy, &numpy_grad)) 
+                if (!PyArg_ParseTuple(returnval, "dO", &energy, &numpy_grad)){
                     throw std::runtime_error("failed to parse the tuple");
-                std::cout << "    done parsing tuple\n";
+                }
+                //std::cout << "    done parsing tuple\n";
 
                 //copy the gradient into grad
                 double * gdata = (double*) PyArray_DATA(numpy_grad);
                 for (size_t i = 0; i < grad.size(); ++i){
                     grad[i] = gdata[i];
                 }
-                std::cout << "    done copying grad\n";
+                //std::cout << "    done copying grad\n";
 
                 // decrease referenece counts on Python objects
-                Py_XDECREF(numpyx); 
-                Py_XDECREF(name); 
                 Py_XDECREF(returnval); 
-                //Py_XDECREF(numpy_grad);
 
                 return energy;
             }

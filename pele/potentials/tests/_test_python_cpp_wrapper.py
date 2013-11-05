@@ -18,7 +18,7 @@ class _Eonly(BasePotential):
 
 class _EG(_Eonly):
     def getEnergyGradient(self, x):
-        print "in python getEnergyGradient"
+#         print "in python getEnergyGradient"
         return self.getEnergy(x), 2. * x
 
 class _Raise(BasePotential):
@@ -88,17 +88,17 @@ def simplertest():
 
 def exceptiontest():
     pot = CppPotentialWrapper(_Raise())
-    e = pot.getEnergy(_xrand)
-    print "energy", e
-    e, g = pot.getEnergyGradient(_xrand)
-    print "energy", e
-    print "grad", g
+#     e = pot.getEnergy(_xrand)
+#     print "energy", e
+#     e, g = pot.getEnergyGradient(_xrand)
+#     print "energy", e
+#     print "grad", g
+    print pot.NumericalDerivative(_xrand)
     print "hess", pot.NumericalHessian(_xrand)
 
-    print pot.NumericalDerivative(_xrand)
     print "done done done"
 
 if __name__ == "__main__":
 #     simplertest()
-    exceptiontest()
-#     unittest.main()
+#     exceptiontest()
+    unittest.main()

@@ -23,16 +23,13 @@ class _EG(object):
 
 class _Raise(BasePotential):
     def getEnergy(self, x):
-        print "get ener grad"
         raise NotImplementedError
     def getEnergyGradient(self, x):
-        print "get ener grad"
         raise NotImplementedError
-        print "no go"
 
 class TestLBFGS_CPP_PP(unittest.TestCase):
     def test_raises(self):
-        with self.assertRaises(BaseException):
+        with self.assertRaises(NotImplementedError):
             lbfgs = LBFGS_CPP(_xrand, _Raise())
         with self.assertRaises(NotImplementedError):
             lbfgs = LBFGS_CPP(_xrand, _Raise())
@@ -56,9 +53,9 @@ class TestLBFGS_CPP(unittest.TestCase):
 class TestLBFGS_CPP_Raises(unittest.TestCase):
     def test_raises(self):
         pot = _lj_cpp._ErrorPotential()
-        with self.assertRaises(BaseException):
+        with self.assertRaises(RuntimeError):
             lbfgs = LBFGS_CPP(_xrand, pot)
-        with self.assertRaises(BaseException):
+        with self.assertRaises(RuntimeError):
             lbfgs = LBFGS_CPP(_xrand, pot)
             lbfgs.run()
 
