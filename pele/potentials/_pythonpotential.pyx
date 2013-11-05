@@ -1,8 +1,16 @@
 from pele.potentials cimport _pele
 import numpy as np
 cimport numpy as np
+cimport numpy as cnp
 cimport cython
 from cpython.ref cimport PyObject
+
+# import the numpy array api.  this is necessary because some files
+# used by this module use the numpy c-api.
+# see the miscillaneous section and "importing the api"
+# http://docs.scipy.org/doc/numpy/reference/c-api.array.html
+# also see http://mail.scipy.org/pipermail/numpy-discussion/2011-December/059612.html
+cnp.import_array()
 
 cdef extern from "potentialfunction.h" namespace "pele":
     cdef cppclass  cPythonPotentialNew "pele::PythonPotential":

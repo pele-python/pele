@@ -50,11 +50,13 @@ namespace pele {
             {
                 Py_XINCREF(_potential);
 
-                // import the the numpy array API.  This is not the correct way
-                // to do it, this function should be called in the
-                // initialization routine of the module file.   Aslo, it should only be called 
-                import_array();
-                //std::cout << "in constructor: done calling numpy import_array()\n";
+                // import the the numpy array API.  This is commented because
+                // it is now done in the cython module file.  It is possible I
+                // need to define some preprocessor variables like
+                // NO_IMPORT_ARRAY and PY_ARRAY_UNIQUE_SYMBOL, but the
+                // documentation is a bit confusing.
+                // http://docs.scipy.org/doc/numpy/reference/c-api.array.html
+                //import_array();
             }
 
             ~PythonPotential() { 
