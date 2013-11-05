@@ -37,7 +37,9 @@ namespace pele{
 
                 // do a sanity check
                 if (_frozen_dof.size() > 0){
-                    assert(_frozen_dof[_frozen_dof.size()-1] < (long int)ndof());
+                    if (_frozen_dof[_frozen_dof.size()-1] >= (long int)ndof()) {
+                        throw std::runtime_error("index of frozen degree of freedom is out of bounds");
+                    }
                 }
 
                 //populate _mobile_dof
@@ -73,7 +75,9 @@ namespace pele{
              * set of coordinates with the frozen degrees of freedom removed.
              */
             Array<double> get_reduced_coords(Array<double> const &full_coords){
-                assert(full_coords.size() == ndof());
+                if (full_coords.size() != ndof()) {
+                    std::invalid_argument("full_coords has the wrong size");
+                }
                 Array<double> reduced_coords(ndof_mobile());
                 for (size_t i=0; i < ndof_mobile(); ++i){
                     reduced_coords[i] = full_coords[_mobile_dof[i]];
@@ -86,7 +90,9 @@ namespace pele{
              * of coordinates with the frozen degrees of freedom added back in.
              */
             Array<double> get_full_coords(Array<double> const &reduced_coords){
-                assert(reduced_coords.size() == ndof_mobile());
+                if (reduced_coords.size() != ndof_mobile()) {
+                    std::invalid_argument("reduced_coords has the wrong size");
+                }
                 // make a new array full_coords as a copy of _reference_coords.
                 //Array<double> const a(_reference_coords); //wrap _reference_coords in an Array (returns error due to _reference_coords being const)
                 ////Array<double> full_coords(a.copy());
@@ -131,7 +137,10 @@ namespace pele{
 
             inline double get_energy_gradient(Array<double> reduced_coords, Array<double> reduced_grad) 
             {
-                assert(reduced_grad.size() == _coords_converter.ndof_mobile());
+                if (reduced_grad.size() != _coords_converter.ndof_mobile()) {
+                    throw std::invalid_argument("reduced_grad has the wrong size");
+                }
+                
                 Array<double> full_coords(_coords_converter.get_full_coords(reduced_coords));
                 Array<double> gfull(_coords_converter.ndof());
                 double energy = _underlying_potential->get_energy_gradient(full_coords, gfull);

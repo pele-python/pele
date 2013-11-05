@@ -105,7 +105,9 @@ namespace pele {
 
             virtual double get_energy_gradient(Array<double> x, Array<double> grad)
             {
-                assert(x.size() == grad.size());
+                if (x.size() != grad.size()) {
+                    throw std::invalid_argument("grad.size() be the same as x.size()");
+                }
 
                 // create a numpy array from x
                 // this wraps the data which is unsafe becase the python object might live longer than the data in x.data

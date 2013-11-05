@@ -28,8 +28,8 @@ namespace pele {
          */
         Array(size_t size) : _size(size) 
         { 
-            _data = new dtype[size]; 
-            _allocated_memory = NULL;
+            _allocated_memory = new dtype[size]; 
+            _data = _allocated_memory;
             _reference_count = new long int;
             *_reference_count = 1;
         }
@@ -101,7 +101,9 @@ namespace pele {
         	_reference_count = x._reference_count;
         	_data = x._data;
         	_allocated_memory = x._allocated_memory;
-        	*_reference_count += 1;
+            if (_reference_count != NULL){
+                *_reference_count += 1;
+            }
         }
         
         /**
@@ -121,14 +123,16 @@ namespace pele {
          */
         Array<dtype> view(size_t ibegin, size_t iend)
         {
-            assert(iend > ibegin);
+            if (iend <= ibegin) {
+                throw std::invalid_argument("iend must larger than ibegin");
+            }
             Array<dtype> newarray();
             newarray._data = &_data[ibegin];
             newarray._allocated_memory = _allocated_memory;
             newarray._size = iend - ibegin;
             newarray._reference_count = _reference_count;
+            assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
             if (_allocated_memory != NULL){
-                assert(_reference_count != NULL);
                 *_reference_count += 1;
             }
             return newarray;

@@ -48,7 +48,9 @@ namespace pele {
 		 */
 		virtual void numerical_gradient(Array<double> x, Array<double> grad, double eps=1e-6)
 		{
-			assert(x.size() == grad.size());
+			if (x.size() != grad.size()) {
+                throw std::invalid_argument("grad.size() be the same as x.size()");
+            }
 
 			Array<double> xnew(x.copy());
 			for (size_t i=0; i<xnew.size(); ++i){
@@ -66,7 +68,9 @@ namespace pele {
 		 */
 		virtual void numerical_hessian(Array<double> x, Array<double> hess, double eps=1e-6)
 		{
-			assert(hess.size() == x.size()*x.size());
+			if (hess.size() != x.size()*x.size()) {
+                throw std::invalid_argument("hess.size() be the same as x.size()");
+            }
 			size_t const N = x.size();
 
 			Array<double> gplus(x.size());
