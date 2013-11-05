@@ -86,6 +86,19 @@ def simplertest():
     print pot.NumericalDerivative(_xrand)
     print "done done done"
 
+def exceptiontest():
+    pot = CppPotentialWrapper(_Raise())
+    e = pot.getEnergy(_xrand)
+    print "energy", e
+    e, g = pot.getEnergyGradient(_xrand)
+    print "energy", e
+    print "grad", g
+    print "hess", pot.NumericalHessian(_xrand)
+
+    print pot.NumericalDerivative(_xrand)
+    print "done done done"
+
 if __name__ == "__main__":
 #     simplertest()
-    unittest.main()
+    exceptiontest()
+#     unittest.main()

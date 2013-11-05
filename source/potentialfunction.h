@@ -10,6 +10,7 @@
 //#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
 using std::cout;
+using std::cerr;
 
 namespace pele {
 
@@ -47,50 +48,42 @@ namespace pele {
             PythonPotential(PyObject * potential)
                 :    _potential(potential)
             {
-                std::cout << "in constructor\n";
                 Py_XINCREF(_potential);
-                std::cout << "    leaving constructor\n";
                 import_array();
-                std::cout << "    done calling import_array()\n";
+                std::cout << "in constructor: done calling numpy import_array()\n";
             }
             ~PythonPotential() { 
-                std::cout << "in destructor\n";
                 Py_XDECREF(_potential); 
             }
 
             virtual double get_energy(Array<double> x) 
             { 
                 // create a numpy array from x
+                // this wraps the data which is unsafe becase the python object might live longer than the data in x.data
                 std::cout << "creating numpy array\n";
                 npy_intp N = (npy_intp) x.size();
                 PyObject * numpyx = PyArray_SimpleNewFromData(1, &N, NPY_DOUBLE, static_cast<void*>(x.data()));
-                //Py_XINCREF(numpyx);
-                std::cout << "    done creating numpy array\n" << std::endl;
+                if (!numpyx){
+                    cerr << "created numpy object is NULL\n";
+                    throw std::runtime_error("created numpy object is NULL\n");
+                }
                 
                 // call the function getEnergy
                 PyObject * name = PyString_FromString("getEnergy");
-                //Py_XINCREF(name);
-                std::cout << "    done creating python string\n" << std::endl;
                 PyObject * returnval = PyObject_CallMethodObjArgs(_potential, name, numpyx, NULL);
-                //Py_XINCREF(returnval);
-                std::cout << "    getEnergy returned1\n";
+                Py_XDECREF(name); 
+                Py_XDECREF(numpyx); 
                 if (!returnval){
                     //parse error
-                    std::cout << "    getEnergy returned2\n";
+                    cout << "getEnergy returned a NULL pointer\n";
                     throw std::runtime_error("getEnergy return is NULL");
                 }
                 std::cout << "    done calling get energy\n";
 
                 // parse the returned tuple
                 double energy = PyFloat_AsDouble(returnval);
-                //if (!PyArg_ParseTuple(returnval, "d", &energy)) 
-                    //throw std::runtime_error("failed to parse the tuple");
-                std::cout << "    done parsing return val " << energy << "\n";
 
                 // decrease referenece counts on Python objects
-                // I think this happens automatically when the object goes out of scope
-                Py_XDECREF(numpyx); 
-                Py_XDECREF(name); 
                 Py_XDECREF(returnval); 
 
                 return energy;
@@ -98,23 +91,19 @@ namespace pele {
 
             virtual double get_energy_gradient(Array<double> x, Array<double> grad)
             {
+                assert(x.size() == grad.size());
+
                 // create a numpy array from x
+                // this wraps the data which is unsafe becase the python object might live longer than the data in x.data
                 std::cout << "in get_energy_gradient\n";
                 npy_intp N = (npy_intp) x.size();
                 PyObject * numpyx = PyArray_SimpleNewFromData(1, &N, NPY_DOUBLE, static_cast<void*>(x.data()));
-                //Py_XINCREF(numpyx);
-                std::cout << "    done creating numpy array\n" << std::endl;
                 
                 // call the function getEnergy
                 PyObject * name = PyString_FromString("getEnergyGradient");
-                //Py_XINCREF(name);
-                std::cout << "    done creating python string\n" << std::endl;
                 PyObject * returnval = PyObject_CallMethodObjArgs(_potential, name, numpyx, NULL);
-                //Py_XINCREF(returnval);
-                std::cout << "    getEnergyGradient returned1\n";
                 if (!returnval){
                     //parse error
-                    std::cout << "    getEnergyGradient returned2\n";
                     throw std::runtime_error("getEnergyGradient return is NULL");
                 }
                 std::cout << "    done calling get energy gradient\n";
