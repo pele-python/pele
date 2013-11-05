@@ -21,6 +21,7 @@ namespace pele {
      * preferred method is to define a class separately for each potential, which
      * eliminates the need to pass around the void * userdata parameter.
      */
+    /*
     class PotentialFunction : public BasePotential
     {
         public:
@@ -38,8 +39,14 @@ namespace pele {
             EnergyGradientCallback *_get_energy_gradient;
             void *_userdata;
     };
+    */
 
 
+    /**
+     * This class derives from the c++ BasePotential, but wraps a pure python
+     * potential This is necessary to be able to use the functions in the pele
+     * c++ interface.
+     */
     class PythonPotential : public BasePotential
     {
             PyObject * _potential;
@@ -59,7 +66,7 @@ namespace pele {
                 //import_array();
             }
 
-            ~PythonPotential() { 
+            virtual ~PythonPotential() { 
                 Py_XDECREF(_potential); 
             }
 

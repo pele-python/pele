@@ -34,7 +34,7 @@ namespace pele
 	public:
 		virtual double get_energy(Array<double> x);
 		virtual double get_energy_gradient(Array<double> x, Array<double> grad);
-		~SimplePairwisePotential() 
+		virtual ~SimplePairwisePotential() 
         { 
             if (_interaction != NULL) delete _interaction; 
             if (_dist != NULL) delete _dist; 

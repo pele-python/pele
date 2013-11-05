@@ -40,7 +40,7 @@ namespace pele {
 
 
 	public:
-		~AtomListPotential()
+		virtual ~AtomListPotential()
 		{
 			if (_interaction != NULL) delete _interaction;
 			if (_dist != NULL) delete _dist;

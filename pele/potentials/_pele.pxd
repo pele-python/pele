@@ -20,12 +20,12 @@ cdef extern from "base_potential.h" namespace "pele":
         void numerical_gradient(Array[double] &x, Array[double] &grad, double eps) except +
         void numerical_hessian(Array[double] &x, Array[double] &hess, double eps) except +
             
-cdef extern from "potentialfunction.h" namespace "pele":
-    cdef cppclass  cPotentialFunction "pele::PotentialFunction":
-        cPotentialFunction(
-            double (*energy)(Array[double] x, void *userdata) except *,
-            double (*energy_gradient)(Array[double] x, Array[double] grad, void *userdata) except *,
-            void *userdata) except +
+#cdef extern from "potentialfunction.h" namespace "pele":
+#    cdef cppclass  cPotentialFunction "pele::PotentialFunction":
+#        cPotentialFunction(
+#            double (*energy)(Array[double] x, void *userdata) except *,
+#            double (*energy_gradient)(Array[double] x, Array[double] grad, void *userdata) except *,
+#            void *userdata) except +
     
 cdef class BasePotential:
     cdef cBasePotential *thisptr      # hold a C++ instance which we're wrapping
