@@ -48,6 +48,36 @@ class TestLBFGS_CPP(unittest.TestCase):
     def test_EG(self):
         self.do_test(_EG())
 
+    def assert_same(self, res1, res2):
+        self.assertEqual(res1.energy, res2.energy)
+        self.assertEqual(res1.rms, res2.rms)
+        self.assertEqual(res1.nfev, res2.nfev)
+        
+    def test_run_niter(self):
+        lbfgs1 = LBFGS_CPP(_xrand, _EG())
+        res1 = lbfgs1.run()
+        lbfgs2 = LBFGS_CPP(_xrand, _EG())
+        res2 = lbfgs2.run(res1.nsteps)
+        self.assert_same(res1, res2)
+        
+    def test_run_niter2(self):
+        lbfgs1 = LBFGS_CPP(_xrand, _EG())
+        res1 = lbfgs1.run()
+        lbfgs2 = LBFGS_CPP(_xrand, _EG())
+        res2 = lbfgs2.run(res1.nsteps / 2)
+        res2 = lbfgs2.run()
+        self.assert_same(res1, res2)
+        
+    def test_run_niter3(self):
+        lbfgs1 = LBFGS_CPP(_xrand, _EG())
+        res1 = lbfgs1.run(10)
+        lbfgs2 = LBFGS_CPP(_xrand, _EG())
+        res2 = lbfgs2.run(5)
+        res2 = lbfgs2.run(5)
+        self.assert_same(res1, res2)
+        
+
+
 class TestLBFGS_CPP_PassGrad(unittest.TestCase):
     def do_test(self, pot):
         e, grad = pot.getEnergyGradient(_xrand)

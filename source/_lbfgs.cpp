@@ -134,22 +134,27 @@ void LBFGS::one_iteration()
   iter_number_ += 1;
 }
 
+void LBFGS::run(int const niter)
+{
+    if (! func_initialized_){
+      // note: this needs to be both here and in one_iteration
+      initialize_func_gradient();
+    }
+
+    // iterate until the stop criterion is satisfied or maximum number of
+    // iterations is reached
+    for (int i = 0; i < niter; ++i)
+    {
+      if (stop_criterion_satisfied()){
+        break;
+      }
+      one_iteration();
+    }
+
+}
 void LBFGS::run()
 {
-  if (! func_initialized_){
-    // note: this needs to be both here and in one_iteration
-    initialize_func_gradient();
-  }
-
-  // iterate until the stop criterion is satisfied or maximum number of
-  // iterations is reached
-  while (iter_number_ < maxiter_)
-  {
-    if (stop_criterion_satisfied()){
-      break;
-    }
-    one_iteration();
-  }
+  run(maxiter_ - iter_number_);
 }
 
 void LBFGS::update_memory(

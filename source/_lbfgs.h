@@ -72,9 +72,15 @@ namespace LBFGS_ns{
 
       /**
        * Run the optimzation algorithm until the tolerance is satisfied or
-       * until the maximum number ofg iterations is reached
+       * until the maximum number of iterations is reached
        */
       void run();
+
+      /**
+       * Run the optimzation algorithm for niter iterations or until the
+       * tolerance is satisfied
+       */
+      void run(int const niter);
 
       /**
        * Set the initial func and gradient.  This can be used

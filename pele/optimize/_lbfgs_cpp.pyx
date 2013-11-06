@@ -13,6 +13,7 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
         cppLBFGS(_pele.cBasePotential *, _pele.Array[double] &, double, int) except +
 
         void run() except +
+        void run(int niter) except +
         void one_iteration() except +
         void set_func_gradient(double energy, _pele.Array[double] grad) except +
 
@@ -74,8 +75,11 @@ cdef class LBFGS_CPP(object):
             del self.thisptr
             self.thisptr = NULL
         
-    def run(self):
-        self.thisptr.run()
+    def run(self, niter=None):
+        if niter is None:
+            self.thisptr.run()
+        else:
+            self.thisptr.run(niter)
         return self.get_result()
 
     @cython.boundscheck(False)
