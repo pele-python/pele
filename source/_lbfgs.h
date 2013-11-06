@@ -47,6 +47,7 @@ namespace LBFGS_ns{
 
       // 
       std::vector<double> step_;
+      bool func_initialized_;
 
     public :
       /**
@@ -74,6 +75,12 @@ namespace LBFGS_ns{
        * until the maximum number ofg iterations is reached
        */
       void run();
+
+      /**
+       * Set the initial func and gradient.  This can be used
+       * to avoid one potential call
+       */
+      void set_func_gradient(double energy, pele::Array<double> grad);
 
       // functions for setting the parameters
       void set_H0(double);
@@ -125,10 +132,17 @@ namespace LBFGS_ns{
       bool stop_criterion_satisfied();
 
       /**
-       * Compute the energy and gradient of the objective function
+       * Compute the func and gradient of the objective function
        */
-      void compute_func_gradient(std::vector<double> & x, double & energy,
+      void compute_func_gradient(std::vector<double> & x, double & func,
           std::vector<double> & gradient);
+
+      /**
+       * initialize the func and gradient
+       */
+      void initialize_func_gradient();
+
+
 
   };
 }

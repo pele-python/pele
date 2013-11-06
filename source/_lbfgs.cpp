@@ -53,7 +53,8 @@ LBFGS::LBFGS(
     iter_number_(0),
     nfev_(0),
     H0_(0.1),
-    k_(0)
+    k_(0),
+    func_initialized_(false)
 {
   // set the precision of the printing
   cout << std::setprecision(12);
@@ -68,16 +69,54 @@ LBFGS::LBFGS(
   rho_ = std::vector<double>(M_);
   step_ = std::vector<double>(N);
 
-  // set up the current location
   for (size_t j2 = 0; j2 < N; ++j2){
     x_[j2] = x0[j2];
   }
-  compute_func_gradient(x_, f_, g_);
-  rms_ = vecnorm(g_) / sqrt(N);
 }
 
+/**
+ * initialize the func and gradient and rms
+ */
+void LBFGS::initialize_func_gradient()
+{
+  // compute the func and gradient at the current locations
+  // and store them
+  size_t N = x_.size();
+  compute_func_gradient(x_, f_, g_);
+  rms_ = vecnorm(g_) / sqrt(N);
+  func_initialized_ = true;
+}
+
+/**
+ * Set the initial func and gradient.  This can be used
+ * to avoid one potential call
+ */
+void LBFGS::set_func_gradient(double f, pele::Array<double> grad)
+{
+  if (grad.size() != g_.size()){
+      throw std::invalid_argument("the gradient has the wrong size");
+  }
+  if (iter_number_ > 0){
+    cout << "warning: setting f and grad after the first iteration.  this is dangerous.\n";
+  }
+  // copy the function and gradient
+  f_ = f;
+  size_t N = x_.size();
+  for (size_t j2 = 0; j2 < N; ++j2){
+    g_[j2] = grad[j2];
+  }
+  rms_ = vecnorm(g_) / sqrt(g_.size());
+  func_initialized_ = true;
+}
+
+/**
+ * Do one iteration iteration of the optimization algorithm
+ */
 void LBFGS::one_iteration()
 {
+  if (! func_initialized_)
+      initialize_func_gradient();
+
   std::vector<double> x_old = x_;
   std::vector<double> g_old = g_;
 
@@ -97,6 +136,11 @@ void LBFGS::one_iteration()
 
 void LBFGS::run()
 {
+  if (! func_initialized_){
+    // note: this needs to be both here and in one_iteration
+    initialize_func_gradient();
+  }
+
   // iterate until the stop criterion is satisfied or maximum number of
   // iterations is reached
   while (iter_number_ < maxiter_)
@@ -150,7 +194,7 @@ void LBFGS::update_memory(
 //    << " rho[i] " << rho_[klocal] 
 //    << "\n";
 
-  // incriment k
+  // increment k
   k_ += 1;
   
 }
@@ -245,7 +289,7 @@ double LBFGS::backtracking_linesearch()
       factor /= 10.;
       if (verbosity_ > 2) {
         cout 
-          << "energy increased: " << df 
+          << "energy increased: " << df
           << " reducing step size to " << factor * stepsize 
           << " H0 " << H0_ << "\n";
       }

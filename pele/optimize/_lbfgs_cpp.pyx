@@ -14,6 +14,8 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
 
         void run() except +
         void one_iteration() except +
+        void set_func_gradient(double energy, _pele.Array[double] grad) except +
+
         double get_f() except +
         _pele.Array[double] get_x() except +
         _pele.Array[double] get_g() except +
@@ -40,7 +42,8 @@ cdef class LBFGS_CPP(object):
     cdef _pele.BasePotential pot # this is stored so that the memory is not freed
     
     def __cinit__(self, x0, potential, double tol=1e-4, int M=4, double maxstep=0.1, 
-                  double maxErise=1e-4, double H0=0.1, int iprint=-1, 
+                  double maxErise=1e-4, double H0=0.1, int iprint=-1,
+                  energy=None, gradient=None,
                   int nsteps=10000, int verbosity=0):
         if not issubclass(potential.__class__, _pele.BasePotential):
             if verbosity > 0:
@@ -60,6 +63,11 @@ cdef class LBFGS_CPP(object):
         opt.set_verbosity(verbosity)
         opt.set_iprint(iprint)
         self.pot = pot # so that the memory is not freed
+        
+        cdef np.ndarray[double, ndim=1] g_  
+        if energy is not None and gradient is not None:
+            g_ = gradient
+            self.thisptr.set_func_gradient(energy, _pele.Array[double](<double*> g_.data, g_.size))
         
     def __dealloc__(self):
         if self.thisptr != NULL:
