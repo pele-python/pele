@@ -34,14 +34,14 @@ namespace pele
                 _interaction(interaction), 
                 _dist(dist),
                 _ilist(ilist.begin(), ilist.end())
-			{
-				if(_dist == 0) _dist = new distance_policy;
+            {
+                if(_dist == 0) _dist = new distance_policy;
 
-				//_ilist = std::vector<long int>(ilist.size());
-				//for (size_t i=0; i<ilist.size(); ++i){
-					//_ilist[i] = ilist[i];
-				//}
-			}
+                //_ilist = std::vector<long int>(ilist.size());
+                //for (size_t i=0; i<ilist.size(); ++i){
+                    //_ilist[i] = ilist[i];
+                //}
+            }
 
         public:
             virtual ~SimplePairwiseInteractionList()

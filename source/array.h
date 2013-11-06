@@ -66,7 +66,7 @@ namespace pele {
          */
         ~Array() 
         {
-        	free();
+            free();
         }
 
         /**
@@ -78,7 +78,7 @@ namespace pele {
             if (_allocated_memory != NULL){
                 *_reference_count -= 1;
                 if (*_reference_count < 0)
-                	throw std::logic_error("reference_count cannot be less than zero.  Something went wrong");
+                    throw std::logic_error("reference_count cannot be less than zero.  Something went wrong");
                 if (*_reference_count == 0){
                     delete[] _allocated_memory; 
                     delete _reference_count; 
@@ -96,11 +96,11 @@ namespace pele {
          */
         void wrap(Array<dtype> x)
         {
-        	free();
-        	_size = x._size;
-        	_reference_count = x._reference_count;
-        	_data = x._data;
-        	_allocated_memory = x._allocated_memory;
+            free();
+            _size = x._size;
+            _reference_count = x._reference_count;
+            _data = x._data;
+            _allocated_memory = x._allocated_memory;
             if (_reference_count != NULL){
                 *_reference_count += 1;
             }

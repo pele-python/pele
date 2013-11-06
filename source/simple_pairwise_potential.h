@@ -16,12 +16,12 @@ namespace pele
      * pairwise_interaction is a passed parameter and defines the actual
      * potential function.
      */
-	template<typename pairwise_interaction, 
+    template<typename pairwise_interaction, 
                  typename distance_policy = cartesian_distance >
-	class SimplePairwisePotential : public BasePotential
-	{
-	protected:
-		pairwise_interaction *_interaction;
+    class SimplePairwisePotential : public BasePotential
+    {
+    protected:
+        pairwise_interaction *_interaction;
         distance_policy *_dist;
 
         SimplePairwisePotential(pairwise_interaction *interaction,
@@ -31,71 +31,71 @@ namespace pele
             if(_dist == NULL) _dist = new distance_policy;
         }
 
-	public:
-		virtual ~SimplePairwisePotential() 
+    public:
+        virtual ~SimplePairwisePotential() 
         { 
             if (_interaction != NULL) delete _interaction; 
             if (_dist != NULL) delete _dist; 
         }
 
-		virtual double get_energy(Array<double> x);
-		virtual double get_energy_gradient(Array<double> x, Array<double> grad);
-	};
+        virtual double get_energy(Array<double> x);
+        virtual double get_energy_gradient(Array<double> x, Array<double> grad);
+    };
 
-	template<typename pairwise_interaction, typename distance_policy>
-	inline double SimplePairwisePotential<pairwise_interaction,distance_policy>::get_energy_gradient(Array<double> x, Array<double> grad)
-	{
-		double e=0.;
-		double gij, dr[3];
-		const size_t n = x.size();
-		const size_t natoms = x.size()/3;
+    template<typename pairwise_interaction, typename distance_policy>
+    inline double SimplePairwisePotential<pairwise_interaction,distance_policy>::get_energy_gradient(Array<double> x, Array<double> grad)
+    {
+        double e=0.;
+        double gij, dr[3];
+        const size_t n = x.size();
+        const size_t natoms = x.size()/3;
 
-		for(size_t i=0; i<n; ++i)
-			grad[i] = 0.;
+        for(size_t i=0; i<n; ++i)
+            grad[i] = 0.;
 
-		for(size_t i=0; i<natoms; ++i) {
-			int i1 = 3*i;
-			for(size_t j=i+1; j<natoms; ++j) {
-				int i2 = 3*j;
+        for(size_t i=0; i<natoms; ++i) {
+            int i1 = 3*i;
+            for(size_t j=i+1; j<natoms; ++j) {
+                int i2 = 3*j;
 
-				_dist->get_rij(dr, &x[i1], &x[i2]);
+                _dist->get_rij(dr, &x[i1], &x[i2]);
                                 //for(size_t k=0; k<3; ++k) {
                                 //    dr[k] = x[i1+k] - x[i2+k];
                                 //}
 
-				double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
-				e += _interaction->energy_gradient(r2, &gij);
-				for(size_t k=0; k<3; ++k)
-					grad[i1+k] -= gij * dr[k];
-				for(size_t k=0; k<3; ++k)
-					grad[i2+k] += gij * dr[k];
-			}
-		}
+                double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+                e += _interaction->energy_gradient(r2, &gij);
+                for(size_t k=0; k<3; ++k)
+                    grad[i1+k] -= gij * dr[k];
+                for(size_t k=0; k<3; ++k)
+                    grad[i2+k] += gij * dr[k];
+            }
+        }
 
-		return e;
-	}
+        return e;
+    }
 
-	template<typename pairwise_interaction, typename distance_policy>
-	inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy(Array<double> x)
-	{
-		double e=0.;
-		size_t const natoms = x.size()/3;
+    template<typename pairwise_interaction, typename distance_policy>
+    inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy(Array<double> x)
+    {
+        double e=0.;
+        size_t const natoms = x.size()/3;
 
-		for(size_t i=0; i<natoms; ++i) {
-			size_t i1 = 3*i;
-			for(size_t j=i+1; j<natoms; ++j) {
-				size_t i2 = 3*j;
-				double dr[3];
+        for(size_t i=0; i<natoms; ++i) {
+            size_t i1 = 3*i;
+            for(size_t j=i+1; j<natoms; ++j) {
+                size_t i2 = 3*j;
+                double dr[3];
                                 _dist->get_rij(dr, &x[i1], &x[i2]);
-				//for(size_t k=0; k<3; ++k)
-				//	dr[k] = x(i1+k) - x(i2+k);
-				double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
-				e += _interaction->energy(r2);
-			}
-		}
+                //for(size_t k=0; k<3; ++k)
+                //    dr[k] = x(i1+k) - x(i2+k);
+                double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+                e += _interaction->energy(r2);
+            }
+        }
 
-		return e;
-	}
+        return e;
+    }
 }
 
 #endif
