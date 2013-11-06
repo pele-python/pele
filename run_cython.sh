@@ -10,4 +10,5 @@ echo "Compiling _lbfgs.pyx"
 cython --cplus -a pele/optimize/_lbfgs_cpp.pyx 
 echo "Compiling _pythonpotential.pyx"
 cython --cplus -a pele/potentials/_pythonpotential.pyx 
-
+echo "Compiling _morse_cpp.pyx"
+cython --cplus pele/potentials/_morse_cpp.pyx 
