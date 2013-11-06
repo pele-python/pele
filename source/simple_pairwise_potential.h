@@ -7,15 +7,15 @@
 
 namespace pele
 {
-  /**
-   * Define a base class for potentials with simple pairwise interactions that
-   * depend only on magnitude of the atom separation
-   *
-   * This class loops though atom pairs, computes the distances and get's the
-   * value of the energy and gradient from the class pairwise_interaction.
-   * pairwise_interaction is a passed parameter and defines the actual
-   * potential function.
-   */
+    /**
+     * Define a base class for potentials with simple pairwise interactions that
+     * depend only on magnitude of the atom separation
+     *
+     * This class loops though atom pairs, computes the distances and get's the
+     * value of the energy and gradient from the class pairwise_interaction.
+     * pairwise_interaction is a passed parameter and defines the actual
+     * potential function.
+     */
 	template<typename pairwise_interaction, 
                  typename distance_policy = cartesian_distance >
 	class SimplePairwisePotential : public BasePotential
@@ -28,17 +28,18 @@ namespace pele
                 distance_policy *dist=NULL) : 
             _interaction(interaction), _dist(dist) 
         {
-            if(_dist == 0) _dist = new distance_policy;
+            if(_dist == NULL) _dist = new distance_policy;
         }
 
 	public:
-		virtual double get_energy(Array<double> x);
-		virtual double get_energy_gradient(Array<double> x, Array<double> grad);
 		virtual ~SimplePairwisePotential() 
         { 
             if (_interaction != NULL) delete _interaction; 
             if (_dist != NULL) delete _dist; 
         }
+
+		virtual double get_energy(Array<double> x);
+		virtual double get_energy_gradient(Array<double> x, Array<double> grad);
 	};
 
 	template<typename pairwise_interaction, typename distance_policy>

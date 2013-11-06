@@ -62,7 +62,7 @@ namespace LBFGS_ns{
       /**
        * Destructor
        */
-      ~LBFGS();
+      ~LBFGS() {}
 
       /**
        * Do one iteration iteration of the optimization algorithm

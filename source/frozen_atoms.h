@@ -20,7 +20,8 @@ namespace pele{
      * freedom.  The reduced set of coordinates includes only the mobile
      * degrees of freedom.
      */
-    class FrozenCoordsConverter{
+    class FrozenCoordsConverter
+    {
         private:
             std::vector<double> const _reference_coords;
             std::vector<long int> _frozen_dof;
@@ -111,7 +112,8 @@ namespace pele{
 
 
     template<typename PotentialType>
-    class FrozenPotentialWrapper : public BasePotential{
+    class FrozenPotentialWrapper : public BasePotential
+    {
         protected:
             PotentialType *_underlying_potential;
             FrozenCoordsConverter _coords_converter;

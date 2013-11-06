@@ -76,10 +76,6 @@ LBFGS::LBFGS(
   rms_ = vecnorm(g_) / sqrt(N);
 }
 
-LBFGS::~LBFGS()
-{
-}
-
 void LBFGS::one_iteration()
 {
   std::vector<double> x_old = x_;

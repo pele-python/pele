@@ -2,9 +2,13 @@
 #define _PELE_DISTANCE_H
 
 #include <cmath>
+#include <stdexcept>
 
 namespace pele
 {
+  /**
+   * compute the cartesian distance
+   */
   struct cartesian_distance {
     inline void get_rij(double * __restrict__ r_ij, 
                  double const * __restrict__ const r1, 
@@ -37,7 +41,8 @@ namespace pele
           _iboxz(1./_boxz)
       {}
 
-      /* this exists only so the compiler doesn't complain.  it should never be used */
+      /* this constructor exists only so the compiler doesn't complain.
+       * It should never be used */
       periodic_distance() :
           _boxx(1000.),
           _boxy(1000.),
@@ -45,7 +50,8 @@ namespace pele
           _iboxx(1./_boxx),
           _iboxy(1./_boxy),
           _iboxz(1./_boxz)
-      { throw; }
+      { throw std::runtime_error("the empty constructor is not available for periodic boundaries"); }
+
       inline void get_rij(double * __restrict__ r_ij, 
                      double const * __restrict__ const r1, 
                      double const * __restrict__ const r2) 

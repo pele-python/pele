@@ -28,28 +28,30 @@ namespace pele
             pairwise_interaction *_interaction;
             distance_policy *_dist;
             std::vector<long int> const _ilist;
+
             SimplePairwiseInteractionList(pairwise_interaction *interaction, 
                     Array<long int> const & ilist, distance_policy *dist=NULL ) : 
                 _interaction(interaction), 
                 _dist(dist),
                 _ilist(ilist.begin(), ilist.end())
-        {
-            if(_dist == 0) _dist = new distance_policy;
+			{
+				if(_dist == 0) _dist = new distance_policy;
 
-            //_ilist = std::vector<long int>(ilist.size());
-            //for (size_t i=0; i<ilist.size(); ++i){
-                //_ilist[i] = ilist[i];
-            //}
-        }
+				//_ilist = std::vector<long int>(ilist.size());
+				//for (size_t i=0; i<ilist.size(); ++i){
+					//_ilist[i] = ilist[i];
+				//}
+			}
 
         public:
-            virtual double get_energy(Array<double> x);
-            virtual double get_energy_gradient(Array<double> x, Array<double> grad);
             virtual ~SimplePairwiseInteractionList()
             { 
                 if (_interaction != NULL) delete _interaction; 
                 if (_dist != NULL) delete _dist; 
             }
+
+            virtual double get_energy(Array<double> x);
+            virtual double get_energy_gradient(Array<double> x, Array<double> grad);
     };
 
     template<typename pairwise_interaction, typename distance_policy>
