@@ -43,13 +43,14 @@ class Morse(BasePotential):
 
 
 def test():
-    m = Morse(1.)
+    m = Morse()
     x = np.random.rand(3*10)
     e = m.getEnergy(x)
     print e
     
     e, v = m.getEnergyGradient(x)
     print e, v
+    m.test_potential(x)
 
 if __name__ == "__main__":
     test()

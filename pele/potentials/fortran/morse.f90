@@ -69,7 +69,7 @@
             EMORSE=EMORSE+DUMMY - Eshift
 
             if (gtest) then
-               xmul2 = 2.0D0*R*(R-1.0D0)/DIST * A
+               xmul2 = rho * 2.0D0*R*(R-1.0D0)/DIST * A
                V(J3-2:j2) = V(j3-2:j2) - xmul2 * dx
                V(J4-2:j2) = V(j4-2:j2) + xmul2 * dx
             endif
