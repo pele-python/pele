@@ -70,17 +70,25 @@ namespace pele {
                 Py_XDECREF(_potential); 
             }
 
+            /**
+             * call the getEnergy method of the python potential
+             */
             virtual double get_energy(Array<double> x) 
             { 
                 // create a numpy array from x
-                // this wraps the data which is unsafe becase the python object might live longer than the data in x.data
-                //std::cout << "creating numpy array\n";
+                // copy the data from x because becase the python object might
+                // live longer than the data in x.data
                 npy_intp N = (npy_intp) x.size();
-                PyObject * numpyx = PyArray_SimpleNewFromData(1, &N, NPY_DOUBLE, static_cast<void*>(x.data()));
+                PyObject * numpyx = PyArray_SimpleNew(1, &N, NPY_DOUBLE);
                 if (!numpyx){
                     cerr << "created numpy object is NULL\n";
                     throw std::runtime_error("created numpy object is NULL\n");
                 }
+                double * xdata = (double*) PyArray_DATA(numpyx);
+                for (size_t i = 0; i < x.size(); ++i){
+                    xdata[i] = x[i];
+                }
+
 
                 // call the function getEnergy
                 PyObject * name = PyString_FromString("getEnergy");
@@ -110,6 +118,9 @@ namespace pele {
                 return energy;
             }
 
+            /**
+             * call the getEnergyGradient method of the python potential
+             */
             virtual double get_energy_gradient(Array<double> x, Array<double> grad)
             {
                 if (x.size() != grad.size()) {
@@ -117,13 +128,17 @@ namespace pele {
                 }
 
                 // create a numpy array from x
-                // this wraps the data which is unsafe becase the python object might live longer than the data in x.data
-                //std::cout << "in get_energy_gradient\n";
+                // copy the data from x because becase the python object might
+                // live longer than the data in x.data
                 npy_intp N = (npy_intp) x.size();
-                PyObject * numpyx = PyArray_SimpleNewFromData(1, &N, NPY_DOUBLE, static_cast<void*>(x.data()));
+                PyObject * numpyx = PyArray_SimpleNew(1, &N, NPY_DOUBLE);
                 if (!numpyx){
                     cerr << "created numpy object is NULL\n";
                     throw std::runtime_error("created numpy object is NULL\n");
+                }
+                double * numpyx_data = (double*) PyArray_DATA(numpyx);
+                for (size_t i = 0; i < x.size(); ++i){
+                    numpyx_data[i] = x[i];
                 }
                 
                 // call the function getEnergy
