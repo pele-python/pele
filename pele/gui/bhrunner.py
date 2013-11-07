@@ -35,7 +35,7 @@ class _BHProcess(mp.Process):
     
     def run(self):
         seed = int(time.time())#*100.)
-        print seed
+#        print seed
         np.random.seed(seed)
         print np.random.random(2)
         db = self.system.create_database()

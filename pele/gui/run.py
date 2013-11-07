@@ -596,7 +596,7 @@ class MainGUI(QtGui.QMainWindow):
 #def refresh_pl():
     #pl.pause(0.000001)    
     
-def run_gui(system, db=None):
+def run_gui(system, db=None, application=None):
     """
     The top level function that will launch the gui for a given system
     
@@ -607,13 +607,16 @@ def run_gui(system, db=None):
         about the system is in this class.
     db : str, optional
         connect to the database at this file location
+    application : QApplication
+        Use this QApplication object rather than creating a new one
         
     """
-    app = QtGui.QApplication(sys.argv)
+    if application is None:
+        application = QtGui.QApplication(sys.argv)
     
     sys.excepthook = excepthook
 
-    myapp = MainGUI(app, system)
+    myapp = MainGUI(application, system)
     if db is not None:
         myapp.connect_db(db)
         
@@ -621,7 +624,7 @@ def run_gui(system, db=None):
 #    refresh_timer.timeout.connect(refresh_pl)
 #    refresh_timer.start(0.)
     myapp.show()
-    sys.exit(app.exec_()) 
+    sys.exit(application.exec_()) 
        
 #def run_gui(systemtype):
 #    app = QtGui.QApplication(sys.argv)
