@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 import _base_test
-from pele.potentials._pythonpotential import CppPotentialWrapper
+from pele.potentials._pythonpotential import CppPotentialWrapper, _TestingCppPotentialWrapper
 from pele.potentials import BasePotential
 
 ndof = 4
@@ -24,6 +24,18 @@ class _EG(_Eonly):
 class _Raise(BasePotential):
     def getEnergy(self, x):
         raise NotImplementedError
+
+class _ReturnBad1(BasePotential):
+    def getEnergy(self, x):
+        return "not a double"
+    def getEnergyGradient(self, x): 
+        return 1., "not a np array"
+
+class _ReturnBad2(BasePotential):
+    def getEnergy(self, x):
+        return 1.
+    def getEnergyGradient(self, x):
+        return 1. 
 
 
 class TestEonly(_base_test._BaseTest):
@@ -73,7 +85,60 @@ class TestRaised(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             p.getEnergyGradient(_xrand)
 
+class TestBadReturn(unittest.TestCase):
+    """
+    test getEnergyGradient returns invalid energy
+    test getEnergyGradient returns 
+    test getEnergyGradient returns 
+    test getEnergyGradient returns 
+    """
+    def test1(self):
+        """test getEnergy returns not double"""
+        p = _TestingCppPotentialWrapper(_ReturnBad1())
+        with self.assertRaises(TypeError):
+            e = p.cpp_get_energy(_xrand)
 
+    def test2(self):
+        """test getEnergyGradient returns not tuple"""
+        p1 = _ReturnBad1()
+        p1.getEnergyGradient = lambda s, x: None 
+        p = _TestingCppPotentialWrapper(p1)
+        with self.assertRaises(TypeError):
+            e = p.cpp_get_energy_gradient(_xrand)
+
+    def test3(self):
+        """test getEnergyGradient returns invalid energy"""
+        p1 = _ReturnBad1()
+        p1.getEnergyGradient = lambda x: ("not energy", np.zeros(x.size))
+        p = _TestingCppPotentialWrapper(p1)
+        with self.assertRaises(TypeError):
+            e = p.cpp_get_energy_gradient(_xrand)
+
+    def test4(self):
+        """test getEnergyGradient returns invalid grad"""
+        p1 = _ReturnBad1()
+        p1.getEnergyGradient = lambda x: (1., (1., "not numpy array"))
+        p = _TestingCppPotentialWrapper(p1)
+        with self.assertRaises(ValueError):
+            e = p.cpp_get_energy_gradient(_xrand)
+    
+    def test5(self):
+        """test getEnergyGradient returns list for grad"""
+        p1 = _ReturnBad1()
+        p1.getEnergyGradient = lambda x: (1., list(np.zeros(x.size)))
+        p = _TestingCppPotentialWrapper(p1)
+        # this should not raise anything
+        e = p.cpp_get_energy_gradient(_xrand)
+    
+    def test6(self):
+        """test getEnergyGradient returns grad of wrong size"""
+        p1 = _ReturnBad1()
+        p1.getEnergyGradient = lambda x: (1., np.zeros(x.size-1))
+        p = _TestingCppPotentialWrapper(p1)
+        with self.assertRaises(IndexError):
+            e = p.cpp_get_energy_gradient(_xrand)
+    
+    
 def simplertest():
     pot = CppPotentialWrapper(_Eonly())
     e = pot.getEnergy(_xrand)

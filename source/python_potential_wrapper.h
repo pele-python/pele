@@ -89,13 +89,20 @@ namespace pele {
                 Py_XDECREF(numpyx); 
                 if (!returnval){
                     //parse error
-                    cout << "getEnergy returned a NULL pointer\n";
+//                    cout << "getEnergy returned a NULL pointer\n";
                     throw std::runtime_error("getEnergy returned NULL");
                 }
                 //std::cout << "    done calling get energy\n";
 
                 // parse the returned tuple
                 double energy = PyFloat_AsDouble(returnval);
+                //TODO: error checking
+                if (PyErr_Occurred()){
+                    PyErr_Clear();
+                    PyErr_SetString(PyExc_TypeError, "return value of getEnergy could not be converted to float");
+                    Py_XDECREF(returnval);
+                    throw std::runtime_error("return value of getEnergy could not be converted to float");
+                }
 
                 // decrease referenece counts on Python objects
                 Py_XDECREF(returnval); 
@@ -132,21 +139,40 @@ namespace pele {
 
                 // parse the returned tuple into a doulbe and a numpy array
                 double energy;
-                PyObject * numpy_grad; //the reference count for this does not need to be decreased
-                if (!PyArg_ParseTuple(returnval, "dO", &energy, &numpy_grad)){
+                PyObject * npgrad_returned; //the reference count for this does not need to be decreased
+                if (!PyArg_ParseTuple(returnval, "dO", &energy, &npgrad_returned)){
+                    Py_XDECREF(returnval);
                     throw std::runtime_error("failed to parse the tuple");
                 }
                 //std::cout << "    done parsing tuple\n";
 
+                // convert the returned gradient into an array which I know I can safely
+                // use as a double array.
+                // note: NPY_CARRAY is for numpy version 1.6, for later version use NPY_ARRAY_CARRAY
+                PyObject * npgrad_safe = PyArray_FromAny(npgrad_returned, PyArray_DescrFromType(NPY_DOUBLE),
+                        1, 1, NPY_CARRAY, NULL);
+                if (!npgrad_safe){
+                    Py_XDECREF(returnval);
+                    throw std::runtime_error("gradient returned by getEnergyGradient could not be converted to numpy double array");
+                }
+                // check the size of the gradient array
+                if (PyArray_Size(npgrad_safe) != grad.size()){
+                    PyErr_SetString(PyExc_IndexError, "gradient returned by getEnergyGradient has wrong size.");
+                    Py_XDECREF(returnval);
+                    Py_XDECREF(npgrad_safe);
+                    throw std::runtime_error("return value of getEnergy could not be converted to float");
+                }
+
                 //copy the gradient into grad
-                double * gdata = (double*) PyArray_DATA(numpy_grad);
+                double * gdata = (double*) PyArray_DATA(npgrad_safe);
                 for (size_t i = 0; i < grad.size(); ++i){
                     grad[i] = gdata[i];
                 }
                 //std::cout << "    done copying grad\n";
 
                 // decrease referenece counts on Python objects
-                Py_XDECREF(returnval); 
+                Py_XDECREF(returnval);
+                Py_XDECREF(npgrad_safe);
 
                 return energy;
             }

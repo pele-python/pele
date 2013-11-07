@@ -10,6 +10,7 @@ from cpython.ref cimport PyObject
 # see the miscillaneous section and "importing the api"
 # http://docs.scipy.org/doc/numpy/reference/c-api.array.html
 # also see http://mail.scipy.org/pipermail/numpy-discussion/2011-December/059612.html
+# question: should I define PY_ARRAY_UNIQUE_SYMBOL?  And how can I?
 cnp.import_array()
 
 cdef extern from "python_potential_wrapper.h" namespace "pele":
@@ -95,3 +96,18 @@ class CppPotentialWrapper(CppPotentialWrapperBase):
 #         self.NumericalGradient = pot.NumericalGradient
 
 
+class _TestingCppPotentialWrapper(CppPotentialWrapper):
+    """testing potential which provides direct access to c++ wrapper"""
+    def getEnergy(self, x):
+        print "going through cpp"
+        return _pele.BasePotential.getEnergy(self, x)
+
+    def cpp_get_energy(self, x):
+        return _pele.BasePotential.getEnergy(self, x)
+
+    def cpp_get_energy_gradient(self, x):
+        return _pele.BasePotential.getEnergyGradient(self, x)
+
+    def getEnergyGradient(self, x):
+        return _pele.BasePotential.getEnergyGradient(self, x)
+        
