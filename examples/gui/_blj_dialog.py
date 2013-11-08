@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '_blj_dialog.ui'
 #
-# Created: Fri Nov  8 11:39:29 2013
+# Created: Fri Nov  8 12:16:44 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -74,6 +74,8 @@ class Ui_DialogLJSetup(object):
         self.gridLayout.addWidget(self.label_6, 6, 0, 1, 1)
 
         self.retranslateUi(DialogLJSetup)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), DialogLJSetup.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), DialogLJSetup.reject)
         QtCore.QMetaObject.connectSlotsByName(DialogLJSetup)
 
     def retranslateUi(self, DialogLJSetup):
