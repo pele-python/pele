@@ -58,7 +58,7 @@ to be written
 from potential import *
 #from _pele import BasePotential
 #from lj import *
-from _lj_cpp import LJ
+from _lj_cpp import LJ, BLJCut
 from ATLJ import *
 from coldfusioncheck import *
 from gminpotential import *
