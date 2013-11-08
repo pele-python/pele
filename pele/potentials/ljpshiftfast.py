@@ -39,7 +39,7 @@ class LJpshift(BasePotential):
         self.BB = BLJ_interaction_type( epsBB, sigBB, rcut)
         self.AB = BLJ_interaction_type( epsAB, sigAB, rcut)
 
-        if self.boxl == None:
+        if self.boxl is None:
             self.periodic = False
             self.boxl = 10000.
         else:
@@ -88,8 +88,8 @@ if __name__ == "__main__":
     rcut = 2.5
     print "natoms", natoms, "ntypea", ntypeA
     
-    bljslow = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
-    blj =              LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
+    bljslow = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl, sigBB=1.7)
+    blj =              LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl, sigBB=1.7)
     
     ebljslow = bljslow.getEnergy(coords)
     print "blj energy slow", ebljslow

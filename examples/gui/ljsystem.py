@@ -20,6 +20,7 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     dialog = QtGui.QInputDialog()
     dialog.setLabelText("number of atoms")
+    dialog.setWindowTitle("Create new Lennard-Jones system")
     dialog.setInputMode(1)
     dialog.setIntMinimum(2)
     dialog.setIntValue(13)
