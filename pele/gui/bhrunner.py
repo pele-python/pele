@@ -40,7 +40,7 @@ class _BHProcess(mp.Process):
         print np.random.random(2)
         db = self.system.create_database()
         db.on_minimum_added.connect(self.insert)
-        opt = self.system.get_basinhopping(database=db, outstream=None)
+        opt = self.system.get_basinhopping(database=db)#, outstream=None)
         if self.nsteps is None:
             try:
                 self.nsteps = self.system.params.gui.basinhopping_nsteps
