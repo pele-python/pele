@@ -16,8 +16,33 @@ The code project upon which this python package is based can be found at
 http://www-wales.ch.cam.ac.uk/software.html
 
 pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
-programs written by David Wales and collaborators.  pele has recently been
-renamed.  The previous name of the project was pygmin
+programs written by David Wales of Cambridge University and collaborators.
+pele has recently been renamed.  The previous name of the project was pygmin.
+
+pele has tools for energy minization, global optimization, saddle point
+(transition state) search and much more.  Some of the algorithms implemented are
+
+1. Basinhopping global optimization
+
+#. LBFGS minimization (plus other minimizers)
+
+#. Single ended saddle point search:
+
+  - Hybrid Eigenvector Following
+
+  - Dimer method
+
+4. Double ended saddle point search
+
+  - Nudged Elastic Band (NEB)
+
+  - Doubly Nudged Elastic Band (DNEB)
+
+5. Disconnectivity Graph visualization
+
+6. Structure alignment algorithms
+
+7. Thermodynamic information (e.g. heat capacity) via the Harmonic Superposition Approximation
 
 INSTALLATION
 ============
@@ -29,7 +54,7 @@ for compilation:
 
   1. fortran compiler
 
-  #. c compiler
+  #. c / c++ compiler
 
 python packages:
 
@@ -49,13 +74,12 @@ python packages:
   #. SQLAlchemy 0.7: 
        For managing database of stationary points.  http://www.sqlalchemy.org/
 
-
   #. hungarian: 
        For permutational alignment
 
   #. scikits.sparse: optional 
        for use of sparse Cholesky decomposition methods when calculating rates
-     
+
   #. pymol: optional
        for viewing molecular structures
 
@@ -195,6 +219,6 @@ Running
 You can find examples of how to run pele in the examples folder.  More
 information can be found in the documentation at
 
-http://js850.github.com/pele/
+http://pele-python.github.com/pele/
 
 
