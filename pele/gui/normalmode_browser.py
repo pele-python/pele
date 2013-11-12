@@ -72,7 +72,10 @@ class NormalmodeBrowser(QtGui.QMainWindow):
 #        E, g, hess = pot.getEnergyGradientHessian(self.coords)
 #        metric = self.system.get_metric_tensor(self.coords)
 #        freq, mode = normalmodes(hess, metric = metric)
-        freq, mode = self.system.get_normalmodes(self.coords)
+        pot = self.system.get_potential()
+        hess = pot.getHessian(self.coords)
+        freq, mode = normalmodes(hess, metric=None)
+#        freq, mode = self.system.get_normalmodes(self.coords)
         mode=np.real(mode.transpose())
         
         self.normalmodes = []
