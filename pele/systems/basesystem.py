@@ -382,8 +382,6 @@ class BaseSystem(object):
         freqs, vecs = normalmodes(hess, mt)
         return freqs, vecs
         
-         
-    
     def get_log_product_normalmode_freq(self, coords, nnegative=0):
         """return the log product of the squared normal mode frequencies
         
@@ -421,7 +419,7 @@ class BaseSystem(object):
         """
         raise NotImplementedError
 
-    def smooth_path(self, images):
+    def smooth_path(self, images, **kwargs):
         """return a smoothed path between two configurations.
 
         used for movies

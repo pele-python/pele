@@ -260,7 +260,7 @@ class MainGUI(QtGui.QMainWindow):
         if not hasattr(self, "nebexplorer"):
             self.nebexplorer = NEBExplorer(system=self.system, app=self.app, parent=self)
         self.nebexplorer.show()
-        self.nebexplorer.new_neb(coords1, coords2)
+        self.nebexplorer.new_neb(coords1, coords2, run=False)
         
 #    def showFrame(self, i):
 #        if hasattr(self, "nebcoords"):
