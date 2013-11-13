@@ -64,18 +64,28 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         
         self.ui.view3D.setCoords(coords)
         
+        if self.ui.actionShow_energies.isChecked():
+            self.draw_energy_plot()
+
+
+    def _use_hessian_eigs(self):
+        return self.ui.actionHessian_eigs.isChecked()
+    
+    def on_actionHessian_eigs_toggled(self, checked):
+        if checked is None: return
+        self.set_coords(self.coords)
+        
+    
     def _calculate_normalmodes(self):
         """
         compute the normal modes
         """
-#        pot = self.system.get_potential()
-#        E, g, hess = pot.getEnergyGradientHessian(self.coords)
-#        metric = self.system.get_metric_tensor(self.coords)
-#        freq, mode = normalmodes(hess, metric = metric)
-        pot = self.system.get_potential()
-        hess = pot.getHessian(self.coords)
-        freq, mode = normalmodes(hess, metric=None)
-#        freq, mode = self.system.get_normalmodes(self.coords)
+        if self._use_hessian_eigs():
+            pot = self.system.get_potential()
+            hess = pot.getHessian(self.coords)
+            freq, mode = normalmodes(hess, metric=None)
+        else:
+            freq, mode = self.system.get_normalmodes(self.coords)
         mode=np.real(mode.transpose())
         
         self.normalmodes = []
@@ -87,9 +97,12 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         """
         populate the list of normal modes
         """
+        row = self.ui.listNormalmodes.currentRow()
         self.ui.listNormalmodes.clear()
         for n in self.normalmodes:
             self.ui.listNormalmodes.addItem(NormalmodeItem(n))
+        self.current_selection = self.ui.listNormalmodes.item(row)
+        self.ui.listNormalmodes.setCurrentRow(row)
 
     def on_listNormalmodes_currentItemChanged(self, newsel):
         """
@@ -127,7 +140,11 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         """
         make a plot of the energies and the energies from the harmonic approximation
         """
-        if self.current_selection is None: return
+        if self.current_selection is None:
+            print "clearing energy axes"
+            self.ui.mplwidget.axes.clear() 
+            self.ui.mplwidget.draw()
+            return
         dxlist = self.dxlist
         coordspath = self.coordspath
         
@@ -148,8 +165,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         ax.legend(loc='best')
         ax.set_xlabel("displacement")
         self.ui.mplwidget.draw()
-            
-        
+    
     def on_actionRun_toggled(self, checked=None):
         if checked is None: return
         if checked:
