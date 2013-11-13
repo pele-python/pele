@@ -6,6 +6,7 @@ from pele.optimize import Result
 cimport cython
 from pele.potentials import _pythonpotential
 import sys
+from cpython cimport bool as cbool
 
 # import the externally defined ljbfgs implementation
 cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
@@ -15,6 +16,7 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
         void run() except +
         void run(int niter) except +
         void one_iteration() except +
+        int stop_criterion_satisfied() except +
         void set_func_gradient(double energy, _pele.Array[double] grad) except +
 
         double get_f() except +
@@ -33,10 +35,11 @@ cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
         double get_H0() except +
         int get_nfev() except +
         int get_niter() except +
+        int get_maxiter() except +
         int success() except +
 
 
-cdef class LBFGS_CPP(object):
+cdef class _Cdef_LBFGS_CPP(object):
     """This class is the python interface for the c++ LBFGS implementation
     """
     cdef cppLBFGS *thisptr
@@ -45,7 +48,7 @@ cdef class LBFGS_CPP(object):
     def __cinit__(self, x0, potential, double tol=1e-4, int M=4, double maxstep=0.1, 
                   double maxErise=1e-4, double H0=0.1, int iprint=-1,
                   energy=None, gradient=None,
-                  int nsteps=10000, int verbosity=0):
+                  int nsteps=10000, int verbosity=0, events=None):
         if not issubclass(potential.__class__, _pele.BasePotential):
             if verbosity > 0:
                 print "LBFGS_CPP: potential is not subclass of BasePotential; wrapping it.", potential
@@ -113,9 +116,57 @@ cdef class LBFGS_CPP(object):
         res.nsteps = self.thisptr.get_niter()
         res.nfev = self.thisptr.get_nfev()
         res.H0 = self.thisptr.get_H0()
-        res.success = self.thisptr.success()
+        res.success = bool(self.thisptr.success())
         return res
     
     def one_iteration(self):
         self.thisptr.one_iteration()
+    
+    def stop_criterion_satisfied(self):
+        return bool(self.thisptr.stop_criterion_satisfied())
 
+    def get_maxiter(self):
+        return self.thisptr.get_maxiter()
+
+    def get_niter(self):
+        return self.thisptr.get_niter()
+
+class LBFGS_CPP(_Cdef_LBFGS_CPP):
+    """This class is the python interface for the c++ LBFGS implementation
+    """
+    def __init__(self, x0, potential, double tol=1e-4, int M=4, double maxstep=0.1, 
+                  double maxErise=1e-4, double H0=0.1, int iprint=-1,
+                  energy=None, gradient=None,
+                  int nsteps=10000, int verbosity=0, events=None):
+        self._need_python = events is not None
+
+        self.events = events
+        if self.events is None: 
+            self.events = []
+    
+    def one_iteration(self):
+        """do one iteration"""
+        _Cdef_LBFGS_CPP.one_iteration(self)
+        res = self.get_result()
+        for event in self.events:
+            event(coords=res.coords, energy=res.energy, rms=res.rms)
+    
+    def run(self, niter=None):
+        """run the lbfgs algorithm
+        
+        this overloads the underlying implementation so that the purely python 
+        events can be called. If events are not called this simply calls the 
+        purely cpp version.
+        """
+        if not self._need_python:
+            return _Cdef_LBFGS_CPP.run(self, niter)
+
+        if niter is None:
+            niter = self.get_maxiter() - self.get_niter()
+
+        for i in xrange(niter):
+            if self.stop_criterion_satisfied():
+                break
+            self.one_iteration()
+        
+        return self.get_result()

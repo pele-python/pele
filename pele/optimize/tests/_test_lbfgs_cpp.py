@@ -32,10 +32,12 @@ class TestLBFGS_CPP_PP(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             lbfgs = LBFGS_CPP(_xrand, _Raise())
             lbfgs.run()
+    
+            
 
 class TestLBFGS_CPP(unittest.TestCase):
-    def do_test(self, pot):
-        lbfgs = LBFGS_CPP(_xrand, pot)
+    def do_test(self, pot, **kwargs):
+        lbfgs = LBFGS_CPP(_xrand, pot, **kwargs)
         res = lbfgs.run()
         self.assertAlmostEqual(res.energy, _emin, 4)
         self.assertTrue(res.success)
@@ -75,6 +77,20 @@ class TestLBFGS_CPP(unittest.TestCase):
         res2 = lbfgs2.run(5)
         res2 = lbfgs2.run(5)
         self.assert_same(res1, res2)
+        
+    def test_event_raise(self):
+        class EventException(BaseException): pass
+        def myevent(*args, **kwargs): raise EventException
+        with self.assertRaises(EventException):
+            lbfgs = LBFGS_CPP(_xrand, _EG(), events=[myevent])
+            lbfgs.run()
+    
+    def test_event(self):
+        self.event_called = False
+        def myevent(*args, **kwargs): 
+            self.event_called = True
+        self.do_test(_EG(), events=[myevent])
+        self.assertTrue(self.event_called)
         
 
 

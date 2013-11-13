@@ -105,7 +105,13 @@ namespace LBFGS_ns{
       double get_H0() { return H0_; }
       int get_nfev() { return nfev_; }
       int get_niter() { return iter_number_; }
+      int get_maxiter() { return maxiter_; }
       bool success() { return stop_criterion_satisfied(); }
+
+      /**
+       * Return true if the termination condition is satisfied, false otherwise
+       */
+      bool stop_criterion_satisfied();
 
     private :
 
@@ -131,11 +137,6 @@ namespace LBFGS_ns{
        * does not rise more than the allowed amount.
        */
       double backtracking_linesearch();
-
-      /**
-       * Return true if the termination condition is satisfied, false otherwise
-       */
-      bool stop_criterion_satisfied();
 
       /**
        * Compute the func and gradient of the objective function

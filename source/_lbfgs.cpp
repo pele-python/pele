@@ -52,6 +52,7 @@ LBFGS::LBFGS(
     verbosity_(0),
     iter_number_(0),
     nfev_(0),
+    rms_(1e100),
     H0_(0.1),
     k_(0),
     func_initialized_(false)
@@ -317,6 +318,9 @@ double LBFGS::backtracking_linesearch()
 
 bool LBFGS::stop_criterion_satisfied()
 {
+  if (! func_initialized_)
+    initialize_func_gradient();
+
   return rms_ <= tol_;
 }
 
