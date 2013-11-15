@@ -13,6 +13,7 @@ def make3dVector(u):
     make a 3d unit vector from (theta, phi)
     """ 
     sinphi = sin(u[1])
+
     vec = np.zeros(3)
     vec[0] = sinphi * cos(u[0])
     vec[1] = sinphi * sin(u[0])
@@ -171,6 +172,85 @@ class HeisenbergModel(BasePotential):
         return E + Efields, grad2
 
 
+def normalize_spins(v3):
+    v = v3.reshape([-1,3])
+    norms = np.sqrt((v*v).sum(1))
+    v = v / norms[:,np.newaxis]
+    v = v.reshape(-1)
+    v3[:] = v[:]
+
+class HeisenbergModelConstraint(BasePotential):
+    """alternate implementation of the Heisenberg model where all the computations are done
+    with 3d spins.  The constraint that the spins are unity is done in the gradient.  
+    """
+    def __init__(self, dim = [4, 4], field_disorder = 1.):
+        """
+        dim is an array giving the dimensions of the lattice
+        
+        phi is the magnitude of the randomness in the fields
+        """
+        self.dim = copy(dim)
+        self.nspins = np.prod(dim)
+        
+        self.G = nx.grid_graph(dim, periodic=True)
+        
+        self.fields = np.zeros([self.nspins, 3])
+                
+        self.indices = dict()
+        i = 0
+        for node in self.G.nodes():
+            self.indices[node] = i
+            self.fields[i,:] = rotations.vec_random() * \
+                field_disorder#np.random.uniform(0, field_disorder, [3])
+            i += 1 
+
+
+    
+        
+    def getEnergy(self, coords3):
+        """
+        coords3 is a list of unit vectors in 3d 
+        """
+        normalize_spins(coords3)
+        coords3 = coords3.reshape([-1,3])
+        E = 0.
+        for edge in self.G.edges():
+            u = self.indices[edge[0]]
+            v = self.indices[edge[1]]
+            E -= np.dot( coords3[u,:], coords3[v,:] )
+        
+        Efields = -np.sum( self.fields * coords3 )
+        
+        #print "EJ EH", E, Efields
+        return E + Efields
+        
+    def getEnergyGradient(self, coords3):
+        """
+        coords3 is a list of unit vectors in 3d 
+        """
+        normalize_spins(coords3)
+        coords3 = coords3.reshape([-1,3])
+            
+        E = 0.
+        grad3 = np.zeros(coords3.shape)
+        for edge in self.G.edges():
+            u = self.indices[edge[0]]
+            v = self.indices[edge[1]]
+            E -= np.dot( coords3[u,:], coords3[v,:] )
+            
+            grad3[u,:] -= coords3[v,:]
+            grad3[v,:] -= coords3[u,:]
+        
+        Efields = -np.sum( self.fields * coords3 )
+        grad3 -= self.fields
+        
+        # make the gradient perpendicular to the spin direction
+        for i in xrange(coords3.shape[0]):
+            grad3[i,:] -= np.dot(grad3[i,:], coords3[i,:])
+        
+        return E + Efields, grad3.reshape(-1)
+
+
 
 def test_basin_hopping(pot, angles):
     from pele.basinhopping import BasinHopping
@@ -237,7 +317,7 @@ def test():
     
     print "try a quench"
     from pele.optimize import mylbfgs
-    ret = mylbfgs(coords, pot)
+    ret = mylbfgs(coords, pot, iprint=1)
     
     print "quenched e = ", ret.energy, "funcalls", ret.nfev
     print ret.coords
@@ -256,5 +336,34 @@ def test():
     
     test_basin_hopping(pot, coords)
 
+def test_potential():
+    L=4
+    nspins=L*L
+    pot = HeisenbergModel( dim = [L,L], field_disorder = 1.) #, phases=phases)
+    
+    coords = np.zeros([nspins, 2])
+    for i in range(nspins): 
+        vec = rotations.vec_random()
+        coords[i,:] = make2dVector(vec)
+    coords = np.reshape(coords, [nspins*2])
+    
+    coords[1] = 2.*np.pi - coords[1]
+    
+    pot.test_potential(coords)
+
+def test_potential_constrained():
+    L=4
+    nspins=L*L
+    pot = HeisenbergModelConstraint( dim = [L,L], field_disorder = 1.) #, phases=phases)
+    
+    coords = np.zeros([nspins, 3])
+    for i in range(nspins): 
+        coords[i,:] = rotations.vec_random()
+    coords = coords.reshape(-1)
+    
+    pot.test_potential(coords)
+
+
 if __name__ == "__main__":
-    test()
+    test_potential_constrained()
+#    test()

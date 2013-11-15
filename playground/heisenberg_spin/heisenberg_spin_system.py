@@ -10,15 +10,15 @@ from pele.landscape import smoothPath
 from pele.utils.frozen_atoms import FrozenCoordsConverter, FrozenPotWrapper
 #from pele.transition_states import InterpolatedPath
 
-def align_vectors_rmat(v1, v2):
-    """return the rotation matrix that will align vector 2 with vector 1"""
-    vx = np.cross(v1, v2)
-    theta = np.arccos(np.dot(v1, v2))
-    aa = theta * vx / np.linalg.norm(vx)
-    return rotations.aa2mx(aa)
+#def align_vectors_rmat(v1, v2):
+#    """return the rotation matrix that will align vector 2 with vector 1"""
+#    vx = np.cross(v1, v2)
+#    theta = np.arccos(np.dot(v1, v2))
+#    aa = theta * vx / np.linalg.norm(vx)
+#    return rotations.aa2mx(aa)
 
 def interpolate_spin(v1, v2, t):
-    vx = np.cross(v1, v2)
+    vx = np.cross(v2, v1)
     theta = np.arccos(np.dot(v1, v2))
     theta *= (1.0 - t)
     aa = theta * vx / np.linalg.norm(vx)
@@ -45,31 +45,36 @@ def interpolate_spins(initial, final, t, i3=None, f3=None):
 #    f3 = hs.coords2ToCoords3(final)
     
 
-class spin3d_mindist(object):
-    def __init__(self, pot):
-        self.pot = pot
-    
-    def __call__(self, xa, xb):
-        sa = hs.coords2ToCoords3(xa).reshape([-1,3])
-        sb = hs.coords2ToCoords3(xb).reshape([-1,3])
-        meansa = sa.sum(0)
-        meansb = sb.sum(0)
-        
-        meansa /= np.linalg.norm(meansa)
-        meansa /= np.linalg.norm(meansb)
-        
-        rmat = align_vectors_rmat(meansa, meansb)
-        
-        for i in xrange(self.pot.npins):
-            sb[i,:] = np.dot(rmat, sb[i,:])
-        
-        dist = np.linalg.norm(sb.reshape(-1) - sa.reshape(-1))
-        
-        xb = hs.coords3ToCoords2(sb)
-        return dist, xa, xb        
+#class spin3d_mindist(object):
+#    def __init__(self, pot):
+#        self.pot = pot
+#    
+#    def __call__(self, xa, xb):
+#        sa = hs.coords2ToCoords3(xa).reshape([-1,3])
+#        sb = hs.coords2ToCoords3(xb).reshape([-1,3])
+#        meansa = sa.sum(0)
+#        meansb = sb.sum(0)
+#        
+#        meansa /= np.linalg.norm(meansa)
+#        meansa /= np.linalg.norm(meansb)
+#        
+#        rmat = align_vectors_rmat(meansa, meansb)
+#        
+#        for i in xrange(self.pot.npins):
+#            sb[i,:] = np.dot(rmat, sb[i,:])
+#        
+#        dist = np.linalg.norm(sb.reshape(-1) - sa.reshape(-1))
+#        
+#        xb = hs.coords3ToCoords2(sb)
+#        return dist, xa, xb        
 
 
 def spin3d_mindist_norot(xa, xb):
+    """
+    would be better to use the spherical law of cosines to compute
+    the angle between the vectors
+    http://en.wikipedia.org/wiki/Great-circle_distance
+    """
     sa = hs.coords2ToCoords3(xa).reshape([-1,3])
     sb = hs.coords2ToCoords3(xb).reshape([-1,3])
     # get an array of the dot product between the spins
@@ -79,8 +84,28 @@ def spin3d_mindist_norot(xa, xb):
 #    dist = np.linalg.norm(sb - sa)
     return dist, xa, xb
 
+def normalize_2dspins(coords):
+    """there is probably a better way to do this."""
+    return hs.make2dVector(hs.make3dVector(coords))
+
 def spin3d_distance(xa, xb, distance=True, grad=True):
-    dist = None
+    """
+    the coorindates are in the form (theta, phi) = xa[0,:]
+    where phi is the polar angle (the angle to the z axis)
+    and theta is the azimulth angle to the x-axis (I think... it could be y axis).
+    1) compute delta phi and delta theta
+    2) apply symmetries until -pi/2 < delta phi < pi/2
+    3) apply symmetries until -pi < delta theta < pi
+    4) normalize delta theta by sin(phi) 
+    """
+    import sys
+    sys.stderr.write("Warning, this distance function (spin3d_distance) is wrong.  The NEB will be messed up\n")
+    from pele.angleaxis import _aadist
+    dist, temp1, temp2 = spin3d_mindist_norot(xa, xb)
+    S = np.eye(3)
+    print "THIS IS WHAT I WAS DOING BEFORE I WENT TO THE PUB"
+    xa = normalize_2dspins(xa)
+    xb = normalize_2dspins(xb)
     grad = xa - xb
     if distance:
         dist, xa, xb = spin3d_mindist_norot(xa, xb)
@@ -102,7 +127,7 @@ class HeisenbergSystem(BaseSystem):
         self.setup_params(self.params)
     
     def setup_params(self, params):
-        params.takestep.stepsize = np.pi / 4
+        params.takestep.stepsize = np.pi #/ 2.
         params.takestep.verbose = True
         params.double_ended_connect.local_connect_params.NEBparams.interpolator = interpolate_spins
         params.double_ended_connect.local_connect_params.NEBparams.image_density = 10
@@ -118,6 +143,7 @@ class HeisenbergSystem(BaseSystem):
             return self.pot
         except AttributeError:
             if self.one_frozen:
+                # freeze one spin to remove the global rotational symmetry
                 base_pot = HeisenbergModel(dim=self.dims, field_disorder=0.)
                 reference_coords = np.zeros(base_pot.nspins * 2)
                 n = reference_coords.size
@@ -162,12 +188,12 @@ class HeisenbergSystem(BaseSystem):
         """
 #        return None
         coords = coords.reshape([-1,2])
-        sinphi = np.sin(coords[:,1])
+        sinphi2 = np.sin(coords[:,1])**2
         n = coords.size
         g = np.eye(n).reshape(-1)
         # set every second diagonal component to sintheta
 #        g[n+1::2*(n+1)] = sintheta2
-        g[::2*(n+1)] = sinphi**2
+        g[::2*(n+1)] = sinphi2
         return g.reshape([n,n])
 
     def draw(self, coords, index):
@@ -197,12 +223,28 @@ class HeisenbergSystem(BaseSystem):
 def rungui():
     from pele.gui import run_gui
     system = HeisenbergSystem(field_disorder=3.1, disorder=True)
+#    system = HeisenbergSystem(field_disorder=0., disorder=False)
+
 #    x = system.get_random_configuration()
 #    print system.get_metric_tensor(x)
 #    return
 #    bh = system.get_basinhopping()
 #    bh.run(10)
     run_gui(system)
+
+def test_eigs():
+    from pele.transition_states import findLowestEigenVector
+    from pele.thermodynamics import normalmodes
+    system = HeisenbergSystem(field_disorder=3.1, disorder=True)
+    pot = system.get_potential()
+    x = system.get_random_configuration()
+    x = system.get_random_minimized_configuration().coords
+    ret = findLowestEigenVector(x, pot, orthogZeroEigs=None)
+    hess = pot.getHessian(x)
+    freq, modes = normalmodes(hess, metric=None)
+    print "lowest eig from hess", freq[0]
+    print "lowest eig from RR  ", ret.eigenval
+    
 
 def test_pot():
     np.random.seed(0)
@@ -232,5 +274,7 @@ if __name__ == "__main__":
     print np.arccos(-.99)
     print np.arccos(0.99)
     print np.arccos(0.0)
+    np.random.seed(0)
 #    test_pot()
+#    test_eigs()
     rungui()
