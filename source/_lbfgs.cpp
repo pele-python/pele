@@ -9,9 +9,10 @@
 #include <iostream>
 #include <iomanip>
 
-using namespace LBFGS_ns;
 using std::vector;
 using std::cout;
+
+namespace pele{
 
 /**
  * compute the dot product of two vectors
@@ -342,4 +343,5 @@ void LBFGS::set_H0(double H0)
     cout << "warning: setting H0 after the first iteration.\n";
   }
   H0_ = H0;
+}
 }

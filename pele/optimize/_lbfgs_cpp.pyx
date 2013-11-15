@@ -9,8 +9,8 @@ import sys
 from cpython cimport bool as cbool
 
 # import the externally defined ljbfgs implementation
-cdef extern from "_lbfgs.h" namespace "LBFGS_ns":
-    cdef cppclass cppLBFGS "LBFGS_ns::LBFGS":
+cdef extern from "_lbfgs.h" namespace "pele":
+    cdef cppclass cppLBFGS "pele::LBFGS":
         cppLBFGS(_pele.cBasePotential *, _pele.Array[double] &, double, int) except +
 
         void run() except +

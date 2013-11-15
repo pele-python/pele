@@ -1,5 +1,5 @@
-#ifndef __LBFGS_CPP__
-#define __LBFGS_CPP__
+#ifndef __LBFGS_H__
+#define __LBFGS_H__
 /**
  * an implementation of the LBFGS optimization algorithm in c++.  This
  * implemenation uses a backtracking linesearch.
@@ -9,7 +9,8 @@
 #include "array.h"
 
 using std::vector;
-namespace LBFGS_ns{
+
+namespace pele{
   class LBFGS{
     private : 
       // input parameters
