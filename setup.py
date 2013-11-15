@@ -100,7 +100,12 @@ include_dirs = [numpy_include, "source/"]
 depends = ["source/" + f for f in os.listdir("source/") 
            if f.endswith(".cpp") or f.endswith(".h")]
 
-extra_compile_args=['-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
+extra_compile_args = ["-Wextra", "-O2", '-funroll-loops']
+# uncomment the next line to add extra optimization options
+# extra_compile_args = ['-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
+
+# note: to compile with debug on and to override extra_compile_args use, e.g.
+# OPT="-g -O2 -march=native" python setup.py ...
 
 cxx_modules = [
     Extension("pele.potentials._lj_cpp", 
