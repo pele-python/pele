@@ -2,7 +2,7 @@ import tempfile
 import numpy as np
 
 from pele.systems import AtomicCluster
-from pele.potentials.ljpshiftfast import LJpshift
+from pele.potentials import BLJCut
 from pele.utils.xyz import write_xyz
 from pele.mindist import CoMToOrigin
 
@@ -39,7 +39,7 @@ class BLJCluster(AtomicCluster):
 
     
     def get_potential(self):
-        return LJpshift(self.natoms, self.ntypeA, **self.potential_kwargs)
+        return BLJCut(self.natoms, self.ntypeA, **self.potential_kwargs)
     
     def get_permlist(self):
         return [range(self.ntypeA), range(self.ntypeA, self.natoms)]

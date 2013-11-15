@@ -76,3 +76,22 @@ def draw_atomic_binary(coordslinear, index, Aatoms, Batoms, subtract_com=False,
         color = [0.00, 0.25, 0., 1.]
     
     draw_atoms(coords, Batoms, color, radius=rB)
+
+def draw_cone(X1, X2, rbase=0.1, rtop=0.0):
+    """draw a cylinder from X1 to X2"""
+    from OpenGL import GL,GLUT, GLU
+    z = np.array([0.,0.,1.]) #default cylinder orientation
+    p = X2-X1 #desired cylinder orientation
+    r = np.linalg.norm(p)
+    t = np.cross(z,p)  #angle about which to rotate
+    a = np.arccos( np.dot( z,p) / r ) #rotation angle
+    a *= (180. / np.pi)  #change units to angles
+    GL.glPushMatrix()
+    GL.glTranslate( X1[0], X1[1], X1[2] )
+    GL.glRotate( a, t[0], t[1], t[2] )
+    g=GLU.gluNewQuadric()
+    GLU.gluCylinder(g, rbase, rtop, r, 30, 30)  #I can't seem to draw a cylinder
+    GL.glPopMatrix()
+
+def draw_cylinder(X1, X2, radius=.1):
+    draw_cone(X1, X2, rbase=radius, rtop=radius)

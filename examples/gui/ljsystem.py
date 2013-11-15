@@ -1,44 +1,33 @@
+import sys
+
 from PyQt4 import QtGui
-import NewLJ
-import numpy as np
-
-from pele.config import config
-
-#from pele.transition_states import dimer, tstools
 
 from pele.systems import LJCluster
- 
-class LJSystem(LJCluster):
-    def __init__(self):
-        dlg = NewLJDialog()
-        dlg.exec_()
-        self.natoms = dlg.natoms()
-        if dlg.result() == QtGui.QDialog.Rejected:
-            raise BaseException("Aborted parameter dialog")
-        super(LJSystem, self).__init__(self.natoms)
-        self.params.gui.basinhopping_nsteps = 1000
-    
-    def get_optim_spawner(self, coords1, coords2):
-        from pele.systems.spawn_OPTIM import SpawnOPTIM_LJ
-        import os
-#        # TODO: this should be passable somehow
-#        optim = os.path.expanduser("~")+"/git/OPTIM/source/build/OPTIM"
-##        optim = "OPTIM"
-        optim = config.get("exec", "OPTIM")
-        optim = os.path.expandvars(os.path.expanduser(optim))
-        print "optim executable", optim
-        return SpawnOPTIM_LJ(coords1, coords2, self, OPTIM=optim, tempdir=True)
+from pele.gui import run_gui
 
+"""
+start a gui for a lennard jones cluster.
 
-class NewLJDialog(QtGui.QDialog,NewLJ.Ui_DialogLJSetup):
-    def __init__(self):
-        QtGui.QDialog.__init__(self)
-        self.setupUi(self)
-    def natoms(self):
-        return int(self.lineNatoms.text())
-    def nsave(self):
-        return int(self.lineNsave.text())
-        
+All that is really needed to start a gui is define a system and call run_gui
+
+    system = LJCluster(13)
+    run_gui(system)
+
+"""
+
 if __name__ == "__main__":
-    import pele.gui.run as gr
-    gr.run_gui(LJSystem)
+    # create a pop up window to get the number of atoms
+    app = QtGui.QApplication(sys.argv)
+    dialog = QtGui.QInputDialog()
+    dialog.setLabelText("number of atoms")
+    dialog.setWindowTitle("Create new Lennard-Jones system")
+    dialog.setInputMode(1)
+    dialog.setIntMinimum(2)
+    dialog.setIntValue(13)
+    dialog.exec_()
+    natoms = dialog.intValue()
+
+    # create the system and start the gui
+    # (note: since the application is already started we need to pass it to run_gui)
+    system = LJCluster(natoms)
+    run_gui(system, application=app)

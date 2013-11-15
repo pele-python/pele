@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_normalmode_explorer.ui'
 #
-# Created: Wed Apr 24 13:53:16 2013
+# Created: Wed Nov 13 11:48:24 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -96,17 +96,21 @@ class Ui_MainWindow(object):
         self.actionShow_energies = QtGui.QAction(MainWindow)
         self.actionShow_energies.setCheckable(True)
         self.actionShow_energies.setObjectName(_fromUtf8("actionShow_energies"))
+        self.actionHessian_eigs = QtGui.QAction(MainWindow)
+        self.actionHessian_eigs.setCheckable(True)
+        self.actionHessian_eigs.setObjectName(_fromUtf8("actionHessian_eigs"))
         self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionSave)
         self.toolBar.addAction(self.actionParameters)
         self.toolBar.addAction(self.actionShow_energies)
+        self.toolBar.addAction(self.actionHessian_eigs)
 
         self.retranslateUi(MainWindow)
         QtCore.QObject.connect(self.pushClose, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.close)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Normalmode Browser", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Normalmodes", None, QtGui.QApplication.UnicodeUTF8))
         self.pushClose.setText(QtGui.QApplication.translate("MainWindow", "Close", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
@@ -114,8 +118,10 @@ class Ui_MainWindow(object):
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.actionParameters.setText(QtGui.QApplication.translate("MainWindow", "Parameters", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShow_energies.setText(QtGui.QApplication.translate("MainWindow", "show energies", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionShow_energies.setToolTip(QtGui.QApplication.translate("MainWindow", "show a plot of the energies", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionShow_energies.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Show a plot of the energies.  Note the energy will only agree with the harmonic approximation if the metric tensor is the identity.  Click the button &quot;Hessian eigs&quot; to make the energies agree.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionHessian_eigs.setText(QtGui.QApplication.translate("MainWindow", "Hessian eigs", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionHessian_eigs.setToolTip(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Show the Hessian eigenvalues and eigenvectors instead of the normal modes. These will be different if the metric tensor is not the identity (e.g. if with curvilinear coordinates like angle-axis).</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
 
-from pele.gui.ui.mplwidget import MPLWidget
 from pele.gui.show3d_with_slider import Show3DWithSlider
+from pele.gui.ui.mplwidget import MPLWidget
 import resources_rc

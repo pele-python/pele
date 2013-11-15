@@ -24,7 +24,7 @@ class MorseCluster(AtomicCluster):
         self.natoms = natoms
         self.rho = rho
         self.r0 = r0
-        self.A = 1.
+        self.A = A
         self.rcut = rcut
         
         self.params.database.accuracy = 1e-3

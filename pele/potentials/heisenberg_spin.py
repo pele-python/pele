@@ -255,7 +255,6 @@ def test():
     print "magnetization after quench", m
     
     test_basin_hopping(pot, coords)
-    
 
 if __name__ == "__main__":
     test()

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Normalmode Browser</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -112,6 +112,7 @@
    <addaction name="actionSave"/>
    <addaction name="actionParameters"/>
    <addaction name="actionShow_energies"/>
+   <addaction name="actionHessian_eigs"/>
   </widget>
   <action name="actionRun">
    <property name="checkable">
@@ -153,7 +154,18 @@
     <string>show energies</string>
    </property>
    <property name="toolTip">
-    <string>show a plot of the energies</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show a plot of the energies.  Note the energy will only agree with the harmonic approximation if the metric tensor is the identity.  Click the button &amp;quot;Hessian eigs&amp;quot; to make the energies agree.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionHessian_eigs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hessian eigs</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the Hessian eigenvalues and eigenvectors instead of the normal modes. These will be different if the metric tensor is not the identity (e.g. if with curvilinear coordinates like angle-axis).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
  </widget>

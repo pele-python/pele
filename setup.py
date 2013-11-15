@@ -8,6 +8,10 @@ import os
 numpy_lib = os.path.split(np.__file__)[0] 
 numpy_include = os.path.join(numpy_lib, 'core/include') 
 
+#
+# compile fortran extension modules
+#
+
 class ModuleList:
     def __init__(self, **kwargs):
         self.module_list = []
@@ -27,7 +31,7 @@ if False:
 fmodules = ModuleList(extra_compile_args=extra_compile_args)
 #fmodules.add_module("pele/mindist/overlap.f90")
 fmodules.add_module("pele/mindist/minperm.f90")
-fmodules.add_module("pele/optimize/mylbfgs_fort.f90")
+#fmodules.add_module("pele/optimize/mylbfgs_fort.f90")
 fmodules.add_module("pele/optimize/mylbfgs_updatestep.f90")
 fmodules.add_module("pele/potentials/fortran/AT.f90")
 fmodules.add_module("pele/potentials/fortran/ljpshiftfort.f90")
@@ -35,11 +39,11 @@ fmodules.add_module("pele/potentials/fortran/lj.f90")
 fmodules.add_module("pele/potentials/fortran/ljcut.f90")
 fmodules.add_module("pele/potentials/fortran/rmdrvt.f90")
 fmodules.add_module("pele/potentials/fortran/soft_sphere_pot.f90")
-fmodules.add_module("pele/potentials/fortran/maxneib_lj.f90")
-fmodules.add_module("pele/potentials/fortran/maxneib_blj.f90")
+#fmodules.add_module("pele/potentials/fortran/maxneib_lj.f90")
+#fmodules.add_module("pele/potentials/fortran/maxneib_blj.f90")
 fmodules.add_module("pele/potentials/fortran/lj_hess.f90")
 fmodules.add_module("pele/potentials/fortran/morse.f90")
-fmodules.add_module("pele/potentials/fortran/magnetic_colloids.f90")
+#fmodules.add_module("pele/potentials/fortran/magnetic_colloids.f90")
 #fmodules.add_module("pele/potentials/rigid_bodies/rbutils.f90")
 fmodules.add_module("pele/utils/_fortran_utils.f90")
 fmodules.add_module("pele/transition_states/_orthogoptf.f90")
@@ -85,61 +89,105 @@ setup(name='pele',
       ext_modules=ext_modules
         )
 
+#
+# build the c++ files
+#
+
+include_sources = ["source/" + f for f in os.listdir("source/") 
+                   if f.endswith(".cpp")]
+include_dirs = [numpy_include, "source/"]
+
+depends = ["source/" + f for f in os.listdir("source/") 
+           if f.endswith(".cpp") or f.endswith(".h")]
+
+extra_compile_args=['-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
+
+cxx_modules = [
+    Extension("pele.potentials._lj_cpp", 
+              ["pele/potentials/_lj_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    
+    Extension("pele.potentials._pele", 
+              ["pele/potentials/_pele.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    
+    Extension("pele.optimize._lbfgs_cpp", 
+              ["pele/optimize/_lbfgs_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    Extension("pele.potentials._pythonpotential", 
+              ["pele/potentials/_pythonpotential.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+               ]
+
+setup(ext_modules=cxx_modules,
+      )
+
 
 #
 # we have no cython files any more.  so the following is commented
 #
-have_cython = False
-if have_cython:
-
-    ###########################################################
-    """
-    programming note:  f2py and cython are not mutually compatible with distutils.
-    To use f2py, we must use numpy.distutils, but numpy.distutils doesn't support
-    cython.  There are several ways around this, but all of them are hacky.
-
-    1   Use numpy.distutils to compile the fortran extension modules and use
-        distutils to compile the .pyx files.  This seems like an optimal solution,
-        but it fails when you pass a flag to numpy.distutils that distutils doesn't
-        understand, e.g. --fcompiler.  A possible solution is to check for the
-        known incompatible flags and remove them when passing to distutils.  
-
-    2.  Compile cython .pyx files into .c files by hand and use numpy.distils
-        to include the .c as source files.  This is the way scipy does it.
-        We could also have setup.py accept a flag --cython which does this for
-        all .pyx files.
-
-    Currently we are using method 1.
-    """
-    ###########################################################
-
-    import sys
-    #remove any flag incompatible with non-numpy distutils.
-    flag = "--fcompiler"
-    rmlist = []
-    for arg in sys.argv:
-        if flag in arg:
-            rmlist.append(arg)
-    for arg in rmlist:
-        sys.argv.remove(arg)
-
-
-    #now build the cython modules
-    #we have to do this separately because cython isn't supported by numpy.distutils
-    from distutils.core import setup
-    from distutils.extension import Extension
-    from Cython.Distutils import build_ext
-    import numpy as np
-
-    cython_modules = [
-                      Extension("pele.potentials.rigid_bodies._rbutils_cython",
-                                ["pele/potentials/rigid_bodies/_rbutils_cython.pyx"])
-                      ]
-
-    setup(
-      ext_modules = cython_modules,
-      cmdclass = {'build_ext': build_ext},
-      include_dirs = [np.get_include()],
-    #  script_args = ['build_ext', '--inplace'],
-    )
-
+#have_cython = False
+#if have_cython:
+#
+#    ###########################################################
+#    """
+#    programming note:  f2py and cython are not mutually compatible with distutils.
+#    To use f2py, we must use numpy.distutils, but numpy.distutils doesn't support
+#    cython.  There are several ways around this, but all of them are hacky.
+#
+#    1   Use numpy.distutils to compile the fortran extension modules and use
+#        distutils to compile the .pyx files.  This seems like an optimal solution,
+#        but it fails when you pass a flag to numpy.distutils that distutils doesn't
+#        understand, e.g. --fcompiler.  A possible solution is to check for the
+#        known incompatible flags and remove them when passing to distutils.  
+#
+#    2.  Compile cython .pyx files into .c files by hand and use numpy.distils
+#        to include the .c as source files.  This is the way scipy does it.
+#        We could also have setup.py accept a flag --cython which does this for
+#        all .pyx files.
+#
+#    Currently we are using method 1.
+#    """
+#    ###########################################################
+#
+#    import sys
+#    #remove any flag incompatible with non-numpy distutils.
+#    flag = "--fcompiler"
+#    rmlist = []
+#    for arg in sys.argv:
+#        if flag in arg:
+#            rmlist.append(arg)
+#    for arg in rmlist:
+#        sys.argv.remove(arg)
+#
+#
+#    #now build the cython modules
+#    #we have to do this separately because cython isn't supported by numpy.distutils
+#    from distutils.core import setup
+#    from distutils.extension import Extension
+#    from Cython.Distutils import build_ext
+#    import numpy as np
+#
+#    cython_modules = [
+#                      Extension("pele.potentials.rigid_bodies._rbutils_cython",
+#                                ["pele/potentials/rigid_bodies/_rbutils_cython.pyx"])
+#                      ]
+#
+#    setup(
+#      ext_modules = cython_modules,
+#      cmdclass = {'build_ext': build_ext},
+#      include_dirs = [np.get_include()],
+#    #  script_args = ['build_ext', '--inplace'],
+#    )
