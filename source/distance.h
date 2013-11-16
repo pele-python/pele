@@ -4,6 +4,17 @@
 #include <cmath>
 #include <stdexcept>
 
+/**
+ * These classes and structs are used by the potentials to compute distances.
+ * They must have a member function get_rij() with signature
+ *
+ *    void get_rij(double * r_ij, double const * const r1, 
+ *                                double const * const r2) 
+ *
+ * Where r1 and r2 are the position of the two atoms and r_ij is an array of
+ * size 3 which will be used to return the distance vector from r1 to r2.
+ */
+
 namespace pele
 {
   /**

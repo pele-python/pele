@@ -1,9 +1,6 @@
-#ifndef __LBFGS_H__
-#define __LBFGS_H__
-/**
- * an implementation of the LBFGS optimization algorithm in c++.  This
- * Implementation uses a backtracking linesearch.
- */
+#ifndef _PELE_LBFGS_H__
+#define _PELE_LBFGS_H__
+
 #include <vector>
 #include "base_potential.h"
 #include "array.h"
@@ -12,6 +9,10 @@
 using std::vector;
 
 namespace pele{
+  /**
+   * An implementation of the LBFGS optimization algorithm in c++.  This
+   * Implementation uses a backtracking linesearch.
+   */
   class LBFGS : public GradientOptimizer{
     private : 
 

@@ -60,6 +60,9 @@ public:
     virtual void run(int const niter)
     { throw runtime_error("Optimizer::run(niter) must be overloaded"); }
 
+    /**
+     * accessors
+     */
     virtual pele::Array<double> get_x()
     { throw runtime_error("Optimizer::get_x() must be overloaded"); }
     virtual pele::Array<double> get_g()
@@ -94,17 +97,17 @@ protected :
     double maxstep_; /**< The maximum step size */
 
     int maxiter_; /**< The maximum number of iterations */
-    int iprint_;
-    int verbosity_;
+    int iprint_; /**< how often to print status information */
+    int verbosity_; /**< How much information to print */
 
     int iter_number_; /**< The current iteration number */
     int nfev_; /**< The number of function evaluations */
 
     // variables representing the state of the system
-    std::vector<double> x_;
-    double f_;
-    std::vector<double> g_;
-    double rms_;
+    std::vector<double> x_; /**< The current coordinates */
+    double f_; /**< The current function value */
+    std::vector<double> g_; /**< The current gradient */
+    double rms_; /**< The root mean square of the gradient */
 
     /**
      * This flag keeps track of whether the function and gradient have been
@@ -159,8 +162,8 @@ public :
           }
           one_iteration();
         }
-
     }
+
     /**
      * Run the optimzation algorithm for niter iterations or until the
      * stop criterion is satisfied
@@ -199,7 +202,7 @@ public :
     void set_iprint(int iprint) { iprint_ = iprint; }
     void set_verbosity(int verbosity) { verbosity_ = verbosity; }
 
-    // functions for accessing the results
+    // functions for accessing the status of the optimizer
     pele::Array<double> get_x() { return x_; }
     pele::Array<double> get_g() { return g_; }
     double get_f() { return f_; }
@@ -214,10 +217,8 @@ public :
      */
     bool stop_criterion_satisfied()
     {
-      if (! func_initialized_)
-        initialize_func_gradient();
-
-      return rms_ <= tol_;
+        if (! func_initialized_) initialize_func_gradient();
+        return rms_ <= tol_;
     }
 
 protected :
@@ -238,7 +239,7 @@ protected :
     }
 
     /**
-     * initialize the func and gradient
+     * compute the initial func and gradient
      */
     void initialize_func_gradient()
     {
