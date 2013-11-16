@@ -29,9 +29,6 @@ namespace pele{
       double H0_;
       int k_; /**< Counter for how many times the memory has been updated */
 
-      // 
-      std::vector<double> step_;
-
     public :
       /**
        * Constructor
@@ -73,23 +70,22 @@ namespace pele{
        * This updates s_, y_, rho_, H0_, and k_
        */
       void update_memory(
-          std::vector<double> & xold,
-          std::vector<double> & gold,
-          std::vector<double> & xnew,
-          std::vector<double> & gnew
-          );
+          std::vector<double> const & xold,
+          std::vector<double> const & gold,
+          std::vector<double> const & xnew,
+          std::vector<double> const & gnew);
 
       /**
        * Compute the LBFGS step from the memory
        */
-      void compute_lbfgs_step();
+      void compute_lbfgs_step(vector<double> & step);
 
       /**
        * Take the step and do a backtracking linesearch if necessary.
        * Apply the maximum step size constraint and ensure that the function
        * does not rise more than the allowed amount.
        */
-      double backtracking_linesearch();
+      double backtracking_linesearch(vector<double> & step);
 
   };
 
@@ -116,7 +112,6 @@ namespace pele{
       y_ = std::vector<vector<double> >(M_, vector<double>(N));
       s_ = std::vector<vector<double> >(M_, vector<double>(N));
       rho_ = std::vector<double>(M_);
-      step_ = std::vector<double>(N);
 
       for (size_t j2 = 0; j2 < N; ++j2){
           x_[j2] = x0[j2];
@@ -131,28 +126,36 @@ namespace pele{
       if (! func_initialized_)
           initialize_func_gradient();
 
+      // make a copy of the position and gradient
       std::vector<double> x_old = x_;
       std::vector<double> g_old = g_;
 
-      compute_lbfgs_step();
+      // get the stepsize and direction from the LBFGS algorithm
+      vector<double> step(x_.size());
+      compute_lbfgs_step(step);
 
-      double stepsize = backtracking_linesearch();
+      // reduce the stepsize if necessary
+      double stepsize = backtracking_linesearch(step);
 
+      // update the LBFGS memeory
       update_memory(x_old, g_old, x_, g_);
+
+      // print some status information
       if ((iprint_ > 0) && (iter_number_ % iprint_ == 0)){
           cout << "lbgs: " << iter_number_
-                  << " f " << f_
+                  << " E " << f_
                   << " rms " << rms_
+                  << " nfev " << nfev_
                   << " stepsize " << stepsize << "\n";
       }
       iter_number_ += 1;
   }
 
   void LBFGS::update_memory(
-          std::vector<double> & xold,
-          std::vector<double> & gold,
-          std::vector<double> & xnew,
-          std::vector<double> & gnew)
+          std::vector<double> const & xold,
+          std::vector<double> const & gold,
+          std::vector<double> const & xnew,
+          std::vector<double> const & gnew)
   {
       // update the lbfgs memory
       // This updates s_, y_, rho_, and H0_, and k_
@@ -164,48 +167,42 @@ namespace pele{
 
       double ys = vecdot(y_[klocal], s_[klocal]);
       if (ys == 0.) {
-          // should print a warning here
           if (verbosity_ > 0) {
               cout << "warning: resetting YS to 1.\n";
           }
           ys = 1.;
-
       }
 
       rho_[klocal] = 1. / ys;
 
       double yy = vecdot(y_[klocal], y_[klocal]);
       if (yy == 0.) {
-          // should print a warning here
           if (verbosity_ > 0) {
               cout << "warning: resetting YY to 1.\n";
           }
           yy = 1.;
       }
       H0_ = ys / yy;
-      //  cout << "    setting H0 " << H0_
-      //    << " ys " << ys
-      //    << " yy " << yy
-      //    << " rho[i] " << rho_[klocal]
-      //    << "\n";
 
       // increment k
       k_ += 1;
 
   }
 
-  void LBFGS::compute_lbfgs_step()
+  void LBFGS::compute_lbfgs_step(vector<double> & step)
   {
       if (k_ == 0){
+          // take a conservative first step
           double gnorm = vecnorm(g_);
           if (gnorm > 1.) gnorm = 1. / gnorm;
           for (size_t j2 = 0; j2 < x_.size(); ++j2){
-              step_[j2] = - gnorm * H0_ * g_[j2];
+              step[j2] = - gnorm * H0_ * g_[j2];
           }
           return;
       }
 
-      step_ = g_;
+      // copy the gradient into step
+      step = g_;
 
       int jmin = std::max(0, k_ - M_);
       int jmax = k_;
@@ -217,52 +214,52 @@ namespace pele{
       for (int j = jmax - 1; j >= jmin; --j){
           i = j % M_;
           //cout << "    i " << i << " j " << j << "\n";
-          alpha[i] = rho_[i] * vecdot(s_[i], step_);
-          for (size_t j2 = 0; j2 < step_.size(); ++j2){
-              step_[j2] -= alpha[i] * y_[i][j2];
+          alpha[i] = rho_[i] * vecdot(s_[i], step);
+          for (size_t j2 = 0; j2 < step.size(); ++j2){
+              step[j2] -= alpha[i] * y_[i][j2];
           }
       }
 
       // scale the step size by H0
-      for (size_t j2 = 0; j2 < step_.size(); ++j2){
-          step_[j2] *= H0_;
+      for (size_t j2 = 0; j2 < step.size(); ++j2){
+          step[j2] *= H0_;
       }
 
       // loop forwards through the memory
       for (int j = jmin; j < jmax; ++j){
           i = j % M_;
           //cout << "    i " << i << " j " << j << "\n";
-          beta = rho_[i] * vecdot(y_[i], step_);
-          for (size_t j2 = 0; j2 < step_.size(); ++j2){
-              step_[j2] += s_[i][j2] * (alpha[i] - beta);
+          beta = rho_[i] * vecdot(y_[i], step);
+          for (size_t j2 = 0; j2 < step.size(); ++j2){
+              step[j2] += s_[i][j2] * (alpha[i] - beta);
           }
       }
 
       // invert the step to point downhill
       for (size_t j2 = 0; j2 < x_.size(); ++j2){
-          step_[j2] *= -1;
+          step[j2] *= -1;
       }
 
   }
 
-  double LBFGS::backtracking_linesearch()
+  double LBFGS::backtracking_linesearch(vector<double> & step)
   {
       vector<double> xnew(x_.size());
       vector<double> gnew(x_.size());
       double fnew;
 
       // if the step is pointing uphill, invert it
-      if (vecdot(step_, g_) > 0.){
+      if (vecdot(step, g_) > 0.){
           if (verbosity_ > 1) {
               cout << "warning: step direction was uphill.  inverting\n";
           }
-          for (size_t j2 = 0; j2 < step_.size(); ++j2){
-              step_[j2] *= -1;
+          for (size_t j2 = 0; j2 < step.size(); ++j2){
+              step[j2] *= -1;
           }
       }
 
       double factor = 1.;
-      double stepsize = vecnorm(step_);
+      double stepsize = vecnorm(step);
 
       // make sure the step is no larger than maxstep_
       if (factor * stepsize > maxstep_){
@@ -273,7 +270,7 @@ namespace pele{
       int nred_max = 10;
       for (nred = 0; nred < nred_max; ++nred){
           for (size_t j2 = 0; j2 < xnew.size(); ++j2){
-              xnew[j2] = x_[j2] + factor * step_[j2];
+              xnew[j2] = x_[j2] + factor * step[j2];
           }
           compute_func_gradient(xnew, fnew, gnew);
 
