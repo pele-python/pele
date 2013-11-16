@@ -114,7 +114,12 @@ cxx_modules = [
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    
+    Extension("pele.potentials._morse_cpp", 
+              ["pele/potentials/_morse_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
     Extension("pele.potentials._pele", 
               ["pele/potentials/_pele.cpp"] + include_sources,
               include_dirs=include_dirs,
