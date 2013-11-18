@@ -56,7 +56,13 @@ def lineSearchScipy(X, V, pot, aguess = 0.1, tol = 1e-3, G = None):
     return a, funcalls
     
 
-        
+# js850> note: Nocedal and Wright (page 200, equation 8.20) suggest
+# scaling the initial inverse Hessian matrix H0 after the first 
+# step has been computed but before the first BFGS update is performed
+#
+# H0 = np.dot(y, s) / np.dot(y, y) * np.eye(n,n)
+#
+# I think this could be a very important step
 
 class BFGS:
     def __init__(self, X, pot, maxstep):

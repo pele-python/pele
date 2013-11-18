@@ -224,6 +224,11 @@ class LBFGS(object):
         # this is described in Liu and Nocedal 1989 
         # http://dx.doi.org/10.1007/BF01589116
         # note: for this step we assume H0 is always the identity
+        # js850: This ability to update H0 is what sets LBFGS apart from BFGS
+        # and makes it such a superior algorithm in my opinion.  This is why
+        # LBFGS gets away with not using a more complicated linesearch algorithm
+        # and why BFGS (which can't have this step) gives nonsensical results without
+        # a linesearch.
         YY = np.dot(dG, dG)
         if YY == 0.:
             self.logger.warning("warning: resetting YY to 1 in lbfgs %s", YY)
