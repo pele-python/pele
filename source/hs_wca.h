@@ -12,7 +12,7 @@ using std::sqrt;
 namespace pele {
 
     /**
-     * Pairwise interaction for Hard Sphere + Weeks-Chandler-Andersen (HS_WCA) potential
+     * Pairwise interaction for Hard Sphere + Weeks-Chandler-Andersen (HS_WCA) potential, refer to D. Asenjo PhD thesis pp 66
      */
     struct HS_WCA_interaction {
         double const _C6, _C12;
@@ -27,16 +27,17 @@ namespace pele {
         	_infty(pow(10.0,20)), _eps(eps)
         {}
 
-        /* calculate energy from distance squared */
+        /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
         double energy(double r2, double r0) const {
             double E;
         	double r = sqrt(r2);
-            double ir2 = 1.0/r2;
+        	double dr = r - r0;
+            double ir2 = 1.0/(dr*dr);
             double ir6 = ir2*ir2*ir2;
             double ir12 = ir6*ir6;
             if (r < r0)
             	E = _infty;
-            else if(r < _coff)
+            else if(r < _coff + dr)
             	E = _eps*(-_C6*ir6 + _C12*ir12 + 1.0/4);
             else
             	E = 0.;
@@ -44,19 +45,21 @@ namespace pele {
             return E;
         }
 
-        /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
+        /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
         double energy_gradient(double r2, double r0, double *gij) const {
         	double E;
         	double r = sqrt(r2);
-			double ir2 = 1.0/r2;
+			double dr = r - r0;
+			double ir2 = 1.0/(dr*dr);
 			double ir6 = ir2*ir2*ir2;
 			double ir12 = ir6*ir6;
+
 			if (r < r0)
 			{
 				E = _infty;
 				*gij = _infty;
 			}
-			else if(r < _coff)
+			else if(r < _coff + dr)
 			{
 				E = _eps*(-_C6*ir6 + _C12*ir12 + 1.0/4);
 				*gij = _eps*(_12C12 * ir12 - _6C6 * ir6) * ir2;
