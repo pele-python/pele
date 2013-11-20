@@ -185,14 +185,14 @@ def group_rotation_file(molecule, params, filename):
                                            rotated_atoms[1].name.strip()))
                     output.write(" ".join(("GROUP", 
                                            group_name,
-                                           str(rotated_atoms[0].index),
-                                           str(rotated_atoms[1].index),
+                                           str(rotated_atoms[0].index + 1),
+                                           str(rotated_atoms[1].index + 1),
                                            str(len(rotated_atoms[2])),
                                            str(params[param][0]),
                                            str(params[param][1]),
                                            "\n")))
                     for atom in rotated_atoms[2]:
-                        output.write(str(atom.index) + "\n")
+                        output.write(str(atom.index + 1) + "\n")
                     output.write("\n")
 
 def group_rotation_dict(molecule, params):
