@@ -59,9 +59,6 @@ namespace pele
                 int i2 = 3*j;
 
                 _dist->get_rij(dr, &x[i1], &x[i2]);
-                                //for(size_t k=0; k<3; ++k) {
-                                //    dr[k] = x[i1+k] - x[i2+k];
-                                //}
 
                 double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
                 e += _interaction->energy_gradient(r2, &gij);
@@ -86,9 +83,7 @@ namespace pele
             for(size_t j=i+1; j<natoms; ++j) {
                 size_t i2 = 3*j;
                 double dr[3];
-                                _dist->get_rij(dr, &x[i1], &x[i2]);
-                //for(size_t k=0; k<3; ++k)
-                //    dr[k] = x(i1+k) - x(i2+k);
+                _dist->get_rij(dr, &x[i1], &x[i2]);
                 double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
                 e += _interaction->energy(r2);
             }
