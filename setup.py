@@ -119,12 +119,12 @@ cxx_modules = [
               language="c++", depends=depends,
               ),
                
-    Extension("pele.potentials._wca_cpp", 
-              ["pele/potentials/_wca_cpp.cpp"] + include_sources,
+    Extension("pele.potentials._hs_wca_cpp", 
+              ["pele/potentials/_hs_wca_cpp.cpp"] + include_sources,
               include_dirs=include_dirs,
-              extra_compile_args=extra_compile_args,
+             extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
-              ),
+             ),
     
     Extension("pele.potentials._pele", 
               ["pele/potentials/_pele.cpp"] + include_sources,
