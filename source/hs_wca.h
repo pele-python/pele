@@ -12,54 +12,63 @@ using std::sqrt;
 namespace pele {
 
     /**
-     * Pairwise interaction for Hard Sphere + Weeks-Chandler-Andersen (HS_WCA) potential
+     * Pairwise interaction for Hard Sphere + Weeks-Chandler-Andersen (HS_WCA) potential, refer to D. Asenjo PhD thesis pp 66
      */
     struct HS_WCA_interaction {
-        double const _C6, _C12;
-        double const _6C6, _12C12;
-        double const _coff, _infty; //cutoff distance for HS_WCA potential
-        double const _eps;
+    	double const _eps, _sca;
+    	double const _infty, _prfac;
 
-        HS_WCA_interaction(double C6, double C12, double eps) :
-            _C6(C6), _C12(C12),
-            _6C6(6.*_C6), _12C12(12.*_C12),
-        	_coff(pow(2.*C6,1./6)),
-        	_infty(pow(10.0,20)), _eps(eps)
-        {}
+        HS_WCA_interaction(double eps, double sca) :
+            _eps(eps), _sca(1 + 1./sca),
+            _infty(pow(10.0,10)), _prfac(1./(sqrt(2)*sca*sca*sca))
+    	{}
+        // _prfac is the cubic power of 1/(2**(1/6) * sca)
+        //well depth _eps and scaling factor (shell thickness = 1/sca * R, where R is the hard core radius)
 
-        /* calculate energy from distance squared */
+        /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
         double energy(double r2, double r0) const {
             double E;
         	double r = sqrt(r2);
-            double ir2 = 1.0/r2;
+        	double dr = r - r0;
+            double ir2 = 1.0/(dr*dr);
             double ir6 = ir2*ir2*ir2;
             double ir12 = ir6*ir6;
-            if (r < r0)
+            double C3 = _prfac*r0*r0*r0;
+            double C6 = C3*C3;
+            double C12 = C6*C6;
+            double coff = r0*_sca; //distance at which the soft cores are at contact
+            if (r <= r0)
             	E = _infty;
-            else if(r < _coff)
-            	E = _eps*(-_C6*ir6 + _C12*ir12 + 1.0/4);
+            else if(r < coff )
+            	E = _eps*(-C6*ir6 + C12*ir12 + 1.0/4);
             else
             	E = 0.;
 
             return E;
         }
 
-        /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
+        /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
         double energy_gradient(double r2, double r0, double *gij) const {
         	double E;
-        	double r = sqrt(r2);
-			double ir2 = 1.0/r2;
+			double r = sqrt(r2);
+			double dr = r - r0;
+			double ir2 = 1.0/(dr*dr);
 			double ir6 = ir2*ir2*ir2;
 			double ir12 = ir6*ir6;
-			if (r < r0)
+			double C3 = _prfac*r0*r0*r0;
+			double C6 = C3*C3;
+			double C12 = C6*C6;
+			double coff = r0*_sca; //distance at which the soft cores are at contact
+
+			if (r <= r0)
 			{
 				E = _infty;
 				*gij = _infty;
 			}
-			else if(r < _coff)
+			else if(r < coff)
 			{
-				E = _eps*(-_C6*ir6 + _C12*ir12 + 1.0/4);
-				*gij = _eps*(_12C12 * ir12 - _6C6 * ir6) * ir2;
+				E = _eps*(- C6 * ir6 + C12 * ir12 + 1.0/4);
+				*gij = _eps*(12 * C12 * ir12 - 6 * C6 * ir6) * ir2;
 			}
 			else
 			{
@@ -83,8 +92,8 @@ namespace pele {
     class HS_WCA : public SimplePairwisePotential< HS_WCA_interaction >
     {
         public:
-            HS_WCA(double C6, double C12, double eps)
-                : SimplePairwisePotential< HS_WCA_interaction > ( new HS_WCA_interaction(C6, C12, eps) ) {}
+            HS_WCA(double eps, double sca)
+                : SimplePairwisePotential< HS_WCA_interaction > ( new HS_WCA_interaction(eps, sca) ) {}
     };
 
     /**
@@ -92,9 +101,9 @@ namespace pele {
      */
     class HS_WCAPeriodic : public SimplePairwisePotential< HS_WCA_interaction, periodic_distance > {
         public:
-            HS_WCAPeriodic(double C6, double C12, double eps, double const *boxvec)
+            HS_WCAPeriodic(double eps, double sca, double const *boxvec)
                 : SimplePairwisePotential< HS_WCA_interaction, periodic_distance> (
-                        new HS_WCA_interaction(C6, C12, eps),
+                        new HS_WCA_interaction(eps, sca),
                         new periodic_distance(boxvec[0], boxvec[1], boxvec[2])
                         )
             {}
@@ -105,8 +114,8 @@ namespace pele {
      */
     class HS_WCA_interaction_list : public SimplePairwiseInteractionList< HS_WCA_interaction > {
         public:
-            HS_WCA_interaction_list(Array<long int> & ilist, double C6, double C12, double eps)
-                :  SimplePairwiseInteractionList< HS_WCA_interaction > ( new HS_WCA_interaction(C6, C12, eps), ilist) {}
+            HS_WCA_interaction_list(Array<long int> & ilist, double eps, double sca)
+                :  SimplePairwiseInteractionList< HS_WCA_interaction > ( new HS_WCA_interaction(eps, sca), ilist) {}
     };
 }
 #endif
