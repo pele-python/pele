@@ -43,7 +43,7 @@ namespace pele {
             if (r <= r0)
             {
             	E = _infty;
-            	std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is less than their hard core radii"<<std::endl;
+            	std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is less than their hard core separation"<<std::endl;
             }
             else if(r < coff )
             	E = _eps*(-C6*ir6 + C12*ir12 + 1.0/4);
@@ -71,13 +71,13 @@ namespace pele {
 			{
 				E = _infty;
 				*gij = _infty;
-				std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is less than their hard core radii"<<std::endl;
+				std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is less than their hard core separation"<<std::endl;
 			}
 			else if(r < coff)
 			{
 				E = _eps*(- C6 * ir6 + C12 * ir12 + 1.0/4);
 				*gij = _eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / (dr*r); // this is -g|gij| (for consistency with the loop in pairwise potential)
-			}
+			}cimport pele.potentials._pele as _pele
 			else
 			{
 				E = 0.;
