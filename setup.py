@@ -56,6 +56,10 @@ cxx_modules = [
                       include_dirs=[numpy_include],
                       extra_compile_args=['-Wextra','-pedantic','-funroll-loops','-O2',],
                       ),
+            Extension("pele.potentials._cython_tools", ["pele/potentials/_cython_tools.c"],
+                      include_dirs=[numpy_include],
+                      extra_compile_args=['-Wextra','-pedantic','-funroll-loops','-O2',],
+                      ),
 
                ]
 

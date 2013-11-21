@@ -99,7 +99,14 @@ def run_gui():
     system = XYModlelSystem(dim=[10,10], phi_disorder=1.5)
     run_gui(system)
 
+def test_potential():
+    system = XYModlelSystem(dim=[10,10], phi_disorder=1.5)
+    pot = system.get_potential()
+    pot.test_potential(system.get_random_configuration())
+
+
 if __name__ == "__main__":
+#    test_potential()
     run_gui()
         
     
