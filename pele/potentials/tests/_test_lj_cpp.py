@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 import os
+import logging
 
 from pele.potentials import _lj_cpp
 from pele.utils.xyz import read_xyz
@@ -47,4 +48,5 @@ class TestLJ_CPP_NeighborList(_base_test._BaseTest):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(filename='lj_cpp.log',level=logging.DEBUG)
     unittest.main()
