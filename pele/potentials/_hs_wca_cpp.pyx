@@ -27,7 +27,7 @@ cdef class HS_WCA(_pele.BasePotential):
             self.thisptr = <_pele.cBasePotential*>new cHS_WCA(4.*eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
         else:
             self.periodic = True
-            bv = np.array(boxvec, dypte=float)
+            bv = np.array(boxvec, dtype=float)
             self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic(4.*eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)
             
 cdef class _ErrorPotential(_pele.BasePotential):
