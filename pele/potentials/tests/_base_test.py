@@ -42,7 +42,7 @@ class _BaseTest(unittest.TestCase):
         self.assertGreater(np.min(eigenvals), -1e-4)
     
     def test_random(self):
-        self.grad_test(self.xrandom)
+        self.grad_test(self.xmin+self.xrandom)
     
 
     
