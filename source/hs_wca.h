@@ -39,9 +39,12 @@ namespace pele {
             double C3 = _prfac*r0*r0*r0;
             double C6 = C3*C3;
             double C12 = C6*C6;
-            double coff = r0*(1+_sca); //distance at which the soft cores are at contact
+            double coff = r0*(1.0 +_sca); //distance at which the soft cores are at contact
             if (r <= r0)
+            {
             	E = _infty;
+            	std::cout<<"WARNING: distance between particles "<<i<<" and "<<j<<" is less than their hard core radii"<<std::endl;
+            }
             else if(r < coff )
             	E = _eps*(-C6*ir6 + C12*ir12 + 1.0/4);
             else
@@ -68,6 +71,7 @@ namespace pele {
 			{
 				E = _infty;
 				*gij = _infty;
+				std::cout<<"WARNING: distance between particles "<<i<<" and "<<j<<" is less than their hard core radii"<<std::endl;
 			}
 			else if(r < coff)
 			{

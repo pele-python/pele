@@ -59,6 +59,7 @@ from potential import *
 #from _pele import BasePotential
 #from lj import *
 from _lj_cpp import LJ, BLJCut
+from _hs_wca_cpp import HS_WCA
 from ATLJ import *
 from coldfusioncheck import *
 from gminpotential import *
@@ -72,3 +73,4 @@ from soft_sphere import *
 #from stockmeyer import *
 from xyspin import *
 from morse import Morse
+
