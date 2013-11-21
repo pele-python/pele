@@ -15,6 +15,44 @@ using std::cout;
 
 namespace pele{
 
+/*
+ * compute sum of two vectors element wise
+ * */
+
+void vecsum(std::vector<double> const& v1, std::vector<double> const& v2, std::vector<double> &v3)
+{
+	assert(v1.size() == v2.size());
+	assert(v1.size() == v3.size());
+	std::vector<double>::iterator it2 = v2.begin();
+	std::vector<double>::iterator it3 = v3.begin();
+
+	for (std::vector<double>::iterator it1=v1.begin(); it != v1.end(); ++it1)
+		{
+			*it3 = *it1 + *it2;
+			++it2;
+			++it3;
+		}
+}
+
+/*
+ * compute difference of two vectors element wise
+ * */
+
+void vecdif(std::vector<double> const& v1, std::vector<double> const& v2, std::vector<double> &v3)
+{
+	assert(v1.size() == v2.size());
+	assert(v1.size() == v3.size());
+	std::vector<double>::iterator it2 = v2.begin();
+	std::vector<double>::iterator it3 = v3.begin();
+
+	for (std::vector<double>::iterator it1=v1.begin(); it != v1.end(); ++it1)
+		{
+			*it3 = *it1 - *it2;
+			++it2;
+			++it3;
+		}
+}
+
 /**
  * compute the dot product of two vectors
  */
