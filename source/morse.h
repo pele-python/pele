@@ -28,7 +28,7 @@ struct morse_interaction
     {}
 
     /* calculate energy from distance squared */
-    double energy(double r2) const
+    double inline energy(double r2, size_t atom_i, size_t atom_j) const
     {
         double r = sqrt(r2);
         double c = exp(-_rho * (r - _r0));
@@ -36,7 +36,7 @@ struct morse_interaction
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
-    double energy_gradient(double r2, double *gij) const
+    double inline energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
         double r = sqrt(r2);
         double c = exp(-_rho * (r - _r0));

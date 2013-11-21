@@ -67,15 +67,17 @@ namespace pele
 #endif
 
         for(size_t i=0; i<nlist; i+=2) {
-            size_t i1 = 3*_neighbor_list[i];
-            size_t i2 = 3*_neighbor_list[i+1];
+            size_t atom1 = _neighbor_list[i];
+            size_t atom2 = _neighbor_list[i+1];
+            size_t i1 = 3 * atom1;
+            size_t i2 = 3 * atom2;
 
             for(size_t k=0; k<3; ++k)
                 dr[k] = x[i1+k] - x[i2+k];
 
             double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
 
-            e += _interaction->energy_gradient(r2, &gij);
+            e += _interaction->energy_gradient(r2, &gij, atom1, atom2);
             for(size_t k=0; k<3; ++k)
                 grad[i1+k] -= gij * dr[k];
             for(size_t k=0; k<3; ++k)
@@ -94,13 +96,15 @@ namespace pele
         size_t const nlist = _neighbor_list.size();
 
         for(size_t i=0; i<nlist; i+=2) {
-            size_t i1 = 3*_neighbor_list[i];
-            size_t i2 = 3*_neighbor_list[i+1];
+            size_t atom1 = _neighbor_list[i];
+            size_t atom2 = _neighbor_list[i+1];
+            size_t i1 = 3 * atom1;
+            size_t i2 = 3 * atom2;
             double dr[3];
             for(size_t k=0; k<3; ++k)
                 dr[k] = x[i1+k] - x[i2+k];
             double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
-            e += _interaction->energy(r2);
+            e += _interaction->energy(r2, atom1, atom2);
         }
 
         return e;

@@ -33,7 +33,7 @@ namespace pele {
         {}
 
         /* calculate energy from distance squared */
-        virtual double energy(double r2) const {
+        double inline energy(double r2, size_t atom_i, size_t atom_j) const {
             double ir2 = 1.0/r2;
             double ir6 = ir2*ir2*ir2;
             double ir12 = ir6*ir6;
@@ -42,7 +42,7 @@ namespace pele {
         }
 
         /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
-        virtual double energy_gradient(double r2, double *gij) const {
+        double inline energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const {
             double ir2 = 1.0/r2;
             double ir6 = ir2*ir2*ir2;
             double ir12 = ir6*ir6;

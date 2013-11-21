@@ -34,7 +34,7 @@ namespace pele {
         {}
 
         /* calculate energy from distance squared */
-        double energy(double r2) const {
+        double inline energy(double r2, size_t atom_i, size_t atom_j) const {
             if (r2 >= _rcut2) {
                 return 0.;
             }
@@ -46,7 +46,7 @@ namespace pele {
         }
 
         /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
-        double energy_gradient(double r2, double *gij) const {
+        double inline energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const {
             if (r2 >= _rcut2) {
                 *gij = 0.;
                 return 0.;

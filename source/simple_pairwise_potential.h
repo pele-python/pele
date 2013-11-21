@@ -53,22 +53,21 @@ namespace pele
         for(size_t i=0; i<n; ++i)
             grad[i] = 0.;
 
-        for(size_t i=0; i<natoms; ++i) {
-            int i1 = 3*i;
-            for(size_t j=i+1; j<natoms; ++j) {
-                int i2 = 3*j;
+        for(size_t atomi=0; atomi<natoms; ++atomi) {
+            int i1 = 3*atomi;
+            for(size_t atomj=atomi+1; atomj<natoms; ++atomj) {
+                int j1 = 3*atomj;
 
-                _dist->get_rij(dr, &x[i1], &x[i2]);
+                _dist->get_rij(dr, &x[i1], &x[j1]);
 
                 double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
-                e += _interaction->energy_gradient(r2, &gij);
+                e += _interaction->energy_gradient(r2, &gij, atomi, atomj);
                 for(size_t k=0; k<3; ++k)
                     grad[i1+k] -= gij * dr[k];
                 for(size_t k=0; k<3; ++k)
-                    grad[i2+k] += gij * dr[k];
+                    grad[j1+k] += gij * dr[k];
             }
         }
-
         return e;
     }
 
@@ -78,17 +77,16 @@ namespace pele
         double e=0.;
         size_t const natoms = x.size()/3;
 
-        for(size_t i=0; i<natoms; ++i) {
-            size_t i1 = 3*i;
-            for(size_t j=i+1; j<natoms; ++j) {
-                size_t i2 = 3*j;
+        for(size_t atomi=0; atomi<natoms; ++atomi) {
+            size_t i1 = 3*atomi;
+            for(size_t atomj=atomi+1; atomj<natoms; ++atomj) {
+                size_t j1 = 3*atomj;
                 double dr[3];
-                _dist->get_rij(dr, &x[i1], &x[i2]);
+                _dist->get_rij(dr, &x[i1], &x[j1]);
                 double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
-                e += _interaction->energy(r2);
+                e += _interaction->energy(r2, atomi, atomj);
             }
         }
-
         return e;
     }
 }
