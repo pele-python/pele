@@ -33,8 +33,9 @@ class RectangularLattice(object):
         i = x + y * self.Lx
         return i
         
-    
-    
+
+def angle_to_2dvector(theta):
+    return np.cos(theta), np.sin(theta)
 
 class XYModel(BasePotential):
     """
