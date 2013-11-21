@@ -41,11 +41,11 @@ class XYModel(BasePotential):
     """
     XY model of 2d spins on a lattice
     """
-    def __init__(self, dim=[4, 4], phi=np.pi):
+    def __init__(self, dim=[4, 4], phi=np.pi, periodic=True):
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
         
-        self.G = nx.grid_graph(dim, periodic=True)
+        self.G = nx.grid_graph(dim, periodic)
         
         self.phases = dict()
         binary_disorder = True

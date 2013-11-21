@@ -5,6 +5,10 @@ from pele.potentials.xyspin import angle_to_2dvector
 from pele.systems import BaseSystem
 from pele.landscape import smoothPath
 
+def normalize_spins(x):
+    L = 2. * np.pi
+    x = x - L * np.floor(x / L)
+    return x
 
 def spin_distance_1d(x1, x2):
     dx = x1 - x2
@@ -18,7 +22,6 @@ def spin_mindist_1d(x1, x2):
     L = 2. * np.pi
     offset = L * np.round((x1 - x2) / L)
     x2 = x2 + offset
-    print "max dist", np.max(np.abs(x1-x2))
     assert np.max(np.abs(x1-x2)) <= L/2.
     return np.linalg.norm(x1-x2), x1, x2
      
@@ -34,7 +37,7 @@ class XYModlelSystem(BaseSystem):
         self.setup_params(self.params)
 
     def setup_params(self, params):
-        params.takestep.stepsize = np.pi / 2.
+        params.takestep.stepsize = np.pi# / 2.
         params.takestep.verbose = True
 #        params.double_ended_connect.local_connect_params.NEBparams.interpolator = interpolate_spins
         params.double_ended_connect.local_connect_params.NEBparams.image_density = 3
@@ -73,7 +76,25 @@ class XYModlelSystem(BaseSystem):
 
     def node2xyz(self, node):
         return np.array([float(x) for x in [node[0], node[1], 0]])
-    
+
+#    def get_takestep(self, **kwargs):
+#        """return the takestep object for use in basinhopping, etc.
+#        
+#        default is random displacement with adaptive step size 
+#        adaptive temperature
+#        
+#        See Also
+#        --------
+#        pele.takestep
+#        """
+#        from pele.takestep import RandomDisplacement
+#        kwargs = dict(self.params["takestep"].items() + kwargs.items())
+#        try:
+#            stepsize = kwargs.pop("stepsize")
+#        except KeyError:
+#            stepsize = 0.6
+#        takeStep = RandomDisplacement(stepsize=stepsize)
+#        return takeStep
 
     def draw(self, coords, index):
         from pele.systems._opengl_tools import draw_cone
@@ -94,19 +115,29 @@ class XYModlelSystem(BaseSystem):
             x2 = xyz + 0.5 * spin3 * d - com
             draw_cone(x1, x2, rbase=r)
     
+def normalize_spins_db(db):
+    for m in db.minima():
+        x = normalize_spins(m.coords)
+        print np.max(x), np.min(x)
+        m.coords = x
+    db.session.commit()
+    
 def run_gui():
     from pele.gui import run_gui
-    system = XYModlelSystem(dim=[10,10], phi_disorder=1.5)
+    system = XYModlelSystem(dim=[24,24], phi_disorder=np.pi)
     run_gui(system)
 
 def test_potential():
-    system = XYModlelSystem(dim=[10,10], phi_disorder=1.5)
+    system = XYModlelSystem(dim=[10,10], phi_disorder=np.pi)
     pot = system.get_potential()
     pot.test_potential(system.get_random_configuration())
 
 
 if __name__ == "__main__":
 #    test_potential()
+#    from pele.storage import Database
+#    db = Database("20x20_no_disorder.sqlite")
+#    normalize_spins_db(db)
     run_gui()
         
     
