@@ -77,7 +77,7 @@ namespace pele {
 			{
 				E = _eps*(- C6 * ir6 + C12 * ir12 + 1.0/4);
 				*gij = _eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / (dr*r); // this is -g|gij| (for consistency with the loop in pairwise potential)
-			}
+			}cimport pele.potentials._pele as _pele
 			else
 			{
 				E = 0.;
