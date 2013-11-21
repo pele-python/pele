@@ -9,9 +9,15 @@ cdef extern from "wca.h" namespace "pele":
     cdef cppclass  cWCA "pele::WCA":
         cWCA(double C6, double C12, double eps) except +
     cdef cppclass  cWCAPeriodic "pele::WCAPeriodic":
+<<<<<<< HEAD
         cWCAPeriodic(double C6, double C12, , double eps, double * boxvec) except +
     cdef cppclass  cWCA_Ilist "pele::WCA_interaction_list":
         cWCA_Ilist(_pele.Array[long] & ilist, double C6, double C12, , double eps) except +
+=======
+        cWCAPeriodic(double C6, double C12, double eps, double * boxvec) except +
+    cdef cppclass  cWCA_Ilist "pele::WCA_interaction_list":
+        cWCA_Ilist(_pele.Array[long] & ilist, double C6, double C12, double eps) except +
+>>>>>>> ac0ea49350b26d3fb477559d33a9f485c53c83e5
 
 cdef class WCA(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation
