@@ -126,7 +126,7 @@ namespace pele {
             if (iend <= ibegin) {
                 throw std::invalid_argument("iend must larger than ibegin");
             }
-            Array<dtype> newarray();
+            Array<dtype> newarray;
             newarray._data = &_data[ibegin];
             newarray._allocated_memory = _allocated_memory;
             newarray._size = iend - ibegin;
