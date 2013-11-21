@@ -40,7 +40,7 @@ class XYModel(BasePotential):
     """
     XY model of 2d spins on a lattice
     """
-    def __init__(self, dim = [4, 4], phi=np.pi):
+    def __init__(self, dim=[4, 4], phi=np.pi):
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
         

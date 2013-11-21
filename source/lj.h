@@ -103,10 +103,10 @@ namespace pele {
     /**
      * Pairwise Lennard-Jones potential with interaction lists
      */
-    class LJ_interaction_list : public SimplePairwiseInteractionList< lj_interaction > {
+    class LJNeighborList : public SimplePairwiseNeighborList< lj_interaction > {
         public:
-            LJ_interaction_list(Array<long int> & ilist, double C6, double C12)
-                :  SimplePairwiseInteractionList< lj_interaction > ( new lj_interaction(C6, C12), ilist) {}
+            LJNeighborList(Array<long int> & ilist, double C6, double C12)
+                :  SimplePairwiseNeighborList< lj_interaction > ( new lj_interaction(C6, C12), ilist) {}
     };
 }
 #endif

@@ -13,8 +13,8 @@ cdef extern from "lj.h" namespace "pele":
     cdef cppclass  cLJFrozen "pele::LJFrozen":
         cLJFrozen(double C6, double C12, _pele.Array[double] & reference_coords,
                   _pele.Array[long] & frozen_dof) except +
-    cdef cppclass  cLJ_Ilist "pele::LJ_interaction_list":
-        cLJ_Ilist(_pele.Array[long] & ilist, double C6, double C12) except +
+    cdef cppclass  cLJNeighborList "pele::LJNeighborList":
+        cLJNeighborList(_pele.Array[long] & ilist, double C6, double C12) except +
 #    cdef cppclass  cLJAtomlist "pele::LJAtomList":
 #        cLJAtomlist(double C6, double C12, 
 #                    _pele.Array[size_t] & atoms1,
@@ -91,11 +91,11 @@ cdef class LJFrozen(_pele.BasePotential):
 #                                                                  <double*> bv.data)
 
 
-cdef class LJInteractionList(_pele.BasePotential):
+cdef class LJNeighborList(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):
-        self.thisptr = <_pele.cBasePotential*>new cLJ_Ilist( _pele.Array[long](<long*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12)
+        self.thisptr = <_pele.cBasePotential*>new cLJNeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12)
 
 cdef class BLJCut(_pele.BasePotential):
     def __cinit__(self, natoms, ntypeA, boxl=None, rcut=2.5, epsAA=1., sigAA=1., 
