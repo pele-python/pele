@@ -24,10 +24,8 @@ class DoubleEndedConnect(object):
     mindist : callable
         the function which returns the optimized minimum distance between
         two structures
-    database : Database() object
-        the database object, used to save distance calculations so
-        mindist() need only be called once for each minima pair. *Note* the
-        use of this and graph is a bit redundant, this should be cleaned up
+    database : pele Database object
+        Used to store the new minima and transition states found.
     niter : int, optional
         maximum number of iterations
     verbosity : int
@@ -237,11 +235,6 @@ class DoubleEndedConnect(object):
     def getDist(self, min1, min2):
         """
         get the distance between min1 and min2.
-        
-        Try first to get distances from the dictionary distmatrix as this is 
-        the fastest access method.  Then try to 
-        get distances from the database if they exist, else calculate the
-        distance and save it to the database and distmatrix
         """
         return self.dist_graph.getDist(min1, min2)
 

@@ -45,9 +45,6 @@ def main():
     parser.add_argument("-t",
                       dest="writeTS", action="store_true",
                       help="dump transition states to screen")
-    parser.add_argument("-d",
-                      dest="write_distances", action="store_true",
-                      help="dump distances to screen")
     parser.add_argument("-s",
                       dest="summary", action="store_true",
                       help="print summary")
@@ -82,13 +79,6 @@ def main():
         for ts in db.transition_states():
             print "%d\t<->\t%d\tid %d\tenergies %f %f %f" % \
                 (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
-        print "END\n"
-    if(args.write_distances):
-        print "List of distances:"
-        print "--------------------------"
-        for d in db.distances():
-            print "%d\t<->\t%d\tid %d\tdistance %f"%\
-                (d._minimum1_id, d._minimum2_id, d._id, d.dist)
         print "END\n"
 
     if(args.writeDPS):

@@ -15,19 +15,12 @@ class _DistanceGraph(object):
     ----------
     database : 
         the database in which to store newly found minima and transition states.
-        If database contains contains previously found minima and transition states,
-        those will be used to help with the connection.
     graph :
         the graph build from the database which contains the minima and transition states
     mindist : callable
         the routine which calculates the optimized distance between two structures
     verbosity :
         how much info to print (not very thoroughly implemented)
-    defer_database_update : bool
-        if true, save new distances and only update the database when enough new
-        distances have been accumulated
-    db_update_min : int
-        only update the database when at least this many new distances have been found.
     
     Description
     -----------
@@ -77,7 +70,7 @@ class _DistanceGraph(object):
     def _setDist(self, min1, min2, dist):
         """
         this function saves newly calculated distances both to the local
-        distance map and ultimately to the database
+        distance map
         """
         #add the distance to the distance map
         self.distance_map[(min1, min2)] = dist

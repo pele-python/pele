@@ -17,7 +17,6 @@ ensures that all minima and transition state objects are unique
     Database
     Minimum
     TransitionState
-    Distance
 
 
 
@@ -88,24 +87,6 @@ can be accessed from the database by::
 
     >>> database.transition_states #  an iterator over transition states
     >>> ts = database.getTranstionState(minimum1, minimum2)
-
-
-Distance
---------
-.. autosummary::
-   :toctree: generated/
-
-    Distance
-
-The Distance class is used to store :ref:`mindist <structure_alignment>`
-(best structural alignment) distances in the database.  We save these distances
-because recalculating distances can be quite time consuming.  The use of Distance
-is very similar to that of TransitionState::
-
-    >>> dist, newcoords1, newcoords2 = mindist(minimum1.coords, minimum2.coords)
-    >>> database.setDistance(dist, minimum1, minimum2)
-    >>> database.distances() #  iterator over Distance objects
-    >>> database.getDistance(minimum1, minimum2)
 
 
 Database 
