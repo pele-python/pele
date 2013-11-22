@@ -11,13 +11,13 @@ namespace pele {
 		  pele::Array<double> _default_array;
 	  public:
 		  /*Constructor*/
-		  VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double> v = _default_array,
-				  pele::Array<double> m = _default_array){}
+		  VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double>& v = _default_array,
+				  pele::Array<double>& f = _default_array, pele::Array<double>& m = _default_array){}
 	  };
 
-	  VelocityVerlet::VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double> v = _default_array,
-			  pele::Array<double> m = _default_array):
-			  BaseIntegrator(potential, x, dt, v, m)
+	  VelocityVerlet::VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double>& v = _default_array,
+			  pele::Array<double>& f = _default_array, pele::Array<double>& m = _default_array):
+			  BaseIntegrator(potential, x, dt, v, f, m)
 		{}
 
 	  void VelocityVerlet::oneiteration()
@@ -37,7 +37,7 @@ namespace pele {
 		  }
 	  }
 
-	  void VelocityVerlet::run(int N)
+	  void VelocityVerlet::run(int const N)
 	  {
 		 for(int i =0; i < N; ++i)
 		 {
