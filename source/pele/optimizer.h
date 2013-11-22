@@ -54,6 +54,28 @@ void vecdif(std::vector<double> const& v1, std::vector<double> const& v2, std::v
 }
 
 /**
+ * compute the dot product of two vectors
+ */
+double vecdot(std::vector<double> const v1, std::vector<double> const v2)
+{
+  assert(v1.size() == v2.size());
+  size_t i;
+  double dot = 0.;
+  for (i=0; i<v1.size(); ++i) {
+    dot += v1[i] * v2[i];
+  }
+  return dot;
+}
+
+/**
+ * compute the L2 norm of a vector
+ */
+double vecnorm(std::vector<double> const v)
+{
+  return sqrt(vecdot(v, v));
+}
+
+/**
  * this defines the basic interface for optimizers.  All pele optimizers
  * should derive from this class.
  */

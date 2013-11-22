@@ -111,6 +111,66 @@ double vecnorm(std::vector<double> const v)
   return sqrt(vecdot(v, v));
 }
 
+/*
+ * compute sum of two vectors element wise
+ * */
+
+void vecsum(std::vector<double> const& v1, std::vector<double> const& v2, std::vector<double> &v3)
+{
+	assert(v1.size() == v2.size());
+	assert(v1.size() == v3.size());
+	std::vector<double>::iterator it2 = v2.begin();
+	std::vector<double>::iterator it3 = v3.begin();
+
+	for (std::vector<double>::iterator it1=v1.begin(); it != v1.end(); ++it1)
+		{
+			*it3 = *it1 + *it2;
+			++it2;
+			++it3;
+		}
+}
+
+/*
+ * compute difference of two vectors element wise
+ * */
+
+void vecdif(std::vector<double> const& v1, std::vector<double> const& v2, std::vector<double> &v3)
+{
+	assert(v1.size() == v2.size());
+	assert(v1.size() == v3.size());
+	std::vector<double>::iterator it2 = v2.begin();
+	std::vector<double>::iterator it3 = v3.begin();
+
+	for (std::vector<double>::iterator it1=v1.begin(); it != v1.end(); ++it1)
+		{
+			*it3 = *it1 - *it2;
+			++it2;
+			++it3;
+		}
+}
+
+/**
+ * compute the dot product of two vectors
+ */
+double vecdot(std::vector<double> const v1, std::vector<double> const v2)
+{
+  assert(v1.size() == v2.size());
+  size_t i;
+  double dot = 0.;
+  for (i=0; i<v1.size(); ++i) {
+    dot += v1[i] * v2[i];
+  }
+  return dot;
+}
+
+/**
+ * compute the L2 norm of a vector
+ */
+double vecnorm(std::vector<double> const v)
+{
+  return sqrt(vecdot(v, v));
+}
+
 namespace pele {
     /**
      * Simple wrapper class for arrays
