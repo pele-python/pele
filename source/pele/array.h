@@ -95,6 +95,18 @@ namespace pele {
             *_reference_count = 1;
         }
 
+        Array(size_t size, dtype val) : _size(size)
+                {
+                    _allocated_memory = new dtype[size];
+                    _data = _allocated_memory;
+                    _reference_count = new long int;
+                    *_reference_count = 1;
+                    for (size_t i=0; i<_size; ++i)
+                    {
+                    	_data[i] = val;
+                    }
+                }
+
         /** 
          * wrap another array
          */
