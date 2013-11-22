@@ -29,7 +29,7 @@ def water():
 def align(system, coords1, coords2):
     c1 = system.coords_adapter(coords1)
     c2 = system.coords_adapter(coords2)
-    R = findrotation_kabsch(c2.posRigid, c1.posRigid)
+    R = findrotation_kabsch(c2.posRigid, c1.posRigid).transpose()
     #R = rotations.aa2mx(p)
     for x, p in zip(c2.posRigid, c2.rotRigid):
         x[:] = np.dot(R, x)

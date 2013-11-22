@@ -35,7 +35,7 @@ def findrotation_kabsch(coords1, coords2, align_com=True):
         s[-1] = -s[-1]
         u[:,-1] = -u[:,-1]
  
-    return  np.dot(u, v)
+    return  np.dot(u, v).transpose()
     
 def findrotation_kearsley(coords1, coords2, align_com=True):
     """
@@ -146,3 +146,6 @@ if __name__ == "__main__":
     x2 = np.dot(mx,x1.reshape(-1,3).transpose()).transpose().reshape(-1)
     print x2-x1
     print mx-findrotation_kabsch(x1,x2)
+    print findrotation_kabsch(x1,x2)
+    print findrotation_kearsley(x1,x2)[1]
+    

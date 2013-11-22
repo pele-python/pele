@@ -120,7 +120,7 @@ for i in xrange(1):
         com2 = np.sum(c1.posRigid,axis=0) / float(13)
         c1.posRigid-=com1    
         c2.posRigid-=com2    
-        mx = findrotation_kabsch(c2.posRigid, c1.posRigid)
+        mx = findrotation_kabsch(c2.posRigid, c1.posRigid).transpose()
         #print mx
         c2.posRigid[:] = np.dot(mx, c2.posRigid.transpose()).transpose()
         for p in c2.rotRigid:
