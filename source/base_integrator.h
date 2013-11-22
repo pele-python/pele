@@ -27,6 +27,7 @@ class BaseIntegrator
 	  	  	  {
 		  	  	  int i,j;
 	  	  	  	  _E = _potential.energy_gradient(_x, _f);
+	  	  	  	  _Estart = _E;
 	  	  	  	  _fstart(_f.copy());
 
 	  	  	  	  if (v == _default_array)
@@ -71,29 +72,29 @@ class BaseIntegrator
 
 	  virtual void set_dt(double newdt){ _dt = newdt; }
 
-	  virtual void reset_dt(){ _dt(_dtstart); }
+	  virtual void reset_dt(){ _dt = _dtstart; }
 
-	  virtual void reset_v(){ _v(_vstart); }
+	  virtual void reset_v(){ _v(_vstart.copy()); }
 
-	  virtual void reset_x(){ _x(_xstart); }
+	  virtual void reset_x(){ _x(_xstart.copy()); }
 
-	  virtual void reset_f(){ _f(_fstart); }
+	  virtual void reset_f(){ _f(_fstart.copy()); }
 
 	  virtual void reset_vfxE()
 	  {
-	  	_v(_vstart);
-	  	_x(_xstart);
-	  	_f(_fstart);
-	  	_E(_Estart);
+	  	_v(_vstart.copy());
+	  	_x(_xstart.copy());
+	  	_f(_fstart.copy());
+	  	_E(_Estart.copy());
 	  }
 
 	  virtual void reset_all()
 	  {
-	   	_v(_vstart);
-	   	_x(_xstart);
-	   	_f(_fstart);
-	   	_E(_Estart);
-	   	_dt(_dtstart);
+	   	_v(_vstart.copy());
+	   	_x(_xstart.copy());
+	   	_f(_fstart.copy());
+	   	_E(_Estart.copy());
+	   	_dt(_dtstart.copy());
 	  }
 
 	  virtual void wrap_v(pele::Array<double>& v){ v(_v); }
