@@ -115,7 +115,36 @@ class TestDB(unittest.TestCase):
         ts = self.db.transition_states()[0]
         ts1 = self.db.getTransitionStateFromID(ts._id)
         self.assertEqual(ts, ts1)
+    
+    def test_property(self):
+        # add some system properties and ensure they were added correctly
+        self.db.add_property("natoms", int_value=10)
+        p = self.db.get_property("natoms")
+        self.assertEqual(p.value(), 10)
+        self.db.add_property("eps", float_value=2.1)
+        p = self.db.get_property("eps")
+        self.assertEqual(p.value(), 2.1)
+        self.db.add_property("author", string_value="jake")
+        p = self.db.get_property("author")
+        self.assertEqual(p.value(), "jake")
+        self.db.add_property("data", pickle_value=[1, 2])
+        p = self.db.get_property("data")
+        self.assertEqual(p.value()[0], 1)
+        self.assertEqual(p.value()[1], 2)
+        
+        p = self.db.get_property("noprop")
+        self.assertIsNone(p)
 
+        props = self.db.properties(as_dict=True)
+        self.assertIsInstance(props, dict)
+        self.assertDictContainsSubset(dict(natoms=10), props)
+        self.assertEqual(len(props.items()), 4)
+        
+        props = self.db.properties(as_dict=False)
+        self.assertIn(("natoms", 10), [p.item() for p in props])
+        self.assertEqual(len(props), 4)
+
+        
 def benchmark_number_of_minima():
     import time, sys
     import numpy as np

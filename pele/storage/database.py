@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, and_, or_
 from sqlalchemy.orm import sessionmaker
 import threading
 import numpy as np
-from sqlalchemy import Column, Integer, Float, PickleType
+from sqlalchemy import Column, Integer, Float, PickleType, String
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref, deferred
 import sqlalchemy.orm
@@ -240,6 +240,62 @@ class Distance(Base):
         self.dist = dist
         self.minimum1 = min1
         self.minimum2 = min2
+
+class SystemProperty(Base):
+    """table to hold system properties like potential parameters and number of atoms
+    
+    The properties can be stored as integers, floats, strings, or a pickled object.
+    Only one of the property value types should be set for each property.
+    """
+    __tablename__ = "tbl_system_property"
+    _id = Column(Integer, primary_key=True)
+
+    property_name = Column(String)
+    int_value = Column(Integer)
+    float_value = Column(Float)
+    string_value = Column(String)
+    pickle_value = deferred(Column(PickleType))
+
+    def __init__(self, property_name, int_value=None, float_value=None,
+                  string_value=None, pickle_value=None):
+        self.property_name = property_name
+        self.int_value = int_value
+        self.float_value = float_value
+        self.string_value = string_value
+        self.pickle_value = pickle_value
+        
+        actual_values = self._values()
+        if len(actual_values) != 1:
+            print "SystemProperty: Only one type of property value should be set"
+        
+
+    def name(self):
+        return self.property_name
+    
+    def _values(self):
+        """return a dictionary of the values that are not None"""
+        values = dict(int_value=self.int_value, float_value=self.float_value, 
+                    string_value=self.string_value, pickle_value=self.pickle_value)
+        values = dict([(k,v) for k,v in values.iteritems() if v is not None])
+        return values
+    
+    def value(self):
+        """return the property value"""
+        actual_values = [v for v in self._values().values() if v is not None]
+        if len(actual_values) == 1:
+            return actual_values[0]
+        elif len(actual_values) == 0:
+            return None
+        elif len(actual_values) > 1:
+            print "SystemProperty: multiple property values are set"
+            return actual_values
+        return None
+    
+    def item(self):
+        """return a tuple of (name, value)"""
+        return self.name(), self.value()
+            
+
 
 Index('idx_transition_states', TransitionState.__table__.c._minimum1_id, TransitionState.__table__.c._minimum2_id)
 Index('idx_distances', Distance.__table__.c._minimum1_id, Distance.__table__.c._minimum2_id, unique=True)
@@ -811,6 +867,45 @@ class Database(object):
         number_of_minima
         """
         return self.session.query(TransitionState).count()
+
+    def get_property(self, property_name):
+        """return the minimum with a given name"""
+        candidates = self.session.query(SystemProperty).\
+            filter(SystemProperty.property_name == property_name)
+        return candidates.first()
+
+    def properties(self, as_dict=True):
+        query = self.session.query(SystemProperty)
+        if as_dict:
+            return dict([p.item() for p in query])
+        else:
+            return query.all()
+
+
+    def add_property(self, property_name, int_value=None, float_value=None,
+                       string_value=None, pickle_value=None, commit=True):
+        """add a system property to the database
+        
+        This could anything, such as a potential parameter or the number of atoms.
+        The properties can be stored as integers, floats, strings, or a pickled object.
+        Only one of the property value types should be set for each property.
+        
+        For the pickle_value, pass the object you want pickled, not the pickled object.
+        We will do the pickling for you.
+        """
+        new = self.get_property(property_name)
+        
+        if new is None:
+            new = SystemProperty(property_name, int_value=int_value, 
+                                 float_value=float_value, string_value=string_value, 
+                                 pickle_value=pickle_value)
+        else:
+            print "warning: overwriting old property", new.item()
+        self.session.add(new)
+        if commit:
+            self.session.commit()
+        return new
+
 
 
 if __name__ == "__main__":    
