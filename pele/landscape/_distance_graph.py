@@ -47,8 +47,7 @@ class _DistanceGraph(object):
     good guess for the best way to try connect min1 and min2.  
 
     """
-    def __init__(self, database, graph, mindist, verbosity=0,
-                 defer_database_update=True, db_update_min=300):
+    def __init__(self, database, graph, mindist, verbosity):
         self.database = database
         self.graph = graph
         self.mindist = mindist
@@ -58,11 +57,6 @@ class _DistanceGraph(object):
         self.distance_map = dict() #place to store distances locally for faster lookup
         nx.set_edge_attributes(self.Gdist, "weight", dict())
         self.debug = False
-        
-        self.defer_database_update = defer_database_update
-        
-        self.new_distances = dict() #keep track of newly calculated distances
-        self.db_update_min = db_update_min
         
         self.infinite_weight = 1e20
 
@@ -80,28 +74,12 @@ class _DistanceGraph(object):
         """
         return dist**2
 
-    def updateDatabase(self, force=False):
-        """update databases with new distances"""
-        nnewdist = len(self.new_distances.items())
-        if nnewdist == 0:
-            return
-        if not force:
-            if nnewdist < self.db_update_min:
-                return
-        logger.info("updating database with %s %s", nnewdist, "new distances")
-        self.database.setDistanceBulk(self.new_distances.iteritems())
-        self.new_distances = dict()
-
     def _setDist(self, min1, min2, dist):
         """
         this function saves newly calculated distances both to the local
         distance map and ultimately to the database
         """
-        #add the distance to the database and the distance map
-        if self.defer_database_update:
-            self.new_distances[(min1, min2)] = dist
-        else:
-            self.database.setDistance(dist, min1, min2)
+        #add the distance to the distance map
         self.distance_map[(min1, min2)] = dist
         
         #make sure a zeroed edge weight is not overwritten
@@ -119,15 +97,6 @@ class _DistanceGraph(object):
         if dist is not None: return dist
         dist = self.distance_map.get((min2,min1))
         if dist is not None: return dist
-
-        if False:
-            #this is extremely slow for large databases (> 50% of time spent here)
-            #also, it's not necessary if we load all the distances in initialize()
-            #if that fails, try to get it from the database
-            dist = self.database.getDistance(min1, min2)
-            if dist is not None: 
-                logger.warning("distance in database but not in distance_map")
-                return dist
         return None
 
     def getDist(self, min1, min2):
@@ -176,7 +145,7 @@ class _DistanceGraph(object):
         distance calculation is slow.
         """
         self.Gdist.add_node(m)
-        #for noded that are connected set the edge weight using setTransitionStateConnection
+        #for nodes that are connected set the edge weight using setTransitionStateConnection
         cc = nx.node_connected_component(self.graph.graph, m)
         for m2 in cc:
             if m2 in self.Gdist:
@@ -235,86 +204,19 @@ class _DistanceGraph(object):
 #            pass
 #        return True
 
-    def _initializeDistances(self):
-        """put all distances in the database into distance_map for faster access"""
-#        from pele.storage.database import Distance
-#        from sqlalchemy.sql import select
-#        conn = self.database.engine.connect()
-#        sql = select([Distance.__table__])
-#        for tmp, dist, id1, id2 in conn.execute(sql):
-#            #m1 = self.database.getMinimum(id1)
-#            #m2 = self.database.getMinimum(id2)
-#            self.distance_map[id1, id2] = dist
-        if False:
-            for d in self.database.distances():
-                self.distance_map[(d.minimum1, d.minimum2)] = d.dist
-        else:
-            for d in self.database.distances():
-                self.distance_map[(d._minimum1_id, d._minimum2_id)] = d.dist
-
     def replaceTransitionStateGraph(self, graph):
         self.graph = graph
 
-    def _addRelevantMinima(self, minstart, minend):
-        """
-        add all the relevant minima from the database to the distance graph
-        
-        a minima is considered relevant if distance(min1, minstart) and
-        distance(min1, minend) are both less than distance(minstart, minend)
-        
-        also, don't calculate any new distances, only add a minima if all distances
-        are already known. 
-        """
-        start_end_distance = self.getDist(minstart, minend)
-        count = 0
-        naccept = 0
-        for m in self.graph.graph.nodes():
-            count += 1
-            d1 = self._getDistNoCalc(m, minstart)
-            if d1 is None: continue
-            if d1 > start_end_distance: continue
-            
-            d2 = self._getDistNoCalc(m, minend)
-            if d2 is None: continue
-            if d2 > start_end_distance: continue
-            
-            logger.debug("    accepting minimum %s %s %s", d1, d2, start_end_distance)
-            
-            naccept += 1
-            self.addMinimum(m)
-        if self.verbosity > 0:
-            logger.info("    found %s %s %s", naccept, "relevant minima out of", count)
-
-
-    def initialize(self, minstart, minend, use_all_min=False, use_limited_min=True, load_no_distances=False):
+    def initialize(self, minstart, minend):
         """
         set up the distance graph
         
         initialize distance_map, add the start and end minima and load any other
         minima that should be used in the connect routine.
         """
-        #raw_input("Press Enter to continue:")
-        if not load_no_distances and self.verbosity > 0:
-            logger.info("loading distances from database")
-            self._initializeDistances()
-        #raw_input("Press Enter to continue:")
         dist = self.getDist(minstart, minend)
         self.addMinimum(minstart)
         self.addMinimum(minend)
-        if not load_no_distances:
-            if use_all_min:
-                # add all minima in self.graph to self.Gdist
-                if self.verbosity > 0:
-                    logger.info("adding all minima to distance graph (Gdist).")
-                    logger.info( "    This might take a while.")
-                for m in self.graph.graph.nodes():
-                    self.addMinimum(m)
-            elif use_limited_min:
-                if self.verbosity > 0:
-                    logger.info( "adding relevant minima to distance graph (Gdist).")
-                    logger.info( "    This might take a while.")
-                self._addRelevantMinima(minstart, minend)
-        #raw_input("Press Enter to continue:")
 
     def setTransitionStateConnection(self, min1, min2):
         """use this function to tell _DistanceGraph that
@@ -434,15 +336,19 @@ class TestDistanceGraph(unittest.TestCase):
         mindist = sys.get_mindist()
         
         db = create_random_database(nmin=nmin, natoms=natoms, nts=nmin/2)
-        min1, min2 = list(db.minima())[:2] 
+        min1, min2 = list(db.minima())[:2]
         
         
-        connect = DoubleEndedConnect(min1, min2, pot, mindist, db, use_all_min=True, 
-                                     merge_minima=True, max_dist_merge=1e100)
-
-        self.connect = connect
         self.db = db
         self.natoms = natoms
+        self.connect = DoubleEndedConnect(min1, min2, pot, mindist, db,
+                                          merge_minima=True, max_dist_merge=1e100)
+#        for ts in db.transition_states():
+#            self.add_ts(ts.energy, ts.coords, 
+#                        ts.minimum1.energy, ts.minimum1.coords,
+#                        ts.minimum2.energy, ts.minimum2.coords)
+        for m in db.minima():
+            self.connect.dist_graph.addMinimum(m)
     
     def make_result(self, coords, energy):
         from pele.optimize import Result
@@ -452,6 +358,12 @@ class TestDistanceGraph(unittest.TestCase):
         res.eigenval = 1.
         res.eigenvec = coords.copy()
         return res
+
+    def add_ts(self, tse, tsx, m1e, m1x, m2e, m2x):
+        tsres = self.make_result(tsx, tse)
+        min_ret1 = self.make_result(m1x, m1e)
+        min_ret2 = self.make_result(m2x, m2e)
+        return self.connect._addTransitionState(tsres, min_ret1, min_ret2)
 
     
     def test_merge_minima(self):

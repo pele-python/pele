@@ -28,11 +28,6 @@ class DoubleEndedConnect(object):
         the database object, used to save distance calculations so
         mindist() need only be called once for each minima pair. *Note* the
         use of this and graph is a bit redundant, this should be cleaned up
-    use_all_min : bool
-        if True, then all known minima and transition states in graph will
-        be used to try to connect min1 and min2.  This requires a mindist()
-        call (or a retrieveal operation from database) for every pair which
-        can take a very long time if many minima are known.
     niter : int, optional
         maximum number of iterations
     verbosity : int
@@ -63,8 +58,6 @@ class DoubleEndedConnect(object):
         
         If any configuration in a minimum-transition_state-minimum triplet fails
         a test then the whole triplet is rejected.
-    load_no_distances : bool, optional
-        if True, then no distances will be loaded from the database
     
     Notes
     -----
@@ -177,7 +170,9 @@ class DoubleEndedConnect(object):
             logger.info("minima are already connected.  not initializing distance graph")
             return
 
-        self.dist_graph.initialize(self.minstart, self.minend, use_all_min=use_all_min, load_no_distances=self.load_no_distances)
+        if use_all_min or load_no_distances:
+            print "warning: distances were removed from the database but you requested distances to be loaded"
+        self.dist_graph.initialize(self.minstart, self.minend)
         
         if self.verbosity > 0:
             logger.info("************************************************************")
@@ -476,9 +471,6 @@ class DoubleEndedConnect(object):
         """
         self.NEBattempts = 2;
         for i in range(self.niter):
-            #do some book keeping
-            self.dist_graph.updateDatabase()
-            
             #stop if we're done
             if self.graph.areConnected(self.minstart, self.minend):
                 self.dist_graph.updateDatabase(force=True)
