@@ -33,8 +33,16 @@ def from_1_to_2(connection, schema):
     connection.execute("PRAGMA user_version = 2;")
     return 2
 
+def from_2_to_3(connection, schema):
+    assert schema == 2
+    print "migrating from database version 2 to 3"
+    connection.execute("drop table tbl_distances;")
+    connection.execute("PRAGMA user_version = 3;")
+    return 3
+
 migrate_script = {0:from_0_to_1,
-                  1:from_1_to_2
+                  1:from_1_to_2,
+                  2:from_2_to_3,
                   }
     
 def migrate(db):
