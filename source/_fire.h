@@ -22,11 +22,59 @@ namespace pele{
    * http://link.aps.org/doi/10.1103/PhysRevLett.97.170201
    */
 
+  class BaseIntegrator
+  {
+  	  protected:
+	  std::vector<double> _v, _f, _x, _m;
+	  pele::BasePotential * _potential
+	  double _E, _dt;
+
+  	  public:
+	  virtual ~BaseIntegrator() {}
+
+	  virtual void oneiteration(std::vector<double> )
+	  {
+		  throw std::runtime_error("BaseIterator::oneiteration must be overloaded");
+	  }
+  };
+
+  class VelocityVerlet: public BaseIntegrator
+  {
+  public:
+	  /*Constructor*/
+
+	  VelocityVerlet(pele::BasePotential * potential, std::vector<double> x){}
+
+	  /*Destructor*/
+
+	  ~VelocityVerlet(){}
+  };
+
+  VelocityVerlet::VelocityVerlet(pele::BasePotential * potential, std::vector<double> x, double dt):
+  		_potential(potential), _x(x), _dt(dt), _f(x.size()), _v(x.size()), _m(x.size()/3)
+  		  {
+  	  	  	  _E = _potential.energy_gradient(_x, _f);
+  		  }
+
+  void VelocityVerlet::oneiteration()
+  {
+	  std::vector<double>::iterator xit, vit, fit, mit;
+	  vit = _v.begin();
+	  fit = _f.begin();
+	  mit = _m.begin();
+
+	  for(xit=_x.begin();xit!=_x.end();++xit)
+	  {
+		  //WRITE THIS LOOP
+	  }
+  }
+
   class FIRE : public GradientOptimizer{
     private :
 	  double _Nmin, _dt, _dtmax;
-	  double _finc, _fdec, _fa, _tol;
-	  double _astart, _potential;
+	  double _finc, _fdec, _fa;
+	  double _astart;
+	  pele::BasePotential * _potential
 	  pele::Array<double> _coords;
 	  std::vector<double> v;
 
@@ -58,17 +106,9 @@ namespace pele{
 		  double iprint, double tol=1e-4):
     	  _potential(potential), _coords(x0.copy()), maxstep_(maxstep),
     	  _initdt(initdt), _dtmax(dtmax), _astart(astart), _Nmin(Nmin), _finc(finc),
-    	  _fdec(fdec), _fa(fa), _tol(tol), iprint_(iprint)
-  {
-	_v.assign(_coords.size(),0);
-	g_.assign(_coords.size(),0);
-	x_.assign(_coords.size(),0);
-	for(size_t i=0; i!=_coords.size(); ++i)
-	{
-		x_[i] = _coords[i];
-	}
-  }
-
+    	  _fdec(fdec), _fa(fa), tol_(tol), iprint_(iprint), _v(_coords.size(),0),
+  	  	  g_(_coords.size(),0), x_(_coords)
+  {}
 
 }
 
