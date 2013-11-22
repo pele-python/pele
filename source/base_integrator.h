@@ -12,33 +12,45 @@ namespace pele{
 class BaseIntegrator
   {
   	  protected:
-	  std::vectror<double>& _x;
-	  std::vector<double> _v, _f, _fold, _m, _vstart, _fstart, _xstart, _default_vector;
+	  pele::Array<double> _x, _v, _f, _fold, _m, _vstart, _fstart, _xstart, _default_array;
 	  pele::BasePotential * _potential
 	  double _E, _dt, _Estart, _dtstart;
 
   	  public:
 
-	  BaseIntegrator(pele::BasePotential * potential, std::vector<double>& x, double dt, std::vector<double> m = _default_vector):
-	    		_potential(potential), _x(x), _xstart(x), _dt(dt),
-	    		_dtstart(dt), _f(x.size(),0), _fold(x.size(),0),
-	    		_v(x.size(),0), _vstart(x.size(),0)
-	    		{
-	  	  	  	  _E = _potential.energy_gradient(_x, _f);
-	  	  	  	  _fstart(_f);
+	  BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double> v = _default_array,
+			  pele::Array<double> m = _default_array):
 
-	  	  	  	  if (m == _default_vector)
-	  	  	  		  _m(x.size(), 1.);
+				_potential(potential), _x(x), _xstart(x.copy()), _dt(dt),
+	    		_dtstart(dt), _f(x.size()), _fold(x.size())
+
+	  	  	  {
+		  	  	  int i,j;
+	  	  	  	  _E = _potential.energy_gradient(_x, _f);
+	  	  	  	  _fstart(_f.copy());
+
+	  	  	  	  if (v == _default_array)
+	  	  	  		  _v(x.size(),0.);
+	  	  	  	  else
+	  	  	  	  {
+	  	  	  		  assert(v.size() == x.size());
+	  	  	  		  _v(v); // NOTE: wrap velocity, it does not copy it
+	  	  	  	  }
+
+	  	  	  	  _vstart(_v.copy());
+
+	  	  	  	  if (m == _default_array)
+	  	  	  		  _m(x.size(),1.);
 	  	  	  	  else
 	  	  	  	  {
 	  	  	  		  assert(m.size() == x.size()/3);
-	  	  	  		  int j = 0;
-	  	  	  		  _m(x);
+	  	  	  		  j = 0;
+	  	  	  		  _m(m.size());
 
-	  	  	  		  for(int i=0; i != x.size(); ++i)
+	  	  	  		  for(i=0; i != x.size(); ++i)
 	  	  	  		  {
-	  	  	  			  if (i%3 == 0){ ++j; }
 	  	  	  			  _m[i] = m[j];
+	  	  	  			  if ((i+1)%3 == 0){ ++j; }
 	  	  	  		  }
 	  	  	  	  }
 	    		}
@@ -75,9 +87,22 @@ class BaseIntegrator
 	  	_E(_Estart);
 	  }
 
-	  virtual void get_v(std::vector<double> &v){ v = _v; }
+	  virtual void reset_all()
+	  {
+	   	_v(_vstart);
+	   	_x(_xstart);
+	   	_f(_fstart);
+	   	_E(_Estart);
+	   	_dt(_dtstart);
+	  }
 
-	  virtual void get_f(std::vector<double> &f){ f = _f; }
+	  virtual void wrap_v(pele::Array<double>& v){ v(_v); }
+
+	  virtual void wrap_f(pele::Array<double>& f){ f(_f); }
+
+	  virtual void wrap_vstart(pele::Array<double> &v){ v(_vstart); }
+
+	  virtual void wrap_xstart(pele::Array<double> &x){ x(_xstart); }
 
 	  virtual double get_energy(){ return _E; }
   };

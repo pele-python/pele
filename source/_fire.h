@@ -23,17 +23,12 @@ namespace pele{
    * http://link.aps.org/doi/10.1103/PhysRevLett.97.170201
    */
 
-
-
-
-
-
-  class FIRE : public GradientOptimizer{
+	class FIRE : public GradientOptimizer{
     private :
 	  double _Nmin, _dt, _dtmax;
 	  double _finc, _fdec, _fa;
 	  double _astart;
-	  pele::BasePotential * _potential
+	  pele::BasePotential * _potential;
 	  pele::Array<double> _coords;
 	  std::vector<double> v;
 
@@ -42,8 +37,8 @@ namespace pele{
 	    /**
 		* Constructor
 		*/
-	  FIRE(pele::BasePotential * potential, const pele::Array<double> & x0,
-    		  double maxstep, double initdt, double dtmax,
+	  FIRE(pele::BasePotential * potential, pele::BaseIntegrator * integrator,
+			  const pele::Array<double> & x0, double maxstep, double initdt, double dtmax,
     		  size_t Nmin, double finc, double fdec, double fa, double astart,
     		  double iprint, double tol=1e-4) {}
       /**

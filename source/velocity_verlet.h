@@ -8,21 +8,23 @@ namespace pele {
 	class VelocityVerlet: public BaseIntegrator
 	  {
 	  private:
-		  std::vector<double> _default_vector;
+		  pele::Array<double> _default_array;
 	  public:
 		  /*Constructor*/
-		  VelocityVerlet(pele::BasePotential * potential, std::vector<double>& x, double dt, std::vector<double> m = _default_vector){}
+		  VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double> v = _default_array,
+				  pele::Array<double> m = _default_array){}
 	  };
 
-	  VelocityVerlet::VelocityVerlet(pele::BasePotential * potential, std::vector<double> x, double dt, std::vector<double> m = _default_vector):
-			  BaseIntegrator(potential, x, dt, m)
+	  VelocityVerlet::VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double> v = _default_array,
+			  pele::Array<double> m = _default_array):
+			  BaseIntegrator(potential, x, dt, v, m)
 		{}
 
 	  void VelocityVerlet::oneiteration()
 	  {
 		  int j = 0;
 
-		  for(int i =0; i != _x.size(); ++i)
+		  for(int i =0; i < _x.size(); ++i)
 		  {
 			_x[i] += _dt * (_v[i] + 0.5 * _dt * _f[i] / _m[i]);
 
@@ -37,7 +39,7 @@ namespace pele {
 
 	  void VelocityVerlet::run(int N)
 	  {
-		 for(int i =0; i != N; ++i)
+		 for(int i =0; i < N; ++i)
 		 {
 			 this.oneiteration();
 		 }
