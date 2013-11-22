@@ -54,11 +54,11 @@ fmodules.add_module("pele/accept_tests/_spherical_container.f90")
 cxx_modules = [
             Extension("pele.optimize._cython_lbfgs", ["pele/optimize/_cython_lbfgs.c"],
                       include_dirs=[numpy_include],
-                      extra_compile_args=['-Wextra','-pedantic','-funroll-loops','-O2',],
+                      extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',],
                       ),
             Extension("pele.potentials._cython_tools", ["pele/potentials/_cython_tools.c"],
                       include_dirs=[numpy_include],
-                      extra_compile_args=['-Wextra','-pedantic','-funroll-loops','-O2',],
+                      extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',],
                       ),
 
                ]
@@ -104,9 +104,9 @@ include_dirs = [numpy_include, "source/"]
 depends = ["source/" + f for f in os.listdir("source/") 
            if f.endswith(".cpp") or f.endswith(".h")]
 
-extra_compile_args = ["-Wextra", "-O2", '-funroll-loops']
+extra_compile_args = ["-Wall", "-Wextra", "-O2", '-funroll-loops']
 # uncomment the next line to add extra optimization options
-# extra_compile_args = ['-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
+# extra_compile_args = ["-Wall", '-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
 
 # note: to compile with debug on and to override extra_compile_args use, e.g.
 # OPT="-g -O2 -march=native" python setup.py ...

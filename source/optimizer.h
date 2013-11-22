@@ -132,7 +132,10 @@ public :
       verbosity_(0),
       iter_number_(0),
       nfev_(0),
-      rms_(1e100),
+      x_(x0.begin(), x0.end()),
+      f_(0.),
+      g_(x0.size()),
+      rms_(1e10),
       func_initialized_(false)
     {}
 

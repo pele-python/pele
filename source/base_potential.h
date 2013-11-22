@@ -39,7 +39,6 @@ namespace pele {
         {
             double energy = get_energy(x);
             numerical_gradient(x, grad);
-//            std::cout << "get_energy_gradient " << energy << " grad[0] " << grad[0] << "\n";
             return energy;
         }
 
