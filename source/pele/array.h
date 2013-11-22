@@ -8,41 +8,54 @@
 #include <math.h>
 
 /*
- * compute sum of two vectors element wise
+ * compute sum of two pele arrays element wise
  * */
 
-void vecsum(std::vector<double> const& v1, std::vector<double> const& v2, std::vector<double> &v3)
+void arraysum(pele::Array<double> const& v1, pele::Array<double> const& v2, pele::Array<double> &v3)
 {
 	assert(v1.size() == v2.size());
-	assert(v1.size() == v3.size());
-	std::vector<double>::iterator it2 = v2.begin();
-	std::vector<double>::iterator it3 = v3.begin();
 
-	for (std::vector<double>::iterator it1=v1.begin(); it != v1.end(); ++it1)
+	for (int i =0; i < v1.size(); ++i)
 		{
-			*it3 = *it1 + *it2;
-			++it2;
-			++it3;
+			v3[i] = v1[i] + v2[i];
 		}
 }
 
 /*
- * compute difference of two vectors element wise
+ * compute difference of two pele arrays element wise
  * */
 
-void vecdif(std::vector<double> const& v1, std::vector<double> const& v2, std::vector<double> &v3)
+void arraydif(pele::Array<double> const& v1, pele::Array<double> const& v2, pele::Array<double> &v3)
 {
 	assert(v1.size() == v2.size());
-	assert(v1.size() == v3.size());
-	std::vector<double>::iterator it2 = v2.begin();
-	std::vector<double>::iterator it3 = v3.begin();
 
-	for (std::vector<double>::iterator it1=v1.begin(); it != v1.end(); ++it1)
+	for (int i =0; i < v1.size(); ++i)
 		{
-			*it3 = *it1 - *it2;
-			++it2;
-			++it3;
+			v3[i] = v1[i] - v2[i];
 		}
+}
+
+/**
+ * compute the dot product of two pele arrays
+ */
+
+double arraydot(pele::Array<double> const v1, pele::Array<double> const v2)
+{
+  assert(v1.size() == v2.size());
+  size_t i;
+  double dot = 0.;
+  for (i=0; i<v1.size(); ++i) {
+    dot += v1[i] * v2[i];
+  }
+  return dot;
+}
+
+/**
+ * compute the L2 norm of a pele array
+ */
+double arraynorm(pele::Array<double> const v)
+{
+  return sqrt(arraydot(v, v));
 }
 
 /**

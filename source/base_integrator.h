@@ -18,15 +18,24 @@ class BaseIntegrator
 
   	  public:
 
-	  BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double> v = _default_array,
-			  pele::Array<double> m = _default_array):
+	  BaseIntegrator(pele::BasePotential * potential, pele::Array<double>& x, double dt, pele::Array<double>& v = _default_array,
+			  pele::Array<double>& f = _default_array, pele::Array<double>& m = _default_array):
 
 				_potential(potential), _x(x), _xstart(x.copy()), _dt(dt),
-	    		_dtstart(dt), _f(x.size()), _fold(x.size())
+	    		_dtstart(dt), _fold(x.size())
 
 	  	  	  {
 		  	  	  int i,j;
-	  	  	  	  _E = _potential.energy_gradient(_x, _f);
+
+		  	  	  if (f == _default_array)
+		  	  		  _f(x.size());
+		  	  	  else
+		  	  	  {
+		  	  		assert(f.size() == x.size());
+		  	  		_f(f); // NOTE: wrap force, it does not copy it
+		  	  	  }
+
+		  	  	  _E = _potential.energy_gradient(_x, _f);
 	  	  	  	  _Estart = _E;
 	  	  	  	  _fstart(_f.copy());
 
@@ -63,7 +72,7 @@ class BaseIntegrator
 		  throw std::runtime_error("BaseIterator::oneiteration must be overloaded");
 	  }
 
-	  virtual void run(int N)
+	  virtual void run(int const N)
 	  {
 		  throw std::runtime_error("BaseIterator::run must be overloaded");
 	  }
