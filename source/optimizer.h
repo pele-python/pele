@@ -82,9 +82,9 @@ protected :
     int nfev_; /**< The number of function evaluations */
 
     // variables representing the state of the system
-    std::vector<double> x_; /**< The current coordinates */
+    pele::Array<double> x_; /**< The current coordinates */
     double f_; /**< The current function value */
-    std::vector<double> g_; /**< The current gradient */
+    pele::Array<double> g_; /**< The current gradient */
     double rms_; /**< The root mean square of the gradient */
 
     /**

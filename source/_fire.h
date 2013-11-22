@@ -29,8 +29,8 @@ namespace pele{
 	  double _finc, _fdec, _fa;
 	  double _astart;
 	  pele::BasePotential * _potential;
-	  pele::Array<double> _coords;
-	  std::vector<double> v;
+	  pele::BaseIntegrator * _integrator;
+	  pele::Array<double> _xstart, _f, _v;
 
     public :
 
@@ -38,7 +38,7 @@ namespace pele{
 		* Constructor
 		*/
 	  FIRE(pele::BasePotential * potential, pele::BaseIntegrator * integrator,
-			  const pele::Array<double> & x0, double maxstep, double initdt, double dtmax,
+			  const pele::Array<double> & x0, double maxstep, double dtstart, double dtmax,
     		  size_t Nmin, double finc, double fdec, double fa, double astart,
     		  double iprint, double tol=1e-4) {}
       /**
@@ -54,15 +54,19 @@ namespace pele{
 
   };
 
-  FIRE::FIRE(pele::BasePotential * potential, const pele::Array<double> & x0,
-		  double maxstep, double initdt, double dtmax,
+  FIRE::FIRE(pele::BasePotential * potential, pele::BaseIntegrator * integrator,
+		  const pele::Array<double> & x0, double maxstep, double dtstart, double dtmax,
 		  size_t Nmin, double finc, double fdec, double fa, double astart,
 		  double iprint, double tol=1e-4):
-    	  _potential(potential), _coords(x0.copy()), maxstep_(maxstep),
-    	  _initdt(initdt), _dtmax(dtmax), _astart(astart), _Nmin(Nmin), _finc(finc),
-    	  _fdec(fdec), _fa(fa), tol_(tol), iprint_(iprint), _v(_coords.size(),0),
-  	  	  g_(_coords.size(),0), x_(x0)
-  {}
+		  GradientOptimizer(potential, x0, tol=1e-4),
+		  _xstart(x0.copy()), _dtstart(dtstart), _dtmax(dtmax),
+		  _astart(astart), _Nmin(Nmin), _finc(finc),
+    	  _fdec(fdec), _fa(fa), _f(x0.size()), _v(x0.size())
+
+  {
+	  set_maxstep(maxstep);
+	  set_iprint(iprint);
+  }
 
 }
 
