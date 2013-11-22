@@ -115,7 +115,7 @@ class TestDB(unittest.TestCase):
         ts = self.db.transition_states()[0]
         ts1 = self.db.getTransitionStateFromID(ts._id)
         self.assertEqual(ts, ts1)
-    
+
     def test_property(self):
         # add some system properties and ensure they were added correctly
         self.db.add_property("natoms", int_value=10)

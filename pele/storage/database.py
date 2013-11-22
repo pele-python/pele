@@ -17,7 +17,7 @@ import os
 
 __all__ = ["Minimum", "TransitionState", "Database", "Distance"]
 
-_schema_version = 1
+_schema_version = 2
 verbose=False
 
 Base = declarative_base()
