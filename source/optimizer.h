@@ -14,10 +14,8 @@ using std::runtime_error;
 using std::cout;
 
 namespace pele{
-
 /**
- * this defines the basic interface for optimizers.  All pele optimizers
- * should derive from this class.
+ * this defines the basic interface for optimizers.  All pele optimizers* should derive from this class.
  */
 class Optimizer{
 public:
@@ -82,9 +80,9 @@ protected :
     int nfev_; /**< The number of function evaluations */
 
     // variables representing the state of the system
-    pele::Array<double> x_; /**< The current coordinates */
+    std::vector<double> x_; /**< The current coordinates */
     double f_; /**< The current function value */
-    pele::Array<double> g_; /**< The current gradient */
+    std::vector<double> g_; /**< The current gradient */
     double rms_; /**< The root mean square of the gradient */
 
     /**

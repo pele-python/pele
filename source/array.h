@@ -6,6 +6,28 @@
 #include <stdexcept>
 #include <iostream>
 
+using std::sqrt;
+
+/*compute the product of an array and a scalar*/
+
+void arrayscalprod(pele::Array<double>& v1, double c)
+{
+	for (int i =0; i < v1.size(); ++i)
+		{
+			v1[i] *= c;
+		}
+}
+
+/*compute the sum of an array and a scalar*/
+
+void arrayscalsum(pele::Array<double>& v1, double c)
+{
+	for (int i =0; i < v1.size(); ++i)
+		{
+			v1[i] += c;
+		}
+}
+
 /*
  * compute sum of two pele arrays element wise
  * */
@@ -55,6 +77,15 @@ double arraydot(pele::Array<double> const v1, pele::Array<double> const v2)
 double arraynorm(pele::Array<double> const v)
 {
   return sqrt(arraydot(v, v));
+}
+
+/**
+ * compute the unit vector version of a pele array
+ */
+void arrayunit(pele::Array<double> &v)
+{
+	double norm = arraynorm(v);
+	arrayscalprod(v,1./norm);
 }
 
 /**
