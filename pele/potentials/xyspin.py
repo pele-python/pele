@@ -33,18 +33,19 @@ class RectangularLattice(object):
         i = x + y * self.Lx
         return i
         
-    
-    
+
+def angle_to_2dvector(theta):
+    return np.cos(theta), np.sin(theta)
 
 class XYModel(BasePotential):
     """
     XY model of 2d spins on a lattice
     """
-    def __init__(self, dim=[4, 4], phi=np.pi):
+    def __init__(self, dim=[4, 4], phi=np.pi, periodic=True):
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
         
-        self.G = nx.grid_graph(dim, periodic=True)
+        self.G = nx.grid_graph(dim, periodic)
         
         self.phases = dict()
         binary_disorder = True
@@ -63,10 +64,25 @@ class XYModel(BasePotential):
             i += 1 
         
         self.num_edges = self.G.number_of_edges()
+        
+        self.set_up_neighborlists()
+        
+    def set_up_neighborlists(self):
+        neighbors = []
+        self.phase_matrix = np.zeros([self.nspins, self.nspins])
+        for edge in self.G.edges():
+            u = self.indices[edge[0]]
+            v = self.indices[edge[1]]
+            neighbors.append([u, v])
+            self.phase_matrix[u,v] = self.phases[edge]
+            self.phase_matrix[v,u] = self.phases[edge]
+            
+        self.neighbors = np.array(neighbors).reshape([-1,2])
 
         
-        
     def getEnergy(self, angles):
+        e, g = self.getEnergyGradient(angles)
+        return e
         #do internal energies first
         E = 0.
         for edge in self.G.edges():
@@ -79,6 +95,8 @@ class XYModel(BasePotential):
         return E
         
     def getEnergyGradient(self, angles):
+        import _cython_tools
+        return _cython_tools.xymodel_energy_gradient(angles, self.phase_matrix, self.neighbors) 
         #do internal energies first
         E = 0.
         grad = np.zeros(self.nspins)

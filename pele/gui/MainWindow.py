@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Mon Oct 21 18:28:06 2013
+# Created: Thu Nov 21 16:24:15 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -86,7 +86,7 @@ class Ui_MainWindow(object):
         self.label_bh_nproc.setObjectName(_fromUtf8("label_bh_nproc"))
         self.gridLayout_3.addWidget(self.label_bh_nproc, 4, 1, 1, 1)
         self.lineEdit_bh_nsteps = QtGui.QLineEdit(self.BHTab)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lineEdit_bh_nsteps.sizePolicy().hasHeightForWidth())

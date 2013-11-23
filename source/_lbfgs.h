@@ -98,24 +98,14 @@ namespace pele{
           GradientOptimizer(potential, x0, tol),
           M_(M),
           max_f_rise_(1e-4),
+          s_(M_, vector<double>(x0.size())),
+          y_(M_, vector<double>(x0.size())),
+          rho_(M_),
           H0_(0.1),
           k_(0)
   {
       // set the precision of the printing
       cout << std::setprecision(12);
-
-      size_t N = x0.size();
-      // allocate arrays
-      x_ = std::vector<double>(N);
-      g_ = std::vector<double>(N);
-
-      y_ = std::vector<vector<double> >(M_, vector<double>(N));
-      s_ = std::vector<vector<double> >(M_, vector<double>(N));
-      rho_ = std::vector<double>(M_);
-
-      for (size_t j2 = 0; j2 < N; ++j2){
-          x_[j2] = x0[j2];
-      }
   }
 
   /**

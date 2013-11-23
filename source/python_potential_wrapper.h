@@ -167,7 +167,7 @@ namespace pele {
                     throw std::runtime_error("gradient returned by getEnergyGradient could not be converted to numpy double array");
                 }
                 // check the size of the gradient array
-                if (PyArray_Size(npgrad_safe) != grad.size()){
+                if (static_cast<size_t>(PyArray_Size(npgrad_safe)) != grad.size()){
                     PyErr_SetString(PyExc_IndexError, "gradient returned by getEnergyGradient has wrong size.");
                     Py_XDECREF(returnval);
                     Py_XDECREF(npgrad_safe);
