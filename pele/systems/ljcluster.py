@@ -33,6 +33,12 @@ class LJCluster(AtomicCluster):
     def get_potential(self):
         return LJ()
 
+    def create_database(self, *args, **kwargs):
+        db = super(LJCluster, self).create_database(*args, **kwargs)
+        db.add_property("potential", string_value="LJ cluster")
+        db.add_property("natoms", int_value=self.natoms)
+        return db
+        
     #
     #below here is stuff only for the gui
     #
@@ -114,7 +120,6 @@ class LJCluster(AtomicCluster):
             pymol.cmd.color("red", oname)
         else:
             pymol.cmd.color("gray", oname)
-
 
 #
 #only for testing below here

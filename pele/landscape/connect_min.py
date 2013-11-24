@@ -466,7 +466,6 @@ class DoubleEndedConnect(object):
         for i in range(self.niter):
             #stop if we're done
             if self.graph.areConnected(self.minstart, self.minend):
-                self.dist_graph.updateDatabase(force=True)
                 logger.info("found connection!")
                 return
             
