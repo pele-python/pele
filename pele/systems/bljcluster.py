@@ -46,9 +46,9 @@ class BLJCluster(AtomicCluster):
 
     def create_database(self, *args, **kwargs):
         db = super(BLJCluster, self).create_database(*args, **kwargs)
-        db.add_property("potential", string_value="BLJ cluster")
-        db.add_property("natoms", int_value=self.natoms)
-        db.add_property("ntypeA", int_value=self.ntypeA)
+        db.add_property("potential", "BLJ cluster")
+        db.add_property("natoms", self.natoms, dtype="int")
+        db.add_property("ntypeA", self.ntypeA, dtype="int")
 #         pot = self.get_potential()
 #         db.add_property("sigAA", float_value=pot.sigAA)
 #         db.add_property("sigAB", float_value=pot.sigAB)

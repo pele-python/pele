@@ -195,17 +195,8 @@ class SystemProperty(Base):
     string_value = Column(String)
     pickle_value = deferred(Column(PickleType))
 
-    def __init__(self, property_name, int_value=None, float_value=None,
-                  string_value=None, pickle_value=None):
+    def __init__(self, property_name):
         self.property_name = property_name
-        self.int_value = int_value
-        self.float_value = float_value
-        self.string_value = string_value
-        self.pickle_value = pickle_value
-        
-        actual_values = self._values()
-        if len(actual_values) != 1:
-            print "SystemProperty: Only one type of property value should be set"
         
     def name(self):
         return self.property_name
@@ -691,31 +682,61 @@ class Database(object):
         else:
             return query.all()
 
-
-    def add_property(self, property_name, int_value=None, float_value=None,
-                       string_value=None, pickle_value=None, commit=True):
+    def add_property(self, name, value, dtype=None, commit=True):
         """add a system property to the database
         
-        This could anything, such as a potential parameter or the number of atoms.
-        The properties can be stored as integers, floats, strings, or a pickled object.
-        Only one of the property value types should be set for each property.
+        Parameters
+        ----------
+        name : string
+            the name of the property
+        value : object
+            the value of the property
+        dtype : string
+            the datatype of the property.  This can be "int", "float", 
+            "string", "pickle", or None.  If None, the datatype will be
+            automatically determined.
         
-        For the pickle_value, pass the object you want pickled, not the pickled object.
-        We will do the pickling for you.
+        This could anything, such as a potential parameter, the number of atoms, or the
+        list of frozen atoms. The properties can be stored as integers, floats, 
+        strings, or a pickled object.  Only one of the property value types 
+        should be set for each property.
+        
+        For a value of type "pickle", pass the object you want pickled, not 
+        the pickled object.  We will do the pickling and unpickling for you.
+
         """
-        new = self.get_property(property_name)
-        
+        new = self.get_property(name)
         if new is None:
-            new = SystemProperty(property_name, int_value=int_value, 
-                                 float_value=float_value, string_value=string_value, 
-                                 pickle_value=pickle_value)
+            new = SystemProperty(name)
         else:
             print "warning: overwriting old property", new.item()
+
+        if dtype is None:
+            # try to determine type of the value
+            if isinstance(value, int):
+                dtype = "int"
+            elif isinstance(value, float):
+                dtype = "float"
+            elif isinstance(value, basestring):
+                dtype = "string"
+            else:
+                dtype = "pickle"
+        
+        if dtype == "string":
+            new.string_value = value
+        elif dtype == "int":
+            new.int_value = value
+        elif dtype == "float":
+            new.float_value = value
+        elif dtype == "pickle":
+            new.pickle_value = value
+        else:
+            raise ValueError('dtype must be one of "int", "float", "string", "pickle", or None')
+            
         self.session.add(new)
         if commit:
             self.session.commit()
         return new
-
 
 
 if __name__ == "__main__":    

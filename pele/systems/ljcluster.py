@@ -35,8 +35,8 @@ class LJCluster(AtomicCluster):
 
     def create_database(self, *args, **kwargs):
         db = super(LJCluster, self).create_database(*args, **kwargs)
-        db.add_property("potential", string_value="LJ cluster")
-        db.add_property("natoms", int_value=self.natoms)
+        db.add_property("potential", "LJ cluster")
+        db.add_property("natoms", self.natoms, dtype="int")
         return db
         
     #
