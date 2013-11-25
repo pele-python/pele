@@ -43,42 +43,30 @@ double vecnorm(std::vector<double> const v)
  */
 class Optimizer{
 public:
-    virtual void one_iteration()
-    { throw runtime_error("Optimizer::one_iteration must be overloaded"); }
+    virtual void one_iteration() = 0;
 
     /**
      * Run the optimization algorithm until the stop criterion is satisfied or
      * until the maximum number of iterations is reached
      */
-    virtual void run()
-    { throw runtime_error("Optimizer::run() must be overloaded"); }
+    virtual void run() = 0;
 
     /**
      * Run the optimization algorithm for niter iterations or until the
      * stop criterion is satisfied
      */
-    virtual void run(int const niter)
-    { throw runtime_error("Optimizer::run(niter) must be overloaded"); }
+    virtual void run(int const niter) = 0;
 
     /**
      * accessors
      */
-    virtual pele::Array<double> get_x()
-    { throw runtime_error("Optimizer::get_x() must be overloaded"); }
-    virtual pele::Array<double> get_g()
-    { throw runtime_error("Optimizer::get_g() must be overloaded"); }
-    virtual double get_f()
-    { throw runtime_error("Optimizer::get_f() must be overloaded"); }
-    virtual double get_rms()
-    { throw runtime_error("Optimizer::get_rms() must be overloaded"); }
-    virtual int get_nfev()
-    { throw runtime_error("Optimizer::get_nfev() must be overloaded"); }
-    virtual int get_niter()
-    { throw runtime_error("Optimizer::get_niter() must be overloaded"); }
-    virtual bool success()
-    { throw runtime_error("Optimizer::success() must be overloaded"); }
-
-
+    virtual pele::Array<double> get_x() = 0;
+    virtual pele::Array<double> get_g() = 0;
+    virtual double get_f() = 0;
+    virtual double get_rms() = 0;
+    virtual int get_nfev() = 0;
+    virtual int get_niter() = 0;
+    virtual bool success() = 0;
 };
 
 /**
@@ -142,8 +130,7 @@ public :
     /**
      * Do one iteration iteration of the optimization algorithm
      */
-    virtual void one_iteration()
-    { throw std::runtime_error("Optimizer::one_iteration must be overloaded"); }
+    virtual void one_iteration() = 0;
 
     /**
      * Run the optimization algorithm until the stop criterion is satisfied or
