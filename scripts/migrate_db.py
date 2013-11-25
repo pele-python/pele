@@ -17,33 +17,10 @@ def from_0_to_1(connection, schema):
     connection.execute("PRAGMA user_version = 1;")
     return 1
 
-def from_1_to_2(connection, schema):
-    assert schema == 1
-    print "migrating from database version 1 to 2"
-    connection.execute("""CREATE TABLE tbl_system_property (
-    _id INTEGER NOT NULL, 
-    property_name VARCHAR, 
-    int_value INTEGER, 
-    float_value FLOAT, 
-    string_value VARCHAR, 
-    pickle_value BLOB, 
-    PRIMARY KEY (_id)
-    );
-    """)
-    connection.execute("PRAGMA user_version = 2;")
-    return 2
 
-def from_2_to_3(connection, schema):
-    assert schema == 2
-    print "migrating from database version 2 to 3"
-    connection.execute("drop table tbl_distances;")
-    connection.execute("PRAGMA user_version = 3;")
-    return 3
-
-migrate_script = {0:from_0_to_1,
-                  1:from_1_to_2,
-                  2:from_2_to_3,
-                  }
+migrate_script = [
+            from_0_to_1
+            ]
     
 def migrate(db):
     engine = sqlalchemy.create_engine("sqlite:///%s"%db)
@@ -59,10 +36,9 @@ def migrate(db):
         trans = connection.begin()
         try:
             schema = migrate_script[schema](connection, schema)
-        except BaseException:
-            print "failed to migrate database, rolling back changes"
+        except RuntimeError:
             trans.rollback()
-            raise
+            raise#raise RuntimeError("failed to migrate database")
         trans.commit()
     connection.close()
     print "database is at newest version"
@@ -71,7 +47,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2 or "--help" in sys.argv or "-h" in sys.argv:
         print "usage:\npython migrate_db.py <database1> [<database2> ...]"
         print ""
-        print "update pele database to the newest version"
+        print "update pele database to the newist version"
         sys.exit()
     for dbfile in sys.argv[1:]:
         print dbfile
