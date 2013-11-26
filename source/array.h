@@ -212,18 +212,11 @@ namespace pele {
         Array<dtype> &operator=(Array<dtype> const & rhs) {
             if (sole_owner()){
                 if (_size != rhs.size()){
-                    std::cout << "resizing array during assignment from " << _size << " to " << rhs.size() << "\n";
+                    //std::cout << "resizing array during assignment from " << _size << " to " << rhs.size() << "\n";
                     resize(rhs.size());
                 }
             } else {
                 if (_size != rhs.size()){
-                    std::cout << "bad assignment: (" << _size << "->" << rhs.size() << ")" << " sole_owner " << sole_owner() 
-                        << " reference_count " << _reference_count
-                        << " _size " << _size
-                        << " _data " << _data
-                        << " _allocated_memory " << _allocated_memory
-
-                        << "\n";
                     throw std::runtime_error("cannot assign an array that's not the sole owner of it's data to another with different size");
                 }
             }
