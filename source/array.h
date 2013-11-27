@@ -206,18 +206,20 @@ namespace pele {
         dtype operator[](size_t i) const { return _data[i]; }
 
         /**
-         * assignment operator: copy the data and raise an error if the sizes
-         * are not the same
+         * Assignment operator: copy the data into the existing array
+         *
+         * Throw an error if the sizes are not the same.  The only exception is
+         * if the array is unallocated, in which case resize the array to
+         * match.  This exception is to enable code like.
+         *
+         * Array a = Array(10);
          */
         Array<dtype> &operator=(Array<dtype> const & rhs) {
-            if (sole_owner()){
-                if (_size != rhs.size()){
-                    //std::cout << "resizing array during assignment from " << _size << " to " << rhs.size() << "\n";
+            if (_size != rhs.size()){
+                if (_data == NULL) {
                     resize(rhs.size());
-                }
-            } else {
-                if (_size != rhs.size()){
-                    throw std::runtime_error("cannot assign an array that's not the sole owner of it's data to another with different size");
+                } else {
+                    throw std::runtime_error("cannot assign an array to another with different size unless the array is unallocated");
                 }
             }
             for (size_t i=0; i<_size; ++i){
