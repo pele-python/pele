@@ -675,7 +675,7 @@ class Database(object):
             filter(SystemProperty.property_name == property_name)
         return candidates.first()
 
-    def properties(self, as_dict=True):
+    def properties(self, as_dict=False):
         query = self.session.query(SystemProperty)
         if as_dict:
             return dict([p.item() for p in query])

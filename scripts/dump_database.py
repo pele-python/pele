@@ -5,6 +5,16 @@ import networkx as nx
 from pele.storage.database import Database
 from pele.landscape import TSGraph
 
+def print_system_properties(db):
+    if len(db.properties()) == 0: return
+    print "System properties:"
+    print "------------------"
+    for p in db.properties():
+        name, value = p.name(), p.value()
+        print "%10s:\t\t%s" % (name, str(value))
+    print ""
+        
+
 def long_summary(db):
     nts = db.number_of_transition_states()
     if nts == 0:
@@ -45,6 +55,9 @@ def main():
     parser.add_argument("-t",
                       dest="writeTS", action="store_true",
                       help="dump transition states to screen")
+    parser.add_argument("-p",
+                      dest="properties", action="store_true",
+                      help="print system properties")
     parser.add_argument("-s",
                       dest="summary", action="store_true",
                       help="print summary")
@@ -60,11 +73,15 @@ def main():
     db = Database(db=args.database, createdb=False)
 
     if args.summary:
+        print_system_properties(db)
         print "number of minima:", db.number_of_minima()
         print "number of transition states:", db.number_of_transition_states()
   
     if args.summary_long:
         long_summary(db)
+
+    if args.properties:
+        print_system_properties(db)
         
     if(args.writeMinima):
         print "List of minima: energy id fvib pgorder"
