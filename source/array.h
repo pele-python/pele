@@ -64,7 +64,7 @@ namespace pele {
         /** 
          * destructor
          */
-        ~Array() 
+        ~Array()
         {
             free();
         }
@@ -88,7 +88,6 @@ namespace pele {
                     _size = 0; 
                 }
             }
-
         }
 
         /*
@@ -96,6 +95,9 @@ namespace pele {
          */
         void wrap(Array<dtype> x)
         {
+            if (x._data == NULL){
+                throw std::runtime_error("cannot wrap an array with no data");
+            }
             free();
             _size = x._size;
             _reference_count = x._reference_count;
@@ -109,7 +111,7 @@ namespace pele {
         /**
          * return a copy of the array.
          */
-        Array<dtype> const copy()
+        Array<dtype> const copy() const
         {
             Array<dtype> newarray(_size);
             for (size_t i=0; i<_size; ++i){
@@ -126,15 +128,15 @@ namespace pele {
             if (iend <= ibegin) {
                 throw std::invalid_argument("iend must larger than ibegin");
             }
-            Array<dtype> newarray;
+            Array<dtype> newarray(*this);
             newarray._data = &_data[ibegin];
-            newarray._allocated_memory = _allocated_memory;
             newarray._size = iend - ibegin;
-            newarray._reference_count = _reference_count;
-            assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
-            if (_allocated_memory != NULL){
-                *_reference_count += 1;
-            }
+            //newarray._allocated_memory = _allocated_memory;
+            //newarray._reference_count = _reference_count;
+            //assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
+            //if (_allocated_memory != NULL){
+                //*_reference_count += 1;
+            //}
             return newarray;
         }
 
@@ -145,13 +147,32 @@ namespace pele {
         /// return size of array
         size_t size() const { return _size; }
 
+        /**
+         * Return true if this is the sole owner of the data
+         */
+        bool sole_owner()
+        {
+            assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
+            if (_reference_count == NULL){
+                if (_data != NULL){
+                    // the array wraps data which it doesn't own.
+                    return false;
+                }
+                assert(_size == 0);
+                // this array has no data
+                return true;
+            } else {
+                return (*_reference_count == 1);
+            }
+        }
+
         // return iterators over data
         typedef dtype * iterator;
         typedef dtype const * const_iterator;
         iterator begin() { return &_data[0]; }
         iterator end() { return &_data[_size]; }
-        const_iterator begin() const { return &_data[0]; }
-        const_iterator end() const { return &_data[_size]; }
+        const_iterator begin() const { return _data; }
+        const_iterator end() const { return _data + _size; }
 
 
         /**
@@ -159,17 +180,16 @@ namespace pele {
          * data or if the data has not been allocated yet.
          */
         void resize(size_t size) {
+            if (_size == size){
+                // no need to do anything.
+                return;
+            }
             // do sanity checks
             assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
-            if (_allocated_memory == NULL && _data != NULL){
+            if (! sole_owner()){
                 // this instance can occur if you wrap data that was not allocated by the Array class.
                 // e.g. if this wraps data in a std::vector.
                 throw std::runtime_error("Array: cannot resize Arrays if not sole owner of data");
-            }
-            if (_reference_count != NULL){
-                if (*_reference_count != 1){
-                    throw std::runtime_error("Array: cannot resize Arrays if not sole owner of data");
-                }
             }
             // all seems ok. resize the array
             if (_allocated_memory != NULL) delete[] _allocated_memory;
@@ -185,8 +205,29 @@ namespace pele {
         dtype &operator[](size_t i) { return _data[i]; }
         dtype operator[](size_t i) const { return _data[i]; }
 
-        /// read only access to element in array
-//        dtype operator()(size_t i) const { return _data[i]; }
+        /**
+         * Assignment operator: copy the data into the existing array
+         *
+         * Throw an error if the sizes are not the same.  The only exception is
+         * if the array is unallocated, in which case resize the array to
+         * match.  This exception is to enable code like.
+         *
+         * Array a = Array(10);
+         */
+        Array<dtype> &operator=(Array<dtype> const & rhs) {
+            if (_size != rhs.size()){
+                if (_data == NULL) {
+                    resize(rhs.size());
+                } else {
+                    throw std::runtime_error("cannot assign an array to another with different size unless the array is unallocated");
+                }
+            }
+            for (size_t i=0; i<_size; ++i){
+                _data[i] = rhs[i];
+            }
+            return *this;
+        }
+
 
         Array<dtype> &operator=(dtype d) {
             for(size_t i=0; i<_size; ++i)
