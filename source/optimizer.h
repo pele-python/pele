@@ -16,14 +16,34 @@ using std::cout;
 namespace pele{
 
 /**
+ * compute the dot product of two Arrays
+ */
+double arraydot(Array<double> const v1, Array<double> const v2)
+{
+  assert(v1.size() == v2.size());
+  double dot = 0.;
+  for (size_t i=0; i<v1.size(); ++i) {
+    dot += v1[i] * v2[i];
+  }
+  return dot;
+}
+
+/**
+ * compute the L2 norm of an Array
+ */
+double arraynorm(Array<double> const v)
+{
+  return sqrt(arraydot(v, v));
+}
+
+/**
  * compute the dot product of two vectors
  */
 double vecdot(std::vector<double> const v1, std::vector<double> const v2)
 {
   assert(v1.size() == v2.size());
-  size_t i;
   double dot = 0.;
-  for (i=0; i<v1.size(); ++i) {
+  for (size_t i=0; i<v1.size(); ++i) {
     dot += v1[i] * v2[i];
   }
   return dot;
@@ -60,8 +80,8 @@ public:
     /**
      * accessors
      */
-    virtual pele::Array<double> get_x() = 0;
-    virtual pele::Array<double> get_g() = 0;
+    virtual Array<double> get_x() = 0;
+    virtual Array<double> get_g() = 0;
     virtual double get_f() = 0;
     virtual double get_rms() = 0;
     virtual int get_nfev() = 0;
@@ -92,9 +112,9 @@ protected :
     int nfev_; /**< The number of function evaluations */
 
     // variables representing the state of the system
-    std::vector<double> x_; /**< The current coordinates */
+    Array<double> x_; /**< The current coordinates */
     double f_; /**< The current function value */
-    std::vector<double> g_; /**< The current gradient */
+    Array<double> g_; /**< The current gradient */
     double rms_; /**< The root mean square of the gradient */
 
     /**
@@ -109,7 +129,7 @@ protected :
 
 public :
     GradientOptimizer(pele::BasePotential * potential,
-          const pele::Array<double> & x0,
+          const pele::Array<double> x0,
           double tol=1e-4)
     :
       potential_(potential),
@@ -120,7 +140,7 @@ public :
       verbosity_(0),
       iter_number_(0),
       nfev_(0),
-      x_(x0.begin(), x0.end()),
+      x_(x0.copy()),
       f_(0.),
       g_(x0.size()),
       rms_(1e10),
@@ -167,7 +187,7 @@ public :
      * Set the initial func and gradient.  This can be used
      * to avoid one potential call
      */
-    void set_func_gradient(double f, pele::Array<double> grad)
+    void set_func_gradient(double f, Array<double> grad)
     {
         if (grad.size() != g_.size()){
             throw std::invalid_argument("the gradient has the wrong size");
@@ -181,7 +201,7 @@ public :
         for (size_t j2 = 0; j2 < N; ++j2){
             g_[j2] = grad[j2];
         }
-        rms_ = vecnorm(g_) / sqrt(g_.size());
+        rms_ = arraynorm(g_) / sqrt(g_.size());
         func_initialized_ = true;
     }
 
@@ -193,8 +213,8 @@ public :
     void set_verbosity(int verbosity) { verbosity_ = verbosity; }
 
     // functions for accessing the status of the optimizer
-    pele::Array<double> get_x() { return x_; }
-    pele::Array<double> get_g() { return g_; }
+    Array<double> get_x() { return x_; }
+    Array<double> get_g() { return g_; }
     double get_f() { return f_; }
     double get_rms() { return rms_; }
     int get_nfev() { return nfev_; }
@@ -216,13 +236,10 @@ protected :
     /**
      * Compute the func and gradient of the objective function
      */
-    void compute_func_gradient(std::vector<double> & x, double & func,
-            std::vector<double> & gradient)
+    void compute_func_gradient(Array<double> x, double & func,
+            Array<double> gradient)
     {
         nfev_ += 1;
-        // wrap the vectors as pele::Array objects
-        pele::Array<double> xarray(&x[0], x.size());
-        pele::Array<double> garray(&gradient[0], gradient.size());
 
         // pass the arrays to the potential
         func = potential_->get_energy_gradient(x, gradient);
@@ -237,7 +254,7 @@ protected :
         // and store them
         size_t N = x_.size();
         compute_func_gradient(x_, f_, g_);
-        rms_ = vecnorm(g_) / sqrt(N);
+        rms_ = arraynorm(g_) / sqrt(N);
         func_initialized_ = true;
     }
 
