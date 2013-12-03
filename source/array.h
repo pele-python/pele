@@ -41,6 +41,7 @@ namespace pele {
             _data(x._data), _allocated_memory(x._allocated_memory),
             _size(x._size), _reference_count(x._reference_count) 
         {
+            //std::cout << "copy constructing Array\n";
             if (_data == NULL){
                 throw std::runtime_error("cannot wrap an array with no data");
             }
@@ -170,7 +171,7 @@ namespace pele {
         typedef dtype * iterator;
         typedef dtype const * const_iterator;
         iterator begin() { return &_data[0]; }
-        iterator end() { return &_data[_size]; }
+        iterator end() { return _data + _size; }
         const_iterator begin() const { return _data; }
         const_iterator end() const { return _data + _size; }
 
@@ -214,17 +215,34 @@ namespace pele {
          *
          * Array a = Array(10);
          */
+        /*
         Array<dtype> &operator=(Array<dtype> const & rhs) {
             if (_size != rhs.size()){
                 if (_data == NULL) {
+                    std::cout << "operator=: resizing array to size " << rhs.size() << "\n";
                     resize(rhs.size());
                 } else {
+                    std::cout << "operator=: cannot assign an array to another with different size unless the array is unallocated\n";
                     throw std::runtime_error("cannot assign an array to another with different size unless the array is unallocated");
                 }
+                assert(_size == rhs.size());
             }
             for (size_t i=0; i<_size; ++i){
                 _data[i] = rhs[i];
             }
+            return *this;
+        }
+        */
+
+        /**
+         * Assignment operator: wrap the data
+         */
+        Array<dtype> &operator=(Array<dtype> const & rhs) {
+            //if (_data != NULL) {
+                //std::cout << "operator=: cannot assign an array unless the array is unallocated\n";
+                //throw std::runtime_error("cannot assign an array unless the array is unallocated");
+            //}
+            wrap(rhs);
             return *this;
         }
 
