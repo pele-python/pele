@@ -289,7 +289,7 @@ class Database(object):
     
     '''
     engine = None
-    Session = None
+    Session = None # js850> This seems to be unused. Can we remove it?
     session = None
     connection = None
     accuracy = 1e-3
@@ -297,36 +297,49 @@ class Database(object):
         
     def __init__(self, db=":memory:", accuracy=1e-3, connect_string='sqlite:///%s',
                  compareMinima=None, createdb=True):
-        global _schema_version
+        self.accuracy=accuracy
+        self.compareMinima = compareMinima
+
         if not createdb:
             if not os.path.isfile(db): 
                 raise IOError("database does not exist")
-            
+        
+        # set up the engine which will manage the backend connection to the database
         self.engine = create_engine(connect_string%(db), echo=verbose)
-        if createdb:
-            conn = self.engine.connect()
-            if not self.engine.has_table("tbl_minima"):
-                conn.execute("PRAGMA user_version = %d;"%_schema_version)
-            Base.metadata.create_all(self.engine)
-            result=conn.execute("PRAGMA user_version;")
-            schema = result.fetchone()[0]
-            result.close()
-            conn.close()
-            if _schema_version != schema:
-                raise IOError("database schema outdated, current (newest) version: "
-                              "%d (%d). Please use migrate_db.py in pele/scripts to update database"%(schema, _schema_version))
-            
+
+        # set up the tables and check the schema version
+        self._check_schema_version_and_create_tables()
+
+        # set up the session which will manage the frontend connection to the database
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
-        self.accuracy=accuracy
+        
+        # these functions will be called when a minimum or transition state is 
+        # added or removed
         self.on_minimum_added = Signal()
         self.on_minimum_removed = Signal()
         self.on_ts_added = Signal()
         self.on_ts_removed = Signal()
         
-        self.compareMinima = compareMinima
         self.lock = threading.Lock()
         self.connection = self.engine.connect()
+
+    def _check_schema_version_and_create_tables(self):
+        global _schema_version
+        conn = self.engine.connect()
+        if not self.engine.has_table("tbl_minima"):
+            conn.execute("PRAGMA user_version = %d;"%_schema_version)
+        Base.metadata.create_all(bind=self.engine)
+        result=conn.execute("PRAGMA user_version;")
+        schema = result.fetchone()[0]
+        result.close()
+        conn.close()
+        if _schema_version != schema:
+            raise IOError("database schema outdated, current (newest) version: "
+                          "%d (%d). Please use migrate_db.py in pele/scripts to update database"%(schema, _schema_version))
+
+
+
         
 #        self._initialize_queries()
         
