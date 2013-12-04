@@ -44,21 +44,18 @@ class BLJCluster(AtomicCluster):
     def get_permlist(self):
         return [range(self.ntypeA), range(self.ntypeA, self.natoms)]
 
-    def create_database(self, *args, **kwargs):
-        db = super(BLJCluster, self).create_database(*args, **kwargs)
-        db.add_property("potential", "BLJ cluster")
-        db.add_property("natoms", self.natoms, dtype="int")
-        db.add_property("ntypeA", self.ntypeA, dtype="int")
-#         pot = self.get_potential()
-#         db.add_property("sigAA", float_value=pot.sigAA)
-#         db.add_property("sigAB", float_value=pot.sigAB)
-#         db.add_property("sigBB", float_value=pot.sigBB)
-#         db.add_property("epsAA", float_value=pot.epsAA)
-#         db.add_property("epsAB", float_value=pot.epsAB)
-#         db.add_property("epsBB", float_value=pot.epsBB)
-        return db
-
-
+    def get_system_properties(self):
+        return dict(natoms=int(self.natoms),
+                    ntypeA=int(self.ntypeA),
+                    potential="BLJ cluster",
+#                    sigAA=pot.sigAA,
+#                    sigAB=pot.sigAB,
+#                    sigBB=pot.sigBB,
+#                    epsAA=pot.epsAA,
+#                    epsAB=pot.epsAB,
+#                    epsBB=pot.epsBB,
+                    )
+    
     #
     # stuff for the gui below here
     #

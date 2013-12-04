@@ -33,12 +33,11 @@ class LJCluster(AtomicCluster):
     def get_potential(self):
         return LJ()
 
-    def create_database(self, *args, **kwargs):
-        db = super(LJCluster, self).create_database(*args, **kwargs)
-        db.add_property("potential", "LJ cluster")
-        db.add_property("natoms", self.natoms, dtype="int")
-        return db
-        
+    def get_system_properties(self):
+        return dict(natoms=int(self.natoms),
+                    potential="LJ cluster",
+                    )
+
     #
     #below here is stuff only for the gui
     #

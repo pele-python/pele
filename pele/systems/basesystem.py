@@ -169,6 +169,10 @@ class BaseSystem(object):
             return None
         return lambda m1, m2: compare(m1.coords, m2.coords)
     
+    def get_system_properties(self):
+        """return a dictionary of system specific properties that will be stored in the database"""
+        return dict()
+
     def create_database(self, *args, **kwargs):
         """return a new database object
         
@@ -198,7 +202,10 @@ class BaseSystem(object):
             #compareMinima is optional
             pass
 
-        return Database(**kwargs)
+        db = Database(**kwargs)
+        
+        db.add_properties(self.get_system_properties())
+        return db
     
 
     def get_takestep(self, **kwargs):
