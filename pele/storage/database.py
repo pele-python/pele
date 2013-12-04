@@ -750,6 +750,17 @@ class Database(object):
         if commit:
             self.session.commit()
         return new
+    
+    def add_properties(self, properties):
+        """add multiple properties from a dictionary
+        
+        properties : dict
+            a dictionary of (name, value) pairs.  The data type of the value
+            will be determined automatically
+        """
+        for name, value in properties.iteritems():
+            self.add_property(name, value, commit=True)
+            
 
 
 if __name__ == "__main__":    

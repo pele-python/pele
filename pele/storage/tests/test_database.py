@@ -1,5 +1,6 @@
 from pele.storage import Database
 import unittest
+from numpy.ma.testutils import assert_equal
 
 class TestDB(unittest.TestCase):
     def setUp(self):
@@ -169,6 +170,13 @@ class TestDB(unittest.TestCase):
         self.db.add_property("natoms", 10, dtype="string")
         p = self.db.get_property("natoms")
         self.assertEqual(p.value(), "10")
+    
+    def test_add_properties(self):
+        props = dict(natoms=10, author="jake")
+        self.db.add_properties(props)
+        for name, value in props.iteritems():
+            p = self.db.get_property(name)
+            self.assertEqual(p.value(), value)
    
 def benchmark_number_of_minima():
     import time, sys
