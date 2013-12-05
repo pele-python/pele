@@ -751,7 +751,16 @@ class Database(object):
         if new is None:
             new = SystemProperty(name)
         else:
-            print "warning: overwriting old property", new.item()
+            # the database already has a property with this name, Try to determine if they are the same             
+            same = False
+            try:
+                if new.value() == value:
+                    same = True
+            except:
+                print "warning, could not compare value", value, "with", new.value()
+                pass
+            if not same:
+                print "warning: overwriting old property", new.item()
 
         if dtype is None:
             # try to determine type of the value
