@@ -27,11 +27,11 @@ def spin_mindist_1d(x1, x2):
      
 
 class XYModlelSystem(BaseSystem):
-    def __init__(self, dim=[4, 4], phi_disorder=1.):
+    def __init__(self, dim=[4, 4], phi_disorder=np.pi, phases=None):
         BaseSystem.__init__(self)
         self.dim = dim
         self.phi_disorder = phi_disorder
-        self.pot = self.get_potential()
+        self.pot = self.get_potential(phases=phases)
         self.nspins = np.prod(dim)
         
         self.setup_params(self.params)
@@ -45,12 +45,19 @@ class XYModlelSystem(BaseSystem):
 #        params.double_ended_connect.local_connect_params.NEBparams.distance = spin3d_distance
         params.structural_quench_params.tol = 1e-6
 
+    def get_system_properties(self):
+        return dict(potential="XY spin glass",
+                    phases=self.pot.get_phases(),
+                    dim=self.dim,
+                    Lx=self.dim[0],
+                    Ly=self.dim[1],
+                    )
 
-    def get_potential(self):
+    def get_potential(self, phases=None):
         try:
             return self.pot
         except AttributeError:
-            return XYModel(dim=self.dim, phi=self.phi_disorder)
+            return XYModel(dim=self.dim, phi=self.phi_disorder, phases=phases)
     
     def get_orthogonalize_to_zero_eigenvectors(self):
         return None
@@ -127,6 +134,18 @@ def run_gui():
     system = XYModlelSystem(dim=[24,24], phi_disorder=np.pi)
     run_gui(system)
 
+def run_gui_db(dbname="xy_10x10.sqlite"):
+    from pele.gui import run_gui
+    from pele.storage import Database
+    try:
+        db = Database(dbname, createdb=False)
+        phases = db.get_property("phases").value()
+    except IOError:
+        phases=None
+    system = XYModlelSystem(dim=[10,10], phi_disorder=np.pi, phases=phases)
+    run_gui(system, db=dbname)
+
+
 def test_potential():
     system = XYModlelSystem(dim=[10,10], phi_disorder=np.pi)
     pot = system.get_potential()
@@ -138,7 +157,7 @@ if __name__ == "__main__":
 #    from pele.storage import Database
 #    db = Database("20x20_no_disorder.sqlite")
 #    normalize_spins_db(db)
-    run_gui()
+    run_gui_db()
         
     
     

@@ -41,20 +41,23 @@ class XYModel(BasePotential):
     """
     XY model of 2d spins on a lattice
     """
-    def __init__(self, dim=[4, 4], phi=np.pi, periodic=True):
+    def __init__(self, dim=[4, 4], phi=np.pi, periodic=True, phases=None):
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
         
         self.G = nx.grid_graph(dim, periodic)
         
-        self.phases = dict()
-        binary_disorder = True
-        if binary_disorder:
-            for edge in self.G.edges():
-                self.phases[edge] = phi * np.random.random_integers(0,1)
+        if phases is not None:
+            self.phases = phases
         else:
-            for edge in self.G.edges():
-                self.phases[edge] = np.random.uniform(-phi, phi)
+            self.phases = dict()
+            binary_disorder = True
+            if binary_disorder:
+                for edge in self.G.edges():
+                    self.phases[edge] = phi * np.random.random_integers(0,1)
+            else:
+                for edge in self.G.edges():
+                    self.phases[edge] = np.random.uniform(-phi, phi)
         nx.set_edge_attributes(self.G, "phase", self.phases)
 
         self.indices = dict()
@@ -66,7 +69,10 @@ class XYModel(BasePotential):
         self.num_edges = self.G.number_of_edges()
         
         self.set_up_neighborlists()
-        
+    
+    def get_phases(self):
+        return self.phases.copy()
+    
     def set_up_neighborlists(self):
         neighbors = []
         self.phase_matrix = np.zeros([self.nspins, self.nspins])
