@@ -15,7 +15,7 @@ class SuttonChenBulk(MorseBulk):
         self.boxvec = np.array(boxvec, dtype=float)
         self.periodic = True
         
-        self.r0 = sig
+        self.r0 = sig # the equilibrium separation of the atoms.
 
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.0

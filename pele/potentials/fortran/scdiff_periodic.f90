@@ -36,33 +36,21 @@
       double precision, intent(IN) :: eps, c, sig, rcut, boxvec(3)
       double precision, intent(out) :: psc ! energy
       double precision, intent(out) :: v(3*N) !gradient
-      INTEGER J1, J2, J3, J4, J5, J6, J7, I, J
+      INTEGER J1, J2, J3, J4, I, J
       DOUBLE PRECISION RHO(N), RM(N,N), &
                        R1(N,N), &
                        RN(N,N),RN2(N,N), &
                        RM2(N,N), &
-                       DIST,POTA,POTB,TEMP,TEMP1,TEMP2,TEMP3, R
+                       DIST,POTA,POTB, R
       double precision iboxvec(3), dx(3), dr
-      !double precision A1M, A2M, B1M
-      !double precision A1N, A2N, B1N
-      double precision rho1, ircm, ircn
-      !boxvec(1) = param6
-      !boxvec(2) = param7
-      !boxvec(3) = param8
-      !rcut2 = param9
+      double precision rho1, ircm, ircn, sigmm, signn
       IBOXVEC = 1.D0 / BOXVEC
-      !write(*,*) boxvec, rcut
 
       ! compute the parameters for the cutoff smoothing function
-      !A1M = (SIG/rcut)**MM * (-1.d0 - FLOAT(MM))
-      !A2M = (SIG/rcut)**MM * FLOAT(MM) / rcut
-      !B1M = (1.d0/rcut)**MM / rcut
-      !A1N = (SIG/rcut)**NN * (-1.d0 - FLOAT(NN))
-      !A2N = (SIG/rcut)**NN * FLOAT(NN) / rcut
-      !B1N = (1.d0/rcut)**NN / rcut
-      !write(*,*) A1M, A2M, B1M, A1N, A2N, B1N
       IRCM = 1./RCUT**MM
       IRCN = 1./RCUT**NN
+      SIGMM = SIG**MM
+      sigNN = sig**NN
 !
 !
 !  Store distance matrices.
@@ -101,14 +89,12 @@
             if (i.ne.j) then
                R = R1(I,J)
                IF (R .LT. RCUT) THEN
-                  !write(*,*) I, J, SIG**MM*RM(I,J), A1M, r1(i,j) * A2M, r1(i,j)
-                  RHO1 = SIG**MM*(RM(I,J) + &
+                  RHO1 = SIGMM*(RM(I,J) + &
                      IRCM*(-1.D0 + MM*(R-RCUT)/RCUT - 0.5*MM*(MM+1)*(R-RCUT)**2/RCUT**2))
                   RHO(I)=RHO(I) + rho1
                ENDIF
             endif
          end do
-         !write(*,*) "rho(I)", I, rho(I)
       end do
 !
 ! First calculate the potential energy:
@@ -119,7 +105,7 @@
          DO J=1,N
             if (i.ne.j) then
                IF (R1(I,J) .LT. RCUT) THEN
-                  POTA=POTA + 0.50D00*EPS*SIG**NN*(RN(I,J) + &
+                  POTA=POTA + 0.50D00*EPS*SIGNN*(RN(I,J) + &
                      IRCN*(-1.D0 + NN*(R-RCUT)/RCUT - 0.5*NN*(NN+1)*(R-RCUT)**2/RCUT**2))
                endif
             endif
@@ -143,10 +129,10 @@
                   IF (R1(j1,j4) .LT. RCUT) THEN
                      dr = X(J3)-X(3*(J4-1)+J2)
                      dr = dr - boxvec(j2) * nint(dr * iboxvec(j2))
-                     V(J3)=V(J3)+(-NN*EPS*SIG**NN &
+                     V(J3)=V(J3)+(-NN*EPS*SIGNN &
                                   *(RN2(J1,J4) - IRCN*(NN/RCUT - NN*(NN+1)*(R-RCUT)/RCUT**2 ) ) &
                                   + &
-                                  FLOAT(MM)/2.d0*EPS*C*SIG**MM &
+                                  FLOAT(MM)/2.d0*EPS*C*SIGMM &
                                   *(RM2(J1,J4) - IRCM*(MM/RCUT - MM*(MM+1)*(R-RCUT)/RCUT**2)) &
                                   *(1.d0/DSQRT(RHO(J1)) + 1.d0/DSQRT(RHO(J4))) &
                                  )*dr

@@ -29,7 +29,6 @@ class MorseBulk(MorseCluster):
         return Morse(rho=self.rho, r0=self.r0, A=self.A, boxvec=self.boxvec, rcut=self.rcut)
 
     def draw(self, coordslinear, index):
-        print "draw length", coordslinear.size
         put_in_box(coordslinear, self.boxvec)
         MorseCluster.draw(self, coordslinear, index, subtract_com=False)
     
