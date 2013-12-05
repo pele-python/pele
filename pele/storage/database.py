@@ -300,15 +300,27 @@ class Database(object):
         self.accuracy=accuracy
         self.compareMinima = compareMinima
 
-        if not createdb:
-            if not os.path.isfile(db): 
-                raise IOError("database does not exist")
-        
+
+        if not os.path.isfile(db) or db == ":memory:":
+            newfile = True
+            if not createdb:
+                raise IOError("createdb is False, but database does not exist")
+        else:
+            newfile = False
+
         # set up the engine which will manage the backend connection to the database
         self.engine = create_engine(connect_string%(db), echo=verbose)
 
+        if not newfile and not self._is_pele_database():
+            raise IOError("existing file (%s) is not a pele database." % db)
+        
+
         # set up the tables and check the schema version
-        self._check_schema_version_and_create_tables()
+        if newfile:
+            self._set_schema_version()
+        self._check_schema_version()
+        self._update_schema()
+#         self._check_schema_version_and_create_tables(newfile)
 
         # set up the session which will manage the frontend connection to the database
         Session = sessionmaker(bind=self.engine)
@@ -324,12 +336,29 @@ class Database(object):
         self.lock = threading.Lock()
         self.connection = self.engine.connect()
 
-    def _check_schema_version_and_create_tables(self):
+    def _is_pele_database(self):
+        conn = self.engine.connect()
+        result = True
+        if (not self.engine.has_table("tbl_minima") or
+            not self.engine.has_table("tbl_transition_states")):
+            result = False
+        conn.close()
+        return result
+
+    def _set_schema_version(self):
         global _schema_version
         conn = self.engine.connect()
-        if not self.engine.has_table("tbl_minima"):
-            conn.execute("PRAGMA user_version = %d;"%_schema_version)
+        conn.execute("PRAGMA user_version = %d;"%_schema_version)
+        conn.close()
+
+    def _update_schema(self):
+        conn = self.engine.connect()
         Base.metadata.create_all(bind=self.engine)
+        conn.close()
+
+    def _check_schema_version(self):
+        global _schema_version
+        conn = self.engine.connect()
         result=conn.execute("PRAGMA user_version;")
         schema = result.fetchone()[0]
         result.close()
