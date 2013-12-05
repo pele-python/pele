@@ -55,8 +55,8 @@ def rungui():
     natoms = 17
     boxl = 2.
     boxvec = np.ones(3) * boxl
-    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
-#    system = MorseBulk(natoms, boxvec, rho=3., r0=1., A=1.)
+#    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
+    system = MorseBulk(natoms, boxvec, rho=3., r0=1., A=1.)
     db = system.create_database()
     run_gui(system)
 

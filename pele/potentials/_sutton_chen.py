@@ -6,6 +6,8 @@ from pele.potentials.fortran import scdiff_periodic as fortran_sc
 class SuttonChen(BasePotential):
     def __init__(self, eps=1., sig=1., c=1., boxvec=[10., 10., 10.], rcut=2.5,
                   n=10, m=8):
+        if boxvec is None:
+            raise ValueError("non-periodic sutton chen potential not implemented")
         self.eps = eps
         self.sig = sig
         self.c = c
