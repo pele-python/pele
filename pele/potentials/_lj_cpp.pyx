@@ -100,8 +100,6 @@ cdef class LJNeighborList(_pele.BasePotential):
 cdef class BLJCut(_pele.BasePotential):
     def __cinit__(self, natoms, ntypeA, boxl=None, rcut=2.5, epsAA=1., sigAA=1., 
                    epsBB=0.5, sigBB=0.88, epsAB=1.5, sigAB=0.8):
-        sigAA = 1.
-        epsAA = 1.
         cdef np.ndarray[size_t, ndim=1] atomsAnp = np.array([range(ntypeA)],         dtype=size_t).reshape(-1)
         cdef np.ndarray[size_t, ndim=1] atomsBnp = np.array([range(ntypeA, natoms)], dtype=size_t).reshape(-1)
         cdef _pele.Array[size_t] atomsA = _pele.Array[size_t](<size_t*> atomsAnp.data, <size_t>atomsAnp.size)

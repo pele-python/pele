@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, and_, or_
 from sqlalchemy.orm import sessionmaker
 import threading
 import numpy as np
-from sqlalchemy import Column, Integer, Float, PickleType
+from sqlalchemy import Column, Integer, Float, PickleType, String
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref, deferred
 import sqlalchemy.orm
@@ -15,7 +15,7 @@ from sqlalchemy.schema import Index
 from pele.utils.events import Signal
 import os
 
-__all__ = ["Minimum", "TransitionState", "Database", "Distance"]
+__all__ = ["Minimum", "TransitionState", "Database"]
 
 _schema_version = 1
 verbose=False
@@ -49,7 +49,7 @@ class Minimum(Base):
 
     See Also
     --------
-    Database, TransitionState, Distance
+    Database, TransitionState
     '''
     __tablename__ = 'tbl_minima'
 
@@ -131,7 +131,7 @@ class TransitionState(Base):
 
     See Also
     --------
-    Database, Minimum, Distance
+    Database, Minimum
     '''
     __tablename__ = "tbl_transition_states"
     _id = Column(Integer, primary_key=True)
@@ -179,77 +179,60 @@ class TransitionState(Base):
         self.eigenvec = np.copy(eigenvec)
         self.eigenval = eigenval
 
-class Distance(Base):
-    '''object to store "mindist" distances between minima
-    
-    Parameters
-    ----------
-    dist: float
-        distance between minima
-    min1: Minimum object
-        first minimum
-    min2: Minimum object
-        second minimum
-        
-    Attributes
-    ----------
-    dist: float
-    minimum1: Minimum object
-    minimum2: Minimum object
-    
-    Notes
-    -----
-    To avoid any double entries and be able to compare them,
-    only use `Database.setDistance()` to create a Distance object.
-    
-    programming note: As with TransitionState, functions in the database require that 
-    `dist.minimum1._id < dist.minimum2._id`.  This will be handled automatically
-    by the database, but we must remember not to screw it up.
-    
-    See Also
-    --------
-    Database, Minimum, TransitionState
 
-    '''
-    __tablename__ = "tbl_distances"
+class SystemProperty(Base):
+    """table to hold system properties like potential parameters and number of atoms
+    
+    The properties can be stored as integers, floats, strings, or a pickled object.
+    Only one of the property value types should be set for each property.
+    """
+    __tablename__ = "tbl_system_property"
     _id = Column(Integer, primary_key=True)
-    
-    dist = Column(Float)
-    '''distance between minima'''
+
+    property_name = Column(String)
+    int_value = Column(Integer)
+    float_value = Column(Float)
+    string_value = Column(String)
+    pickle_value = deferred(Column(PickleType))
+
+    def __init__(self, property_name):
+        self.property_name = property_name
         
-    _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
-    minimum1 = relationship("Minimum",
-                            primaryjoin="Minimum._id==Distance._minimum1_id")
-    '''first minimum'''
+    def name(self):
+        return self.property_name
     
-    _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
-    minimum2 = relationship("Minimum",
-                            primaryjoin="Minimum._id==Distance._minimum2_id")
-    '''second minimum'''
+    def _values(self):
+        """return a dictionary of the values that are not None"""
+        values = dict(int_value=self.int_value, float_value=self.float_value, 
+                    string_value=self.string_value, pickle_value=self.pickle_value)
+        values = dict([(k,v) for k,v in values.iteritems() if v is not None])
+        return values
     
+    def value(self):
+        """return the property value"""
+        actual_values = [v for v in self._values().values() if v is not None]
+        if len(actual_values) == 1:
+            return actual_values[0]
+        elif len(actual_values) == 0:
+            return None
+        elif len(actual_values) > 1:
+            print "SystemProperty: multiple property values are set"
+            return actual_values
+        return None
     
-    def __init__(self, dist, min1, min2):
-        assert min1._id is not None
-        assert min2._id is not None
-        
-        if(min1._id < min2._id):
-            m1, m2 = min1, min2
-        else:
-            m1, m2 = min2, min1
+    def item(self):
+        """return a tuple of (name, value)"""
+        return self.name(), self.value()
             
-        self.dist = dist
-        self.minimum1 = min1
-        self.minimum2 = min2
 
 Index('idx_transition_states', TransitionState.__table__.c._minimum1_id, TransitionState.__table__.c._minimum2_id)
-Index('idx_distances', Distance.__table__.c._minimum1_id, Distance.__table__.c._minimum2_id, unique=True)
 
 
 class Database(object):
     '''Database storage class
     
-    The Database class handles the connection to the database. It has functions to create new Minima,
-    TransitionState and Distance objects. The objects are persistent in the database and exist as
+    The Database class handles the connection to the database. It has functions to create new Minima and
+    TransitionState objects. The objects are persistent in the database and exist as
     soon as the Database class in connected to the database. If any value in the objects is changed,
     the changes are automatically persistent in the database (TODO: be careful, check commit transactions, ...)
     
@@ -303,11 +286,10 @@ class Database(object):
     --------
     Minimum
     TransitionState
-    Distance
     
     '''
     engine = None
-    Session = None
+    Session = None # js850> This seems to be unused. Can we remove it?
     session = None
     connection = None
     accuracy = 1e-3
@@ -315,57 +297,99 @@ class Database(object):
         
     def __init__(self, db=":memory:", accuracy=1e-3, connect_string='sqlite:///%s',
                  compareMinima=None, createdb=True):
-        global _schema_version
-        if not createdb:
-            if not os.path.isfile(db): 
-                raise IOError("database does not exist")
-            
+        self.accuracy=accuracy
+        self.compareMinima = compareMinima
+
+
+        if not os.path.isfile(db) or db == ":memory:":
+            newfile = True
+            if not createdb:
+                raise IOError("createdb is False, but database does not exist")
+        else:
+            newfile = False
+
+        # set up the engine which will manage the backend connection to the database
         self.engine = create_engine(connect_string%(db), echo=verbose)
-        if createdb:
-            conn = self.engine.connect()
-            if not self.engine.has_table("tbl_minima"):
-                conn.execute("PRAGMA user_version = %d;"%_schema_version)
-            Base.metadata.create_all(self.engine)
-            result=conn.execute("PRAGMA user_version;")
-            schema = result.fetchone()[0]
-            result.close()
-            conn.close()
-            if _schema_version != schema:
-                raise IOError("database schema outdated, current (newest) version: "
-                              "%d (%d). Please use migrate_db.py in pele/scripts to update database"%(schema, _schema_version))
-            
+
+        if not newfile and not self._is_pele_database():
+            raise IOError("existing file (%s) is not a pele database." % db)
+        
+
+        # set up the tables and check the schema version
+        if newfile:
+            self._set_schema_version()
+        self._check_schema_version()
+        self._update_schema()
+#         self._check_schema_version_and_create_tables(newfile)
+
+        # set up the session which will manage the frontend connection to the database
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
-        self.accuracy=accuracy
+        
+        # these functions will be called when a minimum or transition state is 
+        # added or removed
         self.on_minimum_added = Signal()
         self.on_minimum_removed = Signal()
         self.on_ts_added = Signal()
         self.on_ts_removed = Signal()
         
-        self.compareMinima = compareMinima
         self.lock = threading.Lock()
         self.connection = self.engine.connect()
+
+    def _is_pele_database(self):
+        conn = self.engine.connect()
+        result = True
+        if (not self.engine.has_table("tbl_minima") or
+            not self.engine.has_table("tbl_transition_states")):
+            result = False
+        conn.close()
+        return result
+
+    def _set_schema_version(self):
+        global _schema_version
+        conn = self.engine.connect()
+        conn.execute("PRAGMA user_version = %d;"%_schema_version)
+        conn.close()
+
+    def _update_schema(self):
+        conn = self.engine.connect()
+        Base.metadata.create_all(bind=self.engine)
+        conn.close()
+
+    def _check_schema_version(self):
+        global _schema_version
+        conn = self.engine.connect()
+        result=conn.execute("PRAGMA user_version;")
+        schema = result.fetchone()[0]
+        result.close()
+        conn.close()
+        if _schema_version != schema:
+            raise IOError("database schema outdated, current (newest) version: "
+                          "%d (%d). Please use migrate_db.py in pele/scripts to update database"%(schema, _schema_version))
+
+
+
         
-        self._initialize_queries()
+#        self._initialize_queries()
         
-    def _initialize_queries(self):
-        #        self._sql_get_dist = select([Distance.__table__.c.dist],
-        #               or_(and_(Distance.__table__.c._minimum1_id==bindparam("id1"), 
-        #                        Distance.__table__.c._minimum2_id==bindparam("id2")),
-        #                   and_(Distance.__table__.c._minimum1_id==bindparam("id2"), 
-        #                        Distance.__table__.c._minimum2_id==bindparam("id1")),
-        #               ), use_labels=False).limit(1)
-        tbl =  Distance.__table__.c
-        self._sql_get_dist = select([tbl.dist],and_(
-                                 tbl._minimum1_id==bindparam("id1"), 
-                                 tbl._minimum2_id==bindparam("id2")
-                                 ), use_labels=False).limit(1)
-                                 
-        #self._sql_set_dist = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
-        self._sql_set_dist = "INSERT OR REPLACE INTO tbl_distances (dist, _minimum1_id, _minimum2_id) VALUES (:dist, :id1, :id2)"
-        
-        #self._sql_set_dist_upd = Distance.__table__.update().where(and_(tbl._minimum1_id==bindparam("id1"),tbl._minimum2_id==bindparam("id2"))).values(dist=bindparam("dist"))
-        #self._sql_set_dist_ins = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
+#    def _initialize_queries(self):
+#        #        self._sql_get_dist = select([Distance.__table__.c.dist],
+#        #               or_(and_(Distance.__table__.c._minimum1_id==bindparam("id1"), 
+#        #                        Distance.__table__.c._minimum2_id==bindparam("id2")),
+#        #                   and_(Distance.__table__.c._minimum1_id==bindparam("id2"), 
+#        #                        Distance.__table__.c._minimum2_id==bindparam("id1")),
+#        #               ), use_labels=False).limit(1)
+#        tbl =  Distance.__table__.c
+#        self._sql_get_dist = select([tbl.dist],and_(
+#                                 tbl._minimum1_id==bindparam("id1"), 
+#                                 tbl._minimum2_id==bindparam("id2")
+#                                 ), use_labels=False).limit(1)
+#                                 
+#        #self._sql_set_dist = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
+#        self._sql_set_dist = "INSERT OR REPLACE INTO tbl_distances (dist, _minimum1_id, _minimum2_id) VALUES (:dist, :id1, :id2)"
+#        
+#        #self._sql_set_dist_upd = Distance.__table__.update().where(and_(tbl._minimum1_id==bindparam("id1"),tbl._minimum2_id==bindparam("id2"))).values(dist=bindparam("dist"))
+#        #self._sql_set_dist_ins = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
         
     def _highest_energy_minimum(self):
         """return the minimum with the highest energy"""
@@ -546,112 +570,9 @@ class Database(object):
 
         return candidates.all()
 
-
     def getTransitionStateFromID(self, id_):
         """return the transition state with id id_"""
         return self.session.query(TransitionState).get(id_)
-    
-    def setDistance(self, dist, min1, min2):
-        """set the distance between two minima
-        """
-        id1 = max(min1._id, min2._id)
-        id2 = min(min1._id, min2._id)
-        
-        self.connection.execute(self._sql_set_dist, [{'id1':id1, 'id2':id2, 'dist':dist}])
-        
-        #res = self.connection.execute(self._sql_set_dist_upd, [{'id1':min1._id, 'id2':min2._id, 'dist':dist}])
-        #if(res.rowcount == 0):
-        #    self.connection.execute(self._sql_set_dist_ins, [{'id1':min1._id, 'id2':min2._id, 'dist':dist}])
-        
-        
-    def setDistanceBulk(self, values):
-        """set multiple distances
-        
-        This is faster than calling `setDistance` multiple times
-        
-        Parameters
-        -----------
-        values : iterable of tuples of form ((min1, min2), dist)
-        """
-        submit = []
-        for mins, dist in values:
-            submit.append({'id1':min(mins[0]._id, mins[1]._id), 'id2':max(mins[0]._id, mins[1]._id), 'dist':dist})
-        self.connection.execute(self._sql_set_dist, submit)
-        
-#    def setDistanceMultiple(self, newdistances, commit=True):
-#        """set multiple distances at once
-#        
-#        this should be much faster than calling setDistance
-#        multiple times.  Especially for databases with many 
-#        distances
-#        
-#        Parameters
-#        ----------
-#        distances :
-#            a dictionary of distances with the key a tuple of minima
-#        """
-#        #copy distances so it can be safely modified
-#        newdistances = newdistances.copy()
-#        
-#        #update distances that are already in the database and remove
-#        #them from newdistances
-#        for d in self.distances():
-#            m1id, m2id = d._minimum1_id, d._minimum2_id
-#            
-#            dnew = newdistances.get((m1id, m2id))
-#            if dnew is not None:
-#                d.dist = dnew
-#                newdistances.pop((m1id, m2id))
-#
-#            #check alternate ordering as well
-#            dnew = newdistances.get((m2id, m1id))
-#            if dnew is not None:
-#                d.dist = dnew
-#                newdistances.pop((m2id, m1id))
-#        
-#        #all the rest of the distances in newdistances are not in the database.
-#        #Add them all.
-#        for d in newdistances.items():
-#            self.session.add(Distance(d[1], d[0][0], d[0][1]))
-#        
-#        if(commit):
-#            self.session.commit()        
-            
-    def getDistanceORM(self, min1, min2):
-        """slow way of getting distance.  deprecated"""
-        if(min1._id > min2._id):
-            min1, min2 = min2, min1
-            
-        candidates = self.session.query(Distance).\
-            filter(and_(Distance.minimum1==min1, 
-                            Distance.minimum2==min2))
-        try:
-            return candidates.one().dist        
-        except sqlalchemy.orm.exc.NoResultFound:
-            return None
-    
-    def getDistance(self, min1, min2):
-        """return the distance between two minima
-        
-        Returns
-        --------
-        dist : float or None
-        """        
-        result = self.connection.execute(self._sql_get_dist, id1=min1._id, id2=min2._id)
-        dist = result.fetchone()
-        result.close()
-        if dist is None:
-            return None
-        return dist[0]
-        
-    def distances(self):
-        '''return an iterator over all distances in database
-        '''
-        #return self.session.query(Distance).all()
-        return self.session.query(Distance).yield_per(100)
-        #return self.session.query(Distance)
-
-        
     
     def minima(self, order_energy=True):
         '''return an iterator over all minima in database
@@ -712,17 +633,9 @@ class Database(object):
     def removeMinimum(self, m, commit=True):
         """remove a minimum from the database
         
-        Remove a minimum and any objects (TransitionState or Distance) 
+        Remove a minimum and any objects (TransitionState) 
         pointing to that minimum.
         """
-        #delete any distance objects pointing to min2
-        candidates = self.session.query(Distance).\
-            filter(or_(Distance.minimum1 == m, 
-                       Distance.minimum2 == m))
-        candidates = list(candidates)
-        for d in candidates:
-            self.session.delete(d)
-            
         #delete any transition states objects pointing to min2
         candidates = self.session.query(TransitionState).\
             filter(or_(TransitionState.minimum1 == m, 
@@ -744,9 +657,6 @@ class Database(object):
         
         min2 will be deleted and everything that 
         points to min2 will point to min1 instead.
-        
-        (actually, any Distance objects pointing to 
-        min2 will just be deleted)
         """
         #find all transition states for which ts.minimum1 is min2
         candidates = self.session.query(TransitionState).\
@@ -765,17 +675,6 @@ class Database(object):
             ts.minimum2 = min1
             if ts.minimum1._id > ts.minimum2._id:
                 ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
-              
-        
-        #delete any distance objects pointing to min2
-        candidates = self.session.query(Distance).\
-            filter(or_(Distance.minimum1 == min2, 
-                       Distance.minimum2 == min2))
-
-        #copy it into list format so the iterator doesn't get corrupted as we delete things            
-        candidates = list(candidates)
-        for d in candidates:
-            self.session.delete(d)
         
         self.session.delete(min2)
         self.session.commit()
@@ -812,6 +711,86 @@ class Database(object):
         """
         return self.session.query(TransitionState).count()
 
+    def get_property(self, property_name):
+        """return the minimum with a given name"""
+        candidates = self.session.query(SystemProperty).\
+            filter(SystemProperty.property_name == property_name)
+        return candidates.first()
+
+    def properties(self, as_dict=False):
+        query = self.session.query(SystemProperty)
+        if as_dict:
+            return dict([p.item() for p in query])
+        else:
+            return query.all()
+
+    def add_property(self, name, value, dtype=None, commit=True):
+        """add a system property to the database
+        
+        Parameters
+        ----------
+        name : string
+            the name of the property
+        value : object
+            the value of the property
+        dtype : string
+            the datatype of the property.  This can be "int", "float", 
+            "string", "pickle", or None.  If None, the datatype will be
+            automatically determined.
+        
+        This could anything, such as a potential parameter, the number of atoms, or the
+        list of frozen atoms. The properties can be stored as integers, floats, 
+        strings, or a pickled object.  Only one of the property value types 
+        should be set for each property.
+        
+        For a value of type "pickle", pass the object you want pickled, not 
+        the pickled object.  We will do the pickling and unpickling for you.
+
+        """
+        new = self.get_property(name)
+        if new is None:
+            new = SystemProperty(name)
+        else:
+            print "warning: overwriting old property", new.item()
+
+        if dtype is None:
+            # try to determine type of the value
+            if isinstance(value, int):
+                dtype = "int"
+            elif isinstance(value, float):
+                dtype = "float"
+            elif isinstance(value, basestring):
+                dtype = "string"
+            else:
+                dtype = "pickle"
+        
+        if dtype == "string":
+            new.string_value = value
+        elif dtype == "int":
+            new.int_value = value
+        elif dtype == "float":
+            new.float_value = value
+        elif dtype == "pickle":
+            new.pickle_value = value
+        else:
+            raise ValueError('dtype must be one of "int", "float", "string", "pickle", or None')
+            
+        self.session.add(new)
+        if commit:
+            self.session.commit()
+        return new
+    
+    def add_properties(self, properties):
+        """add multiple properties from a dictionary
+        
+        properties : dict
+            a dictionary of (name, value) pairs.  The data type of the value
+            will be determined automatically
+        """
+        for name, value in properties.iteritems():
+            self.add_property(name, value, commit=True)
+            
+
 
 if __name__ == "__main__":    
     db = Database()
@@ -823,17 +802,6 @@ if __name__ == "__main__":
     ts = db.addTransitionState(10., None, m1, m2)
     ts.eigenval=11.
     
-    db.setDistance(21., m2, m1)
-    db.setDistance(12., m1, m2)
-    db.setDistance(211., m2, m1)
-    db.setDistance(11., m1, m1)
-    db.setDistance(22., m2, m2)
-    #db.setDistance(11., m1, m2)
-    print db.getDistance(m1, m2)
-    print "List of all distances"
-    for d in db.distances():
-        print d.minimum1._id, d.minimum2._id, d.dist        
-
     print    
     for m in db.minima():
         print m._id, m.energy

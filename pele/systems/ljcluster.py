@@ -33,6 +33,11 @@ class LJCluster(AtomicCluster):
     def get_potential(self):
         return LJ()
 
+    def get_system_properties(self):
+        return dict(natoms=int(self.natoms),
+                    potential="LJ cluster",
+                    )
+
     #
     #below here is stuff only for the gui
     #
@@ -114,7 +119,6 @@ class LJCluster(AtomicCluster):
             pymol.cmd.color("red", oname)
         else:
             pymol.cmd.color("gray", oname)
-
 
 #
 #only for testing below here
