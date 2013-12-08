@@ -153,7 +153,7 @@ class BaseSystem(object):
     def get_compare_exact(self):
         """object that returns True if two structures are exact.
         
-            true_false = compare_exact(min1, min2)
+            true_false = compare_exact(coords1, coords2)
         
         See Also
         --------
@@ -170,7 +170,11 @@ class BaseSystem(object):
         return lambda m1, m2: compare(m1.coords, m2.coords)
     
     def get_system_properties(self):
-        """return a dictionary of system specific properties that will be stored in the database"""
+        """return a dictionary of system specific properties.
+        
+        These will be stored automatically in the database.  
+        The keys must be strings.
+        """
         return dict()
 
     def create_database(self, *args, **kwargs):

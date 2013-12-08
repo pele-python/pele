@@ -151,7 +151,7 @@ setup(ext_modules=cxx_modules,
 
 
 #
-# we have no cython files any more.  so the following is commented
+# we are currently using method 2 below
 #
 #have_cython = False
 #if have_cython:
@@ -173,7 +173,7 @@ setup(ext_modules=cxx_modules,
 #        We could also have setup.py accept a flag --cython which does this for
 #        all .pyx files.
 #
-#    Currently we are using method 1.
+#    Currently we are using method 2.
 #    """
 #    ###########################################################
 #
