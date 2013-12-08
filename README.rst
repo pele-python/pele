@@ -77,6 +77,9 @@ python packages:
   #. hungarian: 
        For permutational alignment
 
+  #. pyro4: 
+       For parallel jobs
+
   #. scikits.sparse: optional 
        for use of sparse Cholesky decomposition methods when calculating rates
 
@@ -106,7 +109,7 @@ if you're running ubuntu, you can get all the prerequisites with the following
 commands::
 
   $ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip cython pymol
-  $ pip install --user networkx sqlalchemy hungarian
+  $ pip install --user networkx sqlalchemy hungarian pyro4
 
 (in the above, the flag --user will install localy.)
 

@@ -23,7 +23,7 @@ An arbitrary number of workers can connect to the server and process the connect
 
 Usage
 -----
-see the example in the examples/ folder for more details.
+see the example in the examples/connecting_in_parallel/ folder for more details.
 
 start the server in one terminal::
   

@@ -1,0 +1,27 @@
+This example demonstrates how to run basinhopping and connect jobs in parallel
+
+Introduction
+------------
+The server manages the central database and decides which connections to try.
+An arbitrary number of workers can connect to the server and run basinhopping
+or process connect jobs.  Every new minimum or transition state encountered is
+sent back to the server to be put into the global database.
+
+Usage
+-----
+
+start the server in one terminal
+  python server.py
+
+The provides an uri. Clients can connect to this uri and access the connect
+manager. To start a worker to run basinhopping or connect jobs use
+
+  python start_basinhopping_worker.py
+  python start_connect_worker.py
+
+Run on cluster / with remote workers
+------------------------------------
+Start the server on a workstation (or node) which should be the master node. To
+allow for incoming remote connections, a hostname (not localhost) must be
+specified. Then specify the uri to connect to in the workers and submit as many
+jobs a needed.
