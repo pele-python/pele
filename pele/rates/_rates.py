@@ -123,7 +123,7 @@ def test():
     system = LJCluster(13)
     db = system.create_database("lj13.db")
     
-    if False:
+    if db.number_of_minima() < 10:
         bh = system.get_basinhopping(db, outstream=None)
         bh.run(50)
         
@@ -132,6 +132,11 @@ def test():
             min1, min2 = manager.get_connect_job("gmin")
             connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)
             connect.connect()
+        
+
+    connect = system.get_double_ended_connect(db.minima()[0], db.minima()[-1], db, verbosity=0)
+    connect.connect()
+        
     
     A = [db.minima()[0]]
     B = [db.minima()[-1]]

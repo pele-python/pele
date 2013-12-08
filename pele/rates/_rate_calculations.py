@@ -2,6 +2,7 @@
 routines to help with computing rates from one subset of a graph to another
 """
 
+from collections import defaultdict
 import networkx as nx
 import numpy as np
 
@@ -17,15 +18,12 @@ def graph_from_rates(rates):
             rate_uv = rate[(u,v)]
     """
     graph = nx.Graph()
-    sumk = dict()
+    sumk = defaultdict(lambda: 0.)
     
     # compute the sum of the outgoing rates for each node
     for edge, rate in rates.iteritems():
         u, v = edge
-        try:
-            sumk[u] += rate
-        except KeyError:
-            sumk[u] = rate
+        sumk[u] += rate
     
     
     # add nodes to the rate graph and assign waiting time and Puu
