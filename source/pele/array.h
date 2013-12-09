@@ -209,30 +209,21 @@ namespace pele {
         /**
          * Assignment operator: copy the data into the existing array
          *
-         * Throw an error if the sizes are not the same.  The only exception is
-         * if the array is unallocated, in which case resize the array to
-         * match.  This exception is to enable code like.
-         *
-         * Array a = Array(10);
+         * arrays must be of same size  
          */
-        /*
-        Array<dtype> &operator=(Array<dtype> const & rhs) {
-            if (_size != rhs.size()){
-                if (_data == NULL) {
-                    std::cout << "operator=: resizing array to size " << rhs.size() << "\n";
-                    resize(rhs.size());
-                } else {
-                    std::cout << "operator=: cannot assign an array to another with different size unless the array is unallocated\n";
-                    throw std::runtime_error("cannot assign an array to another with different size unless the array is unallocated");
-                }
-                assert(_size == rhs.size());
-            }
-            for (size_t i=0; i<_size; ++i){
+		Array<dtype> &assign(Array<dtype> const & rhs) {
+            assert(_size == rhs.size());
+            for (size_t i=0; i<_size; ++i)
                 _data[i] = rhs[i];
-            }
             return *this;
         }
-        */
+
+        Array<dtype> &assign(dtype d) {
+            for(size_t i=0; i<_size; ++i)
+                _data[i] = d;
+            return *this;
+        }
+
 
         /**
          * Assignment operator: wrap the data
@@ -246,12 +237,35 @@ namespace pele {
             return *this;
         }
 
-
-        Array<dtype> &operator=(dtype d) {
-            for(size_t i=0; i<_size; ++i)
-                _data[i] = d;
+		Array<dtype> &operator+=(Array<dtype> const & rhs) {
+            assert(_size == rhs.size());
+            for (size_t i=0; i<_size; ++i)
+                _data[i] += rhs[i];
             return *this;
         }
+
+		Array<dtype> &operator-=(Array<dtype> const & rhs) {
+            assert(_size == rhs.size());
+            for (size_t i=0; i<_size; ++i)
+                _data[i] -= rhs[i];
+            return *this;
+        }
+
+		Array<dtype> &operator*=(dtype rhs) {
+            assert(_size == rhs.size());
+            for (size_t i=0; i<_size; ++i)
+                _data[i] *= rhs;
+            return *this;
+        }
+
+		Array<dtype> &operator/=(dtype rhs) {
+            assert(_size == rhs.size());
+            for (size_t i=0; i<_size; ++i)
+                _data[i] /= rhs;
+            return *this;
+        }
+
+
     };
 
     // for array printing
