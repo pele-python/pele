@@ -68,7 +68,6 @@ def main():
     
     if args.summary_long:
         args.summary = True
-    
         
     db = Database(db=args.database, createdb=False)
 
@@ -83,14 +82,14 @@ def main():
     if args.properties:
         print_system_properties(db)
         
-    if(args.writeMinima):
+    if args.writeMinima:
         print "List of minima: energy id fvib pgorder"
         print "---------------"
         for m in db.minima():
             print "%f\t\tid %d %s %s" % (m.energy, m._id, str(m.fvib), str(m.pgorder))
         print "END\n"
     
-    if(args.writeTS):
+    if args.writeTS:
         print "List of transition states:"
         print "--------------------------"
         for ts in db.transition_states():
@@ -98,7 +97,7 @@ def main():
                 (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
         print "END\n"
 
-    if(args.writeDPS):
+    if args.writeDPS:
         writeDPS(db)
         
 
