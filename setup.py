@@ -102,7 +102,7 @@ include_sources = ["source/pele" + f for f in os.listdir("source/pele")
                    if f.endswith(".cpp")]
 include_dirs = [numpy_include, "source"]
 
-depends = ["source/pele" + f for f in os.listdir("source/") 
+depends = ["source/pele" + f for f in os.listdir("source/pele/") 
            if f.endswith(".cpp") or f.endswith(".h")]
 
 extra_compile_args = ["-Wall", "-Wextra", "-O2", '-funroll-loops']

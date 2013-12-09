@@ -207,12 +207,14 @@ namespace pele {
         dtype operator[](size_t i) const { return _data[i]; }
 
         /**
-         * Assignment operator: copy the data into the existing array
+         * Assignment function: copy the data into the existing array
          *
          * arrays must be of same size  
          */
 		Array<dtype> &assign(Array<dtype> const & rhs) {
-            assert(_size == rhs.size());
+            if (_size != rhs.size()){
+                throw std::runtime_error("arrays must have the same size during assignment");
+            }
             for (size_t i=0; i<_size; ++i)
                 _data[i] = rhs[i];
             return *this;
@@ -238,28 +240,36 @@ namespace pele {
         }
 
 		Array<dtype> &operator+=(Array<dtype> const & rhs) {
-            assert(_size == rhs.size());
+            if (_size != rhs.size()){
+                throw std::runtime_error("operator+=: arrays must have the same size");
+            }
             for (size_t i=0; i<_size; ++i)
                 _data[i] += rhs[i];
             return *this;
         }
 
 		Array<dtype> &operator-=(Array<dtype> const & rhs) {
-            assert(_size == rhs.size());
+            if (_size != rhs.size()){
+                throw std::runtime_error("operator-=: arrays must have the same size");
+            }
             for (size_t i=0; i<_size; ++i)
                 _data[i] -= rhs[i];
             return *this;
         }
 
 		Array<dtype> &operator*=(dtype rhs) {
-            assert(_size == rhs.size());
+            if (_size != rhs.size()){
+                throw std::runtime_error("operator*=: arrays must have the same size");
+            }
             for (size_t i=0; i<_size; ++i)
                 _data[i] *= rhs;
             return *this;
         }
 
 		Array<dtype> &operator/=(dtype rhs) {
-            assert(_size == rhs.size());
+            if (_size != rhs.size()){
+                throw std::runtime_error("operator/=: arrays must have the same size");
+            }
             for (size_t i=0; i<_size; ++i)
                 _data[i] /= rhs;
             return *this;
