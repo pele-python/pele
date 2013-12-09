@@ -88,7 +88,7 @@ class LBFGS(object):
     def __init__(self, X, pot, maxstep=0.1, maxErise=1e-4, M=4, 
                  rel_energy=False, H0=0.1, events=None,
                  alternate_stop_criterion=None, debug=False,
-                 iprint=-1, nsteps=10000, tol=1e-6, logger=None,
+                 iprint=-1, nsteps=10000, tol=1e-5, logger=None,
                  energy=None, gradient=None, armijo=False, 
                  armijo_c=1e-4,
                  fortran=False,
