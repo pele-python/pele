@@ -724,7 +724,7 @@ class Database(object):
         else:
             return query.all()
 
-    def add_property(self, name, value, dtype=None, commit=True):
+    def add_property(self, name, value, dtype=None, commit=True, overwrite=True):
         """add a system property to the database
         
         Parameters
@@ -760,6 +760,8 @@ class Database(object):
                 print "warning, could not compare value", value, "with", new.value()
                 pass
             if not same:
+                if not overwrite:
+                    raise RuntimeError("property %s already exists and the value does not compare equal to the new value." )
                 print "warning: overwriting old property", new.item()
 
         if dtype is None:
@@ -789,7 +791,7 @@ class Database(object):
             self.session.commit()
         return new
     
-    def add_properties(self, properties):
+    def add_properties(self, properties, overwrite=True):
         """add multiple properties from a dictionary
         
         properties : dict
@@ -797,7 +799,7 @@ class Database(object):
             will be determined automatically
         """
         for name, value in properties.iteritems():
-            self.add_property(name, value, commit=True)
+            self.add_property(name, value, commit=True, overwrite=overwrite)
             
 
 

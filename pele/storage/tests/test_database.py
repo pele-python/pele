@@ -170,6 +170,15 @@ class TestDB(unittest.TestCase):
         self.db.add_property("natoms", 10, dtype="string")
         p = self.db.get_property("natoms")
         self.assertEqual(p.value(), "10")
+
+    def test_property_overwrite_false(self):
+        self.db.add_property("natoms", 10)
+        # overwriting with the same value should not raise error
+        self.db.add_property("natoms", 10, overwrite=False) 
+        # overwriting with a different value should raise error
+        with self.assertRaises(RuntimeError):
+            self.db.add_property("natoms", 11, overwrite=False)
+    
     
     def test_add_properties(self):
         props = dict(natoms=10, author="jake")
@@ -177,7 +186,7 @@ class TestDB(unittest.TestCase):
         for name, value in props.iteritems():
             p = self.db.get_property(name)
             self.assertEqual(p.value(), value)
-   
+
 def benchmark_number_of_minima():
     import time, sys
     import numpy as np

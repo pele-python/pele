@@ -193,6 +193,11 @@ class BaseSystem(object):
         if len(args) == 1:
             if "db" not in kwargs:
                 kwargs["db"] = args[0]
+        
+        try:
+            overwrite_properties = kwargs.pop("overwrite_properties")
+        except KeyError:
+            overwrite_properties = True
 
         #get a routine to compare the minima as exact
         try:
@@ -208,7 +213,7 @@ class BaseSystem(object):
 
         db = Database(**kwargs)
         
-        db.add_properties(self.get_system_properties())
+        db.add_properties(self.get_system_properties(), overwrite=overwrite_properties)
         return db
     
 
