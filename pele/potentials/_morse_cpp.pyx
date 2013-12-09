@@ -5,7 +5,7 @@ from cpython cimport bool
 from ctypes import c_size_t as size_t
 
 # use external c++ class
-cdef extern from "morse.h" namespace "pele":
+cdef extern from "pele/morse.h" namespace "pele":
     cdef cppclass  cMorse "pele::Morse":
         cMorse(double rho, double r0, double A) except +
 

@@ -5,14 +5,14 @@
 import numpy as np
 cimport numpy as np 
 
-cdef extern from "array.h" namespace "pele":
+cdef extern from "pele/array.h" namespace "pele":
     cdef cppclass Array[dtype] :
         Array() except +
         Array(dtype*, size_t n) except +
         size_t size() except +
         dtype *data() except +
 
-cdef extern from "base_potential.h" namespace "pele":
+cdef extern from "pele/base_potential.h" namespace "pele":
     cdef cppclass  cBasePotential "pele::BasePotential":
         cBasePotential() except +
         double get_energy(Array[double] &x) except +
@@ -31,7 +31,7 @@ cdef class BasePotential:
     cdef cBasePotential *thisptr      # hold a C++ instance which we're wrapping
     
     
-cdef extern from "combine_potentials.h" namespace "pele":
+cdef extern from "pele/combine_potentials.h" namespace "pele":
     cdef cppclass  cCombinedPotential "pele::CombinedPotential":
         cCombinedPotential() except +
         double get_energy(Array[double] &x) except +

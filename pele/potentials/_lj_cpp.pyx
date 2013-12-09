@@ -5,7 +5,7 @@ from cpython cimport bool
 from ctypes import c_size_t as size_t
 
 # use external c++ class
-cdef extern from "lj.h" namespace "pele":
+cdef extern from "pele/lj.h" namespace "pele":
     cdef cppclass  cLJ "pele::LJ":
         cLJ(double C6, double C12) except +
     cdef cppclass  cLJPeriodic "pele::LJPeriodic":
@@ -21,7 +21,7 @@ cdef extern from "lj.h" namespace "pele":
 #                    _pele.Array[size_t] & atoms2,
 #                    ) except +
 
-cdef extern from "lj_cut.h" namespace "pele":
+cdef extern from "pele/lj_cut.h" namespace "pele":
     cdef cppclass  cLJCut "pele::LJCut":
         cLJCut(double C6, double C12, double rcut) except +
     cdef cppclass  cLJCutPeriodic "pele::LJCutPeriodic":

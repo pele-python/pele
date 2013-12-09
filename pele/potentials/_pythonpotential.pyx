@@ -13,7 +13,7 @@ from cpython.ref cimport PyObject
 # question: should I define PY_ARRAY_UNIQUE_SYMBOL?  And how can I?
 cnp.import_array()
 
-cdef extern from "python_potential_wrapper.h" namespace "pele":
+cdef extern from "pele/python_potential_wrapper.h" namespace "pele":
     cdef cppclass  cPythonPotential "pele::PythonPotential":
         cPythonPotential(PyObject *potential) except +
     
