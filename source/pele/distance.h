@@ -21,9 +21,9 @@ namespace pele
    * compute the cartesian distance
    */
   struct cartesian_distance {
-    inline void get_rij(double * __restrict__ r_ij, 
-                 double const * __restrict__ const r1, 
-                 double const * __restrict__ const r2) 
+    inline void get_rij(double *  r_ij, 
+                 double const * const r1, 
+                 double const * const r2) 
     {
       r_ij[0] = r1[0] - r2[0];
       r_ij[1] = r1[1] - r2[1];
@@ -63,9 +63,9 @@ namespace pele
           _iboxz(1./_boxz)
       { throw std::runtime_error("the empty constructor is not available for periodic boundaries"); }
 
-      inline void get_rij(double * __restrict__ r_ij, 
-                     double const * __restrict__ const r1, 
-                     double const * __restrict__ const r2) 
+      inline void get_rij(double * r_ij, 
+                     double const * const r1, 
+                     double const * const r2) 
       {
           r_ij[0] = r1[0] - r2[0];
           r_ij[1] = r1[1] - r2[1];
