@@ -61,10 +61,10 @@ def start_server(create_system, dbname, server_name=None, host=None, port=None):
     
     connect_manager.run()
 
-def start_basinhopping(create_system, uri):
+def start_basinhopping(create_system, uri, niter=1000):
     system = create_system()
     worker = BasinhoppingWorker(uri, system=system)
-    worker.run(1000)
+    worker.run(nsteps=niter)
 
 def start_connect(create_system, uri, strategy="random"):
     system = create_system()
@@ -103,6 +103,8 @@ def main():
                         help="name for the pele server")
     parser.add_argument("--strategy", type=str, default="random",
                         help="strategy to use when choosing which minima to connect")
+    parser.add_argument("--niter", type=int, default=5000,
+                        help="number of basinhopping iterations")
     args = parser.parse_args()
     
     if not (args.server or args.basinhopping or args.connect):
@@ -121,7 +123,7 @@ def main():
         return
     
     if args.basinhopping:
-        start_basinhopping(create_system, args.uri)
+        start_basinhopping(create_system, args.uri, niter=args.niter)
         return
     
     if args.connect:
