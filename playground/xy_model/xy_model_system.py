@@ -44,6 +44,7 @@ class XYModlelSystem(BaseSystem):
         params.double_ended_connect.local_connect_params.NEBparams.reinterpolate = 50
 #        params.double_ended_connect.local_connect_params.NEBparams.distance = spin3d_distance
         params.structural_quench_params.tol = 1e-6
+        params.database.overwrite_properties = False
 
     def get_system_properties(self):
         return dict(potential="XY spin glass",
@@ -83,6 +84,9 @@ class XYModlelSystem(BaseSystem):
 
     def node2xyz(self, node):
         return np.array([float(x) for x in [node[0], node[1], 0]])
+    
+    def create_database(self, *args, **kwargs):
+        return BaseSystem.create_database(self, *args, **kwargs)
 
 #    def get_takestep(self, **kwargs):
 #        """return the takestep object for use in basinhopping, etc.
@@ -134,7 +138,7 @@ def run_gui():
     system = XYModlelSystem(dim=[24,24], phi_disorder=np.pi)
     run_gui(system)
 
-def run_gui_db(dbname="xy_10x10.sqlite"):
+def run_gui_db(dbname="xy1_10x10.sqlite"):
     from pele.gui import run_gui
     from pele.storage import Database
     try:
