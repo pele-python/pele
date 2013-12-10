@@ -16,48 +16,6 @@ using std::cout;
 namespace pele{
 
 /**
- * compute the dot product of two Arrays
- */
-double arraydot(Array<double> const v1, Array<double> const v2)
-{
-  assert(v1.size() == v2.size());
-  double dot = 0.;
-  for (size_t i=0; i<v1.size(); ++i) {
-    dot += v1[i] * v2[i];
-  }
-  return dot;
-}
-
-/**
- * compute the L2 norm of an Array
- */
-double arraynorm(Array<double> const v)
-{
-  return sqrt(arraydot(v, v));
-}
-
-/**
- * compute the dot product of two vectors
- */
-double vecdot(std::vector<double> const v1, std::vector<double> const v2)
-{
-  assert(v1.size() == v2.size());
-  double dot = 0.;
-  for (size_t i=0; i<v1.size(); ++i) {
-    dot += v1[i] * v2[i];
-  }
-  return dot;
-}
-
-/**
- * compute the L2 norm of a vector
- */
-double vecnorm(std::vector<double> const v)
-{
-  return sqrt(vecdot(v, v));
-}
-
-/**
  * this defines the basic interface for optimizers.  All pele optimizers
  * should derive from this class.
  */
@@ -201,7 +159,7 @@ public :
         for (size_t j2 = 0; j2 < N; ++j2){
             g_[j2] = grad[j2];
         }
-        rms_ = arraynorm(g_) / sqrt(g_.size());
+        rms_ = norm(g_) / sqrt(g_.size());
         func_initialized_ = true;
     }
 
@@ -254,7 +212,7 @@ protected :
         // and store them
         size_t N = x_.size();
         compute_func_gradient(x_, f_, g_);
-        rms_ = arraynorm(g_) / sqrt(N);
+        rms_ = norm(g_) / sqrt(N);
         func_initialized_ = true;
     }
 

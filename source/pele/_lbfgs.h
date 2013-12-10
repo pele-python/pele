@@ -159,7 +159,7 @@ namespace pele{
           s_[klocal][j2] = xnew[j2] - xold[j2];
       }
 
-      double ys = arraydot(y_[klocal], s_[klocal]);
+      double ys = dot(y_[klocal], s_[klocal]);
       if (ys == 0.) {
           if (verbosity_ > 0) {
               cout << "warning: resetting YS to 1.\n";
@@ -169,7 +169,7 @@ namespace pele{
 
       rho_[klocal] = 1. / ys;
 
-      double yy = arraydot(y_[klocal], y_[klocal]);
+      double yy = dot(y_[klocal], y_[klocal]);
       if (yy == 0.) {
           if (verbosity_ > 0) {
               cout << "warning: resetting YY to 1.\n";
@@ -186,7 +186,7 @@ namespace pele{
   {
       if (k_ == 0){
           // take a conservative first step
-          double gnorm = arraynorm(g_);
+          double gnorm = norm(g_);
           if (gnorm > 1.) gnorm = 1. / gnorm;
           for (size_t j2 = 0; j2 < x_.size(); ++j2){
               step[j2] = - gnorm * H0_ * g_[j2];
@@ -209,7 +209,7 @@ namespace pele{
       for (int j = jmax - 1; j >= jmin; --j){
           i = j % M_;
           //cout << "    i " << i << " j " << j << "\n";
-          alpha[i] = rho_[i] * arraydot(s_[i], step);
+          alpha[i] = rho_[i] * dot(s_[i], step);
           for (size_t j2 = 0; j2 < step.size(); ++j2){
               step[j2] -= alpha[i] * y_[i][j2];
           }
@@ -224,7 +224,7 @@ namespace pele{
       for (int j = jmin; j < jmax; ++j){
           i = j % M_;
           //cout << "    i " << i << " j " << j << "\n";
-          beta = rho_[i] * arraydot(y_[i], step);
+          beta = rho_[i] * dot(y_[i], step);
           for (size_t j2 = 0; j2 < step.size(); ++j2){
               step[j2] += s_[i][j2] * (alpha[i] - beta);
           }
@@ -244,7 +244,7 @@ namespace pele{
       double fnew;
 
       // if the step is pointing uphill, invert it
-      if (arraydot(step, g_) > 0.){
+      if (dot(step, g_) > 0.){
           if (verbosity_ > 1) {
               cout << "warning: step direction was uphill.  inverting\n";
           }
@@ -254,7 +254,7 @@ namespace pele{
       }
 
       double factor = 1.;
-      double stepsize = arraynorm(step);
+      double stepsize = norm(step);
 
       // make sure the step is no larger than maxstep_
       if (factor * stepsize > maxstep_){
@@ -297,7 +297,7 @@ namespace pele{
           g_[i] = gnew[i];
       }
       f_ = fnew;
-      rms_ = arraynorm(gnew) / sqrt(gnew.size());
+      rms_ = norm(gnew) / sqrt(gnew.size());
       return stepsize * factor;
   }
 }

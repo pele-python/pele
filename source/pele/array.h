@@ -288,6 +288,27 @@ namespace pele {
         out << " ]";
         return out;
     }
+
+	/**
+	 * compute the dot product of two Arrays
+	 */
+	inline double dot(Array<double> const v1, Array<double> const v2)
+	{
+	  assert(v1.size() == v2.size());
+	  double dot = 0.;
+	  for (size_t i=0; i<v1.size(); ++i) {
+		dot += v1[i] * v2[i];
+	  }
+	  return dot;
+	}
+
+	/**
+	 * compute the L2 norm of an Array
+	 */
+	inline double norm(Array<double> const v)
+	{
+	  return sqrt(dot(v, v));
+	}
 }
 
 //Array newa(old);  Array newa; newa.view(old)
