@@ -61,10 +61,10 @@ class XYModel(BasePotential):
         nx.set_edge_attributes(self.G, "phase", self.phases)
 
         self.indices = dict()
-        i = 0
-        for node in self.G.nodes():
+        self.index2node = dict()
+        for i, node in enumerate(self.G.nodes()):
             self.indices[node] = i
-            i += 1 
+            self.index2node[i] = node
         
         self.num_edges = self.G.number_of_edges()
         
