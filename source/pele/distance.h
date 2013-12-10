@@ -4,6 +4,13 @@
 #include <cmath>
 #include <stdexcept>
 
+// roundis missing in visual studio
+#ifdef _MSC_VER
+	inline double round(double r) {
+		return (r > 0.0) ? floor(r + 0.5) : ceil(r - 0.5);
+	}
+#endif
+
 /**
  * These classes and structs are used by the potentials to compute distances.
  * They must have a member function get_rij() with signature
