@@ -32,6 +32,7 @@ def _uphill_search(x0, search, push, push_minrms):
     return fire(x1, search.getEnergyGradient, tol=1e-6)
         
 def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minrms=1.e-2):
+    raise Exception("js850> this function doesn't work anymore since changing graph.addMinimum and addTransitionState.  It needs to be overhauled")
     print "Single ended search for minimum", minimum._id, minimum.energy
     
     search = DimerSearch(minimum.coords, potential, zeroEigenVecs=zeroEV_cluster)
@@ -49,7 +50,7 @@ def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minr
          
         if(min1 is min2):
             print "Warning in single ended search: downhill search from transistion state ended in same minimum"
-            
+        
         ts = graph.addTransitionState(energy_ts, x_ts, min1, min2)
         print "found transition state: ", min1._id, min2._id, min1.energy,ts.energy,min2.energy
         

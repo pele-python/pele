@@ -220,9 +220,11 @@ class DoubleEndedConnect(object):
 #                if min2 == ts.minimum1 or min2 == ts.minimum2:
 #                    print "error, a transition state attached to min2 is still in database", ts.minimum1._id, ts.minimum2._id
         
-        #merge minima in transition state graph
-        #note, this will merge minima in the database also
-        self.graph.mergeMinima(min1, min2, update_database=True)
+        # merge minima in transition state graph
+        self.graph.mergeMinima(min1, min2)
+
+        # merge minima in the database also
+        self.database.mergeMinima(min1, min2)
         if debug:
             #testing
             if min2 in self.graph.graph.nodes():
@@ -271,18 +273,22 @@ class DoubleEndedConnect(object):
             return False
                 
         
-        # add the minima to the transition state graph.  
-        # This step is important to do first because it returns a Database Minimum object.
-        min1 = self.graph.addMinimum(min_ret1.energy, min_ret1.coords)
-        min2 = self.graph.addMinimum(min_ret2.energy, min_ret2.coords)
+        # Add the minima to the database
+        min1 = self.database.addMinimum(min_ret1.energy, min_ret1.coords)
+        min2 = self.database.addMinimum(min_ret2.energy, min_ret2.coords)
+
+        # Add the minima to the transition state graph.  
+        self.graph.addMinimum(min1)
+        self.graph.addMinimum(min2)
         if min1 == min2:
             logger.warning( "stepping off the transition state resulted in twice the same minima %s", min1._id)
             return False
 
         logger.info("adding transition state %s %s", min1._id, min2._id)
+        # add the transition state to the database
+        ts = self.database.addTransitionState(ts_ret.energy, ts_ret.coords, min1, min2, eigenvec=ts_ret.eigenvec, eigenval=ts_ret.eigenval)
         # update the transition state graph
-        # this also updates the database and returns a TransitionState object
-        ts = self.graph.addTransitionState(ts_ret.energy, ts_ret.coords, min1, min2, eigenvec=ts_ret.eigenvec, eigenval=ts_ret.eigenval)
+        self.graph.addTransitionState(ts)
 #        self.graph.refresh()
 
         #update the distance graph
