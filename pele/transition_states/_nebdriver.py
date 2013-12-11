@@ -83,7 +83,7 @@ class NEBDriver(object):
     '''
     
     def __init__(self, potential, coords1, coords2,
-                 k = 100., max_images = 50, image_density=10, iter_density = 10,
+                 k = 100., max_images = 50, image_density=10., iter_density = 10.,
                  verbose=0, factor=1., NEBquenchParams=None, adjustk_freq=0, 
                  adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
                  reinterpolate_tol=0.1,
