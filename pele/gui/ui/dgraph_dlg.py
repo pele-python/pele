@@ -249,8 +249,16 @@ def reduced_db2graph(db, Emax):
     '''
     make a networkx graph from a database including only transition states with energy < Emax
     '''
+    from pele.storage.database import Minimum
     g = nx.Graph()
-    ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax).all()
+    # js850> It's not strictly necessary to add the minima explicitly here,
+    # but for some reason it is much faster if you do (factor of 2).  Even 
+    # if this means there are many more minima in the graph.  I'm not sure 
+    # why this is.  This step is already often the bottleneck of the d-graph 
+    # calculation.
+    minima = db.session.query(Minimum).filter(Minimum.energy <= Emax)
+    g.add_nodes_from(minima)
+    ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax)
     for t in ts: 
         g.add_edge(t.minimum1, t.minimum2, ts=t)
     return g
