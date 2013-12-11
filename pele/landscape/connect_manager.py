@@ -212,7 +212,7 @@ class ConnectManagerCombine(BaseConnectManager):
         # remove group1 from cclist
         cclist.remove(group1)
 
-        # get a minima from each of the other groups
+        # get a minimum from each of the other groups
         for group2 in cclist:
             if len(self.minpairs) > self.list_len:
                 break

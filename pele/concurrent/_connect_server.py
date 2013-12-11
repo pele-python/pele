@@ -161,7 +161,7 @@ class ConnectWorker(object):
         pot = system.get_potential()
 
         # stores the global id's of the minima found
-        self.gid = {}
+        self.gid = dict()
 
         # create a local database in memory
         db = system.create_database(db=":memory:")
