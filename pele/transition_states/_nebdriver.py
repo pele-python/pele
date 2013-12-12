@@ -258,7 +258,7 @@ class NEBDriver(object):
         if self.max_images > 0:
             nimages = min(nimages, self.max_images)
         if nimages < self.min_images:
-            nimages = self.min_images
+            nimages = int(self.min_images)
         path = InterpolatedPath(coords1, coords2, nimages, interpolator=self.interpolator)
 
         return [x for x in path]
@@ -274,6 +274,8 @@ class NEBDriver(object):
             nimages = int(int(max(1., acc_dist) * self.image_density * self.factor))
         if self.max_images > 0:
             nimages = int(min(nimages, self.max_images))
+        if nimages < self.min_images:
+            nimages = int(self.min_images)
             
         #print avdev, abs(float(nimages - len(path))/float(nimages))
         # only reinterpolate if above tolerance
