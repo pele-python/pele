@@ -2,7 +2,7 @@
 !!start a new subroutine here
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       SUBROUTINE MYLBFGS_UPDATESTEP(ITER, N, M, GRAD, W, DIAG, POINT, &
-         STPOUT )
+         STPOUT)
       IMPLICIT NONE
       INTEGER, INTENT(IN)             :: N
       INTEGER, INTENT(IN)             :: M
@@ -14,12 +14,13 @@
       DOUBLE PRECISION, INTENT(INOUT) :: DIAG(N)
       DOUBLE PRECISION                :: STP  !not passed
       DOUBLE PRECISION, INTENT(OUT)   :: STPOUT(N)
+      !INTEGER, INTENT(OUT)            :: error ! if not zero something went wrong
 
       INTEGER J1
       INTEGER NPT  !js850>  I think this is (POINT-1)*N
       INTEGER ISPT, IYPT, CP, INMC, ISCN, IYCN, BOUND
       DOUBLE PRECISION DGUESS, DUMMY, WTEMP(N), DOT1, DOT2, GNORM
-      DOUBLE PRECISION OVERLAP, SLENGTH, SQ, BETA
+      DOUBLE PRECISION OVERLAP, SQ, BETA
       DOUBLE PRECISION YR, YS, YY
 
       LOGICAL DIAGCO !this could be passed. It would be used to specify what the diagonal components are
@@ -41,6 +42,9 @@
 !     THE SEARCH STEPS AND GRADIENT DIFFERENCES ARE STORED IN A
 !     CIRCULAR ORDER CONTROLLED BY THE PARAMETER POINT.
 !
+      !error = 0
+      ! error = 1 # Improper input parameters (N or M are not positive)
+      ! error = 2 # A diagonal element of the inverse hessian approximation is not positive
 
       ISPT= N+2*M    ! index for storage of search steps
       IYPT= ISPT+N*M ! index for storage of gradient differences
@@ -68,8 +72,10 @@
             !WRITE(*,*) 'using estimate of the inverse diagonal elements', diag(1)
             DO J1=1,N
                IF (DIAG(J1).LE.0.0D0) THEN
-                  WRITE(*,235) J1
-                  STOP
+                  WRITE(*,*) "The diagonal inverse hessian approximation is negative, using", dguess, "instead"
+                  DIAG(:) = DGUESS
+                  exit ! exit loop
+                  !STOP
                ENDIF
             ENDDO
          ELSE
