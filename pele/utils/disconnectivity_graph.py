@@ -57,7 +57,7 @@ class Tree(object):
         return len(self.subtrees)
     
     def is_leaf(self):
-        """return true if this tree has no descendents"""
+        """return true if this tree has no descendants"""
         return self.number_of_branches() == 0
     
     def number_of_leaves(self):
@@ -855,16 +855,16 @@ class DisconnectivityGraph(object):
         assert graph.number_of_nodes() > 0, "after applying Emax, graph has no minima"
         assert graph.number_of_edges() > 0, "after applying Emax, graph has no minima" 
         
-        #find a reduced graph with only those connected to min0
+        # find a reduced graph with only those connected to min0
 #        nodes = nx.node_connected_component(self.graph, self.min0)
 #        self.graph = self.graph.subgraph(nodes)
         graph = self._reduce_graph(graph, self.min0list)
         
-        #define the energy levels
+        # define the energy levels
         elevels = self._get_energy_levels(graph)
         self.energy_levels = elevels
         
-        #remove more nodes
+        # remove more nodes
         graph = self._remove_high_energy_minima(graph, elevels[-1])
         graph = self._remove_high_energy_transitions(graph, elevels[-1])
         graph = self._remove_nodes_with_few_edges(graph, 1)
@@ -872,7 +872,7 @@ class DisconnectivityGraph(object):
         assert graph.number_of_nodes() > 0, "after cleaning up the graph, graph has no minima"
         assert graph.number_of_edges() > 0, "after cleaning up the graph, graph has no edges" 
 
-        #make the tree graph defining the discontinuity of the minima
+        # make the tree graph defining the discontinuity of the minima
         tree_graph = self._make_tree(graph, elevels)
         
         #assign id to trees

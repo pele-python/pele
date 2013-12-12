@@ -188,10 +188,13 @@ def main():
         
     if not OPTIM: 
         # make graph from database
+        t0 = time.time()
         if "Emax" in kwargs and use_gui:
             graph = reduced_db2graph(db, kwargs['Emax'])
         else:
             graph = dg.database2graph(db)
+        t1 = time.time()
+        print "loading the data into a transition state graph took", t1-t0, "seconds"
 
     # do the disconnectivity graph analysis
     mydg = dg.DisconnectivityGraph(graph, **kwargs)
