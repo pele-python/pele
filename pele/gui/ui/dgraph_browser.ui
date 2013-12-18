@@ -168,19 +168,6 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
-          <widget class="QComboBox" name="comboBox_colour"/>
-         </item>
-         <item row="7" column="0">
-          <widget class="QLabel" name="label_5">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To color a basin first enable &amp;quot;show trees.&amp;quot;  Then select a node and select a color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>color</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
        <item>
@@ -259,24 +246,7 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>btnRebuild</sender>
-   <signal>clicked()</signal>
-   <receiver>Form</receiver>
-   <slot>rebuild_disconnectivity_graph()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>485</x>
-     <y>493</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>58</x>
-     <y>510</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>rebuild_disconnectivity_graph()</slot>
  </slots>

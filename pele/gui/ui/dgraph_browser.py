@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'dgraph_browser.ui'
 #
-# Created: Thu May 30 10:11:18 2013
+# Created: Wed Dec 18 18:28:53 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -87,12 +87,6 @@ class Ui_Form(object):
         self.lineEdit_offset.setMaximumSize(QtCore.QSize(200, 16777215))
         self.lineEdit_offset.setObjectName(_fromUtf8("lineEdit_offset"))
         self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.lineEdit_offset)
-        self.comboBox_colour = QtGui.QComboBox(self.layoutWidget)
-        self.comboBox_colour.setObjectName(_fromUtf8("comboBox_colour"))
-        self.formLayout.setWidget(7, QtGui.QFormLayout.FieldRole, self.comboBox_colour)
-        self.label_5 = QtGui.QLabel(self.layoutWidget)
-        self.label_5.setObjectName(_fromUtf8("label_5"))
-        self.formLayout.setWidget(7, QtGui.QFormLayout.LabelRole, self.label_5)
         self.verticalLayout_2.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
@@ -120,7 +114,6 @@ class Ui_Form(object):
         self.horizontalLayout.addWidget(self.splitter)
 
         self.retranslateUi(Form)
-        QtCore.QObject.connect(self.btnRebuild, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.rebuild_disconnectivity_graph)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
@@ -140,8 +133,6 @@ class Ui_Form(object):
         self.label_2.setText(QtGui.QApplication.translate("Form", "Minimum subgraph size", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Form", "nlevels", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Form", "offset", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>To color a basin first enable &quot;show trees.&quot;  Then select a node and select a color</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("Form", "color", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRebuild.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>rebuild and redraw the graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRebuild.setText(QtGui.QApplication.translate("Form", "Rebuild Graph", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRedraw.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>redraw the graph without rebuilding</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))

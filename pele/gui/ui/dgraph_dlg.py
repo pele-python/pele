@@ -1,7 +1,7 @@
 import sys
 
 from PyQt4 import QtGui
-from PyQt4.QtGui import QApplication, QWidget
+from PyQt4.QtGui import QApplication, QWidget, QColorDialog, QColor
 from PyQt4.QtCore import pyqtSlot
 
 import matplotlib.colors as col
@@ -50,11 +50,11 @@ class DGraphWidget(QWidget):
         self.colour_tree = []
         self.tree_selected = None
 
-        # populate the dropdown list with the color names
-        self._colors = sorted(col.cnames.keys())
-        self.ui.comboBox_colour.addItems(self._colors)
-        [self.ui.comboBox_colour.addItem(s) for s in self._colors]
-        self.ui.comboBox_colour.activated[str].connect(self._color_tree)
+#        # populate the dropdown list with the color names
+#        self._colors = sorted(col.cnames.keys())
+#        self.ui.comboBox_colour.addItems(self._colors)
+#        [self.ui.comboBox_colour.addItem(s) for s in self._colors]
+#        self.ui.comboBox_colour.activated[str].connect(self._color_tree)
 
 
     def _set_checked(self, keyword, default):
@@ -131,23 +131,26 @@ class DGraphWidget(QWidget):
         self.show_trees = self.ui.chkbx_show_trees.isChecked()
 
     
-    @pyqtSlot(str)
-    def _color_tree(self, colour):
-        if self.tree_selected is not None: 
-            c = col.hex2color(col.cnames[str(colour)])
-            print "coloring tree", colour, self.tree_selected
-
-            for tree in self.tree_selected.get_all_trees():
-                tree.data["colour"] = c
-            
-            self.redraw_disconnectivity_graph()
-#            self.tree_selected = None
+#    @pyqtSlot(str)
+#    def _color_tree(self, colour):
+#        if self.tree_selected is not None: 
+#            c = col.hex2color(col.cnames[str(colour)])
+#            print "coloring tree", colour, self.tree_selected
+#
+#            for tree in self.tree_selected.get_all_trees():
+#                tree.data["colour"] = c
+#            
+#            self.redraw_disconnectivity_graph()
+##            self.tree_selected = None
 
     @pyqtSlot()
     def on_btnRedraw_clicked(self):
-#        if clicked is None: return
         self.redraw_disconnectivity_graph()
-        
+
+    @pyqtSlot()
+    def on_btnRebuild_clicked(self):
+        self.rebuild_disconnectivity_graph()
+    
 
     def redraw_disconnectivity_graph(self):        
         self.params = self._get_input_parameters()
@@ -185,6 +188,29 @@ class DGraphWidget(QWidget):
                 energies.append(tree.data["ethresh"])
         return treelist, xlist, energies
 
+    def _on_pick_tree(self, event):
+        """a matplotlib callback function for when a tree is clicked on"""
+        if event.artist != self._treepoints:
+#                print "you clicked on something other than a node"
+            return True
+        ind = event.ind[0]
+        self.tree_selected = self._tree_list[ind]
+        print "tree clicked on", self.tree_selected
+        
+        # launch a color selector dialog and color 
+        # all subtrees by the selected color
+        color_dialog = QColorDialog(parent=self)
+        color_dialog.exec_()
+        if color_dialog.result():
+            color = color_dialog.selectedColor()
+            rgba = color.getRgbF() # red green blue alpha
+            print "color", rgba
+            rgb = rgba[:3]
+            for tree in self.tree_selected.get_all_trees():
+                tree.data["colour"] = rgb
+            
+            self.redraw_disconnectivity_graph()
+            
     def _draw_disconnectivity_graph(self, show_minima=True, show_trees=False):
         ax = self.canvas.axes
         ax.clear()
@@ -203,17 +229,32 @@ class DGraphWidget(QWidget):
             tree_list, x_pos, energies = self._get_tree_layout(dg.tree_graph)
 
             treepoints = ax.scatter(x_pos, energies, picker=5, color='red', alpha=0.5)
+            self._treepoints = treepoints
+            self._tree_list = tree_list
 
-            def on_pick_tree(event):
-                if event.artist != treepoints:
-    #                print "you clicked on something other than a node"
-                    return True
-                ind = event.ind[0]
-                self.tree_selected = tree_list[ind]
-                print "tree clicked on", self.tree_selected
+#            def on_pick_tree(event):
+#                if event.artist != treepoints:
+#    #                print "you clicked on something other than a node"
+#                    return True
+#                ind = event.ind[0]
+#                self.tree_selected = tree_list[ind]
+#                print "tree clicked on", self.tree_selected
+#                
+#                color_dialog = QColorDialog(parent=self)
+#                color_dialog.exec_()
+#                color = color_dialog.selectedColor()
+#                rgba = color.getRgbF() # red green blue alpha
+#                print "color", rgba
+#                rgb = rgba[:3]
+#                for tree in self.tree_selected.get_all_trees():
+#                    tree.data["colour"] = rgb
 
 
-            self.canvas.mpl_connect('pick_event', on_pick_tree)
+            if not hasattr(self, "_tree_cid"):
+                self._tree_cid = None
+            if self._tree_cid is not None:
+                self.canvas.mpl_disconnect(self._tree_cid)
+            self._tree_cid = self.canvas.mpl_connect('pick_event', self._on_pick_tree)
 
 
         #draw minima as points and make them interactive
@@ -266,7 +307,7 @@ def reduced_db2graph(db, Emax):
 
 if __name__ == "__main__":
     
-    db = Database("lj31.db")
+    db = Database("lj31.db", createdb=False)
     if len(db.minima()) < 2:
         raise Exception("database has no minima")
     
