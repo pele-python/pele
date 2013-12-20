@@ -5,6 +5,8 @@ from pele.storage import Database
 from pele.landscape import ConnectManager
 from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
 
+_show = False
+
 def create_random_database(nmin=20, nts=20):
     db = Database()
     
@@ -50,7 +52,10 @@ class TestDisconnectivityGraph(unittest.TestCase):
                   ]
         dgraph.color_by_group(groups)
         dgraph.plot(linewidth=2.)
-#         dgraph.show()
+        if _show:
+            from matplotlib import pyplot as plt
+            plt.title("color by group")
+#             dgraph.show()
     
     def test_color_groups_many(self):
         dgraph = DisconnectivityGraph(self.tsgraph)
@@ -62,7 +67,25 @@ class TestDisconnectivityGraph(unittest.TestCase):
                 break
         dgraph.color_by_group(groups)
         dgraph.plot(linewidth=2.)
-#         dgraph.show()
+        if _show:
+            from matplotlib import pyplot as plt
+            plt.title("color by group")
+#             dgraph.show()
+
+    def test_color_value(self):
+        dgraph = DisconnectivityGraph(self.tsgraph)
+        dgraph.calculate()
+        def minimum_to_value(m):
+            if m.energy < 5.:
+                return m.energy
+            else:
+                return None
+        dgraph.color_by_value(minimum_to_value)
+        dgraph.plot(linewidth=2.)
+        if _show:
+            from matplotlib import pyplot as plt
+            plt.title("color by value")
+            dgraph.show()
 
 
 if __name__ == "__main__":

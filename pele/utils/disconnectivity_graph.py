@@ -432,7 +432,89 @@ class ColorDGraphByGroups(object):
             if colors is not None:
                 tree.data["colour"] = self.colors_to_color(colors)
     
+class ColorDGraphByValue(object):
+    """color a disconnectivity graph by values associated with minima (e.g. order parameter)
+
+    Parameters
+    ----------
+    tree_graph: a DGTree object
+        usually accessed by dgraph.tree_graph if dgraph is a 
+        DisconnectivityGraph object.
+    minimum_to_value: callable
+        A function that accepts a minimum and returns a float value.
+        return None to indicate no color for this minimum
+    colormap: callable, optional
+        function which converts a float in (0,1) to a matplotlib color (RGB)
+    normalize_values: bool
+        if True the values will be normalized to fall between 0 and 1
+    
+    Notes
+    -----
+    Each node in the graph will be colored according to the value of the 
+    child minimum with the largest value.  If any child minimum has value None
+    then the node will not be colored
+    """
+    def __init__(self, tree_graph, minimum_to_value, colormap=None, 
+                 normalize_values=True):
+        self.tree_graph = tree_graph
+        self.minimum_to_value = minimum_to_value
+        if colormap is None:
+            from matplotlib import cm
+            self.colormap = cm.get_cmap("jet")
+        else:
+            self.colormap = colormap
+    
+        self._tree_to_value = dict()
         
+        if normalize_values:
+            values = [self.minimum_to_value(leaf.data["minimum"]) 
+                      for leaf in self.tree_graph.leaf_iterator()]
+            values = filter(lambda v: v is not None, values)
+            self.maxval = max(values)
+            self.minval = min(values)
+        else:
+            self.minval = None
+            self.maxval = None
+    
+    def resolve_multiple_values(self, values):
+        if None in values:
+            return None
+        else:
+            return max(values)
+    
+    def value_to_color(self, value):
+        if self.minval is None:
+            vnorm = value
+        else:
+            vnorm = (value - self.minval) / (self.maxval - self.minval)
+        return self.colormap(vnorm)
+    
+    def tree_get_value(self, tree):
+        """return the color that this tree should be colored by"""
+        try:
+            return self._tree_to_value[tree]
+        except KeyError:
+            if tree.is_leaf():
+                value = self.minimum_to_value(tree.data["minimum"])
+                self._tree_to_value[tree] = value
+                return value
+            else:
+                values = [self.tree_get_value(subtree) for subtree in tree.get_subtrees()]
+                value = self.resolve_multiple_values(values)
+                self._tree_to_value[tree] = value
+                return value
+    
+            
+    
+    def run(self):
+        """main loop for the algorithm"""
+        for tree in self.tree_graph.get_all_trees():
+            value = self.tree_get_value(tree)
+            if value is not None:
+                tree.data["colour"] = self.value_to_color(value)    
+            
+    
+    
 
 class DisconnectivityGraph(object):
     """
@@ -586,58 +668,6 @@ class DisconnectivityGraph(object):
         self.minimum_to_leave = maketree.minimum_to_leave
         return trees
         
-    ##########################################################
-    #functions for determining the x position of the branches
-    #and leaves
-    ##########################################################
-    
-#    def _recursive_assign_id(self, tree):
-#        subtrees = tree.get_subtrees()
-#        for subtree in subtrees:
-#            if subtree.number_of_branches() >= 2:
-#                self.tree_list[subtree.data['ilevel']].append(subtree)
-#
-#                subtree.data['id'] = len(self.tree_list[subtree.data['ilevel']])
-##                 print subtree.data.items()
-##                 subtree.data['colour'] = tuple(np.random.random(3))
-#            self._recursive_assign_id(subtree)
-#
-#            
-#    def _assign_id(self, tree):
-#        """
-#        Determining the id of the branches and leaves
-#        for selection purposes
-#        """
-#
-#        self._recursive_assign_id(tree)
-#        
-#    def _set_colour(self,i,colour_dict):
-#        '''
-#        
-#        '''
-#        self.tree_list[i[0]][i[1]].data['colour'] = colour_dict[i]
-#
-#    def assign_colour(self, tree, colour):#colour_dict=[]):
-#        '''
-#        Colour trees according to `colour_dict`, a dictionay with 
-#        (level, tree_index) tuples as keys and RGB colours as values
-#        '''
-##         for i in colour_dict: self._set_colour(i,colour_dict)
-#        tree.data['colour'] = colour
-##         print tree, tree.__dict__#.data.items()
-##         print 'recursive'
-#        self._recursive_colour_trees(tree, colour)
-#            
-#        
-#    def _recursive_colour_trees(self, tree, colour):
-#        '''
-#        
-#        '''
-#        for s in tree.get_subtrees():
-##             print tree, tree.__dict__
-#            s.data['colour'] = colour #= s.parent.data['colour']
-##             print s.parent.data['colour'], s.data['colour'], s.data['ilevel'], s.data['id']
-#            self._recursive_colour_trees(s, colour)
             
             
 
@@ -1015,7 +1045,31 @@ class DisconnectivityGraph(object):
         """
         colorer = ColorDGraphByGroups(self.tree_graph, groups)
         colorer.run()
+
+    def color_by_value(self, minimum_to_value, colormap=None, 
+                 normalize_values=True):        
+        """color the graph by values associated with minima (e.g. order parameter)
+    
+        Parameters
+        ----------
+        minimum_to_value: callable
+            A function that accepts a minimum and returns a float value.
+            return None to indicate no color for this minimum
+        colormap: callable, optional
+            function which converts a float in (0,1) to a matplotlib color (RGB)
+        normalize_values: bool
+            if True the values will be normalized to fall between 0 and 1
         
+        Notes
+        -----
+        Each node in the graph will be colored according to the value of the 
+        child minimum with the largest value.  If any child minimum has value None
+        then the node will not be colored
+        """
+        colorer = ColorDGraphByValue(self.tree_graph, minimum_to_value,
+                                     colormap=colormap, 
+                                     normalize_values=normalize_values)
+        colorer.run()
 
     def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None):
         """draw the disconnectivity graph using matplotlib
@@ -1067,6 +1121,11 @@ class DisconnectivityGraph(object):
         ax.set_xticks([])        
         
     def show(self):
+        """simple wrapper for matplotlib.pyplot.show()"""
         from matplotlib import pyplot
         pyplot.show()
+    def savefig(self, *args, **kwargs):
+        """simple wrapper for matplotlib.pyplot.savefig()"""
+        from matplotlib import pyplot
+        pyplot.savefig(*args, **kwargs)
     
