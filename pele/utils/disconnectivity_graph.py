@@ -350,58 +350,57 @@ class ColorDGraphByGroups(object):
     def __init__(self, tree_graph, groups):
         import matplotlib as mpl
         self.tree_graph = tree_graph
-        oldgroups = groups
-        self.groups = []
-        self.colors = dict()
-        for group in oldgroups:
-            g = frozenset(group)
-            self.groups.append(g)
-            
-            import numpy as np
-            self.colors[g] = tuple(np.random.uniform(0,1,[3]))
-    
-        # set the color of each of the groups         
         
-        self._tree_dict = dict()
+        # set the colors
+        self._minimum_to_color = dict()
+        for group in groups:
+            import numpy as np
+            color = tuple(np.random.uniform(0,1,[3]))
+            for minimum in group:
+                self._minimum_to_color[minimum] = color
+        self._tree_to_colors = dict()
+                
+        
     
-    def minimum_to_group(self, minimum):
-        for group in self.groups:
-            if minimum in group:
-                return group
-        return None
-    
-    def tree_get_groups(self, tree):
+    def minimum_to_color(self, minimum):
         try:
-            return self._tree_dict[tree]
+            return self._minimum_to_color[minimum]
+        except KeyError:
+            return None
+    
+    def tree_get_colors(self, tree):
+        try:
+            return self._tree_to_colors[tree]
         except KeyError:
             if tree.is_leaf():
-                group = self.minimum_to_group(tree.data["minimum"])
-                if group is None:
-                    groups = None
+                color = self.minimum_to_color(tree.data["minimum"])
+                if color is None:
+                    colors = None
                 else:
-                    groups = frozenset([group])    
-                self._tree_dict[tree] = groups
-                return groups
+                    colors = frozenset([color])    
+                self._tree_to_colors[tree] = colors
+                return colors
             else:
-                groups_list = [self.tree_get_groups(subtree) for subtree in tree.get_subtrees()]
-                if None in groups_list:
-                    groups = None
+                colors_list = [self.tree_get_colors(subtree) for subtree in tree.get_subtrees()]
+                if None in colors_list:
+                    colors = None
                 else:
-                    groups = frozenset([g for groups1 in groups_list for g in groups1])
-                print "groups", groups
-                self._tree_dict[tree] = groups
-                return groups
-                
+                    colors = frozenset([g for colors1 in colors_list for g in colors1])
+                print "colors", colors
+                self._tree_to_colors[tree] = colors
+                return colors
+    
+    def colors_to_color(self, colors):
+        for color in colors:
+            return color       
             
     
     def run(self):
         print "in run"
         for tree in self.tree_graph.get_all_trees():
-            groups = self.tree_get_groups(tree)
-            if groups is not None:
-                for group in groups:
-                    tree.data["colour"] = self.colors[group]
-                    break
+            colors = self.tree_get_colors(tree)
+            if colors is not None:
+                tree.data["colour"] = self.colors_to_color(colors)
     
         
 
