@@ -1071,7 +1071,8 @@ class DisconnectivityGraph(object):
                                      normalize_values=normalize_values)
         colorer.run()
 
-    def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None):
+    def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None,
+             title=None):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
@@ -1116,6 +1117,9 @@ class DisconnectivityGraph(object):
         linecollection.set_color(self.line_colours)
         ax.add_collection(linecollection)
         
+        if title is not None:
+            ax.set_title(title)
+        
         # scale the axes appropriately
         ax.relim()
         ax.autoscale_view(scalex=True, scaley=True, tight=None)
@@ -1140,6 +1144,11 @@ class DisconnectivityGraph(object):
         kwargs: kwargs
             additional keyword arguments are passed on to matplotlib 
             ax.set_xticklabels()
+        
+        Notes
+        -----
+        if the labels are outside of the figure bounding box you can fix it with
+        plt.tight_layout() or fig.tight_layout() 
         """
         if axes is not None:
             ax = axes
@@ -1155,7 +1164,12 @@ class DisconnectivityGraph(object):
         labels = [minima_labels[leaf.data["minimum"]] for leaf in leaves]
         ax.set_xticks(xpos)
         ax.set_xticklabels(labels, rotation=rotation, **kwargs)
-        
+
+#         rescale = True
+#         if rescale:
+#             import matplotlib.pyplot as plt
+#             plt.tight_layout()
+ 
     
     def show(self):
         """simple wrapper for matplotlib.pyplot.show()"""

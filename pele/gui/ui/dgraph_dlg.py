@@ -85,7 +85,7 @@ class DGraphWidget(QWidget):
         else:
             v = default
         if v is not None:
-            line = "self.ui.lineEdit_%s.setText(str(%d))" % (keyword, v)
+            line = "self.ui.lineEdit_%s.setText(str(%s))" % (keyword, str(v))
             exec(line)
 
 
@@ -105,6 +105,9 @@ class DGraphWidget(QWidget):
         self._set_lineEdit("Emax")
         self._set_lineEdit("subgraph_size")
         self._set_lineEdit("nlevels")
+        
+#         self.line_width = 0.5
+        self._set_lineEdit("linewidth",  default=0.5)
 
 
     def _get_input_parameters(self):
@@ -127,6 +130,12 @@ class DGraphWidget(QWidget):
         if len(offset) > 0:
             params["node_offset"] = float(offset)
 
+        line_width = self.ui.lineEdit_linewidth.text()
+        if len(line_width) > 0:
+            self.line_width = float(line_width)
+        
+        self.title = self.ui.lineEdit_title.text()
+        
 
         params["center_gmin"] = self.ui.chkbx_center_gmin.isChecked()
         self.show_minima = self.ui.chkbx_show_minima.isChecked()
@@ -254,7 +263,8 @@ class DGraphWidget(QWidget):
         # plot the lines and set up the rest of the plot using the built in function
         # this might change some of the minima x positions, so this has to go before
         # anything dependent on those positions
-        dg.plot(axes=ax, show_minima=False)
+        dg.plot(axes=ax, show_minima=False, linewidth=self.line_width, 
+                title=self.title)
         if len(self._minima_labels) > 0:
             dg.label_minima(self._minima_labels, axes=ax)
             self.ui.widget.canvas.fig.tight_layout()
