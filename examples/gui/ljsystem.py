@@ -25,6 +25,8 @@ if __name__ == "__main__":
     dialog.setIntMinimum(2)
     dialog.setIntValue(13)
     dialog.exec_()
+    if not dialog.result():
+        sys.exit()
     natoms = dialog.intValue()
 
     # create the system and start the gui

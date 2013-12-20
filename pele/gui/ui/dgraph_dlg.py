@@ -1,7 +1,7 @@
 import sys
 
 from PyQt4 import QtGui
-from PyQt4.QtGui import QApplication, QWidget, QColorDialog, QColor
+from PyQt4.QtGui import QApplication, QWidget, QColorDialog, QInputDialog
 from PyQt4.QtCore import pyqtSlot
 
 import matplotlib.colors as col
@@ -49,6 +49,11 @@ class DGraphWidget(QWidget):
 #        self.rebuild_disconnectivity_graph()
         self.colour_tree = []
         self.tree_selected = None
+        
+        self._tree_cid = None
+        self._minima_cid = None
+        
+        self._minima_labels = dict()
 
 #        # populate the dropdown list with the color names
 #        self._colors = sorted(col.cnames.keys())
@@ -158,6 +163,7 @@ class DGraphWidget(QWidget):
 
     def rebuild_disconnectivity_graph(self):        
         self._get_input_parameters()
+        self._minima_labels = dict()
         self._build_disconnectivity_graph(**self.params)
         self._draw_disconnectivity_graph(self.show_minima, self.show_trees)
 
@@ -210,7 +216,34 @@ class DGraphWidget(QWidget):
                 tree.data["colour"] = rgb
             
             self.redraw_disconnectivity_graph()
+    
+    def _on_right_click_minimum(self, minimum):
+        print "you clicked on minimum with id", minimum._id, "and energy", minimum.energy
+        self.minimum_selected(minimum)
+    
+    def _on_left_click_minimum(self, minimum):
+        dialog = QInputDialog(parent=self)
+#         dialog.setLabelText("")
+        dialog.setLabelText("set label for minimum: " + str(minimum.energy))
+        dialog.setInputMode(0)
+        dialog.exec_()
+        if dialog.result():
+            label = dialog.textValue()
+            self._minima_labels[minimum] = label
             
+    
+    def _on_pick_minimum(self, event):
+        """matplotlib event called when a minimum is clicked on"""
+        if event.artist != self._minima_points:
+#                print "you clicked on something other than a node"
+            return True
+        ind = event.ind[0]
+        min1 = self._minima_list[ind]
+        if event.mouseevent.button == 3:
+            self._on_left_click_minimum(min1)
+        else:
+            self._on_right_click_minimum(min1)
+ 
     def _draw_disconnectivity_graph(self, show_minima=True, show_trees=False):
         ax = self.canvas.axes
         ax.clear()
@@ -222,8 +255,14 @@ class DGraphWidget(QWidget):
         # this might change some of the minima x positions, so this has to go before
         # anything dependent on those positions
         dg.plot(axes=ax, show_minima=False)
+        if len(self._minima_labels) > 0:
+            dg.label_minima(self._minima_labels, axes=ax)
+            self.ui.widget.canvas.fig.tight_layout()
 
 #        if show_trees
+        if self._tree_cid is not None:
+            self.canvas.mpl_disconnect(self._tree_cid)
+            self._tree_cid = None
         if show_trees:
             # draw the nodes
             tree_list, x_pos, energies = self._get_tree_layout(dg.tree_graph)
@@ -250,28 +289,28 @@ class DGraphWidget(QWidget):
 #                    tree.data["colour"] = rgb
 
 
-            if not hasattr(self, "_tree_cid"):
-                self._tree_cid = None
-            if self._tree_cid is not None:
-                self.canvas.mpl_disconnect(self._tree_cid)
             self._tree_cid = self.canvas.mpl_connect('pick_event', self._on_pick_tree)
 
 
         #draw minima as points and make them interactive
+        if self._minima_cid is not None:
+            self.canvas.mpl_disconnect(self._minima_cid)
+            self._minima_cid = None
         if show_minima:
             xpos, minima = dg.get_minima_layout()
             energies = [m.energy for m in minima]
-            points = ax.scatter(xpos, energies, picker=5)        
+            self._minima_points = ax.scatter(xpos, energies, picker=5)
+            self._minima_list = minima
             
-            def on_pick_min(event):
-                if event.artist != points:
-    #                print "you clicked on something other than a node"
-                    return True
-                ind = event.ind[0]
-                min1 = minima[ind]
-                print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-                self.minimum_selected(min1)
-            self.canvas.mpl_connect('pick_event', on_pick_min)
+#             def on_pick_min(event):
+#                 if event.artist != points:
+#     #                print "you clicked on something other than a node"
+#                     return True
+#                 ind = event.ind[0]
+#                 min1 = minima[ind]
+#                 print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+#                 self.minimum_selected(min1)
+            self._minima_cid = self.canvas.mpl_connect('pick_event', self._on_pick_minimum)
 
         self.canvas.draw()
 
