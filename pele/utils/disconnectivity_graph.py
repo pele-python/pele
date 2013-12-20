@@ -364,7 +364,7 @@ class ColorDGraphByGroups(object):
     def get_list_of_colors_mpl(self, number):
         """return a list of colors for the groups.  Use matplotlib colormap"""
         from matplotlib import cm
-        colormap = cm.get_cmap("gist_rainbow", lut=number)
+        colormap = cm.get_cmap("Dark2", lut=number)
         colors = [colormap(i) for i in np.linspace(0., 1., number)]
         return colors
         
@@ -460,7 +460,7 @@ class ColorDGraphByValue(object):
         self.minimum_to_value = minimum_to_value
         if colormap is None:
             from matplotlib import cm
-            self.colormap = cm.get_cmap("jet")
+            self.colormap = cm.get_cmap("winter")
         else:
             self.colormap = colormap
     
