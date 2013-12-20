@@ -327,7 +327,83 @@ class _MakeTree(object):
             
         return newtrees
 
-
+class ColorDGraphByGroups(object):
+    """color the graph based on specified grouping of minima
+    
+    Parameters
+    ----------
+    groups : list
+        list of groups of minima that should have the same color
+    
+    Notes
+    -----
+    For each node, check all minima for which the node is a parent.
+    If all minima are contained on one of the groups, the node 
+    will be coloured to represent that group.  
+    If any minimum is not contained on one of the groups, the node
+    is not coloured. 
+    
+    The next bit may be implemented at some point in the future:
+    If all minima are contained in groups but more than one group 
+    is represented, the node will be the colour of the last group
+    """
+    def __init__(self, tree_graph, groups):
+        import matplotlib as mpl
+        self.tree_graph = tree_graph
+        oldgroups = groups
+        self.groups = []
+        self.colors = dict()
+        for group in oldgroups:
+            g = frozenset(group)
+            self.groups.append(g)
+            
+            import numpy as np
+            self.colors[g] = tuple(np.random.uniform(0,1,[3]))
+    
+        # set the color of each of the groups         
+        
+        self._tree_dict = dict()
+    
+    def minimum_to_group(self, minimum):
+        for group in self.groups:
+            if minimum in group:
+                return group
+        return None
+    
+    def tree_get_groups(self, tree):
+        try:
+            return self._tree_dict[tree]
+        except KeyError:
+            if tree.is_leaf():
+                group = self.minimum_to_group(tree.data["minimum"])
+                if group is None:
+                    groups = None
+                else:
+                    groups = frozenset([group])    
+                self._tree_dict[tree] = groups
+                return groups
+            else:
+                groups_list = [self.tree_get_groups(subtree) for subtree in tree.get_subtrees()]
+                if None in groups_list:
+                    groups = None
+                else:
+                    groups = frozenset([g for groups1 in groups_list for g in groups1])
+                print "groups", groups
+                self._tree_dict[tree] = groups
+                return groups
+                
+            
+    
+    def run(self):
+        print "in run"
+        for tree in self.tree_graph.get_all_trees():
+            groups = self.tree_get_groups(tree)
+            if groups is not None:
+                for group in groups:
+                    tree.data["colour"] = self.colors[group]
+                    break
+    
+        
 
 class DisconnectivityGraph(object):
     """
@@ -641,7 +717,7 @@ class DisconnectivityGraph(object):
                         
 
     #######################################################################
-    #functions which return the line segments that make up the visual graph
+    # functions which return the line segments that make up the visual graph
     #######################################################################
 
     def _get_line_segment_recursive(self, line_segments,line_colours, tree, eoffset):
@@ -838,8 +914,6 @@ class DisconnectivityGraph(object):
         
         return elower
 
-       
-    
     def calculate(self):
         """
         do the calculations necessary to draw the diconnectivity graph
@@ -890,7 +964,14 @@ class DisconnectivityGraph(object):
         self.eoffset = eoffset
         self.tree_graph = tree_graph
 #        self.line_segments = line_segments
-    
+
+
+    def color_by_group(self, groups):
+        print "coloring"
+        colorer = ColorDGraphByGroups(self.tree_graph, groups)
+        colorer.run()
+        
+
     def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None):
         """draw the disconnectivity graph using matplotlib
         
@@ -940,5 +1021,7 @@ class DisconnectivityGraph(object):
         #remove xtics            
         ax.set_xticks([])        
         
-        
+    def show(self):
+        from matplotlib import pyplot
+        pyplot.show()
     

@@ -41,14 +41,16 @@ class ConnectManagerGMin(BaseConnectManager):
     """
     return connect jobs in order to connect everything to the global minimum
     """
-    def __init__(self, database, list_len=10):
+    def __init__(self, database, list_len=10, verbosity=1):
         self.database = database
         self.list_len = list_len
+        self.verbosity = verbosity
         
         self.minpairs = deque()
 
     def _build_list(self):
-        print "populating list of minima not connected to the global minimum"
+        if self.verbosity > 0:
+            print "populating list of minima not connected to the global minimum"
         self.minpairs = deque()
         
         gmin = self.database.minima()[0]
@@ -295,14 +297,15 @@ class ConnectManager(object):
         ["random", "combine", "untrap", "gmin"] 
     """
     def __init__(self, database, strategy="random", list_len=20, clust_min=4, Emax=None,
-                  untrap_nlevels=20):
+                  untrap_nlevels=20, verbosity=1):
         self.database = database
         self.default_strategy = strategy
+        self.verbosity = verbosity
         
         self.manager_random = ConnectManagerRandom(self.database, Emax)
         self.manager_combine = ConnectManagerCombine(self.database, list_len=list_len, clust_min=4)
         self.manager_untrap = ConnectManagerUntrap(database, list_len=list_len, nlevels=untrap_nlevels)
-        self.manager_gmin = ConnectManagerGMin(database, list_len=list_len)
+        self.manager_gmin = ConnectManagerGMin(database, list_len=list_len, verbosity=self.verbosity)
         
         self.possible_strategies = ["random", "combine", "untrap", "gmin"]
         self.backup_strategy = "random"
@@ -348,32 +351,39 @@ class ConnectManager(object):
         if strategy == "untrap":
             min1, min2 = self.manager_untrap.get_connect_job()
             if min1 is None or min2 is None:
-                print "couldn't find any minima to untrap.  Doing", self.backup_strategy, "strategy instead"
+                if self.verbosity > 0:
+                    print "couldn't find any minima to untrap.  Doing", self.backup_strategy, "strategy instead"
                 strategy = self.backup_strategy
             else:
-                print "sending an untrap connect job", min1._id, min2._id
+                if self.verbosity > 0:
+                    print "sending an untrap connect job", min1._id, min2._id
 
         if strategy == "combine":
             min1, min2 = self.manager_combine.get_connect_job()
             if min1 is None or min2 is None:
-                print "couldn't find any minima clusters to combine.  Doing", self.backup_strategy, "strategy instead"
+                if self.verbosity > 0:
+                    print "couldn't find any minima clusters to combine.  Doing", self.backup_strategy, "strategy instead"
                 strategy = self.backup_strategy
             else:
-                print "sending a connect job to combine two disconnected clusters", min1._id, min2._id
+                if self.verbosity > 0:
+                    print "sending a connect job to combine two disconnected clusters", min1._id, min2._id
         
         if strategy == "gmin":
             min1, min2 = self.manager_gmin.get_connect_job()
             if min1 is None or min2 is None:
-                print "couldn't find any minima not connected to the global minimum.  Doing", self.backup_strategy, "strategy instead"
+                if self.verbosity > 0:
+                    print "couldn't find any minima not connected to the global minimum.  Doing", self.backup_strategy, "strategy instead"
                 strategy = self.backup_strategy
             else:
-                print "sending a connect job to connect all minima with the global minimum", min1._id, min2._id
+                if self.verbosity > 0:
+                    print "sending a connect job to connect all minima with the global minimum", min1._id, min2._id
 
         if strategy == "random":
             min1, min2 = self.manager_random.get_connect_job()
             if min1 is None or min2 is None:
                 raise Exception("couldn't find any random minima pair to connect.  Have we tried all pairs?")
-            print "sending a random connect job", min1._id, min2._id
+            if self.verbosity > 0:
+                print "sending a random connect job", min1._id, min2._id
         
         self._register_pair(min1, min2)
         return min1, min2
