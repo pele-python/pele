@@ -1,7 +1,9 @@
 import copy
-
-import networkx as nx
+from itertools import izip
 from collections import deque
+
+import numpy as np
+import networkx as nx
 
 __all__ = ["DisconnectivityGraph", "database2graph", "graph_constructor"]
 
@@ -329,9 +331,12 @@ class _MakeTree(object):
 
 class ColorDGraphByGroups(object):
     """color the graph based on specified grouping of minima
-    
+
     Parameters
     ----------
+    tree_graph: a DGTree object
+        usually accessed by dgraph.tree_graph if dgraph is a 
+        DisconnectivityGraph object.
     groups : list
         list of groups of minima that should have the same color
     
@@ -342,33 +347,54 @@ class ColorDGraphByGroups(object):
     will be coloured to represent that group.  
     If any minimum is not contained on one of the groups, the node
     is not coloured. 
-    
-    The next bit may be implemented at some point in the future:
     If all minima are contained in groups but more than one group 
-    is represented, the node will be the colour of the last group
+    is represented, the node will be the colour of the last group listed
     """
     def __init__(self, tree_graph, groups):
-        import matplotlib as mpl
         self.tree_graph = tree_graph
         
         # set the colors
         self._minimum_to_color = dict()
-        for group in groups:
-            import numpy as np
-            color = tuple(np.random.uniform(0,1,[3]))
+        self.color_list = self.get_list_of_colors(len(groups))
+        for color, group in izip(self.color_list, groups):
             for minimum in group:
                 self._minimum_to_color[minimum] = color
         self._tree_to_colors = dict()
-                
+    
+    def get_list_of_colors_mpl(self, number):
+        """return a list of colors for the groups.  Use matplotlib colormap"""
+        from matplotlib import cm
+        colormap = cm.get_cmap("gist_rainbow", lut=number)
+        colors = [colormap(i) for i in np.linspace(0., 1., number)]
+        return colors
         
+         
+    def get_list_of_colors(self, number):
+        """return a list of colors for the groups"""
+        try:
+            import brewer2mpl
+        except ImportError:
+            print "could not import brewer2mpl."
+            print "install package brewer2mpl for a nicer color scheme"
+            return self.get_list_of_colors_mpl(number)
+        if number <= 12:
+            bnumber = max(3, number)
+            bcolors = brewer2mpl.get_map("Dark2", "Qualitative", bnumber)
+            colors = bcolors.mpl_colors
+            colors = colors[:number]
+        else:
+            return self.get_list_of_colors_mpl(number)
+        return colors
     
     def minimum_to_color(self, minimum):
+        """return the color of the minimum, or None if not colored"""
         try:
             return self._minimum_to_color[minimum]
         except KeyError:
             return None
     
     def tree_get_colors(self, tree):
+        """return the color that this tree should be colored by"""
         try:
             return self._tree_to_colors[tree]
         except KeyError:
@@ -386,17 +412,21 @@ class ColorDGraphByGroups(object):
                     colors = None
                 else:
                     colors = frozenset([g for colors1 in colors_list for g in colors1])
-                print "colors", colors
                 self._tree_to_colors[tree] = colors
                 return colors
     
     def colors_to_color(self, colors):
-        for color in colors:
-            return color       
+        """if there are multiple colors for this tree, select which one to use
+        
+        select the color which is listed last in self.color_list
+        """
+        for color in reversed(self.color_list):
+            if color in colors:
+                return color       
             
     
     def run(self):
-        print "in run"
+        """main loop for the algorithm"""
         for tree in self.tree_graph.get_all_trees():
             colors = self.tree_get_colors(tree)
             if colors is not None:
@@ -966,7 +996,23 @@ class DisconnectivityGraph(object):
 
 
     def color_by_group(self, groups):
-        print "coloring"
+        """color the graph based on specified grouping of minima
+    
+        Parameters
+        ----------
+        groups : list
+            list of groups of minima that should have the same color
+        
+        Notes
+        -----
+        For each node, check all minima for which the node is a parent.
+        If all minima are contained on one of the groups, the node 
+        will be coloured to represent that group.  
+        If any minimum is not contained on one of the groups, the node
+        is not coloured. 
+        If all minima are contained in groups but more than one group 
+        is represented, the node will be the colour of the last group listed
+        """
         colorer = ColorDGraphByGroups(self.tree_graph, groups)
         colorer.run()
         

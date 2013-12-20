@@ -44,10 +44,24 @@ class TestDisconnectivityGraph(unittest.TestCase):
         dgraph = DisconnectivityGraph(self.tsgraph)
         dgraph.calculate()
         groups = [ self.db.minima()[:5],
-                  self.db.minima()[5:10]
+                  self.db.minima()[5:10],
+                  self.db.minima()[10:15],
+                  self.db.minima()[15:18],
                   ]
         dgraph.color_by_group(groups)
-        dgraph.plot()
+        dgraph.plot(linewidth=2.)
+        dgraph.show()
+    
+    def test_color_groups_many(self):
+        dgraph = DisconnectivityGraph(self.tsgraph)
+        dgraph.calculate()
+        groups = []
+        for m in self.db.minima():
+            groups.append([m])
+            if len(groups) > 13:
+                break
+        dgraph.color_by_group(groups)
+        dgraph.plot(linewidth=2.)
         dgraph.show()
 
 
