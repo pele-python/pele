@@ -50,7 +50,7 @@ class TestDisconnectivityGraph(unittest.TestCase):
                   ]
         dgraph.color_by_group(groups)
         dgraph.plot(linewidth=2.)
-        dgraph.show()
+#         dgraph.show()
     
     def test_color_groups_many(self):
         dgraph = DisconnectivityGraph(self.tsgraph)
@@ -62,7 +62,7 @@ class TestDisconnectivityGraph(unittest.TestCase):
                 break
         dgraph.color_by_group(groups)
         dgraph.plot(linewidth=2.)
-        dgraph.show()
+#         dgraph.show()
 
 
 if __name__ == "__main__":

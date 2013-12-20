@@ -14,6 +14,7 @@ from pele.landscape._distance_graph import TestDistanceGraph
 from pele.transition_states._orthogopt import TestOrthogopt
 from pele.transition_states.tests import *
 from pele.utils.hessian import TestEig
+from pele.utils.tests import *
 from pele.accept_tests.tests import *
 from pele.storage.tests import *
 from pele._test_basinhopping import TestBasinhopping
