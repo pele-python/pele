@@ -1087,9 +1087,12 @@ class DisconnectivityGraph(object):
         if axes is not None:
             ax = axes
         else:
-            fig = plt.figure(figsize=(6,7))
-            fig.set_facecolor('white')
-            ax = fig.add_subplot(111, adjustable='box')
+            try:
+                ax = self.axes
+            except AttributeError:
+                fig = plt.figure(figsize=(6,7))
+                fig.set_facecolor('white')
+                ax = fig.add_subplot(111, adjustable='box')
 
         #set up how the figure should look
         ax.tick_params(axis='y', direction='out')
@@ -1118,8 +1121,42 @@ class DisconnectivityGraph(object):
         ax.autoscale_view(scalex=True, scaley=True, tight=None)
         ax.set_ylim(top=self.Emax)
         #remove xtics            
-        ax.set_xticks([])        
+        ax.set_xticks([])
+        self.axes = ax
+
+    def label_minima(self, minima_labels, axes=None, 
+                     rotation=60., **kwargs):
+        """label the specified minima
         
+        Parameters
+        ----------
+        minima_labels: dict
+            dictionary with minima as keys and labels as values.
+            i.e. label = minima_labels[minimum]
+        axes: matplotlib axis object, optional
+            The axes we are working on
+        rotation: float
+            angle (in degrees) of how much to rotate the text
+        kwargs: kwargs
+            additional keyword arguments are passed on to matplotlib 
+            ax.set_xticklabels()
+        """
+        if axes is not None:
+            ax = axes
+        else:
+            try:
+                ax = self.axes
+            except AttributeError:
+                print "you must call plot() before label_minima()"
+                raise
+        leaves = filter(lambda leaf: leaf.data["minimum"] in minima_labels, 
+                        self.tree_graph.leaf_iterator())
+        xpos = [leaf.data["x"] for leaf in leaves]
+        labels = [minima_labels[leaf.data["minimum"]] for leaf in leaves]
+        ax.set_xticks(xpos)
+        ax.set_xticklabels(labels, rotation=rotation, **kwargs)
+        
+    
     def show(self):
         """simple wrapper for matplotlib.pyplot.show()"""
         from matplotlib import pyplot

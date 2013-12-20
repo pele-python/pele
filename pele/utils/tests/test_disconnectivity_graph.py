@@ -82,6 +82,8 @@ class TestDisconnectivityGraph(unittest.TestCase):
                 return None
         dgraph.color_by_value(minimum_to_value)
         dgraph.plot(linewidth=2.)
+        dgraph.label_minima({self.db.minima()[0]: "gmin", 
+                             self.db.minima()[1]: "2nd lowest"})
         if _show:
             from matplotlib import pyplot as plt
             plt.title("color by value")
