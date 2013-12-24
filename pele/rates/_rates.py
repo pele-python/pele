@@ -37,8 +37,8 @@ class RateCalculation(object):
         """remove nodes from tsgraph that are not connected to A"""
         # get all nodes that are connected to A 
         u = iter(self.A).next()
-        nodes = nx.single_source_shortest_path_length(self.tsgraph, u)
-        nodes = set(nodes.iterkeys())
+        nodes = nx.node_connected_component(self.tsgraph, u)
+        nodes = set(nodes)
         nodes.add(u)
         
         # rebuild tsgraph with only those nodes
@@ -65,7 +65,7 @@ class RateCalculation(object):
     def _get_local_rate(self, min1, min2, ts):
         """rate for going from min1 to min2
         
-        should properly sum over all transition states between min1 and min2.
+        TODO: should properly sum over all transition states between min1 and min2.
         
         from book Energy Landscapes page 387:
         
@@ -121,6 +121,7 @@ def test():
     from pele.landscape import ConnectManager
     from pele.thermodynamics import get_thermodynamic_information
     system = LJCluster(13)
+    system.params.structural_quench_params.tol = 1e-6
     db = system.create_database("lj13.db")
     
     if db.number_of_minima() < 10:

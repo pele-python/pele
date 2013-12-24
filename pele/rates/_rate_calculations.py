@@ -1,8 +1,9 @@
 """
 routines to help with computing rates from one subset of a graph to another
 """
-
+import itertools
 from collections import defaultdict
+
 import networkx as nx
 import numpy as np
 
@@ -78,16 +79,30 @@ class GraphReduction(object):
         self.A = set(A)
         self.B = set(B)
         
+        self._source_Pxx = dict()
+        self._source_tau = dict()
+        self._sink_Pxx = dict()
+        self._sink_tau = dict()
+        
         self.debug = debug
+        self.initial_check_graph()
         self.check_graph()
     
-    def renormalize(self):
+    def _phase_one_remove_intermediates(self):
         intermediates = set(self.graph.nodes())
         intermediates.difference_update(self.A)
         intermediates.difference_update(self.B)
+        intermediates = list(intermediates)
+        # The calculation is faster if we remove the nodes with the least edges first
+        intermediates.sort(key=lambda x: self.graph.degree(x))
         
         for x in intermediates:
             self.remove_node(x)
+    
+    def renormalize(self):
+        self._phase_one_remove_intermediates()
+        
+#         self._phase_two()
             
         while len(self.A) > 1:
             x = self.A.pop()
@@ -106,7 +121,57 @@ class GraphReduction(object):
             print "rate ", u, "->", v, self.rateAB
             print "rate ", v, "->", u, self.rateBA
         return self.rateAB, self.rateBA
+
+    def _phase_two_group(self, full_graph, group, tau_dict, P_dict):
+        for a in group:
+            self.graph = full_graph.copy()
+            Acopy = set(group)
+            Acopy.remove(a)
+            while len(Acopy) > 0:
+                x = Acopy.pop()
+                self.remove_node(x)
             
+            adata = self.graph.node[a]
+            P_dict[a] = adata["P"]
+            tau_dict[a] = adata["tau"]
+        
+
+    def _phase_two(self):
+        """
+        in this second phase we deal with starting and ending sets that have more
+        than 1 element.  This follows the text above equation 19 in Wales 2009.
+        This is called after all the intermediates have been decimated.
+        
+        
+        for each element a in set A, compute tauF_a and PF_aa by decimating all 
+        nodes in A except a.  Then the final rate from A to B
+        
+        kAB = (1/p_eq_A) sum_a PF_aB / tauF_a * p_eq_a
+        
+        where in the above PF_aB = 1-PF_aa and p_eq_a is the equilibrium
+        probability to be in state a and p_eq_A = sum_a p_eq_a
+        
+        The inverse rate is, symmetrically,
+        
+        kBA = (1/p_eq_B) sum_b PF_bA / tauF_b * p_eq_b
+        
+        """
+        print "copying graph", iter(self.A).next()
+        full_graph = self.graph.copy()
+        self._phase_two_group(full_graph, self.A, self._source_tau, self._source_Pxx)
+        
+        # restore the full graph        
+        self.graph = full_graph
+            
+        
+#         a = iter(self.A).next()
+#         b = iter(self.B).next()
+#         abdata = self._get_edge_data(a, b)
+#         abdata2 = self._get_edge_data(a, b, graph=full_graph) 
+#         print "before", abdata, abdata2
+#         abdata2[self.Pkey(a, b)] = 0.222
+#         print "after ", abdata, abdata2
+ 
     def _get_rate(self, u, v):
         uvdata = self._get_edge_data(u, v)
         Puv = uvdata[self.Pkey(u, v)]
@@ -127,11 +192,12 @@ class GraphReduction(object):
         """return the edge attribute key for the transition probability from u to v"""
         return ("P", u, v)
     
-    def _get_edge_data(self, u, v):
+    def _get_edge_data(self, u, v, graph=None):
+        if graph is None: graph = self.graph
         try:
-            return self.graph[u][v]
+            return graph[u][v]
         except KeyError:
-            return self.graph[v][u]
+            return graph[v][u]
 
     
     def _update_edge(self, u, v, uxdata, vxdata, x, xdata):
@@ -139,6 +205,7 @@ class GraphReduction(object):
         update the probabilities of transition between u and v upon removing node x
         
         Puv -> Puv + Pux * Pxv / (1-Pxx)
+        Pvu -> Pvu + Pvx * Pxu / (1-Pxx)
         """
         assert u != v
         # if the edge doesn't exists, create it.
@@ -154,6 +221,8 @@ class GraphReduction(object):
         Pvx = vxdata[self.Pkey(v, x)]
         Pxv = vxdata[self.Pkey(x, v)]
         
+        # in the paper, to avoid numerical errors DJW computes 
+        # 1-Pxx as sum_j Pxj if Pxx > .99         
         Pxx = xdata["P"]
         
         if self.debug:
@@ -235,20 +304,69 @@ class GraphReduction(object):
             total_prob += uvdata[self.Pkey(u, v)]
         
         print "  total prob", total_prob
-    
+
     def _check_node(self, u, verbose=True):
         udata = self.graph.node[u]  
 #        print "checking node", u
         assert udata["tau"] >= 0
         assert 1 >= udata["P"] >= 0
-        
+
         total_prob = udata["P"]
         for x, v, uvdata in self.graph.edges(u, data=True):
             assert 1 >= uvdata[self.Pkey(u, v)] >= 0
             assert 1 >= uvdata[self.Pkey(v, u)] >= 0
             total_prob += uvdata[self.Pkey(u, v)]
-        
+
         assert np.abs(total_prob - 1.) < 1e-6, "%s: total_prob %g" % (str(u), total_prob)
+
+    def _check_A_B_connected(self, connected_components):
+        ccset = [set(c) for c in connected_components]
+        
+        ca_intersections = [c.intersection(self.A) for c in ccset]
+        cb_intersections = [c.intersection(self.B) for c in ccset]
+
+        sizes = [len(ca) for ca in ca_intersections if len(ca) > 0]
+        if len(sizes) != 1:
+            assert len(sizes) != 0
+            print "warning, the reactant set is not fully connected"
+            print "   ", [c for c in ca_intersections if len(c) > 0]
+            raise Exception("the reactant set is not fully connected")
+
+        sizes = [len(cb) for cb in cb_intersections if len(cb) > 0]
+        if len(sizes) != 1:
+            assert len(sizes) != 0
+            print "warning, the product set is not fully connected"
+            print "   ", [c for c in cb_intersections if len(c) > 0]
+            raise Exception("the product set is not fully connected")
+        
+        AB_connected = False
+        for ca, cb in itertools.izip(ca_intersections, cb_intersections):
+            if len(ca) > 0 and len(cb) > 0:
+                AB_connected = True
+                break
+        if not AB_connected:
+            raise Exception("product and reactant sets are not connected")
+        
+            
+        return False
+
+    def initial_check_graph(self):
+        for a in self.A:
+            if not self.graph.has_node(a):
+                raise Exception("an element in the reactant set is not in the graph")
+        for b in self.B:
+            if not self.graph.has_node(b):
+                raise Exception("an element in the product set is not in the graph")
+
+        # check A and B are connected
+        cc = nx.connected_components(self.graph)
+        if len(cc) != 1:
+            print "warning, graph is not fully connected.  There are", len(cc), "components"
+            self._check_A_B_connected(cc)
+            
+#          for a, b in itertools.product(self.A, self.B):
+#             try: a, b
+            
 
     def check_graph(self):
         for u in self.graph.nodes():
@@ -262,41 +380,6 @@ class GraphReduction(object):
 # only testing stuff below here
 #
 
-def _three_state_graph():
-    tmatrix = [ [0., 1., 1.,], [1., 0., 1.,], [1., 1., 0.] ]
-    rates = dict()
-    for i in range(3):
-        for j in range(3):
-            if i != j:
-                rates[(i,j)] = tmatrix[i][j]
-
-    return graph_from_rates(rates)
-
-import unittest
-class TestGraphReduction(unittest.TestCase):
-    def setUp(self):
-        self.graph = _three_state_graph()
-        # all rates after graph renormalization should be 1.0
-        self.final_rate = 1.0
-
-    def _test_rate(self, i, j):
-        reducer = GraphReduction(self.graph, [i], [j], debug=False)
-        reducer.check_graph()
-        rAB, rBA = reducer.renormalize()
-        reducer.check_graph()
-        self.assertEqual(reducer.graph.number_of_nodes(), 2)
-        self.assertEqual(reducer.graph.number_of_edges(), 1)
-        self.assertAlmostEqual(rAB, self.final_rate, 7)
-        self.assertAlmostEqual(rBA, self.final_rate, 7)
-
-    def test01(self):
-        self._test_rate(0,1)
-
-    def test12(self):
-        self._test_rate(1,2)
-
-    def test02(self):
-        self._test_rate(0,2)
 
 def _make_random_graph(nnodes=16):
     L = int(np.sqrt(nnodes))
@@ -355,7 +438,7 @@ def test(nnodes=36):
     print "rates", rAB, rBA
 
 if __name__ == "__main__":
-    unittest.main()
-#    test()
+#     unittest.main()
+    test()
     
     
