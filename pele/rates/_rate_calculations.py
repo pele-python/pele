@@ -79,10 +79,8 @@ class GraphReduction(object):
         self.A = set(A)
         self.B = set(B)
         
-        self._source_Pxx = dict()
-        self._source_tau = dict()
-        self._sink_Pxx = dict()
-        self._sink_tau = dict()
+        self._final_Pxx = dict()
+        self._final_tau = dict()
         
         self.debug = debug
         self.initial_check_graph()
@@ -99,30 +97,40 @@ class GraphReduction(object):
         for x in intermediates:
             self.remove_node(x)
     
+    def get_final_rates(self):
+        kAB = sum(( (1.-self._final_Pxx[x]) / self._final_tau[x]
+                     for x in self.A))
+        kBA = sum(( (1.-self._final_Pxx[x]) / self._final_tau[x]
+                     for x in self.B))
+        return kAB, kBA
+    
     def renormalize(self):
         self._phase_one_remove_intermediates()
         
-#         self._phase_two()
-            
-        while len(self.A) > 1:
-            x = self.A.pop()
-            self.remove_node(x)
-            
-        while len(self.B) > 1:
-            x = self.B.pop()
-            self.remove_node(x)
+        self._phase_two()
         
-        u = iter(self.A).next()
-        v = iter(self.B).next()
-        self.rateAB = self._get_rate(u, v)
-        self.rateBA = self._get_rate(v, u)
-        
-        if self.debug:
-            print "rate ", u, "->", v, self.rateAB
-            print "rate ", v, "->", u, self.rateBA
+        self.rateAB, self.rateBA = self.get_final_rates()
         return self.rateAB, self.rateBA
+            
+#         while len(self.A) > 1:
+#             x = self.A.pop()
+#             self.remove_node(x)
+#             
+#         while len(self.B) > 1:
+#             x = self.B.pop()
+#             self.remove_node(x)
+#         
+#         u = iter(self.A).next()
+#         v = iter(self.B).next()
+#         self.rateAB = self._get_rate(u, v)
+#         self.rateBA = self._get_rate(v, u)
+#         
+#         if self.debug:
+#             print "rate ", u, "->", v, self.rateAB
+#             print "rate ", v, "->", u, self.rateBA
+#         return self.rateAB, self.rateBA
 
-    def _phase_two_group(self, full_graph, group, tau_dict, P_dict):
+    def _phase_two_group(self, full_graph, group):
         for a in group:
             self.graph = full_graph.copy()
             Acopy = set(group)
@@ -132,8 +140,8 @@ class GraphReduction(object):
                 self.remove_node(x)
             
             adata = self.graph.node[a]
-            P_dict[a] = adata["P"]
-            tau_dict[a] = adata["tau"]
+            self._final_Pxx[a] = adata["P"]
+            self._final_tau[a] = adata["tau"]
         
 
     def _phase_two(self):
@@ -156,11 +164,11 @@ class GraphReduction(object):
         kBA = (1/p_eq_B) sum_b PF_bA / tauF_b * p_eq_b
         
         """
-        print "copying graph", iter(self.A).next()
         full_graph = self.graph.copy()
-        self._phase_two_group(full_graph, self.A, self._source_tau, self._source_Pxx)
+        self._phase_two_group(full_graph, self.A)
+        self._phase_two_group(full_graph, self.B)
         
-        # restore the full graph        
+        # restore the full graph
         self.graph = full_graph
             
         
@@ -357,6 +365,8 @@ class GraphReduction(object):
         for b in self.B:
             if not self.graph.has_node(b):
                 raise Exception("an element in the product set is not in the graph")
+        
+        assert len(self.A.intersection(self.B)) == 0
 
         # check A and B are connected
         cc = nx.connected_components(self.graph)

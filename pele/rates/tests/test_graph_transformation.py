@@ -84,29 +84,28 @@ class TestGraphReduction3(unittest.TestCase):
         self._test_rate(0,2)
 
 class TestGraphReductionRandom(unittest.TestCase):
-#     def setUp(self):
-    
-    def test(self):
-        u, v = 0, 1
-        maker = _MakeRandomGraph(nnodes=20, nedges=20, node_set=set([u,v]))
-        graph = maker.run()
-        reducer = GraphReduction(graph, [u], [v])  
-        reducer.check_graph()
-        rAB, rBA = reducer.renormalize()
-        reducer.check_graph()
-        self.assertEqual(reducer.graph.number_of_nodes(), 2)
-        self.assertEqual(reducer.graph.number_of_edges(), 1)
-
-    def test_setA(self):
-        A, B = [0, 1, 2], [3]
+    def do_test(self, A, B, nnodes=20, nedges=20):
         maker = _MakeRandomGraph(nnodes=20, nedges=20, node_set=A+B)
         graph = maker.run()
         reducer = GraphReduction(graph, A, B)  
         reducer.check_graph()
         rAB, rBA = reducer.renormalize()
         reducer.check_graph()
-        self.assertEqual(reducer.graph.number_of_nodes(), 2)
-        self.assertEqual(reducer.graph.number_of_edges(), 1)
+        self.assertEqual(reducer.graph.number_of_nodes(), len(A) + len(B))
+        if len(A) == 1 and len(B) == 1:
+            self.assertEqual(reducer.graph.number_of_edges(), 1)
+            
+    def test(self):
+        A, B = [0], [1]
+        self.do_test(A, B)
+
+    def test_setA(self):
+        A, B = [0, 1, 2], [3]
+        self.do_test(A, B)
+
+    def test_setAB(self):
+        A, B = [0, 1, 2], [3, 4, 5, 6]
+        self.do_test(A, B)
 
 
 if __name__ == "__main__":
