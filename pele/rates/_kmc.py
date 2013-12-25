@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-from pele.rates._rate_calculations import GraphReduction, graph_from_rates, _three_state_graph
+from pele.rates._rate_calculations import GraphReduction
 
 def weighted_pick(weights):
     """sample uniformly from the objects with given weights
@@ -106,22 +106,12 @@ class KineticMonteCarlo(object):
 # testing only below here
 #
 
-import unittest
-class TestKMC(unittest.TestCase):
-    def setUp(self):
-        graph = _three_state_graph()
-        self.kmc = KineticMonteCarlo(graph)
-    
-    def test_mfp(self):
-        time = self.kmc.mean_first_passage_time(0,1,niter=1000)
-        self.assertAlmostEqual(time, 1.0, 1)
-        
         
 def test():
-    
+        from pele.rates.tests.test_graph_transformation import _three_state_graph
         graph = _three_state_graph()
         kmc = KineticMonteCarlo(graph)
         kmc.mean_first_passage_time(0, 1, niter=10000)
 
 if __name__ == "__main__":
-    unittest.main()
+    test()
