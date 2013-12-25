@@ -27,13 +27,20 @@ class RateCalculation(object):
     T : float
         temperature at which to do the the calculation.  Should be in units
         of energy, i.e. include the factor of k_B if necessary.
+    ndof : int
+        number of vibrational degrees freedom
     """
-    def __init__(self, graph, A, B, T, use_fvib=True):
+    def __init__(self, graph, A, B, T=1., ndof=None, use_fvib=True):
         self.tsgraph = graph
         self.A = set(A)
         self.B = set(B)
         self.beta = 1. / T
+        self.ndof = ndof
         self.use_fvib = use_fvib
+        
+        if self.ndof is None:
+            if len(self.A) > 1 or len(self.B) > 1:
+                raise ValueError("if A or B has more than 1 minimum you must pass ndof")
         
     def _reduce_tsgraph(self):
         """remove nodes from tsgraph that are not connected to A"""
@@ -106,12 +113,36 @@ class RateCalculation(object):
         self.Anodes = set([self._min2node(m) for m in self.A]) 
         self.Bnodes = set([self._min2node(m) for m in self.B]) 
 
+    def _log_equilibrium_occupation_probability(self, minimum):
+        # warning, this has not been checked, there might be a bug
+        return (-self.beta * minimum.energy - np.log(minimum.pgorder)
+                - 0.5 * minimum.fvib - self.ndof * np.log(self.beta))
+
+    def _get_equilibrium_occupation_probabilities(self):
+        if self.ndof is None:
+            assert len(self.A) == 1
+            assert len(self.B) == 1
+            self.weights = None
+            return self.weights
+        log_weights = dict()
+        for m in self.A.union(self.B):
+            x = self._min2node(m)
+            log_weights[x] = self._log_equilibrium_occupation_probability(m)
+        
+        # normalize the weights to avoid overflow or underflow when taking the exponential
+        weight_max = max(log_weights.itervalues())
+        self.weights = dict(( (x, np.exp(w - weight_max)) 
+                              for x, w in log_weights.iteritems()
+                            ))
+        return self.weights
+
     def compute_rates(self):
         """compute the rates from A to B and vice versa"""
         self._reduce_tsgraph()
         self._make_rate_graph()
-        reducer = GraphReduction(self.rate_graph, self.Anodes, self.Bnodes)
-        self.rateAB, self.rateBA = reducer.renormalize()
+        weights = self._get_equilibrium_occupation_probabilities()
+        reducer = GraphReduction(self.rate_graph, self.Anodes, self.Bnodes, weights=weights)
+        self.rateAB, self.rateBA = reducer.compute_rates()
         return self.rateAB, self.rateBA
 
 #

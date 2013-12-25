@@ -1,4 +1,5 @@
 import unittest
+import os
 import numpy as np
 import networkx as nx
 
@@ -33,9 +34,12 @@ def create_random_database(system, db, nmin=20, nts=10):
 
 class TestGraphRatesLJ(unittest.TestCase):
     def setUp(self):
+        current_dir = os.path.dirname(__file__)
+        dbfname = current_dir + "/lj13.db"
         self.system = LJCluster(13)
         self.system.params.structural_quench_params.tol = 1e-6
-        self.db = self.system.create_database("lj13.db")
+        self.db = self.system.create_database(dbfname)
+        self.ndof = self.system.get_ndof()
         
         create_random_database(self.system, self.db, 10, 20)
     
@@ -44,16 +48,16 @@ class TestGraphRatesLJ(unittest.TestCase):
         B = [self.db.minima()[-1]]
         
         graph = database2graph(self.db)
-        rcalc = RateCalculation(graph, A, B, T=1.)
+        rcalc = RateCalculation(graph, A, B, ndof=self.ndof, T=1.)
         rAB, rBA = rcalc.compute_rates()
         print "rates", rAB, rBA
 
     def test2(self):
         A = self.db.minima()[:2]
         B = self.db.minima()[2:4]
-        
+
         graph = database2graph(self.db)
-        rcalc = RateCalculation(graph, A, B, T=1.)
+        rcalc = RateCalculation(graph, A, B, T=1., ndof=self.ndof)
         rAB, rBA = rcalc.compute_rates()
         print "rates", rAB, rBA
 
