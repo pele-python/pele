@@ -1,5 +1,3 @@
-import random
-from collections import defaultdict
 import numpy as np
 
 from pele.rates._rate_calculations import GraphReduction
@@ -26,16 +24,6 @@ def weighted_pick(weights):
         if r < s: return u
     return u
 
-
-class CumulativeMean(object):
-    value = 0.
-    count = 0
-    def insert(self, new_value):
-        self.value += new_value
-        self.count += 1
-    def mean(self):
-        return self.value / self.count
-    
 
 class KineticMonteCarlo(object):
     """class to do kinetic Monte Carlo runs
@@ -116,17 +104,31 @@ class KineticMonteCarlo(object):
         print "mean first passage time", tavg
         return tavg
 
-    def mean_rate(self, A, B, niter=1000):
+    def mean_rate(self, A, B, niter=1000, weights=None):
         """return the mean rate from A to B
         
+        Parameters
+        ----------
+        A, B : iteratables
+            groups of nodes
+        weights : dict
+            The equilibrium occupation probabilities of the states in group A.
+            For doing the weighted average over the states in A
+        
+        Notes
+        -----
         the mean rate is the inverse mean first passage time
         averaged over the states in A
         """
+        A = list(A) 
         mfpt = [self.mean_first_passage_time(a, B, niter=niter) for a in A]
         mfpt = np.array(mfpt)
         
-        return np.mean(1./mfpt)
-        
+        if weights is None:
+            return np.mean(1./mfpt)
+        else:
+            weights = np.array([weights[a] for a in A])
+            return np.sum(weights / mfpt) / weights.sum()
 
 #
 # testing only below here

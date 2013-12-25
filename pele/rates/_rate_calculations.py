@@ -1,5 +1,5 @@
 """
-routines to help with computing rates from one subset of a graph to another
+routines for computing rates from one subset of a graph to another
 """
 import itertools
 from collections import defaultdict
@@ -73,6 +73,11 @@ class GraphReduction(object):
     A, B : iterables
         groups of nodes specifying the reactant and product groups.  The rates 
         returned will be the rate from A to B and vice versa.
+    weights : dict
+        dictionary with nodes as keys and weights as values.  The weights are the
+        equilibrium occupation probabilities of the nodes in A and B.  They are used
+        to do the weighted mean for the final average over inverse mean first passage
+        times.
     
     Notes
     -----
@@ -83,12 +88,16 @@ class GraphReduction(object):
     self.get_final_rates) is the inverse mean first passage time
     averaged over the states in A
     
-    TODO: add support for equilibrium occupation probabilities
     """
-    def __init__(self, graph, A, B, debug=False):
+    def __init__(self, graph, A, B, debug=False, weights=None):
         self.graph = graph
         self.A = set(A)
         self.B = set(B)
+        if weights is None:
+            # everything has weight 1
+            self.weights = defaultdict(lambda : 1.)
+        else:
+            self.weights = weights
         
         self._final_Pxx = dict()
         self._final_tau = dict()
@@ -108,23 +117,32 @@ class GraphReduction(object):
         for x in intermediates:
             self.remove_node(x)
     
+    def _get_final_rate(self, group):
+        # make it a list so the iteration order is preserved
+        rate = sum(( (1.-self._final_Pxx[x]) / self._final_tau[x] * self.weights[x]
+                     for x in group))
+        norm = sum((self.weights[x] for x in group))
+        return rate / norm
+        
     def get_final_rates(self):
         """return the average inverse mean first passage time """
-        kAB = sum(( (1.-self._final_Pxx[x]) / self._final_tau[x]
-                     for x in self.A))
-        kBA = sum(( (1.-self._final_Pxx[x]) / self._final_tau[x]
-                     for x in self.B))
-        kAB /= len(self.A)
-        kBA /= len(self.B)
+        kAB = self._get_final_rate(self.A)
+        kBA = self._get_final_rate(self.B)
         return kAB, kBA
     
     def renormalize(self):
+        # this function is deprecated
+        return self.compute_rates()
+
+    def compute_rates(self):
+        """do the computation to compute the rates"""
         self._phase_one_remove_intermediates()
         
         self._phase_two()
         
         self.rateAB, self.rateBA = self.get_final_rates()
         return self.rateAB, self.rateBA
+    
             
 #         while len(self.A) > 1:
 #             x = self.A.pop()

@@ -1,4 +1,5 @@
 import unittest
+import numpy as np
 
 from pele.rates._kmc import KineticMonteCarlo
 from pele.rates._rate_calculations import GraphReduction
@@ -17,22 +18,22 @@ class TestKMC(unittest.TestCase):
     
 
 class TestKMC_GraphReduction(unittest.TestCase):
-    def compare(self, A, B, nnodes=10, nedges=20):
+    def compare(self, A, B, nnodes=10, nedges=20, weights=None):
         maker = _MakeRandomGraph(nnodes=nnodes, nedges=nedges, node_set=A+B)
         graph = maker.run()
         graph_backup = graph.copy()
-        reducer = GraphReduction(graph, A, B)  
+        reducer = GraphReduction(graph, A, B, weights=weights)  
         rAB, rBA = reducer.renormalize()
          
         kmc = KineticMonteCarlo(graph_backup, debug=False)
-        rAB_KMC = kmc.mean_rate(A, B, niter=1000)
+        rAB_KMC = kmc.mean_rate(A, B, niter=1000, weights=weights)
          
         print "NGT rate A->B", rAB
         print "KMC rate A->B", rAB_KMC
         print "normalized difference", (rAB - rAB_KMC)/rAB 
         self.assertLess(abs(rAB - rAB_KMC)/rAB, .1)
          
-        rBA_KMC = kmc.mean_rate(B, A, niter=1000)
+        rBA_KMC = kmc.mean_rate(B, A, niter=1000, weights=weights)
          
         print "NGT rate B->A", rBA
         print "KMC rate B->A", rBA_KMC
@@ -48,6 +49,14 @@ class TestKMC_GraphReduction(unittest.TestCase):
         A = [0,1]
         B = [2, 3]
         self.compare(A, B)
+
+    def test_weights(self, nnodes=10, nedges=20):
+        A = [0,1]
+        B = [2, 3]
+        weights = dict()
+        for x in A+B:
+            weights[x] = np.random.uniform(0,1)
+        self.compare(A, B, weights=weights)
 
 
 if __name__ == "__main__":
