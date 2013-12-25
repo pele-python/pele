@@ -131,6 +131,13 @@ class GraphReduction(object):
 #         return self.rateAB, self.rateBA
 
     def _phase_two_group(self, full_graph, group):
+        """
+        for each element a in the group, remove all other elements in
+        the group then record the node attributes of a for later analysis.
+        
+        Note: This is a very inefficient way to do it.  If this becomes a 
+        bottleneck it should be rewritten.
+        """
         for a in group:
             self.graph = full_graph.copy()
             Acopy = set(group)
