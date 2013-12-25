@@ -1,4 +1,5 @@
 import random
+from collections import defaultdict
 import numpy as np
 
 from pele.rates._rate_calculations import GraphReduction
@@ -25,6 +26,16 @@ def weighted_pick(weights):
         if r < s: return u
     return u
 
+
+class CumulativeMean(object):
+    value = 0.
+    count = 0
+    def insert(self, new_value):
+        self.value += new_value
+        self.count += 1
+    def mean(self):
+        return self.value / self.count
+    
 
 class KineticMonteCarlo(object):
     """class to do kinetic Monte Carlo runs
@@ -93,7 +104,7 @@ class KineticMonteCarlo(object):
             
 
     def mean_first_passage_time(self, a, B, niter=1000):
-        """compute the mean first passage time between nodes a and b
+        """compute the mean first passage time from node a to nodes B
         """
         tavg = 0.
         for i in xrange(niter):
@@ -104,7 +115,19 @@ class KineticMonteCarlo(object):
         tavg /= niter
         print "mean first passage time", tavg
         return tavg
-    
+
+    def mean_rate(self, A, B, niter=1000):
+        """return the mean rate from A to B
+        
+        the mean rate is the inverse mean first passage time
+        averaged over the states in A
+        """
+        mfpt = [self.mean_first_passage_time(a, B, niter=niter) for a in A]
+        mfpt = np.array(mfpt)
+        
+        return np.mean(1./mfpt)
+        
+
 #
 # testing only below here
 #
@@ -114,7 +137,7 @@ def test():
         from pele.rates.tests.test_graph_transformation import _three_state_graph
         graph = _three_state_graph()
         kmc = KineticMonteCarlo(graph)
-        kmc.mean_first_passage_time(0, 1, niter=10000)
+        kmc.mean_first_passage_time([0], [1], niter=10000)
 
 if __name__ == "__main__":
     test()

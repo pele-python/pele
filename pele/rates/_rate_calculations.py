@@ -71,8 +71,17 @@ class GraphReduction(object):
             ("P", v, u) : transition probability from v to u
         
     A, B : iterables
-        groups of nodes specifying the reactant and product groups.  The rates returned will be 
-        the rate from A to B and vice versa.
+        groups of nodes specifying the reactant and product groups.  The rates 
+        returned will be the rate from A to B and vice versa.
+    
+    Notes
+    -----
+    This follows the new graph transformation procedure (NGT) described by 
+    Wales, J. Chem. Phys., 2009 http://dx.doi.org/10.1063/1.3133782
+    
+    The rates, rAB computed by this calculation (returned by 
+    self.get_final_rates) is the inverse mean first passage time
+    averaged over the states in A
     
     TODO: add support for equilibrium occupation probabilities
     """
@@ -100,10 +109,13 @@ class GraphReduction(object):
             self.remove_node(x)
     
     def get_final_rates(self):
+        """return the average inverse mean first passage time """
         kAB = sum(( (1.-self._final_Pxx[x]) / self._final_tau[x]
                      for x in self.A))
         kBA = sum(( (1.-self._final_Pxx[x]) / self._final_tau[x]
                      for x in self.B))
+        kAB /= len(self.A)
+        kBA /= len(self.B)
         return kAB, kBA
     
     def renormalize(self):
