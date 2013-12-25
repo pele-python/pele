@@ -73,6 +73,8 @@ class GraphReduction(object):
     A, B : iterables
         groups of nodes specifying the reactant and product groups.  The rates returned will be 
         the rate from A to B and vice versa.
+    
+    TODO: add support for equilibrium occupation probabilities
     """
     def __init__(self, graph, A, B, debug=False):
         self.graph = graph

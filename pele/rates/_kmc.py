@@ -54,8 +54,8 @@ class KineticMonteCarlo(object):
         return unext, udata["tau"]
         
     
-    def first_passage(self, a, B, niter=1000):
-        """start at A and stop when you get to B, return the time elapsed
+    def first_passage(self, a, B, maxiter=100000):
+        """start at a and stop when you get to B, return the time elapsed
         
         Parameters
         ----------
@@ -79,6 +79,9 @@ class KineticMonteCarlo(object):
             if self.debug: path.append(current_state)
             total_time += time
             niter += 1
+            if niter >= maxiter:
+                print "KMC: error: first_passage maxiter reached"
+            
         
         if self.debug:
             print path[0],
@@ -89,12 +92,12 @@ class KineticMonteCarlo(object):
         return total_time, niter
             
 
-    def mean_first_passage_time(self, a, b, niter=1000):
+    def mean_first_passage_time(self, a, B, niter=1000):
         """compute the mean first passage time between nodes a and b
         """
         tavg = 0.
         for i in xrange(niter):
-            time, count = self.first_passage(a, [b], niter)
+            time, count = self.first_passage(a, B)
     #        print time
             tavg += time
         
