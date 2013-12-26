@@ -13,20 +13,20 @@ class RateCalculation(object):
     
     Parameters 
     ----------
-    graph : networkx.Grapph
-        transition state graph with the minima as nodes and the transition states
-        attached to the edges. You can use the function database2graph() to 
-        create this from a database.:
+    graph : networkx.Graph
+        transition state graph with the minima as nodes and the transition
+        states attached to the edges. You can use the function database2graph()
+        to create this from a database.:
         
             from pele.utils.disconnectivity_graph import database2graph
             graph = database2graph(database)
 
     A, B : iterables
-        groups of minima specifying the reactant and product groups.  The 
-        rates returned will be the rate from A to B and vice versa.
+        groups of minima specifying the reactant and product groups.  The rates
+        returned will be the rate from A to B and vice versa.
     T : float
-        temperature at which to do the the calculation.  Should be in units
-        of energy, i.e. include the factor of k_B if necessary.
+        temperature at which to do the the calculation.  Should be in units of
+        energy, i.e. include the factor of k_B if necessary.
     ndof : int
         number of vibrational degrees freedom
     """
@@ -37,11 +37,11 @@ class RateCalculation(object):
         self.beta = 1. / T
         self.ndof = ndof
         self.use_fvib = use_fvib
-        
+
         if self.ndof is None:
             if len(self.A) > 1 or len(self.B) > 1:
                 raise ValueError("if A or B has more than 1 minimum you must pass ndof")
-        
+
     def _reduce_tsgraph(self):
         """remove nodes from tsgraph that are not connected to A"""
         # get all nodes that are connected to A 
@@ -49,7 +49,7 @@ class RateCalculation(object):
         nodes = nx.node_connected_component(self.tsgraph, u)
         nodes = set(nodes)
         nodes.add(u)
-        
+
         # rebuild tsgraph with only those nodes
         self.tsgraph = self.tsgraph.subgraph(nodes)
         
@@ -65,11 +65,9 @@ class RateCalculation(object):
         if len(Bdiff) > 0:
             print "warning: the product set B is not fully connected or is not connected to A"
             self.B = self.B.difference_update(nodes)
-        assert len(self.B) > 0
+        if len(self.B) == 0:
+            raise Exception("the product set B is empty or not connected to A")
         
-#         if len(self.A) > 1 or len(self.B) > 1:
-#             print "warning rates between minima in the product and reactant set should be set to zero but this isn't implemented yet"
-#             # TODO : implement this
     
     def _get_local_rate(self, min1, min2, ts):
         """rate for going from min1 to min2
@@ -114,6 +112,11 @@ class RateCalculation(object):
         self.Bnodes = set([self._min2node(m) for m in self.B]) 
 
     def _log_equilibrium_occupation_probability(self, minimum):
+        """return the log equilibrium occupation probability
+        
+        This is computed from the harmonic superposition approximation.  Some
+        constants that are the same for all minima have been left out.
+        """
         # warning, this has not been checked, there might be a bug
         return (-self.beta * minimum.energy - np.log(minimum.pgorder)
                 - 0.5 * minimum.fvib - self.ndof * np.log(self.beta))

@@ -66,7 +66,7 @@ class TestGraphReduction3(unittest.TestCase):
     def _test_rate(self, i, j):
         reducer = GraphReduction(self.graph, [i], [j], debug=False)
         reducer.check_graph()
-        rAB, rBA = reducer.renormalize()
+        rAB, rBA = reducer.compute_rates()
         reducer.check_graph()
         self.assertEqual(reducer.graph.number_of_nodes(), 2)
         self.assertEqual(reducer.graph.number_of_edges(), 1)
@@ -88,7 +88,7 @@ class TestGraphReductionRandom(unittest.TestCase):
         graph = maker.run()
         reducer = GraphReduction(graph, A, B)  
         reducer.check_graph()
-        rAB, rBA = reducer.renormalize()
+        rAB, rBA = reducer.compute_rates()
         reducer.check_graph()
         self.assertEqual(reducer.graph.number_of_nodes(), len(A) + len(B))
         if len(A) == 1 and len(B) == 1:

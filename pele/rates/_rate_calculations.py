@@ -13,8 +13,8 @@ def graph_from_rates(rates):
     Parameters
     ----------
     rates : dict
-        a dictionary of rates.  the keys are tuples of nodes (u,v), the
-        values are the rates.
+        a dictionary of rates.  the keys are tuples of nodes (u,v), the values
+        are the rates.
         
             rate_uv = rate[(u,v)]
     """
@@ -57,36 +57,37 @@ class GraphReduction(object):
     Parameters
     ----------
     graph : networkx.Graph object
-        an undirected graph specifying the connectivity, the initial transition probabilities
-        and the occupation times.  The graph must have all the data in the correct format.
-        Each node must have the following keys in their attributes dictionary::
+        An undirected graph specifying the connectivity, the initial transition
+        probabilities and the occupation times.  The graph must have all the
+        data in the correct format.  Each node must have the following keys in
+        their attributes dictionary::
             
             "P"   : the probability to stay in this state
             "tau" : occupation time
         
-        Each edge between nodes u and v must have the following keys in their 
+        Each edge between nodes u and v must have the following keys in their
         attributes dictionary:
         
             ("P", u, v) : transition probability from u to v
             ("P", v, u) : transition probability from v to u
         
     A, B : iterables
-        groups of nodes specifying the reactant and product groups.  The rates 
+        Groups of nodes specifying the reactant and product groups.  The rates
         returned will be the rate from A to B and vice versa.
     weights : dict
-        dictionary with nodes as keys and weights as values.  The weights are the
-        equilibrium occupation probabilities of the nodes in A and B.  They are used
-        to do the weighted mean for the final average over inverse mean first passage
-        times.
+        Dictionary with nodes as keys and weights as values.  The weights are
+        the equilibrium occupation probabilities of the nodes in A and B.  They
+        are used to do the weighted mean for the final average over inverse
+        mean first passage times.
     
     Notes
     -----
     This follows the new graph transformation procedure (NGT) described by 
-    Wales, J. Chem. Phys., 2009 http://dx.doi.org/10.1063/1.3133782
+    David Wales, J. Chem. Phys., 2009 http://dx.doi.org/10.1063/1.3133782
     
-    The rates, rAB computed by this calculation (returned by 
-    self.get_final_rates) is the inverse mean first passage time
-    averaged over the states in A
+    The rate, rAB computed by this calculation (returned by
+    self.get_final_rates) is the inverse mean first passage time averaged over
+    the states in A
     
     """
     def __init__(self, graph, A, B, debug=False, weights=None):
@@ -118,7 +119,7 @@ class GraphReduction(object):
             self.remove_node(x)
     
     def _get_final_rate(self, group):
-        # make it a list so the iteration order is preserved
+        # should maybe be careful when Pxx is very close to 1.
         rate = sum(( (1.-self._final_Pxx[x]) / self._final_tau[x] * self.weights[x]
                      for x in group))
         norm = sum((self.weights[x] for x in group))
@@ -130,10 +131,6 @@ class GraphReduction(object):
         kBA = self._get_final_rate(self.B)
         return kAB, kBA
     
-    def renormalize(self):
-        # this function is deprecated
-        return self.compute_rates()
-
     def compute_rates(self):
         """do the computation to compute the rates"""
         self._phase_one_remove_intermediates()
@@ -142,25 +139,6 @@ class GraphReduction(object):
         
         self.rateAB, self.rateBA = self.get_final_rates()
         return self.rateAB, self.rateBA
-    
-            
-#         while len(self.A) > 1:
-#             x = self.A.pop()
-#             self.remove_node(x)
-#             
-#         while len(self.B) > 1:
-#             x = self.B.pop()
-#             self.remove_node(x)
-#         
-#         u = iter(self.A).next()
-#         v = iter(self.B).next()
-#         self.rateAB = self._get_rate(u, v)
-#         self.rateBA = self._get_rate(v, u)
-#         
-#         if self.debug:
-#             print "rate ", u, "->", v, self.rateAB
-#             print "rate ", v, "->", u, self.rateBA
-#         return self.rateAB, self.rateBA
 
     def _phase_two_group(self, full_graph, group):
         """
@@ -179,10 +157,11 @@ class GraphReduction(object):
                 self.remove_node(x)
             
             adata = self.graph.node[a]
+            # in the paper, to avoid numerical errors DJW computes 
+            # 1-Pxx as sum_j Pxj if Pxx > .99         
             self._final_Pxx[a] = adata["P"]
             self._final_tau[a] = adata["tau"]
         
-
     def _phase_two(self):
         """
         in this second phase we deal with starting and ending sets that have more
@@ -210,23 +189,6 @@ class GraphReduction(object):
         # restore the full graph
         self.graph = full_graph
             
-        
-#         a = iter(self.A).next()
-#         b = iter(self.B).next()
-#         abdata = self._get_edge_data(a, b)
-#         abdata2 = self._get_edge_data(a, b, graph=full_graph) 
-#         print "before", abdata, abdata2
-#         abdata2[self.Pkey(a, b)] = 0.222
-#         print "after ", abdata, abdata2
- 
-    def _get_rate(self, u, v):
-        uvdata = self._get_edge_data(u, v)
-        Puv = uvdata[self.Pkey(u, v)]
-        tauu = self.graph.node[u]["tau"]
-        
-        return Puv / tauu
-        
-    
     def _add_edge(self, u, v):
         """add an edge to the graph and initialize it with the appropriate data"""
         if self.debug: print "creating edge", u, v
@@ -246,7 +208,6 @@ class GraphReduction(object):
         except KeyError:
             return graph[v][u]
 
-    
     def _update_edge(self, u, v, uxdata, vxdata, x, xdata):
         """
         update the probabilities of transition between u and v upon removing node x
@@ -291,6 +252,8 @@ class GraphReduction(object):
         
         Puu -> Puu + Pux * Pxu / (1-Pxx)
         """
+        # in the paper, to avoid numerical errors DJW computes 
+        # 1-Pxx as sum_j Pxj if Pxx > .99         
         taux = xdata["tau"]
         Pxx = xdata["P"]
         
@@ -312,9 +275,7 @@ class GraphReduction(object):
         
         if self.debug:
             print "updating node data", u, "P", Pold, "->", udata["P"], "tau", tauold, "->", udata["tau"]
-        
-            
-    
+
     def remove_node(self, x):
         """
         remove node x from the graph and update the neighbors of x
@@ -335,14 +296,14 @@ class GraphReduction(object):
                 self._update_edge(u, v, udata, vdata, x, xdata)
         
         self.graph.remove_node(x)
-    
+
     def _print_node_data(self, u):
         print "data from node x =", u
         udata = self.graph.node[u]  
 #        print "checking node", u
         print "  taux",  udata["tau"]
         print "  Pxx",  udata["P"]
-        
+
         total_prob = udata["P"]
         for x, v, uvdata in self.graph.edges(u, data=True):
             print "  Pxv", uvdata[self.Pkey(u, v)], ": v =", v
@@ -481,7 +442,7 @@ def test(nnodes=36):
     B = set(graph.nodes()[-2:])
     print "A B", A, B
     reducer = GraphReduction(graph, A, B)
-    rAB, rBA = reducer.renormalize()
+    rAB, rBA = reducer.compute_rates()
     reducer.check_graph()
     print "number of nodes", graph.number_of_nodes()
     print "rates", rAB, rBA
