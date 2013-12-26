@@ -534,8 +534,8 @@ class PrintEvent:
         self.coordslist = []
 
     def __call__(self, coords, **kwargs):
-        from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz 
-        printxyz(self.fout, coords)
+        from pele.utils.xyz import write_xyz
+        write_xyz(self.fout, coords)
         self.coordslist.append( coords.copy() )
         
     

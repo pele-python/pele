@@ -44,9 +44,9 @@ print "testing gradient (should be small)", res
 
 fname = "out.xyz"
 print "saving coordinates to", fname
-from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+from pele.utils.xyz import write_xyz
 with open(fname, "w") as fout:
     for xyz,line2 in printlist:
         #xyz = putInBox(xyz, boxl)
-        printxyz(fout, xyz, line2=line2) 
+        write_xyz(fout, xyz, title=line2) 
         

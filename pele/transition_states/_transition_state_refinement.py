@@ -644,7 +644,6 @@ def testgetcoordsATLJ():
 
 def testpot1():
     import itertools
-    from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
     pot, coords, coords1, coords2 = guesstsLJ()
     coordsinit = np.copy(coords)
     natoms = len(coords)/3
@@ -661,26 +660,26 @@ def testpot1():
 
     
     
-    from pele.printing.print_atoms_xyz import PrintEvent
+    from pele.utils.xyz import write_xyz
 
     #print ret
     
     with open("out.xyz", "w") as fout:
         e = pot.getEnergy(coords1)
         print "energy of minima 1", e
-        printxyz(fout, coords1, line2=str(e))
+        write_xyz(fout, coords1, title=str(e))
         e, grad = pot.getEnergyGradient(coordsinit)
         print "energy of NEB guess for the transition state", e, "rms grad", \
             np.linalg.norm(grad) / np.sqrt(float(len(coords))/3.)
-        printxyz(fout, coordsinit, line2=str(e))
+        write_xyz(fout, coordsinit, title=str(e))
         e = pot.getEnergy(coords2)
         print "energy of minima 2", e
-        printxyz(fout, coords2, line2=str(e))
+        write_xyz(fout, coords2, title=str(e))
         
         #mess up coords a bit
         coords += np.random.uniform(-1,1,len(coords))*0.05
         e = pot.getEnergy(coords)
-        printxyz(fout, coords, line2=str(e))
+        write_xyz(fout, coords, title=str(e))
 
         
         printevent = PrintEvent(fout)
@@ -690,7 +689,7 @@ def testpot1():
         print ret
         #coords, eval, evec, e, grad, rms = ret
         e = pot.getEnergy(ret.coords)
-        printxyz(fout, coords2, line2=str(e))
+        write_xyz(fout, coords2, title=str(e))
 
     print "finished searching for transition state"
     print "energy", e

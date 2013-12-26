@@ -1,1 +1,0 @@
-from print_atoms_xyz import *

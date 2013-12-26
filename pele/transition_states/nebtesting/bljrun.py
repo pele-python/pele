@@ -5,13 +5,13 @@ import basinhopping
 from pele.optimize import lbfgs_scipy as quench
 #from potentials.lj import LJ
 from mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
-from printing.print_atoms_xyz import printAtomsXYZ
+from pele.utils.xyz import write_xyz
 
 
 def printpath(fout, coordslist, atomtypes = ["LA"]):
     nimages = len(coordslist[:,0])
     for i in range(nimages):
-        printAtomsXYZ(fout, coordslist[i,:], atom_type=atomtypes)
+        write_xyz(fout, coordslist[i,:], atom_type=atomtypes)
 
 def printpath_EoS(fout, coordslist, getEnergy):
     nimages = len(coordslist[:,0])
