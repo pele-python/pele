@@ -5,7 +5,7 @@ from pele.mc import MonteCarlo
 from pele.takestep.displace import RandomDisplacement as TakeStep
 from pele.takestep.adaptive import AdaptiveStepsize
 import sys
-from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+from pele.utils.xyz import write_xyz
 
 class PrintEvent(object):
     def __init__(self, fout, printfrq = 1):
@@ -23,7 +23,7 @@ class PrintEvent(object):
     def printwrapper(self, E, coords, accepted):
         if self.count % self.printfrq == 0: 
             self.center(coords)
-            printxyz(self.fout, coords, line2=str(E))
+            write_xyz(self.fout, coords, title=str(E))
         self.count += 1
 
 #def center(E, coords, accepted):

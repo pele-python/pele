@@ -17,7 +17,7 @@ from pele.landscape import DoubleEndedConnect, smoothPath
 from pele.mindist import MinPermDistAtomicCluster
 from pele.transition_states import orthogopt
 from pele.storage import Database, Minimum
-from pele.printing import printAtomsXYZ
+from pele.utils.xyz import write_xyz
 np.random.seed(0)
 
 #set up the potential
@@ -121,7 +121,7 @@ xyzfile = "path.xyz"
 print "saving path in xyz format to", xyzfile
 with open(xyzfile, "w") as fout:
     for m in mints:
-        printAtomsXYZ(fout, m.coords, line2=str(m.energy))
+        write_xyz(fout, m.coords, title=str(m.energy))
 
 
 xyzfile = "path.smooth.xyz"
@@ -130,7 +130,7 @@ clist = [m.coords for m in mints]
 smoothed = smoothPath(clist, mindist)
 with open(xyzfile, "w") as fout:
     for coords in smoothed:
-        printAtomsXYZ(fout, coords)
+        write_xyz(fout, coords)
 
 if False:
     try:
