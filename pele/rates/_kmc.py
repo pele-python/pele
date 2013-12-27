@@ -30,7 +30,7 @@ class KineticMonteCarlo(object):
     
     Parameters
     ----------
-    graph : networkx.Graph()
+    graph : networkx.DiGraph()
         see GraphReduction for a description of how to attach transition
         probabilities and waiting times
     """
@@ -41,15 +41,15 @@ class KineticMonteCarlo(object):
     def next(self, u):
         udata = self.graph.node[u]
         
-        rates = {u:udata["P"]}
-        for x, v, uvdata in self.graph.edges(u, data=True):
+        transition_probabilities = dict()
+        for x, v, uvdata in self.graph.edges_iter(u, data=True):
             assert u == x
-            kuv = uvdata[GraphReduction.Pkey(u, v)]
-            rates[v] = kuv
+            kuv = uvdata["P"]
+            transition_probabilities[v] = kuv
         
-        unext = weighted_pick(rates)
+        unext = weighted_pick(transition_probabilities)
 #        print "rates", u, ":", rates, "chosen", unext
-        
+
         return unext, udata["tau"]
         
     
@@ -101,7 +101,7 @@ class KineticMonteCarlo(object):
             tavg += time
         
         tavg /= niter
-        print "mean first passage time", tavg
+#         print "mean first passage time", tavg
         return tavg
 
     def mean_rate(self, A, B, niter=1000, weights=None):
@@ -130,16 +130,35 @@ class KineticMonteCarlo(object):
             weights = np.array([weights[a] for a in A])
             return np.sum(weights / mfpt) / weights.sum()
 
-#
-# testing only below here
-#
+    def committor(self, x, A, B, maxiter=100000):
+        """starting from x return True if the trajectory ends up B before it enters A
+        """
+        A = set(A)
+        B = set(B)
 
+        current_state = x
+        total_time = 0.
+        niter = 0
+        while True:
+            unext, time = self.next(current_state)
+            current_state = unext
+            total_time += time
+            niter += 1
+#             print "in state", current_state
+            if niter >= maxiter:
+                raise Exception("committor maxiter reached")
+            if current_state in A or current_state in B:
+                break
+
+        return current_state in B
+    
+    def committor_probability(self, x, A, B, niter=1000):
+        nB = 0
+        for i in xrange(niter):
+            result = self.committor(x, A, B)
+            if result:
+                nB += 1
+        pB = float(nB) / niter
+        return pB
+    
         
-def test():
-        from pele.rates.tests.test_graph_transformation import _three_state_graph
-        graph = _three_state_graph()
-        kmc = KineticMonteCarlo(graph)
-        kmc.mean_first_passage_time([0], [1], niter=10000)
-
-if __name__ == "__main__":
-    test()

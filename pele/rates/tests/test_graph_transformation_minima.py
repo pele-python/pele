@@ -9,7 +9,7 @@ from pele.thermodynamics import get_thermodynamic_information
 from pele.utils.disconnectivity_graph import database2graph
 
 from pele.rates import RateCalculation
-from pele.rates._rate_calculations import GraphReduction, graph_from_rates
+from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
 from test_graph_transformation import _MakeRandomGraph
 

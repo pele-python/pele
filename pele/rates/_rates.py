@@ -4,7 +4,7 @@ import networkx as nx
 import numpy as np
 
 from pele.utils.disconnectivity_graph import database2graph
-from pele.rates._rate_calculations import GraphReduction, graph_from_rates
+from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
 __all__ = ["RateCalculation"]
 
@@ -91,7 +91,7 @@ class RateCalculation(object):
     def _min2node(self, minimum):
         return minimum._id
     
-    def _make_rate_graph(self):
+    def _make_kmc_graph(self):
         """build the graph that will be used in the rate calculation"""
         # get rate constants over transition states
         rates = dict()
@@ -105,7 +105,7 @@ class RateCalculation(object):
             rates[(v,u)] = kvu
         
         # make the rate graph from the rate constants
-        self.rate_graph = graph_from_rates(rates)
+        self.kmc_graph = kmcgraph_from_rates(rates)
 
         # translate the product and reactant set into the new node definition  
         self.Anodes = set([self._min2node(m) for m in self.A]) 
@@ -142,10 +142,12 @@ class RateCalculation(object):
     def compute_rates(self):
         """compute the rates from A to B and vice versa"""
         self._reduce_tsgraph()
-        self._make_rate_graph()
+        self._make_kmc_graph()
         weights = self._get_equilibrium_occupation_probabilities()
-        reducer = GraphReduction(self.rate_graph, self.Anodes, self.Bnodes, weights=weights)
-        self.rateAB, self.rateBA = reducer.compute_rates()
+        self.reducer = GraphReduction(self.kmc_graph, self.Anodes, self.Bnodes, weights=weights)
+        self.reducer.compute_rates()
+        self.rateAB = self.reducer.get_rate_AB()
+        self.rateBA = self.reducer.get_rate_BA()
         return self.rateAB, self.rateBA
 
 #

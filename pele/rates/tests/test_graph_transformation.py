@@ -3,7 +3,7 @@ import numpy as np
 import networkx as nx
 
 from pele.rates import RateCalculation
-from pele.rates._rate_calculations import GraphReduction, graph_from_rates
+from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
 
 class _MakeRandomGraph(object):
@@ -41,7 +41,7 @@ class _MakeRandomGraph(object):
         while(len(self.rates) < nedges):
             self.add_random_edge()
         print "made random graph with", len(self.nodes), "nodes and", len(self.rates) / 2, "edges"
-        return graph_from_rates(self.rates)
+        return kmcgraph_from_rates(self.rates)
     
     
 
@@ -55,7 +55,7 @@ def _three_state_graph():
             if i != j:
                 rates[(i,j)] = tmatrix[i][j]
 
-    return graph_from_rates(rates)
+    return kmcgraph_from_rates(rates)
 
 class TestGraphReduction3(unittest.TestCase):
     def setUp(self):
@@ -66,10 +66,12 @@ class TestGraphReduction3(unittest.TestCase):
     def _test_rate(self, i, j):
         reducer = GraphReduction(self.graph, [i], [j], debug=False)
         reducer.check_graph()
-        rAB, rBA = reducer.compute_rates()
+        reducer.compute_rates()
+        rAB = reducer.get_rate_AB()
+        rBA = reducer.get_rate_BA()
         reducer.check_graph()
         self.assertEqual(reducer.graph.number_of_nodes(), 2)
-        self.assertEqual(reducer.graph.number_of_edges(), 1)
+        self.assertEqual(reducer.graph.number_of_edges(), 4)
         self.assertAlmostEqual(rAB, self.final_rate, 7)
         self.assertAlmostEqual(rBA, self.final_rate, 7)
 
@@ -86,22 +88,24 @@ class TestGraphReductionRandom(unittest.TestCase):
     def do_test(self, A, B, nnodes=20, nedges=20):
         maker = _MakeRandomGraph(nnodes=20, nedges=20, node_set=A+B)
         graph = maker.run()
-        reducer = GraphReduction(graph, A, B)  
+        reducer = GraphReduction(graph, A, B, debug=False)  
         reducer.check_graph()
-        rAB, rBA = reducer.compute_rates()
+        reducer.compute_rates()
+        rAB = reducer.get_rate_AB()
+        rBA = reducer.get_rate_BA()
         reducer.check_graph()
         self.assertEqual(reducer.graph.number_of_nodes(), len(A) + len(B))
         if len(A) == 1 and len(B) == 1:
-            self.assertEqual(reducer.graph.number_of_edges(), 1)
-            
+            self.assertLessEqual(reducer.graph.number_of_edges(), 4)
+             
     def test(self):
         A, B = [0], [1]
         self.do_test(A, B)
-
+ 
     def test_setA(self):
         A, B = [0, 1, 2], [3]
         self.do_test(A, B)
-
+  
     def test_setAB(self):
         A, B = [0, 1, 2], [3, 4, 5, 6]
         self.do_test(A, B)
