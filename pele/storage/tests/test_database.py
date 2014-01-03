@@ -198,7 +198,33 @@ class TestDB(unittest.TestCase):
         current_dir = os.path.dirname(__file__)
         dbname = current_dir + "/lj6_schema2.sqlite"
         db = Database(dbname, createdb=False)
-
+    
+    def test_invalid(self):
+        m = self.db.minima()[0]
+        self.assertFalse(m.invalid)
+        m.invalid = True
+        self.db.session.commit()
+        self.assertTrue(m.invalid)
+        
+        # now with a ts
+        m = self.db.transition_states()[0]
+        self.assertFalse(m.invalid)
+        m.invalid = True
+        self.db.session.commit()
+        self.assertTrue(m.invalid)
+    
+    def test_user_data(self):
+        m = self.db.minima()[0]
+        m.user_data = dict(key="value")
+        self.db.session.commit()
+        v = m.user_data["key"]
+        
+        # now with a transition state
+        m = self.db.transition_states()[0]
+        m.user_data = dict(key="value")
+        self.db.session.commit()
+        v = m.user_data["key"]
+        
 def benchmark_number_of_minima():
     import time, sys
     import numpy as np
