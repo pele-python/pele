@@ -313,6 +313,8 @@ class MainGUI(QtGui.QMainWindow):
         if not hasattr(self, "normalmode_explorer"):
             self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
         min1 = self.ui.ogl_main.minima[1]
+        if min1 is None:
+            raise RuntimeError("you must select a minimum first")
         self.normalmode_explorer.set_coords(min1.coords)
         self.normalmode_explorer.show()
     
@@ -321,6 +323,8 @@ class MainGUI(QtGui.QMainWindow):
         if not hasattr(self, "normalmode_explorer"):
             self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
         ts = self.list_manager.get_selected_ts()
+        if ts is None:
+            raise RuntimeError("you must select a transition state first")
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
     

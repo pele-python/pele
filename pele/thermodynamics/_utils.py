@@ -3,7 +3,7 @@ routines for computing thermodynamic information
 """
 
 import multiprocessing as mp
-from collections import deque
+from pele.thermodynamics._normalmodes import NormalModeError
 
 class _ThermoWorker(mp.Process):
     """worker to calculate the thermodynamic data in a separate process
@@ -43,12 +43,18 @@ class _ThermoWorker(mp.Process):
                 raise Exception("mts must be 'm' or 'ts'")
             
             # do the computation
+            invalid = False
             pgorder = self.system.get_pgorder(coords)
-            fvib = self.system.get_log_product_normalmode_freq(coords, nnegative=nnegative)
+            try:
+                fvib = self.system.get_log_product_normalmode_freq(coords, nnegative=nnegative)
+            except NormalModeError, e:
+                fvib = None
+                invalid = True
+                print str(e)
             if self.verbose:
                 print "finished computing thermodynamic info for minimum", mid, pgorder, fvib
             
-            self.output_queue.put((mts, mid, fvib, pgorder))
+            self.output_queue.put((mts, mid, fvib, pgorder, invalid))
 
 
 class GetThermodynamicInfoParallel(object):
@@ -97,15 +103,19 @@ class GetThermodynamicInfoParallel(object):
                 self.send_queue.put(("ts", ts._id, ts.coords))
     
     def _process_return_value(self, ret):
-        mts, mid, fvib, pgorder = ret
+        mts, mid, fvib, pgorder, invalid = ret
         if mts == "m":
             m = self.database.getMinimum(mid)
             m.fvib = fvib
             m.pgorder = pgorder
+            if invalid:
+                m.invalid = True
         elif mts == "ts":
             ts = self.database.getTransitionStateFromID(mid)
             ts.fvib = fvib
             ts.pgorder = pgorder
+            if invalid:
+                ts.invalid = True
         else:
             raise Exception("mts must be 'm' or 'ts'")
         self.database.session.commit()
