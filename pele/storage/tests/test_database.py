@@ -1,6 +1,7 @@
-from pele.storage import Database
 import unittest
-from numpy.ma.testutils import assert_equal
+import os
+
+from pele.storage import Database
 
 class TestDB(unittest.TestCase):
     def setUp(self):
@@ -186,6 +187,17 @@ class TestDB(unittest.TestCase):
         for name, value in props.iteritems():
             p = self.db.get_property(name)
             self.assertEqual(p.value(), value)
+    
+    def test_load_wrong_schema(self):
+        current_dir = os.path.dirname(__file__)
+        dbname = current_dir + "/lj6_schema1.sqlite"
+        with self.assertRaises(IOError):
+            db = Database(dbname, createdb=False)
+    
+    def test_load_right_schema(self):
+        current_dir = os.path.dirname(__file__)
+        dbname = current_dir + "/lj6_schema2.sqlite"
+        db = Database(dbname, createdb=False)
 
 def benchmark_number_of_minima():
     import time, sys
