@@ -327,7 +327,7 @@ class MainGUI(QtGui.QMainWindow):
             raise RuntimeError("you must select a transition state first")
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
-    
+
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
         self.list_manager.NewMinimum(minimum, sort_items=sort_items)

@@ -44,6 +44,19 @@ class RateCalculation(object):
 
     def _reduce_tsgraph(self):
         """remove nodes from tsgraph that are not connected to A"""
+        # remove nodes with invalid minima
+        nodes = [m for m in self.tsgraph.nodes() if m.invalid]
+        if len(nodes) > 0:
+            print "removing %s invalid minima from rate graph" % (len(nodes))
+            self.tsgraph.remove_nodes_from(nodes)
+        
+        # remove invalid transition states
+        edges = [(u,v) for u,v,data in self.tsgraph.edges_iter(data=True) if data["ts"].invalid]
+        if len(edges) > 0:
+            print "removing %s invalid transition states from rate graph" % (len(nodes))
+            self.tsgraph.remove_edges_from(edges)
+        
+        
         # get all nodes that are connected to A 
         u = iter(self.A).next()
         nodes = nx.node_connected_component(self.tsgraph, u)

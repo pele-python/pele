@@ -50,6 +50,10 @@ class _ThermoWorker(mp.Process):
             except NormalModeError, e:
                 fvib = None
                 invalid = True
+                if mts == "m":
+                    print "problem computing normal modes for minimum with id", mid
+                else:  
+                    print "problem computing normal modes for transition state with id", mid
                 print str(e)
             if self.verbose:
                 print "finished computing thermodynamic info for minimum", mid, pgorder, fvib
