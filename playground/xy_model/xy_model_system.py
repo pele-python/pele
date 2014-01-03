@@ -41,8 +41,11 @@ class XYModlelSystem(BaseSystem):
         params.takestep.stepsize = np.pi# / 2.
         params.takestep.verbose = True
 #        params.double_ended_connect.local_connect_params.NEBparams.interpolator = interpolate_spins
-        params.double_ended_connect.local_connect_params.NEBparams.image_density = 3
+        params.double_ended_connect.local_connect_params.NEBparams.image_density = .8
+        params.double_ended_connect.local_connect_params.NEBparams.iter_density = 50.
         params.double_ended_connect.local_connect_params.NEBparams.reinterpolate = 50
+        params.double_ended_connect.local_connect_params.NEBparams.adaptive_nimages = True
+        params.double_ended_connect.local_connect_params.NEBparams.adaptive_niter = False
 #        params.double_ended_connect.local_connect_params.NEBparams.distance = spin3d_distance
         params.structural_quench_params.tol = 1e-6
         params.database.overwrite_properties = False
@@ -166,7 +169,7 @@ def run_gui():
     system = XYModlelSystem(dim=[24,24], phi_disorder=np.pi)
     run_gui(system)
 
-def run_gui_db(dbname="xy1_10x103.sqlite"):
+def run_gui_db(dbname="xy_10x10.sqlite"):
     from pele.gui import run_gui
     from pele.storage import Database
     try:
@@ -177,12 +180,12 @@ def run_gui_db(dbname="xy1_10x103.sqlite"):
     system = XYModlelSystem(dim=[10,10], phi_disorder=np.pi, phases=phases)
     run_gui(system, db=dbname)
 
-def run_gui_nodisorder():
+def run_gui_nodisorder(L=24):
     from pele.gui import run_gui
-    dim=[10,10]
+    dim=[L,L]
     system = XYModlelSystem(dim=dim, phi_disorder=0.)
     system.params.basinhopping.temperature=10.
-    dbname="xy_10x10_nodisorder4.sqlite"
+    dbname="xy_%dx%d_nodisorder.sqlite" %(L,L)
     run_gui(system, db=dbname)
 
 def test_potential():
@@ -196,8 +199,8 @@ if __name__ == "__main__":
 #    from pele.storage import Database
 #    db = Database("20x20_no_disorder.sqlite")
 #    normalize_spins_db(db)
-    run_gui_db()
-#    run_gui_nodisorder()
+#    run_gui_db()
+    run_gui_nodisorder()
         
     
     

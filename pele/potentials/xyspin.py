@@ -85,7 +85,19 @@ class XYModel(BasePotential):
             
         self.neighbors = np.array(neighbors).reshape([-1,2])
 
+    def get_spin_energies(self, angles):
+        """return the local energy of each spin"""
+        energies = np.zeros(angles.size)
+        for edge in self.G.edges():
+            phase = self.phases[edge]
+            u = self.indices[edge[0]]
+            v = self.indices[edge[1]]
+            E = np.cos( -angles[u] + angles[v] + phase )
+            energies[u] += E
+            energies[v] += E
+        return energies
         
+      
     def getEnergy(self, angles):
         e, g = self.getEnergyGradient(angles)
         return e
