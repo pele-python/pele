@@ -17,7 +17,7 @@ import os
 
 __all__ = ["Minimum", "TransitionState", "Database"]
 
-_schema_version = 1
+_schema_version = 2
 verbose=False
 
 Base = declarative_base()
@@ -57,14 +57,21 @@ class Minimum(Base):
     energy = Column(Float) 
     # deferred means the object is loaded on demand, that saves some time / memory for huge graphs
     coords = deferred(Column(PickleType))
+    '''coordinates of the minimum'''
     fvib = Column(Float)
+    """log product of the squared normal mode frequencies"""
     pgorder = Column(Integer)
+    """point group order"""
+    invalid = Column(Integer)
+    """flag indicating if the minimum is invalid"""
+    user_data = deferred(Column(PickleType))
+    """this can be used to store information about the minimum"""
     
-    '''coordinates'''
     
     def __init__(self, energy, coords):
         self.energy = energy
         self.coords = np.copy(coords)
+        self.invalid = False
  
     def right_neighbors(self):
         return [x.higher_node for x in self.left_edges]
@@ -161,8 +168,15 @@ class TransitionState(Base):
     '''coordinates of transition state'''
 
     fvib = Column(Float)
-    pgorder = Column(Integer)    
-    
+    """log product of the squared normal mode frequencies"""
+    pgorder = Column(Integer)
+    """point group order"""
+    invalid = Column(Integer)
+    """flag indicating if the transition state is invalid"""
+    user_data = deferred(Column(PickleType))
+    """this can be used to store information about the transition state """
+
+
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
         assert min1._id is not None
         assert min2._id is not None
@@ -178,6 +192,7 @@ class TransitionState(Base):
             
         self.eigenvec = np.copy(eigenvec)
         self.eigenval = eigenval
+        self.invalid = False
 
 
 class SystemProperty(Base):

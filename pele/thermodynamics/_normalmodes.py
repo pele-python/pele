@@ -4,6 +4,13 @@ from pele.utils.hessian import sort_eigs
 
 __all__ = ["normalmode_frequencies", "normalmodes", "logproduct_freq2"]
 
+class NormalModeError(Exception):
+    """raised if the normal mode results are not as expected
+
+    this typically means that a minimum is actually a transition state,
+    or a transition state is actually a higher order saddle
+    """
+
 def normalmode_frequencies(hessian, metric=None, eps=1e-4):
     '''calculate (squared) normal mode frequencies
     
@@ -114,11 +121,10 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
         raise ValueError("the number of zero eigenvalues (%d) differs from the expected value (%d)" % (izero, nzero))
     if nnegative != inegative:
         if nnegative > 0 and inegative > nnegative:
-            print "warning: the number of negative eigenvalues (%d) is greater than the expected " \
-                         "number (%d).  Is this a higher order saddle point? ignoring" % (inegative, nnegative)
-            lnf = None
+            raise NormalModeError("the number of negative eigenvalues (%d) is greater than expected "
+                         "(%d).  Is this a higher order saddle point?" % (inegative, nnegative))
         else:
-            raise ValueError("the number of negative eigenvalues (%d) differs from the expected "
+            raise NormalModeError("the number of negative eigenvalues (%d) differs from the expected "
                          "number (%d) (not a minimum / transition state?)" % (inegative, nnegative))
 
     return n, lnf
