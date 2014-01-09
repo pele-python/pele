@@ -1,6 +1,8 @@
-import numpy as np
-from pele.storage import Database, Minimum, TransitionState
 import argparse
+import os
+import numpy as np
+
+from pele.storage import Database, Minimum, TransitionState
 
 def read_points_min_ts(fname, ndof=None, endianness="="):
     """
@@ -42,28 +44,27 @@ def read_points_min_ts(fname, ndof=None, endianness="="):
         coords = np.fromfile(fin, dtype=np.dtype(endianness+"d"))
     if ndof is not None:
         if len(coords) % ndof != 0:
-                raise Exception("number of double precision variables read from %s is not divisible by ndof (%d)" % 
-                                (fname, ndof) )
+                raise Exception("number of double precision variables read from %s (%s) is not divisible by ndof (%d)" % 
+                                (fname, len(coords), ndof) )
 #    print coords
-    return coords.flatten()
+    return coords.reshape(-1)
 
 class Convert(object):
     '''
     Converts old OPTIM to pele database
     '''
-    def __init__(self, ndof, db_name="Database.db", mindata="min.data", 
+    def __init__(self, ndof, database, mindata="min.data", 
                   tsdata="ts.data", pointsmin="points.min", pointsts="points.ts",
-                  endianness="="):
+                  endianness="=", assert_coords=True):
         self.ndof = ndof
-        self.db_name = db_name
+        self.db = database
         self.mindata = mindata
         self.tsdata = tsdata
         self.pointsmin = pointsmin
         self.pointsts = pointsts
         self.endianness = endianness
+        self.no_coords_ok = not assert_coords
 
-        self.db = Database(self.db_name)
-                
     def setAccuracy(self,accuracy = 0.000001):
         self.db.accuracy = accuracy
         
@@ -76,7 +77,10 @@ class Convert(object):
             sline = line.split()
             
             # get the coordinates corresponding to this minimum
-            coords = self.pointsmin_data[indx,:]
+            if self.pointsmin_data is None:
+                coords = np.zeros(1)
+            else:
+                coords = self.pointsmin_data[indx,:]
             
             # read data from the min.data line            
             e, fvib = map(float,sline[:2]) # energy and vibrational free energy
@@ -105,7 +109,10 @@ class Convert(object):
             sline = line.split()
 
             # get the coordinates corresponding to this minimum
-            coords = self.pointsts_data[indx,:]
+            if self.pointsts_data is None:
+                coords = np.zeros(1)
+            else:
+                coords = self.pointsts_data[indx,:]
 
             # read data from the min.ts line            
             e, fvib = map(float, sline[:2]) # get energy and fvib
@@ -137,15 +144,32 @@ class Convert(object):
         coords = read_points_min_ts(self.pointsts, self.ndof, endianness=self.endianness)
         self.pointsts_data = coords.reshape([-1, self.ndof])
                   
-        
-    def Convert(self):
-        self.read_points_min()
+    def load_minima(self):
+        try:
+            self.read_points_min()
+        except IOError:
+            if self.no_coords_ok:
+                self.pointsmin_data = None
+            else:
+                raise
         self.ReadMindata()
         self.db.session.commit()
-        
-        self.read_points_ts()
+    
+    def load_transition_states(self):
+        try:
+            self.read_points_ts()
+        except IOError:
+            if self.no_coords_ok:
+                self.pointsts_data = None
+            else:
+                raise
+
         self.ReadTSdata()
         self.db.session.commit()
+    
+    def convert(self):
+        self.load_minima()
+        self.load_transition_states()
     
 
     
@@ -172,13 +196,15 @@ binary data.  If your coordinates are garbage, try changing the endianness.
     parser.add_argument('--endianness', help = 'set the endianness of the binary data.  Can be "<" for little-endian or ">" for big-endian', type = str, default="=")
     args = parser.parse_args()
     
-    cv = Convert(args.ndof, db_name=args.Database, mindata=args.Mindata, 
+    db = Database(args.Database)
+    
+    cv = Convert(args.ndof, database=db, mindata=args.Mindata, 
                  tsdata=args.Tsdata, pointsmin=args.Pointsmin, pointsts=args.Pointsts,
                  endianness=args.endianness)
 
     cv.setAccuracy()
      
-    cv.Convert()
+    cv.convert()
     cv.db.session.commit()
 
 

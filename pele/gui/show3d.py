@@ -46,6 +46,7 @@ class Show3D(QGLWidget):
         self.last_mouse_pos = QtCore.QPointF(0., 0.)
         self.rotation = rot.aa2mx(np.array([0.,0.,0.])) # np.array([0., 0.])
         self.zoom = 1.0
+        self._fatal_error = False # don't try to plot if it won't work
         
     def setCoords(self, coords, index=1):
         self.coords[index] = coords
@@ -62,7 +63,7 @@ class Show3D(QGLWidget):
         '''
         Drawing routine
         '''
-         
+        if self._fatal_error: return
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glEnable(GL_NORMALIZE)
         amb = [0., 0.0, 0.0, 1.]
@@ -89,7 +90,11 @@ class Show3D(QGLWidget):
             if index == 2:
                 color = [0.00, 0.65, 0., 1.]
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color)
-            self.system.draw(coords, index)
+            try:
+                self.system.draw(coords, index)
+            except NotImplementedError:
+                self._fatal_error = True
+                raise
         
         glPopMatrix()    
         glFlush()

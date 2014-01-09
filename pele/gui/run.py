@@ -34,7 +34,7 @@ def excepthook(ex_type, ex_value, traceback_obj):
     errorbox.setStandardButtons(QtGui.QMessageBox.Ignore | QtGui.QMessageBox.Cancel)
     errorbox.setDefaultButton(QtGui.QMessageBox.Cancel)
     if errorbox.exec_() == QtGui.QMessageBox.Cancel:
-        raise
+        raise ex_value
 
 class MySelection(object):
     """keep track of which minima have been selected and whether those coordinates have been modified
@@ -124,14 +124,16 @@ class MainGUI(QtGui.QMainWindow):
         if len(filename) > 0:
             self.connect_db(filename)
 
-    def connect_db(self, filename=":memory:"):
+    def connect_db(self, database=":memory:"):
         """
         connect to an existing database at location filename
         """
         self.list_manager.clear()
-
-        db = self.system.create_database(db=filename)
-        self.system.database = db
+        
+        if isinstance(database, basestring):
+            self.system.database = self.system.create_database(db=database)
+        else:
+            self.system.database = database
         #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
@@ -605,8 +607,8 @@ def run_gui(system, db=None, application=None):
     system : System class
         A pele system, derived from BaseSystem.  All information 
         about the system is in this class.
-    db : str, optional
-        connect to the database at this file location
+    db : pele database or string, optional
+        connect to this database or the database at this file location
     application : QApplication
         Use this QApplication object rather than creating a new one
         
