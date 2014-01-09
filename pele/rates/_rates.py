@@ -69,7 +69,7 @@ class RateCalculation(object):
             raise Exception("the product set B is empty or not connected to A")
         
     
-    def _get_local_rate(self, min1, min2, ts):
+    def _get_local_log_rate(self, min1, min2, ts):
         """rate for going from min1 to min2
         
         TODO: should properly sum over all transition states between min1 and min2.
@@ -77,16 +77,16 @@ class RateCalculation(object):
         from book Energy Landscapes page 387:
         
             sigma = 2 * min1.pgorder / ts.pgorder
-            k(T) = sigma * exp(min1.fvib - ts.fvib) * exp( -(ts.energy - min1.energy))
+            k(T) = sigma * exp((min1.fvib - ts.fvib)/2) * exp( -(ts.energy - min1.energy))
         
         where fvib is the log product of the harmonic mode frequencies  
         """
         if self.use_fvib:
-            sigma = 2. * min1.pgorder / ts.pgorder
-            return sigma * np.exp(min1.fvib - ts.fvib 
-                                  - (ts.energy - min1.energy) * self.beta )
+            sigma = min1.pgorder / (2. * np.pi * ts.pgorder)
+            return (np.log(sigma) + (min1.fvib - ts.fvib)/2. 
+                  - (ts.energy - min1.energy) * self.beta)
         else:
-            return np.exp( -(ts.energy - min1.energy) * self.beta)
+            return -(ts.energy - min1.energy) * self.beta
     
     def _min2node(self, minimum):
         return minimum._id
@@ -94,15 +94,18 @@ class RateCalculation(object):
     def _make_kmc_graph(self):
         """build the graph that will be used in the rate calculation"""
         # get rate constants over transition states
-        rates = dict()
+        logrates = dict()
         for min1, min2, data in self.tsgraph.edges_iter(data=True):
             u = self._min2node(min1)
             v = self._min2node(min2)
             ts = data["ts"]
-            kuv = self._get_local_rate(min1, min2, ts)
-            kvu = self._get_local_rate(min2, min1, ts)
-            rates[(u,v)] = kuv
-            rates[(v,u)] = kvu
+            log_kuv = self._get_local_log_rate(min1, min2, ts)
+            log_kvu = self._get_local_log_rate(min2, min1, ts)
+            logrates[(u,v)] = log_kuv
+            logrates[(v,u)] = log_kvu
+        
+        # should remove the largest component from the rates to avoid underflow and overflow?
+        rates = dict(( (uv,np.exp(log_k)) for uv, log_k in logrates.iteritems() ))
         
         # make the rate graph from the rate constants
         self.kmc_graph = kmcgraph_from_rates(rates)
