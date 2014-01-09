@@ -17,10 +17,19 @@ def from_0_to_1(connection, schema):
     connection.execute("PRAGMA user_version = 1;")
     return 1
 
+def from_1_to_2(connection, schema):
+    assert schema == 1
+    connection.execute("ALTER TABLE tbl_minima ADD invalid INTEGER;")
+    connection.execute("ALTER TABLE tbl_transition_states ADD invalid INTEGER;") 
+    connection.execute("ALTER TABLE tbl_minima ADD user_data BLOB;")
+    connection.execute("ALTER TABLE tbl_transition_states ADD user_data BLOB;") 
+    connection.execute("PRAGMA user_version = 2;")
+    return 2
 
-migrate_script = [
-            from_0_to_1
-            ]
+
+migrate_script = {0:from_0_to_1,
+                  1:from_1_to_2,
+                  }
     
 def migrate(db):
     engine = sqlalchemy.create_engine("sqlite:///%s"%db)

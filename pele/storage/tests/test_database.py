@@ -1,6 +1,7 @@
-from pele.storage import Database
 import unittest
-from numpy.ma.testutils import assert_equal
+import os
+
+from pele.storage import Database
 
 class TestDB(unittest.TestCase):
     def setUp(self):
@@ -186,7 +187,44 @@ class TestDB(unittest.TestCase):
         for name, value in props.iteritems():
             p = self.db.get_property(name)
             self.assertEqual(p.value(), value)
-
+    
+    def test_load_wrong_schema(self):
+        current_dir = os.path.dirname(__file__)
+        dbname = current_dir + "/lj6_schema1.sqlite"
+        with self.assertRaises(IOError):
+            db = Database(dbname, createdb=False)
+    
+    def test_load_right_schema(self):
+        current_dir = os.path.dirname(__file__)
+        dbname = current_dir + "/lj6_schema2.sqlite"
+        db = Database(dbname, createdb=False)
+    
+    def test_invalid(self):
+        m = self.db.minima()[0]
+        self.assertFalse(m.invalid)
+        m.invalid = True
+        self.db.session.commit()
+        self.assertTrue(m.invalid)
+        
+        # now with a ts
+        m = self.db.transition_states()[0]
+        self.assertFalse(m.invalid)
+        m.invalid = True
+        self.db.session.commit()
+        self.assertTrue(m.invalid)
+    
+    def test_user_data(self):
+        m = self.db.minima()[0]
+        m.user_data = dict(key="value")
+        self.db.session.commit()
+        v = m.user_data["key"]
+        
+        # now with a transition state
+        m = self.db.transition_states()[0]
+        m.user_data = dict(key="value")
+        self.db.session.commit()
+        v = m.user_data["key"]
+        
 def benchmark_number_of_minima():
     import time, sys
     import numpy as np
