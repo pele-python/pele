@@ -58,46 +58,6 @@ class RateCalculation(object):
             if len(self.A) > 1 or len(self.B) > 1:
                 raise ValueError("if A or B has more than 1 minimum you must pass ndof")
 
-#    def _reduce_graph(self, graph):
-#        """remove nodes from tsgraph that are not connected to A"""
-#        # remove nodes with invalid minima
-#        nodes = [m for m in self.graph.nodes() if m.invalid]
-#        if len(nodes) > 0:
-#            print "removing %s invalid minima from rate graph" % (len(nodes))
-#            graph.remove_nodes_from(nodes)
-#        
-#        # remove invalid transition states
-#        edges = [(u,v) for u,v,data in graph.edges_iter(data=True) if data["ts"].invalid]
-#        if len(edges) > 0:
-#            print "removing %s invalid transition states from rate graph" % (len(nodes))
-#            graph.remove_edges_from(edges)
-#        
-#        
-#        # get all nodes that are connected to A 
-#        u = iter(self.A).next()
-#        nodes = nx.node_connected_component(graph, u)
-#        nodes = set(nodes)
-#        nodes.add(u)
-#
-#        # rebuild tsgraph with only those nodes
-#        graph = graph.subgraph(nodes)
-#        
-#        # check set A is in the graph
-#        Adiff = self.A.difference(nodes)
-#        if len(Adiff) > 0:
-#            print "warning: the reactant set A is not fully connected"
-#            self.A = self.A.difference_update(nodes)
-#        assert len(self.A) > 0
-#
-#        # check set B is in the graph
-#        Bdiff = self.B.difference(nodes)
-#        if len(Bdiff) > 0:
-#            print "warning: the product set B is not fully connected or is not connected to A"
-#            self.B = self.B.difference_update(nodes)
-#        if len(self.B) == 0:
-#            raise Exception("the product set B is empty or not connected to A")
-        
-    
     def _get_local_log_rate(self, min1, min2, ts):
         """rate for going from min1 to min2
         
@@ -118,7 +78,7 @@ class RateCalculation(object):
             return -(ts.energy - min1.energy) * self.beta
     
     def _min2node(self, minimum):
-        return minimum._id
+        return minimum
     
     def _transition_state_ok(self, ts):
         if ts.invalid:
@@ -139,8 +99,7 @@ class RateCalculation(object):
                 print "excluding invalid transition state from rate graph", ts.energy, ts._id 
                 continue
             min1, min2 = ts.minimum1, ts.minimum2
-            u = self._min2node(min1)
-            v = self._min2node(min2)
+            u, v = min1, min2
             log_kuv = self._get_local_log_rate(min1, min2, ts)
             log_kvu = self._get_local_log_rate(min2, min1, ts)
             if (u,v) in log_rates:
@@ -160,9 +119,9 @@ class RateCalculation(object):
         # make the rate graph from the rate constants
         self.kmc_graph = kmcgraph_from_rates(rates)
 
-        # translate the product and reactant set into the new node definition  
-        self.Anodes = set([self._min2node(m) for m in self.A]) 
-        self.Bnodes = set([self._min2node(m) for m in self.B]) 
+#        # translate the product and reactant set into the new node definition  
+#        self.Anodes = set([self._min2node(m) for m in self.A]) 
+#        self.Bnodes = set([self._min2node(m) for m in self.B]) 
 
     def _log_equilibrium_occupation_probability(self, minimum):
         """return the log equilibrium occupation probability
@@ -197,7 +156,7 @@ class RateCalculation(object):
 #        self._reduce_tsgraph()
         self._make_kmc_graph()
         weights = self._get_equilibrium_occupation_probabilities()
-        self.reducer = GraphReduction(self.kmc_graph, self.Anodes, self.Bnodes, weights=weights)
+        self.reducer = GraphReduction(self.kmc_graph, self.A, self.B, weights=weights)
         self.reducer.compute_rates()
         self.rateAB = self.reducer.get_rate_AB()
         self.rateBA = self.reducer.get_rate_BA()
