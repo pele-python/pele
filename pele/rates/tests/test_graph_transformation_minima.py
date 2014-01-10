@@ -61,5 +61,30 @@ class TestGraphRatesLJ(unittest.TestCase):
         rAB, rBA = rcalc.compute_rates()
         print "rates", rAB, rBA
 
+class TestOptimCollagen(unittest.TestCase):
+    """test a known value for a large database"""
+    def setUp(self):
+        from pele.utils.optim_compatibility import OptimDBConverter
+        from pele.storage import Database
+        ndof = 10 # wrong, but who cares.
+        self.db = Database()
+        current_dir = os.path.dirname(__file__)
+        converter = OptimDBConverter(ndof, self.db, mindata=current_dir+"/collagen.min.data", 
+                                     tsdata=current_dir+"/collagen.ts.data", assert_coords=False)
+        converter.pointsmin_data = None
+        converter.pointsts_data = None
+        converter.ReadMindata()
+        converter.ReadTSdata()
+        self.db.session.commit()
+    
+    def test1(self):
+        m1 = self.db.getMinimum(1)
+        m2 = self.db.getMinimum(2)
+        
+        rcalc = RateCalculation(self.db.transition_states(), [m1], [m2], T=0.592)
+        r12, r21 = rcalc.compute_rates()
+        self.assertAlmostEqual(r12, 7106337458., delta=1e6)
+        self.assertAlmostEqual(r21, 1955395816., delta=1e6)
+
 if __name__ == "__main__":
     unittest.main()

@@ -5,7 +5,7 @@ from pele.gui import run_gui
 from pele.storage import Database
 from pele.systems import BaseSystem
 
-from optim_database_converter import Convert
+from optim_database_converter import OptimDBConverter
 
         
 
@@ -24,7 +24,7 @@ def main():
     args = parser.parse_args()
 
     db = Database()
-    converter = Convert(args.ndof, db, mindata=args.Mindata, 
+    converter = OptimDBConverter(args.ndof, db, mindata=args.Mindata, 
                  tsdata=args.Tsdata, pointsmin=args.Pointsmin, pointsts=args.Pointsts,
                  endianness=args.endianness, assert_coords=False)
     converter.pointsmin_data = None
