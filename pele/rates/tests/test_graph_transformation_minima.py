@@ -39,7 +39,6 @@ class TestGraphRatesLJ(unittest.TestCase):
         self.system = LJCluster(13)
         self.system.params.structural_quench_params.tol = 1e-6
         self.db = self.system.create_database(dbfname)
-        self.ndof = self.system.get_ndof()
         
         create_random_database(self.system, self.db, 10, 20)
     
@@ -48,7 +47,7 @@ class TestGraphRatesLJ(unittest.TestCase):
         B = [self.db.minima()[-1]]
         
         rcalc = RateCalculation(self.db.transition_states(), 
-                                A, B, ndof=self.ndof, T=1.)
+                                A, B)
         rAB, rBA = rcalc.compute_rates()
         print "rates", rAB, rBA
 
@@ -57,7 +56,7 @@ class TestGraphRatesLJ(unittest.TestCase):
         B = self.db.minima()[2:4]
 
         rcalc = RateCalculation(self.db.transition_states(), 
-                                A, B, T=1., ndof=self.ndof)
+                                A, B, T=1.)
         rAB, rBA = rcalc.compute_rates()
         print "rates", rAB, rBA
 

@@ -41,22 +41,14 @@ class RateCalculation(object):
     T : float
         temperature at which to do the the calculation.  Should be in units of
         energy, i.e. include the factor of k_B if necessary.
-    ndof : int
-        number of vibrational degrees freedom.  Must be included if A or B contains
-        more than 1 minimum.
     """
-    def __init__(self, transition_states, A, B, T=1., ndof=None, 
+    def __init__(self, transition_states, A, B, T=1., 
                   use_fvib=True):
         self.transition_states = transition_states
         self.A = set(A)
         self.B = set(B)
         self.beta = 1. / T
-        self.ndof = ndof
         self.use_fvib = use_fvib
-
-        if self.ndof is None:
-            if len(self.A) > 1 or len(self.B) > 1:
-                raise ValueError("if A or B has more than 1 minimum you must pass ndof")
 
     def _get_local_log_rate(self, min1, min2, ts):
         """rate for going from min1 to min2
@@ -131,12 +123,10 @@ class RateCalculation(object):
         """
         # warning, this has not been checked, there might be a bug
         return (-self.beta * minimum.energy - np.log(minimum.pgorder)
-                - 0.5 * minimum.fvib - self.ndof * np.log(self.beta))
+                - 0.5 * minimum.fvib)
 
     def _get_equilibrium_occupation_probabilities(self):
-        if self.ndof is None:
-            assert len(self.A) == 1
-            assert len(self.B) == 1
+        if len(self.A) == 1 and len(self.B) == 1:
             self.weights = None
             return self.weights
         log_weights = dict()
