@@ -8,14 +8,14 @@ from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
 __all__ = ["RateCalculation"]
 
-def log_sum(log_terms):
-    """
-    return the log of the sum of terms whose logarithms are provided.
-    """
-    lmax = np.max(log_terms)
-#    lsub = log_terms - lmax
-    result = np.log(np.sum(np.exp(log_terms - lmax))) + lmax
-    return result
+#def log_sum(log_terms):
+#    """
+#    return the log of the sum of terms whose logarithms are provided.
+#    """
+#    lmax = np.max(log_terms)
+##    lsub = log_terms - lmax
+#    result = np.log(np.sum(np.exp(log_terms - lmax))) + lmax
+#    return result
 
 def log_sum2(a, b):
     """

@@ -328,19 +328,21 @@ class GraphReduction(object):
         ca_intersections = [c.intersection(self.A) for c in ccset]
         cb_intersections = [c.intersection(self.B) for c in ccset]
 
+        # check to make sure all the nodes in A are connected
         sizes = [len(ca) for ca in ca_intersections if len(ca) > 0]
         if len(sizes) != 1:
             assert len(sizes) != 0
-            print "warning, the reactant set is not fully connected"
+            print "warning, the reactant set (A) is not fully connected"
             print "   ", [c for c in ca_intersections if len(c) > 0]
-            raise Exception("the reactant set is not fully connected")
+            raise ValueError("the reactant set (A) is not fully connected")
 
+        # check to make sure all the nodes in B are connected
         sizes = [len(cb) for cb in cb_intersections if len(cb) > 0]
         if len(sizes) != 1:
             assert len(sizes) != 0
-            print "warning, the product set is not fully connected"
+            print "warning, the product set (B) is not fully connected"
             print "   ", [c for c in cb_intersections if len(c) > 0]
-            raise Exception("the product set is not fully connected")
+            raise ValueError("the product set (B) is not fully connected")
         
         AB_connected = False
         for ca, cb in itertools.izip(ca_intersections, cb_intersections):
@@ -348,33 +350,48 @@ class GraphReduction(object):
                 AB_connected = True
                 break
         if not AB_connected:
-            raise Exception("product and reactant sets are not connected")
+            raise ValueError("product and reactant sets (A and B) are not connected")
         
-            
+        # remove the nodes that are not connected to A or to B
+        unconnected_nodes = set()
+        remaining_components = []
+        for c in ccset:
+            if not self.A.intersection(c) and not self.B.intersection(c):
+                # the nodes in c are not connected to A or to B.
+                unconnected_nodes.update(c)
+            else:
+                remaining_components.append(c)
+        if unconnected_nodes:
+            print "removing", len(unconnected_nodes), "nodes from the graph because they're not connected to A or to B"
+            self.graph.remove_nodes_from(unconnected_nodes)
+        
+        if len(remaining_components) > 1:
+            print "warning, graph is not fully connected.  There are", len(remaining_components), "components"
+                
+        
         return False
 
     def initial_check_graph(self):
         for a in self.A:
             if not self.graph.has_node(a):
-                raise Exception("an element in the reactant set is not in the graph")
+                raise ValueError("an element in the reactant set (A) is not in the graph")
         for b in self.B:
             if not self.graph.has_node(b):
-                raise Exception("an element in the product set is not in the graph")
+                raise ValueError("an element in the product set (B) is not in the graph")
 
         # add node self loops with zero probability if they don't already exist
         for u in self.graph.nodes():
-            try:
-                self._get_edge_data(u, u)
-            except:
+            if not self.graph.has_edge(u, u):
                 self._add_edge(u, u)
         
-        assert len(self.A.intersection(self.B)) == 0
+        if len(self.A.intersection(self.B)) > 0:
+            raise ValueError("A and B have at least one node in common")
 
         # check A and B are connected
         undirected_graph = self.graph.to_undirected()
         cc = nx.connected_components(undirected_graph)
         if len(cc) != 1:
-            print "warning, graph is not fully connected.  There are", len(cc), "components"
+#            print "warning, graph is not fully connected.  There are", len(cc), "components"
             self._check_A_B_connected(cc)
             
 #          for a, b in itertools.product(self.A, self.B):
