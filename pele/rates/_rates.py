@@ -8,19 +8,33 @@ from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
 __all__ = ["RateCalculation"]
 
+def log_sum(log_terms):
+    """
+    return the log of the sum of terms whose logarithms are provided.
+    """
+    lmax = np.max(log_terms)
+#    lsub = log_terms - lmax
+    result = np.log(np.sum(np.exp(log_terms - lmax))) + lmax
+    return result
+
+def log_sum2(a, b):
+    """
+    return log( exp(a) + exp(b) )
+    """
+    if a > b:
+        return a + np.log(1.0 + np.exp(-a + b) )
+    else:
+        return b + np.log(1.0 + np.exp(a - b) )
+
+
+
 class RateCalculation(object):
     """compute transition rates from a database of minima and transition states
     
     Parameters 
     ----------
-    graph : networkx.Graph
-        transition state graph with the minima as nodes and the transition
-        states attached to the edges. You can use the function database2graph()
-        to create this from a database.:
-        
-            from pele.utils.disconnectivity_graph import database2graph
-            graph = database2graph(database)
-
+    transition_states: iteratable
+        list (or iterator) of transition states that define the rate network
     A, B : iterables
         groups of minima specifying the reactant and product groups.  The rates
         returned will be the rate from A to B and vice versa.
@@ -28,10 +42,12 @@ class RateCalculation(object):
         temperature at which to do the the calculation.  Should be in units of
         energy, i.e. include the factor of k_B if necessary.
     ndof : int
-        number of vibrational degrees freedom
+        number of vibrational degrees freedom.  Must be included if A or B contains
+        more than 1 minimum.
     """
-    def __init__(self, graph, A, B, T=1., ndof=None, use_fvib=True):
-        self.tsgraph = graph
+    def __init__(self, transition_states, A, B, T=1., ndof=None, 
+                  use_fvib=True):
+        self.transition_states = transition_states
         self.A = set(A)
         self.B = set(B)
         self.beta = 1. / T
@@ -42,44 +58,44 @@ class RateCalculation(object):
             if len(self.A) > 1 or len(self.B) > 1:
                 raise ValueError("if A or B has more than 1 minimum you must pass ndof")
 
-    def _reduce_tsgraph(self):
-        """remove nodes from tsgraph that are not connected to A"""
-        # remove nodes with invalid minima
-        nodes = [m for m in self.tsgraph.nodes() if m.invalid]
-        if len(nodes) > 0:
-            print "removing %s invalid minima from rate graph" % (len(nodes))
-            self.tsgraph.remove_nodes_from(nodes)
-        
-        # remove invalid transition states
-        edges = [(u,v) for u,v,data in self.tsgraph.edges_iter(data=True) if data["ts"].invalid]
-        if len(edges) > 0:
-            print "removing %s invalid transition states from rate graph" % (len(nodes))
-            self.tsgraph.remove_edges_from(edges)
-        
-        
-        # get all nodes that are connected to A 
-        u = iter(self.A).next()
-        nodes = nx.node_connected_component(self.tsgraph, u)
-        nodes = set(nodes)
-        nodes.add(u)
-
-        # rebuild tsgraph with only those nodes
-        self.tsgraph = self.tsgraph.subgraph(nodes)
-        
-        # check set A is in the graph
-        Adiff = self.A.difference(nodes)
-        if len(Adiff) > 0:
-            print "warning: the reactant set A is not fully connected"
-            self.A = self.A.difference_update(nodes)
-        assert len(self.A) > 0
-
-        # check set B is in the graph
-        Bdiff = self.B.difference(nodes)
-        if len(Bdiff) > 0:
-            print "warning: the product set B is not fully connected or is not connected to A"
-            self.B = self.B.difference_update(nodes)
-        if len(self.B) == 0:
-            raise Exception("the product set B is empty or not connected to A")
+#    def _reduce_graph(self, graph):
+#        """remove nodes from tsgraph that are not connected to A"""
+#        # remove nodes with invalid minima
+#        nodes = [m for m in self.graph.nodes() if m.invalid]
+#        if len(nodes) > 0:
+#            print "removing %s invalid minima from rate graph" % (len(nodes))
+#            graph.remove_nodes_from(nodes)
+#        
+#        # remove invalid transition states
+#        edges = [(u,v) for u,v,data in graph.edges_iter(data=True) if data["ts"].invalid]
+#        if len(edges) > 0:
+#            print "removing %s invalid transition states from rate graph" % (len(nodes))
+#            graph.remove_edges_from(edges)
+#        
+#        
+#        # get all nodes that are connected to A 
+#        u = iter(self.A).next()
+#        nodes = nx.node_connected_component(graph, u)
+#        nodes = set(nodes)
+#        nodes.add(u)
+#
+#        # rebuild tsgraph with only those nodes
+#        graph = graph.subgraph(nodes)
+#        
+#        # check set A is in the graph
+#        Adiff = self.A.difference(nodes)
+#        if len(Adiff) > 0:
+#            print "warning: the reactant set A is not fully connected"
+#            self.A = self.A.difference_update(nodes)
+#        assert len(self.A) > 0
+#
+#        # check set B is in the graph
+#        Bdiff = self.B.difference(nodes)
+#        if len(Bdiff) > 0:
+#            print "warning: the product set B is not fully connected or is not connected to A"
+#            self.B = self.B.difference_update(nodes)
+#        if len(self.B) == 0:
+#            raise Exception("the product set B is empty or not connected to A")
         
     
     def _get_local_log_rate(self, min1, min2, ts):
@@ -95,7 +111,7 @@ class RateCalculation(object):
         where fvib is the log product of the harmonic mode frequencies  
         """
         if self.use_fvib:
-            sigma = min1.pgorder / (2. * np.pi * ts.pgorder)
+            sigma = float(min1.pgorder) / (2. * np.pi * ts.pgorder)
             return (np.log(sigma) + (min1.fvib - ts.fvib)/2. 
                   - (ts.energy - min1.energy) * self.beta)
         else:
@@ -104,21 +120,42 @@ class RateCalculation(object):
     def _min2node(self, minimum):
         return minimum._id
     
+    def _transition_state_ok(self, ts):
+        if ts.invalid:
+            return False
+        if ts.minimum1.invalid:
+            return False
+        if ts.minimum2.invalid:
+            return False
+        return True
+        
     def _make_kmc_graph(self):
         """build the graph that will be used in the rate calculation"""
-        # get rate constants over transition states
-        logrates = dict()
-        for min1, min2, data in self.tsgraph.edges_iter(data=True):
+        # get rate constants over transition states.
+        # sum contributions from multiple transition states between two minima.
+        log_rates = dict()
+        for ts in self.transition_states:
+            if not self._transition_state_ok(ts):
+                print "excluding invalid transition state from rate graph", ts.energy, ts._id 
+                continue
+            min1, min2 = ts.minimum1, ts.minimum2
             u = self._min2node(min1)
             v = self._min2node(min2)
-            ts = data["ts"]
             log_kuv = self._get_local_log_rate(min1, min2, ts)
             log_kvu = self._get_local_log_rate(min2, min1, ts)
-            logrates[(u,v)] = log_kuv
-            logrates[(v,u)] = log_kvu
-        
-        # should remove the largest component from the rates to avoid underflow and overflow?
-        rates = dict(( (uv,np.exp(log_k)) for uv, log_k in logrates.iteritems() ))
+            if (u,v) in log_rates:
+                log_rates[(u,v)] = log_sum2(log_rates[(u,v)], log_kuv)
+                log_rates[(v,u)] = log_sum2(log_rates[(v,u)], log_kvu)
+            else:
+                log_rates[(u,v)] = log_kuv
+                log_rates[(v,u)] = log_kvu
+            
+        # should we remove the largest component from the rates to avoid underflow and overflow?
+        # if so we need to multiply all the rates by this value
+#        max_log_rate = max(logrates.itervalues())
+#        print "time scale need to be multiplied by", np.exp(max_log_rate)
+#        rates = dict(( (uv,np.exp(log_k - max_log_rate)) for uv, log_k in logrates.iteritems() ))
+        rates = dict(( (uv,np.exp(log_k)) for uv, log_k in log_rates.iteritems() ))
         
         # make the rate graph from the rate constants
         self.kmc_graph = kmcgraph_from_rates(rates)
@@ -157,7 +194,7 @@ class RateCalculation(object):
 
     def compute_rates(self):
         """compute the rates from A to B and vice versa"""
-        self._reduce_tsgraph()
+#        self._reduce_tsgraph()
         self._make_kmc_graph()
         weights = self._get_equilibrium_occupation_probabilities()
         self.reducer = GraphReduction(self.kmc_graph, self.Anodes, self.Bnodes, weights=weights)

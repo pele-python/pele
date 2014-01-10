@@ -575,12 +575,10 @@ class MainGUI(QtGui.QMainWindow):
     def _compute_rates(self, min1, min2, T=1.):
         """compute rates without first calculating thermodynamics
         """
-        from pele.utils.disconnectivity_graph import graph_constructor
         print "computing rates at temperature T =", T
-        minima = [m for m in self.system.database.minima() if m.fvib is not None]
-        tslist = [ts for ts in self.system.database.transition_states() if ts.fvib is not None]
-        graph = graph_constructor(minima, tslist)
-        rcalc = RateCalculation(graph, [min1], [min2], T=T)
+        tslist = [ts for ts in self.system.database.transition_states() 
+                  if ts.fvib is not None]
+        rcalc = RateCalculation(tslist, [min1], [min2], T=T)
         r12, r21 = rcalc.compute_rates()
         print "rate from", min1._id, "to", min2._id, "=", r12
         print "rate from", min2._id, "to", min1._id, "=", r21

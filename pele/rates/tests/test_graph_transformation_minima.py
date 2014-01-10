@@ -47,8 +47,8 @@ class TestGraphRatesLJ(unittest.TestCase):
         A = [self.db.minima()[0]]
         B = [self.db.minima()[-1]]
         
-        graph = database2graph(self.db)
-        rcalc = RateCalculation(graph, A, B, ndof=self.ndof, T=1.)
+        rcalc = RateCalculation(self.db.transition_states(), 
+                                A, B, ndof=self.ndof, T=1.)
         rAB, rBA = rcalc.compute_rates()
         print "rates", rAB, rBA
 
@@ -56,8 +56,8 @@ class TestGraphRatesLJ(unittest.TestCase):
         A = self.db.minima()[:2]
         B = self.db.minima()[2:4]
 
-        graph = database2graph(self.db)
-        rcalc = RateCalculation(graph, A, B, T=1., ndof=self.ndof)
+        rcalc = RateCalculation(self.db.transition_states(), 
+                                A, B, T=1., ndof=self.ndof)
         rAB, rBA = rcalc.compute_rates()
         print "rates", rAB, rBA
 
