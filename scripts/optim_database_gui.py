@@ -27,7 +27,10 @@ def main():
     converter = Convert(args.ndof, db, mindata=args.Mindata, 
                  tsdata=args.Tsdata, pointsmin=args.Pointsmin, pointsts=args.Pointsts,
                  endianness=args.endianness, assert_coords=False)
-    converter.convert()
+    converter.pointsmin_data = None
+    converter.pointsts_data = None
+    converter.ReadMindata()
+    converter.ReadTSdata()
     
     system = BaseSystem()
     system.get_ndof = lambda : args.ndof
