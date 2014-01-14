@@ -79,11 +79,18 @@ class TestOptimCollagen(unittest.TestCase):
     def test1(self):
         m1 = self.db.getMinimum(1)
         m2 = self.db.getMinimum(2)
+        m3 = self.db.getMinimum(3)
+        m4 = self.db.getMinimum(4)
         
         rcalc = RateCalculation(self.db.transition_states(), [m1], [m2], T=0.592)
         r12, r21 = rcalc.compute_rates()
-        self.assertAlmostEqual(r12, 7106337458., delta=1e6)
-        self.assertAlmostEqual(r21, 1955395816., delta=1e6)
+        self.assertAlmostEqual(r12, 7106337458., delta=1e4)
+        self.assertAlmostEqual(r21, 1955395816., delta=1e4)
+        
+        rcalc = RateCalculation(self.db.transition_states(), [m1,m3], [m2, m4], T=0.592)
+        rAB, rBA = rcalc.compute_rates()
+        self.assertAlmostEqual(rAB, 8638736600., delta=1e4)
+        self.assertAlmostEqual(rBA, 3499625167., delta=1e4)
 
 if __name__ == "__main__":
     unittest.main()

@@ -120,7 +120,18 @@ class GraphReduction(object):
                      for x in group))
         norm = sum((self.weights[x] for x in group))
         return rate / norm
-    
+
+    def _get_final_rate_NSS(self, group):
+        #get the non steady state rate (warning not tested)
+        rate = 0.
+        for u, v, data in self.graph.out_edges_iter(group, data=True):
+            if v not in group:
+                tau = self.graph.node[u]["tau"]
+                P = data["P"]
+                rate += P / tau * self.weights[u]
+        norm = sum((self.weights[x] for x in group))
+        return rate / norm
+
     def get_committor_probabilityAB(self, x):
         """return the committor probability for node x
         
