@@ -110,17 +110,13 @@ class BaseIntegrator
 
 	  virtual void reset_g(){ _g(_gstart.copy()); }
 
-	  virtual void wrapx(pele::Array<double>& x){ x(_x); }
+	  virtual void wrap_x(pele::Array<double>& x){ x(_x); }
 
-	  virtual void wrapv(pele::Array<double>& v){ v(_v); }
+	  virtual void wrap_v(pele::Array<double>& v){ v(_v); }
 
-	  virtual void wrapg(pele::Array<double>& g){ g(_g); }
+	  virtual void wrap_g(pele::Array<double>& g){ g(_g); }
 
-	  virtual void wrapE(double E){ _E = &E;}
-
-	  virtual void wrap_vstart(pele::Array<double> &v){ v(_vstart); }
-
-	  virtual void wrap_xstart(pele::Array<double> &x){ x(_xstart); }
+	  virtual void wrap_E(double E){ _E = &E;}
 
 	  virtual double get_energy(){ return *_E; }
   };
