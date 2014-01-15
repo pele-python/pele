@@ -23,7 +23,7 @@ namespace pele{
    * http://link.aps.org/doi/10.1103/PhysRevLett.97.170201
    */
 
-	class MODIFIED_FIRE : public Optimizer{
+	class MODIFIED_FIRE : public GradientOptimizer{
     private :
 	  double _Nmin, _dt, _dtmax;
 	  double _finc, _fdec, _fa;
@@ -58,9 +58,9 @@ namespace pele{
 
       void initialize_func_gradient()
             {
-                /*set x, v, E and g (this is -grad(E), hence the force) by wrapping position, velocity and gradient arrays in the integrator*/
+                /*set x, v, E and g (this is grad(E), hence -force) by wrapping position, velocity and gradient arrays in the integrator*/
                 _integrator.wrapv(_v); 	//the velocity array wraps the integrator velocity array so that it updates concurrently
-                _integrator.wrapf(g_); 	//the force array wraps the integrator force array so that it updates concurrently
+                _integrator.wrapg(g_); 	//the gradient array wraps the integrator gradient array so that it updates concurrently
                 _integrator.wrapx(x_);	//the coordinates array wraps the integrator coordinates array so that it updates concurrently
                 _integrator.wrapE(f_);	//the function value (E) wraps the integrator energy so that it updates concurrently
                 compute_func_gradient(x_, f_, g_); //compute at initialisation to compute rms_, they'll be recomputed by integrator
@@ -72,7 +72,7 @@ namespace pele{
   MODIFIED_FIRE::MODIFIEDFIRE(pele::BasePotential * potential, pele::BaseIntegrator * integrator,
 		  const pele::Array<double> & x0, double dtstart, double dtmax,
 		  size_t Nmin, double finc, double fdec, double fa, double astart, double tol=1e-2):
-		  GradientOptimizer(potential,x0,tol=1e-4), //call GradientOptimizer constructor
+		  GradientOptimizer(potential,x0,tol=1e-2), //call GradientOptimizer constructor
 		  _integrator(integrator(potential, x0, dtstart)),//call to BaseIntegrator constructor to initialise integrator variables
 		  _potential(potential), _dtstart(dtstart),
 		  _dtmax(dtmax), _astart(astart), _a(astart),
@@ -89,7 +89,7 @@ namespace pele{
 	  _fire_iter_number += 1; //this is different from iter_number_ which does not get reset
 
 	  _integrator.oneiteration();
-	  double P = arraydot(_v,g_);
+	  double P = -1 * dot(_v,g_);
 
 	  if (P > 0)
 	  {
@@ -100,7 +100,7 @@ namespace pele{
 
 		  for (size_t i =0; i < v.size(); ++v)
 		  {
-			  v[i] += (1. - _a) * _v[i] + _a * g_[i] * _v[i] * ifnorm * ivnorm;
+			  v[i] += (1. - _a) * _v[i] - _a * g_[i] * _v[i] * ifnorm * ivnorm;
 		  }
 
 		  if (_fire_iter_number > _Nmin)

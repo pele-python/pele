@@ -12,27 +12,31 @@ namespace pele {
 	  public:
 		  /*Constructor*/
 		  VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double>& v = _default_array,
-				  pele::Array<double>& f = _default_array, pele::Array<double>& m = _default_array){}
+				  pele::Array<double>& g = _default_array, pele::Array<double>& m = _default_array){}
 	  };
 
 	  VelocityVerlet::VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double>& v = _default_array,
-			  pele::Array<double>& f = _default_array, pele::Array<double>& m = _default_array):
-			  BaseIntegrator(potential, x, dt, v, f, m) //initialise base integrator from which this class is inherited
+			  pele::Array<double>& g = _default_array, pele::Array<double>& m = _default_array):
+			  BaseIntegrator(potential, x, dt, v, g, m) //initialise base integrator from which this class is inherited
 		{}
 
 	  void VelocityVerlet::oneiteration()
 	  {
 		  int j = 0;
 
+		  /* the minuses in the following expressions are due to the fact that
+		   * the gradients rather than the forces appear in the expression
+		   */
+
 		  for(int i =0; i < _x.size(); ++i)
 		  {
-			_x[i] += _dt * (_v[i] + 0.5 * _dt * _f[i] / _m[i]);	//update position
+			_x[i] -= _dt * (_v[i] + 0.5 * _dt * _g[i] / _m[i]);	//update position
 
-			_fold(_f);
+			_gold(_g.copy());
 
-			_E = _potential.energy_gradient(_x, _f); 			//update gradient
+			_E = _potential.energy_gradient(_x, _g); 			//update gradient
 
-			_v[i] += 0.5 * _dt * (_fold[i] + _f[i]) / _m[i]; 	//update velocity
+			_v[i] -= 0.5 * _dt * (_gold[i] + _g[i]) / _m[i]; 	//update velocity
 
 		  }
 	  }

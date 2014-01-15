@@ -16,11 +16,11 @@ class BaseIntegrator
 		 *
 		 * _x: position
 		 * _v: velocity
-		 * _f: force
-		 * _fold: force at previous time step
+		 * _g: gradient
+		 * _gold: gradient at previous time step
 		 * _m: masses
 		 * _v: initial velocities
-		 * _fstart: initial forces
+		 * _gstart: initial gradient
 		 * _xstart: initial positions
 		 * _default_array: an empty array
 		 *
@@ -31,7 +31,7 @@ class BaseIntegrator
 		 *_Estart: initial energy
 		 *_dtstart: initial time step
 		 */
-	  pele::Array<double> _x, _v, _f, _fold, _m, _vstart, _fstart, _xstart, _default_array;
+	  pele::Array<double> _x, _v, _g, _gold, _m, _vstart, _gstart, _xstart, _default_array;
 	  pele::BasePotential * _potential
 	  double _E, _dt, _Estart, _dtstart;
 
@@ -39,25 +39,25 @@ class BaseIntegrator
 
 	  	 /*BaseIntegrator constructor, assigns value to the protected arrays and constants*/
 	  BaseIntegrator(pele::BasePotential * potential, pele::Array<double>& x, double dt, pele::Array<double>& v = _default_array,
-			  pele::Array<double>& f = _default_array, pele::Array<double>& m = _default_array):
+			  pele::Array<double>& g = _default_array, pele::Array<double>& m = _default_array):
 
 				_potential(potential), _x(x), _xstart(x.copy()), _dt(dt),
-	    		_dtstart(dt), _fold(x.size())
+	    		_dtstart(dt), _gold(x.size())
 
 	  	  	  {
 		  	  	  int i,j;
 
-		  	  	  if (f.empty())
-		  	  		  _f(x.size());
+		  	  	  if (g.empty())
+		  	  		  _g(x.size());
 		  	  	  else
 		  	  	  {
-		  	  		assert(f.size() == x.size());
-		  	  		_f(f); // NOTE: wrap force, it does not copy it
+		  	  		assert(g.size() == x.size());
+		  	  		_g(g); // NOTE: wrap gradient, it does not copy it
 		  	  	  }
 
-		  	  	  _E = _potential.energy_gradient(_x, _f); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
+		  	  	  _E = _potential.energy_gradient(_x, _g); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
 	  	  	  	  _Estart = _E;
-	  	  	  	  _fstart(_f.copy());
+	  	  	  	  _gstart(_g.copy());
 
 	  	  	  	  if (v.empty())
 	  	  	  		  _v(x.size(),0.);
@@ -107,36 +107,21 @@ class BaseIntegrator
 
 	  virtual void reset_x(){ _x(_xstart.copy()); }
 
-	  virtual void reset_f(){ _f(_fstart.copy()); }
+	  virtual void reset_g(){ _g(_gstart.copy()); }
 
-	  virtual void reset_vfxE()
-	  {
-	  	_v(_vstart.copy());
-	  	_x(_xstart.copy());
-	  	_f(_fstart.copy());
-	  	_E(_Estart.copy());
-	  }
+	  virtual void wrapx(pele::Array<double>& x){ x(_x); }
 
-	  virtual void reset_all()
-	  {
-	   	_v(_vstart.copy());
-	   	_x(_xstart.copy());
-	   	_f(_fstart.copy());
-	   	_E(_Estart.copy());
-	   	_dt(_dtstart.copy());
-	  }
+	  virtual void wrapv(pele::Array<double>& v){ v(_v); }
 
-	  virtual void wrap_v(pele::Array<double>& v){ v(_v); }
+	  virtual void wrapg(pele::Array<double>& g){ g(_g); }
 
-	  virtual void wrap_f(pele::Array<double>& f){ f(_f); }
-
-	  virtual void wrap_E(pele::Array<double>& E){ E(_E); }
+	  virtual void wrapE(double E){ _E = &E;}
 
 	  virtual void wrap_vstart(pele::Array<double> &v){ v(_vstart); }
 
 	  virtual void wrap_xstart(pele::Array<double> &x){ x(_xstart); }
 
-	  virtual double get_energy(){ return _E; }
+	  virtual double get_energy(){ return *_E; }
   };
 
 }
