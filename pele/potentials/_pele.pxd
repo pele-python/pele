@@ -19,7 +19,23 @@ cdef extern from "pele/base_potential.h" namespace "pele":
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
         void numerical_gradient(Array[double] &x, Array[double] &grad, double eps) except +
         void numerical_hessian(Array[double] &x, Array[double] &hess, double eps) except +
-            
+
+cdef extern from "pele/base_integrator.h" namespace "pele":
+    cdef cppclass  cBaseIntegrator "pele::BaseIntegrator":
+        cBaseIntegrator() except +
+        void oneiteration() except +
+        void run(int const N) except +
+        void set_dt(double newdt) except +
+        void reset_dt() except +
+        void reset_v() except +
+        void reset_x() except +
+        void reset_g() except +
+        void wrap_x(Array[double] &x) except+
+        void wrap_v(Array[double] &v) except+
+        void wrap_g(Array[double] &g) except+
+        void wrap_E(double E) except+
+        double get_energy() except +
+
 #cdef extern from "potentialfunction.h" namespace "pele":
 #    cdef cppclass  cPotentialFunction "pele::PotentialFunction":
 #        cPotentialFunction(
@@ -29,6 +45,9 @@ cdef extern from "pele/base_potential.h" namespace "pele":
     
 cdef class BasePotential:
     cdef cBasePotential *thisptr      # hold a C++ instance which we're wrapping
+
+cdef class BaseIntegrator:
+    cdef cBaseIntegrator *thisptr      # hold a C++ instance which we're wrapping
     
     
 cdef extern from "pele/combine_potentials.h" namespace "pele":
