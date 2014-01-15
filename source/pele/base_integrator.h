@@ -33,7 +33,8 @@ class BaseIntegrator
 		 */
 	  pele::Array<double> _x, _v, _g, _gold, _m, _vstart, _gstart, _xstart, _default_array;
 	  pele::BasePotential * _potential
-	  double _E, _dt, _Estart, _dtstart;
+	  double _dt, _Estart, _dtstart;
+	  double* _E;
 
   	  public:
 
@@ -55,8 +56,8 @@ class BaseIntegrator
 		  	  		_g(g); // NOTE: wrap gradient, it does not copy it
 		  	  	  }
 
-		  	  	  _E = _potential.energy_gradient(_x, _g); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
-	  	  	  	  _Estart = _E;
+		  	  	  *_E = _potential.energy_gradient(_x, _g); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
+	  	  	  	  _Estart = *_E;
 	  	  	  	  _gstart(_g.copy());
 
 	  	  	  	  if (v.empty())
