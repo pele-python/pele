@@ -12,3 +12,5 @@ echo "Compiling _pythonpotential.pyx"
 cython --cplus -a pele/potentials/_pythonpotential.pyx 
 echo "Compiling _morse_cpp.pyx"
 cython --cplus pele/potentials/_morse_cpp.pyx 
+echo "Compiling _hs_wca_cpp.pyx"
+cython --cplus pele/potentials/_hs_wca_cpp.pyx 

@@ -6,79 +6,6 @@
 #include <stdexcept>
 #include <iostream>
 
-/*
- * compute sum of two pele arrays element wise
- * */
-
-void arraysum(pele::Array<double> const& v1, pele::Array<double> const& v2, pele::Array<double> &v3)
-{
-	assert(v1.size() == v2.size());
-
-	for (int i =0; i < v1.size(); ++i)
-		{
-			v3[i] = v1[i] + v2[i];
-		}
-}
-
-/*
- * compute difference of two pele arrays element wise
- * */
-
-void arraydif(pele::Array<double> const& v1, pele::Array<double> const& v2, pele::Array<double> &v3)
-{
-	assert(v1.size() == v2.size());
-
-	for (int i =0; i < v1.size(); ++i)
-		{
-			v3[i] = v1[i] - v2[i];
-		}
-}
-
-/**
- * compute the dot product of two pele arrays
- */
-
-double arraydot(pele::Array<double> const v1, pele::Array<double> const v2)
-{
-  assert(v1.size() == v2.size());
-  size_t i;
-  double dot = 0.;
-  for (i=0; i<v1.size(); ++i) {
-    dot += v1[i] * v2[i];
-  }
-  return dot;
-}
-
-/**
- * compute the L2 norm of a pele array
- */
-double arraynorm(pele::Array<double> const v)
-{
-  return sqrt(arraydot(v, v));
-}
-
-/**
- * compute the dot product of two vectors
- */
-double vecdot(std::vector<double> const v1, std::vector<double> const v2)
-{
-  assert(v1.size() == v2.size());
-  size_t i;
-  double dot = 0.;
-  for (i=0; i<v1.size(); ++i) {
-    dot += v1[i] * v2[i];
-  }
-  return dot;
-}
-
-/**
- * compute the L2 norm of a vector
- */
-double vecnorm(std::vector<double> const v)
-{
-  return sqrt(vecdot(v, v));
-}
-
 namespace pele {
     /**
      * Simple wrapper class for arrays
@@ -106,6 +33,10 @@ namespace pele {
             _reference_count = new long int;
             *_reference_count = 1;
         }
+
+        /**
+         * create array with specific size and values and allocate memory
+         */
 
         Array(size_t size, dtype val) : _size(size)
                 {
@@ -153,6 +84,16 @@ namespace pele {
         ~Array()
         {
             free();
+        }
+
+        /*Returns whether the array is empty (i.e. whether its size is 0).*/
+
+        bool empty()
+        {
+        	if (_size == 0)
+        		return true;
+        	else
+        		return false;
         }
 
         /**
@@ -403,5 +344,7 @@ namespace pele {
 //
 //newa.reference(old);
 //newa.copy(old);
+
+
 
 #endif

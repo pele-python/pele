@@ -15,66 +15,6 @@ using std::cout;
 
 namespace pele{
 
-/*
- * compute sum of two vectors element wise
- * */
-
-void vecsum(std::vector<double> const& v1, std::vector<double> const& v2, std::vector<double> &v3)
-{
-	assert(v1.size() == v2.size());
-	assert(v1.size() == v3.size());
-	std::vector<double>::iterator it2 = v2.begin();
-	std::vector<double>::iterator it3 = v3.begin();
-
-	for (std::vector<double>::iterator it1=v1.begin(); it != v1.end(); ++it1)
-		{
-			*it3 = *it1 + *it2;
-			++it2;
-			++it3;
-		}
-}
-
-/*
- * compute difference of two vectors element wise
- * */
-
-void vecdif(std::vector<double> const& v1, std::vector<double> const& v2, std::vector<double> &v3)
-{
-	assert(v1.size() == v2.size());
-	assert(v1.size() == v3.size());
-	std::vector<double>::iterator it2 = v2.begin();
-	std::vector<double>::iterator it3 = v3.begin();
-
-	for (std::vector<double>::iterator it1=v1.begin(); it != v1.end(); ++it1)
-		{
-			*it3 = *it1 - *it2;
-			++it2;
-			++it3;
-		}
-}
-
-/**
- * compute the dot product of two vectors
- */
-double vecdot(std::vector<double> const v1, std::vector<double> const v2)
-{
-  assert(v1.size() == v2.size());
-  size_t i;
-  double dot = 0.;
-  for (i=0; i<v1.size(); ++i) {
-    dot += v1[i] * v2[i];
-  }
-  return dot;
-}
-
-/**
- * compute the L2 norm of a vector
- */
-double vecnorm(std::vector<double> const v)
-{
-  return sqrt(vecdot(v, v));
-}
-
 /**
  * this defines the basic interface for optimizers.  All pele optimizers
  * should derive from this class.
@@ -230,6 +170,7 @@ public :
     void set_iprint(int iprint) { iprint_ = iprint; }
     void set_verbosity(int verbosity) { verbosity_ = verbosity; }
 
+
     // functions for accessing the status of the optimizer
     Array<double> get_x() { return x_; }
     Array<double> get_g() { return g_; }
@@ -266,7 +207,7 @@ protected :
     /**
      * compute the initial func and gradient
      */
-    void initialize_func_gradient()
+    virtual void initialize_func_gradient()
     {
         // compute the func and gradient at the current locations
         // and store them

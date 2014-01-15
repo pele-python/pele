@@ -23,14 +23,15 @@ namespace pele{
    * http://link.aps.org/doi/10.1103/PhysRevLett.97.170201
    */
 
-	class MODIFIED_FIRE : public GradientOptimizer{
+	class MODIFIED_FIRE : public Optimizer{
     private :
 	  double _Nmin, _dt, _dtmax;
 	  double _finc, _fdec, _fa;
 	  double _astart, _a;
-	  pele::BasePotential * _potential;
 	  pele::BaseIntegrator * _integrator;
-	  pele::Array<double> _xstart, _f, _v, _x, _xold;
+      pele::Array<double> _v, _xold;
+      int _fire_iter_number = 0;
+      int _N = 0;
 
     public :
 
@@ -38,9 +39,8 @@ namespace pele{
 		* Constructor
 		*/
 	  MODIFIED_FIRE(pele::BasePotential * potential, pele::BaseIntegrator * integrator,
-			  const pele::Array<double> & x0, double maxstep, double dtstart, double dtmax,
-    		  size_t Nmin, double finc, double fdec, double fa, double astart,
-    		  double iprint, double tol=1e-4) {}
+			  const pele::Array<double> & x0, double dtstart, double dtmax,
+    		  size_t Nmin, double finc, double fdec, double fa, double astart, double tol=1e-2) {}
       /**
        * Destructorgit undo rebase
        */
@@ -52,70 +52,74 @@ namespace pele{
 
       void one_iteration();
 
+      /**
+       * Overload initialize_func_gradient from parent class (here we need to wrap the integrator)
+       */
+
+      void initialize_func_gradient()
+            {
+                /*set x, v, E and g (this is -grad(E), hence the force) by wrapping position, velocity and gradient arrays in the integrator*/
+                _integrator.wrapv(_v); 	//the velocity array wraps the integrator velocity array so that it updates concurrently
+                _integrator.wrapf(g_); 	//the force array wraps the integrator force array so that it updates concurrently
+                _integrator.wrapx(x_);	//the coordinates array wraps the integrator coordinates array so that it updates concurrently
+                _integrator.wrapE(f_);	//the function value (E) wraps the integrator energy so that it updates concurrently
+                compute_func_gradient(x_, f_, g_); //compute at initialisation to compute rms_, they'll be recomputed by integrator
+                rms_ = norm(g_) / sqrt(N);
+                func_initialized_ = true;
+            }
   };
 
   MODIFIED_FIRE::MODIFIEDFIRE(pele::BasePotential * potential, pele::BaseIntegrator * integrator,
-		  const pele::Array<double> & x0, double maxstep, double dtstart, double dtmax,
-		  size_t Nmin, double finc, double fdec, double fa, double astart,
-		  double iprint, double tol=1e-4):
-		  GradientOptimizer(potential, x0, tol),							//call to GradienOptimizer constructor to initialise inherited variables
-		  _integrator(integrator(potential, x0, dtstart)),						//call to BaseIntegrator constructor to initialise integrator variables
-		  _xstart(x0.copy()), _dtstart(dtstart),
+		  const pele::Array<double> & x0, double dtstart, double dtmax,
+		  size_t Nmin, double finc, double fdec, double fa, double astart, double tol=1e-2):
+		  GradientOptimizer(potential,x0,tol=1e-4), //call GradientOptimizer constructor
+		  _integrator(integrator(potential, x0, dtstart)),//call to BaseIntegrator constructor to initialise integrator variables
+		  _potential(potential), _dtstart(dtstart),
 		  _dtmax(dtmax), _astart(astart), _a(astart),
 		  _Nmin(Nmin), _finc(finc), _fdec(fdec),
-		  _fa(fa), _f(x0.size()), _v(x0.size()),
-    	  _potential(potential), _dt(dtstart),
-    	  _xold(x0.copy())
-
-  {
-	  set_maxstep(maxstep);
-	  set_iprint(iprint);
-	  _integrator.wrapv(_v); 	//the velocity array wraps the integrator velocity array so that it updates concurrently
-	  _integrator.wrapf(_f); 	//the force array wraps the integrator force array so that it updates concurrently
-	  _integrator.wrapx(_x);	//the coordinates array wraps the integrator coordinates array so that it updates concurrently
-  }
+		  _fa(fa), _potential(potential), _dt(dtstart),
+    	  _xold(x0.copy()), _N(x0.size())
+  	  	  {}
 
   MODIFIED_FIRE::one_iteration()
   {
+	  size_t N = x_.size();
+	  nfev_ += 1;
+	  iter_number_ += 1;
+	  _fire_iter_number += 1; //this is different from iter_number_ which does not get reset
+
 	  _integrator.oneiteration();
-	  double P = arraydot(_v,_f);
+	  double P = arraydot(_v,g_);
 
 	  if (P > 0)
 	  {
 		  /*equation written in this conditional statement _v = (1- _a)*_v + _a * funit * vnorm*/
 
-		  /*double vnorm = arraynorm(_v);
-		  pele::array<double> funit(_f.copy());
-		  arrayunit(funit); 					//transforms _f in a unit vector
-		  arrayscalprod(funit, _a*vnorm); 		//_funit -> _a * funit * vnorm
-		  arrayscalprod(_v, 1.-_a);				// _v -> (1-_a) * _v
-		  arraysum(_v,funit,_v);				// _v = (1- _a)*_v + _a * funit * vnorm*/
-
-		  double ifnorm = 1. / arraynorm(_f);
-		  double ivnorm = 1. / arraynorm(_v);
+		  double ifnorm = 1. / norm(g_);
+		  double ivnorm = 1. / norm(_v);
 
 		  for (size_t i =0; i < v.size(); ++v)
 		  {
-			  v[i] += (1. - _a) * _v[i] + _a * _f[i] * _v[i] * ifnorm * ivnorm;
+			  v[i] += (1. - _a) * _v[i] + _a * g_[i] * _v[i] * ifnorm * ivnorm;
 		  }
 
-		  if (iter_number_ > _Nmin)
+		  if (_fire_iter_number > _Nmin)
 		  {
 			  _dt = std::min(_dt* _finc, _dtmax);
 			  integrator.set_dt(_dt);
 			  _a *= _fa;
 		  }
-		  iter_number_ += 1;
-		  _xold(_x.copy());
+		  _xold(x_.copy());
+		  rms_ = norm(g_) / sqrt(N); //update rms
 	  }
 	  else
 	  {
 		  _dt *= _fdec;
 		  integrator.set_dt(_dt);
 		  integrator.set_v_to_vstart(); 		//reset velocity to initial (0)
-		  _x(_xold.copy());						//reset position to the one before the step (core of modified fire)
+		  x_(_xold.copy());						//reset position to the one before the step (core of modified fire)
 		  _a = _astart;
-		  iter_number_ = 0;
+		  _fire_iter_number = 0;
 	  }
   }
 }

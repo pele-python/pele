@@ -17,7 +17,7 @@ namespace pele {
 
 	  VelocityVerlet::VelocityVerlet(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double>& v = _default_array,
 			  pele::Array<double>& f = _default_array, pele::Array<double>& m = _default_array):
-			  BaseIntegrator(potential, x, dt, v, f, m)
+			  BaseIntegrator(potential, x, dt, v, f, m) //initialise base integrator from which this class is inherited
 		{}
 
 	  void VelocityVerlet::oneiteration()
@@ -26,13 +26,13 @@ namespace pele {
 
 		  for(int i =0; i < _x.size(); ++i)
 		  {
-			_x[i] += _dt * (_v[i] + 0.5 * _dt * _f[i] / _m[i]);
+			_x[i] += _dt * (_v[i] + 0.5 * _dt * _f[i] / _m[i]);	//update position
 
 			_fold(_f);
 
-			_E = _potential.energy_gradient(_x, _f);
+			_E = _potential.energy_gradient(_x, _f); 			//update gradient
 
-			_v[i] += 0.5 * _dt * (_fold[i] + _f[i]) / _m[i];
+			_v[i] += 0.5 * _dt * (_fold[i] + _f[i]) / _m[i]; 	//update velocity
 
 		  }
 	  }
