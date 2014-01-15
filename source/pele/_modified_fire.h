@@ -59,10 +59,10 @@ namespace pele{
       void initialize_func_gradient()
             {
                 /*set x, v, E and g (this is grad(E), hence -force) by wrapping position, velocity and gradient arrays in the integrator*/
-                _integrator.wrapv(_v); 	//the velocity array wraps the integrator velocity array so that it updates concurrently
-                _integrator.wrapg(g_); 	//the gradient array wraps the integrator gradient array so that it updates concurrently
-                _integrator.wrapx(x_);	//the coordinates array wraps the integrator coordinates array so that it updates concurrently
-                _integrator.wrapE(f_);	//the function value (E) wraps the integrator energy so that it updates concurrently
+                _integrator.wrap_v(_v); 	//the velocity array wraps the integrator velocity array so that it updates concurrently
+                _integrator.wrap_g(g_); 	//the gradient array wraps the integrator gradient array so that it updates concurrently
+                _integrator.wrap_x(x_);		//the coordinates array wraps the integrator coordinates array so that it updates concurrently
+                _integrator.wrap_E(f_);		//the function value (E) wraps the integrator energy so that it updates concurrently
                 compute_func_gradient(x_, f_, g_); //compute at initialisation to compute rms_, they'll be recomputed by integrator
                 rms_ = norm(g_) / sqrt(N);
                 func_initialized_ = true;
@@ -116,7 +116,7 @@ namespace pele{
 	  {
 		  _dt *= _fdec;
 		  integrator.set_dt(_dt);
-		  integrator.set_v_to_vstart(); 		//reset velocity to initial (0)
+		  integrator.reset_v(); 				//reset velocity to initial (0)
 		  x_(_xold.copy());						//reset position to the one before the step (core of modified fire)
 		  _a = _astart;
 		  _fire_iter_number = 0;
