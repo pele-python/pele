@@ -5,7 +5,7 @@ from cpython cimport bool
 from ctypes import c_size_t as size_t
 
 # use external c++ class
-cdef extern from "wca.h" namespace "pele":
+cdef extern from "pele/wca.h" namespace "pele":
     cdef cppclass  cWCA "pele::WCA":
         cWCA(double C6, double C12, double eps) except +
     cdef cppclass  cWCAPeriodic "pele::WCAPeriodic":

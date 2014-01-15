@@ -5,12 +5,12 @@ from cpython cimport bool
 from ctypes import c_size_t as size_t
 
 # use external c++ class
-cdef extern from "hs_wca.h" namespace "pele":
+cdef extern from "pele/hs_wca.h" namespace "pele":
     cdef cppclass  cHS_WCA "pele::HS_WCA":
         cHS_WCA(double eps, double sca, _pele.Array[double] radii) except +
     cdef cppclass  cHS_WCAPeriodic "pele::HS_WCAPeriodic":
         cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii, double * boxvec) except +
-
+        
 cdef class HS_WCA(_pele.BasePotential):
     """define the python interface to the c++ HS_WCA implementation
     """
