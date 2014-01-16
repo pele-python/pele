@@ -6,6 +6,7 @@
 #include "array.h"
 #include "optimizer.h"
 #include "base_integrator.h"
+#include "velocity_verlet.h"
 
 using std::vector;
 
@@ -28,7 +29,7 @@ namespace pele{
 	  double _Nmin, _dt, _dtmax;
 	  double _finc, _fdec, _fa;
 	  double _astart, _a;
-	  pele::BaseIntegrator * _integrator;
+	  pele::VelocityVerlet * _integrator; //create VelocityVerlet integrator
       pele::Array<double> _v, _xold;
       int _fire_iter_number = 0;
       int _N = 0;
@@ -38,8 +39,7 @@ namespace pele{
 	    /**
 		* Constructor
 		*/
-	  MODIFIED_FIRE(pele::BasePotential * potential, pele::BaseIntegrator * integrator,
-			  const pele::Array<double> & x0, double dtstart, double dtmax,
+	  MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double> x0, double dtstart, double dtmax,
     		  size_t Nmin, double finc, double fdec, double fa, double astart, double tol=1e-2) {}
       /**
        * Destructorgit undo rebase
@@ -61,25 +61,26 @@ namespace pele{
                 /*set x, v, E and g (this is grad(E), hence -force) by wrapping position, velocity and gradient arrays in the integrator*/
                 _integrator.wrap_v(_v); 	//the velocity array wraps the integrator velocity array so that it updates concurrently
                 _integrator.wrap_g(g_); 	//the gradient array wraps the integrator gradient array so that it updates concurrently
-                _integrator.wrap_x(x_);		//the coordinates array wraps the integrator coordinates array so that it updates concurrently
                 _integrator.wrap_E(f_);		//the function value (E) wraps the integrator energy so that it updates concurrently
+                //_integrator.wrap_x(x_);	// no need to wrap x, already wrapped in integrator constructor
                 compute_func_gradient(x_, f_, g_); //compute at initialisation to compute rms_, they'll be recomputed by integrator
                 rms_ = norm(g_) / sqrt(N);
                 func_initialized_ = true;
             }
   };
 
-  MODIFIED_FIRE::MODIFIEDFIRE(pele::BasePotential * potential, pele::BaseIntegrator * integrator,
-		  const pele::Array<double> & x0, double dtstart, double dtmax,
+  MODIFIED_FIRE::MODIFIEDFIRE(pele::BasePotential * potential,
+		  pele::Array<double> x0, double dtstart, double dtmax,
 		  size_t Nmin, double finc, double fdec, double fa, double astart, double tol=1e-2):
 		  GradientOptimizer(potential,x0,tol=1e-2), //call GradientOptimizer constructor
-		  _integrator(integrator(potential, x0, dtstart)),//call to BaseIntegrator constructor to initialise integrator variables
 		  _potential(potential), _dtstart(dtstart),
 		  _dtmax(dtmax), _astart(astart), _a(astart),
 		  _Nmin(Nmin), _finc(finc), _fdec(fdec),
 		  _fa(fa), _potential(potential), _dt(dtstart),
     	  _xold(x0.copy()), _N(x0.size())
-  	  	  {}
+  	  	  {
+	  	  	  _integrator(_potential, x_, _dtstart); //call the integrator constructor
+  	  	  }
 
   MODIFIED_FIRE::one_iteration()
   {
