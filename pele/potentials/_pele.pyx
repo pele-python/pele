@@ -75,7 +75,7 @@ cdef class BasePotential(object):
                                        )
 #        newhess = hess;
         return np.reshape(hess, [x.size, x.size])
-                
+
 # This is a little test function to benchmark potential evaluation in a loop
 # in native code    
 #def call_pot(Potential pot, np.ndarray[double, ndim=1, mode="c"] x not None,

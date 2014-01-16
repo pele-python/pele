@@ -8,11 +8,12 @@ from pele.potentials import _pythonpotential
 import sys
 from cpython cimport bool as cbool
 
-# import the externally defined ljbfgs implementation
-cdef extern from "pele/_lbfgs.h" namespace "pele":
-    cdef cppclass cppLBFGS "pele::LBFGS":
-        cppLBFGS(_pele.cBasePotential *, _pele.Array[double], double, int) except +
-
+# import the externally defined modified_fire implementation
+cdef extern from "pele/_modified_fire.h" namespace "pele":
+    cdef cppclass cppMODIFIED_FIRE "pele::MODIFIED_FIRE":
+        cppMODIFIED_FIRE(_pele.cBasePotential * , const _pele.Array[double], 
+                         double, double, size_t , double, double, 
+                         double, double, double) except +
         void run() except +
         void run(int niter) except +
         void one_iteration() except +
@@ -23,55 +24,51 @@ cdef extern from "pele/_lbfgs.h" namespace "pele":
         _pele.Array[double] get_x() except +
         _pele.Array[double] get_g() except +
         
-        void set_H0(double) except +
         void set_tol(double) except +
         void set_maxstep(double) except +
-        void set_max_f_rise(double) except +
         void set_max_iter(int) except +
         void set_iprint(int) except +
         void set_verbosity(int) except +
 
         double get_rms() except +
-        double get_H0() except +
         int get_nfev() except +
         int get_niter() except +
         int get_maxiter() except +
         int success() except +
 
 
-cdef class _Cdef_LBFGS_CPP(object):
-    """This class is the python interface for the c++ LBFGS implementation
+cdef class _Cdef_MODIFIED_FIRE_CPP(object):
+    """This class is the python interface for the c++ MODIFIED_FIRE implementation
     """
-    cdef cppLBFGS *thisptr
+    cdef cppMODIFIED_FIRE *thisptr
     cdef _pele.BasePotential pot # this is stored so that the memory is not freed
     
-    def __cinit__(self, x0, potential, double tol=1e-5, int M=4, double maxstep=0.1, 
-                  double maxErise=1e-4, double H0=0.1, int iprint=-1,
-                  energy=None, gradient=None,
-                  int nsteps=10000, int verbosity=0, events=None):
+    def __cinit__(self, x0, potential, double dtstart, double dtmax, size_t Nmin=5, double finc=1.1, 
+                  double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-2, 
+                  int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0):
+        
         if not issubclass(potential.__class__, _pele.BasePotential):
             if verbosity > 0:
-                print "LBFGS_CPP: potential is not subclass of BasePotential; wrapping it.", potential
+                print "MODIFIED_FIRE_CPP: potential is not subclass of BasePotential; wrapping it.", potential
 #                print "           Wrapping the potential like this is dangerous.  All python exceptions will be ignored"
             potential = _pythonpotential.CppPotentialWrapper(potential)
+        
         cdef _pele.BasePotential pot = potential
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
-        self.thisptr = <cppLBFGS*>new cppLBFGS(pot.thisptr, 
+        self.thisptr = <cppMODIFIED_FIRE*>new cppMODIFIED_FIRE(pot.thisptr, 
                _pele.Array[double](<double*> x0c.data, x0c.size),
-               tol, M)
+               dtstart, dtmax, Nmin, finc, fdec, fa, astart, tol)
         opt = self.thisptr
-        opt.set_H0(H0)
-        opt.set_maxstep(maxstep)
-        opt.set_max_f_rise(maxErise)
         opt.set_max_iter(nsteps)
         opt.set_verbosity(verbosity)
         opt.set_iprint(iprint)
         self.pot = pot # so that the memory is not freed
         
         cdef np.ndarray[double, ndim=1] g_  
-        if energy is not None and gradient is not None:
-            g_ = gradient
-            self.thisptr.set_func_gradient(energy, _pele.Array[double](<double*> g_.data, g_.size))
+        #this functionality should not be needed in fire because integrator recomputes g and this is then wrapped
+        #if energy is not None and gradient is not None:
+        #    g_ = gradient
+        #    self.thisptr.set_func_gradient(energy, _pele.Array[double](<double*> g_.data, g_.size))
         
     def __dealloc__(self):
         if self.thisptr != NULL:
@@ -115,7 +112,6 @@ cdef class _Cdef_LBFGS_CPP(object):
         res.rms = self.thisptr.get_rms()        
         res.nsteps = self.thisptr.get_niter()
         res.nfev = self.thisptr.get_nfev()
-        res.H0 = self.thisptr.get_H0()
         res.success = bool(self.thisptr.success())
         return res
     
@@ -131,35 +127,26 @@ cdef class _Cdef_LBFGS_CPP(object):
     def get_niter(self):
         return self.thisptr.get_niter()
 
-class LBFGS_CPP(_Cdef_LBFGS_CPP):
-    """This class is the python interface for the c++ LBFGS implementation
+class MODIFIED_FIRE_CPP(_Cdef_MODIFIED_FIRE_CPP):
+    """This class is the python interface for the c++ MODIFED_FIRE implementation
     """
-    def __init__(self, x0, potential, double tol=1e-4, int M=4, double maxstep=0.1, 
-                  double maxErise=1e-4, double H0=0.1, int iprint=-1,
-                  energy=None, gradient=None,
-                  int nsteps=10000, int verbosity=0, events=None):
-        self._need_python = events is not None
-
-        self.events = events
-        if self.events is None: 
-            self.events = []
-    
+    def __init__(self, x0, potential, double dtstart, double dtmax, size_t Nmin=5, double finc=1.1, 
+                  double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-2, 
+                  int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0):
+            
     def one_iteration(self):
         """do one iteration"""
-        _Cdef_LBFGS_CPP.one_iteration(self)
-        res = self.get_result()
-        for event in self.events:
-            event(coords=res.coords, energy=res.energy, rms=res.rms)
+        _Cdef_MODIFIED_FIRE_CPP.one_iteration(self)
     
     def run(self, niter=None):
-        """run the lbfgs algorithm
+        """run the modified_fire algorithm
         
         this overloads the underlying implementation so that the purely python 
         events can be called. If events are not called this simply calls the 
         purely cpp version.
         """
         if not self._need_python:
-            return _Cdef_LBFGS_CPP.run(self, niter)
+            return _Cdef_MODIFIED_FIRE_CPP.run(self, niter)
 
         if niter is None:
             niter = self.get_maxiter() - self.get_niter()
