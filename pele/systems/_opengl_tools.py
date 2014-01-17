@@ -8,7 +8,9 @@ def subtract_com(coords):
     com = np.mean(coords, axis=0)
     return coords - com[np.newaxis,:]
 
-def draw_sphere(xyz, radius=0.5):
+def draw_sphere(xyz, radius=0.5, color=None):
+    if color is not None:
+        change_color(color)
     GL.glPushMatrix()            
     GL.glTranslate(xyz[0], xyz[1], xyz[2])
     GLUT.glutSolidSphere(radius, 30, 30)
@@ -22,7 +24,7 @@ def draw_atoms(coords, atomlist, color=None, radius=0.5):
     if color is not None:
         change_color(color)
     for i in atomlist:
-        draw_sphere(coords[i,:])
+        draw_sphere(coords[i,:], radius=radius)
 
 def draw_atomic_single_atomtype(coords, index, subtract_com=False):
     """
