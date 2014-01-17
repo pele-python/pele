@@ -2,7 +2,6 @@ import networkx as nx
 import exceptions as ex
 import itertools
 import re
-import playground.group_rotation.amino_acids as amino
 import pele.utils.elements as elem
 
 class Atom(object):
@@ -259,15 +258,34 @@ def read_amber_coords(filename):
         raise ex.RuntimeError("Number of coordinates in coords file and number of atoms are inconsistent.")
     return coords
 
+def parse_topology_file(topology_filename):
+    topology_data = read_topology(topology_filename)
+    parsed = create_atoms_and_residues(topology_data)
+    return parsed
+    
 def default_parameters(topology_filename):
+    # should not import something from playground.  should this function
+    # be moved to playground?
+    import playground.group_rotation.amino_acids as amino
     topology_data = read_topology(topology_filename)
     parsed = create_atoms_and_residues(topology_data)
     return group_rotation_dict(parsed, amino.def_parameters)
 
 if __name__ == "__main__":
-    topology_data = read_topology("/home/khs26/coords.prmtop")
+    topology_data = read_topology("/home/js850/projects/pele/examples/amber/aladipep/coords.prmtop")
     parsed = create_atoms_and_residues(topology_data)
-    group_rot_dict = group_rotation_dict(parsed, amino.def_parameters)
-    print read_amber_coords("/home/khs26/coords.inpcrd")
+#    group_rot_dict = group_rotation_dict(parsed, amino.def_parameters)
+#    print read_amber_coords("/home/khs26/coords.inpcrd")
 #    for item in group_rot_dict:
 #        print item, group_rot_dict[item]
+
+    atom_indices = [node.index for node in parsed.atoms.nodes()]
+    atoms = [node for node in parsed.atoms.nodes()]
+    print atoms
+    atom_types = [a.element for a  in atoms]
+    print atom_types
+    bonds = [(edge[0].index, edge[1].index) for edge in parsed.atoms.edges_iter()]
+    print atom_indices
+    print bonds
+    
+    
