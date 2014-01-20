@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'dgraph_browser.ui'
 #
-# Created: Thu May 30 10:11:18 2013
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Fri Dec 20 18:09:36 2013
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -87,12 +96,20 @@ class Ui_Form(object):
         self.lineEdit_offset.setMaximumSize(QtCore.QSize(200, 16777215))
         self.lineEdit_offset.setObjectName(_fromUtf8("lineEdit_offset"))
         self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.lineEdit_offset)
-        self.comboBox_colour = QtGui.QComboBox(self.layoutWidget)
-        self.comboBox_colour.setObjectName(_fromUtf8("comboBox_colour"))
-        self.formLayout.setWidget(7, QtGui.QFormLayout.FieldRole, self.comboBox_colour)
         self.label_5 = QtGui.QLabel(self.layoutWidget)
         self.label_5.setObjectName(_fromUtf8("label_5"))
         self.formLayout.setWidget(7, QtGui.QFormLayout.LabelRole, self.label_5)
+        self.lineEdit_linewidth = QtGui.QLineEdit(self.layoutWidget)
+        self.lineEdit_linewidth.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.lineEdit_linewidth.setObjectName(_fromUtf8("lineEdit_linewidth"))
+        self.formLayout.setWidget(7, QtGui.QFormLayout.FieldRole, self.lineEdit_linewidth)
+        self.lineEdit_title = QtGui.QLineEdit(self.layoutWidget)
+        self.lineEdit_title.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.lineEdit_title.setObjectName(_fromUtf8("lineEdit_title"))
+        self.formLayout.setWidget(8, QtGui.QFormLayout.FieldRole, self.lineEdit_title)
+        self.label_6 = QtGui.QLabel(self.layoutWidget)
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.formLayout.setWidget(8, QtGui.QFormLayout.LabelRole, self.label_6)
         self.verticalLayout_2.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
@@ -120,31 +137,30 @@ class Ui_Form(object):
         self.horizontalLayout.addWidget(self.splitter)
 
         self.retranslateUi(Form)
-        QtCore.QObject.connect(self.btnRebuild, QtCore.SIGNAL(_fromUtf8("clicked()")), Form.rebuild_disconnectivity_graph)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_center_gmin.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>make sure the global minimum is centered</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_center_gmin.setText(QtGui.QApplication.translate("Form", "center global min", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_show_minima.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>show the minima as points at the end of each line</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_show_minima.setText(QtGui.QApplication.translate("Form", "show minima", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_order_by_energy.setText(QtGui.QApplication.translate("Form", "order by energy", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_order_by_basin_size.setText(QtGui.QApplication.translate("Form", "order by basin size", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_include_gmin.setText(QtGui.QApplication.translate("Form", "include global min", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_show_trees.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>Show tree nodes for coloring purposes.  To color a basin select a node then select a color.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.chkbx_show_trees.setText(QtGui.QApplication.translate("Form", "show trees for coloring", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>set the maximum energy level</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Form", "Emax", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>change the minimum size of a disconnected region to be included in the graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Form", "Minimum subgraph size", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("Form", "nlevels", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("Form", "offset", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>To color a basin first enable &quot;show trees.&quot;  Then select a node and select a color</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("Form", "color", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnRebuild.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>rebuild and redraw the graph</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnRebuild.setText(QtGui.QApplication.translate("Form", "Rebuild Graph", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnRedraw.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>redraw the graph without rebuilding</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnRedraw.setText(QtGui.QApplication.translate("Form", "Redraw Graph", None, QtGui.QApplication.UnicodeUTF8))
+        Form.setWindowTitle(_translate("Form", "Form", None))
+        self.chkbx_center_gmin.setToolTip(_translate("Form", "<html><head/><body><p>make sure the global minimum is centered</p></body></html>", None))
+        self.chkbx_center_gmin.setText(_translate("Form", "center global min", None))
+        self.chkbx_show_minima.setToolTip(_translate("Form", "<html><head/><body><p>show the minima as points at the end of each line</p></body></html>", None))
+        self.chkbx_show_minima.setText(_translate("Form", "show minima", None))
+        self.chkbx_order_by_energy.setText(_translate("Form", "order by energy", None))
+        self.chkbx_order_by_basin_size.setText(_translate("Form", "order by basin size", None))
+        self.chkbx_include_gmin.setText(_translate("Form", "include global min", None))
+        self.chkbx_show_trees.setToolTip(_translate("Form", "<html><head/><body><p>Show tree nodes for coloring purposes.  To color a basin select a node then select a color.</p></body></html>", None))
+        self.chkbx_show_trees.setText(_translate("Form", "show trees for coloring", None))
+        self.label.setToolTip(_translate("Form", "<html><head/><body><p>set the maximum energy level</p></body></html>", None))
+        self.label.setText(_translate("Form", "Emax", None))
+        self.label_2.setToolTip(_translate("Form", "<html><head/><body><p>change the minimum size of a disconnected region to be included in the graph</p></body></html>", None))
+        self.label_2.setText(_translate("Form", "Minimum subgraph size", None))
+        self.label_3.setText(_translate("Form", "nlevels", None))
+        self.label_4.setText(_translate("Form", "offset", None))
+        self.label_5.setText(_translate("Form", "line width", None))
+        self.label_6.setText(_translate("Form", "title", None))
+        self.btnRebuild.setToolTip(_translate("Form", "<html><head/><body><p>rebuild and redraw the graph</p></body></html>", None))
+        self.btnRebuild.setText(_translate("Form", "Rebuild Graph", None))
+        self.btnRedraw.setToolTip(_translate("Form", "<html><head/><body><p>redraw the graph without rebuilding</p></body></html>", None))
+        self.btnRedraw.setText(_translate("Form", "Redraw Graph", None))
 
 from mplwidget import MPLWidgetWithToolbar

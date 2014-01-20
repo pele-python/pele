@@ -66,10 +66,10 @@ bh.run(40)
 #print the saved coords
 fname = "otp.xyz"
 print "saving xyz coords to", fname
-from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+from pele.utils.xyz import write_xyz
 with open(fname, "w") as fout:
     for minimum in saveit.data:
         xyz = mysys.getxyz(minimum.coords)
-        printxyz( fout, xyz, atom_type=["N", "O", "O"])
+        write_xyz( fout, xyz, atomtypes=["N", "O", "O"])
 
 

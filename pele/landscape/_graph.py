@@ -111,19 +111,17 @@ class TSGraph(object):
         else:
             self._build_from_list(self.minima)
 
-    def addMinimum(self, energy, coords, **kwargs):
+    def addMinimum(self, minimum):
         """
         add a minimum to the database and graph
         """
-        minimum = self.storage.addMinimum(energy, coords, **kwargs)
         if not self.graph.has_node(minimum):
             self.connected_components.setRebuild()
         self.graph.add_node(minimum)
         return minimum
     
-    def addTransitionState(self, E, coords, min1, min2, **kwargs):
+    def addTransitionState(self, ts):
         self.connected_components.setRebuild()
-        ts = self.storage.addTransitionState(E, coords, min1, min2, **kwargs)
         self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
         return ts
             
@@ -144,7 +142,7 @@ class TSGraph(object):
         except nx.NetworkXNoPath:
             return None
 
-    def mergeMinima(self, min1, min2, update_database=True):
+    def mergeMinima(self, min1, min2):
         """
         delete minima2.  all transition states pointing to min2 should
         now point to min1
@@ -162,10 +160,6 @@ class TSGraph(object):
 #                    data = self.graph.get_edge_data(min2, v)
                 self.graph.add_edge(min1, v, **data)
         self.graph.remove_node(min2)
-
-        if update_database:
-            self.storage.mergeMinima(min1, min2)
-
 
 
 #
@@ -242,7 +236,9 @@ class TestGraph(unittest.TestCase):
         nedges = [graph.graph.degree(n) for n in minima]
         min1, min2 = minima
         neighbors = graph.graph.neighbors(min2)
-        graph.mergeMinima(min1, min2, update_database=True)
+        graph.mergeMinima(min1, min2)
+        self.db.mergeMinima(min1, min2)
+
         self.assertNotIn(min2, graph.graph.nodes())
         
         #make sure the edges were copied

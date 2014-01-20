@@ -66,11 +66,11 @@ def test_soft_sphere(natoms = 9):
 
     fname = "out.xyz"
     print "saving coordinates to", fname
-    from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pele.utils.xyz import write_xyz
     with open(fname, "w") as fout:
         for xyz,line2 in printlist:
             xyz = putInBox(xyz, boxl)
-            printxyz(fout, xyz, line2=line2) 
+            write_xyz(fout, xyz, title=line2) 
             
     
     from scipy.optimize import check_grad

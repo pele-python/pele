@@ -6,33 +6,6 @@ import networkx as nx
 
 __all__ = ["XYModel"]
 
-class RectangularLattice(object):
-    """
-    for getting connectivity of a rectangular lattice
-    """
-    def __init__(self, Lx, Ly):
-        self.Lx = Lx
-        self.Ly = Ly
-        self.nspins = self.Lx * self.Ly
-                            
-    def i2xy(self, i):
-        #xy = np.zeros(2)
-        i -= self.nspins * int(np.floor( float(i) / self.nspins ))
-        
-        x = i % self.Lx
-        y = int(np.floor(i / self.Lx))
-        return x, y
-    
-    def xy2i(self, xy):
-        #xy = np.zeros(2)
-        x = xy[0]
-        y = xy[1]
-        x -= self.Lx * int(np.floor( float(x) / self.Lx ))
-        y -= self.Ly * int(np.floor( float(y) / self.Ly ))
-        
-        i = x + y * self.Lx
-        return i
-        
 
 def angle_to_2dvector(theta):
     return np.cos(theta), np.sin(theta)
@@ -42,6 +15,7 @@ class XYModel(BasePotential):
     XY model of 2d spins on a lattice
     """
     def __init__(self, dim=[4, 4], phi=np.pi, periodic=True, phases=None):
+        dim = copy(dim)
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
         
@@ -61,10 +35,10 @@ class XYModel(BasePotential):
         nx.set_edge_attributes(self.G, "phase", self.phases)
 
         self.indices = dict()
-        i = 0
-        for node in self.G.nodes():
+        self.index2node = dict()
+        for i, node in enumerate(self.G.nodes()):
             self.indices[node] = i
-            i += 1 
+            self.index2node[i] = node
         
         self.num_edges = self.G.number_of_edges()
         
@@ -85,7 +59,19 @@ class XYModel(BasePotential):
             
         self.neighbors = np.array(neighbors).reshape([-1,2])
 
+    def get_spin_energies(self, angles):
+        """return the local energy of each spin"""
+        energies = np.zeros(angles.size)
+        for edge in self.G.edges():
+            phase = self.phases[edge]
+            u = self.indices[edge[0]]
+            v = self.indices[edge[1]]
+            E = np.cos( -angles[u] + angles[v] + phase )
+            energies[u] += E
+            energies[v] += E
+        return energies
         
+      
     def getEnergy(self, angles):
         e, g = self.getEnergyGradient(angles)
         return e

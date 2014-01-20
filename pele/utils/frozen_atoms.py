@@ -302,7 +302,7 @@ class FrozenCoordsConverter(object):
 
 class FrozenPotWrapper(object):
     def __init__(self, potential, reference_coords, frozen_dof):
-        """Wrapper for a potenital object for freezing degrees of freedom
+        """Wrapper for a potential object for freezing degrees of freedom
         
         Parameters
         ----------
@@ -328,7 +328,7 @@ class FrozenPotWrapper(object):
         
         Examples
         --------
-        The following example show how to wrap the lennard jones potential and freeze
+        The following example shows how to wrap the lennard jones potential and freeze
         the first 6 degrees of freedom (2 atoms).  It then does a minimization on the 
         reduced coordinates and prints off some information
         
@@ -375,32 +375,17 @@ class FrozenPotWrapper(object):
         grad = self.coords_converter.get_reduced_coords(grad)
         return e, grad
 
-#    def NumericalHessian(self, coords, eps=1e-6):
-        
-#        """return the Hessian matrix of second derivatives computed numerically
-#        
-#        this takes 2*len(coords) calls to getGradient
-#        """
-#        return base_pote
-#        x = self.coords_converter.get_full_coords(coords)
-#        ndof = len(x)
-#        mobile_dof = self.coords_converter.mobile_dof
-#        hess = np.zeros([len(mobile_dof), len(mobile_dof)])
-#        for i in self.mobile_dof:
-#            xbkup = x[i]
-#            x[i] += eps
-#            g1 = self.underlying_pot.getGradient(x)
-#            x[i] = xbkup - eps
-#            g2 = self.underlying_pot.getGradient(x)            
-#            hess[i,:] = (g1 - g2) / (2. * eps)
-#            x[i] = xbkup
-#        return hess
-
     def getHessian(self, coords):
         fullcoords = self.coords_converter.get_full_coords(coords)
         H = self.underlying_pot.getHessian(fullcoords)
         Hred = self.coords_converter.get_reduced_hessian(H)
         return Hred
+    
+    def __getattr__(self, name):
+        """If this class does not have the attribute then pass the call on to self.underlying_pot"""
+        return getattr(self.underlying_pot, name)
+
+
 
 
 #########################################################

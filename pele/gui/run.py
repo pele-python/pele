@@ -20,6 +20,8 @@ from pele.gui.normalmode_browser import NormalmodeBrowser
 from pele.gui._list_views import ListViewManager
 from pele.gui._cv_viewer import HeatCapacityViewer
 from pele.rates import RateCalculation
+from pele.gui._rate_gui import RateViewer
+from pele.utils.events import Signal
 
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -34,16 +36,16 @@ def excepthook(ex_type, ex_value, traceback_obj):
     errorbox.setStandardButtons(QtGui.QMessageBox.Ignore | QtGui.QMessageBox.Cancel)
     errorbox.setDefaultButton(QtGui.QMessageBox.Cancel)
     if errorbox.exec_() == QtGui.QMessageBox.Cancel:
-        raise
+        raise ex_value
 
 class MySelection(object):
     """keep track of which minima have been selected and whether those coordinates have been modified
     """
     def __init__(self):
         self.minimum1 = None
-        self.minimum1 = None
+        self.minimum2 = None
         self.coords1 = None
-        self.coords1 = None
+        self.coords2 = None
 
 
 class MainGUI(QtGui.QMainWindow):
@@ -68,6 +70,8 @@ class MainGUI(QtGui.QMainWindow):
         self.pick_count = 0
 
         self.minima_selection = MySelection()
+        self.on_minimum_1_selected = Signal()
+        self.on_minimum_2_selected = Signal()
  
         # set up the list manager
         self.list_manager = ListViewManager(self)
@@ -124,14 +128,16 @@ class MainGUI(QtGui.QMainWindow):
         if len(filename) > 0:
             self.connect_db(filename)
 
-    def connect_db(self, filename=":memory:"):
+    def connect_db(self, database=":memory:"):
         """
         connect to an existing database at location filename
         """
         self.list_manager.clear()
-
-        db = self.system.create_database(db=filename)
-        self.system.database = db
+        
+        if isinstance(database, basestring):
+            self.system.database = self.system.create_database(db=database)
+        else:
+            self.system.database = database
         #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
@@ -175,7 +181,9 @@ class MainGUI(QtGui.QMainWindow):
         self.neb = None
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=1)
-
+        
+        self.on_minimum_1_selected(minimum)
+        
     def _SelectMinimum2(self, minimum, set_selected=True):
         """set the second minimum displayed in the connect tab"""
         if set_selected:
@@ -191,6 +199,8 @@ class MainGUI(QtGui.QMainWindow):
         self.neb = None
         if self.usepymol:
             self.pymolviewer.update_coords([minimum.coords], index=2)
+        
+        self.on_minimum_2_selected(minimum)
     
     def get_selected_minima(self):
         """return the two minima that have been chosen in the gui"""
@@ -313,6 +323,8 @@ class MainGUI(QtGui.QMainWindow):
         if not hasattr(self, "normalmode_explorer"):
             self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
         min1 = self.ui.ogl_main.minima[1]
+        if min1 is None:
+            raise RuntimeError("you must select a minimum first")
         self.normalmode_explorer.set_coords(min1.coords)
         self.normalmode_explorer.show()
     
@@ -321,9 +333,11 @@ class MainGUI(QtGui.QMainWindow):
         if not hasattr(self, "normalmode_explorer"):
             self.normalmode_explorer = NormalmodeBrowser(self, self.system, self.app)
         ts = self.list_manager.get_selected_ts()
+        if ts is None:
+            raise RuntimeError("you must select a transition state first")
         self.normalmode_explorer.set_coords(ts.coords)
         self.normalmode_explorer.show()
-    
+
     def NewMinimum(self, minimum, sort_items=True):
         """ add a new minimum to the system """
         self.list_manager.NewMinimum(minimum, sort_items=sort_items)
@@ -523,6 +537,11 @@ class MainGUI(QtGui.QMainWindow):
             self.nebexplorer.hide()
             del self.nebexplorer
         except AttributeError: pass
+        
+        try:
+            self.rate_viewer.hide()
+            del self.rate_viewer
+        except AttributeError: pass
 
     def on_btn_connect_all_clicked(self, checked=None):
         if checked is None: return
@@ -566,32 +585,41 @@ class MainGUI(QtGui.QMainWindow):
         print "calculating thermodynamics for", njobs, "minima and transition states" 
         
 
-    def _compute_rates(self, min1, min2, T=1.):
-        """compute rates without first calculating thermodynamics
-        """
-        from pele.utils.disconnectivity_graph import graph_constructor
-        print "computing rates at temperature T =", T
-        minima = [m for m in self.system.database.minima() if m.fvib is not None]
-        tslist = [ts for ts in self.system.database.transition_states() if ts.fvib is not None]
-        graph = graph_constructor(minima, tslist)
-        rcalc = RateCalculation(graph, [min1], [min2], T=T)
-        r12, r21 = rcalc.compute_rates()
-        print "rate from", min1._id, "to", min2._id, "=", r12
-        print "rate from", min2._id, "to", min1._id, "=", r21
-
-    def compute_rates(self, min1, min2, T=1.):
-        """compute the transition rate from min1 to min2 and vice versa"""
-        def on_finish():
-            print "thermodynamic calculation finished"
-            self._compute_rates(min1, min2)
-        self._on_finish_thermo_reference = on_finish # so it doeesn't get garbage collected
-        self.compute_thermodynamic_information(on_finish=on_finish)
+#    def _compute_rates(self, min1, min2, T=1.):
+#        """compute rates without first calculating thermodynamics
+#        """
+#        print "computing rates at temperature T =", T
+#        tslist = [ts for ts in self.system.database.transition_states() 
+#                  if ts.fvib is not None]
+#        rcalc = RateCalculation(tslist, [min1], [min2], T=T)
+#        r12, r21 = rcalc.compute_rates()
+#        print "rate from", min1._id, "to", min2._id, "=", r12
+#        print "rate from", min2._id, "to", min1._id, "=", r21
+#
+#    def compute_rates(self, min1, min2, T=1.):
+#        """compute the transition rate from min1 to min2 and vice versa"""
+#        def on_finish():
+#            print "thermodynamic calculation finished"
+#            self._compute_rates(min1, min2)
+#        self._on_finish_thermo_reference = on_finish # so it doeesn't get garbage collected
+#        self.compute_thermodynamic_information(on_finish=on_finish)
     
     def on_btn_rates_clicked(self, clicked=None):
         if clicked is None: return
+        if not hasattr(self, "rate_viewer"):
+            m1, m2 = self.minima_selection.minimum1, self.minima_selection.minimum2
+            self.rate_viewer = RateViewer(self.system, self.system.database, parent=self)
+            if m1 is not None:
+                self.rate_viewer.update_A(m1)
+            if m2 is not None:
+                self.rate_viewer.update_B(m2)
+            self.on_minimum_1_selected.connect(self.rate_viewer.update_A)
+            self.on_minimum_2_selected.connect(self.rate_viewer.update_B)
+        self.rate_viewer.show()
+
         
-        min1, min2 = self.get_selected_minima()
-        self.compute_rates(min1, min2)
+#        min1, min2 = self.get_selected_minima()
+#        self.compute_rates(min1, min2)
         
 #def refresh_pl():
     #pl.pause(0.000001)    
@@ -605,8 +633,8 @@ def run_gui(system, db=None, application=None):
     system : System class
         A pele system, derived from BaseSystem.  All information 
         about the system is in this class.
-    db : str, optional
-        connect to the database at this file location
+    db : pele database or string, optional
+        connect to this database or the database at this file location
     application : QApplication
         Use this QApplication object rather than creating a new one
         

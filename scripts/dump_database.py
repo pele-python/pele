@@ -5,13 +5,16 @@ import networkx as nx
 from pele.storage.database import Database
 from pele.landscape import TSGraph
 
-def print_system_properties(db):
+def print_system_properties(db, supress_long=True):
     if len(db.properties()) == 0: return
     print "System properties:"
     print "------------------"
     for p in db.properties():
         name, value = p.name(), p.value()
-        print "%10s:\t\t%s" % (name, str(value))
+        str_value = str(value)
+        if len(str_value) > 100 and supress_long:
+            str_value = str_value[:80] + " '... output suppressed'"
+        print "%10s:\t\t%s" % (name, str_value)
     print ""
         
 
@@ -26,20 +29,26 @@ def long_summary(db):
     
 #    print "number of connected components", len(cclist)
     counts = dict()
+    minimum_energy = dict()
     for cc in cclist:
         nc = len(cc)
+        Emin = min((m.energy for m in cc))
         try:
             counts[nc] += 1
+            if Emin < minimum_energy[nc]:
+                minimum_energy[nc] = Emin 
         except KeyError:
             counts[nc] = 1
+            minimum_energy[nc] = Emin
     counts = counts.items()
     counts.sort(key=lambda x:-x[0])
     print "Connectivity of the database:"
     for n, count in counts:
         if n == 1:
-            print "%7d unconnected minima" % count
+            print "%7d unconnected minima                : minimum energy = %s" % (count, minimum_energy[n])
         else:
-            print "%7d connected clusters of size %7d" % (count, n) 
+            print "%7d connected clusters of size %7d: minimum energy = %s" % (count, n, minimum_energy[n]) 
+
 
 def main():
     parser = argparse.ArgumentParser(description="print information about the database")
@@ -71,16 +80,15 @@ def main():
         
     db = Database(db=args.database, createdb=False)
 
-    if args.summary:
+    if args.properties or args.summary:
         print_system_properties(db)
+
+    if args.summary:
         print "number of minima:", db.number_of_minima()
         print "number of transition states:", db.number_of_transition_states()
   
     if args.summary_long:
         long_summary(db)
-
-    if args.properties:
-        print_system_properties(db)
         
     if args.writeMinima:
         print "List of minima: energy id fvib pgorder"

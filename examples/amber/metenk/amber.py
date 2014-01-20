@@ -25,5 +25,5 @@ try:
     pym.draw_spheres(opt.coords, "A", 1)
 except:
     print "Could not draw using pymol, skipping this step"
-import pele.printing.print_atoms_xyz as pr
-pr.printAtomsXYZ(open("final.xyz", "w"), opt.coords)
+from pele.utils.xyz import write_xyz
+write_xyz(open("final.xyz", "w"), opt.coords)

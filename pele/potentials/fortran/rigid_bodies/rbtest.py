@@ -34,10 +34,10 @@ printlist.append( coords.copy() )
 
 
 
-from printing.print_atoms_xyz import printAtomsXYZ as printxyz
+from pele.utils.xyz import write_xyz
 with open("out.xyz", "w") as fout:
     for x in printlist:
-        printxyz(fout, x)
+        write_xyz(fout, x)
         
         
         

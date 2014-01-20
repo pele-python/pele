@@ -37,9 +37,10 @@ from pele.systems import BaseParameters
 from pele.utils.elements import elements
 from pele.systems.spawn_OPTIM import SpawnOPTIM
 
+from read_amber import parse_topology_file
+
 # OpenMM related 
 import openmm_potential  
-from simtk.unit import angstrom as openmm_angstrom
 
 __all__ = ["AMBERSystem"]
 
@@ -47,38 +48,19 @@ class AMBERSystem(BaseSystem):
 
     
     def __init__(self, prmtopFname, inpcrdFname):
-        
         super(AMBERSystem, self).__init__()
         
-        if os.path.exists('min.in') and os.path.exists('data') :
-#            print '\nFiles min.in and data found. trying to import ambgmin_ now ..' 
-            try:
-                import ambgmin_
-                import gmin_potential
-                self.potential        = gmin_potential.GMINAmberPotential(prmtopFname, inpcrdFname)
-                print '\namberSystem> Using GMIN Amber potential ..'
-            except ImportError:
-                # using OpenMM because ambgmin_ could not be imported 
-                print '\namberSystem> Using OpenMM amber potential because ambgmin_ not imported ..'
-                self.potential    = openmm_potential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
-        else:
-            # using OpenMM because min.in and data files not found 
-            print '\namberSystem> Using OpenMM amber potential because min.in and data files not found..'
-            self.potential    = openmm_potential.OpenMMAmberPotential(prmtopFname, inpcrdFname)
+        self.prmtopFname = prmtopFname
+        self.inpcrdFname = inpcrdFname
+#        self.prmtop_name = prmtopFname
+#        self.inpcrd_name = inpcrdFname
+
+        self.parse_prmtop()
         
-        self.prmtop_name = prmtopFname
-        self.inpcrd_name = inpcrdFname
-        
-        # check for openmm version
-        # data structures changed between openmm4 and 5
-        # crude check - todo  
-        if hasattr(self.potential.prmtop.topology._bonds,'index'):
-            self.OpenMMVer = 5
-        else:
-            self.OpenMMVer = 4                
+#        self.potential = self.get_potential()
         
         self.set_params(self.params)
-        self.natoms = self.potential.prmtop.topology._numAtoms              
+#        self.natoms = self.potential.prmtop.topology._numAtoms              
         
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.
@@ -86,13 +68,7 @@ class AMBERSystem(BaseSystem):
         self.params.takestep_random_displacement = BaseParameters()
         self.params.takestep_random_displacement.stepsize = 2.
                 
-        self.prmtopFname = prmtopFname
-        self.inpcrdFname = inpcrdFname
  
-        # atom numbers of peptide bonds       
-        self.populate_peptideAtomList()
-        # atom numbers of CA neighbors                
-        self.populate_CAneighborList() 
 
         self.params.basinhopping.insert_rejected = False 
         
@@ -104,6 +80,17 @@ class AMBERSystem(BaseSystem):
             self.params.basinhopping.confCheck = [self.check_CAchirality_wrapper]
             self.params.double_ended_connect.conf_checks = [self.check_cistrans_wrapper_kwargs, self.check_CAchirality_wrapper_kwargs]
 
+    def parse_prmtop(self):
+        self.prmtop_parsed = parse_topology_file(self.prmtopFname)
+        atoms = self.prmtop_parsed.atoms.nodes()
+        atoms = sorted(atoms, key=lambda a: a.index)
+        self.atom_names = [a.element for a in atoms]
+        self.bonds = [(a1.index, a2.index) for a1, a2 in 
+                 self.prmtop_parsed.atoms.edges_iter()]
+         
+
+    def get_ndof(self):
+        return 3. * len(self.atom_names)
 
     def set_params(self, params):
         """set default parameters for the system"""
@@ -159,7 +146,37 @@ class AMBERSystem(BaseSystem):
         return self 
     
     def get_potential(self):
-        return self.potential 
+        try:
+            return self.potential
+        except AttributeError:
+            pass
+        if os.path.exists('min.in') and os.path.exists('data') :
+#            print '\nFiles min.in and data found. trying to import ambgmin_ now ..' 
+            try:
+                import ambgmin_
+                import gmin_potential
+                self.potential        = gmin_potential.GMINAmberPotential(self.prmtopFname, self.inpcrdFname)
+                print '\namberSystem> Using GMIN Amber potential ..'
+            except ImportError:
+                # using OpenMM because ambgmin_ could not be imported 
+                print '\namberSystem> Using OpenMM amber potential because ambgmin_ not imported ..'
+                self.potential    = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
+        else:
+            # using OpenMM because min.in and data files not found 
+            print '\namberSystem> Using OpenMM amber potential because min.in and data files not found..'
+            self.potential    = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
+        
+        
+        # check for openmm version
+        # data structures changed between openmm4 and 5
+        # crude check - todo  
+        if hasattr(self.potential.prmtop.topology._bonds,'index'):
+            self.OpenMMVer = 5
+        else:
+            self.OpenMMVer = 4
+        
+        return self.potential           
+ 
         
     def get_random_configuration(self):
         """a starting point for basinhopping, etc."""
@@ -250,36 +267,25 @@ class AMBERSystem(BaseSystem):
         GL.glPopMatrix()
         
     def draw(self, coordsl, index):
-        from OpenGL import GL,GLUT
+        from pele.systems._opengl_tools import draw_sphere
                                         
-        coords=coordsl.reshape(coordsl.size/3,3)        
+        coords=coordsl.reshape([-1,3])        
         com=np.mean(coords, axis=0) 
                     
         # draw atoms as spheres      
-        for i in self.potential.prmtop.topology.atoms():             
-            atomElem = i.name[0]         
-            atomNum  = i.index         
-            x = coords[atomNum] - com 
-            GL.glPushMatrix()            
-            GL.glTranslate(x[0],x[1],x[2])            
-            col = elements[atomElem]['color']
+        for i, name in enumerate(self.atom_names):# in self.potential.prmtop.topology.atoms():             
+            x = coords[i,:] - com 
+            col = elements[name]['color']
             if index == 2:
                 col = [0.5, 1.0, .5]                
-            # scaling down the radius by factor of 5, else the spheres fuse into one another 
-            rad = elements[atomElem]['radius']/5  
-            GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, col)            
-            GLUT.glutSolidSphere(rad,30,30)
-            GL.glPopMatrix()            
-                    
+            rad = elements[name]['radius']/5
+            draw_sphere(x, radius=rad, color=col)
+
         # draw bonds  
-        for atomPairs in self.potential.prmtop.topology.bonds():
+        for atomPairs in self.bonds:#self.potential.prmtop.topology.bonds():
             # note that atom numbers in topology start at 0
-            if self.OpenMMVer == 5: 
-                xyz1 = coords[atomPairs[0]] - com  
-                xyz2 = coords[atomPairs[1]] - com
-            else: 
-                xyz1 = coords[atomPairs[0]] - com  
-                xyz2 = coords[atomPairs[1]] - com
+            xyz1 = coords[atomPairs[0]] - com  
+            xyz2 = coords[atomPairs[1]] - com
                  
             self.drawCylinder(xyz1, xyz2)                        
         
@@ -321,7 +327,8 @@ class AMBERSystem(BaseSystem):
         for coords in coordslist:
             ct = ct + 1 
             coords = CoMToOrigin(coords.copy())
-            self.potential.copyToLocalCoords(coords) 
+            self.potential.copyToLocalCoords(coords)
+            from simtk.unit import angstrom as openmm_angstrom
 #            openmmpdb.PDBFile.writeFile(self.potential.prmtop.topology , self.potential.localCoords * openmm_angstrom , file=sys.stdout, modelIndex=1)
             openmmpdb.PDBFile.writeModel(self.potential.prmtop.topology , self.potential.localCoords * openmm_angstrom , file=f, modelIndex=ct)
                         
@@ -356,29 +363,11 @@ class AMBERSystem(BaseSystem):
 
 
     def populate_peptideAtomList(self):
-        listofC = [] 
-        listofO = [] 
-        listofN = [] 
-        listofH = [] 
+        listofC = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "C"]
+        listofO = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "O"] 
+        listofN = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "N"] 
+        listofH = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "H"] 
             
-        for i in self.potential.prmtop.topology.atoms():
-            if i.name == 'C':
-                listofC.append(i.index)  
-            
-            if i.name == 'O':
-                listofO.append(i.index)
-                  
-            if i.name == 'N':
-                listofN.append(i.index)
-                  
-            if i.name == 'H':
-                listofH.append(i.index)          
-        
-        #print listofC     
-        #print listofO     
-        #print listofN     
-        #print listofH     
-        
         # atom numbers of peptide bond 
         self.peptideBondAtoms = [] 
         
@@ -391,29 +380,11 @@ class AMBERSystem(BaseSystem):
             print i               
 
     def populate_CAneighborList(self):
-        listofCA = [] 
-        listofC = [] 
-        listofN = [] 
-        listofCB = [] 
+        listofCA = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "CA"] 
+        listofC = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "C"] 
+        listofN = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "N"] 
+        listofCB = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "CB"] 
             
-        for i in self.potential.prmtop.topology.atoms():
-            if i.name == 'CA':
-                listofCA.append(i.index)  
-            
-            if i.name == 'C':
-                listofC.append(i.index)
-                  
-            if i.name == 'N':
-                listofN.append(i.index)
-                  
-            if i.name == 'CB':
-                listofCB.append(i.index)  
-                
-#        print '---amberSystem> list of CA = ' , listofCA              
-#        print '---amberSystem> list of  C = ' , listofC              
-#        print '---amberSystem> list of  N = ' , listofN              
-#        print '---amberSystem> list of CB = ' , listofCB      
-        
         # atom numbers of peptide bond 
         self.CAneighborList = [] 
         
@@ -480,7 +451,10 @@ class AMBERSystem(BaseSystem):
         Returns False if the check fails i.e. if any of the peptide bond is CIS         
         
         """
-        
+        if not hasattr(self, "peptideBondAtoms"):
+            # atom numbers of peptide bonds       
+            self.populate_peptideAtomList()
+
         import measure  
         m = measure.Measure() 
         
@@ -521,6 +495,10 @@ class AMBERSystem(BaseSystem):
         Returns False if the check fails i.e. if any D-amino acid is present          
         
         """
+        if not hasattr(self, "CAneighborList"):
+            # atom numbers of CA neighbors                
+            self.populate_CAneighborList() 
+
         
         # print 'in check CA chirality'
         import measure  
@@ -562,6 +540,7 @@ class AMBERSystem(BaseSystem):
         # read a conformation from pdb file
         print 'reading conformation from coords.pdb' 
         from simtk.openmm.app import pdbfile as openmmpdb
+        from simtk.unit import angstrom as openmm_angstrom
         pdb = openmmpdb.PDBFile(pdbfname)        
         coords = pdb.getPositions() / openmm_angstrom   
         coords = np.reshape(np.transpose(coords), 3*len(coords), 1)

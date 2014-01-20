@@ -83,7 +83,7 @@ class NEBDriver(object):
     '''
     
     def __init__(self, potential, coords1, coords2,
-                 k = 100., max_images = 50, image_density=10, iter_density = 10,
+                 k = 100., max_images = 50, image_density=10., iter_density = 10.,
                  verbose=0, factor=1., NEBquenchParams=None, adjustk_freq=0, 
                  adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
                  reinterpolate_tol=0.1,
@@ -258,7 +258,7 @@ class NEBDriver(object):
         if self.max_images > 0:
             nimages = min(nimages, self.max_images)
         if nimages < self.min_images:
-            nimages = self.min_images
+            nimages = int(self.min_images)
         path = InterpolatedPath(coords1, coords2, nimages, interpolator=self.interpolator)
 
         return [x for x in path]
@@ -274,6 +274,8 @@ class NEBDriver(object):
             nimages = int(int(max(1., acc_dist) * self.image_density * self.factor))
         if self.max_images > 0:
             nimages = int(min(nimages, self.max_images))
+        if nimages < self.min_images:
+            nimages = int(self.min_images)
             
         #print avdev, abs(float(nimages - len(path))/float(nimages))
         # only reinterpolate if above tolerance

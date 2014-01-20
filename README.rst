@@ -109,7 +109,7 @@ if you're running ubuntu, you can get all the prerequisites with the following
 commands::
 
   $ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip cython pymol
-  $ pip install --user networkx sqlalchemy hungarian pyro4
+  $ pip install --user networkx sqlalchemy hungarian pyro4 brewer2mpl
 
 (in the above, the flag --user will install localy.)
 

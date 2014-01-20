@@ -204,7 +204,7 @@ def main():
     print "rms gradient", ret.rms
     print "number of function calls", ret.nfev
 
-    from pele.printing.print_atoms_xyz import printAtomsXYZ as printxyz
+    from pele.utils.xyz import write_xyz
     coords = ret.coords
 
     printlist = []
@@ -221,7 +221,7 @@ def main():
     
     with open("out.xyz", "w") as fout:
         for coords in printlist:
-            printxyz(fout, coords)    
+            write_xyz(fout, coords)    
     
 
 

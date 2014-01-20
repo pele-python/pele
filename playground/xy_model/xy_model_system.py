@@ -4,6 +4,7 @@ from pele.potentials import XYModel
 from pele.potentials.xyspin import angle_to_2dvector
 from pele.systems import BaseSystem
 from pele.landscape import smoothPath
+from pele.utils.frozen_atoms import FrozenPotWrapper
 
 def normalize_spins(x):
     L = 2. * np.pi
@@ -24,11 +25,11 @@ def spin_mindist_1d(x1, x2):
     x2 = x2 + offset
     assert np.max(np.abs(x1-x2)) <= L/2.
     return np.linalg.norm(x1-x2), x1, x2
-     
 
 class XYModlelSystem(BaseSystem):
     def __init__(self, dim=[4, 4], phi_disorder=np.pi, phases=None):
         BaseSystem.__init__(self)
+        self.one_frozen = True
         self.dim = dim
         self.phi_disorder = phi_disorder
         self.pot = self.get_potential(phases=phases)
@@ -40,8 +41,11 @@ class XYModlelSystem(BaseSystem):
         params.takestep.stepsize = np.pi# / 2.
         params.takestep.verbose = True
 #        params.double_ended_connect.local_connect_params.NEBparams.interpolator = interpolate_spins
-        params.double_ended_connect.local_connect_params.NEBparams.image_density = 3
+        params.double_ended_connect.local_connect_params.NEBparams.image_density = .8
+        params.double_ended_connect.local_connect_params.NEBparams.iter_density = 50.
         params.double_ended_connect.local_connect_params.NEBparams.reinterpolate = 50
+        params.double_ended_connect.local_connect_params.NEBparams.adaptive_nimages = True
+        params.double_ended_connect.local_connect_params.NEBparams.adaptive_niter = False
 #        params.double_ended_connect.local_connect_params.NEBparams.distance = spin3d_distance
         params.structural_quench_params.tol = 1e-6
         params.database.overwrite_properties = False
@@ -58,8 +62,21 @@ class XYModlelSystem(BaseSystem):
         try:
             return self.pot
         except AttributeError:
-            return XYModel(dim=self.dim, phi=self.phi_disorder, phases=phases)
-    
+            assert self.one_frozen
+            base_pot = XYModel(dim=self.dim, phi=self.phi_disorder, phases=phases)
+            reference_coords = np.zeros(base_pot.nspins)
+            n = reference_coords.size
+            frozen_node = (0,0)
+            frozen_index = base_pot.indices[frozen_node]
+            frozen_dof = np.array([frozen_index])
+            print "making frozen spin at", self.node2xyz(base_pot.index2node[frozen_index])
+#                self.coords_converter = FrozenCoordsConverter(reference_coords, frozen_dof)
+            self.pot = FrozenPotWrapper(base_pot, reference_coords, frozen_dof)
+#            self.coords_converter = self.pot.coords_converter
+#            self.pot.G = base_pot.G
+#            self.pot.indices = base_pot.indices
+            return self.pot
+
     def get_orthogonalize_to_zero_eigenvectors(self):
         return None
     
@@ -67,20 +84,32 @@ class XYModlelSystem(BaseSystem):
         return None
     
     def get_nzero_modes(self):
-        return 1
+        if self.one_frozen:
+            return 0
+        else:
+            return 1
 
     def get_pgorder(self, coords):
         return 1
     
     def get_mindist(self):
+        assert self.one_frozen
         return spin_mindist_1d
+
+    def get_compare_exact(self):
+        mindist = self.get_mindist()
+        return lambda x1, x2: mindist(x1, x2)[0] < .1
 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
         return smoothPath(path, mindist, **kwargs)
 
     def get_random_configuration(self):
-        return np.random.uniform(0,2.*np.pi, self.nspins)
+        if self.one_frozen:
+            n = self.nspins - 1
+        else:
+            n = self.nspins
+        return np.random.uniform(0, 2.*np.pi, n)
 
     def node2xyz(self, node):
         return np.array([float(x) for x in [node[0], node[1], 0]])
@@ -113,6 +142,8 @@ class XYModlelSystem(BaseSystem):
 #            coords = self.coords_converter.get_full_coords(coords)
         d = .4
         r = .04
+        if self.one_frozen:
+            coords = self.pot.coords_converter.get_full_coords(coords)
         nspins = coords.size
         com = sum(self.node2xyz(node) for node in self.pot.G.nodes())
         com /= nspins
@@ -138,7 +169,7 @@ def run_gui():
     system = XYModlelSystem(dim=[24,24], phi_disorder=np.pi)
     run_gui(system)
 
-def run_gui_db(dbname="xy1_10x10.sqlite"):
+def run_gui_db(dbname="xy_10x10.sqlite"):
     from pele.gui import run_gui
     from pele.storage import Database
     try:
@@ -149,6 +180,13 @@ def run_gui_db(dbname="xy1_10x10.sqlite"):
     system = XYModlelSystem(dim=[10,10], phi_disorder=np.pi, phases=phases)
     run_gui(system, db=dbname)
 
+def run_gui_nodisorder(L=24):
+    from pele.gui import run_gui
+    dim=[L,L]
+    system = XYModlelSystem(dim=dim, phi_disorder=0.)
+    system.params.basinhopping.temperature=10.
+    dbname="xy_%dx%d_nodisorder.sqlite" %(L,L)
+    run_gui(system, db=dbname)
 
 def test_potential():
     system = XYModlelSystem(dim=[10,10], phi_disorder=np.pi)
@@ -161,7 +199,8 @@ if __name__ == "__main__":
 #    from pele.storage import Database
 #    db = Database("20x20_no_disorder.sqlite")
 #    normalize_spins_db(db)
-    run_gui_db()
+#    run_gui_db()
+    run_gui_nodisorder()
         
     
     

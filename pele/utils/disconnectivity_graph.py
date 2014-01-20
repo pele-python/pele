@@ -1,7 +1,9 @@
 import copy
-
-import networkx as nx
+from itertools import izip
 from collections import deque
+
+import numpy as np
+import networkx as nx
 
 __all__ = ["DisconnectivityGraph", "database2graph", "graph_constructor"]
 
@@ -57,7 +59,7 @@ class Tree(object):
         return len(self.subtrees)
     
     def is_leaf(self):
-        """return true if this tree has no descendents"""
+        """return true if this tree has no descendants"""
         return self.number_of_branches() == 0
     
     def number_of_leaves(self):
@@ -327,7 +329,192 @@ class _MakeTree(object):
             
         return newtrees
 
+class ColorDGraphByGroups(object):
+    """color the graph based on specified grouping of minima
 
+    Parameters
+    ----------
+    tree_graph: a DGTree object
+        usually accessed by dgraph.tree_graph if dgraph is a 
+        DisconnectivityGraph object.
+    groups : list
+        list of groups of minima that should have the same color
+    
+    Notes
+    -----
+    For each node, check all minima for which the node is a parent.
+    If all minima are contained on one of the groups, the node 
+    will be coloured to represent that group.  
+    If any minimum is not contained on one of the groups, the node
+    is not coloured. 
+    If all minima are contained in groups but more than one group 
+    is represented, the node will be the colour of the last group listed
+    """
+    def __init__(self, tree_graph, groups):
+        self.tree_graph = tree_graph
+        
+        # set the colors
+        self._minimum_to_color = dict()
+        self.color_list = self.get_list_of_colors(len(groups))
+        for color, group in izip(self.color_list, groups):
+            for minimum in group:
+                self._minimum_to_color[minimum] = color
+        self._tree_to_colors = dict()
+    
+    def get_list_of_colors_mpl(self, number):
+        """return a list of colors for the groups.  Use matplotlib colormap"""
+        from matplotlib import cm
+        colormap = cm.get_cmap("Dark2", lut=number)
+        colors = [colormap(i) for i in np.linspace(0., 1., number)]
+        return colors
+        
+         
+    def get_list_of_colors(self, number):
+        """return a list of colors for the groups"""
+        try:
+            import brewer2mpl
+        except ImportError:
+            print "could not import brewer2mpl."
+            print "install package brewer2mpl for a nicer color scheme"
+            return self.get_list_of_colors_mpl(number)
+        if number <= 12:
+            bnumber = max(3, number)
+            bcolors = brewer2mpl.get_map("Dark2", "Qualitative", bnumber)
+            colors = bcolors.mpl_colors
+            colors = colors[:number]
+        else:
+            return self.get_list_of_colors_mpl(number)
+        return colors
+    
+    def minimum_to_color(self, minimum):
+        """return the color of the minimum, or None if not colored"""
+        try:
+            return self._minimum_to_color[minimum]
+        except KeyError:
+            return None
+    
+    def tree_get_colors(self, tree):
+        """return the color that this tree should be colored by"""
+        try:
+            return self._tree_to_colors[tree]
+        except KeyError:
+            if tree.is_leaf():
+                color = self.minimum_to_color(tree.data["minimum"])
+                if color is None:
+                    colors = None
+                else:
+                    colors = frozenset([color])    
+                self._tree_to_colors[tree] = colors
+                return colors
+            else:
+                colors_list = [self.tree_get_colors(subtree) for subtree in tree.get_subtrees()]
+                if None in colors_list:
+                    colors = None
+                else:
+                    colors = frozenset([g for colors1 in colors_list for g in colors1])
+                self._tree_to_colors[tree] = colors
+                return colors
+    
+    def colors_to_color(self, colors):
+        """if there are multiple colors for this tree, select which one to use
+        
+        select the color which is listed last in self.color_list
+        """
+        for color in reversed(self.color_list):
+            if color in colors:
+                return color       
+            
+    
+    def run(self):
+        """main loop for the algorithm"""
+        for tree in self.tree_graph.get_all_trees():
+            colors = self.tree_get_colors(tree)
+            if colors is not None:
+                tree.data["colour"] = self.colors_to_color(colors)
+    
+class ColorDGraphByValue(object):
+    """color a disconnectivity graph by values associated with minima (e.g. order parameter)
+
+    Parameters
+    ----------
+    tree_graph: a DGTree object
+        usually accessed by dgraph.tree_graph if dgraph is a 
+        DisconnectivityGraph object.
+    minimum_to_value: callable
+        A function that accepts a minimum and returns a float value.
+        return None to indicate no color for this minimum
+    colormap: callable, optional
+        function which converts a float in (0,1) to a matplotlib color (RGB)
+    normalize_values: bool
+        if True the values will be normalized to fall between 0 and 1
+    
+    Notes
+    -----
+    Each node in the graph will be colored according to the value of the 
+    child minimum with the largest value.  If any child minimum has value None
+    then the node will not be colored
+    """
+    def __init__(self, tree_graph, minimum_to_value, colormap=None, 
+                 normalize_values=True):
+        self.tree_graph = tree_graph
+        self.minimum_to_value = minimum_to_value
+        if colormap is None:
+            from matplotlib import cm
+            self.colormap = cm.get_cmap("winter")
+        else:
+            self.colormap = colormap
+    
+        self._tree_to_value = dict()
+        
+        if normalize_values:
+            values = [self.minimum_to_value(leaf.data["minimum"]) 
+                      for leaf in self.tree_graph.leaf_iterator()]
+            values = filter(lambda v: v is not None, values)
+            self.maxval = max(values)
+            self.minval = min(values)
+        else:
+            self.minval = None
+            self.maxval = None
+    
+    def resolve_multiple_values(self, values):
+        if None in values:
+            return None
+        else:
+            return max(values)
+    
+    def value_to_color(self, value):
+        if self.minval is None:
+            vnorm = value
+        else:
+            vnorm = (value - self.minval) / (self.maxval - self.minval)
+        return self.colormap(vnorm)
+    
+    def tree_get_value(self, tree):
+        """return the color that this tree should be colored by"""
+        try:
+            return self._tree_to_value[tree]
+        except KeyError:
+            if tree.is_leaf():
+                value = self.minimum_to_value(tree.data["minimum"])
+                self._tree_to_value[tree] = value
+                return value
+            else:
+                values = [self.tree_get_value(subtree) for subtree in tree.get_subtrees()]
+                value = self.resolve_multiple_values(values)
+                self._tree_to_value[tree] = value
+                return value
+    
+            
+    
+    def run(self):
+        """main loop for the algorithm"""
+        for tree in self.tree_graph.get_all_trees():
+            value = self.tree_get_value(tree)
+            if value is not None:
+                tree.data["colour"] = self.value_to_color(value)    
+            
+    
+    
 
 class DisconnectivityGraph(object):
     """
@@ -481,58 +668,6 @@ class DisconnectivityGraph(object):
         self.minimum_to_leave = maketree.minimum_to_leave
         return trees
         
-    ##########################################################
-    #functions for determining the x position of the branches
-    #and leaves
-    ##########################################################
-    
-#    def _recursive_assign_id(self, tree):
-#        subtrees = tree.get_subtrees()
-#        for subtree in subtrees:
-#            if subtree.number_of_branches() >= 2:
-#                self.tree_list[subtree.data['ilevel']].append(subtree)
-#
-#                subtree.data['id'] = len(self.tree_list[subtree.data['ilevel']])
-##                 print subtree.data.items()
-##                 subtree.data['colour'] = tuple(np.random.random(3))
-#            self._recursive_assign_id(subtree)
-#
-#            
-#    def _assign_id(self, tree):
-#        """
-#        Determining the id of the branches and leaves
-#        for selection purposes
-#        """
-#
-#        self._recursive_assign_id(tree)
-#        
-#    def _set_colour(self,i,colour_dict):
-#        '''
-#        
-#        '''
-#        self.tree_list[i[0]][i[1]].data['colour'] = colour_dict[i]
-#
-#    def assign_colour(self, tree, colour):#colour_dict=[]):
-#        '''
-#        Colour trees according to `colour_dict`, a dictionay with 
-#        (level, tree_index) tuples as keys and RGB colours as values
-#        '''
-##         for i in colour_dict: self._set_colour(i,colour_dict)
-#        tree.data['colour'] = colour
-##         print tree, tree.__dict__#.data.items()
-##         print 'recursive'
-#        self._recursive_colour_trees(tree, colour)
-#            
-#        
-#    def _recursive_colour_trees(self, tree, colour):
-#        '''
-#        
-#        '''
-#        for s in tree.get_subtrees():
-##             print tree, tree.__dict__
-#            s.data['colour'] = colour #= s.parent.data['colour']
-##             print s.parent.data['colour'], s.data['colour'], s.data['ilevel'], s.data['id']
-#            self._recursive_colour_trees(s, colour)
             
             
 
@@ -641,7 +776,7 @@ class DisconnectivityGraph(object):
                         
 
     #######################################################################
-    #functions which return the line segments that make up the visual graph
+    # functions which return the line segments that make up the visual graph
     #######################################################################
 
     def _get_line_segment_recursive(self, line_segments,line_colours, tree, eoffset):
@@ -838,8 +973,6 @@ class DisconnectivityGraph(object):
         
         return elower
 
-       
-    
     def calculate(self):
         """
         do the calculations necessary to draw the diconnectivity graph
@@ -855,16 +988,16 @@ class DisconnectivityGraph(object):
         assert graph.number_of_nodes() > 0, "after applying Emax, graph has no minima"
         assert graph.number_of_edges() > 0, "after applying Emax, graph has no minima" 
         
-        #find a reduced graph with only those connected to min0
+        # find a reduced graph with only those connected to min0
 #        nodes = nx.node_connected_component(self.graph, self.min0)
 #        self.graph = self.graph.subgraph(nodes)
         graph = self._reduce_graph(graph, self.min0list)
         
-        #define the energy levels
+        # define the energy levels
         elevels = self._get_energy_levels(graph)
         self.energy_levels = elevels
         
-        #remove more nodes
+        # remove more nodes
         graph = self._remove_high_energy_minima(graph, elevels[-1])
         graph = self._remove_high_energy_transitions(graph, elevels[-1])
         graph = self._remove_nodes_with_few_edges(graph, 1)
@@ -872,7 +1005,7 @@ class DisconnectivityGraph(object):
         assert graph.number_of_nodes() > 0, "after cleaning up the graph, graph has no minima"
         assert graph.number_of_edges() > 0, "after cleaning up the graph, graph has no edges" 
 
-        #make the tree graph defining the discontinuity of the minima
+        # make the tree graph defining the discontinuity of the minima
         tree_graph = self._make_tree(graph, elevels)
         
         #assign id to trees
@@ -890,8 +1023,56 @@ class DisconnectivityGraph(object):
         self.eoffset = eoffset
         self.tree_graph = tree_graph
 #        self.line_segments = line_segments
+
+
+    def color_by_group(self, groups):
+        """color the graph based on specified grouping of minima
     
-    def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None):
+        Parameters
+        ----------
+        groups : list
+            list of groups of minima that should have the same color
+        
+        Notes
+        -----
+        For each node, check all minima for which the node is a parent.
+        If all minima are contained on one of the groups, the node 
+        will be coloured to represent that group.  
+        If any minimum is not contained on one of the groups, the node
+        is not coloured. 
+        If all minima are contained in groups but more than one group 
+        is represented, the node will be the colour of the last group listed
+        """
+        colorer = ColorDGraphByGroups(self.tree_graph, groups)
+        colorer.run()
+
+    def color_by_value(self, minimum_to_value, colormap=None, 
+                 normalize_values=True):        
+        """color the graph by values associated with minima (e.g. order parameter)
+    
+        Parameters
+        ----------
+        minimum_to_value: callable
+            A function that accepts a minimum and returns a float value.
+            return None to indicate no color for this minimum
+        colormap: callable, optional
+            function which converts a float in (0,1) to a matplotlib color (RGB)
+        normalize_values: bool
+            if True the values will be normalized to fall between 0 and 1
+        
+        Notes
+        -----
+        Each node in the graph will be colored according to the value of the 
+        child minimum with the largest value.  If any child minimum has value None
+        then the node will not be colored
+        """
+        colorer = ColorDGraphByValue(self.tree_graph, minimum_to_value,
+                                     colormap=colormap, 
+                                     normalize_values=normalize_values)
+        colorer.run()
+
+    def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None,
+             title=None):
         """draw the disconnectivity graph using matplotlib
         
         don't forget to call calculate() first
@@ -907,9 +1088,12 @@ class DisconnectivityGraph(object):
         if axes is not None:
             ax = axes
         else:
-            fig = plt.figure(figsize=(6,7))
-            fig.set_facecolor('white')
-            ax = fig.add_subplot(111, adjustable='box')
+            try:
+                ax = self.axes
+            except AttributeError:
+                fig = plt.figure(figsize=(6,7))
+                fig.set_facecolor('white')
+                ax = fig.add_subplot(111, adjustable='box')
 
         #set up how the figure should look
         ax.tick_params(axis='y', direction='out')
@@ -933,12 +1117,66 @@ class DisconnectivityGraph(object):
         linecollection.set_color(self.line_colours)
         ax.add_collection(linecollection)
         
+        if title is not None:
+            ax.set_title(title)
+        
         # scale the axes appropriately
         ax.relim()
         ax.autoscale_view(scalex=True, scaley=True, tight=None)
         ax.set_ylim(top=self.Emax)
         #remove xtics            
-        ax.set_xticks([])        
+        ax.set_xticks([])
+        self.axes = ax
+
+    def label_minima(self, minima_labels, axes=None, 
+                     rotation=60., **kwargs):
+        """label the specified minima
         
+        Parameters
+        ----------
+        minima_labels: dict
+            dictionary with minima as keys and labels as values.
+            i.e. label = minima_labels[minimum]
+        axes: matplotlib axis object, optional
+            The axes we are working on
+        rotation: float
+            angle (in degrees) of how much to rotate the text
+        kwargs: kwargs
+            additional keyword arguments are passed on to matplotlib 
+            ax.set_xticklabels()
         
+        Notes
+        -----
+        if the labels are outside of the figure bounding box you can fix it with
+        plt.tight_layout() or fig.tight_layout() 
+        """
+        if axes is not None:
+            ax = axes
+        else:
+            try:
+                ax = self.axes
+            except AttributeError:
+                print "you must call plot() before label_minima()"
+                raise
+        leaves = filter(lambda leaf: leaf.data["minimum"] in minima_labels, 
+                        self.tree_graph.leaf_iterator())
+        xpos = [leaf.data["x"] for leaf in leaves]
+        labels = [minima_labels[leaf.data["minimum"]] for leaf in leaves]
+        ax.set_xticks(xpos)
+        ax.set_xticklabels(labels, rotation=rotation, **kwargs)
+
+#         rescale = True
+#         if rescale:
+#             import matplotlib.pyplot as plt
+#             plt.tight_layout()
+ 
+    
+    def show(self):
+        """simple wrapper for matplotlib.pyplot.show()"""
+        from matplotlib import pyplot
+        pyplot.show()
+    def savefig(self, *args, **kwargs):
+        """simple wrapper for matplotlib.pyplot.savefig()"""
+        from matplotlib import pyplot
+        pyplot.savefig(*args, **kwargs)
     

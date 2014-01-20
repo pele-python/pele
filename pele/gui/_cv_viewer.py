@@ -51,7 +51,7 @@ class HeatCapacityWidget(QtGui.QWidget):
         
         self.system = system
         self.database = database
-        self.ndof = self._get_ndof()
+#        self.ndof = self._get_ndof()
         
         self.canvas = self.ui.mplwidget.canvas
         self.axes = self.canvas.axes
@@ -64,8 +64,9 @@ class HeatCapacityWidget(QtGui.QWidget):
         self._plot_cv()
     
     def _get_ndof(self):
-        m = self.database.minima()[0]
-        return len(m.coords) - self.system.get_nzero_modes()
+        return self.system.get_ndof()
+#        m = self.database.minima()[0]
+#        return len(m.coords) - self.system.get_nzero_modes()
         
     def _get_nmin_max(self):
         txt = self.ui.lineEdit_nmin_max.text()
@@ -94,7 +95,7 @@ class HeatCapacityWidget(QtGui.QWidget):
     
     def _compute_cv(self):
         Tlist = self._get_T_range()
-        lZ, U, U2, Cv = minima_to_cv(self.minima, Tlist, self.ndof)
+        lZ, U, U2, Cv = minima_to_cv(self.minima, Tlist, self._get_ndof())
         self.Tlist = Tlist
         self.Cv = Cv
     

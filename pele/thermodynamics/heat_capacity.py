@@ -68,6 +68,10 @@ def minima_to_cv(minima, kT, k):
     """
     beta = np.array(1./kT)
     k = float(k)
+    nminima_old = len(minima)
+    minima = [m for m in minima if not m.invalid]
+    if len(minima) != nminima_old:
+        print "ignoring %s invalid minima" % (nminima_old - len(minima))
     energies = np.array([m.energy for m in minima])
     
     # compute the log of the terms in the partition function

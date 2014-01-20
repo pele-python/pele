@@ -389,6 +389,20 @@ class BaseSystem(object):
         """
         raise NotImplementedError
     
+    def get_ndof(self):
+        """return the number of degrees of freedom
+        
+        Notes
+        -----
+        this is the true number of degrees of freedom.  It is probably the length
+        of the coordinates array minus the number of zero modes
+        """
+        try:
+            coords = self.get_random_configuration()
+            return len(coords) - self.get_nzero_modes()
+        except NotImplementedError:
+            raise NotImplementedError
+    
     def get_normalmodes(self, coords):
         """return the squared normal mode frequencies and eigenvectors
         """
