@@ -182,7 +182,7 @@ class AMBERSystem(BaseSystem):
         """a starting point for basinhopping, etc."""
 #        from simtk.openmm.app import pdbfile as openmmpdbReader
 #        pdb = openmmpdbReader.PDBFile('coords.pdb')  # todo: coords.pdb is hardcoded
-        from playground.group_rotation.read_amber import read_amber_coords  
+        from pele.amber.read_amber import read_amber_coords  
         
         coords = read_amber_coords(self.inpcrdFname)
         print "Number of coordinates:", len(coords)
