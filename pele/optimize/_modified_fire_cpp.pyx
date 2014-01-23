@@ -11,7 +11,7 @@ from cpython cimport bool as cbool
 # import the externally defined modified_fire implementation
 cdef extern from "pele/_modified_fire.h" namespace "pele":
     cdef cppclass cppMODIFIED_FIRE "pele::MODIFIED_FIRE":
-        cppMODIFIED_FIRE(_pele.cBasePotential * , const _pele.Array[double], 
+        cppMODIFIED_FIRE(_pele.cBasePotential * , _pele.Array[double], 
                          double, double, size_t , double, double, 
                          double, double, double) except +
         void run() except +
@@ -43,21 +43,21 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
     cdef cppMODIFIED_FIRE *thisptr
     cdef _pele.BasePotential pot # this is stored so that the memory is not freed
     
-    def __cinit__(self, x0, potential, double dtstart, double dtmax, size_t Nmin=5, double finc=1.1, 
+    def __cinit__(self, x0, potential, double dtstart = 0.05, double dtmax = 1, size_t Nmin=5, double finc=1.1, 
                   double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-2, 
-                  int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0):
+                  int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0, events = None):
         
         if not issubclass(potential.__class__, _pele.BasePotential):
             if verbosity > 0:
                 print "MODIFIED_FIRE_CPP: potential is not subclass of BasePotential; wrapping it.", potential
-#                print "           Wrapping the potential like this is dangerous.  All python exceptions will be ignored"
+#               print "           Wrapping the potential like this is dangerous.  All python exceptions will be ignored"
             potential = _pythonpotential.CppPotentialWrapper(potential)
         
         cdef _pele.BasePotential pot = potential
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
         self.thisptr = <cppMODIFIED_FIRE*>new cppMODIFIED_FIRE(pot.thisptr, 
-               _pele.Array[double](<double*> x0c.data, x0c.size),
-               dtstart, dtmax, Nmin, finc, fdec, fa, astart, tol)
+                                                               _pele.Array[double](<double*> x0c.data, x0c.size),
+                                                               dtstart, dtmax, Nmin, finc, fdec, fa, astart, tol)
         opt = self.thisptr
         opt.set_max_iter(nsteps)
         opt.set_verbosity(verbosity)
@@ -65,10 +65,9 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
         self.pot = pot # so that the memory is not freed
         
         cdef np.ndarray[double, ndim=1] g_  
-        #this functionality should not be needed in fire because integrator recomputes g and this is then wrapped
-        #if energy is not None and gradient is not None:
-        #    g_ = gradient
-        #    self.thisptr.set_func_gradient(energy, _pele.Array[double](<double*> g_.data, g_.size))
+        if energy is not None and gradient is not None:
+            g_ = gradient
+            self.thisptr.set_func_gradient(energy, _pele.Array[double](<double*> g_.data, g_.size))
         
     def __dealloc__(self):
         if self.thisptr != NULL:
@@ -128,18 +127,26 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
         return self.thisptr.get_niter()
 
 class MODIFIED_FIRE_CPP(_Cdef_MODIFIED_FIRE_CPP):
-    """This class is the python interface for the c++ MODIFED_FIRE implementation
+    """This class is the python interface for the c++ MODIFED_FIRE implementation.
     """
-    def __init__(self, x0, potential, double dtstart, double dtmax, size_t Nmin=5, double finc=1.1, 
-                  double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-2, 
-                  int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0):
-            
+    def __init__(self, x0, potential, double dtstart=0.05, double dtmax=1, size_t Nmin=5,
+                 double finc=1.1, double fdec=0.5, double fa=0.99, double astart=0.1, 
+                 double tol=1e-2, int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0,events=None):
+        self._need_python = events is not None
+
+        self.events = events
+        if self.events is None: 
+            self.events = []
+        
     def one_iteration(self):
         """do one iteration"""
         _Cdef_MODIFIED_FIRE_CPP.one_iteration(self)
+        res = self.get_result()
+        for event in self.events:
+            event(coords=res.coords, energy=res.energy, rms=res.rms)
     
     def run(self, niter=None):
-        """run the modified_fire algorithm
+        """run the lbfgs algorithm
         
         this overloads the underlying implementation so that the purely python 
         events can be called. If events are not called this simply calls the 

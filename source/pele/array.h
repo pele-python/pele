@@ -105,7 +105,7 @@ namespace pele {
             if (_allocated_memory != NULL){
                 *_reference_count -= 1;
                 if (*_reference_count < 0)
-                    throw std::logic_error("reference_count cannot be less than zero.  Something went wrong");
+                    throw std::logic_error("reference_count cannot be less than zero.Something went wrong");
                 if (*_reference_count == 0){
                     delete[] _allocated_memory; 
                     delete _reference_count; 
