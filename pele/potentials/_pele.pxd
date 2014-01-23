@@ -29,9 +29,6 @@ cdef extern from "pele/base_potential.h" namespace "pele":
     
 cdef class BasePotential:
     cdef cBasePotential *thisptr      # hold a C++ instance which we're wrapping
-
-cdef class BaseIntegrator:
-    cdef cBaseIntegrator *thisptr      # hold a C++ instance which we're wrapping
     
     
 cdef extern from "pele/combine_potentials.h" namespace "pele":
