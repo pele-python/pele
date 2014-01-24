@@ -28,7 +28,7 @@ namespace pele{
     private :
 	  double _dtstart, _dt, _dtmax, _Nmin, _finc, _fdec, _fa, _astart, _a;
 	  pele::Array<double> _v, _xold, _gold;
-	  size_t _N, _fire_iter_number;
+	  size_t _fire_iter_number;
 	  pele::VelocityVerlet _integrator; //create VelocityVerlet integrator
 
     public :
@@ -55,9 +55,6 @@ namespace pele{
 
       void initialize_func_gradient()
             {
-    	  	  	_fire_iter_number = 0;
-    	  	  	_N = 0;
-
     	  	  	nfev_ += 1; 					//this accounts for the energy evaluation done by the integrator
     	  	  	_integrator.wrap_v(_v); 		//the velocity array wraps the integrator velocity array so that it updates concurrently
                 _integrator.wrap_g(g_); 		//the gradient array wraps the integrator gradient array so that it updates concurrently
@@ -84,7 +81,7 @@ namespace pele{
 		  _finc(finc), _fdec(fdec), _fa(fa),
 		  _astart(astart), _a(astart), _v(x0.size(),0),
 		  _xold(x0.copy()),_gold(g_.copy()),
-		  _N(x0.size()),_fire_iter_number(0),
+		  _fire_iter_number(0),
 		  _integrator(potential_, x_, _dtstart)
   	  	  {}
 
@@ -104,11 +101,11 @@ namespace pele{
 		  /*equation written in this conditional statement _v = (1- _a)*_v + _a * funit * vnorm*/
 
 		  double ifnorm = 1. / norm(g_);
-		  double ivnorm = 1. / norm(_v);
+		  double vnorm = norm(_v);
 
 		  for (size_t i =0; i < _v.size(); ++i)
 		  {
-			  _v[i] = (1. - _a) * _v[i] - _a * g_[i] * _v[i] * ifnorm * ivnorm;
+			  _v[i] = (1. - _a) * _v[i] - _a * g_[i] * ifnorm * vnorm;
 		  }
 
 		  if (_fire_iter_number > _Nmin)
@@ -121,7 +118,7 @@ namespace pele{
 		  	  {
 			  	  _xold[k] = x_[k];
 		  	  }
-		  rms_ = norm(g_) / sqrt(N); //update rms
+		  rms_ = 1. / (ifnorm * sqrt(N)); //update rms
 	  }
 	  else
 	  {
