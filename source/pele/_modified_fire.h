@@ -28,7 +28,7 @@ namespace pele{
     private :
 	  double _dtstart, _dt, _dtmax, _Nmin, _finc, _fdec, _fa, _astart, _a;
 	  pele::Array<double> _v, _xold, _gold;
-	  size_t _fire_iter_number, _N;
+	  size_t _N, _fire_iter_number;
 	  pele::VelocityVerlet _integrator; //create VelocityVerlet integrator
 
     public :
@@ -57,47 +57,22 @@ namespace pele{
             {
     	  	  	_fire_iter_number = 0;
     	  	  	_N = 0;
-    	  	  	/*set x, v, E and g (this is grad(E), hence -force) by wrapping position, velocity and gradient arrays in the integrator*/
-    	  	  	//x is alredy wrapped by the integrator constructor
 
-    	  	  	compute_func_gradient(x_, f_, g_); //compute at initialisation to compute rms_, they'll be recomputed by integrator
-    	  	  	_integrator.wrap_v(_v); 		//the velocity array is wrapped by the integrator velocity array so that it updates concurrently
-                _integrator.wrap_g(g_); 		//the gradient array is wrapped by the integrator gradient array so that it updates concurrently
+    	  	  	nfev_ += 1; 					//this accounts for the energy evaluation done by the integrator
+    	  	  	_integrator.wrap_v(_v); 		//the velocity array wraps the integrator velocity array so that it updates concurrently
+                _integrator.wrap_g(g_); 		//the gradient array wraps the integrator gradient array so that it updates concurrently
                 _integrator.wrap_E(f_);			//the function value (E) wraps the integrator energy so that it updates concurrently
-                _integrator.wrap_gold(_gold); 	//the gradient array is wrapped by  the integrator gradient array so that it updates concurrently
+                _integrator.wrap_gold(_gold); 	//the gradient array wraps the integrator gradient array so that it updates concurrently
 
                 rms_ = norm(g_) / sqrt(g_.size());
                 func_initialized_ = true;
             }
 
+      //consider removing set func gradient, it doesn't fit in this wrapping framework
       void set_func_gradient(double f, Array<double> grad)
           {
-              if (grad.size() != g_.size()){
-                  throw std::invalid_argument("the gradient has the wrong size");
-              }
-              if (iter_number_ > 0){
-                  cout << "warning: setting f and grad after the first iteration.  this is dangerous.\n";
-              }
-              // copy the function and gradient
-              f_ = f;
-              size_t N = x_.size();
-              for (size_t j2 = 0; j2 < N; ++j2){
-                  g_[j2] = grad[j2];
-                  _gold[j2] = grad[j2];
-              }
-
-              rms_ = norm(g_) / sqrt(g_.size());
-
-              //fire specific directives
-              _fire_iter_number = 0;
-			  _N = 0;
-
-			  _integrator.wrap_v(_v); 		//the velocity array wraps the integrator velocity array so that it updates concurrently
-			  _integrator.wrap_g(g_); 		//the gradient array wraps the integrator gradient array so that it updates concurrently
-			  _integrator.wrap_E(f_);		//the function value (E) wraps the integrator energy so that it updates concurrently
-			  _integrator.wrap_gold(_gold); //the gradient array wraps the integrator gradient array so that it updates concurrently
-
-			  func_initialized_ = true;
+    	  	  throw std::runtime_error("MODIFIED_FIRE::set_func_gradient: this function is not implemented "
+    	  			  "because the gradient is already initialised by BaseIntegrator");
           }
   };
 
@@ -109,7 +84,7 @@ namespace pele{
 		  _finc(finc), _fdec(fdec), _fa(fa),
 		  _astart(astart), _a(astart), _v(x0.size(),0),
 		  _xold(x0.copy()),_gold(g_.copy()),
-		  _N(x0.size()),
+		  _N(x0.size()),_fire_iter_number(0),
 		  _integrator(potential_, x_, _dtstart)
   	  	  {}
 
