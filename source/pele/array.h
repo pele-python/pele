@@ -195,7 +195,7 @@ namespace pele {
 
         bool empty()
         {
-        	if (_size == 0)
+        	if (_data == NULL)
         		return true;
         	else
         		return false;

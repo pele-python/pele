@@ -26,7 +26,7 @@ namespace pele{
 
 	class MODIFIED_FIRE : public GradientOptimizer{
     private :
-	  double _dtstart, _dt, _dtmax, _Nmin, _finc, _fdec, _fa, _astart, _a;
+	  double _dtstart, _dt, _dtmax, _Nmin, _finc, _fdec, _fa, _astart, _a, _fold;
 	  pele::Array<double> _v, _xold, _gold;
 	  size_t _fire_iter_number;
 	  pele::VelocityVerlet _integrator; //create VelocityVerlet integrator
@@ -36,8 +36,8 @@ namespace pele{
 	    /**
 		* Constructor
 		*/
-	  MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double> x0, double dtstart, double dtmax,
-    		  size_t Nmin=5, double finc=1.1, double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-2);
+	  MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double>& x0, double dtstart, double dtmax,
+    		  size_t Nmin=5, double finc=1.1, double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-6);
       /**
        * Destructorgit undo rebase
        */
@@ -60,7 +60,7 @@ namespace pele{
                 _integrator.wrap_g(g_); 		//the gradient array wraps the integrator gradient array so that it updates concurrently
                 _integrator.wrap_E(f_);			//the function value (E) wraps the integrator energy so that it updates concurrently
                 _integrator.wrap_gold(_gold); 	//the gradient array wraps the integrator gradient array so that it updates concurrently
-
+                _fold = f_;
                 rms_ = norm(g_) / sqrt(g_.size());
                 func_initialized_ = true;
             }
@@ -73,14 +73,14 @@ namespace pele{
           }
   };
 
-  MODIFIED_FIRE::MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double> x0, double dtstart, double dtmax,
+  MODIFIED_FIRE::MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double>& x0, double dtstart, double dtmax,
 		  size_t Nmin, double finc, double fdec, double fa, double astart, double tol):
-		  GradientOptimizer(potential,x0,tol=1e-2), //call GradientOptimizer constructor
+		  GradientOptimizer(potential,x0,tol=1e-6), //call GradientOptimizer constructor
 		  _dtstart(dtstart), _dt(dtstart),
 		  _dtmax(dtmax), _Nmin(Nmin),
 		  _finc(finc), _fdec(fdec), _fa(fa),
 		  _astart(astart), _a(astart), _v(x0.size(),0),
-		  _xold(x0.copy()),_gold(g_.copy()),
+		  _xold(x0.copy()),_gold(g_.copy()),_fold(f_),
 		  _fire_iter_number(0),
 		  _integrator(potential_, x_, _dtstart)
   	  	  {}
@@ -92,12 +92,18 @@ namespace pele{
 	  nfev_ += 1;
 	  iter_number_ += 1;
 	  _fire_iter_number += 1; //this is different from iter_number_ which does not get reset
-
 	  _integrator.oneiteration();
 	  double P = -1 * dot(_v,g_);
 
 	  if (P > 0)
 	  {
+		  //save old configuration in case next step has P < 0
+		  _fold = f_; //set f_ old before integration step
+		  for(k=0; k<x_.size();++k) //set next xold to current x
+			  {
+				  _xold[k] = x_[k];
+			  }
+
 		  /*equation written in this conditional statement _v = (1- _a)*_v + _a * funit * vnorm*/
 
 		  double ifnorm = 1. / norm(g_);
@@ -114,11 +120,8 @@ namespace pele{
 			  _a *= _fa;
 		  }
 
-		  for(k=0; k<x_.size();++k) //set next xold to current x
-		  	  {
-			  	  _xold[k] = x_[k];
-		  	  }
 		  rms_ = 1. / (ifnorm * sqrt(N)); //update rms
+
 	  }
 	  else
 	  {
@@ -131,6 +134,7 @@ namespace pele{
 			  	  x_[k] = _xold[k];
 			  	  g_[k] = _gold[k]; //gold is updated in velocity verlet and its wrapped in function_gradient_initializer
 			  	  _v[k] = 0;
+			  	  f_ = _fold;
 		  	  }
 	  }
 
