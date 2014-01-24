@@ -145,7 +145,7 @@ public :
      * Set the initial func and gradient.  This can be used
      * to avoid one potential call
      */
-    void set_func_gradient(double f, Array<double> grad)
+    virtual void set_func_gradient(double f, Array<double> grad)
     {
         if (grad.size() != g_.size()){
             throw std::invalid_argument("the gradient has the wrong size");

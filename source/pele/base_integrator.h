@@ -35,13 +35,13 @@ class BaseIntegrator
 	  pele::Array<double> _x;
 	  double _dt, _dtstart, _Estart;
 	  pele::Array<double> _gold, _v, _g, _m;
-	  double* _E;
+	  double * _E;
 
   	  public:
 
 	  /*BaseIntegrator constructor, assigns value to the protected arrays and constants*/
-	  BaseIntegrator(pele::BasePotential * potential, pele::Array<double>& x, double dt, pele::Array<double> v = pele::Array<double>(),
-			  pele::Array<double> g = pele::Array<double>(), pele::Array<double> m = pele::Array<double>());
+	  BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double> &v,
+			  pele::Array<double> &g, pele::Array<double> &m);
 
 	  virtual ~BaseIntegrator() {}
 
@@ -63,33 +63,33 @@ class BaseIntegrator
 
 	  void wrap_x(pele::Array<double>& x){
 		  if (_x.size() != x.size())
-			  cout<<"warning: wrapping positions arrays of different sizes, this is dangerous.\n";
+			  std::cout<<"warning: wrapping positions arrays of different sizes, this is dangerous.\n";
 		  if (x.reference_count() > 1)
-			  cout<<"warning: x reference count > 1, this is dangerous.\n";
+			  std::cout<<"warning: x reference count > 1, this is dangerous.\n";
 		  x.wrap(_x);
 	  }
 
 	  void wrap_v(pele::Array<double>& v){
 		  if(_v.size() != v.size())
-			  cout<<"warning: wrapping velocity arrays of dirrent sizes, this is dangerous.\n";
+			  std::cout<<"warning: wrapping velocity arrays of different sizes, this is dangerous.\n";
 		  if (v.reference_count() > 1)
-		  			  cout<<"warning: v reference count > 1, this is dangerous.\n";
+			  std::cout<<"warning: v reference count > 1, this is dangerous.\n";
 		  v.wrap(_v);
 	  }
 
 	  void wrap_g(pele::Array<double>& g){
 		  if(_g.size() != g.size())
-			  cout<<"warning: wrapping gradient arrays of dirrent sizes, this is dangerous.\n";
+			  std::cout<<"warning: wrapping gradient arrays of different sizes, this is dangerous.\n";
 		  if (g.reference_count() > 1)
-		  			  cout<<"warning: g reference count > 1, this is dangerous.\n";
+			  std::cout<<"warning: g reference count > 1, this is dangerous.\n";
 		  g.wrap(_g);
 	  }
 
 	  void wrap_gold(pele::Array<double>& gold){
 		  if(_gold.size() != gold.size())
-			  cout<<"warning: wrapping od gradient arrays of dirrent sizes, this is dangerous.\n";
+			  std::cout<<"warning: wrapping gold gradient arrays of different sizes, this is dangerous.\n";
 		  if (gold.reference_count() > 1)
-		  			  cout<<"warning: gold reference count > 1, this is dangerous.\n";
+			  std::cout<<"warning: gold reference count > 1, this is dangerous.\n";
 		  gold.wrap(_gold);
 	  }
 
@@ -102,24 +102,30 @@ class BaseIntegrator
 	  double get_energy(){ return *_E; }
   };
 
-	BaseIntegrator::BaseIntegrator(pele::BasePotential * potential, pele::Array<double>& x, double dt,
-			pele::Array<double> v, pele::Array<double> g, pele::Array<double> m):
+	BaseIntegrator::BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt,
+			pele::Array<double> &v, pele::Array<double> &g, pele::Array<double> &m):
 				_potential(potential), _x(x), _dt(dt),
-	    		_dtstart(dt), _gold(x.size())
+	    		_dtstart(dt), _gold(x.size()), _E(new double)
 
 	  	  	  {
 		  	  	  size_t i,j;
 		  	  	  size_t k;
 
 		  	  	  if (g.empty())
+		  	  	  {
 		  	  		  _g.resize(x.size());
+		  	  	  }
 		  	  	  else
 		  	  	  {
 		  	  		assert(g.size() == x.size());
 		  	  		_g.wrap(g); // NOTE: wrap gradient, it does not copy it
 		  	  	  }
 
-		  	  	  *_E = (*_potential).get_energy_gradient(_x, _g); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
+		  	  	  /*cout<<"_potential address: "<<_potential<<std::endl;
+		  	  	  cout<<_x<<std::endl;
+		  	  	  cout<<_g<<std::endl;*/
+
+		  	  	  *_E = _potential->get_energy_gradient(_x, _g); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
 	  	  	  	  _Estart = *_E;
 
 	  	  	  	  for(k=0; k<_g.size();++k)

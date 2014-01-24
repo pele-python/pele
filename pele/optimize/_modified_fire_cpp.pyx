@@ -50,7 +50,7 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
         if not issubclass(potential.__class__, _pele.BasePotential):
             if verbosity > 0:
                 print "MODIFIED_FIRE_CPP: potential is not subclass of BasePotential; wrapping it.", potential
-#               print "           Wrapping the potential like this is dangerous.  All python exceptions will be ignored"
+#               print "Wrapping the potential like this is dangerous.  All python exceptions will be ignored"
             potential = _pythonpotential.CppPotentialWrapper(potential)
         
         cdef _pele.BasePotential pot = potential
