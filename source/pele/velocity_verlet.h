@@ -25,7 +25,7 @@ namespace pele {
 
 					_gold[i] = _g[i]; //save gradient as old g
 
-					_x[i] -= _dt * (_v[i] + 0.5 * _dt * _g[i] / _m[i]);	//update position
+					_x[i] += _dt * (_v[i] - 0.5 * _dt * _g[i] / _m[i]);	//update position
 
 					*_E = (*_potential).get_energy_gradient(_x, _g);	//update gradient
 
