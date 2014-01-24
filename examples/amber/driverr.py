@@ -1,6 +1,6 @@
 from pele.amber import amberSystem
 import playground.group_rotation.group_rotation as group_rotation
-import playground.group_rotation.read_amber as read_amber
+import pele.amber.read_amber as read_amber
 import time  
 
 # create new amber system

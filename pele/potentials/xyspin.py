@@ -6,33 +6,6 @@ import networkx as nx
 
 __all__ = ["XYModel"]
 
-class RectangularLattice(object):
-    """
-    for getting connectivity of a rectangular lattice
-    """
-    def __init__(self, Lx, Ly):
-        self.Lx = Lx
-        self.Ly = Ly
-        self.nspins = self.Lx * self.Ly
-                            
-    def i2xy(self, i):
-        #xy = np.zeros(2)
-        i -= self.nspins * int(np.floor( float(i) / self.nspins ))
-        
-        x = i % self.Lx
-        y = int(np.floor(i / self.Lx))
-        return x, y
-    
-    def xy2i(self, xy):
-        #xy = np.zeros(2)
-        x = xy[0]
-        y = xy[1]
-        x -= self.Lx * int(np.floor( float(x) / self.Lx ))
-        y -= self.Ly * int(np.floor( float(y) / self.Ly ))
-        
-        i = x + y * self.Lx
-        return i
-        
 
 def angle_to_2dvector(theta):
     return np.cos(theta), np.sin(theta)
@@ -42,6 +15,7 @@ class XYModel(BasePotential):
     XY model of 2d spins on a lattice
     """
     def __init__(self, dim=[4, 4], phi=np.pi, periodic=True, phases=None):
+        dim = copy(dim)
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
         

@@ -1,4 +1,5 @@
-from pele.systems.amberSystem import AMBERSystem_GMIN, AMBERSystem_OpenMM
+#from pele.amber.amberSystem import AMBERSystem_GMIN, AMBERSystem_OpenMM
+from pele.amber import amberSystem
 import time  
 
 # create new amber system

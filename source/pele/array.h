@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 #include <iostream>
+#include <math.h>
 
 namespace pele {
     /**
@@ -289,9 +290,6 @@ namespace pele {
         }
 
 		Array<dtype> &operator*=(dtype rhs) {
-            if (_size != rhs.size()){
-                throw std::runtime_error("operator*=: arrays must have the same size");
-            }
             for (size_t i=0; i<_size; ++i)
                 _data[i] *= rhs;
             return *this;

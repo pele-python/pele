@@ -139,7 +139,7 @@ cxx_modules = [
               ),
     
     Extension("pele.optimize._lbfgs_cpp", 
-              ["pele/optimize/_lbfgs_cpp.cpp"] + include_sources,
+              ["pele/optimize/_lbfgs_cpp.cpp", "source/lbfgs.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,

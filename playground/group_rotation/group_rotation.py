@@ -93,7 +93,7 @@ def measure_dihedral(coords, atoms):
     return angle
     
 if __name__ == "__main__":
-    import playground.group_rotation.read_amber as amber
+    import pele.amber.read_amber as amber
     import playground.group_rotation.amino_acids as amino
     
     topology_data = amber.read_topology("/home/khs26/coords.prmtop")

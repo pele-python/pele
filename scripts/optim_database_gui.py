@@ -13,8 +13,8 @@ def main():
     parser = argparse.ArgumentParser(description="start a limited functionality gui from an OPTIM database", 
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     
-    parser.add_argument('ndof', help='Number of total degrees of freedom (e.g. 3*number of atoms).  This is simply the length of a coordinates vector.', 
-                        type=int)
+    parser.add_argument('--ndof', help='Number of total degrees of freedom (e.g. 3*number of atoms).  This is simply the length of a coordinates vector.', 
+                        type=int, default=1)
 #    parser.add_argument('--Database','-d', help = 'Name of database to write into', type = str, default="optimdb.sqlite")
     parser.add_argument('--Mindata','-m', help = 'Name of min.data file', type = str, default="min.data")
     parser.add_argument('--Tsdata','-t', help = 'Name of ts.data file', type = str, default="ts.data")
@@ -24,7 +24,7 @@ def main():
     args = parser.parse_args()
 
     db = Database()
-    converter = OptimDBConverter(args.ndof, db, mindata=args.Mindata, 
+    converter = OptimDBConverter(db, mindata=args.Mindata, 
                  tsdata=args.Tsdata, pointsmin=args.Pointsmin, pointsts=args.Pointsts,
                  endianness=args.endianness, assert_coords=False)
     converter.pointsmin_data = None

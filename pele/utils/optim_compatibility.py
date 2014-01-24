@@ -114,11 +114,11 @@ class OptimDBConverter(object):
     '''
     Converts old OPTIM to pele database
     '''
-    def __init__(self, ndof, database, mindata="min.data", 
+    def __init__(self, database, ndof=None, mindata="min.data", 
                   tsdata="ts.data", pointsmin="points.min", pointsts="points.ts",
                   endianness="=", assert_coords=True):
-        self.ndof = ndof
         self.db = database
+        self.ndof = ndof
         self.mindata = mindata
         self.tsdata = tsdata
         self.pointsmin = pointsmin
@@ -159,8 +159,10 @@ class OptimDBConverter(object):
 
             indx += 1
             self.db.session.add(min1)
-            if indx % 500 == 0:
+            if indx % 50 == 0:
                 self.db.session.commit()
+        
+        print "--->finished loading %s minima" % indx
 
     def ReadTSdata(self):
         print "reading from", self.tsdata
@@ -192,12 +194,25 @@ class OptimDBConverter(object):
             
             indx += 1
             self.db.session.add(trans)
-            if indx % 500 == 0:
+            if indx % 50 == 0:
                 self.db.session.commit()
+
+        print "--->finished loading %s transition states" % indx
         
     def read_points_min(self):
         print "reading from", self.pointsmin
         coords = read_points_min_ts(self.pointsmin, self.ndof, endianness=self.endianness)
+        if coords.size == 0:
+            raise Exception(self.pointsmin + " is empty")
+        if self.ndof is None:
+            # try to get the number of minima from the min.data file
+            nminima = sum((1 for line in open(self.mindata, "r")))
+            assert len(coords.shape) == 1
+            if coords.size % nminima != 0:
+                raise ValueError("the number of data points in %s is not divisible by %s the number of minima in %s"
+                                 % (self.mindata, coords.size, nminima))
+            self.ndof = coords.size / nminima
+            print "read %s minimum coordinates of length %s" % (nminima, self.ndof)
         self.pointsmin_data = coords.reshape([-1, self.ndof])
 
     def read_points_ts(self):
@@ -229,5 +244,6 @@ class OptimDBConverter(object):
         self.db.session.commit()
     
     def convert(self):
+        
         self.load_minima()
         self.load_transition_states()

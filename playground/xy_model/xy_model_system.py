@@ -49,6 +49,8 @@ class XYModlelSystem(BaseSystem):
 #        params.double_ended_connect.local_connect_params.NEBparams.distance = spin3d_distance
         params.structural_quench_params.tol = 1e-6
         params.database.overwrite_properties = False
+        
+        params.basinhopping.insert_rejected = True
 
     def get_system_properties(self):
         return dict(potential="XY spin glass",
@@ -117,24 +119,27 @@ class XYModlelSystem(BaseSystem):
     def create_database(self, *args, **kwargs):
         return BaseSystem.create_database(self, *args, **kwargs)
 
-#    def get_takestep(self, **kwargs):
-#        """return the takestep object for use in basinhopping, etc.
-#        
-#        default is random displacement with adaptive step size 
-#        adaptive temperature
-#        
-#        See Also
-#        --------
-#        pele.takestep
-#        """
-#        from pele.takestep import RandomDisplacement
-#        kwargs = dict(self.params["takestep"].items() + kwargs.items())
-#        try:
-#            stepsize = kwargs.pop("stepsize")
-#        except KeyError:
-#            stepsize = 0.6
-#        takeStep = RandomDisplacement(stepsize=stepsize)
-#        return takeStep
+    def get_takestep(self, **kwargs):
+        """return the takestep object for use in basinhopping, etc.
+        
+        default is random displacement with adaptive step size 
+        adaptive temperature
+        
+        See Also
+        --------
+        pele.takestep
+        """
+        if self.phi_disorder > 0.01:
+            return super(XYModlelSystem, self).get_takestep(**kwargs)
+        # if no disorder, turn off adaptive step and temperature.
+        from pele.takestep import RandomDisplacement
+        kwargs = dict(self.params["takestep"].items() + kwargs.items())
+        try:
+            stepsize = kwargs.pop("stepsize")
+        except KeyError:
+            stepsize = 2.*np.pi
+        takeStep = RandomDisplacement(stepsize=stepsize)
+        return takeStep
 
     def draw(self, coords, index):
         from pele.systems._opengl_tools import draw_cone
