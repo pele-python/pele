@@ -62,26 +62,42 @@ class BaseIntegrator
 	  void reset_dt(){ _dt = _dtstart; }
 
 	  void wrap_x(pele::Array<double>& x){
-		  assert(_x.size() == x.size());
-		  _x.wrap(x);
+		  if (_x.size() != x.size())
+			  cout<<"warning: wrapping positions arrays of different sizes, this is dangerous.\n";
+		  if (x.reference_count() > 1)
+			  cout<<"warning: x reference count > 1, this is dangerous.\n";
+		  x.wrap(_x);
 	  }
 
 	  void wrap_v(pele::Array<double>& v){
-		  assert(_v.size() == v.size());
-		  _v.wrap(v);
+		  if(_v.size() != v.size())
+			  cout<<"warning: wrapping velocity arrays of dirrent sizes, this is dangerous.\n";
+		  if (v.reference_count() > 1)
+		  			  cout<<"warning: v reference count > 1, this is dangerous.\n";
+		  v.wrap(_v);
 	  }
 
 	  void wrap_g(pele::Array<double>& g){
-		  assert(_g.size() == g.size());
-		  _g.wrap(g);
+		  if(_g.size() != g.size())
+			  cout<<"warning: wrapping gradient arrays of dirrent sizes, this is dangerous.\n";
+		  if (g.reference_count() > 1)
+		  			  cout<<"warning: g reference count > 1, this is dangerous.\n";
+		  g.wrap(_g);
 	  }
 
 	  void wrap_gold(pele::Array<double>& gold){
-		  assert(_gold.size() == gold.size());
-		  _gold.wrap(gold);
+		  if(_gold.size() != gold.size())
+			  cout<<"warning: wrapping od gradient arrays of dirrent sizes, this is dangerous.\n";
+		  if (gold.reference_count() > 1)
+		  			  cout<<"warning: gold reference count > 1, this is dangerous.\n";
+		  gold.wrap(_gold);
 	  }
 
-	  void wrap_E(double E){ _E = &E;}
+	  void wrap_E(double &E){
+		  double Eval = *_E;
+		  _E = &E; //relocate address
+		  *_E = Eval;
+	  }
 
 	  double get_energy(){ return *_E; }
   };

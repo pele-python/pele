@@ -201,6 +201,11 @@ namespace pele {
         		return false;
         }
 
+        long int reference_count()
+        {
+        	return *_reference_count;
+        }
+
         /**
          * free all the memory and resize to zero
          */
