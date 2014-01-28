@@ -145,7 +145,7 @@ public :
      * Set the initial func and gradient.  This can be used
      * to avoid one potential call
      */
-    void set_func_gradient(double f, Array<double> grad)
+    virtual void set_func_gradient(double f, Array<double> grad)
     {
         if (grad.size() != g_.size()){
             throw std::invalid_argument("the gradient has the wrong size");
@@ -169,6 +169,7 @@ public :
     void set_max_iter(int max_iter) { maxiter_ = max_iter; }
     void set_iprint(int iprint) { iprint_ = iprint; }
     void set_verbosity(int verbosity) { verbosity_ = verbosity; }
+
 
     // functions for accessing the status of the optimizer
     Array<double> get_x() { return x_; }
@@ -206,7 +207,7 @@ protected :
     /**
      * compute the initial func and gradient
      */
-    void initialize_func_gradient()
+    virtual void initialize_func_gradient()
     {
         // compute the func and gradient at the current locations
         // and store them
