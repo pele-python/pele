@@ -86,27 +86,39 @@ class RateCalculation(object):
         # get rate constants over transition states.
         # sum contributions from multiple transition states between two minima.
         log_rates = dict()
+        nts_skip_same = 0
         for ts in self.transition_states:
             if not self._transition_state_ok(ts):
                 print "excluding invalid transition state from rate graph", ts.energy, ts._id 
                 continue
             min1, min2 = ts.minimum1, ts.minimum2
+            if min1 == min2:
+#                print "skipping transition state with energy", ts.energy, "that connects minimum", min1._id, "with itself"
+                nts_skip_same += 1
+                continue
             u, v = min1, min2
             log_kuv = self._get_local_log_rate(min1, min2, ts)
             log_kvu = self._get_local_log_rate(min2, min1, ts)
             if (u,v) in log_rates:
+#                print "found another transition state", u._id, v._id
                 log_rates[(u,v)] = log_sum2(log_rates[(u,v)], log_kuv)
                 log_rates[(v,u)] = log_sum2(log_rates[(v,u)], log_kvu)
             else:
                 log_rates[(u,v)] = log_kuv
                 log_rates[(v,u)] = log_kvu
+        if nts_skip_same > 0:
+            print "warning: not using", nts_skip_same, "transition states because they connect a minimum with itself"
             
         # should we remove the largest component from the rates to avoid underflow and overflow?
         # if so we need to multiply all the rates by this value
-#        max_log_rate = max(logrates.itervalues())
-#        print "time scale need to be multiplied by", np.exp(max_log_rate)
-#        rates = dict(( (uv,np.exp(log_k - max_log_rate)) for uv, log_k in logrates.iteritems() ))
-        rates = dict(( (uv,np.exp(log_k)) for uv, log_k in log_rates.iteritems() ))
+        if True:
+            self.max_log_rate = max(log_rates.itervalues())
+            print "time scale need to be multiplied by", 1./np.exp(self.max_log_rate)
+            rates = dict(( (uv,np.exp(log_k - self.max_log_rate)) for uv, log_k in log_rates.iteritems() ))
+        else:
+            self.max_log_rate = 0.
+            rates = dict(( (uv,np.exp(log_k)) for uv, log_k in log_rates.iteritems() ))
+        self.rate_constants = rates
         
         # make the rate graph from the rate constants
         self.kmc_graph = kmcgraph_from_rates(rates)
@@ -148,8 +160,8 @@ class RateCalculation(object):
         weights = self._get_equilibrium_occupation_probabilities()
         self.reducer = GraphReduction(self.kmc_graph, self.A, self.B, weights=weights)
         self.reducer.compute_rates()
-        self.rateAB = self.reducer.get_rate_AB()
-        self.rateBA = self.reducer.get_rate_BA()
+        self.rateAB = self.reducer.get_rate_AB() * np.exp(self.max_log_rate)
+        self.rateBA = self.reducer.get_rate_BA() * np.exp(self.max_log_rate)
         return self.rateAB, self.rateBA
 
 #
