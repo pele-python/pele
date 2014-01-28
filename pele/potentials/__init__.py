@@ -60,6 +60,7 @@ from potential import *
 #from lj import *
 from _lj_cpp import LJ, BLJCut
 from _hs_wca_cpp import HS_WCA
+from _wca_cpp import WCA
 from ATLJ import *
 from coldfusioncheck import *
 from gminpotential import *

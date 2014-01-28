@@ -14,5 +14,7 @@ echo "Compiling _morse_cpp.pyx"
 cython --cplus pele/potentials/_morse_cpp.pyx 
 echo "Compiling _hs_wca_cpp.pyx"
 cython --cplus pele/potentials/_hs_wca_cpp.pyx 
+echo "Compiling _wca_cpp.pyx"
+cython --cplus pele/potentials/_wca_cpp.pyx 
 echo "Compiling _modified_fire_cpp.pyx"
 cython --cplus -a pele/optimize/_modified_fire_cpp.pyx 

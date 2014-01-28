@@ -26,7 +26,7 @@ namespace pele {
         {}
 
         /* calculate energy from distance squared */
-        double energy(double r2) const {
+        double energy(double r2, size_t atom_i, size_t atom_j) const {
             double E;
         	double ir2 = 1.0/r2;
             double ir6 = ir2*ir2*ir2;
@@ -40,7 +40,7 @@ namespace pele {
         }
 
         /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
-        double energy_gradient(double r2, double *gij) const {
+        double energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const {
         	double E;
 			double ir2 = 1.0/r2;
 			double ir6 = ir2*ir2*ir2;
@@ -48,7 +48,7 @@ namespace pele {
 			if(sqrt(r2) < _coff)
 			{
 				E = E = _eps*(-_C6*ir6 + _C12*ir12 + 1./4);
-				*gij = _eps*(_12C12 * ir12 - _6C6 * ir6) * ir2;
+				*gij = _eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
 			}
 			else
 			{
@@ -92,10 +92,12 @@ namespace pele {
     /**
      * Pairwise WCA potential with interaction lists
      */
-    class WCA_interaction_list : public SimplePairwiseInteractionList< WCA_interaction > {
+    class WCANeighborList : public SimplePairwiseNeighborList< WCA_interaction > {
         public:
-            WCA_interaction_list(Array<long int> & ilist, double C6, double C12, double eps)
-                :  SimplePairwiseInteractionList< WCA_interaction > ( new WCA_interaction(C6, C12, eps), ilist) {}
+            WCANeighborList(Array<long int> & ilist, double C6, double C12, double eps)
+                :  SimplePairwiseNeighborList< WCA_interaction > ( new WCA_interaction(C6, C12, eps), ilist) {}
     };
 }
 #endif
+
+

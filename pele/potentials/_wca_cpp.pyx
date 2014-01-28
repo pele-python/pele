@@ -10,8 +10,8 @@ cdef extern from "pele/wca.h" namespace "pele":
         cWCA(double C6, double C12, double eps) except +
     cdef cppclass  cWCAPeriodic "pele::WCAPeriodic":
         cWCAPeriodic(double C6, double C12, double eps, double * boxvec) except +
-    cdef cppclass  cWCA_Ilist "pele::WCA_interaction_list":
-        cWCA_Ilist(_pele.Array[long] & ilist, double C6, double C12, double eps) except +
+    cdef cppclass  cWCANeighborList "pele::WCANeighborList":
+        cWCANeighborList(_pele.Array[long] & ilist, double C6, double C12, double eps) except +
 
 cdef class WCA(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation
@@ -30,11 +30,11 @@ cdef class WCA(_pele.BasePotential):
             bv = np.array(boxvec, dypte=float)
             self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, 4.*eps,
                                                                   <double*> bv.data)
-cdef class WCAInteractionList(_pele.BasePotential):
+cdef class WCANeighborList(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation
     """
     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):
-        self.thisptr = <_pele.cBasePotential*>new cWCA_Ilist( _pele.Array[long](<long*> ilist.data, <int> ilist.size), sigma**6, sigma**12, 4.*eps)
+        self.thisptr = <_pele.cBasePotential*>new cWCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), sigma**6, sigma**12, 4.*eps)
 
 cdef class _ErrorPotential(_pele.BasePotential):
     """this is a test potential which should raise an exception when called
