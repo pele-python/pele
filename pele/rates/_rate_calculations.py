@@ -99,6 +99,9 @@ class GraphReduction(object):
         self.debug = debug
         self.initial_check_graph()
         self.check_graph()
+        
+        self._initial_tau = dict([(u,data["tau"]) for u, data in 
+                                   self.graph.nodes(data=True)])
     
     def _remove_nodes(self, nodes):
         nodes = list(nodes)
@@ -168,6 +171,17 @@ class GraphReduction(object):
         
 #         self.rateAB, self.rateBA = self.get_final_rates()
 #         return self.rateAB, self.rateBA
+
+    def get_rate_AB_SS(self):
+        rate = 0.
+        for a in self.A:
+            PaB = sum((data["P"] for x, b, data in self.graph.out_edges_iter(a, data=True)
+                       if b in self.B
+                       ))
+            rate += PaB * self.weights[a] / self._initial_tau[a]
+        norm = sum((self.weights[x] for x in self.A))
+        return rate / norm
+            
 
     def _reduce_all_iterator(self, nodes, restore_graph=True):
         """for each node in nodes remove all other nodes in nodes and yield the remaining node
