@@ -68,7 +68,7 @@ class TestOptimCollagen(unittest.TestCase):
         ndof = 10 # wrong, but who cares.
         self.db = Database()
         current_dir = os.path.dirname(__file__)
-        converter = OptimDBConverter(ndof, self.db, mindata=current_dir+"/collagen.min.data", 
+        converter = OptimDBConverter(self.db, ndof=ndof, mindata=current_dir+"/collagen.min.data", 
                                      tsdata=current_dir+"/collagen.ts.data", assert_coords=False)
         converter.pointsmin_data = None
         converter.pointsts_data = None
