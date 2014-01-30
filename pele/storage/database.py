@@ -828,12 +828,26 @@ def test_fast_insert():
     print Minimum.__table__.insert()
     db.engine.execute(
                       Minimum.__table__.insert(),
-                      [{"energy":.01, "coords":np.array([0.,1.])}]
+                      [dict(energy=.01, coords=np.array([0.,1.]), invalid=False),
+                      dict(energy=.02, coords=np.array([0.,2.]), invalid=False),
+                      ]
+                      )
+    m1, m2 = db.minima()[:2]
+    db.engine.execute(TransitionState.__table__.insert(),
+                      [dict(energy=1., coords=np.array([1,1.]), _minimum1_id=m1._id, 
+                            _minimum2_id=m2._id)
+                       ]
                       )
     for m in db.minima():
+        print m._id
         print m.energy
         print m.coords
-        print m.invalid
+        print m.invalid, bool(m.invalid)
+        
+    ts = db.transition_states()[0]
+    print ts.minimum1.energy
+    print ts.minimum2.energy
+    print ts._id
 
 if __name__ == "__main__":
     test_fast_insert()

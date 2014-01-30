@@ -29,8 +29,8 @@ def main():
                  endianness=args.endianness, assert_coords=False)
     converter.pointsmin_data = None
     converter.pointsts_data = None
-    converter.ReadMindata()
-    converter.ReadTSdata()
+    converter.ReadMinDataFast()
+    converter.ReadTSdataFast()
     
     system = BaseSystem()
     system.get_ndof = lambda : args.ndof
