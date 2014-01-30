@@ -818,20 +818,22 @@ class Database(object):
             
 
 
-if __name__ == "__main__":    
+def test_fast_insert():
+    """bulk inserts are *really* slow, we should add something along the lines of this
+    answer to speed things up where needed
+    
+    http://stackoverflow.com/questions/11769366/why-is-sqlalchemy-insert-with-sqlite-25-times-slower-than-using-sqlite3-directly
+    """
     db = Database()
-    m1 = db.addMinimum(1., np.random.random(10))
-    m2 = db.addMinimum(3., np.random.random(10))
-    db.addMinimum(2., np.random.random(10))
-    db.addMinimum(1.001, np.random.random(10))
-    db.minimum_adder()(7, np.random.random(10))
-    ts = db.addTransitionState(10., None, m1, m2)
-    ts.eigenval=11.
-    
-    print    
+    print Minimum.__table__.insert()
+    db.engine.execute(
+                      Minimum.__table__.insert(),
+                      [{"energy":.01, "coords":np.array([0.,1.])}]
+                      )
     for m in db.minima():
-        print m._id, m.energy
-    #for i in db.transition_states():
-    #    print i, i.energy, i.eigenval, i.eigenvec
-    
-    print "largest_energy_minimum", db._highest_energy_minimum().energy
+        print m.energy
+        print m.coords
+        print m.invalid
+
+if __name__ == "__main__":
+    test_fast_insert()
