@@ -32,9 +32,9 @@ class TestHS_WCA_CPP(_base_test._BaseTest):
         self.xrandom = x + np.random.uniform(-max_step,max_step,[3*self.natoms])
         self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii)
         
-        print "start minimising"
+        #print "start minimising"
         xyz = minimize(self.xrandom,self.pot)
-        print "end minimising"
+        #print "end minimising"
         self.xmin = xyz[0].reshape(-1).copy()
         self.Emin = float(xyz[1])
         
@@ -43,7 +43,7 @@ class TestErrorPotential(unittest.TestCase):
     def setUp(self):
         self.pot = _hs_wca_cpp._ErrorPotential()
         self.x = np.random.uniform(-1,1,[27*3])
-    def test(self):result = minimiser.run()
+    def test(self):
         with self.assertRaises(RuntimeError):
             self.pot.getEnergy(self.x)
         with self.assertRaises(RuntimeError):
@@ -77,9 +77,9 @@ class TestHS_WCA_CPP_NeighborList(_base_test._BaseTest):
         self.xrandom = x + np.random.uniform(-max_step,max_step,[3*self.natoms])
         self.pot = _hs_wca_cpp.HS_WCANeighborList(nlist, eps=1, sca=sca, radii=hs_radii)
         
-        print "start minimising"
+        #print "start minimising"
         xyz = minimize(self.xrandom,self.pot)
-        print "end minimising"
+        #print "end minimising"
         self.xmin = xyz[0].reshape(-1).copy()
         self.Emin = float(xyz[1])
 
