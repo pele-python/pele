@@ -43,8 +43,8 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
     cdef cppMODIFIED_FIRE *thisptr
     cdef _pele.BasePotential pot # this is stored so that the memory is not freed
     
-    def __cinit__(self, x0, potential, double dtstart = 0.05, double dtmax = 1, size_t Nmin=5, double finc=1.1, 
-                  double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-2, 
+    def __cinit__(self, x0, potential, double dtstart = 0.001, double dtmax = 1, size_t Nmin=5, double finc=1.1, 
+                  double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-6, 
                   int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0, events = None):
         
         if not issubclass(potential.__class__, _pele.BasePotential):
@@ -126,12 +126,12 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
     def get_niter(self):
         return self.thisptr.get_niter()
 
-class MODIFIED_FIRE_CPP(_Cdef_MODIFIED_FIRE_CPP):
+class ModifiedFireCPP(_Cdef_MODIFIED_FIRE_CPP):
     """This class is the python interface for the c++ MODIFED_FIRE implementation.
     """
-    def __init__(self, x0, potential, double dtstart=0.05, double dtmax=1, size_t Nmin=5,
+    def __init__(self, x0, potential, double dtstart=0.001, double dtmax=1, size_t Nmin=5,
                  double finc=1.1, double fdec=0.5, double fa=0.99, double astart=0.1, 
-                 double tol=1e-2, int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0,events=None):
+                 double tol=1e-6, int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0,events=None):
         self._need_python = events is not None
 
         self.events = events

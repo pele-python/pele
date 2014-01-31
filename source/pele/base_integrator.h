@@ -10,6 +10,9 @@
 
 namespace pele{
 
+/*base class for numerical integration methods for the solution of ordinary differential equations,
+ * these could be Euler method, Verlet, Velocity verlet, etc. */
+
 class BaseIntegrator
   {
   	  protected:
@@ -21,9 +24,8 @@ class BaseIntegrator
 		 * _gold: gradient at previous time step
 		 * _m: masses
 		 * _v: initial velocities
-		 * _default_array: an empty array
 		 *
-		 *these are the constants:
+		 *these are the variables:
 		 *
 		 *_E: energy
 		 *_dt: time step
@@ -120,10 +122,6 @@ class BaseIntegrator
 		  	  		assert(g.size() == x.size());
 		  	  		_g.wrap(g); // NOTE: wrap gradient, it does not copy it
 		  	  	  }
-
-		  	  	  /*cout<<"_potential address: "<<_potential<<std::endl;
-		  	  	  cout<<_x<<std::endl;
-		  	  	  cout<<_g<<std::endl;*/
 
 		  	  	  *_E = _potential->get_energy_gradient(_x, _g); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
 	  	  	  	  _Estart = *_E;

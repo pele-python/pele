@@ -24,17 +24,17 @@ cdef class WCA(_pele.BasePotential):
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
             self.periodic = False
-            self.thisptr = <_pele.cBasePotential*>new cWCA(sig**6, sig**12, 4.*eps)
+            self.thisptr = <_pele.cBasePotential*>new cWCA(sig**6, sig**12, eps)
         else:
             self.periodic = True
             bv = np.array(boxvec, dypte=float)
-            self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, 4.*eps,
+            self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, eps,
                                                                   <double*> bv.data)
 cdef class WCANeighborList(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation
     """
     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):
-        self.thisptr = <_pele.cBasePotential*>new cWCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), sigma**6, sigma**12, 4.*eps)
+        self.thisptr = <_pele.cBasePotential*>new cWCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), sigma**6, sigma**12, eps)
 
 cdef class _ErrorPotential(_pele.BasePotential):
     """this is a test potential which should raise an exception when called
