@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 import pele.utils.disconnectivity_graph as dg
 from pele.storage import Database
+from pele.utils.optim_compatibility import OptimDBConverter
 
 
 try:
@@ -164,7 +165,9 @@ def main():
     
     if OPTIM:
         #make database from min.data ts.data
-        graph = make_graph_from_files()
+        db = Database()
+        converter = OptimDBConverter(db)
+        converter.convert_no_coords()
     else:
         if len(args) == 0:
             print "you must specify database file"

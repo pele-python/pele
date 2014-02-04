@@ -321,7 +321,7 @@ class OptimDBConverter(object):
                 self.pointsmin_data = None
             else:
                 raise
-        self.ReadMindataFast()
+        self.ReadMinDataFast()
         self.db.session.commit()
     
     def load_transition_states(self):
@@ -339,3 +339,10 @@ class OptimDBConverter(object):
     def convert(self):
         self.load_minima()
         self.load_transition_states()
+    
+    def convert_no_coords(self):
+        self.pointsmin_data = None
+        self.pointsts_data = None
+        self.ReadMinDataFast()
+        self.ReadTSdataFast()
+
