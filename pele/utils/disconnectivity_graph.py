@@ -130,7 +130,9 @@ class DGTree(Tree):
             tset.add(tree)
         return True
         
-           
+class UnionFind(nx.utils.UnionFind):
+    def groups_iter(self):
+        return (c for c, c1 in self.parents.iteritems() if c == c1)
 
 class _MakeTree(object):
     """class to Make the disconnectivity graph tree
@@ -153,11 +155,11 @@ class _MakeTree(object):
     This algorithm starts from a completely disconnected graph and adds
     transition states one at a time, starting from the lowest energy transition
     state.  Connectivity is determined solely through labeling minima based on
-    which cluster it's in (labels are called colors).  If a new transition
+    which cluster it's in.  If a new transition
     state connects two previously disconnected clusters, the clusters are
     joined to make one single cluster.  As the transition states are added
     (sorted in energy) the energy levels are reached one at a time.  At each
-    level, the state of the connectivity of the graph is saved in tree graphs.  
+    level, the state of the connectivity of the graph is saved in tree graphs.
     """
     def __init__(self, minima, transition_states, energy_levels, get_energy=None):
         self.minima = minima
@@ -165,54 +167,24 @@ class _MakeTree(object):
         self.energy_levels = energy_levels
         self._get_energy = get_energy
         
-        self._equal_colors = set()
-        self._minimum_to_color = dict()
-        self._color_to_minima = dict() 
+        self.union_find = UnionFind()
         self.minimum_to_leave = dict()
 
-    
-    def _color_minima_initialize(self, minima):
-        """give a color to all the minima"""
-        for c, m in enumerate(minima):
-            self._color_to_minima[c] = set([m])
-            self._minimum_to_color[m] = c
-
-    def _recolor(self, cold, cnew):
-        """color cold will  be change to be cnew"""
-        mold = self._color_to_minima[cold]
-        self._color_to_minima[cnew].update(mold)
-        self._color_to_minima.pop(cold)
-        for m in mold:
-            self._minimum_to_color[m] = cnew
-    
-    def _set_colors_equal(self, c1, c2):
-        """join two colors"""
-        if c1 == c2: return
-        # for convenience, recolor the smaller group
-        mlist1 = self._color_to_minima[c1]
-        mlist2 = self._color_to_minima[c2]
-        if len(mlist2) > len(mlist1):
-            self._recolor(c1, c2)
-        else:
-            self._recolor(c2, c1)
-    
-    def _add_edge(self, min1, min2):
-        """add an edge between min1 and min2
-        
-        if min1 and min2 belong to different color groups, those groups
-        will be set equal
-        """
-        c1 = self._minimum_to_color[min1]
-        c2 = self._minimum_to_color[min2]
-        if c1 != c2:
-            self._set_colors_equal(c1, c2)
 
     def get_energy(self, ts):
+        """return the energy of the transition state"""
         if self._get_energy is None:
             return ts.energy
         else:
             return self._get_energy(ts)
 
+    def _new_leaf(self, m):
+        """make a new leaf from minimum m"""
+        leaf = DGTree()
+        leaf.data["minimum"] = m 
+        self.minimum_to_leave[m] = leaf
+        return leaf
+        
     def make_tree(self):
         """make the disconnectivity tree"""
         # make list of transition states sorted so that lower energies are to the right
@@ -222,28 +194,12 @@ class _MakeTree(object):
         tslist.sort(key=lambda ts: -self.get_energy(ts))
         self.transition_states = tslist 
 
-        # color minima with initial values
-        self._color_minima_initialize(self.minima)
-
-        # make a tree leaf for every minimum
-        ethresh = self.energy_levels[0]
         trees = []
-        for m in self.minima:
-            leaf = DGTree()
-            leaf.data["minimum"] = m 
-            leaf.data["ilevel"] = 0 
-            leaf.data["ethresh"] = ethresh 
-            self.minimum_to_leave[m] = leaf
-            trees.append(leaf)
         
         # build the tree up starting at the lowest level
         for ilevel in range(len(self.energy_levels)):
             trees = self._do_next_level(ilevel, trees)
 
-        # remove redundant linear parentage 
-        for tree in trees:
-            self._remove_linear_parantage(tree)
-        
         # deal with any disconnected parts
         energy_levels = self.energy_levels
         if len(trees) == 1:
@@ -262,37 +218,21 @@ class _MakeTree(object):
             print "tree test result", res
 
         return self.tree
-    
-    
-    def _remove_linear_parantage(self, tree):
-        """remove redundant linear parentage
+
+    def _add_edge(self, min1, min2):
+        """add an edge between min1 and min2
         
-        remove all trees which have a parent and only one child
-        
-        also, correctly set ethresh for the minima (leaves)
+        if min1 and min2 belong to different color groups, those groups
+        will be set equal
         """
-        if tree.is_leaf():
-            # this tree represents a minimum
-            if tree.parent is not None:
-                # correct ethresh for this minimum
-                tree.data["ethresh"] = tree.parent.data["ethresh"]
-            return
-        if tree.number_of_branches() == 1:
-            # this tree has only one child.  remove it by bypassing it
-            if tree.parent is not None:
-                for branch in tree.get_subtrees():
-                    tree.parent.add_branch(branch)
-                tree.parent.subtrees.remove(tree)
-        # deal with subtrees recursively
-        # copy the list of subrees so the
-        # list iterator doesn't get messed up if when the list is changed
-        branches = copy.copy(tree.get_subtrees()) 
-        for branch in branches:
-            self._remove_linear_parantage(branch)
-        
-        
-            
-        
+        new_minima = []
+        if min1 not in self.union_find.parents:
+            new_minima.append(min1)
+        if min2 not in self.union_find.parents:
+            new_minima.append(min2)
+        self.union_find.union(min1, min2)
+        return new_minima
+
     def _do_next_level(self, ilevel, previous_trees):
         """do the disconnectivity analysis for energy level ilevel
         """
@@ -305,7 +245,9 @@ class _MakeTree(object):
             if self.get_energy(ts) >= ethresh:
                 break
             
-            self._add_edge(ts.minimum1, ts.minimum2)
+            new_minima = self._add_edge(ts.minimum1, ts.minimum2)
+            for m in new_minima:
+                previous_trees.append(self._new_leaf(m))
             
             # remove the transition state from the list
             tslist.pop()
@@ -313,7 +255,7 @@ class _MakeTree(object):
         # make a new tree for every color (connected cluster)
         newtrees = []
         color_to_tree = dict()
-        for c in self._color_to_minima.keys():
+        for c in self.union_find.groups_iter():
             newtree = DGTree()
             newtree.data["ilevel"] = ilevel 
             newtree.data["ethresh"] = ethresh
@@ -323,11 +265,17 @@ class _MakeTree(object):
         # determine parentage
         for tree in previous_trees:
             m = tree.get_one_minimum()
-            c = self._minimum_to_color[m]
+            c = self.union_find[m]
             parent = color_to_tree[c]
-            parent.add_branch(tree)
+            if tree.number_of_branches() == 1:
+                # remove linear parentage.
+                subtree = iter(tree.subtrees).next()
+                parent.add_branch(subtree)
+            else:
+                parent.add_branch(tree)
             
         return newtrees
+
 
 class ColorDGraphByGroups(object):
     """color the graph based on specified grouping of minima
@@ -637,8 +585,8 @@ class DisconnectivityGraph(object):
 
 
     #############################################################
-    #functions for building the tree by splitting the graph into
-    #connected components at each level 
+    # functions for building the tree by splitting the graph into
+    # connected components at each level 
     #############################################################
 
 
@@ -668,8 +616,9 @@ class DisconnectivityGraph(object):
         self.minimum_to_leave = maketree.minimum_to_leave
         return trees
         
-            
-            
+    #################################################################
+    # These functions determine how to layout the tree on the x axis
+    #################################################################
 
     def _recursive_layout_x_axis(self, tree, xmin, dx_per_min):
 #        nbranches = tree.number_of_branches()
@@ -689,7 +638,7 @@ class DisconnectivityGraph(object):
         used in displaying the disconnectivity graph
         """
         xmin = 4.0
-        dx_per_min = 1
+        dx_per_min = 1.
         self._recursive_layout_x_axis(tree, xmin, dx_per_min)
 
     def _tree_get_minimum_energy(self, tree, emin=1e100):
