@@ -22,6 +22,7 @@ class BaseIntegrator
 		 * _v: velocity
 		 * _g: gradient
 		 * _gold: gradient at previous time step
+		 * _dx: displacement vector (needed to control step size)
 		 * _m: masses
 		 * _v: initial velocities
 		 *
@@ -29,20 +30,21 @@ class BaseIntegrator
 		 *
 		 *_E: energy
 		 *_dt: time step
+		 *_maxstep: maximum step to take
 		 *_Estart: initial energy
 		 *_dtstart: initial time step
 		 */
 
 	  pele::BasePotential * _potential;
 	  pele::Array<double> _x;
-	  double _dt, _dtstart, _Estart;
-	  pele::Array<double> _gold, _v, _g, _m;
+	  double _dt, _dtstart, _Estart, _maxstep;
+	  pele::Array<double> _gold, _v, _g, _m, _dx;
 	  double * _E;
 
   	  public:
 
 	  /*BaseIntegrator constructor, assigns value to the protected arrays and constants*/
-	  BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, pele::Array<double> &v,
+	  BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, double maxstep, pele::Array<double> &v,
 			  pele::Array<double> &g, pele::Array<double> &m);
 
 	  virtual ~BaseIntegrator() {}
@@ -104,10 +106,11 @@ class BaseIntegrator
 	  double get_energy(){ return *_E; }
   };
 
-	BaseIntegrator::BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt,
+	BaseIntegrator::BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, double maxstep,
 			pele::Array<double> &v, pele::Array<double> &g, pele::Array<double> &m):
-				_potential(potential), _x(x), _dt(dt),
-	    		_dtstart(dt), _gold(x.size()), _E(new double)
+				_potential(potential), _x(x), _dt(dt), _dtstart(dt),
+				_maxstep(maxstep), _gold(x.size()), _dx(x.size()),
+				_E(new double)
 
 	  	  	  {
 		  	  	  size_t i,j;

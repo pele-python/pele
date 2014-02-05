@@ -7,6 +7,7 @@
 #include "optimizer.h"
 #include "base_integrator.h"
 #include "velocity_verlet.h"
+#include "forward_euler.h"
 
 using std::vector;
 
@@ -26,18 +27,19 @@ namespace pele{
 
 	class MODIFIED_FIRE : public GradientOptimizer{
     private :
-	  double _dtstart, _dt, _dtmax, _Nmin, _finc, _fdec, _fa, _astart, _a, _fold;
+	  double _dtstart, _dt, _dtmax, _maxstep, _Nmin, _finc, _fdec, _fa, _astart, _a, _fold;
 	  pele::Array<double> _v, _xold, _gold;
 	  size_t _fire_iter_number;
 	  pele::VelocityVerlet _integrator; //create VelocityVerlet integrator
+	  //pele::ForwardEuler _integrator; //create ForwardEuler integrator
 
     public :
 
 	    /**
 		* Constructor
 		*/
-	  MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double>& x0, double dtstart, double dtmax,
-    		  size_t Nmin=5, double finc=1.1, double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-6);
+	  MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double>& x0, double dtstart, double dtmax, double maxstep,
+    		  size_t Nmin=5, double finc=1.1, double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-3);
       /**
        * Destructorgit undo rebase
        */
@@ -62,6 +64,10 @@ namespace pele{
                 _integrator.wrap_gold(_gold); 	//the gradient array wraps the integrator gradient array so that it updates concurrently
                 _fold = f_;
                 rms_ = norm(g_) / sqrt(g_.size());
+                for(int k=0; k<x_.size();++k) //set initial velocities (using forward Euler)
+				  {
+					  _v[k] = -g_[k]*_dt;
+				  }
                 func_initialized_ = true;
             }
 
@@ -73,16 +79,16 @@ namespace pele{
           }
   };
 
-  MODIFIED_FIRE::MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double>& x0, double dtstart, double dtmax,
+  MODIFIED_FIRE::MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double>& x0, double dtstart, double dtmax, double maxstep,
 		  size_t Nmin, double finc, double fdec, double fa, double astart, double tol):
 		  GradientOptimizer(potential,x0,tol=1e-6), //call GradientOptimizer constructor
 		  _dtstart(dtstart), _dt(dtstart),
-		  _dtmax(dtmax), _Nmin(Nmin),
+		  _dtmax(dtmax), _maxstep(maxstep), _Nmin(Nmin),
 		  _finc(finc), _fdec(fdec), _fa(fa),
-		  _astart(astart), _a(astart), _v(x0.size(),0),
-		  _xold(x0.copy()),_gold(g_.copy()),_fold(f_),
+		  _astart(astart), _a(astart), _fold(f_),
+		  _v(x0.size(),0), _xold(x0.copy()),_gold(g_.copy()),
 		  _fire_iter_number(0),
-		  _integrator(potential_, x_, _dtstart)
+		  _integrator(potential_, x_, _dtstart, _maxstep)
   	  	  {}
 
   void MODIFIED_FIRE::one_iteration()
@@ -92,14 +98,14 @@ namespace pele{
 	  nfev_ += 1;
 	  iter_number_ += 1;
 	  _fire_iter_number += 1; //this is different from iter_number_ which does not get reset
-	  _integrator.oneiteration();
 	  double P = -1 * dot(_v,g_);
 
 	  if (P > 0)
 	  {
 		  //save old configuration in case next step has P < 0
+
 		  _fold = f_; //set f_ old before integration step
-		  for(k=0; k<x_.size();++k) //set next xold to current x
+		  for(k=0; k<x_.size();++k) //set next xold to current (just updated) x
 			  {
 				  _xold[k] = x_[k];
 			  }
@@ -116,15 +122,17 @@ namespace pele{
 
 		  if (_fire_iter_number > _Nmin)
 		  {
+			  /*_dt = _integrator.get_dt();  //dt might have been varied in integrator to adjust maxstep*/
 			  _dt = std::min(_dt* _finc, _dtmax);
 			  _a *= _fa;
+			  _integrator.set_dt(_dt);
 		  }
 
 		  rms_ = 1. / (ifnorm * sqrt(N)); //update rms
-
 	  }
 	  else
 	  {
+		  /*_integrator.get_dt();  //dt might have been varied in integrator to adjust maxstep*/
 		  _dt *= _fdec;
 		  _a = _astart;
 		  _fire_iter_number = 0;
@@ -136,9 +144,9 @@ namespace pele{
 			  	  _v[k] = 0;
 			  	  f_ = _fold;
 		  	  }
+		  _integrator.set_dt(_dt);
 	  }
-
-	  _integrator.set_dt(_dt);
+	  _integrator.oneiteration();
   }
 }
 
