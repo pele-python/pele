@@ -39,6 +39,8 @@ class _DistanceGraph(object):
     them again.  The minimum weight path between min1 and min2 in this graph gives a
     good guess for the best way to try connect min1 and min2.  
 
+    TODO: could we use a disjoint set data structure (nx.utils.UnionFind) to improve this
+    algorithm?
     """
     def __init__(self, database, graph, mindist, verbosity):
         self.database = database

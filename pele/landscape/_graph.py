@@ -11,6 +11,9 @@ class _ConnectedComponents():
     This allows connections to be determined much more rapidly because
     the breadth first search algorithm (connected_components, bidirectional_dijkstra) 
     need be run only infrequently.
+    
+    TODO: I think this could be significantly improved by using a disjoint set
+    data structure (nx.utils.UnionFind)
     """
     def __init__(self, graph):
         self.graph = graph

@@ -98,6 +98,12 @@ class Tree(object):
             for subtree in branch.get_all_trees():
                 yield subtree
 
+    def number_of_subtrees(self):
+        ntot = 1
+        for branch in self.get_branches():
+            ntot += branch.number_of_subtrees()
+        return ntot
+
 class DGTree(Tree):
     """add a few functions to Tree to make it specific to disconnectivity graph"""
     def contains_minimum(self, min1):
@@ -160,6 +166,9 @@ class _MakeTree(object):
     joined to make one single cluster.  As the transition states are added
     (sorted in energy) the energy levels are reached one at a time.  At each
     level, the state of the connectivity of the graph is saved in tree graphs.
+    
+    This algorithm is very similar to kruskal's minimum spanning tree algorithm
+    
     """
     def __init__(self, minima, transition_states, energy_levels, get_energy=None):
         self.minima = minima
