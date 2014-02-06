@@ -27,6 +27,16 @@ def log_sum2(a, b):
         return b + np.log(1.0 + np.exp(a - b) )
 
 
+def log_equilibrium_occupation_probability(minimum, T):
+    """return the log equilibrium occupation probability
+    
+    This is computed from the harmonic superposition approximation.  Some
+    constants that are the same for all minima have been left out.
+    """
+    # warning, this has not been checked, there might be a bug
+    return (-minimum.energy / T - np.log(minimum.pgorder)
+            - 0.5 * minimum.fvib)
+
 
 class RateCalculation(object):
     """compute transition rates from a database of minima and transition states
@@ -92,8 +102,10 @@ class RateCalculation(object):
                 print "excluding invalid transition state from rate graph", ts.energy, ts._id 
                 continue
             min1, min2 = ts.minimum1, ts.minimum2
+            if min1._id == 1664:
+                print min1._id, min2._id
             if min1 == min2:
-#                print "skipping transition state with energy", ts.energy, "that connects minimum", min1._id, "with itself"
+#                print "skipping transition state with energy", ts.energy, "that connects minimum", min1._id, "with itself", min2._id
                 nts_skip_same += 1
                 continue
             u, v = min1, min2
@@ -137,12 +149,19 @@ class RateCalculation(object):
         return (-self.beta * minimum.energy - np.log(minimum.pgorder)
                 - 0.5 * minimum.fvib)
 
-    def _get_equilibrium_occupation_probabilities(self):
-        if len(self.A) == 1 and len(self.B) == 1:
-            self.weights = None
-            return self.weights
+    def _get_equilibrium_occupation_probabilities(self, all=True):
+#        if len(self.A) == 1 and len(self.B) == 1:
+#            self.weights = None
+#            return self.weights
+        if all:
+            nodes = set()
+            for ts in self.transition_states:
+                nodes.add(ts.minimum1)
+                nodes.add(ts.minimum2)
+        else:
+            nodes = self.A.union(self.B)
         log_weights = dict()
-        for m in self.A.union(self.B):
+        for m in nodes:
             x = self._min2node(m)
             log_weights[x] = self._log_equilibrium_occupation_probability(m)
         
