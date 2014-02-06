@@ -348,7 +348,10 @@ def reduced_db2graph(db, Emax):
     # calculation.
     minima = db.session.query(Minimum).filter(Minimum.energy <= Emax)
     g.add_nodes_from(minima)
-    ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax)
+    # if we order by energy first and add the transition states with the largest
+    # the we will take the smallest energy transition state in the case of duplicates
+    ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax)\
+                                          .order_by(-TransitionState.energy)
     for t in ts: 
         g.add_edge(t.minimum1, t.minimum2, ts=t)
     return g
