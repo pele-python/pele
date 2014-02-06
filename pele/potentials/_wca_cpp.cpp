@@ -230,8 +230,8 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE__pele__potentials___hs_wca_cpp
-#define __PYX_HAVE_API__pele__potentials___hs_wca_cpp
+#define __PYX_HAVE__pele__potentials___wca_cpp
+#define __PYX_HAVE_API__pele__potentials___wca_cpp
 #include "stdio.h"
 #include "stdlib.h"
 #include "numpy/arrayobject.h"
@@ -244,7 +244,7 @@
 #include "pele/base_potential.h"
 #include "pele/combine_potentials.h"
 #include "pythread.h"
-#include "pele/hs_wca.h"
+#include "pele/wca.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* _OPENMP */
@@ -350,7 +350,7 @@ static const char *__pyx_filename;
 #endif
 
 static const char *__pyx_f[] = {
-  "_hs_wca_cpp.pyx",
+  "_wca_cpp.pyx",
   "numpy.pxd",
   "bool.pxd",
   "complex.pxd",
@@ -567,9 +567,9 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 /*--- Type declarations ---*/
 struct __pyx_obj_4pele_10potentials_5_pele_BasePotential;
-struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp__ErrorPotential;
-struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList;
-struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA;
+struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA;
+struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCANeighborList;
+struct __pyx_obj_4pele_10potentials_8_wca_cpp__ErrorPotential;
 
 /* "numpy.pxd":758
  * ctypedef npy_longdouble longdouble_t
@@ -620,40 +620,40 @@ struct __pyx_obj_4pele_10potentials_5_pele_BasePotential {
 };
 
 
-/* "pele/potentials/_hs_wca_cpp.pyx":41
- *         self.thisptr = <_pele.cBasePotential*>new cHS_WCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
+/* "pele/potentials/_wca_cpp.pyx":16
+ *         cWCANeighborList(_pele.Array[long] & ilist, double C6, double C12, double eps) except +
+ * 
+ * cdef class WCA(_pele.BasePotential):             # <<<<<<<<<<<<<<
+ *     """define the python interface to the c++ WCA implementation
+ *     """
+ */
+struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA {
+  struct __pyx_obj_4pele_10potentials_5_pele_BasePotential __pyx_base;
+  PyBoolObject *periodic;
+};
+
+
+/* "pele/potentials/_wca_cpp.pyx":33
+ *             self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, eps,
+ *                                                                   <double*> bv.data)
+ * cdef class WCANeighborList(_pele.BasePotential):             # <<<<<<<<<<<<<<
+ *     """define the python interface to the c++ WCA implementation
+ *     """
+ */
+struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCANeighborList {
+  struct __pyx_obj_4pele_10potentials_5_pele_BasePotential __pyx_base;
+};
+
+
+/* "pele/potentials/_wca_cpp.pyx":39
+ *         self.thisptr = <_pele.cBasePotential*>new cWCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), sigma**6, sigma**12, eps)
  * 
  * cdef class _ErrorPotential(_pele.BasePotential):             # <<<<<<<<<<<<<<
  *     """this is a test potential which should raise an exception when called
  *     """
  */
-struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp__ErrorPotential {
+struct __pyx_obj_4pele_10potentials_8_wca_cpp__ErrorPotential {
   struct __pyx_obj_4pele_10potentials_5_pele_BasePotential __pyx_base;
-};
-
-
-/* "pele/potentials/_hs_wca_cpp.pyx":35
- *             self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)
- * 
- * cdef class HS_WCANeighborList(_pele.BasePotential):             # <<<<<<<<<<<<<<
- *     """define the python interface to the c++ HS_WCA implementation
- *     """
- */
-struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList {
-  struct __pyx_obj_4pele_10potentials_5_pele_BasePotential __pyx_base;
-};
-
-
-/* "pele/potentials/_hs_wca_cpp.pyx":16
- *         cHS_WCANeighborList(_pele.Array[long] & ilist, double eps, double sca, _pele.Array[double] radii) except +
- * 
- * cdef class HS_WCA(_pele.BasePotential):             # <<<<<<<<<<<<<<
- *     """define the python interface to the c++ HS_WCA implementation
- *     """
- */
-struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA {
-  struct __pyx_obj_4pele_10potentials_5_pele_BasePotential __pyx_base;
-  PyBoolObject *periodic;
 };
 
 
@@ -697,16 +697,17 @@ struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA {
   #define __Pyx_XGIVEREF(r)
 #endif /* CYTHON_REFNANNY */
 
-static void __Pyx_RaiseArgtupleInvalid(const char* func_name, int exact,
-    Py_ssize_t num_min, Py_ssize_t num_max, Py_ssize_t num_found); /*proto*/
-
 static void __Pyx_RaiseDoubleKeywordsError(
     const char* func_name, PyObject* kw_name); /*proto*/
 
 static int __Pyx_ParseOptionalKeywords(PyObject *kwds, PyObject **argnames[],     PyObject *kwds2, PyObject *values[], Py_ssize_t num_pos_args,     const char* function_name); /*proto*/
 
-static int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
-    const char *name, int exact); /*proto*/
+static void __Pyx_RaiseArgtupleInvalid(const char* func_name, int exact,
+    Py_ssize_t num_min, Py_ssize_t num_max, Py_ssize_t num_found); /*proto*/
+
+static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type); /*proto*/
+
+static PyObject *__Pyx_GetName(PyObject *dict, PyObject *name); /*proto*/
 
 /* Run-time type information about structs used with buffers */
 struct __Pyx_StructField_;
@@ -733,14 +734,13 @@ typedef struct {
 static CYTHON_INLINE int  __Pyx_GetBufferAndValidate(Py_buffer* buf, PyObject* obj, __Pyx_TypeInfo* dtype, int flags, int nd, int cast, __Pyx_BufFmt_StackElem* stack);
 static CYTHON_INLINE void __Pyx_SafeReleaseBuffer(Py_buffer* info);
 
-static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type); /*proto*/
-
-static PyObject *__Pyx_GetName(PyObject *dict, PyObject *name); /*proto*/
-
 static void __Pyx_RaiseBufferFallbackError(void); /*proto*/
 
 static CYTHON_INLINE void __Pyx_ErrRestore(PyObject *type, PyObject *value, PyObject *tb); /*proto*/
 static CYTHON_INLINE void __Pyx_ErrFetch(PyObject **type, PyObject **value, PyObject **tb); /*proto*/
+
+static int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
+    const char *name, int exact); /*proto*/
 
 static CYTHON_INLINE int __Pyx_CheckKeywordStrings(PyObject *kwdict,
     const char* function_name, int kw_allowed); /*proto*/
@@ -1049,25 +1049,25 @@ static PyTypeObject *__pyx_ptype_7cpython_7complex_complex = 0;
 
 /* Module declarations from 'cpython' */
 
-/* Module declarations from 'pele.potentials._hs_wca_cpp' */
-static PyTypeObject *__pyx_ptype_4pele_10potentials_11_hs_wca_cpp_HS_WCA = 0;
-static PyTypeObject *__pyx_ptype_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList = 0;
-static PyTypeObject *__pyx_ptype_4pele_10potentials_11_hs_wca_cpp__ErrorPotential = 0;
+/* Module declarations from 'pele.potentials._wca_cpp' */
+static PyTypeObject *__pyx_ptype_4pele_10potentials_8_wca_cpp_WCA = 0;
+static PyTypeObject *__pyx_ptype_4pele_10potentials_8_wca_cpp_WCANeighborList = 0;
+static PyTypeObject *__pyx_ptype_4pele_10potentials_8_wca_cpp__ErrorPotential = 0;
 static __Pyx_TypeInfo __Pyx_TypeInfo_double = { "double", NULL, sizeof(double), 'R' };
 static __Pyx_TypeInfo __Pyx_TypeInfo_long = { "long", NULL, sizeof(long), 'I' };
-#define __Pyx_MODULE_NAME "pele.potentials._hs_wca_cpp"
-int __pyx_module_is_main_pele__potentials___hs_wca_cpp = 0;
+#define __Pyx_MODULE_NAME "pele.potentials._wca_cpp"
+int __pyx_module_is_main_pele__potentials___wca_cpp = 0;
 
-/* Implementation of 'pele.potentials._hs_wca_cpp' */
+/* Implementation of 'pele.potentials._wca_cpp' */
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_RuntimeError;
-static char __pyx_k_1[] = "ndarray is not C contiguous";
-static char __pyx_k_3[] = "ndarray is not Fortran contiguous";
-static char __pyx_k_5[] = "Non-native byte order not supported";
-static char __pyx_k_7[] = "unknown dtype code in numpy.pxd (%d)";
-static char __pyx_k_8[] = "Format string allocated too short, see comment in numpy.pxd";
-static char __pyx_k_11[] = "Format string allocated too short.";
+static char __pyx_k_5[] = "ndarray is not C contiguous";
+static char __pyx_k_7[] = "ndarray is not Fortran contiguous";
+static char __pyx_k_9[] = "Non-native byte order not supported";
+static char __pyx_k_11[] = "unknown dtype code in numpy.pxd (%d)";
+static char __pyx_k_12[] = "Format string allocated too short, see comment in numpy.pxd";
+static char __pyx_k_15[] = "Format string allocated too short.";
 static char __pyx_k__B[] = "B";
 static char __pyx_k__H[] = "H";
 static char __pyx_k__I[] = "I";
@@ -1087,15 +1087,15 @@ static char __pyx_k__Zf[] = "Zf";
 static char __pyx_k__Zg[] = "Zg";
 static char __pyx_k__np[] = "np";
 static char __pyx_k__eps[] = "eps";
-static char __pyx_k__sca[] = "sca";
+static char __pyx_k__sig[] = "sig";
 static char __pyx_k__boxl[] = "boxl";
 static char __pyx_k__size[] = "size";
 static char __pyx_k__array[] = "array";
-static char __pyx_k__dtype[] = "dtype";
+static char __pyx_k__dypte[] = "dypte";
 static char __pyx_k__ilist[] = "ilist";
 static char __pyx_k__numpy[] = "numpy";
-static char __pyx_k__radii[] = "radii";
 static char __pyx_k__range[] = "range";
+static char __pyx_k__sigma[] = "sigma";
 static char __pyx_k__boxvec[] = "boxvec";
 static char __pyx_k__ctypes[] = "ctypes";
 static char __pyx_k__size_t[] = "size_t";
@@ -1104,12 +1104,12 @@ static char __pyx_k____test__[] = "__test__";
 static char __pyx_k__c_size_t[] = "c_size_t";
 static char __pyx_k__ValueError[] = "ValueError";
 static char __pyx_k__RuntimeError[] = "RuntimeError";
-static PyObject *__pyx_kp_u_1;
 static PyObject *__pyx_kp_u_11;
-static PyObject *__pyx_kp_u_3;
+static PyObject *__pyx_kp_u_12;
+static PyObject *__pyx_kp_u_15;
 static PyObject *__pyx_kp_u_5;
 static PyObject *__pyx_kp_u_7;
-static PyObject *__pyx_kp_u_8;
+static PyObject *__pyx_kp_u_9;
 static PyObject *__pyx_n_s__RuntimeError;
 static PyObject *__pyx_n_s__ValueError;
 static PyObject *__pyx_n_s____main__;
@@ -1119,44 +1119,46 @@ static PyObject *__pyx_n_s__boxl;
 static PyObject *__pyx_n_s__boxvec;
 static PyObject *__pyx_n_s__c_size_t;
 static PyObject *__pyx_n_s__ctypes;
-static PyObject *__pyx_n_s__dtype;
+static PyObject *__pyx_n_s__dypte;
 static PyObject *__pyx_n_s__eps;
 static PyObject *__pyx_n_s__ilist;
 static PyObject *__pyx_n_s__np;
 static PyObject *__pyx_n_s__numpy;
-static PyObject *__pyx_n_s__radii;
 static PyObject *__pyx_n_s__range;
-static PyObject *__pyx_n_s__sca;
+static PyObject *__pyx_n_s__sig;
+static PyObject *__pyx_n_s__sigma;
 static PyObject *__pyx_n_s__size;
 static PyObject *__pyx_n_s__size_t;
 static PyObject *__pyx_int_3;
+static PyObject *__pyx_int_6;
+static PyObject *__pyx_int_12;
 static PyObject *__pyx_int_15;
-static PyObject *__pyx_k_tuple_2;
-static PyObject *__pyx_k_tuple_4;
+static PyObject *__pyx_k_1;
+static PyObject *__pyx_k_2;
+static PyObject *__pyx_k_3;
+static PyObject *__pyx_k_4;
 static PyObject *__pyx_k_tuple_6;
-static PyObject *__pyx_k_tuple_9;
+static PyObject *__pyx_k_tuple_8;
 static PyObject *__pyx_k_tuple_10;
-static PyObject *__pyx_k_tuple_12;
+static PyObject *__pyx_k_tuple_13;
+static PyObject *__pyx_k_tuple_14;
+static PyObject *__pyx_k_tuple_16;
 
-/* "pele/potentials/_hs_wca_cpp.pyx":21
+/* "pele/potentials/_wca_cpp.pyx":20
+ *     """
  *     cpdef bool periodic
- *     #thickness of the wca shell is sca * R where R is the hard core radius of the sphere
- *     def __cinit__(self, eps, sca, np.ndarray[double, ndim=1] radii, boxvec=None, boxl=None):             # <<<<<<<<<<<<<<
+ *     def __cinit__(self, eps=1.0, sig=1.0, boxvec=None, boxl=None):             # <<<<<<<<<<<<<<
  *         assert not (boxvec is not None and boxl is not None)
  *         if boxl is not None:
  */
 
-static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pf_4pele_10potentials_8_wca_cpp_3WCA___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pf_4pele_10potentials_8_wca_cpp_3WCA___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_eps = 0;
-  PyObject *__pyx_v_sca = 0;
-  PyArrayObject *__pyx_v_radii = 0;
+  PyObject *__pyx_v_sig = 0;
   PyObject *__pyx_v_boxvec = 0;
   PyObject *__pyx_v_boxl = 0;
   PyArrayObject *__pyx_v_bv = 0;
-  Py_buffer __pyx_bstruct_radii;
-  Py_ssize_t __pyx_bstride_0_radii = 0;
-  Py_ssize_t __pyx_bshape_0_radii = 0;
   Py_buffer __pyx_bstruct_bv;
   Py_ssize_t __pyx_bstride_0_bv = 0;
   Py_ssize_t __pyx_bshape_0_bv = 0;
@@ -1169,30 +1171,30 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject 
   PyObject *__pyx_t_5 = NULL;
   double __pyx_t_6;
   double __pyx_t_7;
-  size_t __pyx_t_8;
-  pele::Array<double> __pyx_t_9;
-  pele::HS_WCA *__pyx_t_10;
+  double __pyx_t_8;
+  pele::WCA *__pyx_t_9;
+  PyObject *__pyx_t_10 = NULL;
   PyObject *__pyx_t_11 = NULL;
-  PyObject *__pyx_t_12 = NULL;
-  PyArrayObject *__pyx_t_13 = NULL;
-  int __pyx_t_14;
+  PyArrayObject *__pyx_t_12 = NULL;
+  int __pyx_t_13;
+  PyObject *__pyx_t_14 = NULL;
   PyObject *__pyx_t_15 = NULL;
   PyObject *__pyx_t_16 = NULL;
-  PyObject *__pyx_t_17 = NULL;
-  pele::HS_WCAPeriodic *__pyx_t_18;
+  pele::WCAPeriodic *__pyx_t_17;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
-  static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__eps,&__pyx_n_s__sca,&__pyx_n_s__radii,&__pyx_n_s__boxvec,&__pyx_n_s__boxl,0};
+  static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__eps,&__pyx_n_s__sig,&__pyx_n_s__boxvec,&__pyx_n_s__boxl,0};
   __Pyx_RefNannySetupContext("__cinit__");
   {
-    PyObject* values[5] = {0,0,0,0,0};
+    PyObject* values[4] = {0,0,0,0};
+    values[0] = __pyx_k_1;
+    values[1] = __pyx_k_2;
+    values[2] = ((PyObject *)Py_None);
     values[3] = ((PyObject *)Py_None);
-    values[4] = ((PyObject *)Py_None);
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       switch (PyTuple_GET_SIZE(__pyx_args)) {
-        case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
@@ -1203,74 +1205,58 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject 
       kw_args = PyDict_Size(__pyx_kwds);
       switch (PyTuple_GET_SIZE(__pyx_args)) {
         case  0:
-        values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__eps);
-        if (likely(values[0])) kw_args--;
-        else goto __pyx_L5_argtuple_error;
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__eps);
+          if (value) { values[0] = value; kw_args--; }
+        }
         case  1:
-        values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__sca);
-        if (likely(values[1])) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("__cinit__", 0, 3, 5, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__sig);
+          if (value) { values[1] = value; kw_args--; }
         }
         case  2:
-        values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__radii);
-        if (likely(values[2])) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("__cinit__", 0, 3, 5, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__boxvec);
+          if (value) { values[2] = value; kw_args--; }
         }
         case  3:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__boxvec);
-          if (value) { values[3] = value; kw_args--; }
-        }
-        case  4:
-        if (kw_args > 0) {
           PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__boxl);
-          if (value) { values[4] = value; kw_args--; }
+          if (value) { values[3] = value; kw_args--; }
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, PyTuple_GET_SIZE(__pyx_args), "__cinit__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, PyTuple_GET_SIZE(__pyx_args), "__cinit__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
-        case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
-        values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
-        values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
-        break;
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
     }
     __pyx_v_eps = values[0];
-    __pyx_v_sca = values[1];
-    __pyx_v_radii = ((PyArrayObject *)values[2]);
-    __pyx_v_boxvec = values[3];
-    __pyx_v_boxl = values[4];
+    __pyx_v_sig = values[1];
+    __pyx_v_boxvec = values[2];
+    __pyx_v_boxl = values[3];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__cinit__", 0, 3, 5, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__cinit__", 0, 0, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("pele.potentials._hs_wca_cpp.HS_WCA.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pele.potentials._wca_cpp.WCA.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
   __Pyx_INCREF(__pyx_v_boxvec);
   __pyx_bstruct_bv.buf = NULL;
-  __pyx_bstruct_radii.buf = NULL;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_radii), __pyx_ptype_5numpy_ndarray, 1, "radii", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_bstruct_radii, (PyObject*)__pyx_v_radii, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_bstride_0_radii = __pyx_bstruct_radii.strides[0];
-  __pyx_bshape_0_radii = __pyx_bstruct_radii.shape[0];
 
-  /* "pele/potentials/_hs_wca_cpp.pyx":22
- *     #thickness of the wca shell is sca * R where R is the hard core radius of the sphere
- *     def __cinit__(self, eps, sca, np.ndarray[double, ndim=1] radii, boxvec=None, boxl=None):
+  /* "pele/potentials/_wca_cpp.pyx":21
+ *     cpdef bool periodic
+ *     def __cinit__(self, eps=1.0, sig=1.0, boxvec=None, boxl=None):
  *         assert not (boxvec is not None and boxl is not None)             # <<<<<<<<<<<<<<
  *         if boxl is not None:
  *             boxvec = [boxl] * 3
@@ -1285,12 +1271,12 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject 
   }
   if (unlikely(!(!__pyx_t_3))) {
     PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   #endif
 
-  /* "pele/potentials/_hs_wca_cpp.pyx":23
- *     def __cinit__(self, eps, sca, np.ndarray[double, ndim=1] radii, boxvec=None, boxl=None):
+  /* "pele/potentials/_wca_cpp.pyx":22
+ *     def __cinit__(self, eps=1.0, sig=1.0, boxvec=None, boxl=None):
  *         assert not (boxvec is not None and boxl is not None)
  *         if boxl is not None:             # <<<<<<<<<<<<<<
  *             boxvec = [boxl] * 3
@@ -1299,19 +1285,19 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject 
   __pyx_t_3 = (__pyx_v_boxl != Py_None);
   if (__pyx_t_3) {
 
-    /* "pele/potentials/_hs_wca_cpp.pyx":24
+    /* "pele/potentials/_wca_cpp.pyx":23
  *         assert not (boxvec is not None and boxl is not None)
  *         if boxl is not None:
  *             boxvec = [boxl] * 3             # <<<<<<<<<<<<<<
  *         cdef np.ndarray[double, ndim=1] bv
- * 
+ *         if boxvec is None:
  */
-    __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyList_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(((PyObject *)__pyx_t_4));
     __Pyx_INCREF(__pyx_v_boxl);
     PyList_SET_ITEM(__pyx_t_4, 0, __pyx_v_boxl);
     __Pyx_GIVEREF(__pyx_v_boxl);
-    __pyx_t_5 = PyNumber_Multiply(((PyObject *)__pyx_t_4), __pyx_int_3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyNumber_Multiply(((PyObject *)__pyx_t_4), __pyx_int_3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_v_boxvec);
@@ -1321,132 +1307,152 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject 
   }
   __pyx_L6:;
 
-  /* "pele/potentials/_hs_wca_cpp.pyx":27
+  /* "pele/potentials/_wca_cpp.pyx":25
+ *             boxvec = [boxl] * 3
  *         cdef np.ndarray[double, ndim=1] bv
- * 
  *         if boxvec is None:             # <<<<<<<<<<<<<<
  *             self.periodic = False
- *             self.thisptr = <_pele.cBasePotential*>new cHS_WCA(eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
+ *             self.thisptr = <_pele.cBasePotential*>new cWCA(sig**6, sig**12, eps)
  */
   __pyx_t_3 = (__pyx_v_boxvec == Py_None);
   if (__pyx_t_3) {
 
-    /* "pele/potentials/_hs_wca_cpp.pyx":28
- * 
+    /* "pele/potentials/_wca_cpp.pyx":26
+ *         cdef np.ndarray[double, ndim=1] bv
  *         if boxvec is None:
  *             self.periodic = False             # <<<<<<<<<<<<<<
- *             self.thisptr = <_pele.cBasePotential*>new cHS_WCA(eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
+ *             self.thisptr = <_pele.cBasePotential*>new cWCA(sig**6, sig**12, eps)
  *         else:
  */
-    __pyx_t_5 = __Pyx_PyBool_FromLong(0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyBool_FromLong(0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    if (!(likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_7cpython_4bool_bool)))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_7cpython_4bool_bool)))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GIVEREF(__pyx_t_5);
-    __Pyx_GOTREF(((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)__pyx_v_self)->periodic);
-    __Pyx_DECREF(((PyObject *)((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)__pyx_v_self)->periodic));
-    ((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)__pyx_v_self)->periodic = ((PyBoolObject *)__pyx_t_5);
+    __Pyx_GOTREF(((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)__pyx_v_self)->periodic);
+    __Pyx_DECREF(((PyObject *)((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)__pyx_v_self)->periodic));
+    ((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)__pyx_v_self)->periodic = ((PyBoolObject *)__pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "pele/potentials/_hs_wca_cpp.pyx":29
+    /* "pele/potentials/_wca_cpp.pyx":27
  *         if boxvec is None:
  *             self.periodic = False
- *             self.thisptr = <_pele.cBasePotential*>new cHS_WCA(eps, sca, _pele.Array[double](<double*> radii.data, radii.size))             # <<<<<<<<<<<<<<
+ *             self.thisptr = <_pele.cBasePotential*>new cWCA(sig**6, sig**12, eps)             # <<<<<<<<<<<<<<
  *         else:
  *             self.periodic = True
  */
-    __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_v_eps); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_v_sca); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_5 = PyObject_GetAttr(((PyObject *)__pyx_v_radii), __pyx_n_s__size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyNumber_Power(__pyx_v_sig, __pyx_int_6, Py_None); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_8 = __Pyx_PyInt_AsSize_t(__pyx_t_5); if (unlikely((__pyx_t_8 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    try {__pyx_t_9 = pele::Array<double>(((double *)__pyx_v_radii->data), __pyx_t_8);} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-    try {__pyx_t_10 = new pele::HS_WCA(__pyx_t_6, __pyx_t_7, __pyx_t_9);} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-    ((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)__pyx_v_self)->__pyx_base.thisptr = ((pele::BasePotential *)__pyx_t_10);
+    __pyx_t_5 = PyNumber_Power(__pyx_v_sig, __pyx_int_12, Py_None); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_v_eps); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    try {__pyx_t_9 = new pele::WCA(__pyx_t_6, __pyx_t_7, __pyx_t_8);} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
+    ((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)__pyx_v_self)->__pyx_base.thisptr = ((pele::BasePotential *)__pyx_t_9);
     goto __pyx_L7;
   }
   /*else*/ {
 
-    /* "pele/potentials/_hs_wca_cpp.pyx":31
- *             self.thisptr = <_pele.cBasePotential*>new cHS_WCA(eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
+    /* "pele/potentials/_wca_cpp.pyx":29
+ *             self.thisptr = <_pele.cBasePotential*>new cWCA(sig**6, sig**12, eps)
  *         else:
  *             self.periodic = True             # <<<<<<<<<<<<<<
- *             bv = np.array(boxvec, dtype=float)
- *             self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)
+ *             bv = np.array(boxvec, dypte=float)
+ *             self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, eps,
  */
-    __pyx_t_5 = __Pyx_PyBool_FromLong(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyBool_FromLong(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    if (!(likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_7cpython_4bool_bool)))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_7cpython_4bool_bool)))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GIVEREF(__pyx_t_5);
-    __Pyx_GOTREF(((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)__pyx_v_self)->periodic);
-    __Pyx_DECREF(((PyObject *)((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)__pyx_v_self)->periodic));
-    ((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)__pyx_v_self)->periodic = ((PyBoolObject *)__pyx_t_5);
+    __Pyx_GOTREF(((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)__pyx_v_self)->periodic);
+    __Pyx_DECREF(((PyObject *)((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)__pyx_v_self)->periodic));
+    ((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)__pyx_v_self)->periodic = ((PyBoolObject *)__pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "pele/potentials/_hs_wca_cpp.pyx":32
+    /* "pele/potentials/_wca_cpp.pyx":30
  *         else:
  *             self.periodic = True
- *             bv = np.array(boxvec, dtype=float)             # <<<<<<<<<<<<<<
- *             self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)
- * 
+ *             bv = np.array(boxvec, dypte=float)             # <<<<<<<<<<<<<<
+ *             self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, eps,
+ *                                                                   <double*> bv.data)
  */
-    __pyx_t_5 = __Pyx_GetName(__pyx_m, __pyx_n_s__np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_GetName(__pyx_m, __pyx_n_s__np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = PyObject_GetAttr(__pyx_t_5, __pyx_n_s__array); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyObject_GetAttr(__pyx_t_5, __pyx_n_s__array); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(((PyObject *)__pyx_t_5));
     __Pyx_INCREF(__pyx_v_boxvec);
     PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_v_boxvec);
     __Pyx_GIVEREF(__pyx_v_boxvec);
-    __pyx_t_11 = PyDict_New(); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_11));
-    if (PyDict_SetItem(__pyx_t_11, ((PyObject *)__pyx_n_s__dtype), ((PyObject *)((PyObject*)(&PyFloat_Type)))) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_12 = PyEval_CallObjectWithKeywords(__pyx_t_4, ((PyObject *)__pyx_t_5), ((PyObject *)__pyx_t_11)); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_12);
+    __pyx_t_10 = PyDict_New(); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(((PyObject *)__pyx_t_10));
+    if (PyDict_SetItem(__pyx_t_10, ((PyObject *)__pyx_n_s__dypte), ((PyObject *)((PyObject*)(&PyFloat_Type)))) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_11 = PyEval_CallObjectWithKeywords(__pyx_t_4, ((PyObject *)__pyx_t_5), ((PyObject *)__pyx_t_10)); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_11);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_11)); __pyx_t_11 = 0;
-    if (!(likely(((__pyx_t_12) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_12, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_13 = ((PyArrayObject *)__pyx_t_12);
+    __Pyx_DECREF(((PyObject *)__pyx_t_10)); __pyx_t_10 = 0;
+    if (!(likely(((__pyx_t_11) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_11, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_12 = ((PyArrayObject *)__pyx_t_11);
     {
       __Pyx_BufFmt_StackElem __pyx_stack[1];
       __Pyx_SafeReleaseBuffer(&__pyx_bstruct_bv);
-      __pyx_t_14 = __Pyx_GetBufferAndValidate(&__pyx_bstruct_bv, (PyObject*)__pyx_t_13, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack);
-      if (unlikely(__pyx_t_14 < 0)) {
-        PyErr_Fetch(&__pyx_t_15, &__pyx_t_16, &__pyx_t_17);
+      __pyx_t_13 = __Pyx_GetBufferAndValidate(&__pyx_bstruct_bv, (PyObject*)__pyx_t_12, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack);
+      if (unlikely(__pyx_t_13 < 0)) {
+        PyErr_Fetch(&__pyx_t_14, &__pyx_t_15, &__pyx_t_16);
         if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_bstruct_bv, (PyObject*)__pyx_v_bv, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
-          Py_XDECREF(__pyx_t_15); Py_XDECREF(__pyx_t_16); Py_XDECREF(__pyx_t_17);
+          Py_XDECREF(__pyx_t_14); Py_XDECREF(__pyx_t_15); Py_XDECREF(__pyx_t_16);
           __Pyx_RaiseBufferFallbackError();
         } else {
-          PyErr_Restore(__pyx_t_15, __pyx_t_16, __pyx_t_17);
+          PyErr_Restore(__pyx_t_14, __pyx_t_15, __pyx_t_16);
         }
       }
       __pyx_bstride_0_bv = __pyx_bstruct_bv.strides[0];
       __pyx_bshape_0_bv = __pyx_bstruct_bv.shape[0];
-      if (unlikely(__pyx_t_14 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (unlikely(__pyx_t_13 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_13 = 0;
-    __pyx_v_bv = ((PyArrayObject *)__pyx_t_12);
     __pyx_t_12 = 0;
+    __pyx_v_bv = ((PyArrayObject *)__pyx_t_11);
+    __pyx_t_11 = 0;
 
-    /* "pele/potentials/_hs_wca_cpp.pyx":33
+    /* "pele/potentials/_wca_cpp.pyx":31
  *             self.periodic = True
- *             bv = np.array(boxvec, dtype=float)
- *             self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)             # <<<<<<<<<<<<<<
- * 
- * cdef class HS_WCANeighborList(_pele.BasePotential):
+ *             bv = np.array(boxvec, dypte=float)
+ *             self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, eps,             # <<<<<<<<<<<<<<
+ *                                                                   <double*> bv.data)
+ * cdef class WCANeighborList(_pele.BasePotential):
  */
-    __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_v_eps); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_v_sca); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_12 = PyObject_GetAttr(((PyObject *)__pyx_v_radii), __pyx_n_s__size); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_12);
-    __pyx_t_8 = __Pyx_PyInt_AsSize_t(__pyx_t_12); if (unlikely((__pyx_t_8 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-    try {__pyx_t_9 = pele::Array<double>(((double *)__pyx_v_radii->data), __pyx_t_8);} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-    try {__pyx_t_18 = new pele::HS_WCAPeriodic(__pyx_t_7, __pyx_t_6, __pyx_t_9, ((double *)__pyx_v_bv->data));} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-    ((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)__pyx_v_self)->__pyx_base.thisptr = ((pele::BasePotential *)__pyx_t_18);
+    __pyx_t_11 = PyNumber_Power(__pyx_v_sig, __pyx_int_6, Py_None); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_11);
+    __pyx_t_8 = __pyx_PyFloat_AsDouble(__pyx_t_11); if (unlikely((__pyx_t_8 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+    __pyx_t_11 = PyNumber_Power(__pyx_v_sig, __pyx_int_12, Py_None); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_11);
+    __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_11); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+    __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_v_eps); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+    /* "pele/potentials/_wca_cpp.pyx":32
+ *             bv = np.array(boxvec, dypte=float)
+ *             self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, eps,
+ *                                                                   <double*> bv.data)             # <<<<<<<<<<<<<<
+ * cdef class WCANeighborList(_pele.BasePotential):
+ *     """define the python interface to the c++ WCA implementation
+ */
+    try {__pyx_t_17 = new pele::WCAPeriodic(__pyx_t_8, __pyx_t_7, __pyx_t_6, ((double *)__pyx_v_bv->data));} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
+
+    /* "pele/potentials/_wca_cpp.pyx":31
+ *             self.periodic = True
+ *             bv = np.array(boxvec, dypte=float)
+ *             self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, eps,             # <<<<<<<<<<<<<<
+ *                                                                   <double*> bv.data)
+ * cdef class WCANeighborList(_pele.BasePotential):
+ */
+    ((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)__pyx_v_self)->__pyx_base.thisptr = ((pele::BasePotential *)__pyx_t_17);
   }
   __pyx_L7:;
 
@@ -1455,18 +1461,16 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject 
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_11);
-  __Pyx_XDECREF(__pyx_t_12);
   { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
-    __Pyx_SafeReleaseBuffer(&__pyx_bstruct_radii);
     __Pyx_SafeReleaseBuffer(&__pyx_bstruct_bv);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("pele.potentials._hs_wca_cpp.HS_WCA.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pele.potentials._wca_cpp.WCA.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   goto __pyx_L2;
   __pyx_L0:;
-  __Pyx_SafeReleaseBuffer(&__pyx_bstruct_radii);
   __Pyx_SafeReleaseBuffer(&__pyx_bstruct_bv);
   __pyx_L2:;
   __Pyx_XDECREF((PyObject *)__pyx_v_bv);
@@ -1475,23 +1479,19 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(PyObject 
   return __pyx_r;
 }
 
-/* "pele/potentials/_hs_wca_cpp.pyx":38
- *     """define the python interface to the c++ HS_WCA implementation
+/* "pele/potentials/_wca_cpp.pyx":36
+ *     """define the python interface to the c++ WCA implementation
  *     """
- *     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps, sca, np.ndarray[double, ndim=1] radii):             # <<<<<<<<<<<<<<
- *         self.thisptr = <_pele.cBasePotential*>new cHS_WCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
+ *     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):             # <<<<<<<<<<<<<<
+ *         self.thisptr = <_pele.cBasePotential*>new cWCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), sigma**6, sigma**12, eps)
  * 
  */
 
-static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_18HS_WCANeighborList___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_18HS_WCANeighborList___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pf_4pele_10potentials_8_wca_cpp_15WCANeighborList___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pf_4pele_10potentials_8_wca_cpp_15WCANeighborList___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_ilist = 0;
   PyObject *__pyx_v_eps = 0;
-  PyObject *__pyx_v_sca = 0;
-  PyArrayObject *__pyx_v_radii = 0;
-  Py_buffer __pyx_bstruct_radii;
-  Py_ssize_t __pyx_bstride_0_radii = 0;
-  Py_ssize_t __pyx_bshape_0_radii = 0;
+  PyObject *__pyx_v_sigma = 0;
   Py_buffer __pyx_bstruct_ilist;
   Py_ssize_t __pyx_bstride_0_ilist = 0;
   Py_ssize_t __pyx_bshape_0_ilist = 0;
@@ -1502,20 +1502,20 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_18HS_WCANeighborList___cini
   pele::Array<long> __pyx_t_3;
   double __pyx_t_4;
   double __pyx_t_5;
-  size_t __pyx_t_6;
-  pele::Array<double> __pyx_t_7;
-  pele::HS_WCANeighborList *__pyx_t_8;
+  double __pyx_t_6;
+  pele::WCANeighborList *__pyx_t_7;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
-  static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__ilist,&__pyx_n_s__eps,&__pyx_n_s__sca,&__pyx_n_s__radii,0};
+  static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__ilist,&__pyx_n_s__eps,&__pyx_n_s__sigma,0};
   __Pyx_RefNannySetupContext("__cinit__");
   {
-    PyObject* values[4] = {0,0,0,0};
+    PyObject* values[3] = {0,0,0};
+    values[1] = __pyx_k_3;
+    values[2] = __pyx_k_4;
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       switch (PyTuple_GET_SIZE(__pyx_args)) {
-        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
         case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -1529,86 +1529,72 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_18HS_WCANeighborList___cini
         if (likely(values[0])) kw_args--;
         else goto __pyx_L5_argtuple_error;
         case  1:
-        values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__eps);
-        if (likely(values[1])) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 4, 4, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__eps);
+          if (value) { values[1] = value; kw_args--; }
         }
         case  2:
-        values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__sca);
-        if (likely(values[2])) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 4, 4, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-        }
-        case  3:
-        values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__radii);
-        if (likely(values[3])) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 4, 4, 3); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__sigma);
+          if (value) { values[2] = value; kw_args--; }
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, PyTuple_GET_SIZE(__pyx_args), "__cinit__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, PyTuple_GET_SIZE(__pyx_args), "__cinit__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
-      goto __pyx_L5_argtuple_error;
     } else {
-      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
-      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
-      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
-      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+      switch (PyTuple_GET_SIZE(__pyx_args)) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        break;
+        default: goto __pyx_L5_argtuple_error;
+      }
     }
     __pyx_v_ilist = ((PyArrayObject *)values[0]);
     __pyx_v_eps = values[1];
-    __pyx_v_sca = values[2];
-    __pyx_v_radii = ((PyArrayObject *)values[3]);
+    __pyx_v_sigma = values[2];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__cinit__", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("pele.potentials._hs_wca_cpp.HS_WCANeighborList.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pele.potentials._wca_cpp.WCANeighborList.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
   __pyx_bstruct_ilist.buf = NULL;
-  __pyx_bstruct_radii.buf = NULL;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_ilist), __pyx_ptype_5numpy_ndarray, 1, "ilist", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_radii), __pyx_ptype_5numpy_ndarray, 1, "radii", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_ilist), __pyx_ptype_5numpy_ndarray, 1, "ilist", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_bstruct_ilist, (PyObject*)__pyx_v_ilist, &__Pyx_TypeInfo_long, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_bstruct_ilist, (PyObject*)__pyx_v_ilist, &__Pyx_TypeInfo_long, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_bstride_0_ilist = __pyx_bstruct_ilist.strides[0];
   __pyx_bshape_0_ilist = __pyx_bstruct_ilist.shape[0];
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_bstruct_radii, (PyObject*)__pyx_v_radii, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_bstride_0_radii = __pyx_bstruct_radii.strides[0];
-  __pyx_bshape_0_radii = __pyx_bstruct_radii.shape[0];
 
-  /* "pele/potentials/_hs_wca_cpp.pyx":39
+  /* "pele/potentials/_wca_cpp.pyx":37
  *     """
- *     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps, sca, np.ndarray[double, ndim=1] radii):
- *         self.thisptr = <_pele.cBasePotential*>new cHS_WCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), eps, sca, _pele.Array[double](<double*> radii.data, radii.size))             # <<<<<<<<<<<<<<
+ *     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):
+ *         self.thisptr = <_pele.cBasePotential*>new cWCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), sigma**6, sigma**12, eps)             # <<<<<<<<<<<<<<
  * 
  * cdef class _ErrorPotential(_pele.BasePotential):
  */
-  __pyx_t_1 = PyObject_GetAttr(((PyObject *)__pyx_v_ilist), __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyObject_GetAttr(((PyObject *)__pyx_v_ilist), __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  try {__pyx_t_3 = pele::Array<long>(((long *)__pyx_v_ilist->data), ((int)__pyx_t_2));} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  __pyx_t_4 = __pyx_PyFloat_AsDouble(__pyx_v_eps); if (unlikely((__pyx_t_4 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_v_sca); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_1 = PyObject_GetAttr(((PyObject *)__pyx_v_radii), __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  try {__pyx_t_3 = pele::Array<long>(((long *)__pyx_v_ilist->data), ((int)__pyx_t_2));} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
+  __pyx_t_1 = PyNumber_Power(__pyx_v_sigma, __pyx_int_6, Py_None); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_6 = __Pyx_PyInt_AsSize_t(__pyx_t_1); if (unlikely((__pyx_t_6 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_4 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  try {__pyx_t_7 = pele::Array<double>(((double *)__pyx_v_radii->data), __pyx_t_6);} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  try {__pyx_t_8 = new pele::HS_WCANeighborList(__pyx_t_3, __pyx_t_4, __pyx_t_5, __pyx_t_7);} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  ((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList *)__pyx_v_self)->__pyx_base.thisptr = ((pele::BasePotential *)__pyx_t_8);
+  __pyx_t_1 = PyNumber_Power(__pyx_v_sigma, __pyx_int_12, Py_None); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_5 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_5 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_v_eps); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  try {__pyx_t_7 = new pele::WCANeighborList(__pyx_t_3, __pyx_t_4, __pyx_t_5, __pyx_t_6);} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
+  ((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCANeighborList *)__pyx_v_self)->__pyx_base.thisptr = ((pele::BasePotential *)__pyx_t_7);
 
   __pyx_r = 0;
   goto __pyx_L0;
@@ -1616,21 +1602,19 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_18HS_WCANeighborList___cini
   __Pyx_XDECREF(__pyx_t_1);
   { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
-    __Pyx_SafeReleaseBuffer(&__pyx_bstruct_radii);
     __Pyx_SafeReleaseBuffer(&__pyx_bstruct_ilist);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("pele.potentials._hs_wca_cpp.HS_WCANeighborList.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pele.potentials._wca_cpp.WCANeighborList.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   goto __pyx_L2;
   __pyx_L0:;
-  __Pyx_SafeReleaseBuffer(&__pyx_bstruct_radii);
   __Pyx_SafeReleaseBuffer(&__pyx_bstruct_ilist);
   __pyx_L2:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "pele/potentials/_hs_wca_cpp.pyx":44
+/* "pele/potentials/_wca_cpp.pyx":42
  *     """this is a test potential which should raise an exception when called
  *     """
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
@@ -1638,8 +1622,8 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_18HS_WCANeighborList___cini
  * 
  */
 
-static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_15_ErrorPotential___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_15_ErrorPotential___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pf_4pele_10potentials_8_wca_cpp_15_ErrorPotential___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pf_4pele_10potentials_8_wca_cpp_15_ErrorPotential___cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   pele::BasePotential *__pyx_t_1;
@@ -1651,19 +1635,19 @@ static int __pyx_pf_4pele_10potentials_11_hs_wca_cpp_15_ErrorPotential___cinit__
     __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 0, 0, PyTuple_GET_SIZE(__pyx_args)); return -1;}
   if (unlikely(__pyx_kwds) && unlikely(PyDict_Size(__pyx_kwds) > 0) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "__cinit__", 0))) return -1;
 
-  /* "pele/potentials/_hs_wca_cpp.pyx":45
+  /* "pele/potentials/_wca_cpp.pyx":43
  *     """
  *     def __cinit__(self):
  *         self.thisptr = <_pele.cBasePotential*>new _pele.cBasePotential()             # <<<<<<<<<<<<<<
  * 
  */
-  try {__pyx_t_1 = new pele::BasePotential();} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  ((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp__ErrorPotential *)__pyx_v_self)->__pyx_base.thisptr = ((pele::BasePotential *)__pyx_t_1);
+  try {__pyx_t_1 = new pele::BasePotential();} catch(...) {__Pyx_CppExn2PyErr(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
+  ((struct __pyx_obj_4pele_10potentials_8_wca_cpp__ErrorPotential *)__pyx_v_self)->__pyx_base.thisptr = ((pele::BasePotential *)__pyx_t_1);
 
   __pyx_r = 0;
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("pele.potentials._hs_wca_cpp._ErrorPotential.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pele.potentials._wca_cpp._ErrorPotential.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -1816,7 +1800,7 @@ static CYTHON_UNUSED int __pyx_pf_5numpy_7ndarray___getbuffer__(PyObject *__pyx_
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  */
-    __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_2), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_6), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_Raise(__pyx_t_4, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -1856,7 +1840,7 @@ static CYTHON_UNUSED int __pyx_pf_5numpy_7ndarray___getbuffer__(PyObject *__pyx_
  * 
  *             info.buf = PyArray_DATA(self)
  */
-    __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_4), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_8), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_Raise(__pyx_t_4, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -2126,7 +2110,7 @@ static CYTHON_UNUSED int __pyx_pf_5numpy_7ndarray___getbuffer__(PyObject *__pyx_
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  */
-      __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_6), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_10), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_Raise(__pyx_t_4, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -2366,7 +2350,7 @@ static CYTHON_UNUSED int __pyx_pf_5numpy_7ndarray___getbuffer__(PyObject *__pyx_
  */
       __pyx_t_4 = PyInt_FromLong(__pyx_v_t); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_8 = PyNumber_Remainder(((PyObject *)__pyx_kp_u_7), __pyx_t_4); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = PyNumber_Remainder(((PyObject *)__pyx_kp_u_11), __pyx_t_4); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(((PyObject *)__pyx_t_8));
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2898,7 +2882,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  * 
  *         if ((child.byteorder == '>' and little_endian) or
  */
-      __pyx_t_5 = PyObject_Call(__pyx_builtin_RuntimeError, ((PyObject *)__pyx_k_tuple_9), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 795; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = PyObject_Call(__pyx_builtin_RuntimeError, ((PyObject *)__pyx_k_tuple_13), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 795; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_Raise(__pyx_t_5, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -2949,7 +2933,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  *             # One could encode it in the format string and have Cython
  *             # complain instead, BUT: < and > in format strings also imply
  */
-      __pyx_t_5 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_10), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_14), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_Raise(__pyx_t_5, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -3054,7 +3038,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  */
-        __pyx_t_3 = PyObject_Call(__pyx_builtin_RuntimeError, ((PyObject *)__pyx_k_tuple_12), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 819; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_3 = PyObject_Call(__pyx_builtin_RuntimeError, ((PyObject *)__pyx_k_tuple_16), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 819; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_Raise(__pyx_t_3, 0, 0, 0);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -3400,7 +3384,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  *             f += 1
  *         else:
  */
-        __pyx_t_5 = PyNumber_Remainder(((PyObject *)__pyx_kp_u_7), __pyx_v_t); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 840; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyNumber_Remainder(((PyObject *)__pyx_kp_u_11), __pyx_v_t); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 840; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(((PyObject *)__pyx_t_5));
         __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 840; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(((PyObject *)__pyx_t_3));
@@ -3606,27 +3590,27 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   return __pyx_r;
 }
 
-static PyObject *__pyx_tp_new_4pele_10potentials_11_hs_wca_cpp_HS_WCA(PyTypeObject *t, PyObject *a, PyObject *k) {
-  struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *p;
+static PyObject *__pyx_tp_new_4pele_10potentials_8_wca_cpp_WCA(PyTypeObject *t, PyObject *a, PyObject *k) {
+  struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *p;
   PyObject *o = __pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_new(t, a, k);
   if (!o) return 0;
-  p = ((struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)o);
+  p = ((struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)o);
   p->periodic = ((PyBoolObject *)Py_None); Py_INCREF(Py_None);
-  if (__pyx_pf_4pele_10potentials_11_hs_wca_cpp_6HS_WCA___cinit__(o, a, k) < 0) {
+  if (__pyx_pf_4pele_10potentials_8_wca_cpp_3WCA___cinit__(o, a, k) < 0) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_4pele_10potentials_11_hs_wca_cpp_HS_WCA(PyObject *o) {
-  struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *p = (struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)o;
+static void __pyx_tp_dealloc_4pele_10potentials_8_wca_cpp_WCA(PyObject *o) {
+  struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *p = (struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)o;
   Py_XDECREF(((PyObject *)p->periodic));
   __pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_dealloc(o);
 }
 
-static int __pyx_tp_traverse_4pele_10potentials_11_hs_wca_cpp_HS_WCA(PyObject *o, visitproc v, void *a) {
+static int __pyx_tp_traverse_4pele_10potentials_8_wca_cpp_WCA(PyObject *o, visitproc v, void *a) {
   int e;
-  struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *p = (struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)o;
+  struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *p = (struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)o;
   if (__pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_traverse) {
     e = __pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_traverse(o, v, a); if (e) return e;
   }
@@ -3636,8 +3620,8 @@ static int __pyx_tp_traverse_4pele_10potentials_11_hs_wca_cpp_HS_WCA(PyObject *o
   return 0;
 }
 
-static int __pyx_tp_clear_4pele_10potentials_11_hs_wca_cpp_HS_WCA(PyObject *o) {
-  struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *p = (struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA *)o;
+static int __pyx_tp_clear_4pele_10potentials_8_wca_cpp_WCA(PyObject *o) {
+  struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *p = (struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA *)o;
   PyObject* tmp;
   if (__pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_clear) {
     __pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_clear(o);
@@ -3648,11 +3632,11 @@ static int __pyx_tp_clear_4pele_10potentials_11_hs_wca_cpp_HS_WCA(PyObject *o) {
   return 0;
 }
 
-static PyMethodDef __pyx_methods_4pele_10potentials_11_hs_wca_cpp_HS_WCA[] = {
+static PyMethodDef __pyx_methods_4pele_10potentials_8_wca_cpp_WCA[] = {
   {0, 0, 0, 0}
 };
 
-static PyNumberMethods __pyx_tp_as_number_HS_WCA = {
+static PyNumberMethods __pyx_tp_as_number_WCA = {
   0, /*nb_add*/
   0, /*nb_subtract*/
   0, /*nb_multiply*/
@@ -3710,7 +3694,7 @@ static PyNumberMethods __pyx_tp_as_number_HS_WCA = {
   #endif
 };
 
-static PySequenceMethods __pyx_tp_as_sequence_HS_WCA = {
+static PySequenceMethods __pyx_tp_as_sequence_WCA = {
   0, /*sq_length*/
   0, /*sq_concat*/
   0, /*sq_repeat*/
@@ -3723,13 +3707,13 @@ static PySequenceMethods __pyx_tp_as_sequence_HS_WCA = {
   0, /*sq_inplace_repeat*/
 };
 
-static PyMappingMethods __pyx_tp_as_mapping_HS_WCA = {
+static PyMappingMethods __pyx_tp_as_mapping_WCA = {
   0, /*mp_length*/
   0, /*mp_subscript*/
   0, /*mp_ass_subscript*/
 };
 
-static PyBufferProcs __pyx_tp_as_buffer_HS_WCA = {
+static PyBufferProcs __pyx_tp_as_buffer_WCA = {
   #if PY_MAJOR_VERSION < 3
   0, /*bf_getreadbuffer*/
   #endif
@@ -3750,12 +3734,12 @@ static PyBufferProcs __pyx_tp_as_buffer_HS_WCA = {
   #endif
 };
 
-static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCA = {
+static PyTypeObject __pyx_type_4pele_10potentials_8_wca_cpp_WCA = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("pele.potentials._hs_wca_cpp.HS_WCA"), /*tp_name*/
-  sizeof(struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCA), /*tp_basicsize*/
+  __Pyx_NAMESTR("pele.potentials._wca_cpp.WCA"), /*tp_name*/
+  sizeof(struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCA), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_4pele_10potentials_11_hs_wca_cpp_HS_WCA, /*tp_dealloc*/
+  __pyx_tp_dealloc_4pele_10potentials_8_wca_cpp_WCA, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -3765,24 +3749,24 @@ static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCA = {
   0, /*reserved*/
   #endif
   0, /*tp_repr*/
-  &__pyx_tp_as_number_HS_WCA, /*tp_as_number*/
-  &__pyx_tp_as_sequence_HS_WCA, /*tp_as_sequence*/
-  &__pyx_tp_as_mapping_HS_WCA, /*tp_as_mapping*/
+  &__pyx_tp_as_number_WCA, /*tp_as_number*/
+  &__pyx_tp_as_sequence_WCA, /*tp_as_sequence*/
+  &__pyx_tp_as_mapping_WCA, /*tp_as_mapping*/
   0, /*tp_hash*/
   0, /*tp_call*/
   0, /*tp_str*/
   0, /*tp_getattro*/
   0, /*tp_setattro*/
-  &__pyx_tp_as_buffer_HS_WCA, /*tp_as_buffer*/
+  &__pyx_tp_as_buffer_WCA, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
-  __Pyx_DOCSTR("define the python interface to the c++ HS_WCA implementation\n    "), /*tp_doc*/
-  __pyx_tp_traverse_4pele_10potentials_11_hs_wca_cpp_HS_WCA, /*tp_traverse*/
-  __pyx_tp_clear_4pele_10potentials_11_hs_wca_cpp_HS_WCA, /*tp_clear*/
+  __Pyx_DOCSTR("define the python interface to the c++ WCA implementation\n    "), /*tp_doc*/
+  __pyx_tp_traverse_4pele_10potentials_8_wca_cpp_WCA, /*tp_traverse*/
+  __pyx_tp_clear_4pele_10potentials_8_wca_cpp_WCA, /*tp_clear*/
   0, /*tp_richcompare*/
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_4pele_10potentials_11_hs_wca_cpp_HS_WCA, /*tp_methods*/
+  __pyx_methods_4pele_10potentials_8_wca_cpp_WCA, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -3792,7 +3776,7 @@ static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCA = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_4pele_10potentials_11_hs_wca_cpp_HS_WCA, /*tp_new*/
+  __pyx_tp_new_4pele_10potentials_8_wca_cpp_WCA, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -3806,24 +3790,24 @@ static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCA = {
   #endif
 };
 
-static PyObject *__pyx_tp_new_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList(PyTypeObject *t, PyObject *a, PyObject *k) {
+static PyObject *__pyx_tp_new_4pele_10potentials_8_wca_cpp_WCANeighborList(PyTypeObject *t, PyObject *a, PyObject *k) {
   PyObject *o = __pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_new(t, a, k);
   if (!o) return 0;
-  if (__pyx_pf_4pele_10potentials_11_hs_wca_cpp_18HS_WCANeighborList___cinit__(o, a, k) < 0) {
+  if (__pyx_pf_4pele_10potentials_8_wca_cpp_15WCANeighborList___cinit__(o, a, k) < 0) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList(PyObject *o) {
+static void __pyx_tp_dealloc_4pele_10potentials_8_wca_cpp_WCANeighborList(PyObject *o) {
   __pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_dealloc(o);
 }
 
-static PyMethodDef __pyx_methods_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList[] = {
+static PyMethodDef __pyx_methods_4pele_10potentials_8_wca_cpp_WCANeighborList[] = {
   {0, 0, 0, 0}
 };
 
-static PyNumberMethods __pyx_tp_as_number_HS_WCANeighborList = {
+static PyNumberMethods __pyx_tp_as_number_WCANeighborList = {
   0, /*nb_add*/
   0, /*nb_subtract*/
   0, /*nb_multiply*/
@@ -3881,7 +3865,7 @@ static PyNumberMethods __pyx_tp_as_number_HS_WCANeighborList = {
   #endif
 };
 
-static PySequenceMethods __pyx_tp_as_sequence_HS_WCANeighborList = {
+static PySequenceMethods __pyx_tp_as_sequence_WCANeighborList = {
   0, /*sq_length*/
   0, /*sq_concat*/
   0, /*sq_repeat*/
@@ -3894,13 +3878,13 @@ static PySequenceMethods __pyx_tp_as_sequence_HS_WCANeighborList = {
   0, /*sq_inplace_repeat*/
 };
 
-static PyMappingMethods __pyx_tp_as_mapping_HS_WCANeighborList = {
+static PyMappingMethods __pyx_tp_as_mapping_WCANeighborList = {
   0, /*mp_length*/
   0, /*mp_subscript*/
   0, /*mp_ass_subscript*/
 };
 
-static PyBufferProcs __pyx_tp_as_buffer_HS_WCANeighborList = {
+static PyBufferProcs __pyx_tp_as_buffer_WCANeighborList = {
   #if PY_MAJOR_VERSION < 3
   0, /*bf_getreadbuffer*/
   #endif
@@ -3921,12 +3905,12 @@ static PyBufferProcs __pyx_tp_as_buffer_HS_WCANeighborList = {
   #endif
 };
 
-static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList = {
+static PyTypeObject __pyx_type_4pele_10potentials_8_wca_cpp_WCANeighborList = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("pele.potentials._hs_wca_cpp.HS_WCANeighborList"), /*tp_name*/
-  sizeof(struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList), /*tp_basicsize*/
+  __Pyx_NAMESTR("pele.potentials._wca_cpp.WCANeighborList"), /*tp_name*/
+  sizeof(struct __pyx_obj_4pele_10potentials_8_wca_cpp_WCANeighborList), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList, /*tp_dealloc*/
+  __pyx_tp_dealloc_4pele_10potentials_8_wca_cpp_WCANeighborList, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -3936,24 +3920,24 @@ static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborLi
   0, /*reserved*/
   #endif
   0, /*tp_repr*/
-  &__pyx_tp_as_number_HS_WCANeighborList, /*tp_as_number*/
-  &__pyx_tp_as_sequence_HS_WCANeighborList, /*tp_as_sequence*/
-  &__pyx_tp_as_mapping_HS_WCANeighborList, /*tp_as_mapping*/
+  &__pyx_tp_as_number_WCANeighborList, /*tp_as_number*/
+  &__pyx_tp_as_sequence_WCANeighborList, /*tp_as_sequence*/
+  &__pyx_tp_as_mapping_WCANeighborList, /*tp_as_mapping*/
   0, /*tp_hash*/
   0, /*tp_call*/
   0, /*tp_str*/
   0, /*tp_getattro*/
   0, /*tp_setattro*/
-  &__pyx_tp_as_buffer_HS_WCANeighborList, /*tp_as_buffer*/
+  &__pyx_tp_as_buffer_WCANeighborList, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE, /*tp_flags*/
-  __Pyx_DOCSTR("define the python interface to the c++ HS_WCA implementation\n    "), /*tp_doc*/
+  __Pyx_DOCSTR("define the python interface to the c++ WCA implementation\n    "), /*tp_doc*/
   0, /*tp_traverse*/
   0, /*tp_clear*/
   0, /*tp_richcompare*/
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList, /*tp_methods*/
+  __pyx_methods_4pele_10potentials_8_wca_cpp_WCANeighborList, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -3963,7 +3947,7 @@ static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborLi
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList, /*tp_new*/
+  __pyx_tp_new_4pele_10potentials_8_wca_cpp_WCANeighborList, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -3977,20 +3961,20 @@ static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborLi
   #endif
 };
 
-static PyObject *__pyx_tp_new_4pele_10potentials_11_hs_wca_cpp__ErrorPotential(PyTypeObject *t, PyObject *a, PyObject *k) {
+static PyObject *__pyx_tp_new_4pele_10potentials_8_wca_cpp__ErrorPotential(PyTypeObject *t, PyObject *a, PyObject *k) {
   PyObject *o = __pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_new(t, a, k);
   if (!o) return 0;
-  if (__pyx_pf_4pele_10potentials_11_hs_wca_cpp_15_ErrorPotential___cinit__(o, __pyx_empty_tuple, NULL) < 0) {
+  if (__pyx_pf_4pele_10potentials_8_wca_cpp_15_ErrorPotential___cinit__(o, __pyx_empty_tuple, NULL) < 0) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_4pele_10potentials_11_hs_wca_cpp__ErrorPotential(PyObject *o) {
+static void __pyx_tp_dealloc_4pele_10potentials_8_wca_cpp__ErrorPotential(PyObject *o) {
   __pyx_ptype_4pele_10potentials_5_pele_BasePotential->tp_dealloc(o);
 }
 
-static PyMethodDef __pyx_methods_4pele_10potentials_11_hs_wca_cpp__ErrorPotential[] = {
+static PyMethodDef __pyx_methods_4pele_10potentials_8_wca_cpp__ErrorPotential[] = {
   {0, 0, 0, 0}
 };
 
@@ -4092,12 +4076,12 @@ static PyBufferProcs __pyx_tp_as_buffer__ErrorPotential = {
   #endif
 };
 
-static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp__ErrorPotential = {
+static PyTypeObject __pyx_type_4pele_10potentials_8_wca_cpp__ErrorPotential = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("pele.potentials._hs_wca_cpp._ErrorPotential"), /*tp_name*/
-  sizeof(struct __pyx_obj_4pele_10potentials_11_hs_wca_cpp__ErrorPotential), /*tp_basicsize*/
+  __Pyx_NAMESTR("pele.potentials._wca_cpp._ErrorPotential"), /*tp_name*/
+  sizeof(struct __pyx_obj_4pele_10potentials_8_wca_cpp__ErrorPotential), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_4pele_10potentials_11_hs_wca_cpp__ErrorPotential, /*tp_dealloc*/
+  __pyx_tp_dealloc_4pele_10potentials_8_wca_cpp__ErrorPotential, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -4124,7 +4108,7 @@ static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp__ErrorPotential 
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_4pele_10potentials_11_hs_wca_cpp__ErrorPotential, /*tp_methods*/
+  __pyx_methods_4pele_10potentials_8_wca_cpp__ErrorPotential, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -4134,7 +4118,7 @@ static PyTypeObject __pyx_type_4pele_10potentials_11_hs_wca_cpp__ErrorPotential 
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_4pele_10potentials_11_hs_wca_cpp__ErrorPotential, /*tp_new*/
+  __pyx_tp_new_4pele_10potentials_8_wca_cpp__ErrorPotential, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -4155,7 +4139,7 @@ static PyMethodDef __pyx_methods[] = {
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef __pyx_moduledef = {
     PyModuleDef_HEAD_INIT,
-    __Pyx_NAMESTR("_hs_wca_cpp"),
+    __Pyx_NAMESTR("_wca_cpp"),
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -4167,12 +4151,12 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_u_1, __pyx_k_1, sizeof(__pyx_k_1), 0, 1, 0, 0},
   {&__pyx_kp_u_11, __pyx_k_11, sizeof(__pyx_k_11), 0, 1, 0, 0},
-  {&__pyx_kp_u_3, __pyx_k_3, sizeof(__pyx_k_3), 0, 1, 0, 0},
+  {&__pyx_kp_u_12, __pyx_k_12, sizeof(__pyx_k_12), 0, 1, 0, 0},
+  {&__pyx_kp_u_15, __pyx_k_15, sizeof(__pyx_k_15), 0, 1, 0, 0},
   {&__pyx_kp_u_5, __pyx_k_5, sizeof(__pyx_k_5), 0, 1, 0, 0},
   {&__pyx_kp_u_7, __pyx_k_7, sizeof(__pyx_k_7), 0, 1, 0, 0},
-  {&__pyx_kp_u_8, __pyx_k_8, sizeof(__pyx_k_8), 0, 1, 0, 0},
+  {&__pyx_kp_u_9, __pyx_k_9, sizeof(__pyx_k_9), 0, 1, 0, 0},
   {&__pyx_n_s__RuntimeError, __pyx_k__RuntimeError, sizeof(__pyx_k__RuntimeError), 0, 0, 1, 1},
   {&__pyx_n_s__ValueError, __pyx_k__ValueError, sizeof(__pyx_k__ValueError), 0, 0, 1, 1},
   {&__pyx_n_s____main__, __pyx_k____main__, sizeof(__pyx_k____main__), 0, 0, 1, 1},
@@ -4182,14 +4166,14 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s__boxvec, __pyx_k__boxvec, sizeof(__pyx_k__boxvec), 0, 0, 1, 1},
   {&__pyx_n_s__c_size_t, __pyx_k__c_size_t, sizeof(__pyx_k__c_size_t), 0, 0, 1, 1},
   {&__pyx_n_s__ctypes, __pyx_k__ctypes, sizeof(__pyx_k__ctypes), 0, 0, 1, 1},
-  {&__pyx_n_s__dtype, __pyx_k__dtype, sizeof(__pyx_k__dtype), 0, 0, 1, 1},
+  {&__pyx_n_s__dypte, __pyx_k__dypte, sizeof(__pyx_k__dypte), 0, 0, 1, 1},
   {&__pyx_n_s__eps, __pyx_k__eps, sizeof(__pyx_k__eps), 0, 0, 1, 1},
   {&__pyx_n_s__ilist, __pyx_k__ilist, sizeof(__pyx_k__ilist), 0, 0, 1, 1},
   {&__pyx_n_s__np, __pyx_k__np, sizeof(__pyx_k__np), 0, 0, 1, 1},
   {&__pyx_n_s__numpy, __pyx_k__numpy, sizeof(__pyx_k__numpy), 0, 0, 1, 1},
-  {&__pyx_n_s__radii, __pyx_k__radii, sizeof(__pyx_k__radii), 0, 0, 1, 1},
   {&__pyx_n_s__range, __pyx_k__range, sizeof(__pyx_k__range), 0, 0, 1, 1},
-  {&__pyx_n_s__sca, __pyx_k__sca, sizeof(__pyx_k__sca), 0, 0, 1, 1},
+  {&__pyx_n_s__sig, __pyx_k__sig, sizeof(__pyx_k__sig), 0, 0, 1, 1},
+  {&__pyx_n_s__sigma, __pyx_k__sigma, sizeof(__pyx_k__sigma), 0, 0, 1, 1},
   {&__pyx_n_s__size, __pyx_k__size, sizeof(__pyx_k__size), 0, 0, 1, 1},
   {&__pyx_n_s__size_t, __pyx_k__size_t, sizeof(__pyx_k__size_t), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
@@ -4214,12 +4198,12 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  */
-  __pyx_k_tuple_2 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_2));
-  __Pyx_INCREF(((PyObject *)__pyx_kp_u_1));
-  PyTuple_SET_ITEM(__pyx_k_tuple_2, 0, ((PyObject *)__pyx_kp_u_1));
-  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_1));
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_2));
+  __pyx_k_tuple_6 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_6)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_6));
+  __Pyx_INCREF(((PyObject *)__pyx_kp_u_5));
+  PyTuple_SET_ITEM(__pyx_k_tuple_6, 0, ((PyObject *)__pyx_kp_u_5));
+  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_5));
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_6));
 
   /* "numpy.pxd":215
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
@@ -4228,12 +4212,12 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             info.buf = PyArray_DATA(self)
  */
-  __pyx_k_tuple_4 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_4));
-  __Pyx_INCREF(((PyObject *)__pyx_kp_u_3));
-  PyTuple_SET_ITEM(__pyx_k_tuple_4, 0, ((PyObject *)__pyx_kp_u_3));
-  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_3));
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_4));
+  __pyx_k_tuple_8 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_8)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_8));
+  __Pyx_INCREF(((PyObject *)__pyx_kp_u_7));
+  PyTuple_SET_ITEM(__pyx_k_tuple_8, 0, ((PyObject *)__pyx_kp_u_7));
+  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_7));
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_8));
 
   /* "numpy.pxd":253
  *                 if ((descr.byteorder == '>' and little_endian) or
@@ -4242,12 +4226,12 @@ static int __Pyx_InitCachedConstants(void) {
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  */
-  __pyx_k_tuple_6 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_6)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_6));
-  __Pyx_INCREF(((PyObject *)__pyx_kp_u_5));
-  PyTuple_SET_ITEM(__pyx_k_tuple_6, 0, ((PyObject *)__pyx_kp_u_5));
-  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_5));
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_6));
+  __pyx_k_tuple_10 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_10)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_10));
+  __Pyx_INCREF(((PyObject *)__pyx_kp_u_9));
+  PyTuple_SET_ITEM(__pyx_k_tuple_10, 0, ((PyObject *)__pyx_kp_u_9));
+  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_9));
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_10));
 
   /* "numpy.pxd":795
  * 
@@ -4256,12 +4240,12 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *         if ((child.byteorder == '>' and little_endian) or
  */
-  __pyx_k_tuple_9 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 795; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_9));
-  __Pyx_INCREF(((PyObject *)__pyx_kp_u_8));
-  PyTuple_SET_ITEM(__pyx_k_tuple_9, 0, ((PyObject *)__pyx_kp_u_8));
-  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_8));
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_9));
+  __pyx_k_tuple_13 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_13)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 795; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_13));
+  __Pyx_INCREF(((PyObject *)__pyx_kp_u_12));
+  PyTuple_SET_ITEM(__pyx_k_tuple_13, 0, ((PyObject *)__pyx_kp_u_12));
+  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_12));
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_13));
 
   /* "numpy.pxd":799
  *         if ((child.byteorder == '>' and little_endian) or
@@ -4270,12 +4254,12 @@ static int __Pyx_InitCachedConstants(void) {
  *             # One could encode it in the format string and have Cython
  *             # complain instead, BUT: < and > in format strings also imply
  */
-  __pyx_k_tuple_10 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_10)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_10));
-  __Pyx_INCREF(((PyObject *)__pyx_kp_u_5));
-  PyTuple_SET_ITEM(__pyx_k_tuple_10, 0, ((PyObject *)__pyx_kp_u_5));
-  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_5));
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_10));
+  __pyx_k_tuple_14 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_14)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_14));
+  __Pyx_INCREF(((PyObject *)__pyx_kp_u_9));
+  PyTuple_SET_ITEM(__pyx_k_tuple_14, 0, ((PyObject *)__pyx_kp_u_9));
+  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_9));
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_14));
 
   /* "numpy.pxd":819
  *             t = child.type_num
@@ -4284,12 +4268,12 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  */
-  __pyx_k_tuple_12 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_12)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 819; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_12));
-  __Pyx_INCREF(((PyObject *)__pyx_kp_u_11));
-  PyTuple_SET_ITEM(__pyx_k_tuple_12, 0, ((PyObject *)__pyx_kp_u_11));
-  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_11));
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_12));
+  __pyx_k_tuple_16 = PyTuple_New(1); if (unlikely(!__pyx_k_tuple_16)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 819; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_k_tuple_16));
+  __Pyx_INCREF(((PyObject *)__pyx_kp_u_15));
+  PyTuple_SET_ITEM(__pyx_k_tuple_16, 0, ((PyObject *)__pyx_kp_u_15));
+  __Pyx_GIVEREF(((PyObject *)__pyx_kp_u_15));
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_16));
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4300,6 +4284,8 @@ static int __Pyx_InitCachedConstants(void) {
 static int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __pyx_int_3 = PyInt_FromLong(3); if (unlikely(!__pyx_int_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_int_6 = PyInt_FromLong(6); if (unlikely(!__pyx_int_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_int_12 = PyInt_FromLong(12); if (unlikely(!__pyx_int_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __pyx_int_15 = PyInt_FromLong(15); if (unlikely(!__pyx_int_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   return 0;
   __pyx_L1_error:;
@@ -4307,11 +4293,11 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC init_hs_wca_cpp(void); /*proto*/
-PyMODINIT_FUNC init_hs_wca_cpp(void)
+PyMODINIT_FUNC init_wca_cpp(void); /*proto*/
+PyMODINIT_FUNC init_wca_cpp(void)
 #else
-PyMODINIT_FUNC PyInit__hs_wca_cpp(void); /*proto*/
-PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
+PyMODINIT_FUNC PyInit__wca_cpp(void); /*proto*/
+PyMODINIT_FUNC PyInit__wca_cpp(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
@@ -4326,7 +4312,7 @@ PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit__hs_wca_cpp(void)");
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit__wca_cpp(void)");
   if ( __Pyx_check_binary_version() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -4342,7 +4328,7 @@ PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4(__Pyx_NAMESTR("_hs_wca_cpp"), __pyx_methods, 0, 0, PYTHON_API_VERSION);
+  __pyx_m = Py_InitModule4(__Pyx_NAMESTR("_wca_cpp"), __pyx_methods, 0, 0, PYTHON_API_VERSION);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -4355,7 +4341,7 @@ PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
   if (__Pyx_SetAttrString(__pyx_m, "__builtins__", __pyx_b) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   /*--- Initialize various global constants etc. ---*/
   if (unlikely(__Pyx_InitGlobals() < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__pyx_module_is_main_pele__potentials___hs_wca_cpp) {
+  if (__pyx_module_is_main_pele__potentials___wca_cpp) {
     if (__Pyx_SetAttrString(__pyx_m, "__name__", __pyx_n_s____main__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   /*--- Builtin init code ---*/
@@ -4367,18 +4353,18 @@ PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
   /*--- Function export code ---*/
   /*--- Type init code ---*/
   __pyx_ptype_4pele_10potentials_5_pele_BasePotential = __Pyx_ImportType("pele.potentials._pele", "BasePotential", sizeof(struct __pyx_obj_4pele_10potentials_5_pele_BasePotential), 1); if (unlikely(!__pyx_ptype_4pele_10potentials_5_pele_BasePotential)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCA.tp_base = __pyx_ptype_4pele_10potentials_5_pele_BasePotential;
-  if (PyType_Ready(&__pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCA) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 16; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__Pyx_SetAttrString(__pyx_m, "HS_WCA", (PyObject *)&__pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCA) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 16; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_4pele_10potentials_11_hs_wca_cpp_HS_WCA = &__pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCA;
-  __pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList.tp_base = __pyx_ptype_4pele_10potentials_5_pele_BasePotential;
-  if (PyType_Ready(&__pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__Pyx_SetAttrString(__pyx_m, "HS_WCANeighborList", (PyObject *)&__pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList = &__pyx_type_4pele_10potentials_11_hs_wca_cpp_HS_WCANeighborList;
-  __pyx_type_4pele_10potentials_11_hs_wca_cpp__ErrorPotential.tp_base = __pyx_ptype_4pele_10potentials_5_pele_BasePotential;
-  if (PyType_Ready(&__pyx_type_4pele_10potentials_11_hs_wca_cpp__ErrorPotential) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (__Pyx_SetAttrString(__pyx_m, "_ErrorPotential", (PyObject *)&__pyx_type_4pele_10potentials_11_hs_wca_cpp__ErrorPotential) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_4pele_10potentials_11_hs_wca_cpp__ErrorPotential = &__pyx_type_4pele_10potentials_11_hs_wca_cpp__ErrorPotential;
+  __pyx_type_4pele_10potentials_8_wca_cpp_WCA.tp_base = __pyx_ptype_4pele_10potentials_5_pele_BasePotential;
+  if (PyType_Ready(&__pyx_type_4pele_10potentials_8_wca_cpp_WCA) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 16; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetAttrString(__pyx_m, "WCA", (PyObject *)&__pyx_type_4pele_10potentials_8_wca_cpp_WCA) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 16; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_4pele_10potentials_8_wca_cpp_WCA = &__pyx_type_4pele_10potentials_8_wca_cpp_WCA;
+  __pyx_type_4pele_10potentials_8_wca_cpp_WCANeighborList.tp_base = __pyx_ptype_4pele_10potentials_5_pele_BasePotential;
+  if (PyType_Ready(&__pyx_type_4pele_10potentials_8_wca_cpp_WCANeighborList) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetAttrString(__pyx_m, "WCANeighborList", (PyObject *)&__pyx_type_4pele_10potentials_8_wca_cpp_WCANeighborList) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_4pele_10potentials_8_wca_cpp_WCANeighborList = &__pyx_type_4pele_10potentials_8_wca_cpp_WCANeighborList;
+  __pyx_type_4pele_10potentials_8_wca_cpp__ErrorPotential.tp_base = __pyx_ptype_4pele_10potentials_5_pele_BasePotential;
+  if (PyType_Ready(&__pyx_type_4pele_10potentials_8_wca_cpp__ErrorPotential) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetAttrString(__pyx_m, "_ErrorPotential", (PyObject *)&__pyx_type_4pele_10potentials_8_wca_cpp__ErrorPotential) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_4pele_10potentials_8_wca_cpp__ErrorPotential = &__pyx_type_4pele_10potentials_8_wca_cpp__ErrorPotential;
   /*--- Type import code ---*/
   __pyx_ptype_5numpy_dtype = __Pyx_ImportType("numpy", "dtype", sizeof(PyArray_Descr), 0); if (unlikely(!__pyx_ptype_5numpy_dtype)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5numpy_flatiter = __Pyx_ImportType("numpy", "flatiter", sizeof(PyArrayIterObject), 0); if (unlikely(!__pyx_ptype_5numpy_flatiter)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -4391,7 +4377,7 @@ PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "pele/potentials/_hs_wca_cpp.pyx":2
+  /* "pele/potentials/_wca_cpp.pyx":2
  * cimport pele.potentials._pele as _pele
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
@@ -4402,7 +4388,7 @@ PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
   if (PyObject_SetAttr(__pyx_m, __pyx_n_s__np, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 2; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pele/potentials/_hs_wca_cpp.pyx":5
+  /* "pele/potentials/_wca_cpp.pyx":5
  * cimport numpy as np
  * from cpython cimport bool
  * from ctypes import c_size_t as size_t             # <<<<<<<<<<<<<<
@@ -4423,7 +4409,43 @@ PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pele/potentials/_hs_wca_cpp.pyx":1
+  /* "pele/potentials/_wca_cpp.pyx":20
+ *     """
+ *     cpdef bool periodic
+ *     def __cinit__(self, eps=1.0, sig=1.0, boxvec=None, boxl=None):             # <<<<<<<<<<<<<<
+ *         assert not (boxvec is not None and boxl is not None)
+ *         if boxl is not None:
+ */
+  __pyx_t_2 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_k_1 = __pyx_t_2;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
+  __pyx_t_2 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_k_2 = __pyx_t_2;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "pele/potentials/_wca_cpp.pyx":36
+ *     """define the python interface to the c++ WCA implementation
+ *     """
+ *     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):             # <<<<<<<<<<<<<<
+ *         self.thisptr = <_pele.cBasePotential*>new cWCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), sigma**6, sigma**12, eps)
+ * 
+ */
+  __pyx_t_2 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_k_3 = __pyx_t_2;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
+  __pyx_t_2 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_k_4 = __pyx_t_2;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "pele/potentials/_wca_cpp.pyx":1
  * cimport pele.potentials._pele as _pele             # <<<<<<<<<<<<<<
  * import numpy as np
  * cimport numpy as np
@@ -4445,10 +4467,10 @@ PyMODINIT_FUNC PyInit__hs_wca_cpp(void)
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
-    __Pyx_AddTraceback("init pele.potentials._hs_wca_cpp", __pyx_clineno, __pyx_lineno, __pyx_filename);
+    __Pyx_AddTraceback("init pele.potentials._wca_cpp", __pyx_clineno, __pyx_lineno, __pyx_filename);
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init pele.potentials._hs_wca_cpp");
+    PyErr_SetString(PyExc_ImportError, "init pele.potentials._wca_cpp");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -4476,32 +4498,6 @@ end:
     return (__Pyx_RefNannyAPIStruct *)r;
 }
 #endif /* CYTHON_REFNANNY */
-
-static void __Pyx_RaiseArgtupleInvalid(
-    const char* func_name,
-    int exact,
-    Py_ssize_t num_min,
-    Py_ssize_t num_max,
-    Py_ssize_t num_found)
-{
-    Py_ssize_t num_expected;
-    const char *more_or_less;
-
-    if (num_found < num_min) {
-        num_expected = num_min;
-        more_or_less = "at least";
-    } else {
-        num_expected = num_max;
-        more_or_less = "at most";
-    }
-    if (exact) {
-        more_or_less = "exactly";
-    }
-    PyErr_Format(PyExc_TypeError,
-                 "%s() takes %s %"PY_FORMAT_SIZE_T"d positional argument%s (%"PY_FORMAT_SIZE_T"d given)",
-                 func_name, more_or_less, num_expected,
-                 (num_expected == 1) ? "" : "s", num_found);
-}
 
 static void __Pyx_RaiseDoubleKeywordsError(
     const char* func_name,
@@ -4595,24 +4591,57 @@ bad:
     return -1;
 }
 
-static int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
-    const char *name, int exact)
+static void __Pyx_RaiseArgtupleInvalid(
+    const char* func_name,
+    int exact,
+    Py_ssize_t num_min,
+    Py_ssize_t num_max,
+    Py_ssize_t num_found)
 {
-    if (!type) {
+    Py_ssize_t num_expected;
+    const char *more_or_less;
+
+    if (num_found < num_min) {
+        num_expected = num_min;
+        more_or_less = "at least";
+    } else {
+        num_expected = num_max;
+        more_or_less = "at most";
+    }
+    if (exact) {
+        more_or_less = "exactly";
+    }
+    PyErr_Format(PyExc_TypeError,
+                 "%s() takes %s %"PY_FORMAT_SIZE_T"d positional argument%s (%"PY_FORMAT_SIZE_T"d given)",
+                 func_name, more_or_less, num_expected,
+                 (num_expected == 1) ? "" : "s", num_found);
+}
+
+static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
+    if (unlikely(!type)) {
         PyErr_Format(PyExc_SystemError, "Missing type object");
         return 0;
     }
-    if (none_allowed && obj == Py_None) return 1;
-    else if (exact) {
-        if (Py_TYPE(obj) == type) return 1;
-    }
-    else {
-        if (PyObject_TypeCheck(obj, type)) return 1;
-    }
-    PyErr_Format(PyExc_TypeError,
-        "Argument '%s' has incorrect type (expected %s, got %s)",
-        name, type->tp_name, Py_TYPE(obj)->tp_name);
+    if (likely(PyObject_TypeCheck(obj, type)))
+        return 1;
+    PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
+                 Py_TYPE(obj)->tp_name, type->tp_name);
     return 0;
+}
+
+static PyObject *__Pyx_GetName(PyObject *dict, PyObject *name) {
+    PyObject *result;
+    result = PyObject_GetAttr(dict, name);
+    if (!result) {
+        if (dict != __pyx_b) {
+            PyErr_Clear();
+            result = PyObject_GetAttr(__pyx_b, name);
+        }
+        if (!result) {
+            PyErr_SetObject(PyExc_NameError, name);
+        }
+    }
+    return result;
 }
 
 static CYTHON_INLINE int __Pyx_IsLittleEndian(void) {
@@ -5055,33 +5084,6 @@ static CYTHON_INLINE void __Pyx_SafeReleaseBuffer(Py_buffer* info) {
   __Pyx_ReleaseBuffer(info);
 }
 
-static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
-    if (unlikely(!type)) {
-        PyErr_Format(PyExc_SystemError, "Missing type object");
-        return 0;
-    }
-    if (likely(PyObject_TypeCheck(obj, type)))
-        return 1;
-    PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
-                 Py_TYPE(obj)->tp_name, type->tp_name);
-    return 0;
-}
-
-static PyObject *__Pyx_GetName(PyObject *dict, PyObject *name) {
-    PyObject *result;
-    result = PyObject_GetAttr(dict, name);
-    if (!result) {
-        if (dict != __pyx_b) {
-            PyErr_Clear();
-            result = PyObject_GetAttr(__pyx_b, name);
-        }
-        if (!result) {
-            PyErr_SetObject(PyExc_NameError, name);
-        }
-    }
-    return result;
-}
-
 static void __Pyx_RaiseBufferFallbackError(void) {
   PyErr_Format(PyExc_ValueError,
      "Buffer acquisition failed on assignment; and then reacquiring the old buffer failed too!");
@@ -5114,6 +5116,26 @@ static CYTHON_INLINE void __Pyx_ErrFetch(PyObject **type, PyObject **value, PyOb
     tstate->curexc_traceback = 0;
 }
 
+
+static int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
+    const char *name, int exact)
+{
+    if (!type) {
+        PyErr_Format(PyExc_SystemError, "Missing type object");
+        return 0;
+    }
+    if (none_allowed && obj == Py_None) return 1;
+    else if (exact) {
+        if (Py_TYPE(obj) == type) return 1;
+    }
+    else {
+        if (PyObject_TypeCheck(obj, type)) return 1;
+    }
+    PyErr_Format(PyExc_TypeError,
+        "Argument '%s' has incorrect type (expected %s, got %s)",
+        name, type->tp_name, Py_TYPE(obj)->tp_name);
+    return 0;
+}
 
 static CYTHON_INLINE int __Pyx_CheckKeywordStrings(
     PyObject *kwdict,

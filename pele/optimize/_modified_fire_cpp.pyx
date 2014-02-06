@@ -6,14 +6,14 @@ from pele.optimize import Result
 cimport cython
 from pele.potentials import _pythonpotential
 import sys
-from cpython cimport bool as cbool
+from libcpp cimport bool as cbool
 
 # import the externally defined modified_fire implementation
-cdef extern from "pele/_modified_fire.h" namespace "pele":
+cdef extern from "pele/modified_fire.h" namespace "pele":
     cdef cppclass cppMODIFIED_FIRE "pele::MODIFIED_FIRE":
         cppMODIFIED_FIRE(_pele.cBasePotential * , _pele.Array[double], 
                          double, double, double, size_t , double, double, 
-                         double, double, double) except +
+                         double, double, double, cbool) except +
         void run() except +
         void run(int niter) except +
         void one_iteration() except +
@@ -44,7 +44,7 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
     cdef _pele.BasePotential pot # this is stored so that the memory is not freed
     
     def __cinit__(self, x0, potential, double dtstart = 0.1, double dtmax = 1, double maxstep=0.5, size_t Nmin=5, double finc=1.1, 
-                  double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-3, 
+                  double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-3, cbool stepback = True, 
                   int iprint=-1, energy=None, gradient=None, int nsteps=100000, int verbosity=0, events = None):
         
         if not issubclass(potential.__class__, _pele.BasePotential):
@@ -57,7 +57,7 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
         self.thisptr = <cppMODIFIED_FIRE*>new cppMODIFIED_FIRE(pot.thisptr, 
                                                                _pele.Array[double](<double*> x0c.data, x0c.size),
-                                                               dtstart, dtmax, maxstep, Nmin, finc, fdec, fa, astart, tol)
+                                                               dtstart, dtmax, maxstep, Nmin, finc, fdec, fa, astart, tol, stepback)
         opt = self.thisptr
         opt.set_max_iter(nsteps)
         opt.set_verbosity(verbosity)
@@ -131,7 +131,8 @@ class ModifiedFireCPP(_Cdef_MODIFIED_FIRE_CPP):
     """
     def __init__(self, x0, potential, double dtstart=0.1, double dtmax=1, double maxstep=0.5, size_t Nmin=5,
                  double finc=1.1, double fdec=0.5, double fa=0.99, double astart=0.1, 
-                 double tol=1e-3, int iprint=-1, energy=None, gradient=None, int nsteps=100000, int verbosity=0,events=None):
+                 double tol=1e-3, cbool stepback = True, int iprint=-1, energy=None, gradient=None, 
+                 int nsteps=100000, int verbosity=0,events=None):
         self._need_python = events is not None
 
         self.events = events

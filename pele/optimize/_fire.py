@@ -68,9 +68,6 @@ class Fire(object):
             1. `coords`
             2. `energy`
             3. `rms`
-        
-            
-    
     
     Notes
     -----
@@ -82,6 +79,9 @@ class Fire(object):
     Erik Bitzek, Pekka Koskinen, Franz Gaehler, Michael Moseler, and Peter Gumbsch.
     Phys. Rev. Lett. 97, 170201 (2006)
     http://link.aps.org/doi/10.1103/PhysRevLett.97.170201
+    
+    This implementation of the algorithm differs significantly from the original
+    algorithm in the order in which the steps are taken.
     
     See Also
     --------
