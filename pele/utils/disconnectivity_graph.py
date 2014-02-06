@@ -7,11 +7,32 @@ import networkx as nx
 
 __all__ = ["DisconnectivityGraph", "database2graph", "graph_constructor"]
 
-def database2graph(database):
-    """create a networkx graph from a pele database"""
-    from pele.landscape import TSGraph # this must be imported here to avoid circular imports
-    graph_wrapper = TSGraph(database)
-    return graph_wrapper.graph
+def database2graph(db, Emax=None):
+    '''
+    make a networkx graph from a database including only transition states with energy < Emax
+    '''
+    from pele.storage.database import Minimum, TransitionState
+    g = nx.Graph()
+    # js850> It's not strictly necessary to add the minima explicitly here,
+    # but for some reason it is much faster if you do (factor of 2).  Even 
+    # if this means there are many more minima in the graph.  I'm not sure 
+    # why this is.  This step is already often the bottleneck of the d-graph 
+    # calculation.
+    if Emax is not None:
+        minima = db.session.query(Minimum).filter(Minimum.energy <= Emax)
+    else:
+        minima = db.session.query(Minimum)
+    g.add_nodes_from(minima)
+    # if we order by energy first and add the transition states with the largest
+    # the we will take the smallest energy transition state in the case of duplicates
+    if Emax is not None:
+        ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax)\
+                                              .order_by(-TransitionState.energy)
+    else:
+        ts = db.session.query(TransitionState).order_by(-TransitionState.energy)
+    for t in ts: 
+        g.add_edge(t.minimum1, t.minimum2, ts=t)
+    return g
 
 def graph_constructor(minima, tslist):
     graph = nx.Graph()
@@ -19,7 +40,8 @@ def graph_constructor(minima, tslist):
     for ts in tslist:
         graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
     return graph
-        
+
+
 
 
 class Tree(object):
@@ -538,10 +560,9 @@ class DisconnectivityGraph(object):
     --------
     These examples assume a Database with minima already exists
     
-    >>> from pele.landscape import TSGraph
     >>> import matplotlib.pyplot as plt
-    >>> graphwrapper = TSGraph(database)
-    >>> dg = DisconnectivityGraph(graphwrapper.graph)
+    >>> graph = database2graph(database)
+    >>> dg = DisconnectivityGraph(graph)
     >>> dg.calculate()
     >>> dg.plot()
     >>> plt.show()

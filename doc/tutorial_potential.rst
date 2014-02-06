@@ -257,11 +257,10 @@ short, so we may not have found the global minimum yet).
 As a final step, let's plot the connectivity in the database using a :ref:`disconnectivity
 graph <disconnectivity_graph>` ::
 
-    from pele.utils.disconnectivity_graph import DisconnectivityGraph
-    from pele.landscape import TSGraph
+    from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
     import matplotlib.pyplot as plt
     #convert the database to a networkx graph
-    graph = TSGraph(database).graph
+    graph = database2graph(database)
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()

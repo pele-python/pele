@@ -80,12 +80,11 @@ def run_double_ended_connect(sys, database):
         connect = sys.get_double_ended_connect(min1, min2, database)
         connect.connect()
 
-from pele.utils.disconnectivity_graph import DisconnectivityGraph
-from pele.landscape import TSGraph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
 import matplotlib.pyplot as plt
 
 def make_disconnectivity_graph(database):
-    graph = TSGraph(database).graph
+    graph = database2graph(database)
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()

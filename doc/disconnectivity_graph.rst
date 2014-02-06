@@ -23,13 +23,12 @@ states connecting them.  Assuming you already have a database, here is how
 you turn it into a disconnectivity graph.  
 
 First you must convert the database to a networkx graph. This can be done
-using pele's graph wrapper `TSGraph` ::
+via the following ::
 
-    from pele.landscape import TSGraph
-    graphwrapper = TSGraph(database)
-    graph = graphwrapper.graph
+    from pele.utils.disconnectivity_graph import database2graph
+    graph = database2graph(database)
 
-Now we pass graphwrapper to the class DisconnectivityGraph ::
+Now we pass the graph to the class DisconnectivityGraph ::
 
   from pele.utils import DisconnectivityGraph 
   dg = DisconnectivityGraph(graph)

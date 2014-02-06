@@ -3,7 +3,7 @@ import argparse
 import networkx as nx
 
 from pele.storage.database import Database
-from pele.landscape import TSGraph
+from pele.utils.disconnectivity_graph import database2graph
 
 def print_system_properties(db, supress_long=True):
     if len(db.properties()) == 0: return
@@ -23,7 +23,7 @@ def long_summary(db):
     if nts == 0:
         print "long summary not applicable: no transition states"
         return
-    graph = TSGraph(db).graph
+    graph = database2graph(db)
     
     cclist = nx.connected_components(graph)
     

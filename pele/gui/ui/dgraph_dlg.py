@@ -7,8 +7,7 @@ from PyQt4.QtCore import pyqtSlot
 import matplotlib.colors as col
 
 import dgraph_browser
-from pele.utils.disconnectivity_graph import DisconnectivityGraph
-from pele.landscape import TSGraph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
 from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
 import networkx as nx
@@ -182,10 +181,9 @@ class DGraphWidget(QWidget):
         else:
             db = self.database
             if self.params.has_key('Emax'):
-                graph = reduced_db2graph(db, params['Emax'])
+                graph = database2graph(db, Emax=params['Emax'])
             else:
-                graphwrapper = TSGraph(db)
-                graph = graphwrapper.graph
+                graph = database2graph(db)
         dg = DisconnectivityGraph(graph, **params)
         dg.calculate()
         self.dg = dg
