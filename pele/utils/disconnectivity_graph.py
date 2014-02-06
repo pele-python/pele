@@ -5,7 +5,7 @@ from collections import deque
 import numpy as np
 import networkx as nx
 
-__all__ = ["DisconnectivityGraph", "database2graph", "graph_constructor"]
+__all__ = ["DisconnectivityGraph", "database2graph"]
 
 def database2graph(db, Emax=None):
     '''
@@ -34,15 +34,6 @@ def database2graph(db, Emax=None):
         g.add_edge(t.minimum1, t.minimum2, ts=t)
     return g
 
-def graph_constructor(minima, tslist):
-    graph = nx.Graph()
-    graph.add_nodes_from(minima)
-    for ts in tslist:
-        graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
-    return graph
-
-
-
 
 class Tree(object):
     """
@@ -70,6 +61,7 @@ class Tree(object):
         return newtree
     
     def get_subtrees(self):
+        print "get_subtrees() is deprecated. use get_branches() instead!"
         return self.get_branches()
     
     def get_branches(self):
@@ -386,7 +378,7 @@ class ColorDGraphByGroups(object):
                 self._tree_to_colors[tree] = colors
                 return colors
             else:
-                colors_list = [self.tree_get_colors(subtree) for subtree in tree.get_subtrees()]
+                colors_list = [self.tree_get_colors(subtree) for subtree in tree.get_branches()]
                 if None in colors_list:
                     colors = None
                 else:
@@ -478,7 +470,7 @@ class ColorDGraphByValue(object):
                 self._tree_to_value[tree] = value
                 return value
             else:
-                values = [self.tree_get_value(subtree) for subtree in tree.get_subtrees()]
+                values = [self.tree_get_value(subtree) for subtree in tree.get_branches()]
                 value = self.resolve_multiple_values(values)
                 self._tree_to_value[tree] = value
                 return value
@@ -653,7 +645,7 @@ class DisconnectivityGraph(object):
     def _recursive_layout_x_axis(self, tree, xmin, dx_per_min):
 #        nbranches = tree.number_of_branches()
         nminima = tree.number_of_leaves()
-        subtrees = tree.get_subtrees()
+        subtrees = tree.get_branches()
         subtrees = self._order_trees(subtrees)
         tree.data["x"] = xmin + dx_per_min * nminima / 2.
         x = xmin
@@ -826,7 +818,7 @@ class DisconnectivityGraph(object):
                 line_segments.append( ([xself, xparent], [yhigh, yparent]) )
                 line_colours.append(color)
 
-        for subtree in tree.get_subtrees():
+        for subtree in tree.get_branches():
             self._get_line_segment_recursive(line_segments, line_colours, subtree, eoffset)
 
         
