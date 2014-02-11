@@ -110,7 +110,8 @@ class DGraphWidget(QWidget):
 
 
     def _get_input_parameters(self):
-        self.params = {}
+        self.params = self.input_params.copy()
+#        self.params.pop("show_minima")
         params = self.params
         
         Emax = self.ui.lineEdit_Emax.text()
@@ -180,7 +181,8 @@ class DGraphWidget(QWidget):
             graph = self.graph
         else:
             db = self.database
-            if self.params.has_key('Emax'):
+            apply_Emax = "Emax" in params and "T" not in params
+            if apply_Emax:
                 graph = database2graph(db, Emax=params['Emax'])
             else:
                 graph = database2graph(db)
@@ -224,11 +226,11 @@ class DGraphWidget(QWidget):
             
             self.redraw_disconnectivity_graph()
     
-    def _on_right_click_minimum(self, minimum):
+    def _on_left_click_minimum(self, minimum):
         print "you clicked on minimum with id", minimum._id, "and energy", minimum.energy
         self.minimum_selected(minimum)
     
-    def _on_left_click_minimum(self, minimum):
+    def _on_right_click_minimum(self, minimum):
         dialog = QInputDialog(parent=self)
 #         dialog.setLabelText("")
         dialog.setLabelText("set label for minimum: " + str(minimum.energy))
@@ -247,9 +249,9 @@ class DGraphWidget(QWidget):
         ind = event.ind[0]
         min1 = self._minima_list[ind]
         if event.mouseevent.button == 3:
-            self._on_left_click_minimum(min1)
-        else:
             self._on_right_click_minimum(min1)
+        else:
+            self._on_left_click_minimum(min1)
  
     def _draw_disconnectivity_graph(self, show_minima=True, show_trees=False):
         ax = self.canvas.axes
