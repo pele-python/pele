@@ -41,6 +41,20 @@
           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
          </property>
          <item row="0" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Minimum selected:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="label_selected_minimum">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
           <widget class="QCheckBox" name="chkbx_center_gmin">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;make sure the global minimum is centered&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -50,7 +64,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="1" column="1">
           <widget class="QCheckBox" name="chkbx_show_minima">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show the minima as points at the end of each line&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -60,28 +74,28 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QCheckBox" name="chkbx_order_by_energy">
            <property name="text">
             <string>order by energy</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="2" column="1">
           <widget class="QCheckBox" name="chkbx_order_by_basin_size">
            <property name="text">
             <string>order by basin size</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QCheckBox" name="chkbx_include_gmin">
            <property name="text">
             <string>include global min</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QCheckBox" name="chkbx_show_trees">
            <property name="enabled">
             <bool>true</bool>
@@ -94,7 +108,7 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;set the maximum energy level&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -104,7 +118,7 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="4" column="1">
           <widget class="QLineEdit" name="lineEdit_Emax">
            <property name="maximumSize">
             <size>
@@ -114,7 +128,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item row="5" column="0">
           <widget class="QLabel" name="label_2">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;change the minimum size of a disconnected region to be included in the graph&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -124,7 +138,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="5" column="1">
           <widget class="QLineEdit" name="lineEdit_subgraph_size">
            <property name="maximumSize">
             <size>
@@ -134,14 +148,14 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
+         <item row="6" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
             <string>nlevels</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="QLineEdit" name="lineEdit_nlevels">
            <property name="maximumSize">
             <size>
@@ -151,14 +165,14 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
+         <item row="7" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>offset</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="7" column="1">
           <widget class="QLineEdit" name="lineEdit_offset">
            <property name="maximumSize">
             <size>
@@ -168,14 +182,14 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="8" column="0">
           <widget class="QLabel" name="label_5">
            <property name="text">
             <string>line width</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="8" column="1">
           <widget class="QLineEdit" name="lineEdit_linewidth">
            <property name="maximumSize">
             <size>
@@ -185,20 +199,20 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="9" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>title</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1">
           <widget class="QLineEdit" name="lineEdit_title">
            <property name="maximumSize">
             <size>
              <width>200</width>
              <height>16777215</height>
             </size>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="0">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>title</string>
            </property>
           </widget>
          </item>
@@ -225,7 +239,7 @@
          <property name="topMargin">
           <number>0</number>
          </property>
-         <item row="0" column="0">
+         <item row="1" column="0">
           <widget class="QPushButton" name="btnRebuild">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
@@ -247,7 +261,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="1" column="1">
           <widget class="QPushButton" name="btnRedraw">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">

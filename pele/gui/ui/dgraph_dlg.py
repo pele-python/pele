@@ -336,6 +336,7 @@ class DGraphWidget(QWidget):
         print "you clicked on minimum with id", minimum._id, "and energy", minimum.energy
         self.minimum_selected(minimum)
         self._selected_minimum = minimum
+        self.ui.label_selected_minimum.setText("%g (%d)" % (minimum.energy, minimum._id))
     
     def _on_right_click_minimum(self, minimum):
         """create a menu with the list of available actions"""
