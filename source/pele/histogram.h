@@ -60,7 +60,7 @@ Histogram::add_entry(double E){
 	}
 	else
 	{
-		newlen = _N - i;
+		newlen = i;
 		for(size_t j = 0; j < newlen-1; ++j)
 		{
 			_hist.push_front(0);
