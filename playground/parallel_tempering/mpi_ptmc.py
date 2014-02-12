@@ -14,7 +14,7 @@ class MPI_Parallel_Tempering(object):
         self.exchange_dic = {1:'right',-1:'left'}
         self.exchange_choice = random.choice(self.exchange_pattern.keys())
         self.ex_outstream = open("exchanges", "w")
-        self.pt_niter = 0
+        self.ptiter = 0
         self.no_exchange_int = 1000000 #this number in exchange pattern means that no exchange should be attempted
         
     def _get_temps(self):
@@ -24,9 +24,9 @@ class MPI_Parallel_Tempering(object):
         """
         if (self.rank == 0):
             CTE = np.exp( np.log( self.Tmax / self.Tmin ) / (self.nproc-1) )
-            Tarray = np.array([self.Tmin * CTE**i for i in range(self.nproc)],dtype='d')
+            self.Tarray = np.array([self.Tmin * CTE**i for i in range(self.nproc)],dtype='d')
         else:
-            Tarray = None
+            self.Tarray = None
         return Tarray
     
     def _scatter_data(self, in_send_array):
@@ -45,7 +45,7 @@ class MPI_Parallel_Tempering(object):
     
     def _scatter_single_value(self, send_array):
         """
-        returns the a signel value for each replica (e.g. Temperature or swap partner)
+        returns a single value from a scattered array for each replica (e.g. Temperature or swap partner)
         """
         T = self._scatter_data(send_array)
         assert(len(T) == 1)
@@ -90,13 +90,13 @@ class MPI_Parallel_Tempering(object):
         """
         swap data between two processors, the message sent buffer is replaced with the received message
         """
-        assert(self.rank == dest or self.rank == source)
+        assert(dest == source)
         old_data = data.copy() #this is for a test that has to be removed after initial implementation
         self.comm.Sendrecv_replace(data, dest=dest,source=source)
         assert(data != old_data) #this is a test that has to be removed after initial implementation
         return data
     
-    def _find_exchange_pairs(self, Earray, Tarray):
+    def _find_exchange_pairs(self, Earray):
         """
         This function determines the exchange pattern alternating swaps with right and left neighbours.
         An exchange pattern array is constructed, filled with self.no_exchange_int which
@@ -110,16 +110,16 @@ class MPI_Parallel_Tempering(object):
             for i in xrange(0,self.nproc,2):
                 print 'exchange choice: ',self.exchange_pattern[self.exchange_choice] #this is a print statement that has to be removed after initial implementation
                 E1 = Earray[i]
-                T1 = Tarray[i]
+                T1 = self.Tarray[i]
                 E2 = Earray[i+self.exchange_choice]
-                T2 = Tarray[i+self.exchange_choice]
+                T2 = self.Tarray[i+self.exchange_choice]
                 deltaE = E1 - E2
                 deltabeta = 1./T1 - 1./T2
                 w = min( 1. , np.exp( deltaE * deltabeta ) )
                 rand = np.random.rand()
                 if w > rand:
                     #accept exchange
-                    self.ex_outstream.write("accepting exchange %d %d %g %g %g %g %d\n" % (i, i+self.exchange_choice, E1, E2, T1, T2, self.pt_niter))
+                    self.ex_outstream.write("accepting exchange %d %d %g %g %g %g %d\n" % (i, i+self.exchange_choice, E1, E2, T1, T2, self.ptiter))
                     assert(exchange_pattern[i] == self.no_exchange_int)                      #verify that is not using the same processor twice for swaps
                     assert(exchange_pattern[i+self.exchange_choice] == self.no_exchange_int) #verify that is not using the same processor twice for swaps
                     exchange_pattern[i] = i+self.exchange_choice
@@ -131,16 +131,39 @@ class MPI_Parallel_Tempering(object):
         self.exchange_choice *= -1 #swap direction of exchange choice
         return exchange_pattern
         
-    def _exchange_pairs(self, Earray, Tarray, data):
+    def _exchange_pairs(self, Earray, data):
         """
         return data from the pair exchange
         """
-        exchange_pattern = self._find_exchange_pairs(Earray, Tarray)
+        exchange_pattern = self._find_exchange_pairs(Earray)
         exchange_buddy = self._scatter_single_value(exchange_pattern)
         if (exchange_buddy != self.no_exchange_int):
             #the replica sends to exchange_partner and receives from it (replacing source with self.rank would cause a deadlock)
             data = self._point_to_point_exchange_replace(exchange_buddy, exchange_buddy, data) 
         return data
+    
+    def one_iteration(self, T, config):
+        # -> do MCMC walk
+        # E, data = -> return energy and configuration from MCMC and configuration
+        Earray = self._gather_energies(E)
+        config = self._exchange_pairs(Earray, config)
+        return config
+            
+    def run(self, max_ptiter = 1000000):
+        # -> config_array find configurations
+        Tarray = self._get_temps()
+        # config = -> scatter/broadcast initial configurations
+        T = self._scatter_single_value(Tarray)
+        while self.ptiter < max_ptiter:
+            config = self.one_iteration(T, config)
+            
+            
+            
+            
+            
+            
+    
+    
     
         
                 
