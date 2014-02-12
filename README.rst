@@ -11,7 +11,7 @@ Documentation: http://pele-python.github.io/pele/
 
 .. figure:: lj38_gmin_dgraph.png
 
-  The global minimum energy structure of a 38 atom Lennard-Jones cluster.  On
+  Images: The global minimum energy structure of a 38 atom Lennard-Jones cluster.  On
   the right is a disconnectivity graph showing a visualization of the energy
   landscape.  The competing low energy basins are shown in color.
 
