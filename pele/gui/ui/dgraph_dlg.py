@@ -194,7 +194,8 @@ class DGraphWidget(QWidget):
 
     def _get_input_parameters(self):
         self.params = self.input_params.copy()
-#        self.params.pop("show_minima")
+        if "show_minima" in self.params:
+            self.params.pop("show_minima")
         params = self.params
         
         Emax = self.ui.lineEdit_Emax.text()
