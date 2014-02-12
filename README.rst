@@ -1,26 +1,32 @@
-PELE : Python Energy Landscape Explorer
+pele : Python Energy Landscape Explorer
 +++++++++++++++++++++++++++++++++++++++
 
-tools for global optimization and energy landscape exploration.
+Tools for global optimization and energy landscape exploration.
 
-The code is hosted at
+Source code: https://github.com/pele-python/pele
 
-https://github.com/pele-python/pele
+Documentation: http://pele-python.github.io/pele/
 
-for documentation, see
 
-http://pele-python.github.com/pele/
 
-The code project upon which this python package is based can be found at
+.. image:: gmin_lj38.png
+  :height: 300
+.. image:: dgraph_lj38.png
+  :height: 300
 
-http://www-wales.ch.cam.ac.uk/software.html
+Images: The global minimum energy structure of a 38 atom Lennard-Jones
+cluster and disconnectivity graph showing a visualization of the energy
+landscape.  The competing low energy basins are shown in color.
 
 pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
-programs written by David Wales of Cambridge University and collaborators.
-pele has recently been renamed.  The previous name of the project was pygmin.
+programs written by David Wales of Cambridge University and collaborators
+(http://www-wales.ch.cam.ac.uk/software.html).  
 
-pele has tools for energy minization, global optimization, saddle point
-(transition state) search and much more.  Some of the algorithms implemented are
+Description
+===========
+pele has tools for energy minimization, global optimization, saddle point
+(transition state) search, data analysis, visualization and much more.  Some of
+the algorithms implemented are:
 
 1. Basinhopping global optimization
 
@@ -42,7 +48,9 @@ pele has tools for energy minization, global optimization, saddle point
 
 6. Structure alignment algorithms
 
-7. Thermodynamic information (e.g. heat capacity) via the Harmonic Superposition Approximation
+7. Thermodynamics (e.g. heat capacity) via the Harmonic Superposition Approximation
+
+8. Transition rates analysis
 
 INSTALLATION
 ============
@@ -118,7 +126,7 @@ Compilation
 -----------
 
 Compilation is required for use of the fast potentials, those written in C
-and/or fortran).  Theoretically you should be able to use any fortran compiler,
+and/or fortran.  Theoretically you should be able to use any fortran compiler,
 but we mostly use gfortran, so it's the least likely to have problems.  This
 package uses the standard python setup utility (distutils).  There are lots of
 options for how and where to install. For more information::
@@ -225,3 +233,6 @@ information can be found in the documentation at
 http://pele-python.github.com/pele/
 
 
+Notes
+=====
+pele has recently been renamed from pygmin
