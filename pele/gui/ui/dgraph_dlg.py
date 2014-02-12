@@ -13,8 +13,59 @@ from pele.utils.events import Signal
 import networkx as nx
 import PyQt4
 
+class TreeLeastCommonAncestor(object):
+    """Find the least common ancestor to a set of trees"""
+    def __init__(self, trees):
+        self.start_trees = trees
+        self.run()
+    
+    def run(self):
+        # find all common ancestors
+        common_ancestors = set()
+        for tree in self.start_trees:
+            parents = set(tree.get_ancestors())
+            parents.add(tree)
+            if len(common_ancestors) == 0:
+                common_ancestors.update(parents)
+            else:
+                # remove all elements that are not common
+                common_ancestors.intersection_update(parents)
+                assert len(common_ancestors) > 0
+
+        if len(common_ancestors) == 0:
+            raise Exception("the trees don't have any common ancestors")
+        
+        # sort the common ancestors by the number of ancestors each has
+        common_ancestors = list(common_ancestors)
+        if len(common_ancestors) > 1:
+            common_ancestors.sort(key=lambda tree: len(list(tree.get_ancestors())))
+
+        # the least common ancestor is the one with the most ancestors
+        self.least_common_ancestor = common_ancestors[-1]
+        return self.least_common_ancestor
+    
+    def get_all_paths_to_common_ancestor(self):
+        """return all the ancestors of all the input trees up to the least common ancestor"""
+        trees = set(self.start_trees)
+        for tree in self.start_trees:
+            for parent in tree.get_ancestors():
+                trees.add(parent)
+                if parent == self.least_common_ancestor:
+                    break
+        return trees
+        
+            
+#            for tree in common_ancestors:
+#                for parent in tree.get_ancestors():
+#                    if parent in common_ancestors
+#            
+#        return iter(common_ancestors).next()
+        
+        
+        
 
 class LabelMinimumAction(QtGui.QAction):
+    """This action will create a dialog box to label a minimum"""
     def __init__(self, minimum, parent=None):
         QtGui.QAction.__init__(self, "add label", parent)
         self.parent = parent
@@ -32,8 +83,9 @@ class LabelMinimumAction(QtGui.QAction):
             self.parent._minima_labels[self.minimum] = label
 
 class ColorPathAction(QtGui.QAction):
+    """this action will color the minimum energy path to minimum1"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "show path", parent)
+        QtGui.QAction.__init__(self, "show path to %d" % (minimum2._id), parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -256,14 +308,26 @@ class DGraphWidget(QWidget):
             self.redraw_disconnectivity_graph()
     
     def _color_minimum_energy_path(self, m1, m2):
+        """find the minimum energy path between m1 and m2 and color the dgraph appropriately"""
         # add weight attribute to the graph
+        # note: this is not actually the minimum energy path.  
+        # This minimizes the sum of energies along the path
+        # TODO: use minimum spanning tree to find the minimum energy path
         emin = min(( m.energy for m in self.graph.nodes_iter() ))
         for u, v, data in self.graph.edges_iter(data=True):
             data["weight"] = data["ts"].energy - emin
         path = nx.shortest_path(self.graph, m1, m2, weight="weight")
-        print "path length", len(path)
-        for m in path:
-            tree = self.dg.minimum_to_leave[m]
+        print "there are", len(path), "minima in the path from", m1._id, "to", m2._id 
+        
+        # color all trees up to the least common ancestor in the dgraph 
+        trees = [self.dg.minimum_to_leave[m] for m in path]
+        ancestry = TreeLeastCommonAncestor(trees)
+        all_trees = ancestry.get_all_paths_to_common_ancestor()
+        # remove the least common ancestor so the coloring doesn't go to higher energies
+        all_trees.remove(ancestry.least_common_ancestor)
+        
+        # color the trees
+        for tree in all_trees:
             tree.data["colour"] = (1., 0., 0.)
         self.redraw_disconnectivity_graph()
         
@@ -274,26 +338,17 @@ class DGraphWidget(QWidget):
         self._selected_minimum = minimum
     
     def _on_right_click_minimum(self, minimum):
+        """create a menu with the list of available actions"""
         menu = QtGui.QMenu("list menu", parent=self)
         
         action1 = LabelMinimumAction(minimum, parent=self)
-        action2 = ColorPathAction(minimum, self._selected_minimum, parent=self)
         menu.addAction(action1)
-        menu.addAction(action2)
+        if self._selected_minimum is not None:
+            action2 = ColorPathAction(minimum, self._selected_minimum, parent=self)
+            menu.addAction(action2)
         
-        print "launching menu"
         menu.exec_(QtGui.QCursor.pos())
         
-#        dialog = QInputDialog(parent=self)
-##         dialog.setLabelText("")
-#        dialog.setLabelText("set label for minimum: " + str(minimum.energy))
-#        dialog.setInputMode(0)
-#        dialog.exec_()
-#        if dialog.result():
-#            label = dialog.textValue()
-#            self._minima_labels[minimum] = label
-            
-    
     def _on_pick_minimum(self, event):
         """matplotlib event called when a minimum is clicked on"""
         if event.artist != self._minima_points:
