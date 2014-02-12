@@ -11,6 +11,26 @@ from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2grap
 from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
 import networkx as nx
+import PyQt4
+
+
+class LabelMinimumAction(QtGui.QAction):
+    def __init__(self, minimum, parent=None):
+        QtGui.QAction.__init__(self, "add label", parent)
+        self.parent = parent
+        self.minimum = minimum
+        self.triggered.connect(self.__call__)
+
+    def __call__(self, val):
+        dialog = QInputDialog(parent=self.parent)
+#         dialog.setLabelText("")
+        dialog.setLabelText("set label for minimum: " + str(self.minimum.energy))
+        dialog.setInputMode(0)
+        dialog.exec_()
+        if dialog.result():
+            label = dialog.textValue()
+            self.parent._minima_labels[self.minimum] = label
+
 
 
 class DGraphWidget(QWidget):
@@ -231,14 +251,22 @@ class DGraphWidget(QWidget):
         self.minimum_selected(minimum)
     
     def _on_right_click_minimum(self, minimum):
-        dialog = QInputDialog(parent=self)
-#         dialog.setLabelText("")
-        dialog.setLabelText("set label for minimum: " + str(minimum.energy))
-        dialog.setInputMode(0)
-        dialog.exec_()
-        if dialog.result():
-            label = dialog.textValue()
-            self._minima_labels[minimum] = label
+        menu = QtGui.QMenu("list menu", parent=self)
+        
+        action1 = LabelMinimumAction(minimum, parent=self)
+        menu.addAction(action1)
+        
+        print "launching menu"
+        menu.exec_(QtGui.QCursor.pos())
+        
+#        dialog = QInputDialog(parent=self)
+##         dialog.setLabelText("")
+#        dialog.setLabelText("set label for minimum: " + str(minimum.energy))
+#        dialog.setInputMode(0)
+#        dialog.exec_()
+#        if dialog.result():
+#            label = dialog.textValue()
+#            self._minima_labels[minimum] = label
             
     
     def _on_pick_minimum(self, event):
