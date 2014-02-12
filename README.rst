@@ -9,14 +9,11 @@ Documentation: http://pele-python.github.io/pele/
 
 
 
-.. image:: gmin_lj38.png
-  :height: 300
-.. image:: dgraph_lj38.png
-  :height: 300
+.. figure:: lj38_gmin_dgraph.png
 
-Images: The global minimum energy structure of a 38 atom Lennard-Jones
-cluster and disconnectivity graph showing a visualization of the energy
-landscape.  The competing low energy basins are shown in color.
+  The global minimum energy structure of a 38 atom Lennard-Jones cluster.  On
+  the right is a disconnectivity graph showing a visualization of the energy
+  landscape.  The competing low energy basins are shown in color.
 
 pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
 programs written by David Wales of Cambridge University and collaborators
