@@ -31,6 +31,16 @@ class LabelMinimumAction(QtGui.QAction):
             label = dialog.textValue()
             self.parent._minima_labels[self.minimum] = label
 
+class ColorPathAction(QtGui.QAction):
+    def __init__(self, minimum1, minimum2, parent=None):
+        QtGui.QAction.__init__(self, "show path", parent)
+        self.parent = parent
+        self.minimum1 = minimum1
+        self.minimum2 = minimum2
+        self.triggered.connect(self.__call__)
+
+    def __call__(self, val):
+        self.parent._color_minimum_energy_path(self.minimum1, self.minimum2)
 
 
 class DGraphWidget(QWidget):
@@ -64,6 +74,7 @@ class DGraphWidget(QWidget):
         
         self.minimum_selected = Signal()
         # self.minimum_selected(minim)
+        self._selected_minimum = None
 
 #        self.rebuild_disconnectivity_graph()
         self.colour_tree = []
@@ -197,16 +208,14 @@ class DGraphWidget(QWidget):
         self._draw_disconnectivity_graph(self.show_minima, self.show_trees)
 
     def _build_disconnectivity_graph(self, **params):
-        if self.database is None:
-            graph = self.graph
-        else:
+        if self.database is not None:
             db = self.database
             apply_Emax = "Emax" in params and "T" not in params
             if apply_Emax:
-                graph = database2graph(db, Emax=params['Emax'])
+                self.graph = database2graph(db, Emax=params['Emax'])
             else:
-                graph = database2graph(db)
-        dg = DisconnectivityGraph(graph, **params)
+                self.graph = database2graph(db)
+        dg = DisconnectivityGraph(self.graph, **params)
         dg.calculate()
         self.dg = dg
 
@@ -246,15 +255,31 @@ class DGraphWidget(QWidget):
             
             self.redraw_disconnectivity_graph()
     
+    def _color_minimum_energy_path(self, m1, m2):
+        # add weight attribute to the graph
+        emin = min(( m.energy for m in self.graph.nodes_iter() ))
+        for u, v, data in self.graph.edges_iter(data=True):
+            data["weight"] = data["ts"].energy - emin
+        path = nx.shortest_path(self.graph, m1, m2, weight="weight")
+        print "path length", len(path)
+        for m in path:
+            tree = self.dg.minimum_to_leave[m]
+            tree.data["colour"] = (1., 0., 0.)
+        self.redraw_disconnectivity_graph()
+        
+    
     def _on_left_click_minimum(self, minimum):
         print "you clicked on minimum with id", minimum._id, "and energy", minimum.energy
         self.minimum_selected(minimum)
+        self._selected_minimum = minimum
     
     def _on_right_click_minimum(self, minimum):
         menu = QtGui.QMenu("list menu", parent=self)
         
         action1 = LabelMinimumAction(minimum, parent=self)
+        action2 = ColorPathAction(minimum, self._selected_minimum, parent=self)
         menu.addAction(action1)
+        menu.addAction(action2)
         
         print "launching menu"
         menu.exec_(QtGui.QCursor.pos())
