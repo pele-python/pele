@@ -82,18 +82,9 @@
 <div><p>the function which returns the optimized minimum distance between
 two structures</p>
 </div></blockquote>
-<p><strong>database</strong> : Database() object</p>
+<p><strong>database</strong> : pele Database object</p>
 <blockquote>
-<div><p>the database object, used to save distance calculations so
-mindist() need only be called once for each minima pair. <em>Note</em> the
-use of this and graph is a bit redundant, this should be cleaned up</p>
-</div></blockquote>
-<p><strong>use_all_min</strong> : bool</p>
-<blockquote>
-<div><p>if True, then all known minima and transition states in graph will
-be used to try to connect min1 and min2.  This requires a mindist()
-call (or a retrieveal operation from database) for every pair which
-can take a very long time if many minima are known.</p>
+<div><p>Used to store the new minima and transition states found.</p>
 </div></blockquote>
 <p><strong>niter</strong> : int, optional</p>
 <blockquote>
@@ -132,7 +123,7 @@ database and try to find a new path</p>
 first</p>
 </div></blockquote>
 <p><strong>conf_checks</strong> : list of callables</p>
-<blockquote>
+<blockquote class="last">
 <div><p>a list of callable function that determine if a configuration is valid.
 They must return a bool, and accept the keyword parameters</p>
 <blockquote>
@@ -140,10 +131,6 @@ They must return a bool, and accept the keyword parameters</p>
 </div></blockquote>
 <p>If any configuration in a minimum-transition_state-minimum triplet fails
 a test then the whole triplet is rejected.</p>
-</div></blockquote>
-<p><strong>load_no_distances</strong> : bool, optional</p>
-<blockquote class="last">
-<div><p>if True, then no distances will be loaded from the database</p>
 </div></blockquote>
 </td>
 </tr>

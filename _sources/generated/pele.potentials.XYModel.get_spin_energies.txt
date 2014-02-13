@@ -1,0 +1,6 @@
+pele.potentials.XYModel.get_spin_energies
+=========================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: XYModel.get_spin_energies

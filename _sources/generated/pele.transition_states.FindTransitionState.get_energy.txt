@@ -1,0 +1,6 @@
+pele.transition_states.FindTransitionState.get_energy
+=====================================================
+
+.. currentmodule:: pele.transition_states
+
+.. automethod:: FindTransitionState.get_energy

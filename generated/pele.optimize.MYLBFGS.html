@@ -98,13 +98,31 @@ using the Fortran code from GMIN.</p>
 <td></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.getStep.html#pele.optimize.MYLBFGS.getStep" title="pele.optimize.MYLBFGS.getStep"><tt class="xref py py-obj docutils literal"><span class="pre">getStep</span></tt></a>(X,&nbsp;G)</td>
-<td>use the Fortran LBFGS code from GMIN to get the step</td>
+<td>use the Fortran MYLBFGS code from GMIN to update the LBFGS memory and get the step size and direction.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.optimize.MYLBFGS.reset.html#pele.optimize.MYLBFGS.reset" title="pele.optimize.MYLBFGS.reset"><tt class="xref py py-obj docutils literal"><span class="pre">reset</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.MYLBFGS.get_result.html#pele.optimize.MYLBFGS.get_result" title="pele.optimize.MYLBFGS.get_result"><tt class="xref py py-obj docutils literal"><span class="pre">get_result</span></tt></a>()</td>
+<td>return a results object</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.get_state.html#pele.optimize.MYLBFGS.get_state" title="pele.optimize.MYLBFGS.get_state"><tt class="xref py py-obj docutils literal"><span class="pre">get_state</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.run.html#pele.optimize.MYLBFGS.run" title="pele.optimize.MYLBFGS.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>()</td>
-<td>the main loop of the algorithm</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.MYLBFGS.one_iteration.html#pele.optimize.MYLBFGS.one_iteration" title="pele.optimize.MYLBFGS.one_iteration"><tt class="xref py py-obj docutils literal"><span class="pre">one_iteration</span></tt></a>()</td>
+<td>do one iteration of the LBFGS loop</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.reset.html#pele.optimize.MYLBFGS.reset" title="pele.optimize.MYLBFGS.reset"><tt class="xref py py-obj docutils literal"><span class="pre">reset</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.MYLBFGS.run.html#pele.optimize.MYLBFGS.run" title="pele.optimize.MYLBFGS.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>()</td>
+<td>run the LBFGS minimizer</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.set_state.html#pele.optimize.MYLBFGS.set_state" title="pele.optimize.MYLBFGS.set_state"><tt class="xref py py-obj docutils literal"><span class="pre">set_state</span></tt></a>(state)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.MYLBFGS.stop_criterion_satisfied.html#pele.optimize.MYLBFGS.stop_criterion_satisfied" title="pele.optimize.MYLBFGS.stop_criterion_satisfied"><tt class="xref py py-obj docutils literal"><span class="pre">stop_criterion_satisfied</span></tt></a>()</td>
+<td>test the stop criterion</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.MYLBFGS.update_coords.html#pele.optimize.MYLBFGS.update_coords" title="pele.optimize.MYLBFGS.update_coords"><tt class="xref py py-obj docutils literal"><span class="pre">update_coords</span></tt></a>(X,&nbsp;E,&nbsp;G)</td>
+<td>change the location of the minimizer manually</td>
 </tr>
 </tbody>
 </table>

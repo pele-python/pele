@@ -1,6 +1,0 @@
-pele.storage.Database.distances
-===============================
-
-.. currentmodule:: pele.storage
-
-.. automethod:: Database.distances

@@ -59,7 +59,7 @@
 <span class="kn">from</span> <span class="nn">pele.storage</span> <span class="kn">import</span> <span class="n">Database</span>
 <span class="kn">from</span> <span class="nn">pele.takestep</span> <span class="kn">import</span> <span class="n">RandomDisplacement</span><span class="p">,</span> <span class="n">AdaptiveStepsizeTemperature</span>
 <span class="kn">from</span> <span class="nn">pele.utils.xyz</span> <span class="kn">import</span> <span class="n">write_xyz</span>
-<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_cpp</span>
 <span class="kn">from</span> <span class="nn">pele.transition_states._nebdriver</span> <span class="kn">import</span> <span class="n">NEBDriver</span>
 <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">FindTransitionState</span>
 <span class="kn">from</span> <span class="nn">pele.thermodynamics</span> <span class="kn">import</span> <span class="n">logproduct_freq2</span><span class="p">,</span> <span class="n">normalmodes</span>
@@ -193,21 +193,21 @@
         <span class="sd">&quot;&quot;&quot;a starting point for basinhopping, etc.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     </div>
-<div class="viewcode-block" id="BaseSystem.get_random_minimized_configuration"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_random_minimized_configuration.html#pele.systems.BaseSystem.get_random_minimized_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">get_random_minimized_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystem.get_random_minimized_configuration"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_random_minimized_configuration.html#pele.systems.BaseSystem.get_random_minimized_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">get_random_minimized_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
-        <span class="n">quencher</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_minimizer</span><span class="p">()</span>
+        <span class="n">quencher</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_minimizer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">quencher</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="BaseSystem.get_minimizer"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_minimizer.html#pele.systems.BaseSystem.get_minimizer">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return a function to minimize the structure&quot;&quot;&quot;</span>
         <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">dict_copy_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&quot;structural_quench_params&quot;</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>        
-        <span class="k">return</span> <span class="k">lambda</span> <span class="n">coords</span><span class="p">:</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">coords</span><span class="p">:</span> <span class="n">lbfgs_cpp</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="BaseSystem.get_compare_exact"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_compare_exact.html#pele.systems.BaseSystem.get_compare_exact">[docs]</a>    <span class="k">def</span> <span class="nf">get_compare_exact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;object that returns True if two structures are exact.</span>
 <span class="sd">        </span>
-<span class="sd">            true_false = compare_exact(min1, min2)</span>
+<span class="sd">            true_false = compare_exact(coords1, coords2)</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -223,6 +223,14 @@
             <span class="k">return</span> <span class="bp">None</span>
         <span class="k">return</span> <span class="k">lambda</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">:</span> <span class="n">compare</span><span class="p">(</span><span class="n">m1</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">m2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
     </div>
+<div class="viewcode-block" id="BaseSystem.get_system_properties"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_system_properties.html#pele.systems.BaseSystem.get_system_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_system_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a dictionary of system specific properties.</span>
+<span class="sd">        </span>
+<span class="sd">        These will be stored automatically in the database.  </span>
+<span class="sd">        The keys must be strings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+</div>
 <div class="viewcode-block" id="BaseSystem.create_database"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.create_database.html#pele.systems.BaseSystem.create_database">[docs]</a>    <span class="k">def</span> <span class="nf">create_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return a new database object</span>
 <span class="sd">        </span>
@@ -239,6 +247,11 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="s">&quot;db&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
                 <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;db&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">overwrite_properties</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;overwrite_properties&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">overwrite_properties</span> <span class="o">=</span> <span class="bp">True</span>
 
         <span class="c">#get a routine to compare the minima as exact</span>
         <span class="k">try</span><span class="p">:</span>
@@ -252,7 +265,10 @@
             <span class="c">#compareMinima is optional</span>
             <span class="k">pass</span>
 
-        <span class="k">return</span> <span class="n">Database</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="n">db</span><span class="o">.</span><span class="n">add_properties</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_system_properties</span><span class="p">(),</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite_properties</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">db</span>
     
 </div>
 <div class="viewcode-block" id="BaseSystem.get_takestep"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_takestep.html#pele.systems.BaseSystem.get_takestep">[docs]</a>    <span class="k">def</span> <span class="nf">get_takestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -270,7 +286,6 @@
             <span class="n">stepsize</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;stepsize&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="n">stepsize</span> <span class="o">=</span> <span class="mf">0.6</span>
-        <span class="k">print</span> <span class="s">&quot;stepsize&quot;</span><span class="p">,</span> <span class="n">stepsize</span>
         <span class="n">takeStep</span> <span class="o">=</span> <span class="n">RandomDisplacement</span><span class="p">(</span><span class="n">stepsize</span><span class="o">=</span><span class="n">stepsize</span><span class="p">)</span>
         <span class="n">tsAdaptive</span> <span class="o">=</span> <span class="n">AdaptiveStepsizeTemperature</span><span class="p">(</span><span class="n">takeStep</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tsAdaptive</span>
@@ -428,6 +443,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     </div>
+<div class="viewcode-block" id="BaseSystem.get_ndof"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_ndof.html#pele.systems.BaseSystem.get_ndof">[docs]</a>    <span class="k">def</span> <span class="nf">get_ndof</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the number of degrees of freedom</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        this is the true number of degrees of freedom.  It is probably the length</span>
+<span class="sd">        of the coordinates array minus the number of zero modes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nzero_modes</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    </div>
 <div class="viewcode-block" id="BaseSystem.get_normalmodes"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_normalmodes.html#pele.systems.BaseSystem.get_normalmodes">[docs]</a>    <span class="k">def</span> <span class="nf">get_normalmodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the squared normal mode frequencies and eigenvectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -436,9 +465,7 @@
         <span class="n">hess</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getHessian</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
         <span class="n">freqs</span><span class="p">,</span> <span class="n">vecs</span> <span class="o">=</span> <span class="n">normalmodes</span><span class="p">(</span><span class="n">hess</span><span class="p">,</span> <span class="n">mt</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">vecs</span>
-        
-         
-    </div>
+        </div>
 <div class="viewcode-block" id="BaseSystem.get_log_product_normalmode_freq"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_log_product_normalmode_freq.html#pele.systems.BaseSystem.get_log_product_normalmode_freq">[docs]</a>    <span class="k">def</span> <span class="nf">get_log_product_normalmode_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">nnegative</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the log product of the squared normal mode frequencies</span>
 <span class="sd">        </span>
@@ -476,7 +503,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </div>
-<div class="viewcode-block" id="BaseSystem.smooth_path"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.smooth_path.html#pele.systems.BaseSystem.smooth_path">[docs]</a>    <span class="k">def</span> <span class="nf">smooth_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystem.smooth_path"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.smooth_path.html#pele.systems.BaseSystem.smooth_path">[docs]</a>    <span class="k">def</span> <span class="nf">smooth_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return a smoothed path between two configurations.</span>
 
 <span class="sd">        used for movies</span>

@@ -14,8 +14,14 @@ pele.optimize.LBFGS
          ~LBFGS.adjustStepSize
          ~LBFGS.attachEvent
          ~LBFGS.getStep
+         ~LBFGS.get_result
+         ~LBFGS.get_state
+         ~LBFGS.one_iteration
          ~LBFGS.reset
          ~LBFGS.run
+         ~LBFGS.set_state
+         ~LBFGS.stop_criterion_satisfied
+         ~LBFGS.update_coords
    
    
 

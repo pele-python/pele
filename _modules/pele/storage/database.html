@@ -59,7 +59,7 @@
 <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">sessionmaker</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">PickleType</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">PickleType</span><span class="p">,</span> <span class="n">String</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">ForeignKey</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">backref</span><span class="p">,</span> <span class="n">deferred</span>
 <span class="kn">import</span> <span class="nn">sqlalchemy.orm</span>
@@ -69,9 +69,9 @@
 <span class="kn">from</span> <span class="nn">pele.utils.events</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Minimum&quot;</span><span class="p">,</span> <span class="s">&quot;TransitionState&quot;</span><span class="p">,</span> <span class="s">&quot;Database&quot;</span><span class="p">,</span> <span class="s">&quot;Distance&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Minimum&quot;</span><span class="p">,</span> <span class="s">&quot;TransitionState&quot;</span><span class="p">,</span> <span class="s">&quot;Database&quot;</span><span class="p">]</span>
 
-<span class="n">_schema_version</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">_schema_version</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span>
 
 <span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
@@ -103,7 +103,7 @@
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    Database, TransitionState, Distance</span>
+<span class="sd">    Database, TransitionState</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;tbl_minima&#39;</span>
 
@@ -111,14 +111,21 @@
     <span class="n">energy</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span> 
     <span class="c"># deferred means the object is loaded on demand, that saves some time / memory for huge graphs</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">deferred</span><span class="p">(</span><span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">))</span>
+    <span class="sd">&#39;&#39;&#39;coordinates of the minimum&#39;&#39;&#39;</span>
     <span class="n">fvib</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;log product of the squared normal mode frequencies&quot;&quot;&quot;</span>
     <span class="n">pgorder</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;point group order&quot;&quot;&quot;</span>
+    <span class="n">invalid</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;flag indicating if the minimum is invalid&quot;&quot;&quot;</span>
+    <span class="n">user_data</span> <span class="o">=</span> <span class="n">deferred</span><span class="p">(</span><span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">))</span>
+    <span class="sd">&quot;&quot;&quot;this can be used to store information about the minimum&quot;&quot;&quot;</span>
     
-    <span class="sd">&#39;&#39;&#39;coordinates&#39;&#39;&#39;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">energy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invalid</span> <span class="o">=</span> <span class="bp">False</span>
  
 <div class="viewcode-block" id="Minimum.right_neighbors"><a class="viewcode-back" href="../../../generated/pele.storage.Minimum.right_neighbors.html#pele.storage.Minimum.right_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">right_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">higher_node</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_edges</span><span class="p">]</span>
@@ -185,7 +192,7 @@
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    Database, Minimum, Distance</span>
+<span class="sd">    Database, Minimum</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&quot;tbl_transition_states&quot;</span>
     <span class="n">_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -215,8 +222,15 @@
     <span class="sd">&#39;&#39;&#39;coordinates of transition state&#39;&#39;&#39;</span>
 
     <span class="n">fvib</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
-    <span class="n">pgorder</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>    
-    
+    <span class="sd">&quot;&quot;&quot;log product of the squared normal mode frequencies&quot;&quot;&quot;</span>
+    <span class="n">pgorder</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;point group order&quot;&quot;&quot;</span>
+    <span class="n">invalid</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;flag indicating if the transition state is invalid&quot;&quot;&quot;</span>
+    <span class="n">user_data</span> <span class="o">=</span> <span class="n">deferred</span><span class="p">(</span><span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">))</span>
+    <span class="sd">&quot;&quot;&quot;this can be used to store information about the transition state &quot;&quot;&quot;</span>
+
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">eigenval</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eigenvec</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
@@ -232,78 +246,62 @@
             
         <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">eigenvec</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="n">eigenval</span>
-</div>
-<div class="viewcode-block" id="Distance"><a class="viewcode-back" href="../../../generated/pele.storage.Distance.html#pele.storage.Distance">[docs]</a><span class="k">class</span> <span class="nc">Distance</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;object to store &quot;mindist&quot; distances between minima</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    dist: float</span>
-<span class="sd">        distance between minima</span>
-<span class="sd">    min1: Minimum object</span>
-<span class="sd">        first minimum</span>
-<span class="sd">    min2: Minimum object</span>
-<span class="sd">        second minimum</span>
-<span class="sd">        </span>
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
-<span class="sd">    dist: float</span>
-<span class="sd">    minimum1: Minimum object</span>
-<span class="sd">    minimum2: Minimum object</span>
-<span class="sd">    </span>
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    To avoid any double entries and be able to compare them,</span>
-<span class="sd">    only use `Database.setDistance()` to create a Distance object.</span>
-<span class="sd">    </span>
-<span class="sd">    programming note: As with TransitionState, functions in the database require that </span>
-<span class="sd">    `dist.minimum1._id &lt; dist.minimum2._id`.  This will be handled automatically</span>
-<span class="sd">    by the database, but we must remember not to screw it up.</span>
-<span class="sd">    </span>
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    Database, Minimum, TransitionState</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invalid</span> <span class="o">=</span> <span class="bp">False</span>
 
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&quot;tbl_distances&quot;</span>
-    <span class="n">_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    
-    <span class="n">dist</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
-    <span class="sd">&#39;&#39;&#39;distance between minima&#39;&#39;&#39;</span>
-        
-    <span class="n">_minimum1_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;tbl_minima._id&#39;</span><span class="p">))</span>
-    <span class="n">minimum1</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Minimum&quot;</span><span class="p">,</span>
-                            <span class="n">primaryjoin</span><span class="o">=</span><span class="s">&quot;Minimum._id==Distance._minimum1_id&quot;</span><span class="p">)</span>
-    <span class="sd">&#39;&#39;&#39;first minimum&#39;&#39;&#39;</span>
-    
-    <span class="n">_minimum2_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;tbl_minima._id&#39;</span><span class="p">))</span>
-    <span class="n">minimum2</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Minimum&quot;</span><span class="p">,</span>
-                            <span class="n">primaryjoin</span><span class="o">=</span><span class="s">&quot;Minimum._id==Distance._minimum2_id&quot;</span><span class="p">)</span>
-    <span class="sd">&#39;&#39;&#39;second minimum&#39;&#39;&#39;</span>
-    
-    
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
-        <span class="k">assert</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
-        
-        <span class="k">if</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span> <span class="o">&lt;</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">):</span>
-            <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">min2</span><span class="p">,</span> <span class="n">min1</span>
-            
-        <span class="bp">self</span><span class="o">.</span><span class="n">dist</span> <span class="o">=</span> <span class="n">dist</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">minimum1</span> <span class="o">=</span> <span class="n">min1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">minimum2</span> <span class="o">=</span> <span class="n">min2</span>
 </div>
+<span class="k">class</span> <span class="nc">SystemProperty</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;table to hold system properties like potential parameters and number of atoms</span>
+<span class="sd">    </span>
+<span class="sd">    The properties can be stored as integers, floats, strings, or a pickled object.</span>
+<span class="sd">    Only one of the property value types should be set for each property.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&quot;tbl_system_property&quot;</span>
+    <span class="n">_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">property_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">int_value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">float_value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
+    <span class="n">string_value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">pickle_value</span> <span class="o">=</span> <span class="n">deferred</span><span class="p">(</span><span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property_name</span> <span class="o">=</span> <span class="n">property_name</span>
+        
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_name</span>
+    
+    <span class="k">def</span> <span class="nf">_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a dictionary of the values that are not None&quot;&quot;&quot;</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">int_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">int_value</span><span class="p">,</span> <span class="n">float_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">float_value</span><span class="p">,</span> 
+                    <span class="n">string_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">string_value</span><span class="p">,</span> <span class="n">pickle_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pickle_value</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">values</span>
+    
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the property value&quot;&quot;&quot;</span>
+        <span class="n">actual_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">actual_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;SystemProperty: multiple property values are set&quot;</span>
+            <span class="k">return</span> <span class="n">actual_values</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    
+    <span class="k">def</span> <span class="nf">item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a tuple of (name, value)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+            
+
 <span class="n">Index</span><span class="p">(</span><span class="s">&#39;idx_transition_states&#39;</span><span class="p">,</span> <span class="n">TransitionState</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">_minimum1_id</span><span class="p">,</span> <span class="n">TransitionState</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">_minimum2_id</span><span class="p">)</span>
-<span class="n">Index</span><span class="p">(</span><span class="s">&#39;idx_distances&#39;</span><span class="p">,</span> <span class="n">Distance</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">_minimum1_id</span><span class="p">,</span> <span class="n">Distance</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">_minimum2_id</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Database"><a class="viewcode-back" href="../../../generated/pele.storage.Database.html#pele.storage.Database">[docs]</a><span class="k">class</span> <span class="nc">Database</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Database storage class</span>
 <span class="sd">    </span>
-<span class="sd">    The Database class handles the connection to the database. It has functions to create new Minima,</span>
-<span class="sd">    TransitionState and Distance objects. The objects are persistent in the database and exist as</span>
+<span class="sd">    The Database class handles the connection to the database. It has functions to create new Minima and</span>
+<span class="sd">    TransitionState objects. The objects are persistent in the database and exist as</span>
 <span class="sd">    soon as the Database class in connected to the database. If any value in the objects is changed,</span>
 <span class="sd">    the changes are automatically persistent in the database (TODO: be careful, check commit transactions, ...)</span>
 <span class="sd">    </span>
@@ -357,11 +355,10 @@
 <span class="sd">    --------</span>
 <span class="sd">    Minimum</span>
 <span class="sd">    TransitionState</span>
-<span class="sd">    Distance</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">engine</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="n">Session</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">Session</span> <span class="o">=</span> <span class="bp">None</span> <span class="c"># js850&gt; This seems to be unused. Can we remove it?</span>
     <span class="n">session</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="n">connection</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">1e-3</span>
@@ -369,57 +366,99 @@
         
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">&quot;:memory:&quot;</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">connect_string</span><span class="o">=</span><span class="s">&#39;sqlite:///</span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span>
                  <span class="n">compareMinima</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">createdb</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-        <span class="k">global</span> <span class="n">_schema_version</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">createdb</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">db</span><span class="p">):</span> 
-                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;database does not exist&quot;</span><span class="p">)</span>
-            
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="o">=</span><span class="n">accuracy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compareMinima</span> <span class="o">=</span> <span class="n">compareMinima</span>
+
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">db</span><span class="p">)</span> <span class="ow">or</span> <span class="n">db</span> <span class="o">==</span> <span class="s">&quot;:memory:&quot;</span><span class="p">:</span>
+            <span class="n">newfile</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">createdb</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;createdb is False, but database does not exist&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">newfile</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c"># set up the engine which will manage the backend connection to the database</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">connect_string</span><span class="o">%</span><span class="p">(</span><span class="n">db</span><span class="p">),</span> <span class="n">echo</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">createdb</span><span class="p">:</span>
-            <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="s">&quot;tbl_minima&quot;</span><span class="p">):</span>
-                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;PRAGMA user_version = </span><span class="si">%d</span><span class="s">;&quot;</span><span class="o">%</span><span class="n">_schema_version</span><span class="p">)</span>
-            <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
-            <span class="n">result</span><span class="o">=</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;PRAGMA user_version;&quot;</span><span class="p">)</span>
-            <span class="n">schema</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">_schema_version</span> <span class="o">!=</span> <span class="n">schema</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;database schema outdated, current (newest) version: &quot;</span>
-                              <span class="s">&quot;</span><span class="si">%d</span><span class="s"> (</span><span class="si">%d</span><span class="s">). Please use migrate_db.py in pele/scripts to update database&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">_schema_version</span><span class="p">))</span>
-            
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">newfile</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_pele_database</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;existing file (</span><span class="si">%s</span><span class="s">) is not a pele database.&quot;</span> <span class="o">%</span> <span class="n">db</span><span class="p">)</span>
+        
+
+        <span class="c"># set up the tables and check the schema version</span>
+        <span class="k">if</span> <span class="n">newfile</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_schema_version</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_schema_version</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_schema</span><span class="p">()</span>
+<span class="c">#         self._check_schema_version_and_create_tables(newfile)</span>
+
+        <span class="c"># set up the session which will manage the frontend connection to the database</span>
         <span class="n">Session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="o">=</span><span class="n">accuracy</span>
+        
+        <span class="c"># these functions will be called when a minimum or transition state is </span>
+        <span class="c"># added or removed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">on_minimum_added</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">on_minimum_removed</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">on_ts_added</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">on_ts_removed</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">()</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">compareMinima</span> <span class="o">=</span> <span class="n">compareMinima</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_is_pele_database</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="s">&quot;tbl_minima&quot;</span><span class="p">)</span> <span class="ow">or</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="s">&quot;tbl_transition_states&quot;</span><span class="p">)):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_set_schema_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">_schema_version</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;PRAGMA user_version = </span><span class="si">%d</span><span class="s">;&quot;</span><span class="o">%</span><span class="n">_schema_version</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_update_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_schema_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">_schema_version</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="n">result</span><span class="o">=</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;PRAGMA user_version;&quot;</span><span class="p">)</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">_schema_version</span> <span class="o">!=</span> <span class="n">schema</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;database schema outdated, current (newest) version: &quot;</span>
+                          <span class="s">&quot;</span><span class="si">%d</span><span class="s"> (</span><span class="si">%d</span><span class="s">). Please use migrate_db.py in pele/scripts to update database&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">_schema_version</span><span class="p">))</span>
+
+
+
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_queries</span><span class="p">()</span>
+<span class="c">#        self._initialize_queries()</span>
         
-    <span class="k">def</span> <span class="nf">_initialize_queries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c">#        self._sql_get_dist = select([Distance.__table__.c.dist],</span>
-        <span class="c">#               or_(and_(Distance.__table__.c._minimum1_id==bindparam(&quot;id1&quot;), </span>
-        <span class="c">#                        Distance.__table__.c._minimum2_id==bindparam(&quot;id2&quot;)),</span>
-        <span class="c">#                   and_(Distance.__table__.c._minimum1_id==bindparam(&quot;id2&quot;), </span>
-        <span class="c">#                        Distance.__table__.c._minimum2_id==bindparam(&quot;id1&quot;)),</span>
-        <span class="c">#               ), use_labels=False).limit(1)</span>
-        <span class="n">tbl</span> <span class="o">=</span>  <span class="n">Distance</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sql_get_dist</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">tbl</span><span class="o">.</span><span class="n">dist</span><span class="p">],</span><span class="n">and_</span><span class="p">(</span>
-                                 <span class="n">tbl</span><span class="o">.</span><span class="n">_minimum1_id</span><span class="o">==</span><span class="n">bindparam</span><span class="p">(</span><span class="s">&quot;id1&quot;</span><span class="p">),</span> 
-                                 <span class="n">tbl</span><span class="o">.</span><span class="n">_minimum2_id</span><span class="o">==</span><span class="n">bindparam</span><span class="p">(</span><span class="s">&quot;id2&quot;</span><span class="p">)</span>
-                                 <span class="p">),</span> <span class="n">use_labels</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                                 
-        <span class="c">#self._sql_set_dist = Distance.__table__.insert().values(_minimum1_id=bindparam(&quot;id1&quot;),_minimum2_id=bindparam(&quot;id2&quot;), dist=bindparam(&quot;dist&quot;))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sql_set_dist</span> <span class="o">=</span> <span class="s">&quot;INSERT OR REPLACE INTO tbl_distances (dist, _minimum1_id, _minimum2_id) VALUES (:dist, :id1, :id2)&quot;</span>
-        
-        <span class="c">#self._sql_set_dist_upd = Distance.__table__.update().where(and_(tbl._minimum1_id==bindparam(&quot;id1&quot;),tbl._minimum2_id==bindparam(&quot;id2&quot;))).values(dist=bindparam(&quot;dist&quot;))</span>
-        <span class="c">#self._sql_set_dist_ins = Distance.__table__.insert().values(_minimum1_id=bindparam(&quot;id1&quot;),_minimum2_id=bindparam(&quot;id2&quot;), dist=bindparam(&quot;dist&quot;))</span>
+<span class="c">#    def _initialize_queries(self):</span>
+<span class="c">#        #        self._sql_get_dist = select([Distance.__table__.c.dist],</span>
+<span class="c">#        #               or_(and_(Distance.__table__.c._minimum1_id==bindparam(&quot;id1&quot;), </span>
+<span class="c">#        #                        Distance.__table__.c._minimum2_id==bindparam(&quot;id2&quot;)),</span>
+<span class="c">#        #                   and_(Distance.__table__.c._minimum1_id==bindparam(&quot;id2&quot;), </span>
+<span class="c">#        #                        Distance.__table__.c._minimum2_id==bindparam(&quot;id1&quot;)),</span>
+<span class="c">#        #               ), use_labels=False).limit(1)</span>
+<span class="c">#        tbl =  Distance.__table__.c</span>
+<span class="c">#        self._sql_get_dist = select([tbl.dist],and_(</span>
+<span class="c">#                                 tbl._minimum1_id==bindparam(&quot;id1&quot;), </span>
+<span class="c">#                                 tbl._minimum2_id==bindparam(&quot;id2&quot;)</span>
+<span class="c">#                                 ), use_labels=False).limit(1)</span>
+<span class="c">#                                 </span>
+<span class="c">#        #self._sql_set_dist = Distance.__table__.insert().values(_minimum1_id=bindparam(&quot;id1&quot;),_minimum2_id=bindparam(&quot;id2&quot;), dist=bindparam(&quot;dist&quot;))</span>
+<span class="c">#        self._sql_set_dist = &quot;INSERT OR REPLACE INTO tbl_distances (dist, _minimum1_id, _minimum2_id) VALUES (:dist, :id1, :id2)&quot;</span>
+<span class="c">#        </span>
+<span class="c">#        #self._sql_set_dist_upd = Distance.__table__.update().where(and_(tbl._minimum1_id==bindparam(&quot;id1&quot;),tbl._minimum2_id==bindparam(&quot;id2&quot;))).values(dist=bindparam(&quot;dist&quot;))</span>
+<span class="c">#        #self._sql_set_dist_ins = Distance.__table__.insert().values(_minimum1_id=bindparam(&quot;id1&quot;),_minimum2_id=bindparam(&quot;id2&quot;), dist=bindparam(&quot;dist&quot;))</span>
         
     <span class="k">def</span> <span class="nf">_highest_energy_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the minimum with the highest energy&quot;&quot;&quot;</span>
@@ -585,112 +624,24 @@
             <span class="c">#self.lock.release()</span>
             <span class="k">return</span> <span class="n">m</span>
         <span class="k">return</span> <span class="bp">None</span>
-    </div>
+</div>
+<div class="viewcode-block" id="Database.getTransitionStatesMinimum"><a class="viewcode-back" href="../../../generated/pele.storage.Database.getTransitionStatesMinimum.html#pele.storage.Database.getTransitionStatesMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">getTransitionStatesMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return all transition states connected to a minimum</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ts : None or TransitionState</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span>\
+            <span class="nb">filter</span><span class="p">(</span><span class="n">or_</span><span class="p">(</span><span class="n">TransitionState</span><span class="o">.</span><span class="n">minimum1</span><span class="o">==</span><span class="n">min1</span><span class="p">,</span> 
+                       <span class="n">TransitionState</span><span class="o">.</span><span class="n">minimum2</span><span class="o">==</span><span class="n">min1</span>
+                       <span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">candidates</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</div>
 <div class="viewcode-block" id="Database.getTransitionStateFromID"><a class="viewcode-back" href="../../../generated/pele.storage.Database.getTransitionStateFromID.html#pele.storage.Database.getTransitionStateFromID">[docs]</a>    <span class="k">def</span> <span class="nf">getTransitionStateFromID</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the transition state with id id_&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span>
-    </div>
-<div class="viewcode-block" id="Database.setDistance"><a class="viewcode-back" href="../../../generated/pele.storage.Database.setDistance.html#pele.storage.Database.setDistance">[docs]</a>    <span class="k">def</span> <span class="nf">setDistance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;set the distance between two minima</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">id1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
-        <span class="n">id2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sql_set_dist</span><span class="p">,</span> <span class="p">[{</span><span class="s">&#39;id1&#39;</span><span class="p">:</span><span class="n">id1</span><span class="p">,</span> <span class="s">&#39;id2&#39;</span><span class="p">:</span><span class="n">id2</span><span class="p">,</span> <span class="s">&#39;dist&#39;</span><span class="p">:</span><span class="n">dist</span><span class="p">}])</span>
-        
-        <span class="c">#res = self.connection.execute(self._sql_set_dist_upd, [{&#39;id1&#39;:min1._id, &#39;id2&#39;:min2._id, &#39;dist&#39;:dist}])</span>
-        <span class="c">#if(res.rowcount == 0):</span>
-        <span class="c">#    self.connection.execute(self._sql_set_dist_ins, [{&#39;id1&#39;:min1._id, &#39;id2&#39;:min2._id, &#39;dist&#39;:dist}])</span>
-        
-        </div>
-<div class="viewcode-block" id="Database.setDistanceBulk"><a class="viewcode-back" href="../../../generated/pele.storage.Database.setDistanceBulk.html#pele.storage.Database.setDistanceBulk">[docs]</a>    <span class="k">def</span> <span class="nf">setDistanceBulk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;set multiple distances</span>
-<span class="sd">        </span>
-<span class="sd">        This is faster than calling `setDistance` multiple times</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        values : iterable of tuples of form ((min1, min2), dist)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">submit</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">mins</span><span class="p">,</span> <span class="n">dist</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
-            <span class="n">submit</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;id1&#39;</span><span class="p">:</span><span class="nb">min</span><span class="p">(</span><span class="n">mins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">mins</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span> <span class="s">&#39;id2&#39;</span><span class="p">:</span><span class="nb">max</span><span class="p">(</span><span class="n">mins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">mins</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span> <span class="s">&#39;dist&#39;</span><span class="p">:</span><span class="n">dist</span><span class="p">})</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sql_set_dist</span><span class="p">,</span> <span class="n">submit</span><span class="p">)</span>
-        
-<span class="c">#    def setDistanceMultiple(self, newdistances, commit=True):</span>
-<span class="c">#        &quot;&quot;&quot;set multiple distances at once</span>
-<span class="c">#        </span>
-<span class="c">#        this should be much faster than calling setDistance</span>
-<span class="c">#        multiple times.  Especially for databases with many </span>
-<span class="c">#        distances</span>
-<span class="c">#        </span>
-<span class="c">#        Parameters</span>
-<span class="c">#        ----------</span>
-<span class="c">#        distances :</span>
-<span class="c">#            a dictionary of distances with the key a tuple of minima</span>
-<span class="c">#        &quot;&quot;&quot;</span>
-<span class="c">#        #copy distances so it can be safely modified</span>
-<span class="c">#        newdistances = newdistances.copy()</span>
-<span class="c">#        </span>
-<span class="c">#        #update distances that are already in the database and remove</span>
-<span class="c">#        #them from newdistances</span>
-<span class="c">#        for d in self.distances():</span>
-<span class="c">#            m1id, m2id = d._minimum1_id, d._minimum2_id</span>
-<span class="c">#            </span>
-<span class="c">#            dnew = newdistances.get((m1id, m2id))</span>
-<span class="c">#            if dnew is not None:</span>
-<span class="c">#                d.dist = dnew</span>
-<span class="c">#                newdistances.pop((m1id, m2id))</span>
-<span class="c">#</span>
-<span class="c">#            #check alternate ordering as well</span>
-<span class="c">#            dnew = newdistances.get((m2id, m1id))</span>
-<span class="c">#            if dnew is not None:</span>
-<span class="c">#                d.dist = dnew</span>
-<span class="c">#                newdistances.pop((m2id, m1id))</span>
-<span class="c">#        </span>
-<span class="c">#        #all the rest of the distances in newdistances are not in the database.</span>
-<span class="c">#        #Add them all.</span>
-<span class="c">#        for d in newdistances.items():</span>
-<span class="c">#            self.session.add(Distance(d[1], d[0][0], d[0][1]))</span>
-<span class="c">#        </span>
-<span class="c">#        if(commit):</span>
-<span class="c">#            self.session.commit()        </span>
-            </div>
-<div class="viewcode-block" id="Database.getDistanceORM"><a class="viewcode-back" href="../../../generated/pele.storage.Database.getDistanceORM.html#pele.storage.Database.getDistanceORM">[docs]</a>    <span class="k">def</span> <span class="nf">getDistanceORM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;slow way of getting distance.  deprecated&quot;&quot;&quot;</span>
-        <span class="k">if</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span> <span class="o">&gt;</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">):</span>
-            <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">min2</span><span class="p">,</span> <span class="n">min1</span>
-            
-        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Distance</span><span class="p">)</span><span class="o">.</span>\
-            <span class="nb">filter</span><span class="p">(</span><span class="n">and_</span><span class="p">(</span><span class="n">Distance</span><span class="o">.</span><span class="n">minimum1</span><span class="o">==</span><span class="n">min1</span><span class="p">,</span> 
-                            <span class="n">Distance</span><span class="o">.</span><span class="n">minimum2</span><span class="o">==</span><span class="n">min2</span><span class="p">))</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">candidates</span><span class="o">.</span><span class="n">one</span><span class="p">()</span><span class="o">.</span><span class="n">dist</span>        
-        <span class="k">except</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">NoResultFound</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">None</span>
-    </div>
-<div class="viewcode-block" id="Database.getDistance"><a class="viewcode-back" href="../../../generated/pele.storage.Database.getDistance.html#pele.storage.Database.getDistance">[docs]</a>    <span class="k">def</span> <span class="nf">getDistance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;return the distance between two minima</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        --------</span>
-<span class="sd">        dist : float or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sql_get_dist</span><span class="p">,</span> <span class="n">id1</span><span class="o">=</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">id2</span><span class="o">=</span><span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
-        <span class="n">dist</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
-        <span class="n">result</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">dist</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">None</span>
-        <span class="k">return</span> <span class="n">dist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        </div>
-<div class="viewcode-block" id="Database.distances"><a class="viewcode-back" href="../../../generated/pele.storage.Database.distances.html#pele.storage.Database.distances">[docs]</a>    <span class="k">def</span> <span class="nf">distances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;return an iterator over all distances in database</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="c">#return self.session.query(Distance).all()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Distance</span><span class="p">)</span><span class="o">.</span><span class="n">yield_per</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-        <span class="c">#return self.session.query(Distance)</span>
-
-        
     </div>
 <div class="viewcode-block" id="Database.minima"><a class="viewcode-back" href="../../../generated/pele.storage.Database.minima.html#pele.storage.Database.minima">[docs]</a>    <span class="k">def</span> <span class="nf">minima</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order_energy</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;return an iterator over all minima in database</span>
@@ -751,17 +702,9 @@
 <div class="viewcode-block" id="Database.removeMinimum"><a class="viewcode-back" href="../../../generated/pele.storage.Database.removeMinimum.html#pele.storage.Database.removeMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">removeMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;remove a minimum from the database</span>
 <span class="sd">        </span>
-<span class="sd">        Remove a minimum and any objects (TransitionState or Distance) </span>
+<span class="sd">        Remove a minimum and any objects (TransitionState) </span>
 <span class="sd">        pointing to that minimum.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#delete any distance objects pointing to min2</span>
-        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Distance</span><span class="p">)</span><span class="o">.</span>\
-            <span class="nb">filter</span><span class="p">(</span><span class="n">or_</span><span class="p">(</span><span class="n">Distance</span><span class="o">.</span><span class="n">minimum1</span> <span class="o">==</span> <span class="n">m</span><span class="p">,</span> 
-                       <span class="n">Distance</span><span class="o">.</span><span class="n">minimum2</span> <span class="o">==</span> <span class="n">m</span><span class="p">))</span>
-        <span class="n">candidates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-            
         <span class="c">#delete any transition states objects pointing to min2</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span>\
             <span class="nb">filter</span><span class="p">(</span><span class="n">or_</span><span class="p">(</span><span class="n">TransitionState</span><span class="o">.</span><span class="n">minimum1</span> <span class="o">==</span> <span class="n">m</span><span class="p">,</span> 
@@ -783,9 +726,6 @@
 <span class="sd">        </span>
 <span class="sd">        min2 will be deleted and everything that </span>
 <span class="sd">        points to min2 will point to min1 instead.</span>
-<span class="sd">        </span>
-<span class="sd">        (actually, any Distance objects pointing to </span>
-<span class="sd">        min2 will just be deleted)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c">#find all transition states for which ts.minimum1 is min2</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span>\
@@ -804,17 +744,6 @@
             <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span> <span class="o">=</span> <span class="n">min1</span>
             <span class="k">if</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="o">.</span><span class="n">_id</span> <span class="o">&gt;</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="o">.</span><span class="n">_id</span><span class="p">:</span>
                 <span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span>
-              
-        
-        <span class="c">#delete any distance objects pointing to min2</span>
-        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Distance</span><span class="p">)</span><span class="o">.</span>\
-            <span class="nb">filter</span><span class="p">(</span><span class="n">or_</span><span class="p">(</span><span class="n">Distance</span><span class="o">.</span><span class="n">minimum1</span> <span class="o">==</span> <span class="n">min2</span><span class="p">,</span> 
-                       <span class="n">Distance</span><span class="o">.</span><span class="n">minimum2</span> <span class="o">==</span> <span class="n">min2</span><span class="p">))</span>
-
-        <span class="c">#copy it into list format so the iterator doesn&#39;t get corrupted as we delete things            </span>
-        <span class="n">candidates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">min2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
@@ -850,36 +779,132 @@
 <span class="sd">        number_of_minima</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Database.get_property"><a class="viewcode-back" href="../../../generated/pele.storage.Database.get_property.html#pele.storage.Database.get_property">[docs]</a>    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the minimum with a given name&quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">SystemProperty</span><span class="p">)</span><span class="o">.</span>\
+            <span class="nb">filter</span><span class="p">(</span><span class="n">SystemProperty</span><span class="o">.</span><span class="n">property_name</span> <span class="o">==</span> <span class="n">property_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">candidates</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Database.properties"><a class="viewcode-back" href="../../../generated/pele.storage.Database.properties.html#pele.storage.Database.properties">[docs]</a>    <span class="k">def</span> <span class="nf">properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">as_dict</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">SystemProperty</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">as_dict</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">query</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Database.add_property"><a class="viewcode-back" href="../../../generated/pele.storage.Database.add_property.html#pele.storage.Database.add_property">[docs]</a>    <span class="k">def</span> <span class="nf">add_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;add a system property to the database</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            the name of the property</span>
+<span class="sd">        value : object</span>
+<span class="sd">            the value of the property</span>
+<span class="sd">        dtype : string</span>
+<span class="sd">            the datatype of the property.  This can be &quot;int&quot;, &quot;float&quot;, </span>
+<span class="sd">            &quot;string&quot;, &quot;pickle&quot;, or None.  If None, the datatype will be</span>
+<span class="sd">            automatically determined.</span>
+<span class="sd">        </span>
+<span class="sd">        This could anything, such as a potential parameter, the number of atoms, or the</span>
+<span class="sd">        list of frozen atoms. The properties can be stored as integers, floats, </span>
+<span class="sd">        strings, or a pickled object.  Only one of the property value types </span>
+<span class="sd">        should be set for each property.</span>
+<span class="sd">        </span>
+<span class="sd">        For a value of type &quot;pickle&quot;, pass the object you want pickled, not </span>
+<span class="sd">        the pickled object.  We will do the pickling and unpickling for you.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">SystemProperty</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># the database already has a property with this name, Try to determine if they are the same             </span>
+            <span class="n">same</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">new</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="n">same</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;warning, could not compare value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="s">&quot;with&quot;</span><span class="p">,</span> <span class="n">new</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+                <span class="k">pass</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">same</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;property </span><span class="si">%s</span><span class="s"> already exists and the value does not compare equal to the new value.&quot;</span> <span class="p">)</span>
+                <span class="k">print</span> <span class="s">&quot;warning: overwriting old property&quot;</span><span class="p">,</span> <span class="n">new</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># try to determine type of the value</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="s">&quot;int&quot;</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="s">&quot;float&quot;</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="s">&quot;string&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="s">&quot;pickle&quot;</span>
+        
+        <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s">&quot;string&quot;</span><span class="p">:</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">string_value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s">&quot;int&quot;</span><span class="p">:</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">int_value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s">&quot;float&quot;</span><span class="p">:</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">float_value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s">&quot;pickle&quot;</span><span class="p">:</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">pickle_value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;dtype must be one of &quot;int&quot;, &quot;float&quot;, &quot;string&quot;, &quot;pickle&quot;, or None&#39;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">commit</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">new</span>
+    </div>
+<div class="viewcode-block" id="Database.add_properties"><a class="viewcode-back" href="../../../generated/pele.storage.Database.add_properties.html#pele.storage.Database.add_properties">[docs]</a>    <span class="k">def</span> <span class="nf">add_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;add multiple properties from a dictionary</span>
+<span class="sd">        </span>
+<span class="sd">        properties : dict</span>
+<span class="sd">            a dictionary of (name, value) pairs.  The data type of the value</span>
+<span class="sd">            will be determined automatically</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_property</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
+            
 
 </div></div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>    
+<span class="k">def</span> <span class="nf">test_fast_insert</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;bulk inserts are *really* slow, we should add something along the lines of this</span>
+<span class="sd">    answer to speed things up where needed</span>
+<span class="sd">    </span>
+<span class="sd">    http://stackoverflow.com/questions/11769366/why-is-sqlalchemy-insert-with-sqlite-25-times-slower-than-using-sqlite3-directly</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
-    <span class="n">m1</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-    <span class="n">m2</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="mf">3.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="mf">2.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="mf">1.001</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">minimum_adder</span><span class="p">()(</span><span class="mi">7</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-    <span class="n">ts</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">addTransitionState</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
-    <span class="n">ts</span><span class="o">.</span><span class="n">eigenval</span><span class="o">=</span><span class="mf">11.</span>
-    
-    <span class="n">db</span><span class="o">.</span><span class="n">setDistance</span><span class="p">(</span><span class="mf">21.</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">m1</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">setDistance</span><span class="p">(</span><span class="mf">12.</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">setDistance</span><span class="p">(</span><span class="mf">211.</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">m1</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">setDistance</span><span class="p">(</span><span class="mf">11.</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m1</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">setDistance</span><span class="p">(</span><span class="mf">22.</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
-    <span class="c">#db.setDistance(11., m1, m2)</span>
-    <span class="k">print</span> <span class="n">db</span><span class="o">.</span><span class="n">getDistance</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;List of all distances&quot;</span>
-    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">distances</span><span class="p">():</span>
-        <span class="k">print</span> <span class="n">d</span><span class="o">.</span><span class="n">minimum1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">minimum2</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">dist</span>        
-
-    <span class="k">print</span>    
+    <span class="k">print</span> <span class="n">Minimum</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">insert</span><span class="p">()</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                      <span class="n">Minimum</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span>
+                      <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">energy</span><span class="o">=.</span><span class="mo">01</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">]),</span> <span class="n">invalid</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                      <span class="nb">dict</span><span class="p">(</span><span class="n">energy</span><span class="o">=.</span><span class="mo">02</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">2.</span><span class="p">]),</span> <span class="n">invalid</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                      <span class="p">]</span>
+                      <span class="p">)</span>
+    <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">TransitionState</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span>
+                      <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.</span><span class="p">]),</span> <span class="n">_minimum1_id</span><span class="o">=</span><span class="n">m1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> 
+                            <span class="n">_minimum2_id</span><span class="o">=</span><span class="n">m2</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
+                       <span class="p">]</span>
+                      <span class="p">)</span>
     <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
-        <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">energy</span>
-    <span class="c">#for i in db.transition_states():</span>
-    <span class="c">#    print i, i.energy, i.eigenval, i.eigenvec</span>
-    
-    <span class="k">print</span> <span class="s">&quot;largest_energy_minimum&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">_highest_energy_minimum</span><span class="p">()</span><span class="o">.</span><span class="n">energy</span>
+        <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">_id</span>
+        <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">energy</span>
+        <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">coords</span>
+        <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">invalid</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">invalid</span><span class="p">)</span>
+        
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">transition_states</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">print</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="o">.</span><span class="n">energy</span>
+    <span class="k">print</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="o">.</span><span class="n">energy</span>
+    <span class="k">print</span> <span class="n">ts</span><span class="o">.</span><span class="n">_id</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test_fast_insert</span><span class="p">()</span>
 </pre></div>
 
           </div>

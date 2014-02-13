@@ -23,6 +23,7 @@ pele.systems.BLJCluster
          ~BLJCluster.get_metric_tensor
          ~BLJCluster.get_mindist
          ~BLJCluster.get_minimizer
+         ~BLJCluster.get_ndof
          ~BLJCluster.get_normalmodes
          ~BLJCluster.get_nzero_modes
          ~BLJCluster.get_orthogonalize_to_zero_eigenvectors
@@ -31,6 +32,7 @@ pele.systems.BLJCluster
          ~BLJCluster.get_potential
          ~BLJCluster.get_random_configuration
          ~BLJCluster.get_random_minimized_configuration
+         ~BLJCluster.get_system_properties
          ~BLJCluster.get_takestep
          ~BLJCluster.load_coords_pymol
          ~BLJCluster.smooth_path

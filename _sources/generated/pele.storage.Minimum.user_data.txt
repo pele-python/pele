@@ -1,0 +1,6 @@
+pele.storage.Minimum.user_data
+==============================
+
+.. currentmodule:: pele.storage
+
+.. autoattribute:: Minimum.user_data

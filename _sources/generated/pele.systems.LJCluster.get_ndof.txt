@@ -1,0 +1,6 @@
+pele.systems.LJCluster.get_ndof
+===============================
+
+.. currentmodule:: pele.systems
+
+.. automethod:: LJCluster.get_ndof

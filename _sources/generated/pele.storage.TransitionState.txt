@@ -25,9 +25,11 @@ pele.storage.TransitionState
          ~TransitionState.eigenvec
          ~TransitionState.energy
          ~TransitionState.fvib
+         ~TransitionState.invalid
          ~TransitionState.metadata
          ~TransitionState.minimum1
          ~TransitionState.minimum2
          ~TransitionState.pgorder
+         ~TransitionState.user_data
    
    

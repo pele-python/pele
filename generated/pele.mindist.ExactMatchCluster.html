@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Structure Alignment (pele.mindist)" href="../structure_alignment.html" />
-    <link rel="next" title="pele.mindist.ExactMatchCluster.check_match" href="pele.mindist.ExactMatchCluster.check_match.html" />
+    <link rel="next" title="pele.mindist.ExactMatchCluster.apply_transformation" href="pele.mindist.ExactMatchCluster.apply_transformation.html" />
     <link rel="prev" title="pele.mindist.MinPermDistCluster.finalize_best_match" href="pele.mindist.MinPermDistCluster.finalize_best_match.html" /> 
   </head>
   <body>
@@ -44,7 +44,7 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pele.mindist.ExactMatchCluster.check_match.html" title="pele.mindist.ExactMatchCluster.check_match"
+          <a href="pele.mindist.ExactMatchCluster.apply_transformation.html" title="pele.mindist.ExactMatchCluster.apply_transformation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pele.mindist.MinPermDistCluster.finalize_best_match.html" title="pele.mindist.MinPermDistCluster.finalize_best_match"
@@ -63,7 +63,7 @@
 <h1>pele.mindist.ExactMatchCluster<a class="headerlink" href="#pele-mindist-exactmatchcluster" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.mindist.ExactMatchCluster">
-<em class="property">class </em><tt class="descclassname">pele.mindist.</tt><tt class="descname">ExactMatchCluster</tt><big>(</big><em>tol=0.01</em>, <em>accuracy=0.01</em>, <em>transform=&lt;pele.mindist._minpermdist_policies.TransformAtomicCluster object at 0x4682ad0&gt;</em>, <em>measure=&lt;pele.mindist._minpermdist_policies.MeasureAtomicCluster object at 0x4682b10&gt;</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/exact_match.html#ExactMatchCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.ExactMatchCluster" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.mindist.</tt><tt class="descname">ExactMatchCluster</tt><big>(</big><em>tol=0.01</em>, <em>accuracy=0.01</em>, <em>transform=&lt;pele.mindist._minpermdist_policies.TransformAtomicCluster object at 0x2757e90&gt;</em>, <em>measure=&lt;pele.mindist._minpermdist_policies.MeasureAtomicCluster object at 0x2757f10&gt;</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/exact_match.html#ExactMatchCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.ExactMatchCluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deterministic check if 2 clusters are a perfect match</p>
 <p>Determines quickly if 2 clusters are a perfect match. It uses
 check_standard_alignment_cluster to get possible orientations.</p>
@@ -107,11 +107,17 @@ particles can be permuted</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.ExactMatchCluster.check_match.html#pele.mindist.ExactMatchCluster.check_match" title="pele.mindist.ExactMatchCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
-<td>Make a more detailed comparison if the 2 structures match</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.ExactMatchCluster.apply_transformation.html#pele.mindist.ExactMatchCluster.apply_transformation" title="pele.mindist.ExactMatchCluster.apply_transformation"><tt class="xref py py-obj docutils literal"><span class="pre">apply_transformation</span></tt></a>(x,&nbsp;tform)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.mindist.ExactMatchCluster.check_match.html#pele.mindist.ExactMatchCluster.check_match" title="pele.mindist.ExactMatchCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
+<td>Give a rotation and inversion, make a more detailed comparison if the 2 structures match</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.ExactMatchCluster.find_transformation.html#pele.mindist.ExactMatchCluster.find_transformation" title="pele.mindist.ExactMatchCluster.find_transformation"><tt class="xref py py-obj docutils literal"><span class="pre">find_transformation</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;...])</td>
+<td>Return None if the two structures are different, else return the transformations that brings them into alignment</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="pele.mindist.ExactMatchCluster.standard_alignments.html#pele.mindist.ExactMatchCluster.standard_alignments" title="pele.mindist.ExactMatchCluster.standard_alignments"><tt class="xref py py-obj docutils literal"><span class="pre">standard_alignments</span></tt></a>(coords1,&nbsp;coords2)</td>
-<td></td>
+<td>return an iterator over the standard alignments</td>
 </tr>
 </tbody>
 </table>
@@ -129,8 +135,8 @@ particles can be permuted</p>
   <p class="topless"><a href="pele.mindist.MinPermDistCluster.finalize_best_match.html"
                         title="previous chapter">pele.mindist.MinPermDistCluster.finalize_best_match</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.mindist.ExactMatchCluster.check_match.html"
-                        title="next chapter">pele.mindist.ExactMatchCluster.check_match</a></p>
+  <p class="topless"><a href="pele.mindist.ExactMatchCluster.apply_transformation.html"
+                        title="next chapter">pele.mindist.ExactMatchCluster.apply_transformation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.mindist.ExactMatchCluster.txt"
@@ -166,7 +172,7 @@ particles can be permuted</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pele.mindist.ExactMatchCluster.check_match.html" title="pele.mindist.ExactMatchCluster.check_match"
+          <a href="pele.mindist.ExactMatchCluster.apply_transformation.html" title="pele.mindist.ExactMatchCluster.apply_transformation"
              >next</a> |</li>
         <li class="right" >
           <a href="pele.mindist.MinPermDistCluster.finalize_best_match.html" title="pele.mindist.MinPermDistCluster.finalize_best_match"

@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Rates (pele.rates) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="prev" title="pele.concurrent.ConnectWorker.run" href="generated/pele.concurrent.ConnectWorker.run.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.concurrent.ConnectWorker.run.html" title="pele.concurrent.ConnectWorker.run"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.rates"></span><div class="section" id="rates-pele-rates">
+<h1>Rates (<cite>pele.rates</cite>)<a class="headerlink" href="#rates-pele-rates" title="Permalink to this headline">¶</a></h1>
+<p>This module contains tools to quickly (and exactly) compute transition rates,
+first passage times and and commitor probabilities in a transition network.
+The resulting rates are exact, in the sense of Kinetic Monte Carlo, but the
+analysis can be orders of magnitude faster than doing a Kinetic Monte Carlo</p>
+<p>This module can also be found as an independent package at 
+<a class="reference external" href="https://github.com/js850/kmc_rates">https://github.com/js850/kmc_rates</a></p>
+<div class="section" id="description-of-the-method">
+<h2>Description of the method<a class="headerlink" href="#description-of-the-method" title="Permalink to this headline">¶</a></h2>
+<p>The rates are computed using the New Graph Transformation (NGT) method of
+described in the paper</p>
+<p>Calculating rate constants and committor probabilities for transition networks
+by graph transformation
+David Wales (2009) J. Chem. Phys., 130, 204111 
+<a class="reference external" href="http://dx.doi.org/10.1063/1.3133782">http://dx.doi.org/10.1063/1.3133782</a></p>
+<p>The method uses a graph renormalization method (renormalization in the sense of
+renormalization group theory) to compute exact Kinetic Monte Carlo rates and
+first passage probabilities from a reactant group A to a product group B.  Each
+node <cite>u</cite> has an attribute <cite>tau_u</cite> which is the waiting time at that node.  Each
+edge <cite>u -&gt; v</cite> has an associated transition probability and <cite>P_uv</cite>.  An
+important feature of this algorithm is that each node has a loop edge pointing
+back to itself and associated probability <cite>P_uu</cite> which gives the self-transitio
+probability.  In the typical case the self-transition probabilities will all be
+zero initially, but will take non zero values after renormalization.  The
+transition probabilities always satisfy <cite>sum_v P_uv = 1</cite>.</p>
+<div class="section" id="graph-transformation">
+<h3>graph transformation<a class="headerlink" href="#graph-transformation" title="Permalink to this headline">¶</a></h3>
+<p>The algorithm is most easily described if we first assume that A, and B each
+contain only one node (called <cite>a</cite>, and <cite>b</cite>).  In the algorithm, nodes are
+iteratively removed from the graph until the only two remaining nodes are a and
+<cite>b</cite>.  Upon removing node <cite>x</cite>, in order to preserve the transition times and
+probabilities, the properties of the neighbors of <cite>x</cite> are all updated.  For
+each neighbor, <cite>u</cite>, of <cite>x</cite>, the transition times are updated according to</p>
+<blockquote>
+<div>tau_u -&gt; tau_u + P_ux * tau_x / (1 - P_xx)</div></blockquote>
+<p>Similarly, for each pair, <cite>u</cite> and <cite>v</cite>, of neighbors of <cite>x</cite>
+the transition probabilities are updated according to</p>
+<blockquote>
+<div>P_uv -&gt; P_uv + P_ux * P_xv / (1 - P_xx)</div></blockquote>
+<p>Note that the self-transition probabilities <cite>P_uu</cite> are also updated according to the
+above equation.</p>
+<p>Once the graph is reduced to only the two nodes, <cite>a</cite>, and <cite>b</cite>, 
+the probability <cite>P_ab</cite> is interpreted as the commitor probability from <cite>a</cite> to <cite>b</cite>.  
+That is, the probability that a trajectory starting at <cite>a</cite> will end up at <cite>b</cite> before returning to <cite>a</cite>.  
+Similarly, the mean first passage time from <cite>a</cite> to <cite>b</cite> is simply
+<cite>tau_a / P_ab</cite>.  Note that because the probabilies sum to 1 the mean first passage time can also
+be written <cite>tau_a / (1-P_aa)</cite>.
+The transtion rate from <cite>a</cite> to <cite>b</cite>
+is simply the inverse of the mean first passage time.  The rates and
+probabilites from <cite>b -&gt; a</cite> are read from the resuling graph in the same way.
+The above interpretations are exact in the sense that a Kinetic Monte Carlo
+simulation will give the same result.</p>
+</div>
+<div class="section" id="if-b-has-more-than-one-element">
+<h3>if B has more than one element<a class="headerlink" href="#if-b-has-more-than-one-element" title="Permalink to this headline">¶</a></h3>
+<p>If there is more than one element in <cite>B</cite> the calculation of rates from <cite>a -&gt; B</cite>
+is nearly as simple.  Following the same procedure described above, all nodes
+except those in <cite>A</cite> or <cite>B</cite> are iteratively removed.  
+The commitor probability from <cite>a</cite> to <cite>B</cite> is then the sum over the transition probabilities
+from <cite>a</cite> to <cite>b</cite> for each element <cite>b</cite> in <cite>B</cite>.  This can also be written as</p>
+<blockquote>
+<div>1 - P_aa</div></blockquote>
+<p>The mean first passage time from <cite>a</cite> to <cite>B</cite> is given by</p>
+<blockquote>
+<div>T_aB = tau_a / (1 - P_aa)</div></blockquote>
+</div>
+<div class="section" id="if-a-has-more-than-one-element">
+<h3>if A has more than one element<a class="headerlink" href="#if-a-has-more-than-one-element" title="Permalink to this headline">¶</a></h3>
+<p>In this, the most general case, when both A and B have more than one element,
+the transition rate from <cite>A</cite> to <cite>B</cite> must be computed as an average over
+the inverse mean first passage time for each
+element <cite>a</cite> in <cite>A</cite>. That is</p>
+<blockquote>
+<div>k_AB = average( 1 / T_aB )</div></blockquote>
+<p>The computation is done in two phases.  In the first phase the intermediate
+nodes (those not in <cite>A</cite> or in <cite>B</cite>) are all removed from the graph.  In the
+second phase we first make a backup copy of the graph.  Then for each node <cite>a</cite>
+in <cite>A</cite> we remove from the graph all nodes in <cite>A</cite> (except <cite>a</cite>). This allows us
+to compute commitor probabilities and mean first passage times (<cite>T_aB</cite>) from
+<cite>a</cite> to <cite>B</cite> as described in the preceding section.</p>
+<p>If the nodes <cite>a</cite> are not all equally likely to be occupied, then the above
+average can be a weighted average where each node is weighted according to its
+equilibrium occupation probabilities.</p>
+<p>The rates <cite>B -&gt; A</cite> can be computed in a similar manner</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">GraphReduction</span></tt></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Rates (<cite>pele.rates</cite>)</a><ul>
+<li><a class="reference internal" href="#description-of-the-method">Description of the method</a><ul>
+<li><a class="reference internal" href="#graph-transformation">graph transformation</a></li>
+<li><a class="reference internal" href="#if-b-has-more-than-one-element">if B has more than one element</a></li>
+<li><a class="reference internal" href="#if-a-has-more-than-one-element">if A has more than one element</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.concurrent.ConnectWorker.run.html"
+                        title="previous chapter">pele.concurrent.ConnectWorker.run</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/rates.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.concurrent.ConnectWorker.run.html" title="pele.concurrent.ConnectWorker.run"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

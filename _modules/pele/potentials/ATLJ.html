@@ -223,7 +223,7 @@
         <span class="n">atlj</span> <span class="o">=</span> <span class="n">ATLJ</span><span class="p">(</span><span class="n">Z</span><span class="o">=</span><span class="mf">3.</span><span class="p">)</span>
         
         <span class="n">e</span><span class="p">,</span> <span class="n">Gf</span> <span class="o">=</span> <span class="n">atlj</span><span class="o">.</span><span class="n">getEnergyGradientFortran</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="n">e</span><span class="p">,</span> <span class="n">Gn</span> <span class="o">=</span> <span class="n">atlj</span><span class="o">.</span><span class="n">getEnergyGradientNumerical</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">Gn</span> <span class="o">=</span> <span class="n">atlj</span><span class="o">.</span><span class="n">NumericalDerivative</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
         <span class="k">print</span> <span class="n">Gf</span>
         <span class="k">print</span> <span class="n">Gn</span>
         <span class="n">maxdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Gf</span><span class="o">-</span><span class="n">Gn</span><span class="p">))</span>
@@ -258,7 +258,7 @@
     <span class="k">print</span> <span class="s">&quot;rms gradient&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">rms</span>
     <span class="k">print</span> <span class="s">&quot;number of function calls&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">nfev</span>
 
-    <span class="kn">from</span> <span class="nn">pele.printing.print_atoms_xyz</span> <span class="kn">import</span> <span class="n">printAtomsXYZ</span> <span class="k">as</span> <span class="n">printxyz</span>
+    <span class="kn">from</span> <span class="nn">pele.utils.xyz</span> <span class="kn">import</span> <span class="n">write_xyz</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span>
 
     <span class="n">printlist</span> <span class="o">=</span> <span class="p">[]</span>
@@ -275,7 +275,7 @@
     
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;out.xyz&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">printlist</span><span class="p">:</span>
-            <span class="n">printxyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>    
+            <span class="n">write_xyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>    
     
 
 

@@ -1,0 +1,6 @@
+pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value
+====================================================================
+
+.. currentmodule:: pele.utils.disconnectivity_graph
+
+.. automethod:: DisconnectivityGraph.color_by_value

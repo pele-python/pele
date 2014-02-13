@@ -57,7 +57,7 @@
 
 <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">NEB</span><span class="p">,</span> <span class="n">NEBPar</span>
 <span class="kn">from</span> <span class="nn">pele.transition_states._NEB</span> <span class="kn">import</span> <span class="n">distance_cart</span>
-<span class="kn">from</span> <span class="nn">interpolate</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span><span class="p">,</span> <span class="n">interpolate_linear</span>
+<span class="kn">from</span> <span class="nn">_interpolate</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span><span class="p">,</span> <span class="n">interpolate_linear</span>
 <span class="kn">from</span> <span class="nn">pele.utils.events</span> <span class="kn">import</span> <span class="n">Signal</span>
 
 <span class="nb">all</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;NEBDriver&quot;</span><span class="p">]</span>
@@ -137,7 +137,7 @@
 <span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span>
-                 <span class="n">k</span> <span class="o">=</span> <span class="mf">100.</span><span class="p">,</span> <span class="n">max_images</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">image_density</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iter_density</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                 <span class="n">k</span> <span class="o">=</span> <span class="mf">100.</span><span class="p">,</span> <span class="n">max_images</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">image_density</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">iter_density</span> <span class="o">=</span> <span class="mf">10.</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">NEBquenchParams</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">adjustk_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> 
                  <span class="n">adjustk_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">adjustk_factor</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span> <span class="n">dneb</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                  <span class="n">reinterpolate_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
@@ -312,7 +312,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_images</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">nimages</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nimages</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_images</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">nimages</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_images</span><span class="p">:</span>
-            <span class="n">nimages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_images</span>
+            <span class="n">nimages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_images</span><span class="p">)</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">InterpolatedPath</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">nimages</span><span class="p">,</span> <span class="n">interpolator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolator</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">path</span><span class="p">]</span>
@@ -328,6 +328,8 @@
             <span class="n">nimages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="n">acc_dist</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_density</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_images</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">nimages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">nimages</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_images</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">nimages</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_images</span><span class="p">:</span>
+            <span class="n">nimages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_images</span><span class="p">)</span>
             
         <span class="c">#print avdev, abs(float(nimages - len(path))/float(nimages))</span>
         <span class="c"># only reinterpolate if above tolerance</span>

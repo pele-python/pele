@@ -40,8 +40,8 @@ for us::
 
   quencher = system.get_minimizer()
   ret = quencher(coords)
-  newcoords = ret[0]
-  newenergy = ret[1]
+  newcoords = ret.coords
+  newenergy = ret.energy
   print "after quenching, the energy is", newenergy
 
 Next we will create a :ref:`database <database>` to store the newly
@@ -99,15 +99,17 @@ finds a connected series of minima and transition states between two minima::
 Finally, lets connect all of the minima in the database to the lowest minimum::
 
   print "now connecting all the minima to the lowest energy minimum"
-  m1 = db.minima()[0]
-  for m2 in db.minima()[1:]:
+  from pele.landscape import ConnectManager
+  manager = ConnectManager(db, strategy="gmin")
+  for i in xrange(db.number_of_minima()-1):
       print "connecting minima with id's", m1._id, m2._id
+      m1, m2 = manager.get_connect_job()
       connect = system.get_double_ended_connect(m1, m2, db)
       connect.connect()
+
 
 And we'll end by printing out some information about what is in the database::
 
   print "database summary:"
   print "    ", len(db.minima()), "minima"
   print "    ", len(db.transition_states()), "transition states"
-

@@ -72,7 +72,7 @@
 <span class="kn">from</span> <span class="nn">pele.utils.neighbor_list</span> <span class="kn">import</span> <span class="n">NeighborListSubsetBuild</span><span class="p">,</span> <span class="n">NeighborListPotentialBuild</span>
 <span class="kn">from</span> <span class="nn">pele.utils.neighbor_list</span> <span class="kn">import</span> <span class="n">NeighborListPotentialMulti</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;makeBLJNeighborListPotFreeze&quot;</span><span class="p">,</span> <span class="s">&quot;FreezePot&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;makeBLJNeighborListPotFreeze&quot;</span><span class="p">,</span> <span class="s">&quot;FreezePot&quot;</span><span class="p">,</span> <span class="s">&quot;FrozenPotWrapper&quot;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">MultiComponentSystemFreeze</span><span class="p">(</span><span class="n">basepot</span><span class="p">):</span>
@@ -301,6 +301,143 @@
             <span class="n">hess</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">g1</span> <span class="o">-</span> <span class="n">g2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">eps</span><span class="p">)</span>
             <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xbkup</span>
         <span class="k">return</span> <span class="n">hess</span>
+</div></div>
+<span class="k">class</span> <span class="nc">FrozenCoordsConverter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a tool to convert to and from the reduce set of coordinate in a system with frozen atoms</span>
+<span class="sd">    </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reference_coords : numpy array</span>
+<span class="sd">            a set of reference coordinates.  This defines the positions of the frozen </span>
+<span class="sd">            coordinates and the total number of degrees of freedom</span>
+<span class="sd">        frozen_dof : list</span>
+<span class="sd">            a list of the frozen degrees of freedom</span>
+<span class="sd">     </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference_coords</span><span class="p">,</span> <span class="n">frozen_dof</span><span class="p">):</span>
+        <span class="c"># remove duplicates</span>
+        <span class="n">frset</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">frozen_dof</span><span class="p">)</span>
+        <span class="n">frozen_dof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">frset</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
+        <span class="n">frozen_dof</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frozen_dof</span> <span class="o">=</span> <span class="n">frozen_dof</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_coords</span> <span class="o">=</span> <span class="n">reference_coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">reference_coords</span><span class="p">))</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frset</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">frozen_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_coords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">frozen_dof</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">get_frozen_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">get_reduced_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fullcoords</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">fullcoords</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fullcoords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_full_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span><span class="p">)</span>
+        <span class="n">fullcoords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">fullcoords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span>
+        <span class="k">return</span> <span class="n">fullcoords</span>
+    
+    <span class="k">def</span> <span class="nf">get_frozen_dof</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_dof</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">get_mobile_dof</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">get_reduced_hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">H</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_coords</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">Hreduced</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">ired</span><span class="p">,</span> <span class="n">ifull</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">jred</span><span class="p">,</span> <span class="n">jfull</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mobile_dof</span><span class="p">):</span>
+                <span class="n">Hreduced</span><span class="p">[</span><span class="n">ired</span><span class="p">,</span><span class="n">jred</span><span class="p">]</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">ifull</span><span class="p">,</span> <span class="n">jfull</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Hreduced</span>
+
+<span class="k">class</span> <span class="nc">FrozenPotWrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">reference_coords</span><span class="p">,</span> <span class="n">frozen_dof</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Wrapper for a potential object for freezing degrees of freedom</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        potential : object</span>
+<span class="sd">            the pele potential object to be wrapped</span>
+<span class="sd">        reference_coords : numpy array</span>
+<span class="sd">            a set of reference coordinates.  This defines the positions of the frozen </span>
+<span class="sd">            coordinates and the total number of degrees of freedom</span>
+<span class="sd">        frozen_dof : list</span>
+<span class="sd">            a list of the frozen degrees of freedom</span>
+<span class="sd">            </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        </span>
+<span class="sd">        This uses class FrozenCoordsConverter to convert back and forth between the full</span>
+<span class="sd">        set of coordinates and the reduced set of coordinates (those that are still mobile).</span>
+<span class="sd">        </span>
+<span class="sd">        The functions getEnergy and getEnergyGradient accept a reduced set of coordinates,</span>
+<span class="sd">        adds passes it to the wrapped potential for calculation of the energy.  </span>
+<span class="sd">        </span>
+<span class="sd">        You can convert between the full and reduced representation using the functions</span>
+<span class="sd">        `coords_converter.get_reduced_coords()` and `coords_converter.get_full_coords()`.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        The following example shows how to wrap the lennard jones potential and freeze</span>
+<span class="sd">        the first 6 degrees of freedom (2 atoms).  It then does a minimization on the </span>
+<span class="sd">        reduced coordinates and prints off some information</span>
+<span class="sd">        </span>
+<span class="sd">            import numpy as np</span>
+<span class="sd">            from pele.potentials import LJ</span>
+<span class="sd">            from pele.utils.frozen_atoms import FrozenPotWrapper</span>
+<span class="sd">            from pele.optimize import mylbfgs</span>
+<span class="sd">            natoms = 4</span>
+<span class="sd">            pot = LJ()</span>
+<span class="sd">            </span>
+<span class="sd">            reference_coords = np.random.uniform(-1, 1, [3*natoms])</span>
+<span class="sd">            print reference_coords</span>
+<span class="sd">            </span>
+<span class="sd">            #freeze the first two atoms (6 degrees of freedom)</span>
+<span class="sd">            frozen_dof = range(6)</span>
+<span class="sd">            </span>
+<span class="sd">            fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)</span>
+<span class="sd">            </span>
+<span class="sd">            reduced_coords = fpot.coords_converter.get_reduced_coords(reference_coords)</span>
+<span class="sd">            </span>
+<span class="sd">            print &quot;the energy in the full representation:&quot; </span>
+<span class="sd">            print pot.getEnergy(reference_coords)</span>
+<span class="sd">            print &quot;is the same as the energy in the reduced representation:&quot;</span>
+<span class="sd">            print fpot.getEnergy(reduced_coords)</span>
+<span class="sd">            </span>
+<span class="sd">            ret = mylbfgs(reduced_coords, fpot)</span>
+<span class="sd">            print &quot;after a minimization the energy is &quot;, ret.energy, &quot;and the rms gradient is&quot;, ret.rms</span>
+<span class="sd">            print &quot;the coordinates of the frozen degrees of freedom are unchanged&quot;</span>
+<span class="sd">            print &quot;starting coords:&quot;, reference_coords</span>
+<span class="sd">            print &quot;minimized coords:&quot;, fpot.coords_converter.get_full_coords(ret.coords)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">underlying_pot</span> <span class="o">=</span> <span class="n">potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords_converter</span> <span class="o">=</span> <span class="n">FrozenCoordsConverter</span><span class="p">(</span><span class="n">reference_coords</span><span class="p">,</span> <span class="n">frozen_dof</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">fullcoords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_converter</span><span class="o">.</span><span class="n">get_full_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">underlying_pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">fullcoords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e</span>
+    
+    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">fullcoords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_converter</span><span class="o">.</span><span class="n">get_full_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">underlying_pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">fullcoords</span><span class="p">)</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_converter</span><span class="o">.</span><span class="n">get_reduced_coords</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e</span><span class="p">,</span> <span class="n">grad</span>
+
+    <span class="k">def</span> <span class="nf">getHessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="n">fullcoords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_converter</span><span class="o">.</span><span class="n">get_full_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">underlying_pot</span><span class="o">.</span><span class="n">getHessian</span><span class="p">(</span><span class="n">fullcoords</span><span class="p">)</span>
+        <span class="n">Hred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_converter</span><span class="o">.</span><span class="n">get_reduced_hessian</span><span class="p">(</span><span class="n">H</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Hred</span>
+    
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If this class does not have the attribute then pass the call on to self.underlying_pot&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">underlying_pot</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
 
 
@@ -308,7 +445,7 @@
 <span class="c">#########################################################</span>
 <span class="c">#testing stuff below here</span>
 <span class="c">#########################################################</span>
-</div></div>
+
 <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">natoms</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="mf">4.</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">pele.potentials.ljpshiftfast</span> <span class="kn">as</span> <span class="nn">ljpshift</span>
     <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
@@ -371,8 +508,38 @@
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
             <span class="k">print</span> <span class="s">&quot;Could not draw using pymol, skipping this step&quot;</span> 
 
+<span class="k">def</span> <span class="nf">test2</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+    <span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">LJ</span>
+    <span class="kn">from</span> <span class="nn">pele.utils.frozen_atoms</span> <span class="kn">import</span> <span class="n">FrozenPotWrapper</span>
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
+    <span class="n">natoms</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">()</span>
+    
+    <span class="n">reference_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">natoms</span><span class="p">])</span>
+    <span class="k">print</span> <span class="n">reference_coords</span>
+    
+    <span class="c">#freeze the first two atoms (6 degrees of freedom)</span>
+    <span class="n">frozen_dof</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    
+    <span class="n">fpot</span> <span class="o">=</span> <span class="n">FrozenPotWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">reference_coords</span><span class="p">,</span> <span class="n">frozen_dof</span><span class="p">)</span>
+    
+    <span class="n">reduced_coords</span> <span class="o">=</span> <span class="n">fpot</span><span class="o">.</span><span class="n">coords_converter</span><span class="o">.</span><span class="n">get_reduced_coords</span><span class="p">(</span><span class="n">reference_coords</span><span class="p">)</span>
+    
+    <span class="k">print</span> <span class="s">&quot;the energy in the full representation:&quot;</span> 
+    <span class="k">print</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">reference_coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;is the same as the energy in the reduced representation:&quot;</span>
+    <span class="k">print</span> <span class="n">fpot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">reduced_coords</span><span class="p">)</span>
+    
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">reduced_coords</span><span class="p">,</span> <span class="n">fpot</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;after a minimization the energy is &quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="s">&quot;and the rms gradient is&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">rms</span>
+    <span class="k">print</span> <span class="s">&quot;the coordinates of the frozen degrees of freedom are unchanged&quot;</span>
+    <span class="k">print</span> <span class="s">&quot;starting coords:&quot;</span><span class="p">,</span> <span class="n">reference_coords</span>
+    <span class="k">print</span> <span class="s">&quot;minimized coords:&quot;</span><span class="p">,</span> <span class="n">fpot</span><span class="o">.</span><span class="n">coords_converter</span><span class="o">.</span><span class="n">get_full_coords</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    
+
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">test</span><span class="p">()</span>
+    <span class="n">test2</span><span class="p">()</span>
 </pre></div>
 
           </div>

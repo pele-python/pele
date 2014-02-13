@@ -1,0 +1,6 @@
+pele.optimize.LBFGS.get_state
+=============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: LBFGS.get_state

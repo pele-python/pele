@@ -147,6 +147,7 @@
         <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">distbest</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">distbest</span> <span class="o">=</span> <span class="n">dist</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rotbest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rot2</span><span class="p">,</span> <span class="n">rot</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">invbest</span> <span class="o">=</span> <span class="n">invert</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x2_best</span> <span class="o">=</span> <span class="n">x2_trial</span>    
     </div>
 <div class="viewcode-block" id="MinPermDistCluster.finalize_best_match"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.finalize_best_match.html#pele.mindist.MinPermDistCluster.finalize_best_match">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_best_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
@@ -164,7 +165,7 @@
     <span class="k">def</span> <span class="nf">_standard_alignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; get iterator for standard alignments &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">StandardClusterAlignment</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">,</span> 
-                                                    <span class="n">can_invert</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">can_invert</span><span class="p">())</span>
+                                        <span class="n">can_invert</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">can_invert</span><span class="p">())</span>
 <div class="viewcode-block" id="MinPermDistCluster.__call__"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.__call__.html#pele.mindist.MinPermDistCluster.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>        
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Parameters</span>
@@ -177,9 +178,12 @@
 <span class="sd">        -------</span>
 <span class="sd">        a tripple of (dist, coords1, coords2). coords1 are the unchanged coords1</span>
 <span class="sd">        and coords2 are brought in best alignment with coords2</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="c"># we don&#39;t want to change the given coordinates</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c"># we don&#39;t want to change the given coordinates</span>
         <span class="n">check_inversion</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">coords1</span> <span class="o">=</span> <span class="n">coords1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">coords2</span> <span class="o">=</span> <span class="n">coords2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
         <span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
         <span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
     
@@ -195,7 +199,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">x2_best</span> <span class="o">=</span> <span class="n">x2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distbest</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distbest</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span>
+            <span class="n">dist</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">finalize_best_match</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distbest</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">x2</span>
         
         <span class="k">for</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_standard_alignments</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">)</span>

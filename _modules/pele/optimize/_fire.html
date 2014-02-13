@@ -173,6 +173,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span>
         
+        <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="mi">0</span>
+        
 <div class="viewcode-block" id="Fire.initialize"><a class="viewcode-back" href="../../../generated/pele.optimize.Fire.initialize.html#pele.optimize.Fire.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">None</span>
         </div>
@@ -219,6 +221,7 @@
         <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="k">while</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="n">steps</span><span class="p">:</span>
             <span class="n">E</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="c">#self.call_observers()</span>
             <span class="c">#print E</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alternate_stop_criterion</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -241,7 +244,7 @@
             <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
             
         <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">step</span>
-        <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="n">step</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span>
         <span class="n">res</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span>
         <span class="n">res</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">E</span>
         <span class="n">res</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="o">-</span><span class="n">f</span>

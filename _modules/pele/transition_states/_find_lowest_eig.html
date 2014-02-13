@@ -1,0 +1,585 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.transition_states._find_lowest_eig &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.transition_states._find_lowest_eig</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;tools for finding the smallest eigenvalue and associated eigenvector</span>
+<span class="sd">using Rayleigh-Ritz minimization</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">Result</span>
+
+<span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">orthogopt</span>
+<span class="kn">from</span> <span class="nn">pele.potentials.potential</span> <span class="kn">import</span> <span class="n">BasePotential</span>
+<span class="c">#from pele.optimize.lbfgs_py import LBFGS</span>
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">MYLBFGS</span><span class="p">,</span> <span class="n">LBFGS</span>
+<span class="kn">import</span> <span class="nn">pele.utils.rotations</span> <span class="kn">as</span> <span class="nn">rotations</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;findLowestEigenVector&quot;</span><span class="p">,</span> <span class="s">&quot;analyticalLowestEigenvalue&quot;</span><span class="p">,</span> <span class="s">&quot;FindLowestEigenVector&quot;</span><span class="p">]</span>
+
+<span class="c">#logger = logging.getLogger(&quot;pele.connect.findTS&quot;)</span>
+
+<span class="k">class</span> <span class="nc">LowestEigPot</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Potential wrapper for use in an optimizer for finding the eigenvector</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    here the energy corresponds to the eigenvalue, and the coordinates to be</span>
+<span class="sd">    optimized is the eigenvector</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    coords : array</span>
+<span class="sd">        The point in space where we want to compute the lowest eigenvector</span>
+<span class="sd">    pot : potential object</span>
+<span class="sd">        The potential of the system.  i.e. pot.getEnergyGradient(coords)</span>
+<span class="sd">        gives the energy and gradient</span>
+<span class="sd">    </span>
+<span class="sd">    orthogZeroEigs : callable</span>
+<span class="sd">        The function which makes a vector orthogonal to the known</span>
+<span class="sd">        eigenvectors with zero eigenvalues.  The default assumes global</span>
+<span class="sd">        translational and rotational symmetry</span>
+<span class="sd">    dx : float</span>
+<span class="sd">        the local curvature is approximated using points separated by dx</span>
+<span class="sd">    first_order : bool</span>
+<span class="sd">        use the first order forward finite differences approximation for</span>
+<span class="sd">        the curvature rather than the second order central differences</span>
+<span class="sd">        approximation.  This is less accurate, but requires one fewer</span>
+<span class="sd">        potential call per iteration.</span>
+<span class="sd">    gradient : float array</span>
+<span class="sd">        the true gradient at coords.  If first_order is true and gradient</span>
+<span class="sd">        is not None then one potential call will be saved. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+                  <span class="n">first_order</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_order</span> <span class="o">=</span> <span class="n">first_order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
+<span class="c">#        self.coords = coords.copy()</span>
+<span class="c">#        if self.first_order:</span>
+<span class="c">#            if gradient is not None:</span>
+<span class="c">##                self.true_energy = energy</span>
+<span class="c">#                self.true_gradient = gradient.copy()</span>
+<span class="c">#            else:</span>
+<span class="c">#                true_energy, self.true_gradient = self.pot.getEnergyGradient(self.coords)</span>
+        <span class="k">if</span> <span class="n">orthogZeroEigs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span> <span class="o">=</span> <span class="n">orthogopt</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span> <span class="o">=</span> <span class="n">orthogZeroEigs</span>
+        <span class="c">#print &quot;orthogZeroEigs&quot;, self.orthogZeroEigs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">=</span> <span class="n">dx</span>
+    
+    <span class="k">def</span> <span class="nf">_get_true_energy_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the true energy and gradient at coords&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">update_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;update the position at which the curvature is computed&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_order</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">gradient</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+<span class="c">#                self.true_energy = energy</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">true_gradient</span> <span class="o">=</span> <span class="n">gradient</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;possibly computing gradient unnecessarily&quot;</span>
+                <span class="n">true_energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_true_energy_gradient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vec_in</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the &#39;energy&#39; a.k.a. the curvature at coords along the direction vec_in&quot;&quot;&quot;</span>
+        <span class="n">vecl</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">vec_in</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec_in</span><span class="p">)</span>
+            <span class="n">vec_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span><span class="p">(</span><span class="n">vec_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+            <span class="c">#vec_in /= np.linalg.norm(vec_in)</span>
+        <span class="n">vec</span> <span class="o">=</span> <span class="n">vec_in</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec_in</span><span class="p">)</span>
+
+        
+        <span class="n">coordsnew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">*</span> <span class="n">vec</span>
+        <span class="n">Eplus</span><span class="p">,</span> <span class="n">Gplus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_true_energy_gradient</span><span class="p">(</span><span class="n">coordsnew</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_order</span><span class="p">:</span>
+            <span class="n">curvature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">Gplus</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_gradient</span><span class="p">),</span> <span class="n">vec</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">coordsnew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">*</span> <span class="n">vec</span>
+            <span class="n">Eminus</span><span class="p">,</span> <span class="n">Gminus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_true_energy_gradient</span><span class="p">(</span><span class="n">coordsnew</span><span class="p">)</span>
+        
+            <span class="c">#diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)</span>
+            
+            <span class="n">curvature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">Gplus</span> <span class="o">-</span> <span class="n">Gminus</span><span class="p">),</span> <span class="n">vec</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">curvature</span>
+        
+    
+    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vec_in</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the curvature and the gradient of the curvature w.r.t. vec_in  </span>
+<span class="sd">        </span>
+<span class="sd">        vec_in : array </span>
+<span class="sd">            A guess for the lowest eigenvector.  It should be normalized</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vecl</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">vec_in</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec_in</span><span class="p">)</span>
+            <span class="n">vec_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span><span class="p">(</span><span class="n">vec_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+            <span class="c">#vec_in /= np.linalg.norm(vec_in)</span>
+        <span class="n">vec</span> <span class="o">=</span> <span class="n">vec_in</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec_in</span><span class="p">)</span>
+
+        <span class="n">coordsnew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">*</span> <span class="n">vec</span>
+        <span class="n">Eplus</span><span class="p">,</span> <span class="n">Gplus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_true_energy_gradient</span><span class="p">(</span><span class="n">coordsnew</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_order</span><span class="p">:</span>
+            <span class="n">curvature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">Gplus</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_gradient</span><span class="p">),</span> <span class="n">vec</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">coordsnew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">*</span> <span class="n">vec</span>
+            <span class="n">Eminus</span><span class="p">,</span> <span class="n">Gminus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_true_energy_gradient</span><span class="p">(</span><span class="n">coordsnew</span><span class="p">)</span>
+            <span class="c">#diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)</span>
+            <span class="c"># use second order central difference method.</span>
+            <span class="n">curvature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">Gplus</span> <span class="o">-</span> <span class="n">Gminus</span><span class="p">),</span> <span class="n">vec</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span><span class="p">)</span>
+        
+        <span class="c"># higher order central differences would be more accurate but it cannot be differentiated analytically</span>
+        <span class="c"># DIAG = (EPLUS + EMINUS - 2. * ENERGY) / (self.diff)</span>
+        <span class="c"># DIAG3=2*(DIAG-DIAG2/2)</span>
+        <span class="c"># C  Although DIAG3 is a more accurate estimate of the diagonal second derivative, it</span>
+        <span class="c"># C  cannot be differentiated analytically.</span>
+
+        <span class="c"># compute the analytical derivative of the curvature with respect to vec        </span>
+        <span class="c">#GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_order</span><span class="p">:</span>
+            <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="n">Gplus</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_gradient</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">curvature</span> <span class="o">*</span> <span class="n">vec</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="n">Gplus</span> <span class="o">-</span> <span class="n">Gminus</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">*</span> <span class="n">vecl</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">curvature</span> <span class="o">*</span> <span class="n">vec</span> <span class="o">/</span> <span class="n">vecl</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        
+        <span class="c"># Project out any component of the gradient along vec (which is a unit vector)</span>
+        <span class="c"># This is a big improvement for DFTB.</span>
+        <span class="c"># js850&gt; grad should already be perpendicular to vec.  this helps with any numerical errors</span>
+        <span class="n">grad</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">vec</span><span class="p">)</span> <span class="o">*</span> <span class="n">vec</span>
+        
+        <span class="k">return</span> <span class="n">curvature</span><span class="p">,</span> <span class="n">grad</span>
+
+<span class="k">class</span> <span class="nc">FindLowestEigenVector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class to compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coords : float array</span>
+<span class="sd">        the point in space at which to compute the lowest eigenvector</span>
+<span class="sd">    pot : Potential object</span>
+<span class="sd">        the potential energy function</span>
+<span class="sd">    eigenvec0 : float array</span>
+<span class="sd">        the initial guess for the lowest eigenvector</span>
+<span class="sd">    orthogZeroEigs : callable</span>
+<span class="sd">        The function which makes a vector orthogonal to the known</span>
+<span class="sd">        eigenvectors with zero eigenvalues.  The default assumes global</span>
+<span class="sd">        translational and rotational symmetry</span>
+<span class="sd">    dx : float</span>
+<span class="sd">        the local curvature is approximated using points separated by dx</span>
+<span class="sd">    first_order : bool</span>
+<span class="sd">        use the first order forward finite differences approximation for</span>
+<span class="sd">        the curvature rather than the second order central differences</span>
+<span class="sd">        approximation.  This is less accurate, but requires one fewer</span>
+<span class="sd">        potential call per iteration.</span>
+<span class="sd">    gradient : float array</span>
+<span class="sd">        the true gradient at coords.  If first_order is true and gradient</span>
+<span class="sd">        is not None then one potential call will be saved.</span>
+<span class="sd">    minimizer_kwargs : kwargs</span>
+<span class="sd">        these kwargs are passed to the optimizer which finds the direction </span>
+<span class="sd">        of least curvature</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+                  <span class="n">first_order</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">minimizer_kwargs</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimizer_kwargs</span> <span class="o">=</span> <span class="n">minimizer_kwargs</span>
+        
+        <span class="k">if</span> <span class="n">eigenvec0</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c">#this random vector should be distributed uniformly on a hypersphere.</span>
+            <span class="n">eigenvec0</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">vec_random_ndim</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">eigenvec0</span> <span class="o">=</span> <span class="n">eigenvec0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">eigenvec0</span><span class="p">)</span>
+
+        <span class="c"># change some default in the minimizer unless manually set</span>
+        <span class="k">if</span> <span class="s">&quot;nsteps&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">minimizer_kwargs</span><span class="p">:</span>
+            <span class="n">minimizer_kwargs</span><span class="p">[</span><span class="s">&quot;nsteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">500</span>
+        <span class="k">if</span> <span class="s">&quot;logger&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">minimizer_kwargs</span><span class="p">:</span>
+            <span class="n">minimizer_kwargs</span><span class="p">[</span><span class="s">&quot;logger&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;pele.connect.findTS.leig_quench&quot;</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigpot</span> <span class="o">=</span> <span class="n">LowestEigPot</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="n">orthogZeroEigs</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
+                                   <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
+                                   <span class="n">first_order</span><span class="o">=</span><span class="n">first_order</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span> <span class="o">=</span> <span class="n">MYLBFGS</span><span class="p">(</span><span class="n">eigenvec0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigpot</span><span class="p">,</span> <span class="n">rel_energy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> 
+                                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">minimizer_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">stop_criterion_satisfied</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;test if the stop criterion is satisfied&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span><span class="o">.</span><span class="n">stop_criterion_satisfied</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">update_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;update the position at which to compute the eigenvector&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigpot</span><span class="o">.</span><span class="n">update_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span> <span class="o">=</span> <span class="n">MYLBFGS</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigpot</span><span class="p">,</span> <span class="n">rel_energy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">minimizer_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">one_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;do one iteration of the minimizer&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span><span class="o">.</span><span class="n">one_iteration</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">niter</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;do niter iterations, or until the stop criterion is satisfied&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">niter</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">niter</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span><span class="o">.</span><span class="n">stop_criterion_satisfied</span><span class="p">():</span>
+                    <span class="k">break</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">one_iteration</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">get_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the results object&quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimizer</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">energy</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">coords</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="nb">delattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;energy&quot;</span><span class="p">)</span>
+        <span class="nb">delattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s">&quot;coords&quot;</span><span class="p">)</span>
+<span class="c">#        res.minimizer_state = self.minimizer.get_state()</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigpot</span><span class="o">.</span><span class="n">nfev</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+<div class="viewcode-block" id="findLowestEigenVector"><a class="viewcode-back" href="../../../generated/pele.transition_states.findLowestEigenVector.html#pele.transition_states.findLowestEigenVector">[docs]</a><span class="k">def</span> <span class="nf">findLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">H0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+<span class="c">#                          minimizer_state=None, </span>
+                          <span class="n">first_order</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                          <span class="o">**</span><span class="n">minimizer_kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization</span>
+
+<span class="sd">    ***orthogZeroEigs is system dependent, don&#39;t forget to set it***</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coords :</span>
+<span class="sd">        the coordinates at which to find the lowest eigenvector</span>
+<span class="sd">    pot :</span>
+<span class="sd">        potential object</span>
+<span class="sd">    eigenvec0 :</span>
+<span class="sd">        the initial guess for the lowest eigenvector (will be random if not</span>
+<span class="sd">        passed)</span>
+<span class="sd">    H0 : float</span>
+<span class="sd">        the initial guess for the diagonal component of the inverse Hessian</span>
+<span class="sd">    orthogZeroEigs : callable</span>
+<span class="sd">        this function makes a vector orthogonal to the known zero</span>
+<span class="sd">        eigenvectors</span>
+
+<span class="sd">            orthogZeroEigs=0  : default behavior, assume translational and</span>
+<span class="sd">                                rotational symmetry</span>
+<span class="sd">            orthogZeroEigs=None : the vector is unchanged</span>
+<span class="sd">    first_order : bool</span>
+<span class="sd">        use the first order forward finite differences approximation for</span>
+<span class="sd">        the curvature rather than the second order central differences</span>
+<span class="sd">        approximation.  This is less accurate, but requires one fewer</span>
+<span class="sd">        potential call per iteration.</span>
+<span class="sd">    gradient : float array</span>
+<span class="sd">        the true gradient at coords.  If first_order is true and gradient</span>
+<span class="sd">        is not None then one potential call will be saved.</span>
+<span class="sd">    minimizer_kwargs : </span>
+<span class="sd">        any additional keyword arguments are passed to the minimizer</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    FindTransitionState : uses this class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">minimizer_kwargs</span> <span class="o">=</span> <span class="n">minimizer_kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s">&quot;iprint&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">minimizer_kwargs</span><span class="p">:</span>
+        <span class="n">minimizer_kwargs</span><span class="p">[</span><span class="s">&quot;iprint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="k">if</span> <span class="s">&quot;tol&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">minimizer_kwargs</span><span class="p">:</span>
+        <span class="n">minimizer_kwargs</span><span class="p">[</span><span class="s">&quot;tol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-6</span>
+
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">FindLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="n">eigenvec0</span><span class="p">,</span> <span class="n">H0</span><span class="o">=</span><span class="n">H0</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="n">orthogZeroEigs</span><span class="p">,</span> 
+                          <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span> <span class="n">first_order</span><span class="o">=</span><span class="n">first_order</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span> <span class="o">**</span><span class="n">minimizer_kwargs</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">result</span>
+<span class="c">#</span>
+<span class="c">#    </span>
+<span class="c">#    if eigenvec0 is None:</span>
+<span class="c">#        #this random vector should be distributed uniformly on a hypersphere.</span>
+<span class="c">#        eigenvec0 = rotations.vec_random_ndim(coords.shape)</span>
+<span class="c">#    </span>
+<span class="c">#    #set up potential for minimization    </span>
+<span class="c">#    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx,</span>
+<span class="c">#                          first_order=first_order, gradient=gradient)</span>
+<span class="c">#    </span>
+<span class="c">#    #and starting with H0 from last minimization</span>
+<span class="c">#    quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, </span>
+<span class="c">#                     **minimizer_kwargs)</span>
+<span class="c">#    if minimizer_state is not None:</span>
+<span class="c">#        quencher.set_state(minimizer_state)</span>
+<span class="c">#        </span>
+<span class="c">#    res = quencher.run()</span>
+<span class="c">#</span>
+<span class="c">#    #res = Result()</span>
+<span class="c">#    res.eigenval = res.energy</span>
+<span class="c">#    res.eigenvec = res.coords / np.linalg.norm(res.coords)</span>
+<span class="c">#    delattr(res, &quot;energy&quot;)</span>
+<span class="c">#    delattr(res, &quot;coords&quot;)</span>
+<span class="c">#    res.H0 = quencher.H0</span>
+<span class="c">#    res.minimizer_state = quencher.get_state()</span>
+<span class="c">#    res.nfev = eigpot.nfev</span>
+<span class="c">#    #res.success = res.rms &lt;= tol</span>
+<span class="c">#    return res</span>
+</div>
+<span class="k">def</span> <span class="nf">analyticalLowestEigenvalue</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;return the lowest eigenvalue and eigenvector of the hessian computed directly&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">pele.utils.hessian</span> <span class="kn">import</span> <span class="n">get_sorted_eig</span>
+    <span class="sd">&quot;&quot;&quot;for testing&quot;&quot;&quot;</span>
+    <span class="n">hess</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getHessian</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">vals</span><span class="p">,</span> <span class="n">vecs</span> <span class="o">=</span> <span class="n">get_sorted_eig</span><span class="p">(</span><span class="n">hess</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">vecs</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+    
+
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># only testing function below here</span>
+<span class="c">#</span>
+<span class="c">#</span>
+
+
+
+  
+<span class="k">def</span> <span class="nf">testpot2</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">pele.potentials.lj</span> <span class="kn">import</span> <span class="n">LJ</span>
+    <span class="kn">import</span> <span class="nn">itertools</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">()</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.12</span> <span class="c">#2.**(1./6.)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="mf">20.</span><span class="o">/</span><span class="mi">360</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.</span> <span class="p">]</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span>
+        <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">r</span> 
+
+<span class="k">def</span> <span class="nf">testpot1</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">pele.potentials.lj</span> <span class="kn">import</span> <span class="n">LJ</span>
+    <span class="kn">import</span> <span class="nn">itertools</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">()</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.12</span> <span class="c">#2.**(1./6.)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="mf">60.</span><span class="o">/</span><span class="mi">360</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.</span><span class="p">,</span> \
+              <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.1</span> \
+              <span class="p">]</span>
+    <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span>
+        <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">r</span> 
+    
+    <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;initial E&quot;</span><span class="p">,</span> <span class="n">e</span>
+    <span class="k">print</span> <span class="s">&quot;initial G&quot;</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+
+    <span class="n">eigpot</span> <span class="o">=</span> <span class="n">LowestEigPot</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+    <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">eigpot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;eigenvalue&quot;</span><span class="p">,</span> <span class="n">e</span> 
+    <span class="k">print</span> <span class="s">&quot;eigenvector&quot;</span><span class="p">,</span> <span class="n">g</span>
+    
+    <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">hess</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradientHessian</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;shape hess&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">hess</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;hessian&quot;</span><span class="p">,</span> <span class="n">hess</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">hess</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;max imag value&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">imag</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&quot;max imag vector&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">imag</span><span class="p">))</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">real</span>
+        <span class="k">print</span> <span class="s">&quot;eigenvalues&quot;</span><span class="p">,</span> <span class="n">u</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="p">)):</span>
+            <span class="k">print</span> <span class="s">&quot;eigenvalue&quot;</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s">&quot;eigenvector&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span>
+        <span class="c">#find minimum eigenvalue, vector</span>
+        <span class="n">imin</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">umin</span> <span class="o">=</span> <span class="mf">10.</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">umin</span><span class="p">:</span>
+                <span class="n">umin</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">imin</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">print</span> <span class="s">&quot;lowest eigenvalue &quot;</span><span class="p">,</span> <span class="n">umin</span><span class="p">,</span> <span class="n">imin</span>
+        <span class="k">print</span> <span class="s">&quot;lowest eigenvector&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">[:,</span><span class="n">imin</span><span class="p">]</span>
+
+    
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span> <span class="k">as</span> <span class="n">quench</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">eigpot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">maxstep</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> \
+                 <span class="n">rel_energy</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">ret</span>
+    
+    <span class="k">print</span> <span class="s">&quot;lowest eigenvalue &quot;</span>
+    <span class="k">print</span> <span class="n">umin</span><span class="p">,</span> <span class="n">imin</span>
+    <span class="k">print</span> <span class="s">&quot;lowest eigenvector&quot;</span>
+    <span class="k">print</span> <span class="n">v</span><span class="p">[:,</span><span class="n">imin</span><span class="p">]</span>
+    <span class="k">print</span> <span class="s">&quot;now the estimate&quot;</span>
+    <span class="k">print</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">print</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">testpot3</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">transition_state_refinement</span> <span class="kn">import</span> <span class="n">guesstsLJ</span>
+    <span class="n">pot</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">guesstsLJ</span><span class="p">()</span>
+    <span class="n">coordsinit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+    <span class="n">eigpot</span> <span class="o">=</span> <span class="n">LowestEigPot</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+    
+    <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+    
+    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span> <span class="k">as</span> <span class="n">quench</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">eigpot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">maxstep</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> \
+                 <span class="n">rel_energy</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">eigval</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">eigvec</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">print</span> <span class="s">&quot;eigenvalue &quot;</span><span class="p">,</span> <span class="n">eigval</span>
+    <span class="k">print</span> <span class="s">&quot;eigenvector&quot;</span><span class="p">,</span> <span class="n">eigvec</span>
+
+    <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">hess</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradientHessian</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">hess</span><span class="p">)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">real</span>
+        <span class="k">print</span> <span class="s">&quot;eigenvalues&quot;</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="c">#for i in range(len(u)):</span>
+        <span class="c">#    print &quot;eigenvalue&quot;, u[i], &quot;eigenvector&quot;, v[:,i]</span>
+        <span class="c">#find minimum eigenvalue, vector</span>
+        <span class="n">imin</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">umin</span> <span class="o">=</span> <span class="mf">10.</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">umin</span><span class="p">:</span>
+                <span class="n">umin</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">imin</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="c">#print &quot;lowest eigenvalue &quot;, umin, imin</span>
+        <span class="c">#print &quot;lowest eigenvector&quot;, v[:,imin]</span>
+        
+        
+        
+        <span class="n">trueval</span><span class="p">,</span> <span class="n">truevec</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="n">imin</span><span class="p">],</span> <span class="n">v</span><span class="p">[:,</span><span class="n">imin</span><span class="p">]</span>
+        <span class="k">print</span> <span class="s">&quot;analytical lowest eigenvalue&quot;</span><span class="p">,</span> <span class="n">trueval</span>
+        <span class="n">maxdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">truevec</span> <span class="o">-</span> <span class="n">eigvec</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&quot;maximum difference between estimated and analytical eigenvectors&quot;</span><span class="p">,</span> <span class="n">maxdiff</span><span class="p">,</span> \
+            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">eigvec</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">truevec</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">truevec</span><span class="p">,</span> <span class="n">eigvec</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">eigvec</span>
+            <span class="k">print</span> <span class="n">truevec</span>
+
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c">#testpot1()</span>
+    <span class="n">testpot3</span><span class="p">()</span>
+    
+    
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

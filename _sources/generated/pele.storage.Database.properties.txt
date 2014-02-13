@@ -1,0 +1,6 @@
+pele.storage.Database.properties
+================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.properties

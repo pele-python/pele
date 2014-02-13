@@ -26,8 +26,8 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
-    <link rel="up" title="pele GUI (pele.gui)" href="../gui.html" />
-    <link rel="next" title="Landscape Exploration (pele.landscape)" href="../landscape_module.html" />
+    <link rel="up" title="pele GUI" href="../gui.html" />
+    <link rel="next" title="Step Taking (pele.takestep)" href="../step_taking.html" />
     <link rel="prev" title="pele.gui.run_gui" href="" /> 
   </head>
   <body>
@@ -44,13 +44,13 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../landscape_module.html" title="Landscape Exploration (pele.landscape)"
+          <a href="../step_taking.html" title="Step Taking (pele.takestep)"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="#" title="pele.gui.run_gui"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
-          <li><a href="../gui.html" accesskey="U">pele GUI (<cite>pele.gui</cite>)</a> &raquo;</li> 
+          <li><a href="../gui.html" accesskey="U">pele GUI</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -63,7 +63,7 @@
 <h1>pele.gui.run_gui<a class="headerlink" href="#pele-gui-run-gui" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pele.gui.run_gui">
-<tt class="descclassname">pele.gui.</tt><tt class="descname">run_gui</tt><big>(</big><em>system</em>, <em>db=None</em><big>)</big><a class="reference internal" href="../_modules/pele/gui/run.html#run_gui"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.gui.run_gui" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pele.gui.</tt><tt class="descname">run_gui</tt><big>(</big><em>system</em>, <em>db=None</em>, <em>application=None</em><big>)</big><a class="reference internal" href="../_modules/pele/gui/run.html#run_gui"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.gui.run_gui" title="Permalink to this definition">¶</a></dt>
 <dd><p>The top level function that will launch the gui for a given system</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -74,9 +74,13 @@
 <div><p>A pele system, derived from BaseSystem.  All information 
 about the system is in this class.</p>
 </div></blockquote>
-<p><strong>db</strong> : str, optional</p>
+<p><strong>db</strong> : pele database or string, optional</p>
+<blockquote>
+<div><p>connect to this database or the database at this file location</p>
+</div></blockquote>
+<p><strong>application</strong> : QApplication</p>
 <blockquote class="last">
-<div><p>connect to the database at this file location</p>
+<div><p>Use this QApplication object rather than creating a new one</p>
 </div></blockquote>
 </td>
 </tr>
@@ -96,8 +100,8 @@ about the system is in this class.</p>
   <p class="topless"><a href=""
                         title="previous chapter">pele.gui.run_gui</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../landscape_module.html"
-                        title="next chapter">Landscape Exploration (<cite>pele.landscape</cite>)</a></p>
+  <p class="topless"><a href="../step_taking.html"
+                        title="next chapter">Step Taking (<cite>pele.takestep</cite>)</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.gui.run_gui.txt"
@@ -133,13 +137,13 @@ about the system is in this class.</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../landscape_module.html" title="Landscape Exploration (pele.landscape)"
+          <a href="../step_taking.html" title="Step Taking (pele.takestep)"
              >next</a> |</li>
         <li class="right" >
           <a href="#" title="pele.gui.run_gui"
              >previous</a> |</li>
         <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
-          <li><a href="../gui.html" >pele GUI (<cite>pele.gui</cite>)</a> &raquo;</li> 
+          <li><a href="../gui.html" >pele GUI</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

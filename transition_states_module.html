@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="index.html" />
     <link rel="next" title="pele.transition_states.FindTransitionState" href="generated/pele.transition_states.FindTransitionState.html" />
-    <link rel="prev" title="pele.systems.Parameters.viewvalues" href="generated/pele.systems.Parameters.viewvalues.html" /> 
+    <link rel="prev" title="pele.mindist.CoMToOrigin" href="generated/pele.mindist.CoMToOrigin.html" /> 
   </head>
   <body>
     <div class="related">
@@ -46,7 +46,7 @@
           <a href="generated/pele.transition_states.FindTransitionState.html" title="pele.transition_states.FindTransitionState"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="generated/pele.systems.Parameters.viewvalues.html" title="pele.systems.Parameters.viewvalues"
+          <a href="generated/pele.mindist.CoMToOrigin.html" title="pele.mindist.CoMToOrigin"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
       </ul>
@@ -72,7 +72,7 @@ it is important to know how these work because they form some of the core routin
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.FindTransitionState.html#pele.transition_states.FindTransitionState" title="pele.transition_states.FindTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">FindTransitionState</span></tt></a>(coords,&nbsp;pot[,&nbsp;tol,&nbsp;...])</td>
-<td>This class implements the routine for finding the nearest transition state</td>
+<td>This class implements the hybrid eigenvector following routine for finding the nearest transition state</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="generated/pele.transition_states.findTransitionState.html#pele.transition_states.findTransitionState" title="pele.transition_states.findTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">findTransitionState</span></tt></a>(*args,&nbsp;**kwargs)</td>
 <td>simply a wrapper for initializing and running FindTransitionState</td>
@@ -89,7 +89,7 @@ it is important to know how these work because they form some of the core routin
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="generated/pele.transition_states.findLowestEigenVector.html#pele.transition_states.findLowestEigenVector" title="pele.transition_states.findLowestEigenVector"><tt class="xref py py-obj docutils literal"><span class="pre">findLowestEigenVector</span></tt></a>(coords,&nbsp;pot[,&nbsp;...])</td>
-<td>find the eigenvector corresponding to the lowest eigenvalue using</td>
+<td>Compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization</td>
 </tr>
 </tbody>
 </table>
@@ -210,8 +210,8 @@ the minima which the transition state connects.  This routine controls that proc
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="generated/pele.systems.Parameters.viewvalues.html"
-                        title="previous chapter">pele.systems.Parameters.viewvalues</a></p>
+  <p class="topless"><a href="generated/pele.mindist.CoMToOrigin.html"
+                        title="previous chapter">pele.mindist.CoMToOrigin</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="generated/pele.transition_states.FindTransitionState.html"
                         title="next chapter">pele.transition_states.FindTransitionState</a></p>
@@ -253,7 +253,7 @@ the minima which the transition state connects.  This routine controls that proc
           <a href="generated/pele.transition_states.FindTransitionState.html" title="pele.transition_states.FindTransitionState"
              >next</a> |</li>
         <li class="right" >
-          <a href="generated/pele.systems.Parameters.viewvalues.html" title="pele.systems.Parameters.viewvalues"
+          <a href="generated/pele.mindist.CoMToOrigin.html" title="pele.mindist.CoMToOrigin"
              >previous</a> |</li>
         <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
       </ul>

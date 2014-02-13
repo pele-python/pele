@@ -244,6 +244,7 @@
 <span class="kn">import</span> <span class="nn">unittest</span>
 <span class="k">class</span> <span class="nc">TestEig</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
         <span class="n">natoms</span> <span class="o">=</span> <span class="mi">10</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>

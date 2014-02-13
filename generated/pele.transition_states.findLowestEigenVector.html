@@ -63,9 +63,8 @@
 <h1>pele.transition_states.findLowestEigenVector<a class="headerlink" href="#pele-transition-states-findlowesteigenvector" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pele.transition_states.findLowestEigenVector">
-<tt class="descclassname">pele.transition_states.</tt><tt class="descname">findLowestEigenVector</tt><big>(</big><em>coords</em>, <em>pot</em>, <em>eigenvec0=None</em>, <em>H0=None</em>, <em>orthogZeroEigs=0</em>, <em>dx=0.001</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/find_lowest_eig.html#findLowestEigenVector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.findLowestEigenVector" title="Permalink to this definition">¶</a></dt>
-<dd><p>find the eigenvector corresponding to the lowest eigenvalue using
-LowestEigPot and the LBFGS minimizer</p>
+<tt class="descclassname">pele.transition_states.</tt><tt class="descname">findLowestEigenVector</tt><big>(</big><em>coords</em>, <em>pot</em>, <em>eigenvec0=None</em>, <em>H0=None</em>, <em>orthogZeroEigs=0</em>, <em>dx=0.001</em>, <em>first_order=False</em>, <em>gradient=None</em>, <em>**minimizer_kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_find_lowest_eig.html#findLowestEigenVector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.findLowestEigenVector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization</p>
 <p><strong>*orthogZeroEigs is system dependent, don&#8217;t forget to set it*</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -86,7 +85,7 @@ passed)</p>
 </div></blockquote>
 <p><strong>H0</strong> : float</p>
 <blockquote>
-<div><p>the initial guess for the diagonal component of the inverse Hermissian</p>
+<div><p>the initial guess for the diagonal component of the inverse Hessian</p>
 </div></blockquote>
 <p><strong>orthogZeroEigs</strong> : callable</p>
 <blockquote>
@@ -101,7 +100,19 @@ eigenvectors</p>
 <p>orthogZeroEigs=None : the vector is unchanged</p>
 </div></blockquote>
 </div></blockquote>
-<p><strong>kwargs :</strong> :</p>
+<p><strong>first_order</strong> : bool</p>
+<blockquote>
+<div><p>use the first order forward finite differences approximation for
+the curvature rather than the second order central differences
+approximation.  This is less accurate, but requires one fewer
+potential call per iteration.</p>
+</div></blockquote>
+<p><strong>gradient</strong> : float array</p>
+<blockquote>
+<div><p>the true gradient at coords.  If first_order is true and gradient
+is not None then one potential call will be saved.</p>
+</div></blockquote>
+<p><strong>minimizer_kwargs :</strong> :</p>
 <blockquote class="last">
 <div><p>any additional keyword arguments are passed to the minimizer</p>
 </div></blockquote>

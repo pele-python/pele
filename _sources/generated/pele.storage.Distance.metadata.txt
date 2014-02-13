@@ -1,6 +1,0 @@
-pele.storage.Distance.metadata
-==============================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: Distance.metadata

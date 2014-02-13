@@ -13,22 +13,22 @@ pele.storage.Database
       
          ~Database.addMinimum
          ~Database.addTransitionState
-         ~Database.distances
+         ~Database.add_properties
+         ~Database.add_property
          ~Database.findMinimum
-         ~Database.getDistance
-         ~Database.getDistanceORM
          ~Database.getMinimum
          ~Database.getTransitionState
          ~Database.getTransitionStateFromID
+         ~Database.getTransitionStatesMinimum
+         ~Database.get_property
          ~Database.mergeMinima
          ~Database.minima
          ~Database.minimum_adder
          ~Database.number_of_minima
          ~Database.number_of_transition_states
+         ~Database.properties
          ~Database.removeMinimum
          ~Database.remove_transition_state
-         ~Database.setDistance
-         ~Database.setDistanceBulk
          ~Database.transition_states
    
    

@@ -19,6 +19,9 @@ pele.potentials.XYModel
          ~XYModel.getEnergyGradientNumerical
          ~XYModel.getGradient
          ~XYModel.getHessian
+         ~XYModel.get_phases
+         ~XYModel.get_spin_energies
+         ~XYModel.set_up_neighborlists
          ~XYModel.test_potential
    
    

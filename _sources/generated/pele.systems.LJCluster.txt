@@ -23,6 +23,7 @@ pele.systems.LJCluster
          ~LJCluster.get_metric_tensor
          ~LJCluster.get_mindist
          ~LJCluster.get_minimizer
+         ~LJCluster.get_ndof
          ~LJCluster.get_normalmodes
          ~LJCluster.get_nzero_modes
          ~LJCluster.get_orthogonalize_to_zero_eigenvectors
@@ -31,6 +32,7 @@ pele.systems.LJCluster
          ~LJCluster.get_potential
          ~LJCluster.get_random_configuration
          ~LJCluster.get_random_minimized_configuration
+         ~LJCluster.get_system_properties
          ~LJCluster.get_takestep
          ~LJCluster.load_coords_pymol
          ~LJCluster.smooth_path

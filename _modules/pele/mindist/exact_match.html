@@ -53,6 +53,8 @@
             
   <h1>Source code for pele.mindist.exact_match</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
 <span class="kn">from</span> <span class="nn">permutational_alignment</span> <span class="kn">import</span> <span class="n">find_best_permutation</span>
 <span class="kn">from</span> <span class="nn">_minpermdist_policies</span> <span class="kn">import</span> <span class="n">TransformAtomicCluster</span><span class="p">,</span> <span class="n">MeasureAtomicCluster</span>
 <span class="kn">import</span> <span class="nn">rmsfit</span>
@@ -62,11 +64,11 @@
 <div class="viewcode-block" id="StandardClusterAlignment"><a class="viewcode-back" href="../../../generated/pele.mindist.StandardClusterAlignment.html#pele.mindist.StandardClusterAlignment">[docs]</a><span class="k">class</span> <span class="nc">StandardClusterAlignment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    class to iterate over standard alignments for atomic clusters</span>
-<span class="sd">    </span>
-<span class="sd">    Quickly determines possible alignments of clusters which exactly match.</span>
+
+<span class="sd">    Quickly determines alignments of clusters which are possible exact matches.</span>
 <span class="sd">    It uses atoms which are far away from the center to determine possible</span>
 <span class="sd">    rotations. The algorithm does the following:</span>
-<span class="sd">    </span>
+
 <span class="sd">    1) Get 2 reference atoms from structure 1 which are farthest away from center</span>
 <span class="sd">       and are not linear</span>
 <span class="sd">    2) Determine candidates from structure 2 which are in same shell</span>
@@ -74,7 +76,7 @@
 <span class="sd">    3) loop over all candidate combinations to determine</span>
 <span class="sd">       orientation and check for match. Skip directly if angle of candidates</span>
 <span class="sd">       does not match angle of reference atoms in structure 1.</span>
-<span class="sd">       </span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    coords1 : np.array</span>
@@ -85,50 +87,50 @@
 <span class="sd">        accuracy of shell for atom candidates in standard alignment</span>
 <span class="sd">    can_invert : boolean</span>
 <span class="sd">        is an inversion possible?</span>
-<span class="sd">        </span>
+
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    </span>
+
 <span class="sd">    &gt;&gt; for rot, invert in StandardClusterAlignment(X1, X2):</span>
 <span class="sd">    &gt;&gt;     print &quot;possible rotation:&quot;,rot,&quot;inversion:&quot;,invert</span>
-<span class="sd">    </span>
+
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">can_invert</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="n">x1</span> <span class="o">=</span> <span class="n">coords1</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">x2</span> <span class="o">=</span> <span class="n">coords2</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">can_invert</span> <span class="o">=</span> <span class="n">can_invert</span>
-        
+
         <span class="c"># calculate distance of all atoms</span>
         <span class="n">R1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x1</span><span class="o">*</span><span class="n">x1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
         <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x2</span><span class="o">*</span><span class="n">x2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-        
+
         <span class="c"># at least 2 atoms are needed</span>
         <span class="c"># get atom most outer atom</span>
-        
+
         <span class="c"># get 1. reference atom in configuration 1</span>
         <span class="c"># use the atom with biggest distance to com</span>
         <span class="n">idx_sorted</span> <span class="o">=</span> <span class="n">R1</span><span class="o">.</span><span class="n">argsort</span><span class="p">()</span>
         <span class="n">idx1_1</span> <span class="o">=</span> <span class="n">idx_sorted</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        
+
         <span class="c"># find second atom which is not in a line</span>
         <span class="n">cos_best</span> <span class="o">=</span> <span class="mf">99.00</span>
         <span class="k">for</span> <span class="n">idx1_2</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">idx_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
             <span class="c"># stop if angle is larger than threshold</span>
             <span class="n">cos_theta1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="n">idx1_1</span><span class="p">],</span> <span class="n">x1</span><span class="p">[</span><span class="n">idx1_2</span><span class="p">])</span> <span class="o">/</span> \
-                <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="n">idx1_1</span><span class="p">])</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="n">idx1_2</span><span class="p">]))</span> 
-            
+                <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="n">idx1_1</span><span class="p">])</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="n">idx1_2</span><span class="p">]))</span>
+
             <span class="c"># store the best match in case it is a almost linear molecule</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cos_theta1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cos_best</span><span class="p">):</span>
                 <span class="n">cos_best</span> <span class="o">=</span> <span class="n">cos_theta1</span>
                 <span class="n">idx1_2_best</span> <span class="o">=</span> <span class="n">idx1_2</span>
-            
+
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cos_theta1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.9</span><span class="p">:</span>
                 <span class="k">break</span>
-        
+
         <span class="n">idx1_2</span> <span class="o">=</span> <span class="n">idx1_2_best</span>
-         
+
         <span class="c"># do a very quick check if most distant atom from</span>
         <span class="c"># center are within accuracy</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">R1</span><span class="p">[</span><span class="n">idx1_1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R2</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">&gt;</span> <span class="n">accuracy</span><span class="p">:</span>
@@ -137,10 +139,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c"># get indices of atoms in shell of thickness 2*accuracy</span>
             <span class="n">candidates1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">R2</span><span class="p">))[</span> \
-                 <span class="p">(</span><span class="n">R2</span> <span class="o">&gt;</span> <span class="n">R1</span><span class="p">[</span><span class="n">idx1_1</span><span class="p">]</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">R2</span> <span class="o">&lt;</span> <span class="n">R1</span><span class="p">[</span><span class="n">idx1_1</span><span class="p">]</span> <span class="o">+</span> <span class="n">accuracy</span><span class="p">)]</span> 
+                 <span class="p">(</span><span class="n">R2</span> <span class="o">&gt;</span> <span class="n">R1</span><span class="p">[</span><span class="n">idx1_1</span><span class="p">]</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">R2</span> <span class="o">&lt;</span> <span class="n">R1</span><span class="p">[</span><span class="n">idx1_1</span><span class="p">]</span> <span class="o">+</span> <span class="n">accuracy</span><span class="p">)]</span>
             <span class="n">candidates2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">R2</span><span class="p">))[</span> \
-                 <span class="p">(</span><span class="n">R2</span> <span class="o">&gt;</span> <span class="n">R1</span><span class="p">[</span><span class="n">idx1_2</span><span class="p">]</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">R2</span> <span class="o">&lt;</span> <span class="n">R1</span><span class="p">[</span><span class="n">idx1_2</span><span class="p">]</span> <span class="o">+</span> <span class="n">accuracy</span><span class="p">)]</span> 
-        
+                 <span class="p">(</span><span class="n">R2</span> <span class="o">&gt;</span> <span class="n">R1</span><span class="p">[</span><span class="n">idx1_2</span><span class="p">]</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">R2</span> <span class="o">&lt;</span> <span class="n">R1</span><span class="p">[</span><span class="n">idx1_2</span><span class="p">]</span> <span class="o">+</span> <span class="n">accuracy</span><span class="p">)]</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">=</span> <span class="n">x1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">=</span> <span class="n">x2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idx1_1</span> <span class="o">=</span> <span class="n">idx1_1</span>
@@ -148,21 +150,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">idx2_1</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idx2_2</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">invert</span> <span class="o">=</span> <span class="bp">False</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">cos_theta1</span> <span class="o">=</span> <span class="n">cos_theta1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">candidates2</span> <span class="o">=</span> <span class="n">candidates2</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">iter1</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">candidates1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iter2</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">candidates2</span><span class="p">)</span>
-                
+
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
-    
+
 <div class="viewcode-block" id="StandardClusterAlignment.next"><a class="viewcode-back" href="../../../generated/pele.mindist.StandardClusterAlignment.next.html#pele.mindist.StandardClusterAlignment.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c"># obtain first index for first call</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx2_1</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">idx2_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-            
+
         <span class="c"># toggle inversion if inversion is possible</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">can_invert</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">invert</span> <span class="o">==</span> <span class="bp">False</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx2_2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">invert</span> <span class="o">=</span> <span class="bp">True</span>
@@ -170,7 +172,7 @@
             <span class="c"># determine next pair of indices</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">invert</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="c"># try to increment 2nd iterator</span>
-            <span class="k">try</span><span class="p">:</span> 
+            <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">idx2_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
                 <span class="c"># end of list, start over again</span>
@@ -179,22 +181,22 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">idx2_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">idx2_2</span> <span class="o">=</span> <span class="bp">None</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-            
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx2_1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx2_2</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-        
+
         <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x1</span>
         <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x2</span>
         <span class="n">idx1_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx1_1</span>
         <span class="n">idx1_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx1_2</span>
         <span class="n">idx2_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx2_1</span>
         <span class="n">idx2_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx2_2</span>
-        
+
         <span class="k">assert</span> <span class="n">idx1_1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="n">idx1_2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="n">idx2_1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="n">idx2_2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
-        
+
         <span class="c"># we can immediately trash the match if angle does not match</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cos_theta2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x2</span><span class="p">[</span><span class="n">idx2_1</span><span class="p">],</span> <span class="n">x2</span><span class="p">[</span><span class="n">idx2_2</span><span class="p">])</span> <span class="o">/</span> \
@@ -211,112 +213,179 @@
         <span class="c"># get rotation for current atom match candidates</span>
         <span class="n">dist</span><span class="p">,</span> <span class="n">rot</span> <span class="o">=</span> <span class="n">rmsfit</span><span class="o">.</span><span class="n">findrotation</span><span class="p">(</span> \
                       <span class="n">x1</span><span class="p">[[</span><span class="n">idx1_1</span><span class="p">,</span> <span class="n">idx1_2</span><span class="p">]],</span> <span class="n">mul</span><span class="o">*</span><span class="n">x2</span><span class="p">[[</span><span class="n">idx2_1</span><span class="p">,</span> <span class="n">idx2_2</span><span class="p">]],</span> <span class="n">align_com</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-        
+
         <span class="k">return</span> <span class="n">rot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">invert</span>
-    </div></div>
+</div></div>
+<span class="k">class</span> <span class="nc">ClusterTransoformation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;an object that defines a transformation on a cluster&quot;&quot;&quot;</span>
+    <span class="n">translation</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">rotation</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">permutation</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">invert</span> <span class="o">=</span> <span class="bp">False</span>
+    
+
+
 <div class="viewcode-block" id="ExactMatchCluster"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.html#pele.mindist.ExactMatchCluster">[docs]</a><span class="k">class</span> <span class="nc">ExactMatchCluster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39; Deterministic check if 2 clusters are a perfect match</span>
-<span class="sd">    </span>
+
 <span class="sd">        Determines quickly if 2 clusters are a perfect match. It uses</span>
 <span class="sd">        check_standard_alignment_cluster to get possible orientations.</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        </span>
+
+
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        </span>
+
 <span class="sd">        accuracy: float, optional</span>
 <span class="sd">            maximum deviation of atoms to still consider cluster as a match</span>
-<span class="sd">            </span>
+
 <span class="sd">        check_inversion: boolean, optional</span>
 <span class="sd">            check for inversion symmetry, default is True</span>
-<span class="sd">            </span>
+
 <span class="sd">        permlist: iteratable, optional</span>
 <span class="sd">            list of allowed permutations. Default is None which means all</span>
 <span class="sd">            particles can be permuted</span>
-<span class="sd">            </span>
+
 <span class="sd">        align_com: boolean, optional</span>
 <span class="sd">            Flag if com should be removed before comparison</span>
-<span class="sd">            </span>
+
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        </span>
+
 <span class="sd">        &gt;&gt;&gt; x1 = np.random.random(3*natoms)</span>
 <span class="sd">        &gt;&gt;&gt; x2 = x1 + 1e-4*np.random.random(x1.shape)</span>
 <span class="sd">        &gt;&gt;&gt; matches = ExactClusterMatch(accuracy=1e-3)</span>
 <span class="sd">        &gt;&gt;&gt; if match(x1, x2):</span>
 <span class="sd">        &gt;&gt;&gt;     print &quot;the two structures are identical</span>
-<span class="sd">          </span>
+
 <span class="sd">    &#39;&#39;&#39;</span>
-    
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">TransformAtomicCluster</span><span class="p">(),</span> <span class="n">measure</span><span class="o">=</span><span class="n">MeasureAtomicCluster</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measure</span> <span class="o">=</span> <span class="n">measure</span>
-        
+
 <div class="viewcode-block" id="ExactMatchCluster.standard_alignments"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.standard_alignments.html#pele.mindist.ExactMatchCluster.standard_alignments">[docs]</a>    <span class="k">def</span> <span class="nf">standard_alignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return an iterator over the standard alignments&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">StandardClusterAlignment</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">,</span>
                                    <span class="n">can_invert</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">can_invert</span><span class="p">())</span>
 
-        </div>
+</div>
 <div class="viewcode-block" id="ExactMatchCluster.__call__"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.__call__.html#pele.mindist.ExactMatchCluster.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return True if the structures are an exact mach, False otherwise&quot;&quot;&quot;</span>
+        <span class="n">alignment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_transformation</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="n">check_inversion</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">alignment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="ExactMatchCluster.find_transformation"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.find_transformation.html#pele.mindist.ExactMatchCluster.find_transformation">[docs]</a>    <span class="k">def</span> <span class="nf">find_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return None if the two structures are different, else return the transformations that brings them into alignment</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None:</span>
+<span class="sd">            if the two structures are different</span>
+<span class="sd">        namedtuple:</span>
+<span class="sd">            with fields: rotation, permutation, inversion</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exact_transformation</span> <span class="o">=</span> <span class="n">ClusterTransoformation</span><span class="p">()</span>
+
         <span class="n">com1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">get_com</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
         <span class="n">x1</span> <span class="o">=</span> <span class="n">coords1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="o">-</span><span class="n">com1</span><span class="p">)</span>
-        
+
         <span class="n">com2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">get_com</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
         <span class="n">x2</span> <span class="o">=</span> <span class="n">coords2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="o">-</span><span class="n">com2</span><span class="p">)</span>
-        
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">exact_transformation</span><span class="o">.</span><span class="n">translation</span> <span class="o">=</span> <span class="n">com1</span> <span class="o">-</span> <span class="n">com2</span>
+
         <span class="k">for</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">standard_alignments</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">invert</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">check_inversion</span><span class="p">:</span> <span class="k">continue</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
-                <span class="k">return</span> <span class="bp">True</span>
-        <span class="k">return</span> <span class="bp">False</span>
-                        </div>
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exact_transformation</span><span class="o">.</span><span class="n">invert</span> <span class="o">=</span> <span class="n">invert</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exact_transformation</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">rotation</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exact_transformation</span><span class="o">.</span><span class="n">permutation</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">permutation</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact_transformation</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
 <div class="viewcode-block" id="ExactMatchCluster.check_match"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.check_match.html#pele.mindist.ExactMatchCluster.check_match">[docs]</a>    <span class="k">def</span> <span class="nf">check_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39; Make a more detailed comparison if the 2 structures match</span>
-<span class="sd">        </span>
+        <span class="sd">&#39;&#39;&#39;Give a rotation and inversion, make a more detailed comparison if the 2 structures match</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        </span>
+
 <span class="sd">        rot: np.array, 3x3</span>
-<span class="sd">            guessed rotation based on reference atoms         </span>
+<span class="sd">            guessed rotation based on reference atoms</span>
 <span class="sd">        invert: boolean</span>
 <span class="sd">            True do match for inverted coordinates</span>
-<span class="sd">                        </span>
+
 <span class="sd">        returns: boolean</span>
 <span class="sd">            True or False for match</span>
-<span class="sd">            </span>
-<span class="sd">        &#39;&#39;&#39;</span>    
-        <span class="c"># apply the rotation</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">x2_trial</span> <span class="o">=</span> <span class="n">x2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c">#apply the inversion</span>
+        <span class="c"># note that inversion happens before rotation.  this is important as they are not commutative (I think)</span>
         <span class="k">if</span><span class="p">(</span><span class="n">invert</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">x2_trial</span><span class="p">)</span>
+
+        <span class="c"># apply the rotation to x2_trial</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">x2_trial</span><span class="p">,</span> <span class="n">rot</span><span class="p">)</span>
 
-        
         <span class="c"># get the best permutation</span>
         <span class="n">dist</span><span class="p">,</span> <span class="n">perm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">find_permutation</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2_trial</span><span class="p">)</span>
         <span class="n">x2_trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="n">x2_trial</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
-       
+
         <span class="c"># now find best rotational alignment, this is more reliable than just</span>
         <span class="c"># aligning the 2 reference atoms</span>
         <span class="n">dist</span><span class="p">,</span> <span class="n">rot2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">find_rotation</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2_trial</span><span class="p">)</span>
+        <span class="c"># further rotate x2_trial by rot2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">x2_trial</span><span class="p">,</span> <span class="n">rot2</span><span class="p">)</span>
         <span class="c"># use the maximum distance, not rms as cutoff criterion</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_checked_rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rot2</span><span class="p">,</span> <span class="n">rot</span><span class="p">)</span>
         <span class="k">if</span>  <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">get_dist</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2_trial</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">True</span>
-        <span class="k">return</span> <span class="bp">False</span>
-                        
-    </div></div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+            <span class="c"># return the rotation and permutation as a named tupple</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">&quot;alignment&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s">&quot;permutation&quot;</span><span class="p">,</span> <span class="s">&quot;rotation&quot;</span><span class="p">])</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">permutation</span> <span class="o">=</span> <span class="n">perm</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rot2</span><span class="p">,</span> <span class="n">rot</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ret</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="ExactMatchCluster.apply_transformation"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.apply_transformation.html#pele.mindist.ExactMatchCluster.apply_transformation">[docs]</a>    <span class="k">def</span> <span class="nf">apply_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">tform</span><span class="p">):</span>
+        <span class="c"># apply permutation</span>
+        <span class="k">if</span> <span class="n">tform</span><span class="o">.</span><span class="n">permutation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tform</span><span class="o">.</span><span class="n">permutation</span><span class="p">)</span>
+
+        <span class="c"># subtract center of mass</span>
+        <span class="n">com</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">get_com</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">com</span><span class="p">)</span>
+
+        <span class="c"># invert</span>
+        <span class="k">if</span> <span class="n">tform</span><span class="o">.</span><span class="n">invert</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">can_invert</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c"># rotate</span>
+        <span class="k">if</span> <span class="n">tform</span><span class="o">.</span><span class="n">rotation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tform</span><span class="o">.</span><span class="n">rotation</span><span class="p">)</span>
+
+        <span class="c"># translate</span>
+        <span class="k">if</span> <span class="n">tform</span><span class="o">.</span><span class="n">translation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tform</span><span class="o">.</span><span class="n">translation</span><span class="p">)</span>
+
+        <span class="c"># add back in center of mass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">com</span><span class="p">)</span>
+
+<span class="c">#</span>
+<span class="c"># only testing below here</span>
+<span class="c">#</span>
+</div></div>
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">35</span>
     <span class="kn">from</span> <span class="nn">pele.utils</span> <span class="kn">import</span> <span class="n">rotations</span>
-    
+
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
         <span class="n">xx1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">natoms</span><span class="p">)</span><span class="o">*</span><span class="mi">5</span>
         <span class="n">xx1</span> <span class="o">=</span> <span class="n">xx1</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
@@ -330,7 +399,10 @@
         <span class="c">#dist, x1n, x2n = findBestPermutation(xx1.flatten(), xx2.flatten())</span>
         <span class="c">#print dist</span>
         <span class="k">print</span> <span class="n">i</span><span class="p">,</span><span class="n">ExactMatchCluster</span><span class="p">()(</span><span class="n">xx1</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">xx2</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
-    
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test</span><span class="p">()</span>
 </pre></div>
 
           </div>

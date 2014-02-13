@@ -12,10 +12,15 @@ pele.utils.disconnectivity_graph.DisconnectivityGraph
          :toctree:
       
          ~DisconnectivityGraph.calculate
+         ~DisconnectivityGraph.color_by_group
+         ~DisconnectivityGraph.color_by_value
          ~DisconnectivityGraph.get_minima_layout
          ~DisconnectivityGraph.get_tree_layout
+         ~DisconnectivityGraph.label_minima
          ~DisconnectivityGraph.plot
+         ~DisconnectivityGraph.savefig
          ~DisconnectivityGraph.set_energy_levels
+         ~DisconnectivityGraph.show
    
    
 

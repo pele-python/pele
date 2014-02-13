@@ -55,8 +55,9 @@
             
   <div class="section" id="pele-python-energy-landscape-explorer">
 <h1>pele : Python Energy Landscape Explorer<a class="headerlink" href="#pele-python-energy-landscape-explorer" title="Permalink to this headline">¶</a></h1>
-<p>The source code repository can be found at <a class="reference external" href="https://github.com/pele-python/pele">https://github.com/pele-python/pele</a></p>
-<p>The documentation is hosted at <a class="reference external" href="http://pele-python.github.com/pele/">http://pele-python.github.com/pele/</a></p>
+<p>Tools for global optimization and energy landscape exploration.</p>
+<p>Source code: <a class="reference external" href="https://github.com/pele-python/pele">https://github.com/pele-python/pele</a></p>
+<p>Documentation: <a class="reference external" href="http://pele-python.github.io/pele/">http://pele-python.github.io/pele/</a></p>
 <p>pele is a package of tools for calculations
 involving optimzation and exploration on energy landscapes.  The core
 routines are broken into two parts: <a class="reference internal" href="global_optimization.html#global-optimization"><em>Basinhopping</em></a>,
@@ -67,6 +68,12 @@ means paths that go through the geometric transition states.</p>
 <p>Note that we use the language &#8220;energy landscape&#8221; because it&#8217;s the language most
 natural for our fields of physics and chemistry, but most of these tools are
 equally applicable for working with any smooth scalar function in N dimensions.</p>
+<div class="figure">
+<img alt="_images/lj38_gmin_dgraph.png" src="_images/lj38_gmin_dgraph.png" />
+<p class="caption">Images: The global minimum energy structure of a 38 atom Lennard-Jones cluster.  On
+the right is a disconnectivity graph showing a visualization of the energy
+landscape.  The competing low energy basins are shown in color.</p>
+</div>
 <div class="section" id="tutorials">
 <h2>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -113,24 +120,32 @@ equally applicable for working with any smooth scalar function in N dimensions.<
 </li>
 </ul>
 </div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">pele GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui.html#pele-gui-pele-gui">pele GUI (<cite>pele.gui</cite>)</a></li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="section" id="modules">
 <h3>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h3>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="accept_tests.html">Acceptance Tests (<cite>pele.accept_tests</cite>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="angleaxis_module.html">Angle Axis Systems (<cite>pele.angleaxis</cite>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="database.html">Database storage (<cite>pele.storage</cite>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">pele GUI (<cite>pele.gui</cite>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="landscape_module.html">Landscape Exploration (<cite>pele.landscape</cite>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="potentials.html">Potentials (<cite>pele.potentials</cite>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="monte_carlo.html">Monte Carlo (<cite>pele.mc</cite>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system_class.html">System Class (<cite>pele.systems</cite>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quenching.html">Optimizers (<cite>pele.optimize</cite>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="potentials.html">Potentials (<cite>pele.potentials</cite>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="landscape_module.html">Landscape Exploration (<cite>pele.landscape</cite>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accept_tests.html">Acceptance Tests (<cite>pele.accept_tests</cite>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database storage (<cite>pele.storage</cite>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">pele GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="step_taking.html">Step Taking (<cite>pele.takestep</cite>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="structure_alignment.html">Structure Alignment (<cite>pele.mindist</cite>)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="system_class.html">System Class (<cite>pele.systems</cite>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transition_states_module.html">Transition States (<cite>pele.transition_states</cite>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="concurrent.html">Parallel connect jobs (<cite>pele.concurrent</cite>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rates.html">Rates (<cite>pele.rates</cite>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities (<cite>pele.utils</cite>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="angleaxis_module.html">Angle Axis Systems (<cite>pele.angleaxis</cite>)</a></li>
 </ul>
 </div>
 </div>

@@ -1,0 +1,6 @@
+pele.optimize.MYLBFGS.get_result
+================================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: MYLBFGS.get_result

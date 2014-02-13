@@ -12,7 +12,9 @@ pele.mindist.ExactMatchAtomicCluster
          :toctree:
       
          ~ExactMatchAtomicCluster.__call__
+         ~ExactMatchAtomicCluster.apply_transformation
          ~ExactMatchAtomicCluster.check_match
+         ~ExactMatchAtomicCluster.find_transformation
          ~ExactMatchAtomicCluster.standard_alignments
    
    

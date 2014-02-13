@@ -1,0 +1,6 @@
+pele.optimize.LBFGS.one_iteration
+=================================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: LBFGS.one_iteration

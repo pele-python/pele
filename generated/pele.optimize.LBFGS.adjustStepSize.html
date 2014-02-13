@@ -66,9 +66,11 @@
 <dt id="pele.optimize.LBFGS.adjustStepSize">
 <tt class="descclassname">LBFGS.</tt><tt class="descname">adjustStepSize</tt><big>(</big><em>X</em>, <em>E</em>, <em>G</em>, <em>stp</em><big>)</big><a class="reference internal" href="../_modules/pele/optimize/_lbfgs_py.html#LBFGS.adjustStepSize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.LBFGS.adjustStepSize" title="Permalink to this definition">¶</a></dt>
 <dd><p>We now have a proposed step.  This function will make sure it is 
-a good step and then take it.</p>
+a good step and then take it.  This is known as a Backtracking linesearch</p>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Backtracking_line_search">http://en.wikipedia.org/wiki/Backtracking_line_search</a></p>
 <ol class="arabic">
-<li><p class="first">if the step is not anti-aligned with the gradient (i.e. downhill), then reverse the step</p>
+<li><p class="first">if the step is not anti-aligned with the gradient (i.e. downhill), 
+then reverse the step</p>
 </li>
 <li><p class="first">if the step is larger than maxstep, then rescale the step</p>
 </li>
@@ -80,16 +82,13 @@ a good step and then take it.</p>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>if the step is reduced more than 10 times and the energy is still not acceptable</dt>
-<dd><p class="first last">increment nfail, reset the lbfgs optimizer and continue</p>
-</dd>
-</dl>
+<li><p class="first">if the step is reduced more than 10 times and the energy is still 
+not acceptable, then increment nfail, reset the lbfgs optimizer and 
+continue</p>
 </li>
 <li><p class="first">if nfail is greater than 5 abort the quench</p>
 </li>
 </ol>
-<p><a href="#id1"><span class="problematic" id="id2">*</span></a>The below is not implemented yet.  It&#8217;s on the TODO list</p>
 </dd></dl>
 
 </div>

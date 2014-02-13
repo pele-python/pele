@@ -1,0 +1,6 @@
+pele.mindist.ExactMatchCluster.apply_transformation
+===================================================
+
+.. currentmodule:: pele.mindist
+
+.. automethod:: ExactMatchCluster.apply_transformation

@@ -1,0 +1,6 @@
+pele.potentials.XYModel.get_phases
+==================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: XYModel.get_phases

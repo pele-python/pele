@@ -63,7 +63,7 @@
 <h1>pele.optimize.LBFGS<a class="headerlink" href="#pele-optimize-lbfgs" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.optimize.LBFGS">
-<em class="property">class </em><tt class="descclassname">pele.optimize.</tt><tt class="descname">LBFGS</tt><big>(</big><em>X</em>, <em>pot</em>, <em>maxstep=0.1</em>, <em>maxErise=0.0001</em>, <em>M=4</em>, <em>rel_energy=False</em>, <em>H0=1.0</em>, <em>events=</em><span class="optional">[</span><span class="optional">]</span>, <em>alternate_stop_criterion=None</em>, <em>debug=False</em>, <em>iprint=-1</em>, <em>nsteps=10000</em>, <em>tol=1e-06</em>, <em>logger=None</em><big>)</big><a class="reference internal" href="../_modules/pele/optimize/_lbfgs_py.html#LBFGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.LBFGS" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.optimize.</tt><tt class="descname">LBFGS</tt><big>(</big><em>X</em>, <em>pot</em>, <em>maxstep=0.1</em>, <em>maxErise=0.0001</em>, <em>M=4</em>, <em>rel_energy=False</em>, <em>H0=0.1</em>, <em>events=None</em>, <em>alternate_stop_criterion=None</em>, <em>debug=False</em>, <em>iprint=-1</em>, <em>nsteps=10000</em>, <em>tol=1e-05</em>, <em>logger=None</em>, <em>energy=None</em>, <em>gradient=None</em>, <em>armijo=False</em>, <em>armijo_c=0.0001</em>, <em>fortran=False</em><big>)</big><a class="reference internal" href="../_modules/pele/optimize/_lbfgs_py.html#LBFGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.LBFGS" title="Permalink to this definition">¶</a></dt>
 <dd><p>minimize a function using the LBFGS routine</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -127,8 +127,30 @@ to stop the iteration</p>
 <div><p>print debugging information</p>
 </div></blockquote>
 <p><strong>logger</strong> : logger object</p>
-<blockquote class="last">
+<blockquote>
 <div><p>messages will be passed to this logger rather than the default</p>
+</div></blockquote>
+<p><strong>energy, gradient</strong> : float, float array</p>
+<blockquote>
+<div><p>The initial energy and gradient.  If these are both not None then the
+energy and gradient of the initial point will not be calculated, saving
+one potential call.</p>
+</div></blockquote>
+<p><strong>armijo</strong> : bool</p>
+<blockquote>
+<div><p>Use the Armijo criterion instead of maxErise as the criterion for 
+accepting a step size.  The Armijo criterion is the first wolfe criterion
+and is a condition that the energy decrease sufficiently</p>
+</div></blockquote>
+<p><strong>armijo_c</strong> : float</p>
+<blockquote>
+<div><p>This adjusts how strong the armijo rule is.  0 &lt; armijo_c &lt; 1.  Default 
+1e-4</p>
+</div></blockquote>
+<p><strong>fortran</strong> : bool</p>
+<blockquote class="last">
+<div><p>use the fortran version of the LBFGS.  Only the step which computes
+the step size and direction from the memory is in fortran.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -167,13 +189,31 @@ Reduce the step size until conditions are satisfied.</li>
 <td></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.getStep.html#pele.optimize.LBFGS.getStep" title="pele.optimize.LBFGS.getStep"><tt class="xref py py-obj docutils literal"><span class="pre">getStep</span></tt></a>(X,&nbsp;G)</td>
-<td>Calculate a step direction and step size using the</td>
+<td>update the LBFGS memory and compute a step direction and size</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.optimize.LBFGS.reset.html#pele.optimize.LBFGS.reset" title="pele.optimize.LBFGS.reset"><tt class="xref py py-obj docutils literal"><span class="pre">reset</span></tt></a>()</td>
-<td></td>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.LBFGS.get_result.html#pele.optimize.LBFGS.get_result" title="pele.optimize.LBFGS.get_result"><tt class="xref py py-obj docutils literal"><span class="pre">get_result</span></tt></a>()</td>
+<td>return a results object</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.run.html#pele.optimize.LBFGS.run" title="pele.optimize.LBFGS.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>()</td>
-<td>the main loop of the algorithm</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.get_state.html#pele.optimize.LBFGS.get_state" title="pele.optimize.LBFGS.get_state"><tt class="xref py py-obj docutils literal"><span class="pre">get_state</span></tt></a>()</td>
+<td>return the state of the LBFGS memory</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.LBFGS.one_iteration.html#pele.optimize.LBFGS.one_iteration" title="pele.optimize.LBFGS.one_iteration"><tt class="xref py py-obj docutils literal"><span class="pre">one_iteration</span></tt></a>()</td>
+<td>do one iteration of the LBFGS loop</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.reset.html#pele.optimize.LBFGS.reset" title="pele.optimize.LBFGS.reset"><tt class="xref py py-obj docutils literal"><span class="pre">reset</span></tt></a>()</td>
+<td>reset the LBFGS memory and H0</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.LBFGS.run.html#pele.optimize.LBFGS.run" title="pele.optimize.LBFGS.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a>()</td>
+<td>run the LBFGS minimizer</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.set_state.html#pele.optimize.LBFGS.set_state" title="pele.optimize.LBFGS.set_state"><tt class="xref py py-obj docutils literal"><span class="pre">set_state</span></tt></a>(state)</td>
+<td>set the LBFGS memory from the passed state</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.LBFGS.stop_criterion_satisfied.html#pele.optimize.LBFGS.stop_criterion_satisfied" title="pele.optimize.LBFGS.stop_criterion_satisfied"><tt class="xref py py-obj docutils literal"><span class="pre">stop_criterion_satisfied</span></tt></a>()</td>
+<td>test the stop criterion</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.LBFGS.update_coords.html#pele.optimize.LBFGS.update_coords" title="pele.optimize.LBFGS.update_coords"><tt class="xref py py-obj docutils literal"><span class="pre">update_coords</span></tt></a>(X,&nbsp;E,&nbsp;G)</td>
+<td>change the location of the minimizer manually</td>
 </tr>
 </tbody>
 </table>

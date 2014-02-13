@@ -1,0 +1,6 @@
+pele.optimize.MYLBFGS.stop_criterion_satisfied
+==============================================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: MYLBFGS.stop_criterion_satisfied

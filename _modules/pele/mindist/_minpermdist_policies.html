@@ -121,23 +121,30 @@
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">can_invert</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_can_invert</span> <span class="o">=</span> <span class="n">can_invert</span>
-        
-    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
         <span class="n">Xtmp</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
         <span class="n">Xtmp</span><span class="o">+=</span><span class="n">d</span>
-        
-    <span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">mx</span><span class="p">,):</span>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">mx</span><span class="p">,):</span>
         <span class="n">Xtmp</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
         <span class="n">Xtmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mx</span><span class="p">,</span> <span class="n">Xtmp</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
         <span class="n">X</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">Xtmp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        
-    <span class="k">def</span> <span class="nf">permute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">perm</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)[</span><span class="n">perm</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    
+    <span class="nd">@staticmethod</span>        
+    <span class="k">def</span> <span class="nf">permute</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">perm</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)[</span><span class="n">perm</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="c"># now modify the passed object, X</span>
+        <span class="n">X</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[:]</span>
+        <span class="k">return</span> <span class="n">X</span>
         
     <span class="k">def</span> <span class="nf">can_invert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_can_invert</span>
     
-    <span class="k">def</span> <span class="nf">invert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">invert</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
         <span class="n">X</span><span class="p">[:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">X</span>
         
 <span class="k">class</span> <span class="nc">MeasureAtomicCluster</span><span class="p">(</span><span class="n">MeasurePolicy</span><span class="p">):</span>

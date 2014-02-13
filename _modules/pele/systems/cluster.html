@@ -106,7 +106,7 @@
 </div>
 <div class="viewcode-block" id="AtomicCluster.get_metric_tensor"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_metric_tensor.html#pele.systems.AtomicCluster.get_metric_tensor">[docs]</a>    <span class="k">def</span> <span class="nf">get_metric_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; metric tensor for all masses m_i=1.0 &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span>
     </div>
 <div class="viewcode-block" id="AtomicCluster.get_pgorder"><a class="viewcode-back" href="../../../generated/pele.systems.AtomicCluster.get_pgorder.html#pele.systems.AtomicCluster.get_pgorder">[docs]</a>    <span class="k">def</span> <span class="nf">get_pgorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="n">calculator</span> <span class="o">=</span> <span class="n">PointGroupOrderCluster</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_compare_exact</span><span class="p">())</span>

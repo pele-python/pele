@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="index.html" />
     <link rel="next" title="pele.storage.Database" href="generated/pele.storage.Database.html" />
-    <link rel="prev" title="pele.angleaxis.AATopology.zeroEV" href="generated/pele.angleaxis.AATopology.zeroEV.html" /> 
+    <link rel="prev" title="pele.accept_tests.SphericalContainer.accept_fortran" href="generated/pele.accept_tests.SphericalContainer.accept_fortran.html" /> 
   </head>
   <body>
     <div class="related">
@@ -46,7 +46,7 @@
           <a href="generated/pele.storage.Database.html" title="pele.storage.Database"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="generated/pele.angleaxis.AATopology.zeroEV.html" title="pele.angleaxis.AATopology.zeroEV"
+          <a href="generated/pele.accept_tests.SphericalContainer.accept_fortran.html" title="pele.accept_tests.SphericalContainer.accept_fortran"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
       </ul>
@@ -79,9 +79,6 @@ ensures that all minima and transition state objects are unique</p>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="generated/pele.storage.TransitionState.html#pele.storage.TransitionState" title="pele.storage.TransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">TransitionState</span></tt></a>(energy,&nbsp;coords,&nbsp;min1,&nbsp;min2)</td>
 <td>Transition state object</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.storage.Distance.html#pele.storage.Distance" title="pele.storage.Distance"><tt class="xref py py-obj docutils literal"><span class="pre">Distance</span></tt></a>(dist,&nbsp;min1,&nbsp;min2)</td>
-<td>object to store &#8220;mindist&#8221; distances between minima</td>
 </tr>
 </tbody>
 </table>
@@ -167,30 +164,6 @@ can be accessed from the database by:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="distance">
-<h2>Distance<a class="headerlink" href="#distance" title="Permalink to this headline">¶</a></h2>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.storage.Distance.html#pele.storage.Distance" title="pele.storage.Distance"><tt class="xref py py-obj docutils literal"><span class="pre">Distance</span></tt></a>(dist,&nbsp;min1,&nbsp;min2)</td>
-<td>object to store &#8220;mindist&#8221; distances between minima</td>
-</tr>
-</tbody>
-</table>
-<p>The Distance class is used to store <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>mindist</em></a>
-(best structural alignment) distances in the database.  We save these distances
-because recalculating distances can be quite time consuming.  The use of Distance
-is very similar to that of TransitionState:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span><span class="p">,</span> <span class="n">newcoords1</span><span class="p">,</span> <span class="n">newcoords2</span> <span class="o">=</span> <span class="n">mindist</span><span class="p">(</span><span class="n">minimum1</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">minimum2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="o">.</span><span class="n">setDistance</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">minimum1</span><span class="p">,</span> <span class="n">minimum2</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="o">.</span><span class="n">distances</span><span class="p">()</span> <span class="c">#  iterator over Distance objects</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="o">.</span><span class="n">getDistance</span><span class="p">(</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">minimum2</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
 <div class="section" id="id1">
 <h2>Database<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <table border="1" class="longtable docutils">
@@ -246,9 +219,6 @@ This function can be conveniently accessed by:</p>
 <li><a class="reference internal" href="#transitionstate">TransitionState</a><ul>
 </ul>
 </li>
-<li><a class="reference internal" href="#distance">Distance</a><ul>
-</ul>
-</li>
 <li><a class="reference internal" href="#id1">Database</a><ul>
 </ul>
 </li>
@@ -257,8 +227,8 @@ This function can be conveniently accessed by:</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="generated/pele.angleaxis.AATopology.zeroEV.html"
-                        title="previous chapter">pele.angleaxis.AATopology.zeroEV</a></p>
+  <p class="topless"><a href="generated/pele.accept_tests.SphericalContainer.accept_fortran.html"
+                        title="previous chapter">pele.accept_tests.SphericalContainer.accept_fortran</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="generated/pele.storage.Database.html"
                         title="next chapter">pele.storage.Database</a></p>
@@ -300,7 +270,7 @@ This function can be conveniently accessed by:</p>
           <a href="generated/pele.storage.Database.html" title="pele.storage.Database"
              >next</a> |</li>
         <li class="right" >
-          <a href="generated/pele.angleaxis.AATopology.zeroEV.html" title="pele.angleaxis.AATopology.zeroEV"
+          <a href="generated/pele.accept_tests.SphericalContainer.accept_fortran.html" title="pele.accept_tests.SphericalContainer.accept_fortran"
              >previous</a> |</li>
         <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
       </ul>

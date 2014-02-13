@@ -16,12 +16,8 @@ pele.potentials.LJ
          ~LJ.getEnergy
          ~LJ.getEnergyGradient
          ~LJ.getEnergyGradientHessian
-         ~LJ.getEnergyGradientList
-         ~LJ.getEnergyGradientNumerical
-         ~LJ.getEnergyList
          ~LJ.getGradient
          ~LJ.getHessian
-         ~LJ.test_potential
    
    
 

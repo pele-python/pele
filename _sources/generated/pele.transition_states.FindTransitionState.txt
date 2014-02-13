@@ -11,6 +11,8 @@ pele.transition_states.FindTransitionState
       .. autosummary::
          :toctree:
       
+         ~FindTransitionState.get_energy
+         ~FindTransitionState.get_gradient
          ~FindTransitionState.params
          ~FindTransitionState.run
    

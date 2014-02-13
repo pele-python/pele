@@ -65,6 +65,9 @@
 <span class="sd">    This allows connections to be determined much more rapidly because</span>
 <span class="sd">    the breadth first search algorithm (connected_components, bidirectional_dijkstra) </span>
 <span class="sd">    need be run only infrequently.</span>
+<span class="sd">    </span>
+<span class="sd">    TODO: I think this could be significantly improved by using a disjoint set</span>
+<span class="sd">    data structure (nx.utils.UnionFind)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span>
@@ -165,19 +168,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_build_from_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minima</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="TSGraph.addMinimum"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.addMinimum.html#pele.landscape.TSGraph.addMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">addMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="TSGraph.addMinimum"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.addMinimum.html#pele.landscape.TSGraph.addMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">addMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add a minimum to the database and graph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">minimum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">has_node</span><span class="p">(</span><span class="n">minimum</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">setRebuild</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">minimum</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">minimum</span>
     </div>
-<div class="viewcode-block" id="TSGraph.addTransitionState"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.addTransitionState.html#pele.landscape.TSGraph.addTransitionState">[docs]</a>    <span class="k">def</span> <span class="nf">addTransitionState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="TSGraph.addTransitionState"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.addTransitionState.html#pele.landscape.TSGraph.addTransitionState">[docs]</a>    <span class="k">def</span> <span class="nf">addTransitionState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">setRebuild</span><span class="p">()</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">addTransitionState</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ts</span>
             </div>
@@ -198,7 +199,7 @@
         <span class="k">except</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXNoPath</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">None</span>
 </div>
-<div class="viewcode-block" id="TSGraph.mergeMinima"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.mergeMinima.html#pele.landscape.TSGraph.mergeMinima">[docs]</a>    <span class="k">def</span> <span class="nf">mergeMinima</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">update_database</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="TSGraph.mergeMinima"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.mergeMinima.html#pele.landscape.TSGraph.mergeMinima">[docs]</a>    <span class="k">def</span> <span class="nf">mergeMinima</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        delete minima2.  all transition states pointing to min2 should</span>
 <span class="sd">        now point to min1</span>
@@ -216,10 +217,6 @@
 <span class="c">#                    data = self.graph.get_edge_data(min2, v)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">min2</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">update_database</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
-
 
 
 <span class="c">#</span>
@@ -296,7 +293,9 @@
         <span class="n">nedges</span> <span class="o">=</span> <span class="p">[</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">degree</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">minima</span><span class="p">]</span>
         <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">minima</span>
         <span class="n">neighbors</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">min2</span><span class="p">)</span>
-        <span class="n">graph</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">update_database</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="n">min2</span><span class="p">,</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
         
         <span class="c">#make sure the edges were copied</span>

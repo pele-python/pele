@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Transition States (pele.transition_states)" href="../transition_states_module.html" />
-    <link rel="next" title="pele.transition_states.FindTransitionState.params" href="pele.transition_states.FindTransitionState.params.html" />
+    <link rel="next" title="pele.transition_states.FindTransitionState.get_energy" href="pele.transition_states.FindTransitionState.get_energy.html" />
     <link rel="prev" title="pele.transition_states.minima_from_ts" href="pele.transition_states.minima_from_ts.html" /> 
   </head>
   <body>
@@ -44,7 +44,7 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pele.transition_states.FindTransitionState.params.html" title="pele.transition_states.FindTransitionState.params"
+          <a href="pele.transition_states.FindTransitionState.get_energy.html" title="pele.transition_states.FindTransitionState.get_energy"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pele.transition_states.minima_from_ts.html" title="pele.transition_states.minima_from_ts"
@@ -63,8 +63,8 @@
 <h1>pele.transition_states.FindTransitionState<a class="headerlink" href="#pele-transition-states-findtransitionstate" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.transition_states.FindTransitionState">
-<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">FindTransitionState</tt><big>(</big><em>coords</em>, <em>pot</em>, <em>tol=0.0001</em>, <em>event=None</em>, <em>nsteps=100</em>, <em>nfail_max=200</em>, <em>eigenvec0=None</em>, <em>iprint=-1</em>, <em>orthogZeroEigs=0</em>, <em>lowestEigenvectorQuenchParams={}</em>, <em>tangentSpaceQuenchParams={}</em>, <em>max_uphill_step=0.1</em>, <em>demand_initial_negative_vec=True</em>, <em>negatives_before_check=10</em>, <em>nsteps_tangent1=10</em>, <em>nsteps_tangent2=100</em>, <em>verbosity=1</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/transition_state_refinement.html#FindTransitionState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.FindTransitionState" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class implements the routine for finding the nearest transition state</p>
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">FindTransitionState</tt><big>(</big><em>coords</em>, <em>pot</em>, <em>tol=0.0001</em>, <em>event=None</em>, <em>nsteps=100</em>, <em>nfail_max=200</em>, <em>eigenvec0=None</em>, <em>iprint=-1</em>, <em>orthogZeroEigs=0</em>, <em>nsteps_tangent1=10</em>, <em>nsteps_tangent2=100</em>, <em>lowestEigenvectorQuenchParams={}</em>, <em>tangentSpaceQuenchParams={}</em>, <em>max_uphill_step=0.5</em>, <em>max_uphill_step_initial=0.2</em>, <em>demand_initial_negative_vec=False</em>, <em>negatives_before_check=10</em>, <em>verbosity=1</em>, <em>check_negative=False</em>, <em>invert_gradient=False</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_transition_state_refinement.html#FindTransitionState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.FindTransitionState" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class implements the hybrid eigenvector following routine for finding the nearest transition state</p>
 <p><strong>*orthogZeroEigs is system dependent, don&#8217;t forget to set it*</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -82,26 +82,30 @@
 <blockquote>
 <div><p>the tolerance for the rms gradient</p>
 </div></blockquote>
-<p><strong>event</strong> : callable</p>
-<blockquote>
-<div><p>This will be called after each step</p>
-</div></blockquote>
 <p><strong>nsteps :</strong> :</p>
 <blockquote>
 <div><p>number of iterations</p>
-</div></blockquote>
-<p><strong>nfail_max :</strong> :</p>
-<blockquote>
-<div><p>if the lowest eigenvector search fails this many times in a row
-than the algorithm ends</p>
 </div></blockquote>
 <p><strong>eigenvec0 :</strong> :</p>
 <blockquote>
 <div><p>a guess for the initial lowest eigenvector</p>
 </div></blockquote>
+<p><strong>nsteps_tangent1, nsteps_tangent2</strong> : int</p>
+<blockquote>
+<div><p>the number of iterations for tangent space minimization before and after
+the eigenvalue is deemed to be converged</p>
+</div></blockquote>
+<p><strong>event</strong> : callable</p>
+<blockquote>
+<div><p>This will be called after each step</p>
+</div></blockquote>
 <p><strong>iprint :</strong> :</p>
 <blockquote>
 <div><p>the interval at which to print status messages</p>
+</div></blockquote>
+<p><strong>verbosity</strong> : int</p>
+<blockquote>
+<div><p>how much debugging information to print (only partially implemented)</p>
 </div></blockquote>
 <p><strong>orthogZeroEigs</strong> : callable</p>
 <blockquote>
@@ -126,29 +130,38 @@ eigenvector search</p>
 <div><p>these parameters are passed quench routine for the minimization in
 the space tabgent to the lowest eigenvector</p>
 </div></blockquote>
-<p><strong>max_uphill_step :</strong> :</p>
+<p><strong>max_uphill_step_initial</strong> : float</p>
 <blockquote>
-<div><p>the maximum step uphill along the direction of the lowest
-eigenvector</p>
+<div><p>The initial maximum uphill step along the direction of the lowest 
+eigenvector.  The maximum uphill step is adjusted dynamically using a 
+trust radius</p>
+</div></blockquote>
+<p><strong>max_uphill_step</strong> : float</p>
+<blockquote>
+<div><p>The maximum value of the maximum uphill step. The maximum uphill step 
+is adjusted using a trust radius, but it can never become larger than 
+this.</p>
+</div></blockquote>
+<p><strong>check_negative</strong> : bool</p>
+<blockquote>
+<div><p>If True then the sign of the lowest eigenvalue is required to remain negative.
+If the sign becomes positive, then the step is retaken with smaller step size</p>
 </div></blockquote>
 <p><strong>demand_initial_negative_vec</strong> : bool</p>
 <blockquote>
-<div><p>if True, abort if the initial lowest eigenvalue is positive</p>
+<div><p>if True, and check_negative is True, then abort if the initial 
+lowest eigenvalue is positive</p>
 </div></blockquote>
 <p><strong>negatives_before_check</strong> : int</p>
 <blockquote>
-<div><p>if start with positive eigenvector and demand_initial_negative_vec is False,
-the check to make sure that the eigenvalue is enabled after having had so 
-many negative eigenvalues before</p>
+<div><p>If the run starts with a positive eigenvalue and demand_initial_negative_vec is False,
+then check to make sure that the eigenvalue is enabled after having had so 
+many negative eigenvalues before.  If check_negative is False this has no affect.</p>
 </div></blockquote>
-<p><strong>nsteps_tangent1, nsteps_tangent2</strong> : int</p>
-<blockquote>
-<div><p>the number of iterations for tangent space minimization before and after
-the eigenvalue is deemed to be converged</p>
-</div></blockquote>
-<p><strong>verbosity</strong> : int</p>
+<p><strong>nfail_max :</strong> :</p>
 <blockquote class="last">
-<div><p>how much debugging information to print (only partially implemented)</p>
+<div><p>if the lowest eigenvector search fails this many times in a row
+than the algorithm ends</p>
 </div></blockquote>
 </td>
 </tr>
@@ -166,18 +179,18 @@ the eigenvalue is deemed to be converged</p>
 </dl>
 </div>
 <p class="rubric">Notes</p>
-<dl class="docutils">
-<dt>It is composed of the following steps</dt>
-<dd><p class="first">1) Find eigenvector corresponding to the lowest <em>nonzero</em>
-eigenvector.</p>
-<ol class="last arabic simple" start="2">
+<p>It is composed of the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Find eigenvector corresponding to the lowest <em>nonzero</em>
+eigenvector.</li>
 <li>Step uphill in the direction of the lowest eigenvector</li>
 <li>minimize in the space tangent to the lowest eigenvector</li>
 </ol>
-</dd>
-</dl>
+</div></blockquote>
 <p>The tolerances for the various steps of this algorithm must be correlated.
-if the tol for tangent space search is lower than the total tol, then it will never finish</p>
+if the tolerance for tangent space search is lower than the total tolerance, 
+then it will never finish</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -185,6 +198,12 @@ if the tol for tangent space search is lower than the total tol, then it will ne
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.FindTransitionState.get_energy.html#pele.transition_states.FindTransitionState.get_energy" title="pele.transition_states.FindTransitionState.get_energy"><tt class="xref py py-obj docutils literal"><span class="pre">get_energy</span></tt></a>()</td>
+<td>return the already computed energy at the current position</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.transition_states.FindTransitionState.get_gradient.html#pele.transition_states.FindTransitionState.get_gradient" title="pele.transition_states.FindTransitionState.get_gradient"><tt class="xref py py-obj docutils literal"><span class="pre">get_gradient</span></tt></a>()</td>
+<td>return the already computed gradient at the current position</td>
+</tr>
 <tr class="row-odd"><td><a class="reference internal" href="pele.transition_states.FindTransitionState.params.html#pele.transition_states.FindTransitionState.params" title="pele.transition_states.FindTransitionState.params"><tt class="xref py py-obj docutils literal"><span class="pre">params</span></tt></a>([obj])</td>
 <td></td>
 </tr>
@@ -207,8 +226,8 @@ if the tol for tangent space search is lower than the total tol, then it will ne
   <p class="topless"><a href="pele.transition_states.minima_from_ts.html"
                         title="previous chapter">pele.transition_states.minima_from_ts</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.transition_states.FindTransitionState.params.html"
-                        title="next chapter">pele.transition_states.FindTransitionState.params</a></p>
+  <p class="topless"><a href="pele.transition_states.FindTransitionState.get_energy.html"
+                        title="next chapter">pele.transition_states.FindTransitionState.get_energy</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.transition_states.FindTransitionState.txt"
@@ -244,7 +263,7 @@ if the tol for tangent space search is lower than the total tol, then it will ne
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pele.transition_states.FindTransitionState.params.html" title="pele.transition_states.FindTransitionState.params"
+          <a href="pele.transition_states.FindTransitionState.get_energy.html" title="pele.transition_states.FindTransitionState.get_energy"
              >next</a> |</li>
         <li class="right" >
           <a href="pele.transition_states.minima_from_ts.html" title="pele.transition_states.minima_from_ts"

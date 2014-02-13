@@ -1,0 +1,6 @@
+pele.potentials.XYModel.set_up_neighborlists
+============================================
+
+.. currentmodule:: pele.potentials
+
+.. automethod:: XYModel.set_up_neighborlists

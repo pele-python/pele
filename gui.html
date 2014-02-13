@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pele GUI (pele.gui) &mdash; pele 0.1 documentation</title>
+    <title>pele GUI &mdash; pele 0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -57,8 +57,42 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <span class="target" id="module-pele.gui"><span id="gui"></span></span><div class="section" id="pele-gui-pele-gui">
-<h1>pele GUI (<cite>pele.gui</cite>)<a class="headerlink" href="#pele-gui-pele-gui" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="pele-gui">
+<span id="gui"></span><h1>pele GUI<a class="headerlink" href="#pele-gui" title="Permalink to this headline">¶</a></h1>
+<p>pele is primarily designed to be used as a library, but there is an extensive
+GUI as well.  The gui can be used to explore almost everything implemented in
+pele.  An example workflow might be:</p>
+<ol class="arabic simple">
+<li>Run basinhopping to find the global minimum structure.</li>
+<li>See a list of minima found and view the structure in 3D using openGL.</li>
+</ol>
+<img alt="_images/gui_main.png" src="_images/gui_main.png" style="height: 300px;" />
+<ol class="arabic simple" start="3">
+<li>View the normal modes of each structure.</li>
+</ol>
+<img alt="_images/gui_normalmodes.png" src="_images/gui_normalmodes.png" style="height: 300px;" />
+<ol class="arabic simple" start="4">
+<li>Find transition states between minima using the double ended connect algorithm</li>
+</ol>
+<img alt="_images/gui_connect_all.png" src="_images/gui_connect_all.png" style="height: 300px;" />
+<ol class="arabic simple" start="5">
+<li>Compare the structures of minima.</li>
+</ol>
+<img alt="_images/gui_ts.png" src="_images/gui_ts.png" style="height: 300px;" />
+<ol class="arabic simple" start="6">
+<li>See a list of all known transition
+states, view the 3d structure, and look at the normal modes.</li>
+<li>Create an interactive disconnectivity graph.  Clicking on a minimum in the
+disconnectivity graph will bring up the minimum in the main window for 3D
+viewing and analysis.</li>
+</ol>
+<img alt="_images/gui_dgraph.png" src="_images/gui_dgraph.png" style="height: 300px;" />
+<ol class="arabic simple" start="8">
+<li>Run the nudged elastic band algorithm interactively.</li>
+</ol>
+<img alt="_images/gui_NEB.png" src="_images/gui_NEB.png" style="height: 300px;" />
+<span class="target" id="module-pele.gui"></span><div class="section" id="pele-gui-pele-gui">
+<h2>pele GUI (<cite>pele.gui</cite>)<a class="headerlink" href="#pele-gui-pele-gui" title="Permalink to this headline">¶</a></h2>
 <p>This module contains all the necessary components for running the gui.</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -66,7 +100,7 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.gui.run_gui.html#pele.gui.run_gui" title="pele.gui.run_gui"><tt class="xref py py-obj docutils literal"><span class="pre">run_gui</span></tt></a>(system[,&nbsp;db])</td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.gui.run_gui.html#pele.gui.run_gui" title="pele.gui.run_gui"><tt class="xref py py-obj docutils literal"><span class="pre">run_gui</span></tt></a>(system[,&nbsp;db,&nbsp;application])</td>
 <td>The top level function that will launch the gui for a given system</td>
 </tr>
 </tbody>
@@ -84,7 +118,7 @@ or create a new one at that location:</p>
 </pre></div>
 </div>
 <div class="section" id="preparing-my-system-for-use-in-the-gui">
-<h2>Preparing my System for use in the gui<a class="headerlink" href="#preparing-my-system-for-use-in-the-gui" title="Permalink to this headline">¶</a></h2>
+<h3>Preparing my System for use in the gui<a class="headerlink" href="#preparing-my-system-for-use-in-the-gui" title="Permalink to this headline">¶</a></h3>
 <p>If you have written your own system class and want to run it in the gui, there are
 a few additional member functions must be defined:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">mysystem</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
@@ -96,6 +130,7 @@ See <a class="reference internal" href="system_class.html#system-class"><em>Base
 and BLJCluster for more information and examples of how to implement these.</p>
 </div>
 </div>
+</div>
 
 
           </div>
@@ -105,8 +140,11 @@ and BLJCluster for more information and examples of how to implement these.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">pele GUI (<cite>pele.gui</cite>)</a><ul>
+<li><a class="reference internal" href="#">pele GUI</a><ul>
+<li><a class="reference internal" href="#pele-gui-pele-gui">pele GUI (<cite>pele.gui</cite>)</a><ul>
 <li><a class="reference internal" href="#preparing-my-system-for-use-in-the-gui">Preparing my System for use in the gui</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

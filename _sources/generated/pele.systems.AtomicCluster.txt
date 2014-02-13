@@ -23,6 +23,7 @@ pele.systems.AtomicCluster
          ~AtomicCluster.get_metric_tensor
          ~AtomicCluster.get_mindist
          ~AtomicCluster.get_minimizer
+         ~AtomicCluster.get_ndof
          ~AtomicCluster.get_normalmodes
          ~AtomicCluster.get_nzero_modes
          ~AtomicCluster.get_orthogonalize_to_zero_eigenvectors
@@ -31,6 +32,7 @@ pele.systems.AtomicCluster
          ~AtomicCluster.get_potential
          ~AtomicCluster.get_random_configuration
          ~AtomicCluster.get_random_minimized_configuration
+         ~AtomicCluster.get_system_properties
          ~AtomicCluster.get_takestep
          ~AtomicCluster.load_coords_pymol
          ~AtomicCluster.smooth_path

@@ -54,6 +54,7 @@
   <h1>Source code for pele.optimize._mylbfgs</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 
 <span class="c">#from bfgs import lineSearch, BFGS</span>
 <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">LBFGS</span>
@@ -88,22 +89,21 @@
         <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>
         
         <span class="c">#in fortran mylbfgs H0 is a vector of length N with all the elements the same</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="c">#initial guess for the hessian</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="c"># initial guess for the hessian</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">M</span><span class="p">)</span> <span class="c">#mylbfgs working space</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">point</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">M</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">M</span><span class="p">)</span> <span class="c"># mylbfgs working space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_point</span> <span class="o">=</span> <span class="mi">0</span>
         
     
 <div class="viewcode-block" id="MYLBFGS.getStep"><a class="viewcode-back" href="../../../generated/pele.optimize.MYLBFGS.getStep.html#pele.optimize.MYLBFGS.getStep">[docs]</a>    <span class="k">def</span> <span class="nf">getStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">G</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        use the Fortran LBFGS code from GMIN to get the step</span>
-<span class="sd">        size and direction.</span>
+<span class="sd">        use the Fortran MYLBFGS code from GMIN to update the LBFGS memory and get the step size and direction.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">G</span>
         <span class="c">#save the position and gradient change</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span>
             <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>
             
@@ -114,33 +114,56 @@
             <span class="n">ISPT</span><span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">M</span>     <span class="c"># index for storage of search steps</span>
             <span class="n">IYPT</span><span class="o">=</span> <span class="n">ISPT</span> <span class="o">+</span> <span class="n">N</span><span class="o">*</span><span class="n">M</span>  <span class="c"># index for storage of gradient differences</span>
 
-            <span class="n">NPT</span> <span class="o">=</span> <span class="n">N</span><span class="o">*</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">point</span> <span class="o">+</span> <span class="n">M</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">M</span><span class="p">)</span>  
+            <span class="n">NPT</span> <span class="o">=</span> <span class="n">N</span><span class="o">*</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_point</span> <span class="o">+</span> <span class="n">M</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">M</span><span class="p">)</span>  
             <span class="c">#s = X - self.Xold</span>
             <span class="c">#y = G - self.Gold</span>
             <span class="c">#print &quot;YS YY py&quot;, np.dot( y, s ), np.dot( y,y ), ISPT+NPT</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">[</span><span class="n">ISPT</span><span class="o">+</span><span class="n">NPT</span> <span class="p">:</span> <span class="n">ISPT</span><span class="o">+</span><span class="n">NPT</span> <span class="o">+</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xold</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">[</span><span class="n">IYPT</span><span class="o">+</span><span class="n">NPT</span> <span class="p">:</span> <span class="n">IYPT</span><span class="o">+</span><span class="n">NPT</span> <span class="o">+</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="n">G</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Gold</span>    
-        <span class="bp">self</span><span class="o">.</span><span class="n">Xold</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Gold</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">[</span><span class="n">ISPT</span><span class="o">+</span><span class="n">NPT</span> <span class="p">:</span> <span class="n">ISPT</span><span class="o">+</span><span class="n">NPT</span> <span class="o">+</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dXold</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">[</span><span class="n">IYPT</span><span class="o">+</span><span class="n">NPT</span> <span class="p">:</span> <span class="n">IYPT</span><span class="o">+</span><span class="n">NPT</span> <span class="o">+</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dGold</span>    
+<span class="c">#        self.Xold = X.copy()</span>
+<span class="c">#        self.Gold = G.copy()</span>
 
         
-        <span class="c">#print self.iter, self.point</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span> <span class="o">=</span> <span class="n">mylbfgs_updatestep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">)</span>
+        <span class="c">#print self._iter, self._point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span> <span class="o">=</span> <span class="n">mylbfgs_updatestep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_point</span><span class="p">)</span>
         
         <span class="c">#print &quot;stp&quot;, np.linalg.norm(self.stp), self.stp</span>
         <span class="c">#print &quot;G&quot;, self.G</span>
         <span class="c">#print &quot;overlap&quot;, np.dot(self.stp, self.G)</span>
         <span class="c">#print &quot;H0&quot;, self.H0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>
         
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stp</span>
+</div>
+<div class="viewcode-block" id="MYLBFGS.get_state"><a class="viewcode-back" href="../../../generated/pele.optimize.MYLBFGS.get_state.html#pele.optimize.MYLBFGS.get_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">State</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">&quot;State&quot;</span><span class="p">,</span> <span class="s">&quot;W dXold dGold iter point H0 have_dXold&quot;</span><span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">W</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dXold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dXold</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dGold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dGold</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                      <span class="nb">iter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">,</span> <span class="n">point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_point</span><span class="p">,</span> <span class="n">H0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                      <span class="n">have_dXold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_have_dXold</span>
+                      <span class="p">)</span>
+        <span class="k">return</span> <span class="n">state</span>
+    </div>
+<div class="viewcode-block" id="MYLBFGS.set_state"><a class="viewcode-back" href="../../../generated/pele.optimize.MYLBFGS.set_state.html#pele.optimize.MYLBFGS.set_state">[docs]</a>    <span class="k">def</span> <span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">W</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dXold</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dXold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dGold</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dGold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_have_dXold</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">have_dXold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_point</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">H0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">dXold</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">dGold</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="MYLBFGS.reset"><a class="viewcode-back" href="../../../generated/pele.optimize.MYLBFGS.reset.html#pele.optimize.MYLBFGS.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">LBFGS</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="mi">0</span>
+        
 
 
-<span class="c">#class LBFGS(MYLBFGS):</span>
-<span class="c">#    &quot;&quot;&quot;for backward compatibility &quot;&quot;&quot;</span>
-<span class="c">#    pass</span>
 
 <span class="c">#</span>
 <span class="c">#only testing stuff below here</span>

@@ -57,7 +57,7 @@
 <span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">ConnectManager</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;ConnectServer&quot;</span><span class="p">,</span> <span class="s">&quot;ConnectWorker&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;ConnectServer&quot;</span><span class="p">,</span> <span class="s">&quot;ConnectWorker&quot;</span><span class="p">,</span> <span class="s">&quot;BasinhoppingWorker&quot;</span><span class="p">]</span>
 
 <span class="c"># we need to run pyros in multiplex mode, otherwise we run into problems with </span>
 <span class="c"># SQLAlchemy. This is due to the fact that a session can only be used from one</span>
@@ -152,8 +152,6 @@
 <span class="sd">        ID : global id of transition state added</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">print</span> <span class="s">&quot;a client found a transition state&quot;</span><span class="p">,</span> <span class="n">E</span>
-<span class="c">#        min1 = self.db.session.query(Minimum).filter(Minimum._id == id1).one()</span>
-<span class="c">#        min2 = self.db.session.query(Minimum).filter(Minimum._id == id2).one()</span>
         <span class="n">min1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">getMinimum</span><span class="p">(</span><span class="n">id1</span><span class="p">)</span>
         <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">getMinimum</span><span class="p">(</span><span class="n">id2</span><span class="p">)</span>
         
@@ -164,7 +162,7 @@
         <span class="sd">&#39;&#39;&#39; start the server and listen for incoming connections &#39;&#39;&#39;</span>
         <span class="k">print</span> <span class="s">&quot;Starting Pyros daemon&quot;</span>
         <span class="n">daemon</span><span class="o">=</span><span class="n">Pyro4</span><span class="o">.</span><span class="n">Daemon</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
-        <span class="c"># make the connect_server available to Pyros childs</span>
+        <span class="c"># make the connect_server available to Pyros children</span>
         <span class="n">uri</span><span class="o">=</span><span class="n">daemon</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objectId</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">server_name</span><span class="p">)</span>
         <span class="k">print</span> <span class="s">&quot;The connect server can be accessed by the following uri: &quot;</span><span class="p">,</span> <span class="n">uri</span> 
         
@@ -195,7 +193,7 @@
 <span class="sd">    pele.landscape.ConnectManager</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uri</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s">&quot;random&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s">&quot;random&quot;</span><span class="p">):</span>
         <span class="k">print</span> <span class="s">&quot;connecting to&quot;</span><span class="p">,</span><span class="n">uri</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connect_server</span> <span class="o">=</span> <span class="n">Pyro4</span><span class="o">.</span><span class="n">Proxy</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">system</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -217,7 +215,7 @@
         <span class="n">pot</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
 
         <span class="c"># stores the global id&#39;s of the minima found</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gid</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gid</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c"># create a local database in memory</span>
         <span class="n">db</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="s">&quot;:memory:&quot;</span><span class="p">)</span>
@@ -244,23 +242,80 @@
                 <span class="n">nruns</span> <span class="o">-=</span> <span class="mi">1</span>
                 <span class="k">if</span> <span class="n">nruns</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">break</span>
 
-        <span class="k">print</span> <span class="s">&quot;finished sucessfully!&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;finished successfully!&quot;</span>
         <span class="k">print</span> <span class="s">&quot;Data collected during run:&quot;</span>
         <span class="k">print</span> <span class="n">db</span><span class="o">.</span><span class="n">number_of_minima</span><span class="p">(),</span> <span class="s">&quot;minima&quot;</span>
         <span class="k">print</span> <span class="n">db</span><span class="o">.</span><span class="n">number_of_transition_states</span><span class="p">(),</span> <span class="s">&quot;transition states&quot;</span>
 </div>
     <span class="k">def</span> <span class="nf">_minimum_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;forward new minima to server&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;forward new minimum to server&quot;&quot;&quot;</span>
         <span class="n">minid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect_server</span><span class="o">.</span><span class="n">add_minimum</span><span class="p">(</span><span class="n">minimum</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">minimum</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
         <span class="c"># store the id of minimum on server-side for quick access later on</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gid</span><span class="p">[</span><span class="n">minimum</span><span class="p">]</span> <span class="o">=</span> <span class="n">minid</span>
         
     <span class="k">def</span> <span class="nf">_ts_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;forward new ts to server&quot;&quot;&quot;</span> 
+        <span class="sd">&quot;&quot;&quot;forward new transition state to server&quot;&quot;&quot;</span> 
         <span class="n">id1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gid</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">]</span>
         <span class="n">id2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gid</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">]</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">connect_server</span><span class="o">.</span><span class="n">add_ts</span><span class="p">(</span><span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">eigenval</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="n">eigenvec</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_server</span><span class="o">.</span><span class="n">add_ts</span><span class="p">(</span><span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">eigenval</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="n">eigenvec</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
+</div>
+<span class="k">class</span> <span class="nc">BasinhoppingWorker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    worker class to execute basinhopping runs in parallel</span>
+<span class="sd">    </span>
+<span class="sd">    The worker will return all new minima to the server.  </span>
+<span class="sd">    </span>
+<span class="sd">    The basinhopping run will be set up using system.get_basinhopping(). </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    uri : string</span>
+<span class="sd">        uri for job server</span>
+<span class="sd">    system : BaseSystem, optional</span>
+<span class="sd">        if no system class is specified, the worker obtains the system</span>
+<span class="sd">        class from the ConnectServer by get_system. This only works for pickleable</span>
+<span class="sd">        systems classes. If this is not the case, the system class can be</span>
+<span class="sd">        created on the client side and passed as a parameter.</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    ConnectServer</span>
+<span class="sd">    pele.Basinhopping</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uri</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s">&quot;random&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">basinhopping_kwargs</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;connecting to&quot;</span><span class="p">,</span><span class="n">uri</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_server</span> <span class="o">=</span> <span class="n">Pyro4</span><span class="o">.</span><span class="n">Proxy</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">system</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect_server</span><span class="o">.</span><span class="n">get_system</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="n">system</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basinhopping_kwargs</span> <span class="o">=</span> <span class="n">basinhopping_kwargs</span>
+    
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; start the client</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nsteps : integer</span>
+<span class="sd">            number of basinhopping iterations</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c"># create a local database in memory</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="s">&quot;:memory:&quot;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">basinhopping_kwargs</span><span class="p">)</span>
+
+        <span class="c"># connect to events and forward them to server</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">on_minimum_added</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_minimum_added</span><span class="p">)</span>
+
+        <span class="n">bh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">db</span><span class="p">)</span>
+        <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">nsteps</span><span class="p">)</span>
+
+        <span class="k">print</span> <span class="s">&quot;finished successfully!&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;minima found:&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">number_of_minima</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_minimum_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;forward new minimum to server&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_server</span><span class="o">.</span><span class="n">add_minimum</span><span class="p">(</span><span class="n">minimum</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">minimum</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+   
 </pre></div>
 
           </div>

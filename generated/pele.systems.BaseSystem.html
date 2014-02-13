@@ -134,26 +134,32 @@ database using self.params.database.accuracy</p>
 <tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_minimizer.html#pele.systems.BaseSystem.get_minimizer" title="pele.systems.BaseSystem.get_minimizer"><tt class="xref py py-obj docutils literal"><span class="pre">get_minimizer</span></tt></a>(**kwargs)</td>
 <td>return a function to minimize the structure</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_normalmodes.html#pele.systems.BaseSystem.get_normalmodes" title="pele.systems.BaseSystem.get_normalmodes"><tt class="xref py py-obj docutils literal"><span class="pre">get_normalmodes</span></tt></a>(coords)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_ndof.html#pele.systems.BaseSystem.get_ndof" title="pele.systems.BaseSystem.get_ndof"><tt class="xref py py-obj docutils literal"><span class="pre">get_ndof</span></tt></a>()</td>
+<td>return the number of degrees of freedom</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_normalmodes.html#pele.systems.BaseSystem.get_normalmodes" title="pele.systems.BaseSystem.get_normalmodes"><tt class="xref py py-obj docutils literal"><span class="pre">get_normalmodes</span></tt></a>(coords)</td>
 <td>return the squared normal mode frequencies and eigenvectors</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_nzero_modes.html#pele.systems.BaseSystem.get_nzero_modes" title="pele.systems.BaseSystem.get_nzero_modes"><tt class="xref py py-obj docutils literal"><span class="pre">get_nzero_modes</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_nzero_modes.html#pele.systems.BaseSystem.get_nzero_modes" title="pele.systems.BaseSystem.get_nzero_modes"><tt class="xref py py-obj docutils literal"><span class="pre">get_nzero_modes</span></tt></a>()</td>
 <td>return the number of vibration modes with zero frequency</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors.html#pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors" title="pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors"><tt class="xref py py-obj docutils literal"><span class="pre">get_orthogonalize_to_zero_eigenvectors</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors.html#pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors" title="pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors"><tt class="xref py py-obj docutils literal"><span class="pre">get_orthogonalize_to_zero_eigenvectors</span></tt></a>()</td>
 <td>return a function which makes a vector orthogonal to the known zero</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_pgorder.html#pele.systems.BaseSystem.get_pgorder" title="pele.systems.BaseSystem.get_pgorder"><tt class="xref py py-obj docutils literal"><span class="pre">get_pgorder</span></tt></a>(coords)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_pgorder.html#pele.systems.BaseSystem.get_pgorder" title="pele.systems.BaseSystem.get_pgorder"><tt class="xref py py-obj docutils literal"><span class="pre">get_pgorder</span></tt></a>(coords)</td>
 <td>return the point group order of the configuration</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_potential.html#pele.systems.BaseSystem.get_potential" title="pele.systems.BaseSystem.get_potential"><tt class="xref py py-obj docutils literal"><span class="pre">get_potential</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_potential.html#pele.systems.BaseSystem.get_potential" title="pele.systems.BaseSystem.get_potential"><tt class="xref py py-obj docutils literal"><span class="pre">get_potential</span></tt></a>()</td>
 <td>return the potential object</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_random_configuration.html#pele.systems.BaseSystem.get_random_configuration" title="pele.systems.BaseSystem.get_random_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_configuration</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_random_configuration.html#pele.systems.BaseSystem.get_random_configuration" title="pele.systems.BaseSystem.get_random_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_configuration</span></tt></a>()</td>
 <td>a starting point for basinhopping, etc.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_random_minimized_configuration.html#pele.systems.BaseSystem.get_random_minimized_configuration" title="pele.systems.BaseSystem.get_random_minimized_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_minimized_configuration</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_random_minimized_configuration.html#pele.systems.BaseSystem.get_random_minimized_configuration" title="pele.systems.BaseSystem.get_random_minimized_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_minimized_configuration</span></tt></a>(**kwargs)</td>
 <td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.get_system_properties.html#pele.systems.BaseSystem.get_system_properties" title="pele.systems.BaseSystem.get_system_properties"><tt class="xref py py-obj docutils literal"><span class="pre">get_system_properties</span></tt></a>()</td>
+<td>return a dictionary of system specific properties.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.get_takestep.html#pele.systems.BaseSystem.get_takestep" title="pele.systems.BaseSystem.get_takestep"><tt class="xref py py-obj docutils literal"><span class="pre">get_takestep</span></tt></a>(**kwargs)</td>
 <td>return the takestep object for use in basinhopping, etc.</td>
@@ -161,7 +167,7 @@ database using self.params.database.accuracy</p>
 <tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.load_coords_pymol.html#pele.systems.BaseSystem.load_coords_pymol" title="pele.systems.BaseSystem.load_coords_pymol"><tt class="xref py py-obj docutils literal"><span class="pre">load_coords_pymol</span></tt></a>(coordslist,&nbsp;oname[,&nbsp;index])</td>
 <td>load the coords into pymol</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.smooth_path.html#pele.systems.BaseSystem.smooth_path" title="pele.systems.BaseSystem.smooth_path"><tt class="xref py py-obj docutils literal"><span class="pre">smooth_path</span></tt></a>(images)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.smooth_path.html#pele.systems.BaseSystem.smooth_path" title="pele.systems.BaseSystem.smooth_path"><tt class="xref py py-obj docutils literal"><span class="pre">smooth_path</span></tt></a>(images,&nbsp;**kwargs)</td>
 <td>return a smoothed path between two configurations.</td>
 </tr>
 </tbody>

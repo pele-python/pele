@@ -1,6 +1,0 @@
-pele.potentials.LJ.test_potential
-=================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: LJ.test_potential

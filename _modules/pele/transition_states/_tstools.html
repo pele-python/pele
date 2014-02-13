@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.transition_states._tstools &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.transition_states._tstools</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;minima_from_ts&quot;</span><span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;pele.connect&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">determinePushoff</span><span class="p">(</span>
+            <span class="n">pot</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">vec</span><span class="p">,</span> <span class="n">gdiff</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">stepmin</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">stepmax</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">grad</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">rms_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    determine a good stepsize to step off a transition state</span>
+<span class="sd">    </span>
+<span class="sd">    try to choose a stepsize so (gradpar-gradpar_ts) / gradpar_ts &gt;= gdiff</span>
+<span class="sd">        where gradpar and gradpar_ts is the parallel component of the gradient</span>
+<span class="sd">        after the step and at the top of the transition state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">grad</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">gpar0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">vec</span><span class="p">)</span><span class="o">/</span><span class="n">vnorm</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="n">stepmin</span> <span class="o">/</span> <span class="n">vnorm</span>
+    <span class="c">#print &quot;gpar0&quot;, gpar0</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">coords1</span> <span class="o">=</span> <span class="n">step</span> <span class="o">*</span> <span class="n">vec</span> <span class="o">+</span> <span class="n">coords</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
+        <span class="n">rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">grad</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">gpar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">vec</span><span class="p">)</span> <span class="o">/</span> <span class="n">vnorm</span>
+        <span class="n">finalstep</span> <span class="o">=</span> <span class="n">step</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;gpar </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">gpar</span><span class="p">,</span> <span class="n">gpar0</span><span class="p">,</span> <span class="nb">abs</span><span class="p">((</span><span class="n">gpar</span><span class="o">-</span><span class="n">gpar0</span><span class="p">)</span> <span class="o">/</span> <span class="n">gpar0</span><span class="p">),</span> <span class="n">step</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">((</span><span class="n">gpar</span><span class="o">-</span><span class="n">gpar0</span><span class="p">)</span> <span class="o">/</span> <span class="n">gpar0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">gdiff</span> <span class="ow">and</span> <span class="n">rms</span> <span class="o">&gt;</span> <span class="n">rms_min</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="n">stepmax</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;warning: taking maximum step size from transition state </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="n">step</span> <span class="o">*=</span> <span class="mf">2.</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s">&quot;using pushoff of </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">finalstep</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">coords1</span>
+
+<div class="viewcode-block" id="minima_from_ts"><a class="viewcode-back" href="../../../generated/pele.transition_states.minima_from_ts.html#pele.transition_states.minima_from_ts">[docs]</a><span class="k">def</span> <span class="nf">minima_from_ts</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">xt</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">quench</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    step off either side of a transition state and quench to find the minima</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pot : potential object</span>
+<span class="sd">    xt : array</span>
+<span class="sd">        transition state coords</span>
+<span class="sd">    stepmin : float</span>
+<span class="sd">        initial guess for size of pushoff when stepping off the transition state</span>
+<span class="sd">    stepmax : float</span>
+<span class="sd">        maximum size of pushoff when stepping off the transition state</span>
+<span class="sd">    gdiff : float</span>
+<span class="sd">        criterion for choosing a step size.  Try to choose a stepsize so that:: </span>
+<span class="sd">        </span>
+<span class="sd">            (gradpar - gradpar_ts) / gradpar_ts &gt;= gdiff</span>
+<span class="sd">        </span>
+<span class="sd">        where gradpar and gradpar_ts is the parallel component of the gradient</span>
+<span class="sd">        after the step and at the top of the transition state</span>
+<span class="sd">    quenchRoutine : callable</span>
+<span class="sd">        routine to use to do the quenching</span>
+<span class="sd">    quenchParams : dict</span>
+<span class="sd">        parameters to pass to quenchRoutine</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># if no direction is given, choose random direction</span>
+    <span class="k">if</span> <span class="n">n</span><span class="o">==</span><span class="bp">None</span><span class="p">:</span>
+        <span class="c"># TODO: replace by better algorithm with uniform sampling</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">xt</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span>
+    
+    <span class="k">if</span> <span class="n">quench</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">quench</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">coords</span> <span class="p">:</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>        
+    
+    <span class="c">#x1 = xt - displace*n</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">determinePushoff</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">xt</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">determinePushoff</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">xt</span><span class="p">,</span> <span class="o">-</span><span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c">#x2 = xt + displace*n</span>
+    <span class="c">#e1,g1 = getEnergyGradient(x1)</span>
+    <span class="c">#e2,g2 = getEnergyGradient(x2)</span>
+    <span class="c">#print np.dot(g1,g2)</span>
+    <span class="n">minimum1</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
+    <span class="n">minimum2</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">minimum1</span><span class="p">,</span> <span class="n">minimum2</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

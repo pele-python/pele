@@ -63,8 +63,8 @@
 <h1>pele.potentials.LJ<a class="headerlink" href="#pele-potentials-lj" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.potentials.LJ">
-<em class="property">class </em><tt class="descclassname">pele.potentials.</tt><tt class="descname">LJ</tt><big>(</big><em>eps=1.0</em>, <em>sig=1.0</em>, <em>boxl=None</em><big>)</big><a class="reference internal" href="../_modules/pele/potentials/lj.html#LJ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.potentials.LJ" title="Permalink to this definition">¶</a></dt>
-<dd><p>simple lennard jones potential</p>
+<em class="property">class </em><tt class="descclassname">pele.potentials.</tt><tt class="descname">LJ</tt><a class="headerlink" href="#pele.potentials.LJ" title="Permalink to this definition">¶</a></dt>
+<dd><p>define the python interface to the c++ LJ implementation</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -72,38 +72,26 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.NumericalDerivative.html#pele.potentials.LJ.NumericalDerivative" title="pele.potentials.LJ.NumericalDerivative"><tt class="xref py py-obj docutils literal"><span class="pre">NumericalDerivative</span></tt></a>(coords[,&nbsp;eps])</td>
-<td>return the gradient calculated numerically</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.potentials.LJ.NumericalHessian.html#pele.potentials.LJ.NumericalHessian" title="pele.potentials.LJ.NumericalHessian"><tt class="xref py py-obj docutils literal"><span class="pre">NumericalHessian</span></tt></a>(coords[,&nbsp;eps])</td>
-<td>return the Hessian matrix of second derivatives computed numerically</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.getEnergy.html#pele.potentials.LJ.getEnergy" title="pele.potentials.LJ.getEnergy"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergy</span></tt></a>(coords)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.NumericalDerivative.html#pele.potentials.LJ.NumericalDerivative" title="pele.potentials.LJ.NumericalDerivative"><tt class="xref py py-obj docutils literal"><span class="pre">NumericalDerivative</span></tt></a></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.potentials.LJ.getEnergyGradient.html#pele.potentials.LJ.getEnergyGradient" title="pele.potentials.LJ.getEnergyGradient"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradient</span></tt></a>(coords)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.potentials.LJ.NumericalHessian.html#pele.potentials.LJ.NumericalHessian" title="pele.potentials.LJ.NumericalHessian"><tt class="xref py py-obj docutils literal"><span class="pre">NumericalHessian</span></tt></a></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.getEnergyGradientHessian.html#pele.potentials.LJ.getEnergyGradientHessian" title="pele.potentials.LJ.getEnergyGradientHessian"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradientHessian</span></tt></a>(coords)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.getEnergy.html#pele.potentials.LJ.getEnergy" title="pele.potentials.LJ.getEnergy"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergy</span></tt></a></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.potentials.LJ.getEnergyGradientList.html#pele.potentials.LJ.getEnergyGradientList" title="pele.potentials.LJ.getEnergyGradientList"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradientList</span></tt></a>(coords,&nbsp;ilist)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.potentials.LJ.getEnergyGradient.html#pele.potentials.LJ.getEnergyGradient" title="pele.potentials.LJ.getEnergyGradient"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradient</span></tt></a></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.getEnergyGradientNumerical.html#pele.potentials.LJ.getEnergyGradientNumerical" title="pele.potentials.LJ.getEnergyGradientNumerical"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradientNumerical</span></tt></a>(coords)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.getEnergyGradientHessian.html#pele.potentials.LJ.getEnergyGradientHessian" title="pele.potentials.LJ.getEnergyGradientHessian"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyGradientHessian</span></tt></a></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.potentials.LJ.getEnergyList.html#pele.potentials.LJ.getEnergyList" title="pele.potentials.LJ.getEnergyList"><tt class="xref py py-obj docutils literal"><span class="pre">getEnergyList</span></tt></a>(coords,&nbsp;ilist)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.potentials.LJ.getGradient.html#pele.potentials.LJ.getGradient" title="pele.potentials.LJ.getGradient"><tt class="xref py py-obj docutils literal"><span class="pre">getGradient</span></tt></a></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.getGradient.html#pele.potentials.LJ.getGradient" title="pele.potentials.LJ.getGradient"><tt class="xref py py-obj docutils literal"><span class="pre">getGradient</span></tt></a>(coords)</td>
-<td>return the gradient at the given coordinates</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.potentials.LJ.getHessian.html#pele.potentials.LJ.getHessian" title="pele.potentials.LJ.getHessian"><tt class="xref py py-obj docutils literal"><span class="pre">getHessian</span></tt></a>(coords)</td>
-<td>return the hessian</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.test_potential.html#pele.potentials.LJ.test_potential" title="pele.potentials.LJ.test_potential"><tt class="xref py py-obj docutils literal"><span class="pre">test_potential</span></tt></a>(coords[,&nbsp;eps])</td>
-<td>print some information testing whether the analytical gradients are correct</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.LJ.getHessian.html#pele.potentials.LJ.getHessian" title="pele.potentials.LJ.getHessian"><tt class="xref py py-obj docutils literal"><span class="pre">getHessian</span></tt></a></td>
+<td></td>
 </tr>
 </tbody>
 </table>

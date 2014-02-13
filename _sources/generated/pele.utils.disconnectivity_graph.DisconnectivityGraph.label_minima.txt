@@ -1,0 +1,6 @@
+pele.utils.disconnectivity_graph.DisconnectivityGraph.label_minima
+==================================================================
+
+.. currentmodule:: pele.utils.disconnectivity_graph
+
+.. automethod:: DisconnectivityGraph.label_minima

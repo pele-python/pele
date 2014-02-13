@@ -95,14 +95,16 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    return connect jobs in order to connect everything to the global minimum</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">list_len</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">list_len</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">list_len</span> <span class="o">=</span> <span class="n">list_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">minpairs</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_build_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">print</span> <span class="s">&quot;populating list of minima not connected to the global minimum&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;populating list of minima not connected to the global minimum&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minpairs</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
         
         <span class="n">gmin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
@@ -266,7 +268,7 @@
         <span class="c"># remove group1 from cclist</span>
         <span class="n">cclist</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">group1</span><span class="p">)</span>
 
-        <span class="c"># get a minima from each of the other groups</span>
+        <span class="c"># get a minimum from each of the other groups</span>
         <span class="k">for</span> <span class="n">group2</span> <span class="ow">in</span> <span class="n">cclist</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minpairs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_len</span><span class="p">:</span>
                 <span class="k">break</span>
@@ -349,14 +351,15 @@
 <span class="sd">        [&quot;random&quot;, &quot;combine&quot;, &quot;untrap&quot;, &quot;gmin&quot;] </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s">&quot;random&quot;</span><span class="p">,</span> <span class="n">list_len</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">clust_min</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">Emax</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                  <span class="n">untrap_nlevels</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+                  <span class="n">untrap_nlevels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">default_strategy</span> <span class="o">=</span> <span class="n">strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">manager_random</span> <span class="o">=</span> <span class="n">ConnectManagerRandom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">Emax</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">manager_combine</span> <span class="o">=</span> <span class="n">ConnectManagerCombine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">list_len</span><span class="o">=</span><span class="n">list_len</span><span class="p">,</span> <span class="n">clust_min</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">manager_untrap</span> <span class="o">=</span> <span class="n">ConnectManagerUntrap</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">list_len</span><span class="o">=</span><span class="n">list_len</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">=</span><span class="n">untrap_nlevels</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">manager_gmin</span> <span class="o">=</span> <span class="n">ConnectManagerGMin</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">list_len</span><span class="o">=</span><span class="n">list_len</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager_gmin</span> <span class="o">=</span> <span class="n">ConnectManagerGMin</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">list_len</span><span class="o">=</span><span class="n">list_len</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">possible_strategies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;random&quot;</span><span class="p">,</span> <span class="s">&quot;combine&quot;</span><span class="p">,</span> <span class="s">&quot;untrap&quot;</span><span class="p">,</span> <span class="s">&quot;gmin&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span> <span class="o">=</span> <span class="s">&quot;random&quot;</span>
@@ -402,32 +405,39 @@
         <span class="k">if</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s">&quot;untrap&quot;</span><span class="p">:</span>
             <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager_untrap</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">min1</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">min2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;couldn&#39;t find any minima to untrap.  Doing&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span><span class="p">,</span> <span class="s">&quot;strategy instead&quot;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;couldn&#39;t find any minima to untrap.  Doing&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span><span class="p">,</span> <span class="s">&quot;strategy instead&quot;</span>
                 <span class="n">strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;sending an untrap connect job&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;sending an untrap connect job&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
 
         <span class="k">if</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s">&quot;combine&quot;</span><span class="p">:</span>
             <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager_combine</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">min1</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">min2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;couldn&#39;t find any minima clusters to combine.  Doing&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span><span class="p">,</span> <span class="s">&quot;strategy instead&quot;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;couldn&#39;t find any minima clusters to combine.  Doing&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span><span class="p">,</span> <span class="s">&quot;strategy instead&quot;</span>
                 <span class="n">strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;sending a connect job to combine two disconnected clusters&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;sending a connect job to combine two disconnected clusters&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
         
         <span class="k">if</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s">&quot;gmin&quot;</span><span class="p">:</span>
             <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager_gmin</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">min1</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">min2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;couldn&#39;t find any minima not connected to the global minimum.  Doing&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span><span class="p">,</span> <span class="s">&quot;strategy instead&quot;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;couldn&#39;t find any minima not connected to the global minimum.  Doing&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span><span class="p">,</span> <span class="s">&quot;strategy instead&quot;</span>
                 <span class="n">strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backup_strategy</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;sending a connect job to connect all minima with the global minimum&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;sending a connect job to connect all minima with the global minimum&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
 
         <span class="k">if</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s">&quot;random&quot;</span><span class="p">:</span>
             <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager_random</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">min1</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">min2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;couldn&#39;t find any random minima pair to connect.  Have we tried all pairs?&quot;</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s">&quot;sending a random connect job&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;sending a random connect job&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_register_pair</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span>

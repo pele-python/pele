@@ -107,10 +107,10 @@ As a first start, all we must do is tell the system class what our potential is<
 </div>
 <p>The following code will use the system class to initialize a basinhopping class
 and run basinhopping for 100 steps.  We use an <a class="reference internal" href="database.html#database"><em>sqlite database</em></a> to store the minima found:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">sys</span> <span class="o">=</span> <span class="n">My1DSystem</span><span class="p">()</span>
-<span class="n">database</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">system</span> <span class="o">=</span> <span class="n">My1DSystem</span><span class="p">()</span>
+<span class="n">database</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
 <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">])</span>
-<span class="n">bh</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
+<span class="n">bh</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
 <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">print</span> <span class="s">&quot;found&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()),</span> <span class="s">&quot;minima&quot;</span>
 <span class="n">min0</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
@@ -163,8 +163,8 @@ ready to use.</p>
 <p class="first admonition-title">Tip</p>
 <p class="last">Loops in python are very slow.  The above functions getEnergy() and
 getEnergyGradient() will run <em>a lot</em> faster in a compiled language.  Good
-choices might be cython or fortran (using f2py).  See the included potential
-pele.potentials.LJ for an example of how to do this.</p>
+choices might be cython or c++ wrapped with cython.  See the included
+potential pele.potentials.LJ for an example of how to do this.</p>
 </div>
 <p>We are now ready to define the system class.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">BaseSystem</span>
@@ -181,10 +181,10 @@ pele.potentials.LJ for an example of how to do this.</p>
 <p>We can now run basinhopping in exactly the same way we did before:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="n">natoms</span> <span class="o">=</span> <span class="mi">8</span>
-<span class="n">sys</span> <span class="o">=</span> <span class="n">MySystem</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
-<span class="n">database</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">MySystem</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
+<span class="n">database</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
 <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,[</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">])</span>
-<span class="n">bh</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
+<span class="n">bh</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
 <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="k">print</span> <span class="s">&quot;found&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()),</span> <span class="s">&quot;minima&quot;</span>
 <span class="n">min0</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
@@ -229,7 +229,7 @@ build up the connected network.  A few additional functions are required.</p>
 <p>Many of the routines in DoubleEndedConnect need a distance metric which returns
 how far apart are two structures.  This is know as mindist (or minpermdist) in
 our lingo.  We use as our metric the root mean squared
-deviation, so in the simplist case the distance is just:</p>
+deviation, so in the simplest case the distance is just:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X1</span> <span class="o">-</span> <span class="n">X2</span><span class="p">)</span>
 </pre></div>
@@ -247,7 +247,7 @@ Some common symmetries are</p>
 <li>permutational invariance</li>
 </ol>
 <p>pele has all the utilities necessary for handling these cases, but they are,
-by definition system dependent, so you must manually specify them for your
+by definition, system dependent, so you must manually specify them for your
 system.  These should be implemented in the system class by overloading
 MySystem.get_mindist().  See <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>Structure Alignment</em></a> for
 how more detailed information and help choosing which routine to use.</p>
@@ -290,10 +290,11 @@ The routine which takes care of this is called <cite>orthogopt</cite></p>
 As a starting point we will use the database that we built up
 from the basinhopping run above. We will connect all minima to the lowest
 energy minimum.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">minima</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()</span>
-<span class="n">min1</span> <span class="o">=</span> <span class="n">minima</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">min2</span> <span class="ow">in</span> <span class="n">minima</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-    <span class="n">connect</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">database</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">ConnectManager</span>
+<span class="n">manager</span> <span class="o">=</span> <span class="n">ConnectManager</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s">&quot;gmin&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">database</span><span class="o">.</span><span class="n">number_of_minima</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">()</span>
+    <span class="n">connect</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">database</span><span class="p">)</span>
     <span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -301,16 +302,18 @@ energy minimum.</p>
 short, so we may not have found the global minimum yet).
 As a final step, let&#8217;s plot the connectivity in the database using a <a class="reference internal" href="disconnectivity_graph.html#disconnectivity-graph"><em>disconnectivity
 graph</em></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.utils.disconnectivity_graph</span> <span class="kn">import</span> <span class="n">DisconnectivityGraph</span>
-<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.utils.disconnectivity_graph</span> <span class="kn">import</span> <span class="n">DisconnectivityGraph</span><span class="p">,</span> <span class="n">database2graph</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="c">#convert the database to a networkx graph</span>
-<span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span><span class="o">.</span><span class="n">graph</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">database2graph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
 <span class="n">dg</span> <span class="o">=</span> <span class="n">DisconnectivityGraph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">center_gmin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">dg</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
 <span class="n">dg</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
+</div>
+<div class="figure">
+<img alt="_images/dgraph_mypotential.png" src="_images/dgraph_mypotential.png" style="height: 300px;" />
 </div>
 </div>
 </div>

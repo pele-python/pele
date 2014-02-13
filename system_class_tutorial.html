@@ -95,8 +95,8 @@ that we use the system class to generate an object to do the <a class="reference
 for us:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">quencher</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_minimizer</span><span class="p">()</span>
 <span class="n">ret</span> <span class="o">=</span> <span class="n">quencher</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-<span class="n">newcoords</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">newenergy</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">newcoords</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span>
+<span class="n">newenergy</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">energy</span>
 <span class="k">print</span> <span class="s">&quot;after quenching, the energy is&quot;</span><span class="p">,</span> <span class="n">newenergy</span>
 </pre></div>
 </div>
@@ -155,9 +155,11 @@ finds a connected series of minima and transition states between two minima:</p>
 </div>
 <p>Finally, lets connect all of the minima in the database to the lowest minimum:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&quot;now connecting all the minima to the lowest energy minimum&quot;</span>
-<span class="n">m1</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">m2</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]:</span>
+<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">ConnectManager</span>
+<span class="n">manager</span> <span class="o">=</span> <span class="n">ConnectManager</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s">&quot;gmin&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">number_of_minima</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
     <span class="k">print</span> <span class="s">&quot;connecting minima with id&#39;s&quot;</span><span class="p">,</span> <span class="n">m1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m2</span><span class="o">.</span><span class="n">_id</span>
+    <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">()</span>
     <span class="n">connect</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
     <span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
 </pre></div>

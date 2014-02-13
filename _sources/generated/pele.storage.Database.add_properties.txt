@@ -1,0 +1,6 @@
+pele.storage.Database.add_properties
+====================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.add_properties

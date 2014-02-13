@@ -89,7 +89,7 @@
         <span class="n">s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">u</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">u</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
  
-    <span class="k">return</span>  <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span>  <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
     </div>
 <div class="viewcode-block" id="findrotation_kearsley"><a class="viewcode-back" href="../../../generated/pele.mindist.findrotation_kearsley.html#pele.mindist.findrotation_kearsley">[docs]</a><span class="k">def</span> <span class="nf">findrotation_kearsley</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">align_com</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -200,6 +200,9 @@
     <span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mx</span><span class="p">,</span><span class="n">x1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">x2</span><span class="o">-</span><span class="n">x1</span>
     <span class="k">print</span> <span class="n">mx</span><span class="o">-</span><span class="n">findrotation_kabsch</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">findrotation_kabsch</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">findrotation_kearsley</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    
 </pre></div>
 
           </div>

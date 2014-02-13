@@ -23,6 +23,7 @@ pele.systems.BaseSystem
          ~BaseSystem.get_metric_tensor
          ~BaseSystem.get_mindist
          ~BaseSystem.get_minimizer
+         ~BaseSystem.get_ndof
          ~BaseSystem.get_normalmodes
          ~BaseSystem.get_nzero_modes
          ~BaseSystem.get_orthogonalize_to_zero_eigenvectors
@@ -30,6 +31,7 @@ pele.systems.BaseSystem
          ~BaseSystem.get_potential
          ~BaseSystem.get_random_configuration
          ~BaseSystem.get_random_minimized_configuration
+         ~BaseSystem.get_system_properties
          ~BaseSystem.get_takestep
          ~BaseSystem.load_coords_pymol
          ~BaseSystem.smooth_path

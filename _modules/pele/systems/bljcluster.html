@@ -56,7 +56,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">AtomicCluster</span>
-<span class="kn">from</span> <span class="nn">pele.potentials.ljpshiftfast</span> <span class="kn">import</span> <span class="n">LJpshift</span>
+<span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BLJCut</span>
 <span class="kn">from</span> <span class="nn">pele.utils.xyz</span> <span class="kn">import</span> <span class="n">write_xyz</span>
 <span class="kn">from</span> <span class="nn">pele.mindist</span> <span class="kn">import</span> <span class="n">CoMToOrigin</span>
 
@@ -93,11 +93,23 @@
 
     
 <div class="viewcode-block" id="BLJCluster.get_potential"><a class="viewcode-back" href="../../../generated/pele.systems.BLJCluster.get_potential.html#pele.systems.BLJCluster.get_potential">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">LJpshift</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">BLJCut</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_kwargs</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="BLJCluster.get_permlist"><a class="viewcode-back" href="../../../generated/pele.systems.BLJCluster.get_permlist.html#pele.systems.BLJCluster.get_permlist">[docs]</a>    <span class="k">def</span> <span class="nf">get_permlist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)]</span>
-
+</div>
+<div class="viewcode-block" id="BLJCluster.get_system_properties"><a class="viewcode-back" href="../../../generated/pele.systems.BLJCluster.get_system_properties.html#pele.systems.BLJCluster.get_system_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_system_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">natoms</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">),</span>
+                    <span class="n">ntypeA</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">),</span>
+                    <span class="n">potential</span><span class="o">=</span><span class="s">&quot;BLJ cluster&quot;</span><span class="p">,</span>
+<span class="c">#                    sigAA=pot.sigAA,</span>
+<span class="c">#                    sigAB=pot.sigAB,</span>
+<span class="c">#                    sigBB=pot.sigBB,</span>
+<span class="c">#                    epsAA=pot.epsAA,</span>
+<span class="c">#                    epsAB=pot.epsAB,</span>
+<span class="c">#                    epsBB=pot.epsBB,</span>
+                    <span class="p">)</span>
+    
     <span class="c">#</span>
     <span class="c"># stuff for the gui below here</span>
     <span class="c">#</span>
@@ -114,29 +126,10 @@
 <span class="sd">            which one to draw.  They are viewed at the same time, so they should be</span>
 <span class="sd">            visually distinct, e.g. different colors.  accepted values are 1 or 2        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c"># index = 1 or 2</span>
-        <span class="kn">from</span> <span class="nn">OpenGL</span> <span class="kn">import</span> <span class="n">GL</span><span class="p">,</span><span class="n">GLUT</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">coordslinear</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coordslinear</span><span class="o">.</span><span class="n">size</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="n">com</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>                  
-        <span class="n">size</span> <span class="o">=</span> <span class="mf">0.5</span>
-        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]</span>
-        <span class="n">GL</span><span class="o">.</span><span class="n">glMaterialfv</span><span class="p">(</span><span class="n">GL</span><span class="o">.</span><span class="n">GL_FRONT_AND_BACK</span><span class="p">,</span> <span class="n">GL</span><span class="o">.</span><span class="n">GL_DIFFUSE</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">xx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">:</span> 
-                <span class="n">size</span> <span class="o">*=</span> <span class="mf">0.88</span> <span class="c">#this should be dependent on lj parameters</span>
-                <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]</span>
-                <span class="n">GL</span><span class="o">.</span><span class="n">glMaterialfv</span><span class="p">(</span><span class="n">GL</span><span class="o">.</span><span class="n">GL_FRONT_AND_BACK</span><span class="p">,</span> <span class="n">GL</span><span class="o">.</span><span class="n">GL_DIFFUSE</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
-            <span class="n">x</span><span class="o">=</span><span class="n">xx</span><span class="o">-</span><span class="n">com</span>
-            <span class="n">GL</span><span class="o">.</span><span class="n">glPushMatrix</span><span class="p">()</span>            
-            <span class="n">GL</span><span class="o">.</span><span class="n">glTranslate</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-            <span class="n">GLUT</span><span class="o">.</span><span class="n">glutSolidSphere</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">30</span><span class="p">)</span>
-            <span class="n">GL</span><span class="o">.</span><span class="n">glPopMatrix</span><span class="p">()</span>
+        <span class="kn">from</span> <span class="nn">_opengl_tools</span> <span class="kn">import</span> <span class="n">draw_atomic_binary</span>
+        <span class="n">draw_atomic_binary</span><span class="p">(</span><span class="n">coordslinear</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">),</span> 
+                           <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">),</span> <span class="n">subtract_com</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="BLJCluster.load_coords_pymol"><a class="viewcode-back" href="../../../generated/pele.systems.BLJCluster.load_coords_pymol.html#pele.systems.BLJCluster.load_coords_pymol">[docs]</a>    <span class="k">def</span> <span class="nf">load_coords_pymol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordslist</span><span class="p">,</span> <span class="n">oname</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;load the coords into pymol</span>

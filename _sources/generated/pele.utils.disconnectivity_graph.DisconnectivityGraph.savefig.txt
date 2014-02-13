@@ -1,0 +1,6 @@
+pele.utils.disconnectivity_graph.DisconnectivityGraph.savefig
+=============================================================
+
+.. currentmodule:: pele.utils.disconnectivity_graph
+
+.. automethod:: DisconnectivityGraph.savefig

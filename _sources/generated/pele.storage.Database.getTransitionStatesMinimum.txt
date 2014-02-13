@@ -1,0 +1,6 @@
+pele.storage.Database.getTransitionStatesMinimum
+================================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.getTransitionStatesMinimum

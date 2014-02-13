@@ -64,6 +64,8 @@ an energy landscape.  In a disconnectivity graph the graph is broken up
 at several levels of energy Elevel into
 groups of minima (basins) that are connected by transition states of energy
 less than Elevel.</p>
+<img alt="_images/dgraph_lj38.png" src="_images/dgraph_lj38.png" style="height: 250px;" />
+<img alt="_images/dgraph_lj16.png" src="_images/dgraph_lj16.png" style="height: 250px;" />
 <table border="1" class="longtable docutils">
 <colgroup>
 <col width="10%" />
@@ -81,13 +83,12 @@ basinhopping to find the minima and DoubleEndedConnect to find the transition
 states connecting them.  Assuming you already have a database, here is how
 you turn it into a disconnectivity graph.</p>
 <p>First you must convert the database to a networkx graph. This can be done
-using pele&#8217;s graph wrapper <cite>TSGraph</cite></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
-<span class="n">graphwrapper</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
-<span class="n">graph</span> <span class="o">=</span> <span class="n">graphwrapper</span><span class="o">.</span><span class="n">graph</span>
+via the following</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.utils.disconnectivity_graph</span> <span class="kn">import</span> <span class="n">database2graph</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">database2graph</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now we pass graphwrapper to the class DisconnectivityGraph</p>
+<p>Now we pass the graph to the class DisconnectivityGraph</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.utils</span> <span class="kn">import</span> <span class="n">DisconnectivityGraph</span>
 <span class="n">dg</span> <span class="o">=</span> <span class="n">DisconnectivityGraph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
 <span class="n">dg</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
@@ -108,7 +109,7 @@ one here, saving the figure to a file.</p>
 <h2>disconnectivity graph script<a class="headerlink" href="#disconnectivity-graph-script" title="Permalink to this headline">¶</a></h2>
 <p>There is a handy script in pele which lets you create a disconnectivity
 graph from a database file directly from the command line.  see the file</p>
-<p>pele/scripts/make_disconnectivity_graph.py</p>
+<p><cite>pele/scripts/make_disconnectivity_graph.py</cite></p>
 </div>
 </div>
 

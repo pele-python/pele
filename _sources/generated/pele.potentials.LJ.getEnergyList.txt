@@ -1,6 +1,0 @@
-pele.potentials.LJ.getEnergyList
-================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: LJ.getEnergyList

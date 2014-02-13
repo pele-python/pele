@@ -1,6 +1,0 @@
-pele.storage.Database.setDistanceBulk
-=====================================
-
-.. currentmodule:: pele.storage
-
-.. automethod:: Database.setDistanceBulk

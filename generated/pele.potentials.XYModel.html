@@ -59,7 +59,7 @@
 <h1>pele.potentials.XYModel<a class="headerlink" href="#pele-potentials-xymodel" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.potentials.XYModel">
-<em class="property">class </em><tt class="descclassname">pele.potentials.</tt><tt class="descname">XYModel</tt><big>(</big><em>dim=[4, 4], phi=3.141592653589793</em><big>)</big><a class="reference internal" href="../_modules/pele/potentials/xyspin.html#XYModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.potentials.XYModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.potentials.</tt><tt class="descname">XYModel</tt><big>(</big><em>dim=[4, 4], phi=3.141592653589793, periodic=True, phases=None</em><big>)</big><a class="reference internal" href="../_modules/pele/potentials/xyspin.html#XYModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.potentials.XYModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>XY model of 2d spins on a lattice</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
@@ -92,7 +92,16 @@
 <tr class="row-even"><td><a class="reference internal" href="pele.potentials.XYModel.getHessian.html#pele.potentials.XYModel.getHessian" title="pele.potentials.XYModel.getHessian"><tt class="xref py py-obj docutils literal"><span class="pre">getHessian</span></tt></a>(coords)</td>
 <td>return the hessian</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.XYModel.test_potential.html#pele.potentials.XYModel.test_potential" title="pele.potentials.XYModel.test_potential"><tt class="xref py py-obj docutils literal"><span class="pre">test_potential</span></tt></a>(coords[,&nbsp;eps])</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.XYModel.get_phases.html#pele.potentials.XYModel.get_phases" title="pele.potentials.XYModel.get_phases"><tt class="xref py py-obj docutils literal"><span class="pre">get_phases</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.potentials.XYModel.get_spin_energies.html#pele.potentials.XYModel.get_spin_energies" title="pele.potentials.XYModel.get_spin_energies"><tt class="xref py py-obj docutils literal"><span class="pre">get_spin_energies</span></tt></a>(angles)</td>
+<td>return the local energy of each spin</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.potentials.XYModel.set_up_neighborlists.html#pele.potentials.XYModel.set_up_neighborlists" title="pele.potentials.XYModel.set_up_neighborlists"><tt class="xref py py-obj docutils literal"><span class="pre">set_up_neighborlists</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.potentials.XYModel.test_potential.html#pele.potentials.XYModel.test_potential" title="pele.potentials.XYModel.test_potential"><tt class="xref py py-obj docutils literal"><span class="pre">test_potential</span></tt></a>(coords[,&nbsp;eps])</td>
 <td>print some information testing whether the analytical gradients are correct</td>
 </tr>
 </tbody>

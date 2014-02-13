@@ -25,7 +25,9 @@ pele.storage.Minimum
          ~Minimum.coords
          ~Minimum.energy
          ~Minimum.fvib
+         ~Minimum.invalid
          ~Minimum.metadata
          ~Minimum.pgorder
+         ~Minimum.user_data
    
    
