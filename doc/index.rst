@@ -6,10 +6,12 @@
 pele : Python Energy Landscape Explorer
 =======================================
 
+Tools for global optimization and energy landscape exploration.
 
-The source code repository can be found at `<https://github.com/pele-python/pele>`_
+Source code: https://github.com/pele-python/pele
 
-The documentation is hosted at `<http://pele-python.github.com/pele/>`_
+Documentation: http://pele-python.github.io/pele/
+
 
 pele is a package of tools for calculations
 involving optimzation and exploration on energy landscapes.  The core
@@ -22,6 +24,13 @@ means paths that go through the geometric transition states.
 Note that we use the language "energy landscape" because it's the language most
 natural for our fields of physics and chemistry, but most of these tools are
 equally applicable for working with any smooth scalar function in N dimensions.
+
+
+.. figure:: lj38_gmin_dgraph.png
+
+  Images: The global minimum energy structure of a 38 atom Lennard-Jones cluster.  On
+  the right is a disconnectivity graph showing a visualization of the energy
+  landscape.  The competing low energy basins are shown in color.
 
 Tutorials
 -----------
@@ -55,20 +64,20 @@ Modules
 .. toctree::
    :maxdepth: 1
 
+   system_class
+   quenching
+   potentials
+   landscape_module
    accept_tests
-   angleaxis_module
    database
    gui
-   landscape_module
-   potentials
-   monte_carlo
-   quenching
    step_taking
    structure_alignment
-   system_class
    transition_states_module
    concurrent
+   rates
    utils
+   angleaxis_module
 
 Indices and tables
 ==================
