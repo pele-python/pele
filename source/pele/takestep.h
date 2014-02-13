@@ -9,7 +9,6 @@
 #include "mc.h"
 
 
-using std::list;
 using std::runtime_error;
 using pele::Array;
 

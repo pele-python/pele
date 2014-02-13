@@ -57,6 +57,7 @@ protected:
 	shared_ptr<pele::BasePotential> _potential;
 	list< shared_ptr<Action> > _actions;
 	list< shared_ptr<AcceptTest> > _accept_tests;
+	list< shared_ptr<AcceptTest> > _conf_tests;
 	shared_ptr<TakeStep> _takestep;
 	size_t _niter, _neval;
 public:
@@ -73,6 +74,7 @@ public:
 	void set_stepsize(double stepsize){_stepsize = stepsize;}
 	void add_action(shared_ptr<Action> action){_actions.push_back(action);}
 	void add_accept_test( shared_ptr<AcceptTest> accept_test){_accept_tests.push_back(accept_test);}
+	void add_conf_test( shared_ptr<AcceptTest> conf_test){_conf_tests.push_back(conf_test);}
 	void set_take_step( shared_ptr<TakeStep> takestep){_takestep = takestep;}
 	void set_coordinates(Array<double> coords, double energy){
 		_coords = coords;
@@ -103,12 +105,19 @@ void MC::one_iteration()
 
 	_takestep->takestep(_trial_coords, _stepsize, this);
 
+	for (auto& test : _conf_tests ){
+
+			success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
+			if (success == false)
+				break;
+		}
+
 	trial_energy = _potential->get_energy(_trial_coords);
 	++_neval;
 
 	for (auto& test : _accept_tests ){
 
-		success *= test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
+		success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
 		if (success == false)
 			break;
 	}
