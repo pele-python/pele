@@ -59,6 +59,11 @@ Reference
 
    disconnectivity_graph
 
+.. toctree::
+   :maxdepth: 2
+
+   gui
+
 Modules
 +++++++
 .. toctree::
