@@ -4,12 +4,13 @@
 #include <math.h>
 #include <algorithm>
 #include <list>
+#include <memory>
 #include "array.h"
 #include "base_potential.h"
 
-using std::vector;
 using std::list;
 using std::runtime_error;
+using std::shared_ptr;
 using pele::Array;
 
 namespace pele{
@@ -23,7 +24,7 @@ class MC;
 class Action {
 public:
 	virtual ~Action(){}
-	virtual void action(Array<double> &coords, double energy, bool accepted, MC * mc) =0;
+	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc) =0;
 };
 
 /*
@@ -52,11 +53,11 @@ public:
 
 class MC {
 protected:
-	Array<double> _coords;
-	pele::BasePotential * _potential;
-	list<pele::Action*> _actions;
-	list<pele::AcceptTest*> _accept_tests;
-	pele::TakeStep * _takestep;
+	Array<double> _coords, _trial_coords;
+	shared_ptr<pele::BasePotential> _potential;
+	list< shared_ptr<Action> > _actions;
+	list< shared_ptr<AcceptTest> > _accept_tests;
+	shared_ptr<TakeStep> _takestep;
 	size_t _niter, _neval;
 public:
 	/*need to keep these public to make them accessible to tests and actions*/
@@ -70,8 +71,9 @@ public:
 	void run(size_t max_iter);
 	void set_temperature(double T){_temperature = T;}
 	void set_stepsize(double stepsize){_stepsize = stepsize;}
-	void add_action(Action* action){_actions.push_back(action);}
-	void add_accept_test(AcceptTest* accept_test){_accept_tests.push_back(accept_test);}
+	void add_action(shared_ptr<Action> action){_actions.push_back(action);}
+	void add_accept_test( shared_ptr<AcceptTest> accept_test){_accept_tests.push_back(accept_test);}
+	void set_take_step( shared_ptr<TakeStep> takestep){_takestep = takestep;}
 	void set_coordinates(Array<double> coords, double energy){
 		_coords = coords;
 		_energy = energy;
@@ -83,39 +85,45 @@ public:
 
 MC::MC(pele::BasePotential * potential, Array<double> coords, double temperature, double stepsize):
 		_stepsize(stepsize),_temperature(temperature), _niter(0), _neval(0),
-		_coords(coords),_potential(potential)
+		_coords(coords), _trial_coords(_coords.size()), _potential(potential)
 		{
 			_energy = _potential->get_energy(_coords);
 			++_neval;
 		}
+
 void MC::one_iteration()
 {
 	Array<double> trial_coords;
 	double trial_energy;
 	bool success = true;
 
-	trial_coords = _coords.copy();
+	for(int i=0;_coords.size();++i){
+		_trial_coords[i] = _coords[i];
+	}
 
-	_takestep->takestep(trial_coords, _stepsize, this);
+	_takestep->takestep(_trial_coords, _stepsize, this);
 
-	trial_energy = _potential->get_energy(trial_coords);
+	trial_energy = _potential->get_energy(_trial_coords);
 	++_neval;
 
-	for (list<AcceptTest*>::iterator test = _accept_tests.begin(); test != _accept_tests.end(); ++test){
+	for (auto& test : _accept_tests ){
 
-		success *= (*test)->test(trial_coords, trial_energy, _coords, _energy, _temperature, this);
+		success *= test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
 		if (success == false)
 			break;
 	}
 
 	if (success == true){
-		_coords = trial_coords.copy();
+		for(int i=0;_coords.size();++i)
+		{
+			_coords[i] = _trial_coords[i];
+		}
 		_energy = trial_energy;
 	}
 
-	for (list<Action*>::iterator action = _actions.begin(); action != _actions.end(); ++action){
+	for (auto& action : _actions){
 
-			(*action)->action(_coords, _energy, success, this);
+			action->action(_coords, _energy, success, this);
 	}
 
 	++_niter;
@@ -127,32 +135,6 @@ void MC::run(size_t max_iter)
 		this->one_iteration();
 }
 
-/*
- *
- * Inherited classes (specific actions, tests, takesteps)
- *
- * /
-
-
-/*Adjust Step*/
-
-class AdjustStep : public Action {
-public:
-	double _factor;
-	AdjustStep(double factor);
-	virtual ~AdjustStep() {}
-	virtual void action(Array<double> coords, double energy, bool accepted, MC * mc);
-};
-
-AdjustStep::AdjustStep(double factor):
-			_factor(factor){}
-
-void AdjustStep::action(Array<double> coords, double energy, bool accepted, MC * mc) {
-		if (accepted == false)
-			mc->_stepsize *= _factor;
-		else
-			mc->_stepsize /= _factor;
-	}
-
 }
+
 #endif
