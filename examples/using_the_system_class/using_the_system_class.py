@@ -23,8 +23,8 @@ print "the energy of the random configuration is", energy
 # minimize that configuration
 quencher = system.get_minimizer()
 ret = quencher(coords)
-newcoords = ret[0]
-newenergy = ret[1]
+newcoords = ret.coords
+newenergy = ret.energy
 print "after quenching, the energy is", newenergy
 
 # create a database to store the minimum in
@@ -71,9 +71,11 @@ print "\nprint found a connection with", nts, "transition states"
 
 # connect all minima to the lowest minimum
 print "now connecting all the minima to the lowest energy minimum"
-m1 = db.minima()[0]
-for m2 in db.minima()[1:]:
+from pele.landscape import ConnectManager
+manager = ConnectManager(db, strategy="gmin")
+for i in xrange(db.number_of_minima()-1):
     print "connecting minima with id's", m1._id, m2._id
+    m1, m2 = manager.get_connect_job()
     connect = system.get_double_ended_connect(m1, m2, db)
     connect.connect()
 
