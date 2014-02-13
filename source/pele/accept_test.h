@@ -41,9 +41,13 @@ bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy, Arra
 
 	wcomp = (trial_energy - old_energy) / temperature;
 	w = std::min(1.0,exp(-wcomp));
-	rand = _distribution(_generator);
-	if (rand > w)
-		success = false;
+
+	if (w < 1.0)
+	{
+		rand = _distribution(_generator);
+		if (rand > w)
+			success = false;
+	}
 
 	return success;
 }
