@@ -4,14 +4,14 @@ from PyQt4 import QtGui
 from PyQt4.QtGui import QApplication, QWidget, QColorDialog, QInputDialog
 from PyQt4.QtCore import pyqtSlot
 
+import networkx as nx
 import matplotlib.colors as col
 
 import dgraph_browser
 from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
 from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
-import networkx as nx
-import PyQt4
+from pele.rates import RatesLinalg
 
 class TreeLeastCommonAncestor(object):
     """Find the least common ancestor to a set of trees"""
@@ -93,6 +93,30 @@ class ColorPathAction(QtGui.QAction):
 
     def __call__(self, val):
         self.parent._color_minimum_energy_path(self.minimum1, self.minimum2)
+
+class ColorMFPTAction(QtGui.QAction):
+    """this action will color the minima by mean first passage times to minimum1"""
+    def __init__(self, minimum1, parent=None):
+        QtGui.QAction.__init__(self, "color by mfpt", parent)
+        self.parent = parent
+        self.minimum1 = minimum1
+        self.triggered.connect(self.__call__)
+
+    def __call__(self, val):
+        self.parent._color_by_mfpt(self.minimum1)
+
+class ColorCommittorAction(QtGui.QAction):
+    """this action will color the graph by committor probabilities"""
+    def __init__(self, minimum1, minimum2, parent=None):
+        QtGui.QAction.__init__(self, "color by committor %d" % (minimum2._id), parent)
+        self.parent = parent
+        self.minimum1 = minimum1
+        self.minimum2 = minimum2
+        self.triggered.connect(self.__call__)
+
+    def __call__(self, val):
+        self.parent._color_by_committor(self.minimum1, self.minimum2)
+
 
 
 class DGraphWidget(QWidget):
@@ -331,8 +355,50 @@ class DGraphWidget(QWidget):
         for tree in all_trees:
             tree.data["colour"] = (1., 0., 0.)
         self.redraw_disconnectivity_graph()
+
+    def _color_by_mfpt(self, min1):
+        print "coloring by the mean first passage time to get to minimum", min1._id
+        # get a list of transition states in the same cluster as min1
+        edges = nx.bfs_edges(self.graph, min1)
+        transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
         
+        # get an arbitrary second minimum2
+        for ts in transition_states:
+            if ts.minimum2 != min1:
+                min2 = ts.minimum2
+                break
+        A = [min1]
+        B = [min2]
+        rcalc = RatesLinalg(transition_states, A, B, T=1.)
+        rcalc.compute_rates()
+        mfptimes = rcalc.get_mfptimes()
+        tmax = max(mfptimes.itervalues())
+        def get_mfpt(m):
+            try:
+                return mfptimes[m]
+            except KeyError:
+                return tmax
+        self.dg.color_by_value(get_mfpt)
+        self.redraw_disconnectivity_graph()
     
+    def _color_by_committor(self, min1, min2):
+        print "coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id
+        # get a list of transition states in the same cluster as min1
+        edges = nx.bfs_edges(self.graph, min1)
+        transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
+        
+        A = [min2]
+        B = [min1]
+        rcalc = RatesLinalg(transition_states, A, B, T=1.)
+        committors = rcalc.compute_committors()
+        def get_committor(m):
+            try:
+                return committors[m]
+            except KeyError:
+                return 1.
+        self.dg.color_by_value(get_committor)
+        self.redraw_disconnectivity_graph()
+
     def _on_left_click_minimum(self, minimum):
         print "you clicked on minimum with id", minimum._id, "and energy", minimum.energy
         self.minimum_selected(minimum)
@@ -345,9 +411,15 @@ class DGraphWidget(QWidget):
         
         action1 = LabelMinimumAction(minimum, parent=self)
         menu.addAction(action1)
+        
         if self._selected_minimum is not None:
             action2 = ColorPathAction(minimum, self._selected_minimum, parent=self)
             menu.addAction(action2)
+            
+            menu.addAction(ColorCommittorAction(minimum, self._selected_minimum, parent=self))
+
+        action3 = ColorMFPTAction(minimum, parent=self)
+        menu.addAction(action3)
         
         menu.exec_(QtGui.QCursor.pos())
         
@@ -472,6 +544,13 @@ if __name__ == "__main__":
     db = Database("lj31.db", createdb=False)
     if len(db.minima()) < 2:
         raise Exception("database has no minima")
+    
+    if True:
+        from pele.systems import LJCluster
+        from pele.thermodynamics import get_thermodynamic_information
+        system = LJCluster(31)
+        get_thermodynamic_information(system, db, nproc=10)
+        
     
     app = QApplication(sys.argv)        
     md = DGraphDialog(db)

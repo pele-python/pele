@@ -189,7 +189,10 @@ class RateCalculation(object):
         return self.rateAB, self.rateBA
 
 class RatesLinalg(RateCalculation):
+    _initialized = False
+    _times_computed = False
     def initialize(self):
+        self._initialized = True
         self._compute_rate_constants()
         self.rate_constants = reduce_rates(self.rate_constants, self.A, self.B)
         self._get_equilibrium_occupation_probabilities()
@@ -197,9 +200,36 @@ class RatesLinalg(RateCalculation):
                                              weights=self.weights, check_rates=False)
 
     def compute_rates(self):
-        self.initialize()
-        self.two_state_rates.compute_rates()
+        if not self._initialized:
+            self.initialize()
+        if not self._times_computed:
+            self.two_state_rates.compute_rates()
         return self.two_state_rates.get_rate_AB() / self.rate_norm
+    
+    def get_mfptimes(self):
+        if not self._initialized:
+            self.initialize()
+        if not self._times_computed:
+            self.two_state_rates.compute_rates()
+        times = self.two_state_rates.mfpt_computer.mfpt_dict
+        
+        self.mfpt_dict = dict(( (m, t * self.rate_norm) for m,t in times.iteritems() ))
+        for m in self.B:
+            self.mfpt_dict[m] = 0.
+        return self.mfpt_dict
+    
+    def compute_committors(self):
+        if not self._initialized:
+            self.initialize()
+        self.two_state_rates.compute_committors()
+        self.committors = self.two_state_rates.committor_dict
+        for m in self.A:
+            self.committors[m] = 0.
+        for m in self.B:
+            self.committors[m] = 1.
+        return self.committors
+    
+        
 
 
 #

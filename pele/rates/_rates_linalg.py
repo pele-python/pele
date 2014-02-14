@@ -450,4 +450,5 @@ class TwoStateRates(object):
         """compute the committors""" 
         self.committor_computer = CommittorLinalg(self.rate_constants, self.A, self.B)
         self.committor_dict = self.committor_computer.compute_committors()
+        return self.committor_dict
         
