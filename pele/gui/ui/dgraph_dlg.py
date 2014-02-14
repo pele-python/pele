@@ -103,7 +103,15 @@ class ColorMFPTAction(QtGui.QAction):
         self.triggered.connect(self.__call__)
 
     def __call__(self, val):
-        self.parent._color_by_mfpt(self.minimum1)
+        dialog = QInputDialog(parent=self.parent)
+#         dialog.setLabelText("")
+        dialog.setLabelText("Temperature for MFPT calculation")
+        dialog.setInputMode(2)
+        dialog.setDoubleValue(1.)
+        dialog.exec_()
+        if dialog.result():
+            T = dialog.doubleValue()
+            self.parent._color_by_mfpt(self.minimum1, T=T)
 
 class ColorCommittorAction(QtGui.QAction):
     """this action will color the graph by committor probabilities"""
@@ -115,7 +123,15 @@ class ColorCommittorAction(QtGui.QAction):
         self.triggered.connect(self.__call__)
 
     def __call__(self, val):
-        self.parent._color_by_committor(self.minimum1, self.minimum2)
+        dialog = QInputDialog(parent=self.parent)
+#         dialog.setLabelText("")
+        dialog.setLabelText("Temperature for committor calculation")
+        dialog.setInputMode(2)
+        dialog.setDoubleValue(1.)
+        dialog.exec_()
+        if dialog.result():
+            T = dialog.doubleValue()
+            self.parent._color_by_committor(self.minimum1, self.minimum2, T=T)
 
 
 
@@ -356,7 +372,7 @@ class DGraphWidget(QWidget):
             tree.data["colour"] = (1., 0., 0.)
         self.redraw_disconnectivity_graph()
 
-    def _color_by_mfpt(self, min1):
+    def _color_by_mfpt(self, min1, T=1.):
         print "coloring by the mean first passage time to get to minimum", min1._id
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
@@ -369,7 +385,7 @@ class DGraphWidget(QWidget):
                 break
         A = [min1]
         B = [min2]
-        rcalc = RatesLinalg(transition_states, A, B, T=1.)
+        rcalc = RatesLinalg(transition_states, A, B, T=T)
         rcalc.compute_rates()
         mfptimes = rcalc.get_mfptimes()
         tmax = max(mfptimes.itervalues())
@@ -381,7 +397,7 @@ class DGraphWidget(QWidget):
         self.dg.color_by_value(get_mfpt)
         self.redraw_disconnectivity_graph()
     
-    def _color_by_committor(self, min1, min2):
+    def _color_by_committor(self, min1, min2, T=1.):
         print "coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
@@ -389,7 +405,7 @@ class DGraphWidget(QWidget):
         
         A = [min2]
         B = [min1]
-        rcalc = RatesLinalg(transition_states, A, B, T=1.)
+        rcalc = RatesLinalg(transition_states, A, B, T=T)
         committors = rcalc.compute_committors()
         def get_committor(m):
             try:
