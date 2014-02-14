@@ -1,5 +1,5 @@
-#ifndef _PELE_MC_H__
-#define _PELE_MC_H__
+#ifndef _PELE_MC_H
+#define _PELE_MC_H
 
 #include <math.h>
 #include <algorithm>
@@ -75,7 +75,7 @@ public:
 	void add_action(shared_ptr<Action> action){_actions.push_back(action);}
 	void add_accept_test( shared_ptr<AcceptTest> accept_test){_accept_tests.push_back(accept_test);}
 	void add_conf_test( shared_ptr<AcceptTest> conf_test){_conf_tests.push_back(conf_test);}
-	void set_take_step( shared_ptr<TakeStep> takestep){_takestep = takestep;}
+	void set_takestep( shared_ptr<TakeStep> takestep){_takestep = takestep;}
 	void set_coordinates(Array<double> coords, double energy){
 		_coords = coords;
 		_energy = energy;
@@ -86,8 +86,8 @@ public:
 };
 
 MC::MC(pele::BasePotential * potential, Array<double> coords, double temperature, double stepsize):
-		_stepsize(stepsize),_temperature(temperature), _niter(0), _neval(0),
-		_coords(coords), _trial_coords(_coords.size()), _potential(potential)
+		_stepsize(stepsize), _temperature(temperature), _niter(0), _neval(0),
+		_coords(coords), _trial_coords(_coords.copy()), _potential(potential)
 		{
 			_energy = _potential->get_energy(_coords);
 			++_neval;
@@ -95,11 +95,10 @@ MC::MC(pele::BasePotential * potential, Array<double> coords, double temperature
 
 void MC::one_iteration()
 {
-	Array<double> trial_coords;
 	double trial_energy;
 	bool success = true;
 
-	for(int i=0;_coords.size();++i){
+	for(int i=0; i<_coords.size();++i){
 		_trial_coords[i] = _coords[i];
 	}
 
@@ -123,7 +122,7 @@ void MC::one_iteration()
 	}
 
 	if (success == true){
-		for(int i=0;_coords.size();++i)
+		for(int i=0;i<_coords.size();++i)
 		{
 			_coords[i] = _trial_coords[i];
 		}

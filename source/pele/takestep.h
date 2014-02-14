@@ -1,5 +1,5 @@
-#ifndef _TAKESTEP_H__
-#define _TAKESTEP_H__
+#ifndef _PELE_TAKESTEP_H__
+#define _PELE_TAKESTEP_H__
 
 #include <math.h>
 #include <algorithm>
@@ -36,7 +36,9 @@ RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N):
 		_seed(std::chrono::system_clock::now().time_since_epoch().count()),
 		_generator(_seed), _distribution(0.0,1.0), _dr(N),
 		_N(N)
-		{}
+		{
+			std::cout<<"seed TakeStep:"<<_seed<<std::endl;
+		}
 
 void RandomCoordsDisplacement::takestep(Array<double>& coords, double stepsize, MC * mc){
 	double norm2, rand;

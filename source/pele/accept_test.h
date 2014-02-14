@@ -1,5 +1,5 @@
-#ifndef _ACCEPT_TEST_H__
-#define _ACCEPT_TEST_H__
+#ifndef _PELE_ACCEPT_TEST_H__
+#define _PELE_ACCEPT_TEST_H__
 
 #include <math.h>
 #include <algorithm>
@@ -32,7 +32,9 @@ public:
 MetropolisTest::MetropolisTest():
 		_seed(std::chrono::system_clock::now().time_since_epoch().count()),
 		_generator(_seed), _distribution(0.0,1.0)
-		{}
+		{
+			std::cout<<"seed Metropolis:"<<_seed<<std::endl;
+		}
 
 bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy, Array<double> & old_coords, double old_energy, double temperature, MC * mc)
 {

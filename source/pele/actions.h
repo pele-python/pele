@@ -1,5 +1,5 @@
-#ifndef _ACTIONS_H__
-#define _ACTIONS_H__
+#ifndef _PELE_ACTIONS_H
+#define _PELE_ACTIONS_H
 
 #include <math.h>
 #include <algorithm>
@@ -8,7 +8,6 @@
 #include "mc.h"
 #include "histogram.h"
 
-using std::list;
 using std::runtime_error;
 using pele::Array;
 
@@ -22,13 +21,14 @@ protected:
 public:
 	AdjustStep(double factor);
 	virtual ~AdjustStep() {}
-	virtual void action(Array<double> coords, double energy, bool accepted, MC * mc);
+	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
 };
 
 AdjustStep::AdjustStep(double factor):
 			_factor(factor){}
 
-void AdjustStep::action(Array<double> coords, double energy, bool accepted, MC * mc) {
+
+void AdjustStep::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
 		if (accepted == false)
 			mc->_stepsize *= _factor;
 		else
@@ -42,18 +42,18 @@ void AdjustStep::action(Array<double> coords, double energy, bool accepted, MC *
 
 class RecordEnergyHistogram : public Action {
 protected:
-	pele::Histogram _hist;
+	pele::Histogram* _hist;
 public:
-	RecordEnergyHistogram(pele::Histogram &hist);
+	RecordEnergyHistogram(pele::Histogram * hist);
 	virtual ~RecordEnergyHistogram() {}
-	virtual void action(Array<double> coords, double energy, bool accepted, MC * mc);
+	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
 };
 
-RecordEnergyHistogram::RecordEnergyHistogram(pele::Histogram &hist):
+RecordEnergyHistogram::RecordEnergyHistogram(pele::Histogram * hist):
 			_hist(hist){}
 
-void RecordEnergyHistogram::action(Array<double> coords, double energy, bool accepted, MC * mc) {
-		_hist.add_entry(energy);
+void RecordEnergyHistogram::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
+		_hist->add_entry(energy);
 }
 
 
