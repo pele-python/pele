@@ -8,7 +8,7 @@ from pele.landscape import ConnectManager
 from pele.thermodynamics import get_thermodynamic_information
 from pele.utils.disconnectivity_graph import database2graph
 
-from pele.rates import RateCalculation
+from pele.rates import RateCalculation, RatesLinalg
 from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
 from test_graph_transformation import _MakeRandomGraph
@@ -49,16 +49,29 @@ class TestGraphRatesLJ(unittest.TestCase):
         rcalc = RateCalculation(self.db.transition_states(), 
                                 A, B)
         rAB, rBA = rcalc.compute_rates()
+        
+        rla = RatesLinalg(self.db.transition_states(), A, B)
+        rAB_la = rla.compute_rates()
+        
         print "rates", rAB, rBA
+        
+        self.assertAlmostEqual(rAB, rAB_la, 7)
 
     def test2(self):
         A = self.db.minima()[:2]
         B = self.db.minima()[2:4]
+        T = 1.
 
         rcalc = RateCalculation(self.db.transition_states(), 
-                                A, B, T=1.)
+                                A, B, T=T)
         rAB, rBA = rcalc.compute_rates()
+        
+        rla = RatesLinalg(self.db.transition_states(), A, B, T=T)
+        rAB_la = rla.compute_rates()
+
+        
         print "rates", rAB, rBA
+        self.assertAlmostEqual(rAB, rAB_la, 7)
 
 class TestOptimCollagen(unittest.TestCase):
     """test a known value for a large database"""
@@ -70,11 +83,7 @@ class TestOptimCollagen(unittest.TestCase):
         current_dir = os.path.dirname(__file__)
         converter = OptimDBConverter(self.db, ndof=ndof, mindata=current_dir+"/collagen.min.data", 
                                      tsdata=current_dir+"/collagen.ts.data", assert_coords=False)
-        converter.pointsmin_data = None
-        converter.pointsts_data = None
-        converter.ReadMindata()
-        converter.ReadTSdata()
-        self.db.session.commit()
+        converter.convert_no_coords()
     
     def test1(self):
         m1 = self.db.getMinimum(1)
@@ -91,6 +100,16 @@ class TestOptimCollagen(unittest.TestCase):
         rAB, rBA = rcalc.compute_rates()
         self.assertAlmostEqual(rAB, 8638736600., delta=1e4)
         self.assertAlmostEqual(rBA, 3499625167., delta=1e4)
+        
+        rla = RatesLinalg(self.db.transition_states(), [m1], [m2], T=0.592)
+        rAB = rla.compute_rates()
+        self.assertAlmostEqual(rAB, 7106337458., delta=1e4)
+        
+        rla = RatesLinalg(self.db.transition_states(), [m1, m3], [m2, m4], T=0.592)
+        rAB = rla.compute_rates()
+        self.assertAlmostEqual(rAB, 8638736600., delta=1e4)
+        
+
 
 if __name__ == "__main__":
     unittest.main()

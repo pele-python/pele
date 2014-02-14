@@ -5,8 +5,9 @@ import numpy as np
 
 from pele.utils.disconnectivity_graph import database2graph
 from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
+from pele.rates._rates_linalg import reduce_rates, TwoStateRates, MfptLinalgSparse
 
-__all__ = ["RateCalculation"]
+__all__ = ["RateCalculation", "RatesLinalg"]
 
 #def log_sum(log_terms):
 #    """
@@ -90,8 +91,8 @@ class RateCalculation(object):
         if ts.minimum2.invalid:
             return False
         return True
-        
-    def _make_kmc_graph(self):
+    
+    def _compute_rate_constants(self):
         """build the graph that will be used in the rate calculation"""
         # get rate constants over transition states.
         # sum contributions from multiple transition states between two minima.
@@ -125,15 +126,19 @@ class RateCalculation(object):
         # if so we need to multiply all the rates by this value
         if True:
             self.max_log_rate = max(log_rates.itervalues())
+            self.rate_norm = np.exp(-self.max_log_rate)
             print "time scale need to be multiplied by", 1./np.exp(self.max_log_rate)
             rates = dict(( (uv,np.exp(log_k - self.max_log_rate)) for uv, log_k in log_rates.iteritems() ))
         else:
             self.max_log_rate = 0.
             rates = dict(( (uv,np.exp(log_k)) for uv, log_k in log_rates.iteritems() ))
         self.rate_constants = rates
+        return self.rate_constants
         
-        # make the rate graph from the rate constants
-        self.kmc_graph = kmcgraph_from_rates(rates)
+    def _make_kmc_graph(self):
+        """make the rate graph from the rate constants"""
+        self._compute_rate_constants()
+        self.kmc_graph = kmcgraph_from_rates(self.rate_constants)
 
 #        # translate the product and reactant set into the new node definition  
 #        self.Anodes = set([self._min2node(m) for m in self.A]) 
@@ -182,6 +187,20 @@ class RateCalculation(object):
         self.rateAB = self.reducer.get_rate_AB() * np.exp(self.max_log_rate)
         self.rateBA = self.reducer.get_rate_BA() * np.exp(self.max_log_rate)
         return self.rateAB, self.rateBA
+
+class RatesLinalg(RateCalculation):
+    def initialize(self):
+        self._compute_rate_constants()
+        self.rate_constants = reduce_rates(self.rate_constants, self.A, self.B)
+        self._get_equilibrium_occupation_probabilities()
+        self.two_state_rates = TwoStateRates(self.rate_constants, self.A, self.B, 
+                                             weights=self.weights, check_rates=False)
+
+    def compute_rates(self):
+        self.initialize()
+        self.two_state_rates.compute_rates()
+        return self.two_state_rates.get_rate_AB() / self.rate_norm
+
 
 #
 # only testing stuff below here
