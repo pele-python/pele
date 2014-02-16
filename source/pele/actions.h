@@ -45,7 +45,7 @@ protected:
 	pele::Histogram* _hist;
 public:
 	RecordEnergyHistogram(pele::Histogram * hist);
-	virtual ~RecordEnergyHistogram() {}
+	virtual ~RecordEnergyHistogram() {delete _hist;}
 	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
 };
 

@@ -13,9 +13,10 @@ using std::shared_ptr;
 
 int main(){
 
+  int ntot =1000000;
   pele::Array<double> coords(3,0);
   pele::Array<double> origin(3,0);
-  pele::Histogram * hist = new pele::Histogram(2,9,0.1);
+  pele::Histogram * hist = new pele::Histogram(2,15,0.1);
   pele::RandomCoordsDisplacement * random = new pele::RandomCoordsDisplacement(coords.size());
   pele::MetropolisTest * metropolis = new pele::MetropolisTest;
   pele::RecordEnergyHistogram * histogram = new pele::RecordEnergyHistogram(hist);
@@ -25,9 +26,27 @@ int main(){
   MC.add_accept_test(shared_ptr<pele::MetropolisTest>(metropolis));
   MC.set_takestep(shared_ptr<pele::RandomCoordsDisplacement>(random));
   std::cout<<"this is a test"<<std::endl;
-  MC.run(1000);
-  hist->print();
+  MC.run(ntot);
+  hist->print(ntot);
+  std::vector<size_t>::iterator it;
+  size_t renorm = 0;
+  for(it = hist->begin();it != hist->end();++it)
+  {
+	  renorm += *it;
+  }
+  std::cout<<"renorm "<<renorm<<std::endl;
+  std::cout<<"histogram niter "<<hist->_niter<<std::endl;
+  renorm = 0;
+  /*for(it = (*hist).begin();it != (*hist).end();++it)
+    {
+  	  *it /= (renorm*exp(-*it));
+  	  //std::cout<<*it<<std::endl;
+    }*/
+  /*delete random;
+  delete metropolis;
+  delete histogram;
+  delete harmonic;*/
 
+  return 0;
 
-return 0;
 }

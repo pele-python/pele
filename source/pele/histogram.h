@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <list>
 #include "array.h"
+#include <iostream>
+#include <limits>
 
 using std::vector;
 using std::runtime_error;
@@ -19,14 +21,17 @@ namespace pele{
  * ->a list is used instead of a vector because more efficient at pushing forward
  * ->begin and end return list iterators point to the beginning and the end of the
  *   histogram respectively.
+ * -> the most basic test that histogram must satisfy is that there must be as many
+ * 	 beads as the number of iterations
  * */
 
 class Histogram{
 protected:
-	double _max, _min, _bin;
+	double _max, _min, _bin, _eps;
 	int _N;
 	vector<size_t> _hist;
 public:
+	int _niter;
 	Histogram(double min, double max, double bin);
 	~Histogram() {}
 	void add_entry(double entry);
@@ -34,49 +39,86 @@ public:
 	double min(){return _min;};
 	double bin(){return _bin;};
 	double size(){return _N;};
-	vector<size_t>::iterator begin(){return _hist.begin();};
-	vector<size_t>::iterator end(){return _hist.end();};
-	void print(){
+	vector<size_t>::iterator begin();
+	vector<size_t>::iterator end();
+	//vector<size_t> get_vec(){return _hist;}
+	void print(int ntot){
 		for(int i=0; i<_hist.size();++i)
 		{
 			std::cout << i << "-" << (i+1) << ": ";
-			std::cout << std::string(_hist[i],'*') << std::endl;
+			std::cout << std::string(_hist[i]*1000/ntot,'*') << std::endl;
 		}
 	};
 };
 
 Histogram::Histogram(double min, double max, double bin):
-		_max(max),_min(min),_bin(bin),_N(floor(0.5 + ((max - min) / bin))),
-		_hist(_N,0)
+		_max(floor((max/bin)+1)*bin),_min(floor((min/bin))*bin),_bin(bin),_N((_max - _min) / bin),
+		_hist(_N,0),_niter(0),_eps(std::numeric_limits<double>::epsilon())
 		{
 			std::cout<<"histogram is of size "<<_N<<std::endl;
 		}
 
 void Histogram::add_entry(double E){
 	int i, newlen;
-	i = floor(0.5+((E-_min)/_bin));
-	if (i <= _N && i >= 0)
-		_hist[i] += 1;
-	else if (i > _N)
+	int renorm = 0;
+	E = E + _eps; //this is sort of a hack, not entirely sure of its generality
+	i = floor((E-_min)/_bin);
+	if (i < _N && i >= 0)
 	{
-		newlen = i - _N;
+		_hist[i] += 1;
+		++_niter;
+	}
+	else if (i >= _N)
+	{
+		newlen = i - _N + 1;
 		_hist.insert(_hist.end(),(newlen-1),0);
 		_hist.push_back(1);
-		_max = floor((E/_bin)+0.5)*_bin; //round to nearest increment
-		_N = floor(((E - _min) / _bin)+0.5);
-		assert(_hist.size() == _N);
+		++_niter;
+		_max = floor((E/_bin)+1)*_bin; //round to nearest increment
+		_N = round((_max - _min) / _bin);
+		if (_hist.size() != _N)
+		{
+			std::cout<<" E "<<E<<"\n niter "<<_niter<<"\n size "<<_hist.size()<<"\n min "<<_min<<"\n max "<<_max<<"\n i "<<i<<"\n N "<<_N<<std::endl;
+			assert(_hist.size() == _N);
+		}
+		std::cout<<"resized aboveat niter "<<_niter<<std::endl;
+	}
+	else if (i < 0)
+	{
+		newlen = -1*i;
+		_hist.insert(_hist.begin(),(newlen-1),0);
+		_hist.insert(_hist.begin(),1);
+		++_niter;
+		_min = floor((E/_bin))*_bin; //round to nearest increment
+		_N = round((_max-_min)/_bin);
+		if (_hist.size() != _N)
+		{
+			std::cout<<" E "<<E<<"\n niter "<<_niter<<"\n size "<<_hist.size()<<"\n min "<<_min<<"\n max "<<_max<<"\n i "<<i<<"\n N "<<_N<<std::endl;
+			assert(_hist.size() == _N);
+		}
+		std::cout<<"resized below at niter "<<_niter<<std::endl;
 	}
 	else
 	{
-		newlen = abs(i);
-		_hist.insert(_hist.begin(),(newlen-1),0);
-		_hist.insert(_hist.begin(),1);
-		_min = floor((E/_bin)+0.5)*_bin; //round to nearest increment
-		_N = floor(0.5+((_max-_min)/_bin));
-		std::cout<<"E "<<E<<"_size "<<_hist.size()<<" i "<<i<<" bin "<<_bin<<" min "<<_min<<" max "<<_max<<"(_max - E)/_bin)= " <<floor((_max-E)/_bin)<<" newlen i "<<newlen<<std::endl;
-		assert(_hist.size() == _N);
+		std::cerr<<"histogram encountered unexpected condition"<<std::endl;
+		std::cout<<" E "<<E<<"\n niter "<<_niter<<"\n renorm "<<renorm<<"\n min "<<_min<<"\n max "<<_max<<"\n i "<<i<<"\n N "<<_N<<std::endl;
 	}
+
+	/*THIS IS A TEST*/
+	/*for(vector<size_t>::iterator it = _hist.begin();it != _hist.end();++it)
+	  {
+		  renorm += *it;
+	  }
+
+	if (renorm != _niter)
+	{
+		std::cout<<" E "<<E<<"\n niter "<<_niter<<"\n renorm "<<renorm<<"\n min "<<_min<<"\n max "<<_max<<"\n i "<<i<<"\n N "<<_N<<std::endl;
+		assert(renorm == _niter);
+	}*/
 }
+
+vector<size_t>::iterator Histogram::begin(){return _hist.begin();};
+vector<size_t>::iterator Histogram::end(){return _hist.end();};
 }
 
 #endif
