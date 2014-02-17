@@ -117,6 +117,14 @@ class Tree(object):
         for branch in self.get_branches():
             ntot += branch.number_of_subtrees()
         return ntot
+    
+    def get_ancestors(self):
+        """iterate over ancestors excluding self"""
+        if self.parent is not None:
+            yield self.parent
+            for ancestor in self.parent.get_ancestors():
+                yield ancestor
+            
 
 class DGTree(Tree):
     """add a few functions to Tree to make it specific to disconnectivity graph"""
