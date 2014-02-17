@@ -209,6 +209,7 @@ class GraphViewWidget(QWidget):
 class GraphViewDialog(QtGui.QMainWindow):
     def __init__(self, database, parent=None, app=None):
         QtGui.QMainWindow.__init__(self, parent=parent)
+        self.setWindowTitle("Connectivity graph")
 
         self.widget = GraphViewWidget(database=database, parent=self, app=app)
         self.setCentralWidget(self.widget)

@@ -569,7 +569,8 @@ class DGraphWidget(QWidget):
 
 class DGraphDialog(QtGui.QMainWindow):
     def __init__(self, database, graph=None, params={}, parent=None, app=None):
-        super(DGraphDialog, self).__init__( parent=parent)
+        super(DGraphDialog, self).__init__(parent=parent)
+        self.setWindowTitle("Disconnectivity graph")
         self.dgraph_widget = DGraphWidget(database, graph, params, parent=self)
         self.setCentralWidget(self.dgraph_widget)
     

@@ -60,6 +60,7 @@ class ConnectAllDialog(ConnectViewer):
     """
     def __init__(self, system, database, parent=None, app=None):
         super(ConnectAllDialog, self).__init__(system, database, app=app, parent=parent)
+        self.setWindowTitle("Connect all")
 
         self.wgt_dgraph = DGraphWidget(database=self.database, parent=self)
         self.connect_manager = ConnectManager(database)
