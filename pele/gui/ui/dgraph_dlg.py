@@ -133,6 +133,25 @@ class ColorCommittorAction(QtGui.QAction):
             T = dialog.doubleValue()
             self.parent._color_by_committor(self.minimum1, self.minimum2, T=T)
 
+class LayoutByCommittorAction(QtGui.QAction):
+    """this action will color the graph by committor probabilities"""
+    def __init__(self, minimum1, minimum2, parent=None):
+        QtGui.QAction.__init__(self, "layout by committor %d" % (minimum2._id), parent)
+        self.parent = parent
+        self.minimum1 = minimum1
+        self.minimum2 = minimum2
+        self.triggered.connect(self.__call__)
+
+    def __call__(self, val):
+        dialog = QInputDialog(parent=self.parent)
+#         dialog.setLabelText("")
+        dialog.setLabelText("Temperature for committor calculation")
+        dialog.setInputMode(2)
+        dialog.setDoubleValue(1.)
+        dialog.exec_()
+        if dialog.result():
+            T = dialog.doubleValue()
+            self.parent._layout_by_committor(self.minimum1, self.minimum2, T=T)
 
 
 class DGraphWidget(QWidget):
@@ -415,6 +434,30 @@ class DGraphWidget(QWidget):
         self.dg.color_by_value(get_committor)
         self.redraw_disconnectivity_graph()
 
+    def _layout_by_committor(self, min1, min2, T=1.):
+        print "coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id
+        # get a list of transition states in the same cluster as min1
+        edges = nx.bfs_edges(self.graph, min1)
+        transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
+        
+        A = [min2]
+        B = [min1]
+        rcalc = RatesLinalg(transition_states, A, B, T=T)
+        committors = rcalc.compute_committors()
+        print "maximum committor", max(committors.values())
+        print "minimum committor", min(committors.values())
+        print "number of committors near 1", len([v for v in committors.values() if v > 1.-1e-4])
+        print "number of committors equal to 1", len([v for v in committors.values() if v == 1.])
+        def get_committor(m):
+            try:
+                return committors[m]
+            except KeyError:
+                return 1.
+        self.dg.get_value = get_committor
+        self.dg._layout_x_axis(self.dg.tree_graph)
+        self.dg.color_by_value(get_committor)
+        self.redraw_disconnectivity_graph()
+
     def _on_left_click_minimum(self, minimum):
         print "you clicked on minimum with id", minimum._id, "and energy", minimum.energy
         self.minimum_selected(minimum)
@@ -433,6 +476,7 @@ class DGraphWidget(QWidget):
             menu.addAction(action2)
             
             menu.addAction(ColorCommittorAction(minimum, self._selected_minimum, parent=self))
+            menu.addAction(LayoutByCommittorAction(minimum, self._selected_minimum, parent=self))
 
         action3 = ColorMFPTAction(minimum, parent=self)
         menu.addAction(action3)

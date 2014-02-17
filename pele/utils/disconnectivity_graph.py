@@ -571,7 +571,8 @@ class DisconnectivityGraph(object):
     def __init__(self, graph, minima=None, nlevels=20, Emax=None,
                  subgraph_size=None, order_by_energy=False,
                  order_by_basin_size=True, node_offset=1.,
-                 center_gmin=True, include_gmin=True, energy_attribute="energy"):
+                 center_gmin=True, include_gmin=True, energy_attribute="energy",
+                 order_by_value=None):
         self.graph = graph
         self.nlevels = nlevels
         self.Emax = Emax
@@ -582,6 +583,7 @@ class DisconnectivityGraph(object):
         self.gmin0 = None
         self.energy_attribute = energy_attribute
         self.node_offset = node_offset
+        self.get_value = order_by_value
         if self.center_gmin:
             include_gmin = True
 
@@ -676,7 +678,7 @@ class DisconnectivityGraph(object):
         return the minimum energy of all the leaves in the tree
         """
         return min([leaf.data["minimum"].energy for leaf in tree.get_leaves()])
-
+        
     def _order_trees(self, trees):
         """
         order a list of trees for printing
@@ -685,10 +687,20 @@ class DisconnectivityGraph(object):
         and functions called by this, will account for all the user options 
         like center_gmin and order by energy
         """
-        if self.order_by_energy:
+        if self.get_value is not None:
+            return self._order_trees_by_value(trees)
+        elif self.order_by_energy:
             return self._order_trees_by_minimum_energy(trees)
         else:
             return self._order_trees_by_most_leaves(trees)
+
+    def _order_trees_by_value(self, trees):
+        """order the trees by a value. smaller numbers to the left"""
+        def get_min_val(tree):
+            return min([self.get_value(leaf.data["minimum"])
+                        for leaf in tree.leaf_iterator()])
+        trees.sort(key=get_min_val)
+        return trees
 
     def _order_trees_final(self, tree_value_list):
         """
