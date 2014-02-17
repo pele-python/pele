@@ -546,6 +546,10 @@ class DisconnectivityGraph(object):
     energy_attribute : string, optional
         attribute which contains energy. default is energy. This attribute can
         be used to generate free energy disconnectivity graphs
+    order_by_value : callable, optional, `v = order_by_value(m)`
+        If this function is passed the minima at each level will be sorted by this value
+        with small values to the left.  A group of minima will be sorted according to the 
+        smallest value in the group.  
     
     See Also
     ---------
@@ -553,8 +557,6 @@ class DisconnectivityGraph(object):
         a script (in pele/scripts) to make the disconnectivity graph from the command line
     pele.storage.Database :
         The database format in which minima and transition states are stored in pele
-    pele.landscape.TSGraph : 
-        a wrapper to create a networkx Graph from a database
     
     Examples
     --------
@@ -695,7 +697,10 @@ class DisconnectivityGraph(object):
             return self._order_trees_by_most_leaves(trees)
 
     def _order_trees_by_value(self, trees):
-        """order the trees by a value. smaller numbers to the left"""
+        """order the trees by a value. smaller numbers to the left
+        
+        Each tree will take the smallest value of all its associated minima.
+        """
         def get_min_val(tree):
             return min([self.get_value(leaf.data["minimum"])
                         for leaf in tree.leaf_iterator()])
