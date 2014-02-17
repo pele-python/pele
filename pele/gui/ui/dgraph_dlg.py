@@ -13,6 +13,19 @@ from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
 from pele.rates import RatesLinalg
 
+def minimum_energy_path(graph, m1, m2):
+    """find the minimum energy path between m1 and m2 and color the dgraph appropriately"""
+    # add weight attribute to the graph
+    # note: this is not actually the minimum energy path.  
+    # This minimizes the sum of energies along the path
+    # TODO: use minimum spanning tree to find the minimum energy path
+    emin = min(( m.energy for m in graph.nodes_iter() ))
+    for u, v, data in graph.edges_iter(data=True):
+        data["weight"] = data["ts"].energy - emin
+    path = nx.shortest_path(graph, m1, m2, weight="weight")
+    return path
+    
+
 class TreeLeastCommonAncestor(object):
     """Find the least common ancestor to a set of trees"""
     def __init__(self, trees):
@@ -373,10 +386,11 @@ class DGraphWidget(QWidget):
         # note: this is not actually the minimum energy path.  
         # This minimizes the sum of energies along the path
         # TODO: use minimum spanning tree to find the minimum energy path
-        emin = min(( m.energy for m in self.graph.nodes_iter() ))
-        for u, v, data in self.graph.edges_iter(data=True):
-            data["weight"] = data["ts"].energy - emin
-        path = nx.shortest_path(self.graph, m1, m2, weight="weight")
+        path = minimum_energy_path(self.graph, m1, m2)
+#        emin = min(( m.energy for m in self.graph.nodes_iter() ))
+#        for u, v, data in self.graph.edges_iter(data=True):
+#            data["weight"] = data["ts"].energy - emin
+#        path = nx.shortest_path(self.graph, m1, m2, weight="weight")
         print "there are", len(path), "minima in the path from", m1._id, "to", m2._id 
         
         # color all trees up to the least common ancestor in the dgraph 

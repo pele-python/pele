@@ -7,11 +7,25 @@ from PyQt4.QtGui import QDialog, QWidget
 from pele.gui.ui.graph_view_ui import Ui_Form
 from pele.utils.events import Signal
 from pele.utils.disconnectivity_graph import database2graph
+from pele.gui.ui.dgraph_dlg import minimum_energy_path
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
     _fromUtf8 = lambda s: s
+
+class ShowPathAction(QtGui.QAction):
+    """this action will show the minimum energy path to minimum1"""
+    def __init__(self, minimum1, minimum2, parent=None):
+        QtGui.QAction.__init__(self, "show path to %d" % (minimum2._id), parent)
+        self.parent = parent
+        self.minimum1 = minimum1
+        self.minimum2 = minimum2
+        self.triggered.connect(self.__call__)
+
+    def __call__(self, val):
+        self.parent._show_minimum_energy_path(self.minimum1, self.minimum2)
+
 
 
 class GraphViewWidget(QWidget):
@@ -34,40 +48,44 @@ class GraphViewWidget(QWidget):
         self.from_minima = set()
         self.positions = dict()
         self.boundary_nodes = set()
+        
+        self._selected_minimum = None
+        self._mpl_cid = None
     
     
     def on_btn_show_all_clicked(self, clicked=None):
         if clicked is None: return
         self.show_all()
-        
-    def show_all(self):
-        self.ui.label_status.setText("showing full graph")
+    
+    def _reset_minima_lists(self):
         self.from_minima.clear()
         self.positions.clear()
         self.boundary_nodes.clear()
+    
+    def show_all(self):
+        self.ui.label_status.setText("showing full graph")
+        self._reset_minima_lists()
         self.make_graph()
         self.show_graph()
     
     def make_graph_from(self, minima, cutoff=1):
+        """rebuild the graph using only the passed and previous minima in self.from_minima"""
 #        cutoff += 1
         self.from_minima.update(minima)
         minima = self.from_minima
         nodes = set()
         # make a graph from the minima in self.minima and nearest neighbors
         outer_layer = set()
-        print "remaking graph"
         for m in minima:
             nodesdir = nx.single_source_shortest_path(self.full_graph, m, cutoff=cutoff)
-            print nodesdir
             for n, path in nodesdir.iteritems():
                 d = len(path) - 1
-                print d, cutoff
                 if d < cutoff:
-                    print "d <= cutoff", d, cutoff
+                    # n is close to m, remove it from outer layer
                     outer_layer.discard(n)
                 elif d == cutoff:
-                    print "d == cutoff"
                     if n not in nodes:
+                        # n is in the outer layer of m and not near any other nodes.
                         outer_layer.add(n)
             nodes.update(nodesdir)
 
@@ -102,7 +120,31 @@ class GraphViewWidget(QWidget):
         self.graph = graph.subgraph(nodes)
         print self.graph.number_of_nodes(), self.graph.number_of_edges()
     
-    def on_minima_picked_local(self, min1):
+    def _show_minimum_energy_path(self, m1, m2):
+        """show only the minima in the path from m1 to m2"""
+        self._reset_minima_lists()
+        path = minimum_energy_path(self.full_graph, m1, m2)
+        self.make_graph_from(path)
+        print "there are", len(path), "minima in the path from", m1._id, "to", m2._id 
+        status = "showing path from minimum %d to %d" % (m1._id, m2._id)
+        self.ui.label_status.setText(status)
+        self.show_graph()
+
+    
+    def _on_right_click_minimum(self, minimum):
+        """create a menu with the list of available actions"""
+        print "you right clicked on minimum with id", min1._id, "and energy", min1.energy
+        menu = QtGui.QMenu("list menu", parent=self)
+        
+        if self._selected_minimum is not None:
+            menu.addAction(ShowPathAction(minimum, self._selected_minimum, parent=self))
+
+        menu.exec_(QtGui.QCursor.pos())
+
+    def _on_left_click_minimum(self, min1):
+        self._selected_minimum = min1
+        print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+        self.on_minima_picked(min1)
         if self.ui.checkBox_zoom.isChecked():
             self.make_graph_from([min1])
             text = "showing graph near minima "
@@ -111,7 +153,26 @@ class GraphViewWidget(QWidget):
             self.ui.label_status.setText(text)
             self.show_graph()
     
+    def _on_mpl_pick_event(self, event):
+        """matplotlib event called when a minimum is clicked on"""
+        artists = set([self._boundary_points, self._minima_points])
+        if event.artist not in artists:
+#                print "you clicked on something other than a node"
+            return True
+        ind = event.ind[0]
+        if event.artist == self._minima_points:
+            min1 = self._mimima_layout_list[ind][0]
+        else:
+            min1 = self._boundary_layout_list[ind][0]
+        if event.mouseevent.button == 3:
+            self._on_right_click_minimum(min1)
+        else:
+            self._on_left_click_minimum(min1)
+
+
+    
     def show_graph(self, fixed=False, show_ids=True):
+        """draw the graph"""
         import pylab as pl
         if not hasattr(self, "graph"):
             self.make_graph()
@@ -152,12 +213,14 @@ class GraphViewWidget(QWidget):
         #color the nodes by energy
         e = np.array([m.energy for m, xy in layoutlist])
         #plot the nodes
-        points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
+        self._minima_points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
                             s=markersize, c=e, cmap=pl.cm.autumn)
+        self._mimima_layout_list = layoutlist
         if not hasattr(self, "colorbar"):
-            self.colorbar = self.fig.colorbar(points)
+            self.colorbar = self.fig.colorbar(self._minima_points)
         
-        boundary_points = None
+        self._boundary_points = None
+        self._boundary_list = []
         if self.boundary_nodes:
             # draw the boundary nodes as empty circles with thin lines
             boundary_layout_list = filter(lambda nxy: nxy[0] in self.boundary_nodes, layout.items())
@@ -166,8 +229,9 @@ class GraphViewWidget(QWidget):
             import matplotlib as mpl
 #            marker = mpl.markers.MarkerStyle("o", fillstyle="none")
 #            marker.set_fillstyle("none")
-            boundary_points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
+            self._boundary_points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
                                 s=markersize, marker="o", facecolors="none", linewidths=.5)
+            self._boundary_layout_list = boundary_layout_list
 
         
         #scale the axes so the points are not cutoff
@@ -195,11 +259,13 @@ class GraphViewWidget(QWidget):
             else:
                 return True
             print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-            self.on_minima_picked(min1)
-            self.on_minima_picked_local(min1)
+            self._on_minima_picked(min1)
 
         
-        self.fig.canvas.mpl_connect('pick_event', on_pick)
+        if self._mpl_cid is not None:
+            self.canvas.mpl_disconnect(self._mpl_cid)
+            self._mpl_cid = None
+        self._mpl_cid = self.fig.canvas.mpl_connect('pick_event', self._on_mpl_pick_event)
 
         
         self.canvas.draw()
