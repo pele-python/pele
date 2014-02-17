@@ -7,8 +7,10 @@ from PyQt4.QtGui import QDialog, QWidget
 from pele.gui.ui.graph_view_ui import Ui_Form
 from pele.utils.events import Signal
 from pele.utils.disconnectivity_graph import database2graph
-from pele.gui.ui.dgraph_dlg import minimum_energy_path
+from pele.gui.ui.dgraph_dlg import minimum_energy_path, check_thermodynamic_info
 from pele.rates import RatesLinalg
+
+
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -154,11 +156,14 @@ class GraphViewWidget(QWidget):
         self.ui.label_status.setText(status)
         self.show_graph()
     
+    
     def _color_by_committor(self, min1, min2, T=1.):
         print "coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
         transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
+        if not check_thermodynamic_info(transition_states):
+            raise Exception("The thermodynamic information is not yet computed.  Use the main menu of the gui under 'Actions'")
         
         A = [min2]
         B = [min1]

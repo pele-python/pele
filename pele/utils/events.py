@@ -1,4 +1,17 @@
-# adapted from http://code.activestate.com/recipes/577980-improved-signalsslots-implementation-in-python/
+"""
+adapted from http://code.activestate.com/recipes/577980-improved-signalsslots-implementation-in-python/
+
+A signal/slot implementation
+
+File:    signal.py
+Author:  Thiago Marcos P. Santos
+Author:  Christopher S. Case
+Author:  David H. Bronke
+Created: August 28, 2008
+Updated: December 12, 2011
+License: MIT
+
+"""
 
 import inspect
 from weakref import WeakSet, WeakKeyDictionary

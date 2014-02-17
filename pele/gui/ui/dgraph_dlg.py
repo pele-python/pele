@@ -13,6 +13,21 @@ from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
 from pele.rates import RatesLinalg
 
+def check_thermodynamic_info(transition_states):
+    """return False if any transition state or minimum does not have pgorder or fvib"""
+    def myiter(tslist):
+        for ts in tslist:
+            yield ts
+            yield ts.minimum1
+            yield ts.minimum2
+    
+    for mts in myiter(transition_states):
+        if not mts.invalid:
+            if mts.fvib is None or mts.pgorder is None:
+                return False
+    return True  
+
+
 def minimum_energy_path(graph, m1, m2):
     """find the minimum energy path between m1 and m2 and color the dgraph appropriately"""
     # add weight attribute to the graph
@@ -410,6 +425,9 @@ class DGraphWidget(QWidget):
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
         transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
+        if not check_thermodynamic_info(transition_states):
+            raise Exception("The thermodynamic information is not yet computed")
+
         
         # get an arbitrary second minimum2
         for ts in transition_states:
@@ -435,7 +453,9 @@ class DGraphWidget(QWidget):
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
         transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
-        
+        if not check_thermodynamic_info(transition_states):
+            raise Exception("The thermodynamic information is not yet computed")
+
         A = [min2]
         B = [min1]
         rcalc = RatesLinalg(transition_states, A, B, T=T)
@@ -453,7 +473,9 @@ class DGraphWidget(QWidget):
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
         transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
-        
+        if not check_thermodynamic_info(transition_states):
+            raise Exception("The thermodynamic information is not yet computed")
+
         A = [min2]
         B = [min1]
         rcalc = RatesLinalg(transition_states, A, B, T=T)

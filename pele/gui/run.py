@@ -506,7 +506,11 @@ class MainGUI(QtGui.QMainWindow):
         min1, min2 = self.get_selected_minima()
         self._merge_minima(min1, min2)
 
-
+    def on_action_compute_thermodynamic_info_triggered(self, checked=None):
+        if checked is None: return
+        def on_done(): print "done computing thermodynamic info"
+        self._on_done = on_done # because on_finish stores a weak reference
+        self.compute_thermodynamic_information(on_finish=self._on_done )
 
 #    def launch_connect_explorer(self):
 #        coords1, coords2 = self.get_selected_coords()
@@ -567,7 +571,7 @@ class MainGUI(QtGui.QMainWindow):
         self.takestep_explorer.show()
     
     def on_btn_heat_capacity_clicked(self, clicked=None):
-        if clicked is None: return 
+        if clicked is None: return
         self.cv_viewer = HeatCapacityViewer(self.system, self.system.database, parent=self)
         self.cv_viewer.show()
         self.cv_viewer.rebuild_cv_plot()

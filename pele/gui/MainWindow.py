@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created: Thu Nov 21 16:24:15 2013
+# Created: Mon Feb 17 17:24:28 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -259,11 +259,14 @@ class Ui_MainWindow(object):
         self.action_edit_params.setObjectName(_fromUtf8("action_edit_params"))
         self.action_merge_minima = QtGui.QAction(MainWindow)
         self.action_merge_minima.setObjectName(_fromUtf8("action_merge_minima"))
+        self.action_compute_thermodynamic_info = QtGui.QAction(MainWindow)
+        self.action_compute_thermodynamic_info.setObjectName(_fromUtf8("action_compute_thermodynamic_info"))
         self.menuSimulation.addAction(self.action_db_connect)
         self.menuHelp.addAction(self.actionAbout)
         self.menuActions.addAction(self.action_delete_minimum)
         self.menuActions.addAction(self.action_merge_minima)
         self.menuActions.addAction(self.action_edit_params)
+        self.menuActions.addAction(self.action_compute_thermodynamic_info)
         self.menubar.addAction(self.menuSimulation.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.menubar.addAction(self.menuActions.menuAction())
@@ -319,6 +322,7 @@ class Ui_MainWindow(object):
         self.action_delete_minimum.setText(QtGui.QApplication.translate("MainWindow", "Delete Minimum", None, QtGui.QApplication.UnicodeUTF8))
         self.action_edit_params.setText(QtGui.QApplication.translate("MainWindow", "Edit default parameters", None, QtGui.QApplication.UnicodeUTF8))
         self.action_merge_minima.setText(QtGui.QApplication.translate("MainWindow", "Merge Minima", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_compute_thermodynamic_info.setText(QtGui.QApplication.translate("MainWindow", "Compute thermodynamic info", None, QtGui.QApplication.UnicodeUTF8))
 
 from show3d_with_slider import Show3DWithSlider
 from pele.gui.show3d import Show3D
