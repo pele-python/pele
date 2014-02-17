@@ -128,39 +128,46 @@ class GraphViewWidget(QWidget):
         layout = self.positions
         
         # draw the edges as lines
-        for u, v in graph.edges():
-            line = np.array([layout[u], layout[v]])
-            if u in self.boundary_nodes or v in self.boundary_nodes:
-                ax.plot(line[:,0], line[:,1], '-k', lw=.2)
-            else:
-                ax.plot(line[:,0], line[:,1], '-k')
+        from matplotlib.collections import LineCollection
+        linecollection = LineCollection([(layout[u], layout[v]) for u, v in graph.edges()
+                 if u not in self.boundary_nodes and v not in self.boundary_nodes])
+        linecollection.set_color('k')
+        ax.add_collection(linecollection)
 
-        interior_nodes = set(graph.nodes()) - self.boundary_nodes
-            
+        if self.boundary_nodes:
+            # draw the edges connecting the boundary nodes as thin lines
+            from matplotlib.collections import LineCollection
+            linecollection = LineCollection([(layout[u], layout[v]) for u, v in graph.edges()
+                     if u in self.boundary_nodes or v in self.boundary_nodes])
+            linecollection.set_color('k')
+            linecollection.set_linewidth(0.2)
+            ax.add_collection(linecollection)
+
+        markersize = 8**2
+        
         # draw the interior nodes
+        interior_nodes = set(graph.nodes()) - self.boundary_nodes
         layoutlist = filter(lambda nxy: nxy[0] in interior_nodes, layout.items())
         xypos = np.array([xy for n, xy in layoutlist])
         #color the nodes by energy
         e = np.array([m.energy for m, xy in layoutlist])
         #plot the nodes
         points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
-                            s=8**2, c=e, cmap=pl.cm.autumn)
+                            s=markersize, c=e, cmap=pl.cm.autumn)
         if not hasattr(self, "colorbar"):
             self.colorbar = self.fig.colorbar(points)
         
-        # draw the boundary nodes
         boundary_points = None
         if self.boundary_nodes:
+            # draw the boundary nodes as empty circles with thin lines
             boundary_layout_list = filter(lambda nxy: nxy[0] in self.boundary_nodes, layout.items())
             xypos = np.array([xy for n, xy in boundary_layout_list])
-            #color the nodes by energy
-            e = np.array([m.energy for m, xy in boundary_layout_list])
             #plot the nodes
             import matplotlib as mpl
 #            marker = mpl.markers.MarkerStyle("o", fillstyle="none")
 #            marker.set_fillstyle("none")
             boundary_points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
-                                s=8**2, marker="o", facecolors="none", linewidths=.5)
+                                s=markersize, marker="o", facecolors="none", linewidths=.5)
 
         
         #scale the axes so the points are not cutoff
