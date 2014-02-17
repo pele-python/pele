@@ -167,6 +167,8 @@ class RateCalculation(object):
             nodes = self.A.union(self.B)
         log_weights = dict()
         for m in nodes:
+            if m.invalid:
+                continue
             x = self._min2node(m)
             log_weights[x] = self._log_equilibrium_occupation_probability(m)
         

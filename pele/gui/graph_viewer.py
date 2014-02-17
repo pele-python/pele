@@ -8,6 +8,7 @@ from pele.gui.ui.graph_view_ui import Ui_Form
 from pele.utils.events import Signal
 from pele.utils.disconnectivity_graph import database2graph
 from pele.gui.ui.dgraph_dlg import minimum_energy_path
+from pele.rates import RatesLinalg
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -25,6 +26,26 @@ class ShowPathAction(QtGui.QAction):
 
     def __call__(self, val):
         self.parent._show_minimum_energy_path(self.minimum1, self.minimum2)
+
+class ColorByCommittorAction(QtGui.QAction):
+    """this action will color the graph by committor probabilities"""
+    def __init__(self, minimum1, minimum2, parent=None):
+        QtGui.QAction.__init__(self, "color by committor %d" % (minimum2._id), parent)
+        self.parent = parent
+        self.minimum1 = minimum1
+        self.minimum2 = minimum2
+        self.triggered.connect(self.__call__)
+
+    def __call__(self, val):
+        dialog = QtGui.QInputDialog(parent=self.parent)
+#         dialog.setLabelText("")
+        dialog.setLabelText("Temperature for committor calculation")
+        dialog.setInputMode(2)
+        dialog.setDoubleValue(1.)
+        dialog.exec_()
+        if dialog.result():
+            T = dialog.doubleValue()
+            self.parent._color_by_committor(self.minimum1, self.minimum2, T=T)
 
 
 
@@ -51,6 +72,8 @@ class GraphViewWidget(QWidget):
         
         self._selected_minimum = None
         self._mpl_cid = None
+        
+        self._minima_color_value = None
     
     
     def on_btn_show_all_clicked(self, clicked=None):
@@ -61,6 +84,7 @@ class GraphViewWidget(QWidget):
         self.from_minima.clear()
         self.positions.clear()
         self.boundary_nodes.clear()
+        self._minima_color_value = None
     
     def show_all(self):
         self.ui.label_status.setText("showing full graph")
@@ -69,7 +93,7 @@ class GraphViewWidget(QWidget):
         self.show_graph()
     
     def make_graph_from(self, minima, cutoff=1):
-        """rebuild the graph using only the passed and previous minima in self.from_minima"""
+        """rebuild the graph using only the passed minima and those in self.from_minima"""
 #        cutoff += 1
         self.from_minima.update(minima)
         minima = self.from_minima
@@ -129,15 +153,35 @@ class GraphViewWidget(QWidget):
         status = "showing path from minimum %d to %d" % (m1._id, m2._id)
         self.ui.label_status.setText(status)
         self.show_graph()
+    
+    def _color_by_committor(self, min1, min2, T=1.):
+        print "coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id
+        # get a list of transition states in the same cluster as min1
+        edges = nx.bfs_edges(self.graph, min1)
+        transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
+        
+        A = [min2]
+        B = [min1]
+        rcalc = RatesLinalg(transition_states, A, B, T=T)
+        committors = rcalc.compute_committors()
+        self._minima_color_value = committors
+        def get_committor(m):
+            try:
+                return committors[m]
+            except KeyError:
+                return 1.
+        self._minima_color_value = get_committor
+        self.show_graph()
 
     
     def _on_right_click_minimum(self, minimum):
         """create a menu with the list of available actions"""
-        print "you right clicked on minimum with id", min1._id, "and energy", min1.energy
+        print "you right clicked on minimum with id", minimum._id, "and energy", minimum.energy
         menu = QtGui.QMenu("list menu", parent=self)
         
         if self._selected_minimum is not None:
             menu.addAction(ShowPathAction(minimum, self._selected_minimum, parent=self))
+            menu.addAction(ColorByCommittorAction(minimum, self._selected_minimum, parent=self))
 
         menu.exec_(QtGui.QCursor.pos())
 
@@ -178,6 +222,10 @@ class GraphViewWidget(QWidget):
             self.make_graph()
         
         print "showing graph"
+        # I need to clear the figure and make a new axes object because
+        # I can't find any other way to remove old colorbars
+        self.fig.clf()
+        self.axes = self.fig.add_subplot(111)
         ax = self.axes
         ax.clear()
         graph = self.graph
@@ -210,14 +258,17 @@ class GraphViewWidget(QWidget):
         interior_nodes = set(graph.nodes()) - self.boundary_nodes
         layoutlist = filter(lambda nxy: nxy[0] in interior_nodes, layout.items())
         xypos = np.array([xy for n, xy in layoutlist])
-        #color the nodes by energy
-        e = np.array([m.energy for m, xy in layoutlist])
+        if self._minima_color_value is None:
+            #color the nodes by energy
+            color_values = [m.energy for m, xy in layoutlist]
+        else:
+            color_values = [self._minima_color_value(m) for m, xy in layoutlist]
         #plot the nodes
         self._minima_points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
-                            s=markersize, c=e, cmap=pl.cm.autumn)
+                            s=markersize, c=color_values, cmap=pl.cm.autumn)
         self._mimima_layout_list = layoutlist
-        if not hasattr(self, "colorbar"):
-            self.colorbar = self.fig.colorbar(self._minima_points)
+#        if not hasattr(self, "colorbar"):
+        self.colorbar = self.fig.colorbar(self._minima_points)
         
         self._boundary_points = None
         self._boundary_list = []
@@ -250,16 +301,16 @@ class GraphViewWidget(QWidget):
 #        self.fig.set_tight_layout(True)
         
         
-        def on_pick(event):
-            ind = event.ind[0]
-            if event.artist == points:
-                min1 = layoutlist[ind][0]
-            elif event.artist == boundary_points:
-                min1 = boundary_layout_list[ind][0]
-            else:
-                return True
-            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-            self._on_minima_picked(min1)
+#        def on_pick(event):
+#            ind = event.ind[0]
+#            if event.artist == points:
+#                min1 = layoutlist[ind][0]
+#            elif event.artist == boundary_points:
+#                min1 = boundary_layout_list[ind][0]
+#            else:
+#                return True
+#            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+#            self._on_minima_picked(min1)
 
         
         if self._mpl_cid is not None:
@@ -290,11 +341,9 @@ class GraphViewDialog(QtGui.QMainWindow):
 #        self.widget.make_graph_from(gmin)
 #        self.widget.show_graph()
 
-def start():
-    wnd.start()
 
 
-if __name__ == "__main__":
+def test():
     from OpenGL.GLUT import glutInit
     import sys
     import pylab as pl
@@ -329,12 +378,20 @@ if __name__ == "__main__":
         connect.connect()
     
         
-    
+    if True:
+        from pele.thermodynamics import get_thermodynamic_information
+        get_thermodynamic_information(system, db, nproc=4)
     
     wnd = GraphViewDialog(db, app=app)
 #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()
     from PyQt4.QtCore import QTimer
+    def start():
+        wnd.start()
+
     QTimer.singleShot(10, start)
     sys.exit(app.exec_()) 
+
+if __name__ == "__main__":
+    test()
