@@ -22,6 +22,8 @@ from pele.gui._cv_viewer import HeatCapacityViewer
 from pele.rates import RateCalculation
 from pele.gui._rate_gui import RateViewer
 from pele.utils.events import Signal
+from pele.gui.graph_viewer import GraphViewDialog
+
 
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -308,15 +310,17 @@ class MainGUI(QtGui.QMainWindow):
         """
         if clicked is None: return
         self.pick_count = 0
-        from pele.gui.graph_viewer import GraphViewDialog
         if not hasattr(self, "graphview"):
             self.graphview = GraphViewDialog(self.system.database, parent=self, app=self.app)
             self.graphview.widget.on_minima_picked.connect(self.on_minimum_picked)
             self.graphview.widget.on_minima_picked.connect(self.SelectMinimum)
         self.graphview.show()
         self.graphview.widget.make_graph()
-        self.graphview.widget.show_graph()
-        return
+        try:
+            m1, m2 = self.get_selected_minima()
+            self.graphview.widget._show_minimum_energy_path(m1, m2)
+        except:
+            self.graphview.widget.show_graph()
         
     def on_pushNormalmodesMin_clicked(self, clicked=None):
         if clicked is None: return
