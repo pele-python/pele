@@ -5,8 +5,8 @@ from PyQt4.QtGui import QDialog, QWidget
 
 #from pele.gui.ui.mplwidget import MPLWidgetWithToolbar
 from pele.gui.ui.graph_view_ui import Ui_Form
-from pele.landscape import TSGraph
 from pele.utils.events import Signal
+from pele.utils.disconnectivity_graph import database2graph
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -33,7 +33,7 @@ class GraphViewWidget(QWidget):
         
         self.from_minima = set()
         self.positions = dict()
-    
+        self.boundary_nodes = set()
     
     
     def on_btn_show_all_clicked(self, clicked=None):
@@ -44,39 +44,57 @@ class GraphViewWidget(QWidget):
         self.ui.label_status.setText("showing full graph")
         self.from_minima.clear()
         self.positions.clear()
+        self.boundary_nodes.clear()
         self.make_graph()
         self.show_graph()
     
     def make_graph_from(self, minima, cutoff=1):
-        cutoff = cutoff + 1
+#        cutoff += 1
         self.from_minima.update(minima)
         minima = self.from_minima
-        graph = self.full_graph
         nodes = set()
         # make a graph from the minima in self.minima and nearest neighbors
+        outer_layer = set()
+        print "remaking graph"
         for m in minima:
-            nodesdir = nx.single_source_shortest_path(graph, m, cutoff=cutoff)
+            nodesdir = nx.single_source_shortest_path(self.full_graph, m, cutoff=cutoff)
+            print nodesdir
+            for n, path in nodesdir.iteritems():
+                d = len(path) - 1
+                print d, cutoff
+                if d < cutoff:
+                    print "d <= cutoff", d, cutoff
+                    outer_layer.discard(n)
+                elif d == cutoff:
+                    print "d == cutoff"
+                    if n not in nodes:
+                        outer_layer.add(n)
             nodes.update(nodesdir)
-        
-        
-        self.graph = graph.subgraph(nodes)
+
+        self.boundary_nodes = outer_layer
+        self.graph = self.full_graph.subgraph(nodes)
 
         # remove nodes not in the graph from the dictionary positions
         difference = set(self.positions.viewkeys())
         difference.difference_update(self.graph.nodes())
         for m in difference:
             self.positions.pop(m)
+
+        print "boundary nodes", len(self.boundary_nodes), self.graph.number_of_nodes()
     
     def make_graph(self, database=None, minima=None):
+        """build an nx graph from the database"""
         if database is None:
             database = self.database
         if minima is None:
             minima = self.minima
 
         print "making graph", database, minima
-        #get the graph object, eliminate nodes without edges
-        graphwrapper = TSGraph(database, minima)
-        graph = graphwrapper.graph
+        # get the graph object, eliminate nodes without edges
+        graph = database2graph(database)
+        if minima is not None:
+            to_remove = set(graph.nodes()).difference(set(minima))
+            graph.remove_nodes_from(to_remove)
         self.full_graph = graph
         print graph.number_of_nodes()
         degree = graph.degree()
@@ -108,8 +126,19 @@ class GraphViewWidget(QWidget):
         layout = nx.spring_layout(graph, pos=oldlayout)#, fixed=fixed)
         self.positions.update(layout)
         layout = self.positions
+        
+        # draw the edges as lines
+        for u, v in graph.edges():
+            line = np.array([layout[u], layout[v]])
+            if u in self.boundary_nodes or v in self.boundary_nodes:
+                ax.plot(line[:,0], line[:,1], '-k', lw=.2)
+            else:
+                ax.plot(line[:,0], line[:,1], '-k')
 
-        layoutlist = layout.items()
+        interior_nodes = set(graph.nodes()) - self.boundary_nodes
+            
+        # draw the interior nodes
+        layoutlist = filter(lambda nxy: nxy[0] in interior_nodes, layout.items())
         xypos = np.array([xy for n, xy in layoutlist])
         #color the nodes by energy
         e = np.array([m.energy for m, xy in layoutlist])
@@ -119,32 +148,45 @@ class GraphViewWidget(QWidget):
         if not hasattr(self, "colorbar"):
             self.colorbar = self.fig.colorbar(points)
         
-        if show_ids and False:
-            # label the nodes
-            ids = [n._id for n, xy in layoutlist]
-            for i in range(len(ids)):
-                ax.annotate( ids[i], xypos[i] )
-        
-        #plot the edges as lines
-        for u, v in graph.edges():
-            line = np.array([layout[u], layout[v]])
-            ax.plot(line[:,0], line[:,1], '-k')
+        # draw the boundary nodes
+        boundary_points = None
+        if self.boundary_nodes:
+            boundary_layout_list = filter(lambda nxy: nxy[0] in self.boundary_nodes, layout.items())
+            xypos = np.array([xy for n, xy in boundary_layout_list])
+            #color the nodes by energy
+            e = np.array([m.energy for m, xy in boundary_layout_list])
+            #plot the nodes
+            import matplotlib as mpl
+#            marker = mpl.markers.MarkerStyle("o", fillstyle="none")
+#            marker.set_fillstyle("none")
+            boundary_points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
+                                s=8**2, marker="o", facecolors="none", linewidths=.5)
+
         
         #scale the axes so the points are not cutoff
-        xmin, ymin = np.min(xypos, 0)
-        xmax, ymax = np.max(xypos, 0)
+        xmax = max((x for x,y in layout.itervalues() ))
+        xmin = min((x for x,y in layout.itervalues() ))
+        ymax = max((y for x,y in layout.itervalues() ))
+        ymin = min((y for x,y in layout.itervalues() ))
         dx = (xmax - xmin)*.1
         dy = (ymax - ymin)*.1
         ax.set_xlim([xmin-dx, xmax+dx])
         ax.set_ylim([ymin-dy, ymax+dy])
+        import matplotlib.pyplot as plt
+#        self.fig.relim()
+#        self.fig.tight_layout()
+#        plt.tight_layout()
+#        self.fig.set_tight_layout(True)
         
         
         def on_pick(event):
-            if event.artist != points:
-#                print "you clicked on something other than a node"
-                return True
             ind = event.ind[0]
-            min1 = layoutlist[ind][0]
+            if event.artist == points:
+                min1 = layoutlist[ind][0]
+            elif event.artist == boundary_points:
+                min1 = boundary_layout_list[ind][0]
+            else:
+                return True
             print "you clicked on minimum with id", min1._id, "and energy", min1.energy
             self.on_minima_picked(min1)
             self.on_minima_picked_local(min1)
