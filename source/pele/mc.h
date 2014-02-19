@@ -12,6 +12,7 @@ using std::list;
 using std::runtime_error;
 using std::shared_ptr;
 using pele::Array;
+using std::sqrt;
 
 namespace pele{
 
@@ -59,7 +60,7 @@ protected:
 	list< shared_ptr<AcceptTest> > _accept_tests;
 	list< shared_ptr<AcceptTest> > _conf_tests;
 	shared_ptr<TakeStep> _takestep;
-	size_t _niter, _neval;
+	size_t _niter, _neval, _accept_count, _reject_count;
 public:
 	/*need to keep these public to make them accessible to tests and actions*/
 	double _stepsize, _temperature, _energy;
@@ -82,12 +83,15 @@ public:
 	}
 	Array<double> get_coordinates(){return _coords;}
 	double get_energy(){return _energy;}
+	double get_accepted_fraction(){return ((double) _accept_count)/(_accept_count+_reject_count);};
 
 };
 
 MC::MC(pele::BasePotential * potential, Array<double> coords, double temperature, double stepsize):
-		_stepsize(stepsize), _temperature(temperature), _niter(0), _neval(0),
-		_coords(coords), _trial_coords(_coords.copy()), _potential(potential)
+		_coords(coords),_trial_coords(_coords.copy()), _potential(potential),
+			_niter(0), _neval(0), _accept_count(0),_reject_count(0),
+		_stepsize(stepsize), _temperature(temperature)
+
 		{
 			_energy = _potential->get_energy(_coords);
 			++_neval;
@@ -98,40 +102,46 @@ void MC::one_iteration()
 	double trial_energy;
 	bool success = true;
 
-	for(int i=0; i<_coords.size();++i){
+	for(size_t i=0; i<_coords.size();++i){
 		_trial_coords[i] = _coords[i];
 	}
 
 	_takestep->takestep(_trial_coords, _stepsize, this);
 
 	for (auto& test : _conf_tests ){
-
-			success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
-			if (success == false)
-				break;
-		}
-
-	trial_energy = _potential->get_energy(_trial_coords);
-	++_neval;
-
-	for (auto& test : _accept_tests ){
-
 		success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
 		if (success == false)
 			break;
 	}
 
-	if (success == true){
-		for(int i=0;i<_coords.size();++i)
-		{
-			_coords[i] = _trial_coords[i];
+	if (success == true)
+	{
+		trial_energy = _potential->get_energy(_trial_coords);
+		++_neval;
+
+		for (auto& test : _accept_tests ){
+			success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
+			if (success == false)
+			{
+				++_reject_count;
+				break;
+			}
 		}
-		_energy = trial_energy;
-	}
 
-	for (auto& action : _actions){
+		if (success == true){
+			for(size_t i=0;i<_coords.size();++i)
+			{
+				_coords[i] = _trial_coords[i];
+			}
+			_energy = trial_energy;
+			++ _accept_count;
+		}
 
-			action->action(_coords, _energy, success, this);
+		/*consider moving actions outside the accepted configuration test condition
+		(currently if conf test is rejected we don't record the state)*/
+		for (auto& action : _actions){
+				action->action(_coords, _energy, success, this);
+			}
 	}
 
 	++_niter;

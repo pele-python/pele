@@ -10,6 +10,7 @@
 
 using std::runtime_error;
 using pele::Array;
+using std::sqrt;
 
 namespace pele{
 

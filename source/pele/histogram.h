@@ -10,6 +10,7 @@
 
 using std::vector;
 using std::runtime_error;
+using std::sqrt;
 
 namespace pele{
 
@@ -22,7 +23,7 @@ namespace pele{
  * ->begin and end return list iterators point to the beginning and the end of the
  *   histogram respectively.
  * -> the most basic test that histogram must satisfy is that there must be as many
- * 	 beads as the number of iterations
+ * 	 beads as the number of iterations (commented out at the end of the script)
  * */
 
 class Histogram{
@@ -41,19 +42,19 @@ public:
 	double size(){return _N;};
 	vector<size_t>::iterator begin();
 	vector<size_t>::iterator end();
-	//vector<size_t> get_vec(){return _hist;}
 	void print(int ntot){
-		for(int i=0; i<_hist.size();++i)
+		for(size_t i=0; i<_hist.size();++i)
 		{
 			std::cout << i << "-" << (i+1) << ": ";
-			std::cout << std::string(_hist[i]*1000/ntot,'*') << std::endl;
+			std::cout << std::string(_hist[i]*10000/ntot,'*') << std::endl;
 		}
 	};
 };
 
 Histogram::Histogram(double min, double max, double bin):
-		_max(floor((max/bin)+1)*bin),_min(floor((min/bin))*bin),_bin(bin),_N((_max - _min) / bin),
-		_hist(_N,0),_niter(0),_eps(std::numeric_limits<double>::epsilon())
+		_max(floor((max/bin)+1)*bin),_min(floor((min/bin))*bin),_bin(bin),
+		_eps(std::numeric_limits<double>::epsilon()),_N((_max - _min) / bin),
+		_hist(_N,0),_niter(0)
 		{
 			std::cout<<"histogram is of size "<<_N<<std::endl;
 		}
@@ -61,7 +62,7 @@ Histogram::Histogram(double min, double max, double bin):
 void Histogram::add_entry(double E){
 	int i, newlen;
 	int renorm = 0;
-	E = E + _eps; //this is sort of a hack, not entirely sure of its generality
+	E = E + _eps; //this is a dirty hack, not entirely sure of its generality and possible consequences, tests seem to be fine
 	i = floor((E-_min)/_bin);
 	if (i < _N && i >= 0)
 	{
@@ -76,12 +77,12 @@ void Histogram::add_entry(double E){
 		++_niter;
 		_max = floor((E/_bin)+1)*_bin; //round to nearest increment
 		_N = round((_max - _min) / _bin);
-		if (_hist.size() != _N)
+		if ( (int) _hist.size() != _N)
 		{
 			std::cout<<" E "<<E<<"\n niter "<<_niter<<"\n size "<<_hist.size()<<"\n min "<<_min<<"\n max "<<_max<<"\n i "<<i<<"\n N "<<_N<<std::endl;
-			assert(_hist.size() == _N);
+			assert( (int) _hist.size() == _N);
 		}
-		std::cout<<"resized aboveat niter "<<_niter<<std::endl;
+		std::cout<<"resized above at niter "<<_niter<<std::endl;
 	}
 	else if (i < 0)
 	{
@@ -91,10 +92,10 @@ void Histogram::add_entry(double E){
 		++_niter;
 		_min = floor((E/_bin))*_bin; //round to nearest increment
 		_N = round((_max-_min)/_bin);
-		if (_hist.size() != _N)
+		if ( (int) _hist.size() != _N)
 		{
 			std::cout<<" E "<<E<<"\n niter "<<_niter<<"\n size "<<_hist.size()<<"\n min "<<_min<<"\n max "<<_max<<"\n i "<<i<<"\n N "<<_N<<std::endl;
-			assert(_hist.size() == _N);
+			assert( (int) _hist.size() == _N);
 		}
 		std::cout<<"resized below at niter "<<_niter<<std::endl;
 	}
@@ -117,8 +118,8 @@ void Histogram::add_entry(double E){
 	}*/
 }
 
-vector<size_t>::iterator Histogram::begin(){return _hist.begin();};
-vector<size_t>::iterator Histogram::end(){return _hist.end();};
+vector<size_t>::iterator Histogram::begin(){return _hist.begin();}
+vector<size_t>::iterator Histogram::end(){return _hist.end();}
 }
 
 #endif

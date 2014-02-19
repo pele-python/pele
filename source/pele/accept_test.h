@@ -22,6 +22,7 @@ protected:
 	size_t _seed;
 	std::mt19937_64 _generator;
 	std::uniform_real_distribution<double> _distribution;
+
 public:
 	MetropolisTest();
 	virtual ~MetropolisTest() {}
@@ -42,7 +43,7 @@ bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy, Arra
 	bool success = true;
 
 	wcomp = (trial_energy - old_energy) / temperature;
-	w = std::min(1.0,exp(-wcomp));
+	w = exp(-wcomp);
 
 	if (w < 1.0)
 	{
@@ -50,6 +51,33 @@ bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy, Arra
 		if (rand > w)
 			success = false;
 	}
+
+	return success;
+}
+
+/*ENERGY WINDOW TEST
+ * this test checks that the energy of the system stays within a certain energy window
+ * */
+
+class EnergyWindowTest:public AcceptTest{
+protected:
+	double _min_energy, _max_energy;
+public:
+	EnergyWindowTest(double min_energy, double max_energy);
+	virtual ~EnergyWindowTest() {}
+	virtual bool test(Array<double> &trial_coords, double trial_energy, Array<double> & old_coords, double old_energy, double temperature, MC * mc);
+};
+
+EnergyWindowTest::EnergyWindowTest(double min_energy, double max_energy):
+		_min_energy(min_energy),_max_energy(max_energy)
+		{}
+
+bool EnergyWindowTest::test(Array<double> &trial_coords, double trial_energy, Array<double> & old_coords, double old_energy, double temperature, MC * mc)
+{
+	bool success = true;
+
+	if ((trial_energy < _min_energy) or (trial_energy > _max_energy))
+		success = false;
 
 	return success;
 }

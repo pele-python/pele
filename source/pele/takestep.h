@@ -11,6 +11,7 @@
 
 using std::runtime_error;
 using pele::Array;
+using std::sqrt;
 
 namespace pele{
 
@@ -41,7 +42,8 @@ RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N):
 		}
 
 void RandomCoordsDisplacement::takestep(Array<double>& coords, double stepsize, MC * mc){
-	double norm2, rand;
+	double norm2=0;
+	double rand;
 	assert(coords.size() == _N);
 	for(size_t i=0; i<_N;++i){
 		rand = _distribution(_generator);
