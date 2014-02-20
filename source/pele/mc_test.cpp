@@ -14,20 +14,20 @@ using std::shared_ptr;
 
 int main(){
 
-  double Emin = 0.5;
-  double Emax = 2;
+  double Emin = 0;
+  double Emax = 5;
   int ntot =10000000;
-  double bin = 0.005;
-  double temperature = 0.8;
+  double bin = 0.0005;
+  double temperature = 1;
   double stepsize = 1;
-  int ndim = 5;
+  int ndim = 15;
   pele::Array<double> coords(ndim,0);
   pele::Array<double> origin(ndim,0);
-  pele::Histogram * hist = new pele::Histogram(0,25,bin);
+  //pele::Histogram * hist = new pele::Histogram(0,25,bin);
 
   pele::RandomCoordsDisplacement * random = new pele::RandomCoordsDisplacement(coords.size());
   pele::MetropolisTest * metropolis = new pele::MetropolisTest;
-  pele::RecordEnergyHistogram * histogram = new pele::RecordEnergyHistogram(hist);
+  pele::RecordEnergyHistogram * histogram = new pele::RecordEnergyHistogram(0,25,bin);
   pele::Harmonic * harmonic = new pele::Harmonic(origin, 1);
   pele::MC MC(harmonic, coords, temperature, stepsize);
   MC.add_action(shared_ptr<pele::RecordEnergyHistogram>(histogram));
@@ -43,10 +43,10 @@ int main(){
   std::cout<<"HISTOGRAM"<<std::endl;
   //hist->print(ntot);
   std::vector<size_t>::iterator it;
-  std::cout<<"histogram niter "<<hist->_niter<<std::endl;
+  //std::cout<<"histogram niter "<<hist->_niter<<std::endl;
   std::cout<<"accepted fraction "<<MC.get_accepted_fraction()<<std::endl;
 
-  std::ofstream myfile;
+  /*std::ofstream myfile;
   myfile.open("harmonic_dos.dat");
 
   double h;
@@ -97,7 +97,7 @@ int main(){
 	  E += bin;
   }
 
-  myfile.close();
+  myfile.close();*/
   return 0;
 
 }

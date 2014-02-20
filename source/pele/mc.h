@@ -39,6 +39,16 @@ public:
 };
 
 /*
+ * Accept Test
+ */
+
+class ConfTest{
+public:
+	virtual ~ConfTest(){}
+	virtual bool test(Array<double> &trial_coords, MC * mc) =0;
+};
+
+/*
  * Take Step
  */
 
@@ -58,7 +68,7 @@ protected:
 	shared_ptr<pele::BasePotential> _potential;
 	list< shared_ptr<Action> > _actions;
 	list< shared_ptr<AcceptTest> > _accept_tests;
-	list< shared_ptr<AcceptTest> > _conf_tests;
+	list< shared_ptr<ConfTest> > _conf_tests;
 	shared_ptr<TakeStep> _takestep;
 	size_t _niter, _neval, _accept_count, _reject_count;
 public:
@@ -75,13 +85,12 @@ public:
 	void set_stepsize(double stepsize){_stepsize = stepsize;}
 	void add_action(shared_ptr<Action> action){_actions.push_back(action);}
 	void add_accept_test( shared_ptr<AcceptTest> accept_test){_accept_tests.push_back(accept_test);}
-	void add_conf_test( shared_ptr<AcceptTest> conf_test){_conf_tests.push_back(conf_test);}
+	void add_conf_test( shared_ptr<ConfTest> conf_test){_conf_tests.push_back(conf_test);}
 	void set_takestep( shared_ptr<TakeStep> takestep){_takestep = takestep;}
 	void set_coordinates(Array<double> coords, double energy){
 		_coords = coords;
 		_energy = energy;
 	}
-	Array<double> get_coordinates(){return _coords;}
 	double get_energy(){return _energy;}
 	double get_accepted_fraction(){return ((double) _accept_count)/(_accept_count+_reject_count);};
 
@@ -109,7 +118,7 @@ void MC::one_iteration()
 	_takestep->takestep(_trial_coords, _stepsize, this);
 
 	for (auto& test : _conf_tests ){
-		success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
+		success = test->test(_trial_coords, this);
 		if (success == false)
 			break;
 	}

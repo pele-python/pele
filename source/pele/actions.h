@@ -43,15 +43,25 @@ void AdjustStep::action(Array<double> &coords, double energy, bool accepted, MC*
 
 class RecordEnergyHistogram : public Action {
 protected:
-	pele::Histogram* _hist;
+	pele::Histogram * _hist;
 public:
-	RecordEnergyHistogram(pele::Histogram * hist);
+	RecordEnergyHistogram(double min, double max, double bin);
 	virtual ~RecordEnergyHistogram() {delete _hist;}
 	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
+	virtual void get_histogram(pele::Array<size_t>& array){
+		array.resize(_hist->size());
+		std::vector<size_t>::iterator it;
+		size_t i = 0;
+		for(it = _hist->begin(); it != _hist->end(); ++it)
+		{
+			array[i] = *it;
+			++i;
+		}
+	}
 };
 
-RecordEnergyHistogram::RecordEnergyHistogram(pele::Histogram * hist):
-			_hist(hist){}
+RecordEnergyHistogram::RecordEnergyHistogram(double min, double max, double bin):
+			_hist(new pele::Histogram(min, max, bin)){}
 
 void RecordEnergyHistogram::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
 		_hist->add_entry(energy);

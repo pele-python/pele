@@ -71,7 +71,7 @@ void Histogram::add_entry(double E){
 	}
 	else if (i >= _N)
 	{
-		newlen = i - _N + 1;
+		newlen = (i + 1) - _N;
 		_hist.insert(_hist.end(),(newlen-1),0);
 		_hist.push_back(1);
 		++_niter;
