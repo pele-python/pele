@@ -39,9 +39,6 @@ from pele.systems.spawn_OPTIM import SpawnOPTIM
 
 from read_amber import parse_topology_file
 
-# OpenMM related 
-import openmm_potential  
-
 __all__ = ["AMBERSystem"]
 
 class AMBERSystem(BaseSystem):
@@ -146,6 +143,8 @@ class AMBERSystem(BaseSystem):
         return self 
     
     def get_potential(self):
+        # OpenMM related 
+        import openmm_potential  
         try:
             return self.potential
         except AttributeError:
