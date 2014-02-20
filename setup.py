@@ -89,6 +89,7 @@ setup(name='pele',
                 "pele.systems",
                 "pele.angleaxis",
                 "pele.thermodynamics",
+                "pele.rates",
                 ],
       ext_modules=ext_modules
         )
