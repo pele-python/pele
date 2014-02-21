@@ -10,15 +10,19 @@ def compare_potentials(pot1, pot2, coords):
     assert ediff < 1e-5
     
     max_gdiff = np.max(np.abs(g1 - g2))
-    assert max_gdiff < 1e-5
+    if max_gdiff > 1e-5:
+        print "maximum difference in the gradient", max_gdiff
+        print e1, e2
+        print g1
+        print g2
 
 if __name__ == "__main__":
     
     natoms = 13
     pot1 = MyPot(natoms)
-    e = 101.
-    while e > 100:
-        coords = np.random.uniform(-5,5,[natoms*3])
+    e = 1001.
+    while e > 1000:
+        coords = np.random.uniform(-3,3,[natoms*3])
         e = pot1.getEnergy(coords)
     
     try:
@@ -28,3 +32,12 @@ if __name__ == "__main__":
         compare_potentials(pot1, pot2, coords)
     except ImportError:
         print "could not import fortran potential"
+
+    try:
+        from cython_potential.mypotential import MyPotCython
+        pot2 = MyPotCython(natoms)
+        print "testing cython potential"
+        compare_potentials(pot1, pot2, coords)
+    except ImportError:
+        print "could not import cython potential"
+        raise
