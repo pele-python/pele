@@ -4,6 +4,8 @@ from numpy.distutils.misc_util import has_cxx_sources
 import numpy as np
 import os
 
+os.environ["CXX"] = "g++-4.6"
+
 ## Numpy header files 
 numpy_lib = os.path.split(np.__file__)[0] 
 numpy_include = os.path.join(numpy_lib, 'core/include') 
@@ -104,7 +106,7 @@ include_dirs = [numpy_include, "source"]
 depends = ["source/pele" + f for f in os.listdir("source/pele/") 
            if f.endswith(".cpp") or f.endswith(".h")]
 
-extra_compile_args = ["-Wall", "-Wextra", "-O3", '-funroll-loops', "-march=native", "-mtune=native"]
+extra_compile_args = ["-std=c++0x","-Wall", "-Wextra", "-O3", '-funroll-loops', "-march=native", "-mtune=native"]
 # uncomment the next line to add extra optimization options
 # extra_compile_args = ["-Wall", '-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
 
@@ -152,6 +154,30 @@ cxx_modules = [
               ),
     Extension("pele.optimize._modified_fire_cpp", 
               ["pele/optimize/_modified_fire_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    Extension("playground.monte_carlo._monte_carlo_cpp", 
+              ["playground/monte_carlo/_monte_carlo_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    Extension("playground.monte_carlo._takestep_cpp", 
+              ["playground/monte_carlo/_takestep_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    Extension("playground.monte_carlo._accept_test_cpp", 
+              ["playground/monte_carlo/_accept_test_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    Extension("playground.monte_carlo._action_cpp", 
+              ["playground/monte_carlo/_action_cpp.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
