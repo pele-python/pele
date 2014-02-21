@@ -41,3 +41,12 @@ if __name__ == "__main__":
     except ImportError:
         print "could not import cython potential"
         raise
+
+    try:
+        from cpp_potential.mypotential import MyPotCpp
+        pot2 = MyPotCpp(natoms)
+        print "testing c++ potential"
+        compare_potentials(pot1, pot2, coords)
+    except ImportError:
+        print "could not import c++ potential"
+        raise
