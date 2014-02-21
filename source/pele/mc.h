@@ -143,7 +143,7 @@ void MC::one_iteration()
 				_coords[i] = _trial_coords[i];
 			}
 			_energy = trial_energy;
-			++ _accept_count;
+			++_accept_count;
 		}
 
 		/*consider moving actions outside the accepted configuration test condition

@@ -17,6 +17,7 @@ namespace pele{
 
 /*Random coords displacement, generates a random displacement for a N dimensional system
  * sampling from a N-dimensional sphere
+ * the stepsize is defined per coordinates, that's why the maximum stepsize is sqrt(N)*stepsize
  * */
 
 class RandomCoordsDisplacement:public TakeStep{
@@ -26,6 +27,7 @@ protected:
 	std::normal_distribution<double> _distribution;
 	pele::Array<double> _dr;
 	size_t _N;
+	double _rootN;
 public:
 	RandomCoordsDisplacement(size_t N);
 	virtual ~RandomCoordsDisplacement() {}
@@ -36,7 +38,7 @@ public:
 RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N):
 		_seed(std::chrono::system_clock::now().time_since_epoch().count()),
 		_generator(_seed), _distribution(0.0,1.0), _dr(N),
-		_N(N)
+		_N(N), _rootN(sqrt((double) N))
 		{
 			std::cout<<"seed TakeStep:"<<_seed<<std::endl;
 		}
@@ -51,7 +53,7 @@ void RandomCoordsDisplacement::takestep(Array<double>& coords, double stepsize, 
 		norm2 += rand*rand;
 	}
 
-	_dr *= stepsize/sqrt(norm2);
+	_dr *= _rootN * stepsize/sqrt(norm2);
 	coords += _dr;
 }
 

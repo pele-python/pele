@@ -30,7 +30,7 @@ class Histogram{
 protected:
 	double _max, _min, _bin, _eps;
 	int _N;
-	vector<size_t> _hist;
+	vector<double> _hist;
 public:
 	int _niter;
 	Histogram(double min, double max, double bin);
@@ -39,10 +39,10 @@ public:
 	double max(){return _max;};
 	double min(){return _min;};
 	double bin(){return _bin;};
-	double size(){return _N;};
-	vector<size_t>::iterator begin();
-	vector<size_t>::iterator end();
-	void print(int ntot){
+	size_t size(){return _N;};
+	vector<double>::iterator begin();
+	vector<double>::iterator end();
+	void print(size_t ntot){
 		for(size_t i=0; i<_hist.size();++i)
 		{
 			std::cout << i << "-" << (i+1) << ": ";
@@ -118,8 +118,8 @@ void Histogram::add_entry(double E){
 	}*/
 }
 
-vector<size_t>::iterator Histogram::begin(){return _hist.begin();}
-vector<size_t>::iterator Histogram::end(){return _hist.end();}
+vector<double>::iterator Histogram::begin(){return _hist.begin();}
+vector<double>::iterator Histogram::end(){return _hist.end();}
 }
 
 #endif

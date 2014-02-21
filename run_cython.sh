@@ -20,6 +20,8 @@ echo "Compiling _harmonic_cpp.pyx"
 cython --cplus pele/potentials/_harmonic_cpp.pyx 
 echo "Compiling _modified_fire_cpp.pyx"
 cython --cplus -a pele/optimize/_modified_fire_cpp.pyx
+echo "Compiling _pele_mc.pyx"
+cython --cplus -a playground/monte_carlo/_pele_mc.pyx
 echo "Compiling _monte_carlo_cpp.pyx"
 cython --cplus -a playground/monte_carlo/_monte_carlo_cpp.pyx
 echo "Compiling _takestep_cpp.pyx"
