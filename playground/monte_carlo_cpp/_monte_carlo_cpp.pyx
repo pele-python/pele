@@ -12,9 +12,9 @@ from _pele_mc import *
 
 cdef class _Cdef_MC(_Cdef_BaseMC):
 
-    def __cinit__(self, _pele.cBasePotential * potential, coords, temperature, stepsize):
-        cdef np.ndarray[double, ndim=1] coordsc = np.array(coords, dtype=float)
-        self.thisptr = <cppMC*>new cppMC(potential, _pele.Array[double](<double*> coordsc.data, coordsc.size),
+    def __cinit__(self, _pele.BasePotential potential, coords, temperature, stepsize):
+        cdef np.ndarray[double, ndim=1] coordsc = np.array(coords, dtype=float)        
+        self.thisptr = <cppMC*>new cppMC(potential.thisptr, _pele.Array[double](<double*> coordsc.data, coordsc.size),
                                                                    temperature, stepsize)
     
     def add_action(self, _Cdef_Action action):
@@ -31,7 +31,7 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
         
     def set_coordinates(self, coords, energy):
         cdef np.ndarray[double, ndim=1] ccoords = np.array(coords, dtype=float)
-        self.thisptr.set_coordinates(coords, energy)
+        self.thisptr.set_coordinates(_pele.Array[double](<double*> ccoords.data, ccoords.size), energy)
     
     def get_energy(self):
         energy = self.thisptr.get_energy()

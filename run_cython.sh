@@ -17,4 +17,12 @@ cython --cplus pele/potentials/_hs_wca_cpp.pyx
 echo "Compiling _wca_cpp.pyx"
 cython --cplus pele/potentials/_wca_cpp.pyx 
 echo "Compiling _modified_fire_cpp.pyx"
-cython --cplus -a pele/optimize/_modified_fire_cpp.pyx 
+cython --cplus -a pele/optimize/_modified_fire_cpp.pyx
+echo "Compiling _monte_carlo_cpp.pyx"
+cython --cplus -a playground/monte_carlo_cpp/_monte_carlo_cpp.pyx
+echo "Compiling _takestep_cpp.pyx"
+cython --cplus -a playground/monte_carlo_cpp/_takestep_cpp.pyx
+echo "Compiling _accept_test_cpp.pyx"
+cython --cplus -a playground/monte_carlo_cpp/_accept_test_cpp.pyx
+echo "Compiling _action_cpp.pyx"
+cython --cplus -a playground/monte_carlo_cpp/_action_cpp.pyx

@@ -25,7 +25,8 @@ cdef class _Cdef_RecordEnergyHistogram(_Cdef_Action):
     
     def get_histogram(self, hist):
         cdef np.ndarray[double, ndim=1] histc = np.array(hist, dtype=float)
-        self.thisptr.get_histogram(histc)
+        cdef cppRecordEnergyHistogram* newptr = <cppRecordEnergyHistogram*> self.thisptr
+        newptr.get_histogram(_pele.Array[size_t](<size_t*> histc.data, histc.size))
         
 class RecordEnergyHistogram(_Cdef_RecordEnergyHistogram):
     """This class is the python interface for the c++ RecordEnergyHistogram implementation.

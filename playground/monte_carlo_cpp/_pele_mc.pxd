@@ -88,5 +88,4 @@ cdef extern from "pele/mc.h" namespace "pele":
 cdef class _Cdef_BaseMC(object):
     """This class is the python interface for the c++ pele::MC base class implementation
     """
-    cdef cppMC* thisptr
-        
+    cdef cppMC* thisptr 
