@@ -7,7 +7,7 @@ from pele.potentials import BasePotential
 class MyPot(BasePotential):
     """a Lennard Jones potential with altered exponents
     
-    V(r) = r**-24 - r**-12
+    V(r) = 4. * (r**-24 - r**-12)
     """
     def __init__(self, natoms):
         self.natoms = natoms #number of atoms
@@ -18,7 +18,7 @@ class MyPot(BasePotential):
         for i in range(self.natoms):
             for j in range(i):
                 r = np.sqrt(np.sum((coords[i,:] - coords[j,:])**2)) 
-                E += r**-24 - r**-12
+                E += 4. * (r**-24 - r**-12)
         return E
     
     def getEnergyGradient(self, coords):
@@ -29,8 +29,8 @@ class MyPot(BasePotential):
             for j in range(i):
                 dr = coords[i,:] - coords[j,:]
                 r = np.sqrt(np.sum(dr**2)) 
-                E += r**(-24) - r**(-12)
-                g = 24. * r**(-25) - 12. * r**(-13)
+                E += 4. * (r**(-24) - r**(-12))
+                g = 4. * ( 24. * r**(-25) - 12. * r**(-13))
                 grad[i,:] += -g * dr/r
                 grad[j,:] += g * dr/r
         return E, grad.reshape(-1)
