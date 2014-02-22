@@ -1,10 +1,9 @@
-#cython: boundscheck=False
-#cython: wraparound=False
-##aaacython: noncheck=True
-#
-#
-# basic potential interface stuff    
-#
+"""
+# distutils: language = C++
+
+basic potential interface stuff    
+"""
+
 import numpy as np
 cimport numpy as np
 
