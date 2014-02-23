@@ -69,14 +69,20 @@ fmodules.add_module("pele/transition_states/_NEB_utils.f90")
 fmodules.add_module("pele/angleaxis/_aadist.f90")
 fmodules.add_module("pele/accept_tests/_spherical_container.f90")
 
+
+#
+# pure cython modules
+#
+extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',]
+
 cxx_modules = [
             Extension("pele.optimize._cython_lbfgs", ["pele/optimize/_cython_lbfgs.c"],
                       include_dirs=[numpy_include],
-                      extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',],
+                      extra_compile_args=extra_compile_args,
                       ),
             Extension("pele.potentials._cython_tools", ["pele/potentials/_cython_tools.c"],
                       include_dirs=[numpy_include],
-                      extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',],
+                      extra_compile_args=extra_compile_args,
                       ),
 
                ]
@@ -111,6 +117,7 @@ setup(name='pele',
       ext_modules=ext_modules
         )
 
+
 #
 # build the c++ files
 #
@@ -119,7 +126,7 @@ include_sources = ["source/pele" + f for f in os.listdir("source/pele")
                    if f.endswith(".cpp")]
 include_dirs = [numpy_include, "source"]
 
-depends = ["source/pele" + f for f in os.listdir("source/pele/") 
+depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/") 
            if f.endswith(".cpp") or f.endswith(".h")]
 
 extra_compile_args = ["-Wall", "-Wextra", "-O2", '-funroll-loops']
