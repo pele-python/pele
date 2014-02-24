@@ -48,23 +48,17 @@ public:
 	RecordEnergyHistogram(double min, double max, double bin);
 	virtual ~RecordEnergyHistogram() {delete _hist;}
 
-	virtual size_t get_histogram_size(){
-		return _hist->size();};
-
 	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
 
-	virtual void get_histogram(pele::Array<double>& array){
-		assert(_hist->size() == array.size());
-		std::vector<double>::iterator it;
-		size_t i = 0;
-		for(it = _hist->begin(); it != _hist->end(); ++it)
-		{
-			array[i] = *it;
-			++i;
-		}
+	virtual Array<double> get_histogram(){
+		std::vector<double> vecdata =_hist->get_vecdata();
+		Array<double> histogram(vecdata);
+		Array<double> histogram2(histogram.copy());
+		return histogram2;
 	}
-	virtual void print_histogram(size_t ntot){
-				_hist->print(ntot);};
+
+	virtual void print_terminal(size_t ntot){
+				_hist->print_terminal(ntot);};
 };
 
 RecordEnergyHistogram::RecordEnergyHistogram(double min, double max, double bin):

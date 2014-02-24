@@ -37,7 +37,7 @@ MetropolisTest::MetropolisTest():
 			std::cout<<"seed Metropolis:"<<_seed<<std::endl;
 		}
 
-bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy, Array<double> & old_coords, double old_energy, double temperature, MC * mc)
+bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy, Array<double>& old_coords, double old_energy, double temperature, MC * mc)
 {
 	double rand, w, wcomp;
 	bool success = true;

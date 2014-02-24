@@ -42,7 +42,8 @@ public:
 	size_t size(){return _N;};
 	vector<double>::iterator begin();
 	vector<double>::iterator end();
-	void print(size_t ntot){
+	vector<double> get_vecdata(){return _hist;};
+	void print_terminal(size_t ntot){
 		for(size_t i=0; i<_hist.size();++i)
 		{
 			std::cout << i << "-" << (i+1) << ": ";

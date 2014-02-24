@@ -75,7 +75,7 @@ public:
 	/*need to keep these public to make them accessible to tests and actions*/
 	double _stepsize, _temperature, _energy;
 
-	MC(pele::BasePotential * potential, Array<double> coords, double temperature, double stepsize);
+	MC(pele::BasePotential * potential, Array<double>& coords, double temperature, double stepsize);
 
 	~MC(){}
 
@@ -87,22 +87,24 @@ public:
 	void add_accept_test( shared_ptr<AcceptTest> accept_test){_accept_tests.push_back(accept_test);}
 	void add_conf_test( shared_ptr<ConfTest> conf_test){_conf_tests.push_back(conf_test);}
 	void set_takestep( shared_ptr<TakeStep> takestep){_takestep = takestep;}
-	void set_coordinates(Array<double> coords, double energy){
-		_coords = coords;
+	void set_coordinates(Array<double>& coords, double energy){
+		_coords = coords.copy();
 		_energy = energy;
 	}
 	double get_energy(){return _energy;}
+	Array<double> get_coords(){return _coords;}
 	double get_accepted_fraction(){return ((double) _accept_count)/(_accept_count+_reject_count);};
 
 };
 
-MC::MC(pele::BasePotential * potential, Array<double> coords, double temperature, double stepsize):
-		_coords(coords),_trial_coords(_coords.copy()), _potential(potential),
+MC::MC(pele::BasePotential * potential, Array<double>& coords, double temperature, double stepsize):
+		_coords(coords.copy()),_trial_coords(_coords.copy()), _potential(potential),
 			_niter(0), _neval(0), _accept_count(0),_reject_count(0),
 		_stepsize(stepsize), _temperature(temperature)
 
 		{
 			_energy = _potential->get_energy(_coords);
+			//std::cout<<"Energy is "<<_energy<<std::endl;
 			++_neval;
 		}
 
@@ -127,7 +129,7 @@ void MC::one_iteration()
 	{
 		trial_energy = _potential->get_energy(_trial_coords);
 		++_neval;
-
+		
 		for (auto& test : _accept_tests ){
 			success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
 			if (success == false)
@@ -140,7 +142,7 @@ void MC::one_iteration()
 		if (success == true){
 			for(size_t i=0;i<_coords.size();++i)
 			{
-				_coords[i] = _trial_coords[i];
+			  _coords[i] = _trial_coords[i];
 			}
 			_energy = trial_energy;
 			++_accept_count;

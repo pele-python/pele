@@ -36,6 +36,18 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
         energy = self.thisptr.get_energy()
         return energy
     
+    @cython.boundscheck(False)
+    def get_coords(self):
+        """return a histogram array"""
+        cdef _pele.Array[double] xi = self.thisptr.get_coords()
+        cdef double *xdata = xi.data()
+        cdef np.ndarray[double, ndim=1, mode="c"] x = np.zeros(xi.size())
+        cdef size_t i
+        for i in xrange(xi.size()):
+            x[i] = xdata[i]
+              
+        return x
+    
     def get_accepted_fraction(self):
         accepted_frac = self.thisptr.get_accepted_fraction()
         return accepted_frac

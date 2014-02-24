@@ -14,9 +14,8 @@ from _pele_mc cimport cppAction,_Cdef_Action
 cdef extern from "pele/actions.h" namespace "pele":
     cdef cppclass cppRecordEnergyHistogram "pele::RecordEnergyHistogram":
         cppRecordEnergyHistogram(double, double, double) except +
-        void get_histogram(_pele.Array[double]&) except +
-        size_t get_histogram_size() except +
-        void print_histogram(size_t) except +
+        _pele.Array[double] get_histogram() except +
+        void print_terminal(size_t) except +
         
 cdef class _Cdef_RecordEnergyHistogram(_Cdef_Action):
     """This class is the python interface for the c++ pele::RecordEnergyHistogram acceptance test class implementation
@@ -24,18 +23,22 @@ cdef class _Cdef_RecordEnergyHistogram(_Cdef_Action):
     def __cinit__(self, min, max, bin):
         self.thisptr = <cppAction*>new cppRecordEnergyHistogram(min, max, bin)
     
-    def get_histogram(self, np.ndarray[double, ndim=1] hist):
+    @cython.boundscheck(False)
+    def get_histogram(self):
+        """return a histogram array"""
         cdef cppRecordEnergyHistogram* newptr = <cppRecordEnergyHistogram*> self.thisptr
-        newptr.get_histogram(_pele.Array[double](<double*> hist.data, hist.size))
+        cdef _pele.Array[double] histi = newptr.get_histogram()
+        cdef double *histdata = histi.data()
+        cdef np.ndarray[double, ndim=1, mode="c"] hist = np.zeros(histi.size())
+        cdef size_t i
+        for i in xrange(histi.size()):
+            hist[i] = histdata[i]
+              
+        return hist
         
-    def get_histogram_size(self):
+    def print_terminal(self, ntot):
         cdef cppRecordEnergyHistogram* newptr2 = <cppRecordEnergyHistogram*> self.thisptr
-        size = newptr2.get_histogram_size()
-        return size
-    
-    def print_histogram(self, ntot):
-        cdef cppRecordEnergyHistogram* newptr3 = <cppRecordEnergyHistogram*> self.thisptr
-        newptr3.print_histogram(ntot)
+        newptr2.print_terminal(ntot)
         
 class RecordEnergyHistogram(_Cdef_RecordEnergyHistogram):
     """This class is the python interface for the c++ RecordEnergyHistogram implementation.

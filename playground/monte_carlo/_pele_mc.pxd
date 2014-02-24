@@ -80,9 +80,9 @@ cdef extern from "pele/mc.h" namespace "pele":
         void add_accept_test( shared_ptr[cppAcceptTest]) except +
         void add_conf_test( shared_ptr[cppConfTest]) except +
         void set_takestep( shared_ptr[cppTakeStep]) except +
-        void set_coordinates(_pele.Array[double], double) except +
-        _pele.Array[double] get_coordinates() except +
+        void set_coordinates(_pele.Array[double]&, double) except +
         double get_energy() except +
+        _pele.Array[double] get_coords() except +
         double get_accepted_fraction() except +
 
 cdef class _Cdef_BaseMC(object):
