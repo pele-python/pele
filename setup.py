@@ -1,12 +1,29 @@
+import os
+import sys
+import subprocess
+
 from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
 from numpy.distutils.misc_util import has_cxx_sources
 import numpy as np
-import os
 
 ## Numpy header files 
 numpy_lib = os.path.split(np.__file__)[0] 
 numpy_include = os.path.join(numpy_lib, 'core/include') 
+
+
+def generate_cython():
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    print("Cythonizing sources")
+    p = subprocess.call([sys.executable,
+                          os.path.join(cwd, 'cythonize.py'),
+                          'pele'],
+                         cwd=cwd)
+    if p != 0:
+        raise RuntimeError("Running cythonize failed!")
+
+generate_cython()
+
 
 #
 # compile fortran extension modules
@@ -52,14 +69,20 @@ fmodules.add_module("pele/transition_states/_NEB_utils.f90")
 fmodules.add_module("pele/angleaxis/_aadist.f90")
 fmodules.add_module("pele/accept_tests/_spherical_container.f90")
 
+
+#
+# pure cython modules
+#
+extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',]
+
 cxx_modules = [
             Extension("pele.optimize._cython_lbfgs", ["pele/optimize/_cython_lbfgs.c"],
                       include_dirs=[numpy_include],
-                      extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',],
+                      extra_compile_args=extra_compile_args,
                       ),
             Extension("pele.potentials._cython_tools", ["pele/potentials/_cython_tools.c"],
                       include_dirs=[numpy_include],
-                      extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',],
+                      extra_compile_args=extra_compile_args,
                       ),
 
                ]
@@ -94,6 +117,7 @@ setup(name='pele',
       ext_modules=ext_modules
         )
 
+
 #
 # build the c++ files
 #
@@ -102,7 +126,7 @@ include_sources = ["source/pele" + f for f in os.listdir("source/pele")
                    if f.endswith(".cpp")]
 include_dirs = [numpy_include, "source"]
 
-depends = ["source/pele" + f for f in os.listdir("source/pele/") 
+depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/") 
            if f.endswith(".cpp") or f.endswith(".h")]
 
 extra_compile_args = ["-Wall", "-Wextra", "-O3", '-funroll-loops', "-march=native", "-mtune=native"]
@@ -114,51 +138,51 @@ extra_compile_args = ["-Wall", "-Wextra", "-O3", '-funroll-loops', "-march=nativ
 
 cxx_modules = [
     Extension("pele.potentials._lj_cpp", 
-              ["pele/potentials/_lj_cpp.cpp"] + include_sources,
+              ["pele/potentials/_lj_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
                
     Extension("pele.potentials._morse_cpp", 
-              ["pele/potentials/_morse_cpp.cpp"] + include_sources,
+              ["pele/potentials/_morse_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
     Extension("pele.potentials._hs_wca_cpp", 
-              ["pele/potentials/_hs_wca_cpp.cpp"] + include_sources,
+              ["pele/potentials/_hs_wca_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
              extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
     Extension("pele.potentials._wca_cpp", 
-              ["pele/potentials/_wca_cpp.cpp"] + include_sources,
+              ["pele/potentials/_wca_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
              extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
     Extension("pele.potentials._pele", 
-              ["pele/potentials/_pele.cpp"] + include_sources,
+              ["pele/potentials/_pele.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
     
     Extension("pele.optimize._lbfgs_cpp", 
-              ["pele/optimize/_lbfgs_cpp.cpp", "source/lbfgs.cpp"] + include_sources,
+              ["pele/optimize/_lbfgs_cpp.cxx", "source/lbfgs.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
     Extension("pele.optimize._modified_fire_cpp", 
-              ["pele/optimize/_modified_fire_cpp.cpp"] + include_sources,
+              ["pele/optimize/_modified_fire_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
     Extension("pele.potentials._pythonpotential", 
-              ["pele/potentials/_pythonpotential.cpp"] + include_sources,
+              ["pele/potentials/_pythonpotential.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
