@@ -35,6 +35,22 @@ namespace pele {
             *_reference_count = 1;
         }
 
+        /**
+         * create array with specific size and values and allocate memory
+         */
+
+        Array(size_t size, dtype val) : _size(size)
+                {
+                    _allocated_memory = new dtype[size];
+                    _data = _allocated_memory;
+                    _reference_count = new long int;
+                    *_reference_count = 1;
+                    for (size_t i=0; i<_size; ++i)
+                    {
+                    	_data[i] = val;
+                    }
+                }
+
         /** 
          * wrap another array
          */
@@ -71,6 +87,21 @@ namespace pele {
             free();
         }
 
+        /*Returns whether the array is empty (i.e. whether its size is 0).*/
+
+        bool empty()
+        {
+        	if (_data == NULL)
+        		return true;
+        	else
+        		return false;
+        }
+
+        long int reference_count()
+        {
+        	return *_reference_count;
+        }
+
         /**
          * free all the memory and resize to zero
          */
@@ -80,7 +111,7 @@ namespace pele {
             if (_allocated_memory != NULL){
                 *_reference_count -= 1;
                 if (*_reference_count < 0)
-                    throw std::logic_error("reference_count cannot be less than zero.  Something went wrong");
+                    throw std::logic_error("reference_count cannot be less than zero. Something went wrong");
                 if (*_reference_count == 0){
                     delete[] _allocated_memory; 
                     delete _reference_count; 
@@ -316,5 +347,7 @@ namespace pele {
 //
 //newa.reference(old);
 //newa.copy(old);
+
+
 
 #endif
