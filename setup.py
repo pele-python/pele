@@ -105,7 +105,7 @@ include_dirs = [numpy_include, "source"]
 depends = ["source/pele" + f for f in os.listdir("source/pele/") 
            if f.endswith(".cpp") or f.endswith(".h")]
 
-extra_compile_args = ["-Wall", "-Wextra", "-O2", '-funroll-loops']
+extra_compile_args = ["-Wall", "-Wextra", "-O3", '-funroll-loops', "-march=native", "-mtune=native"]
 # uncomment the next line to add extra optimization options
 # extra_compile_args = ["-Wall", '-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
 
@@ -119,12 +119,25 @@ cxx_modules = [
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
+               
     Extension("pele.potentials._morse_cpp", 
               ["pele/potentials/_morse_cpp.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
+    Extension("pele.potentials._hs_wca_cpp", 
+              ["pele/potentials/_hs_wca_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+             extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+             ),
+    Extension("pele.potentials._wca_cpp", 
+              ["pele/potentials/_wca_cpp.cpp"] + include_sources,
+              include_dirs=include_dirs,
+             extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+             ),
     Extension("pele.potentials._pele", 
               ["pele/potentials/_pele.cpp"] + include_sources,
               include_dirs=include_dirs,
@@ -134,6 +147,12 @@ cxx_modules = [
     
     Extension("pele.optimize._lbfgs_cpp", 
               ["pele/optimize/_lbfgs_cpp.cpp", "source/lbfgs.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    Extension("pele.optimize._modified_fire_cpp", 
+              ["pele/optimize/_modified_fire_cpp.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
