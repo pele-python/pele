@@ -27,44 +27,53 @@ class MPI_Parallel_Tempering(object):
             self.Tarray = np.array([self.Tmin * CTE**i for i in range(self.nproc)],dtype='d')
         else:
             self.Tarray = None
-        return Tarray
     
-    def _scatter_data(self, in_send_array):
+    def _scatter_data(self, in_send_array, adim):
         """
         function to scatter data in equal ordered chunks among replica (it relies on the rank of the replica) 
         """
         if (self.rank == 0):
-            assert(len(in_send_array) % self.nproc == 0) 
+            # process 0 is the root, it has data to scatter
+            assert(len(in_send_array) == adim)
+            assert(adim % self.nproc == 0) 
             send_array = in_send_array
         else:
+            # processes other than root do not send
+            assert(adim % self.nproc == 0) 
             send_array = None
         
-        recv_array = np.zeros(len(send_array) /self.nproc,dtype='d')
+        recv_array = np.empty(adim/self.nproc,dtype='d')
         self.comm.Scatter(send_array, recv_array, root=0) 
         return recv_array 
     
     def _scatter_single_value(self, send_array):
         """
         returns a single value from a scattered array for each replica (e.g. Temperature or swap partner)
+        this implies that send array must be of the same length as the number of processors
         """
-        T = self._scatter_data(send_array)
+        if (self.rank == 0):
+            assert(len(send_array) == self.nproc)
+        
+        T = self._scatter_data(send_array, self.nproc)
         assert(len(T) == 1)
         return T[0]
     
-    def _broadcast_data(self, in_data):
+    def _broadcast_data(self, in_data, adim):
         """
         identical data are broadcasted from root to all other processes
         """
         if(self.rank == 0):
             bcast_data = in_data
         else:
-            bcast_data = None
+            bcast_data = np.empty(adim,dtype='d')
         bcast_data = self.comm.Bcast(bcast_data, root=0)
         return bcast_data
     
     def _gather_data(self, in_send_array):
         """
-        function to gather data in equal ordered chunks from replicas (it relies on the rank of the replica) 
+        function to gather data in equal ordered chunks from replicas (it relies on the rank of the replica)
+        note that gather assumes that all the subprocess are sending the same amount of data to root, to send
+        variable amounts of data must use the MPI_gatherv directive 
         """
         if (self.rank == 0):
             recv_array = np.zeros(len(in_send_array) * self.nproc,dtype='d')
@@ -101,11 +110,11 @@ class MPI_Parallel_Tempering(object):
         This function determines the exchange pattern alternating swaps with right and left neighbours.
         An exchange pattern array is constructed, filled with self.no_exchange_int which
         signifies that no exchange should be attempted. This value is replaced with the
-        rank of the processor with which to perform the swap is the swap attempt is successful.
+        rank of the processor with which to perform the swap if the swap attempt is successful.
         The exchange partner is then scattered to the other processors.
         """        
         if (self.rank == 0):
-            assert(len(Earray)==len(Tarray))
+            assert(len(Earray)==len(self.Tarray))
             exchange_pattern = np.array([self.no_exchange_int for i in xrange(len(Earray))],dtype='i')
             for i in xrange(0,self.nproc,2):
                 print 'exchange choice: ',self.exchange_pattern[self.exchange_choice] #this is a print statement that has to be removed after initial implementation
@@ -143,7 +152,7 @@ class MPI_Parallel_Tempering(object):
         return data
     
     def one_iteration(self, T, config):
-        # -> do MCMC walk
+        self.mcrunner.run()
         # E, data = -> return energy and configuration from MCMC and configuration
         Earray = self._gather_energies(E)
         config = self._exchange_pairs(Earray, config)
