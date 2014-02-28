@@ -127,7 +127,7 @@ include_sources = ["source/pele" + f for f in os.listdir("source/pele")
 include_dirs = [numpy_include, "source"]
 
 depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/") 
-           if f.endswith(".cpp") or f.endswith(".h")]
+           if f.endswith(".cpp") or f.endswith(".h") or f.endswith(".hpp")]
 
 extra_compile_args = ["-Wall", "-Wextra", "-O3", '-funroll-loops', "-march=native", "-mtune=native"]
 # uncomment the next line to add extra optimization options
@@ -188,6 +188,15 @@ cxx_modules = [
               language="c++", depends=depends,
               ),
                ]
+
+cxx_modules.append(
+    Extension("pele.rates._ngt_cpp", 
+              ["pele/rates/_ngt_cpp.cxx"] + ["sources/pele/graph.hpp", "sources/pele/ngt.hpp"],
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", 
+              )
+                   )
 
 setup(ext_modules=cxx_modules,
       )

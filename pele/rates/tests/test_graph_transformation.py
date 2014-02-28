@@ -5,6 +5,14 @@ import networkx as nx
 from pele.rates import RateCalculation
 from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
+def make_rates_complete(nnodes=10):
+    rates = dict()
+    for i in range(nnodes):
+        for j in range(i+1,nnodes):
+            rates[(i,j)] = float(i+j) / (i+1)
+            rates[(j,i)] = float(i+j) / (j+1)
+    return rates
+
 
 class _MakeRandomGraph(object):
     def __init__(self, nnodes=10, nedges=20, node_set=None):
@@ -46,16 +54,17 @@ class _MakeRandomGraph(object):
     
 
 
-
-def _three_state_graph():
+def _three_state_rates():
     tmatrix = [ [0., 1., 1.,], [1., 0., 1.,], [1., 1., 0.] ]
     rates = dict()
     for i in range(3):
         for j in range(3):
             if i != j:
                 rates[(i,j)] = tmatrix[i][j]
+    return rates
 
-    return kmcgraph_from_rates(rates)
+def _three_state_graph():
+    return kmcgraph_from_rates(_three_state_rates())
 
 class TestGraphReduction3(unittest.TestCase):
     def setUp(self):
