@@ -11,7 +11,6 @@ import networkx as nx
 
 from pele.storage import Minimum
 from pele.landscape import TSGraph
-from pele.utils.disconnectivity_graph import DisconnectivityGraph
 
 
 __all__ = ["ConnectManager"]
@@ -106,6 +105,8 @@ class ConnectManagerUntrap(BaseConnectManager):
                 
     def _compute_barriers(self, graph, min1):
         """for each minimum graph compute the (approximate) energy barrier to min1"""
+        # this is a local import to avoid cyclical imports
+        from pele.utils.disconnectivity_graph import DisconnectivityGraph
         dgraph = DisconnectivityGraph(graph, nlevels=self.nlevels)
         dgraph.calculate()
         tree = dgraph.tree_graph
