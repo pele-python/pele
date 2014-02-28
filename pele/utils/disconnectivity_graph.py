@@ -5,34 +5,10 @@ from collections import deque
 import numpy as np
 import networkx as nx
 
-__all__ = ["DisconnectivityGraph", "database2graph"]
+from pele.landscape import database2graph
 
-def database2graph(db, Emax=None):
-    '''
-    make a networkx graph from a database including only transition states with energy < Emax
-    '''
-    from pele.storage.database import Minimum, TransitionState
-    g = nx.Graph()
-    # js850> It's not strictly necessary to add the minima explicitly here,
-    # but for some reason it is much faster if you do (factor of 2).  Even 
-    # if this means there are many more minima in the graph.  I'm not sure 
-    # why this is.  This step is already often the bottleneck of the d-graph 
-    # calculation.
-    if Emax is not None:
-        minima = db.session.query(Minimum).filter(Minimum.energy <= Emax)
-    else:
-        minima = db.session.query(Minimum)
-    g.add_nodes_from(minima)
-    # if we order by energy first and add the transition states with the largest
-    # the we will take the smallest energy transition state in the case of duplicates
-    if Emax is not None:
-        ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax)\
-                                              .order_by(-TransitionState.energy)
-    else:
-        ts = db.session.query(TransitionState).order_by(-TransitionState.energy)
-    for t in ts: 
-        g.add_edge(t.minimum1, t.minimum2, ts=t)
-    return g
+__all__ = ["DisconnectivityGraph"]
+
 
 
 class Tree(object):
