@@ -42,10 +42,7 @@ class TestGraphRatesLJ(unittest.TestCase):
         
         create_random_database(self.system, self.db, 10, 20)
     
-    def test(self):
-        A = [self.db.minima()[0]]
-        B = [self.db.minima()[-1]]
-        
+    def do_test_rates(self, A, B):
         rcalc = RateCalculation(self.db.transition_states(), A, B)
         rcalc.compute_rates()
         rAB = rcalc.get_rate_AB()
@@ -54,26 +51,30 @@ class TestGraphRatesLJ(unittest.TestCase):
         rla = RatesLinalg(self.db.transition_states(), A, B)
         rAB_la = rla.compute_rates()
         
-        print "rates", rAB, rBA
-        
         self.assertAlmostEqual(rAB, rAB_la, 7)
+        
+    def do_test_committors(self, A, B):
+        rcalc = RateCalculation(self.db.transition_states(), A, B)
+        rcalc.compute_rates_and_committors()
+        committors = rcalc.get_committors()
+        
+        rla = RatesLinalg(self.db.transition_states(), A, B)
+        cla = rla.compute_committors()
+        
+        for m, qla in cla.iteritems():
+            self.assertAlmostEqual(committors[m], qla, 7)
+        
+    def test(self):
+        A = [self.db.minima()[0]]
+        B = [self.db.minima()[-1]]
+        self.do_test_rates(A, B)
+        self.do_test_committors(A, B)
 
     def test2(self):
         A = self.db.minima()[:2]
         B = self.db.minima()[2:4]
-        T = 1.
-
-        rcalc = RateCalculation(self.db.transition_states(), A, B, T=T)
-        rcalc.compute_rates()
-        rAB = rcalc.get_rate_AB()
-        rBA = rcalc.get_rate_BA()
-        
-        rla = RatesLinalg(self.db.transition_states(), A, B, T=T)
-        rAB_la = rla.compute_rates()
-
-        
-        print "rates", rAB, rBA
-        self.assertAlmostEqual(rAB, rAB_la, 7)
+        self.do_test_rates(A, B)
+        self.do_test_committors(A, B)
 
 class TestOptimCollagen(unittest.TestCase):
     """test a known value for a large database"""
