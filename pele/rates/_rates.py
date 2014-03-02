@@ -4,7 +4,7 @@ import networkx as nx
 import numpy as np
 
 from pele.utils.disconnectivity_graph import database2graph
-from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
+from pele.rates._ngt_cpp import NGT
 from pele.rates._rates_linalg import reduce_rates, TwoStateRates, MfptLinalgSparse
 
 __all__ = ["RateCalculation", "RatesLinalg"]
@@ -184,7 +184,7 @@ class RateCalculation(object):
 #        self._reduce_tsgraph()
         self._compute_rate_constants()
         weights = self._get_equilibrium_occupation_probabilities()
-        self.reducer = GraphReduction(self.rate_constants, self.A, self.B, weights=weights)
+        self.reducer = NGT(self.rate_constants, self.A, self.B, weights=weights)
         self.reducer.compute_rates()
         self.rateAB = self.reducer.get_rate_AB() * np.exp(self.max_log_rate)
         self.rateBA = self.reducer.get_rate_BA() * np.exp(self.max_log_rate)
