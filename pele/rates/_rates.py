@@ -135,10 +135,10 @@ class RateCalculation(object):
         self.rate_constants = rates
         return self.rate_constants
         
-    def _make_kmc_graph(self):
-        """make the rate graph from the rate constants"""
-        self._compute_rate_constants()
-        self.kmc_graph = kmcgraph_from_rates(self.rate_constants)
+#     def _make_kmc_graph(self):
+#         """make the rate graph from the rate constants"""
+#         self._compute_rate_constants()
+#         self.kmc_graph = kmcgraph_from_rates(self.rate_constants)
 
 #        # translate the product and reactant set into the new node definition  
 #        self.Anodes = set([self._min2node(m) for m in self.A]) 
@@ -182,15 +182,16 @@ class RateCalculation(object):
     def compute_rates(self):
         """compute the rates from A to B and vice versa"""
 #        self._reduce_tsgraph()
-        self._make_kmc_graph()
+        self._compute_rate_constants()
         weights = self._get_equilibrium_occupation_probabilities()
-        self.reducer = GraphReduction(self.kmc_graph, self.A, self.B, weights=weights)
+        self.reducer = GraphReduction(self.rate_constants, self.A, self.B, weights=weights)
         self.reducer.compute_rates()
         self.rateAB = self.reducer.get_rate_AB() * np.exp(self.max_log_rate)
         self.rateBA = self.reducer.get_rate_BA() * np.exp(self.max_log_rate)
         return self.rateAB, self.rateBA
 
 class RatesLinalg(RateCalculation):
+    """this class duplicates the behavior in RateCalculation, but with the linalg solver"""
     _initialized = False
     _times_computed = False
     def initialize(self):

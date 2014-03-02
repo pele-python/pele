@@ -68,12 +68,12 @@ def _three_state_graph():
 
 class TestGraphReduction3(unittest.TestCase):
     def setUp(self):
-        self.graph = _three_state_graph()
+        self.rates = _three_state_rates()
         # all rates after graph renormalization should be 1.0
         self.final_rate = 1.0
 
     def _test_rate(self, i, j):
-        reducer = GraphReduction(self.graph, [i], [j], debug=False)
+        reducer = GraphReduction(self.rates, [i], [j], debug=False)
         reducer.check_graph()
         reducer.compute_rates()
         rAB = reducer.get_rate_AB()
@@ -97,7 +97,7 @@ class TestGraphReductionRandom(unittest.TestCase):
     def do_test(self, A, B, nnodes=20, nedges=20):
         maker = _MakeRandomGraph(nnodes=20, nedges=20, node_set=A+B)
         graph = maker.run()
-        reducer = GraphReduction(graph, A, B, debug=False)  
+        reducer = GraphReduction(maker.rates, A, B, debug=False)  
         reducer.check_graph()
         reducer.compute_rates()
         rAB = reducer.get_rate_AB()
