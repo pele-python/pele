@@ -46,9 +46,10 @@ class TestGraphRatesLJ(unittest.TestCase):
         A = [self.db.minima()[0]]
         B = [self.db.minima()[-1]]
         
-        rcalc = RateCalculation(self.db.transition_states(), 
-                                A, B)
-        rAB, rBA = rcalc.compute_rates()
+        rcalc = RateCalculation(self.db.transition_states(), A, B)
+        rcalc.compute_rates()
+        rAB = rcalc.get_rate_AB()
+        rBA = rcalc.get_rate_BA()
         
         rla = RatesLinalg(self.db.transition_states(), A, B)
         rAB_la = rla.compute_rates()
@@ -62,9 +63,10 @@ class TestGraphRatesLJ(unittest.TestCase):
         B = self.db.minima()[2:4]
         T = 1.
 
-        rcalc = RateCalculation(self.db.transition_states(), 
-                                A, B, T=T)
-        rAB, rBA = rcalc.compute_rates()
+        rcalc = RateCalculation(self.db.transition_states(), A, B, T=T)
+        rcalc.compute_rates()
+        rAB = rcalc.get_rate_AB()
+        rBA = rcalc.get_rate_BA()
         
         rla = RatesLinalg(self.db.transition_states(), A, B, T=T)
         rAB_la = rla.compute_rates()
@@ -92,14 +94,14 @@ class TestOptimCollagen(unittest.TestCase):
         m4 = self.db.getMinimum(4)
         
         rcalc = RateCalculation(self.db.transition_states(), [m1], [m2], T=0.592)
-        r12, r21 = rcalc.compute_rates()
-        self.assertAlmostEqual(r12, 7106337458., delta=1e4)
-        self.assertAlmostEqual(r21, 1955395816., delta=1e4)
+        rcalc.compute_rates()
+        self.assertAlmostEqual(rcalc.get_rate_AB(), 7106337458., delta=1e4)
+        self.assertAlmostEqual(rcalc.get_rate_BA(), 1955395816., delta=1e4)
         
         rcalc = RateCalculation(self.db.transition_states(), [m1,m3], [m2, m4], T=0.592)
-        rAB, rBA = rcalc.compute_rates()
-        self.assertAlmostEqual(rAB, 8638736600., delta=1e4)
-        self.assertAlmostEqual(rBA, 3499625167., delta=1e4)
+        rcalc.compute_rates()
+        self.assertAlmostEqual(rcalc.get_rate_AB(), 8638736600., delta=1e4)
+        self.assertAlmostEqual(rcalc.get_rate_BA(), 3499625167., delta=1e4)
         
         rla = RatesLinalg(self.db.transition_states(), [m1], [m2], T=0.592)
         rAB = rla.compute_rates()

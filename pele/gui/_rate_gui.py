@@ -59,7 +59,9 @@ class RateWidget(QtGui.QWidget):
         T = float(self.ui.lineEdit_T.text())
         calculator = RateCalculation(self.transition_states, self.A, self.B, 
                                      T=T, use_fvib=True)
-        rAB, rBA = calculator.compute_rates()
+        calculator.compute_rates()
+        rAB = calculator.get_rate_AB()
+        rBA = calculator.get_rate_BA()
         self._add_result(self.A, self.B, rAB, rBA)
         
         self.ui.label_status.setText("")

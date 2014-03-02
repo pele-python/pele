@@ -60,6 +60,18 @@ class RateCalculation(object):
         self.B = set(B)
         self.beta = 1. / T
         self.use_fvib = use_fvib
+        self.initialized = False
+
+    def initialize(self):
+        """compute rate constants from transition states and check and reduce graph
+        
+        also compute equilibrium occupation probabilities
+        """
+        self._initialized = True
+        self._compute_rate_constants()
+        self.rate_constants = reduce_rates(self.rate_constants, self.A, self.B)
+        self._get_equilibrium_occupation_probabilities()
+
 
     def _get_local_log_rate(self, min1, min2, ts):
         """rate for going from min1 to min2
@@ -181,14 +193,33 @@ class RateCalculation(object):
 
     def compute_rates(self):
         """compute the rates from A to B and vice versa"""
-#        self._reduce_tsgraph()
-        self._compute_rate_constants()
-        weights = self._get_equilibrium_occupation_probabilities()
-        self.reducer = NGT(self.rate_constants, self.A, self.B, weights=weights)
+        if not self.initialized:
+            self.initialize()
+        self.reducer = NGT(self.rate_constants, self.A, self.B, weights=self.weights)
         self.reducer.compute_rates()
-        self.rateAB = self.reducer.get_rate_AB() * np.exp(self.max_log_rate)
-        self.rateBA = self.reducer.get_rate_BA() * np.exp(self.max_log_rate)
-        return self.rateAB, self.rateBA
+
+    def compute_rates_and_committors(self):
+        """compute the rates from A to B and vice versa"""
+        if not self.initialized:
+            self.initialize()
+        self.reducer = NGT(self.rate_constants, self.A, self.B, weights=self.weights)
+        self.reducer.compute_rates_and_committors()
+
+    def get_rate_AB(self):
+        return self.reducer.get_rate_AB() * np.exp(self.max_log_rate)
+
+    def get_rate_BA(self):
+        return self.reducer.get_rate_BA() * np.exp(self.max_log_rate)
+
+    def get_rate_AB_SS(self):
+        return self.reducer.get_rate_AB_SS() * np.exp(self.max_log_rate)
+
+    def get_rate_BA_SS(self):
+        return self.reducer.get_rate_BA_SS() * np.exp(self.max_log_rate)
+    
+    def get_committors(self):
+        committors = self.reducer.get_committors()
+        return committors
 
 class RatesLinalg(RateCalculation):
     """this class duplicates the behavior in RateCalculation, but with the linalg solver"""
