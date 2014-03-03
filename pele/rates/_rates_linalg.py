@@ -6,6 +6,8 @@ import numpy as np
 import scipy.sparse.linalg
 import networkx as nx
 
+class LinalgError(Exception):
+    """raised when a the linear algebra solver fails"""
 
 def reduce_rates(rates, B, A=None):
     B = set(B)
@@ -183,6 +185,8 @@ class CommittorLinalg(object):
             t0 = time.clock()
             committors = scipy.sparse.linalg.spsolve(self.matrix, self.right_side)
             self.time_solve += time.clock() - t0
+        if np.any(committors < 0) or np.any(committors > 1):
+            raise LinalgError("The committors are not all between 0 and 1")
         self.committor_dict = dict(((node, c) for node, c in izip(self.node_list, committors)))
 #        self.committors = committors
 #        print "committors", committors
@@ -263,7 +267,7 @@ class MfptLinalgSparse(object):
         self.time_solve += time.clock() - t0
         self.mfpt_dict = dict(((node, time) for node, time in izip(self.node_list, times)))
         if np.any(times < 0):
-            raise RuntimeError("error the mean first passage times are not all greater than zero")
+            raise LinalgError("error the mean first passage times are not all greater than zero")
         return self.mfpt_dict
     
     def compute_mfpt_symmetric(self, Peq):
@@ -305,7 +309,7 @@ class MfptLinalgSparse(object):
         self.time_solve += time.clock() - t0
         self.mfpt_dict = dict(((node, time) for node, time in izip(node_list, times)))
         if np.any(times < 0):
-            raise RuntimeError("error the mean first passage times are not all greater than zero")
+            raise LinalgError("error the mean first passage times are not all greater than zero")
         return self.mfpt_dict
 
     def compute_mfpt_from_estimate(self, mfpt_estimates):
@@ -354,7 +358,7 @@ class MfptLinalgSparse(object):
         self.time_solve += time.clock() - t0
         self.mfpt_dict = dict(((u, time * mfpt_estimates[u]) for u, time in izip(node_list, times)))
         if np.any(times < 0):
-            raise RuntimeError("error the mean first passage times are not all greater than zero")
+            raise LinalgError("error the mean first passage times are not all greater than zero")
         return self.mfpt_dict
 
     def compute_mfpt_subgroups(self, use_umfpack=True):

@@ -8,7 +8,7 @@ from pele.gui.ui.graph_view_ui import Ui_Form
 from pele.utils.events import Signal
 from pele.utils.disconnectivity_graph import database2graph
 from pele.gui.ui.dgraph_dlg import minimum_energy_path, check_thermodynamic_info
-from pele.rates import RatesLinalg
+from pele.rates import RatesLinalg, compute_committors
 
 
 
@@ -167,8 +167,7 @@ class GraphViewWidget(QWidget):
         
         A = [min2]
         B = [min1]
-        rcalc = RatesLinalg(transition_states, A, B, T=T)
-        committors = rcalc.compute_committors()
+        committors = compute_committors(transition_states, A, B, T=T)
         self._minima_color_value = committors
         def get_committor(m):
             try:

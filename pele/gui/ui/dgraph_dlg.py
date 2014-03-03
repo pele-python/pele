@@ -11,7 +11,7 @@ import dgraph_browser
 from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
 from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
-from pele.rates import RatesLinalg
+from pele.rates import RatesLinalg, RateCalculation, compute_committors
 
 def check_thermodynamic_info(transition_states):
     """return False if any transition state or minimum does not have pgorder or fvib"""
@@ -458,8 +458,7 @@ class DGraphWidget(QWidget):
 
         A = [min2]
         B = [min1]
-        rcalc = RatesLinalg(transition_states, A, B, T=T)
-        committors = rcalc.compute_committors()
+        committors = compute_committors(transition_states, A, B, T=T)
         def get_committor(m):
             try:
                 return committors[m]
@@ -478,8 +477,7 @@ class DGraphWidget(QWidget):
 
         A = [min2]
         B = [min1]
-        rcalc = RatesLinalg(transition_states, A, B, T=T)
-        committors = rcalc.compute_committors()
+        committors = compute_committors(transition_states, A, B, T=T)
         print "maximum committor", max(committors.values())
         print "minimum committor", min(committors.values())
         print "number of committors near 1", len([v for v in committors.values() if v > 1.-1e-4])

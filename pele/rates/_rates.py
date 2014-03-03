@@ -5,9 +5,9 @@ import numpy as np
 
 from pele.utils.disconnectivity_graph import database2graph
 from pele.rates._ngt_cpp import NGT
-from pele.rates._rates_linalg import reduce_rates, TwoStateRates, MfptLinalgSparse
+from pele.rates._rates_linalg import reduce_rates, TwoStateRates, LinalgError
 
-__all__ = ["RateCalculation", "RatesLinalg"]
+__all__ = ["RateCalculation", "RatesLinalg", "compute_committors"]
 
 #def log_sum(log_terms):
 #    """
@@ -270,45 +270,22 @@ class RatesLinalg(object):
             self.committors[m] = 1.
         return self.committors
     
+    def get_committors(self):
+        return self.committors
+
+def compute_committors(transition_states, A, B, T=1.):
+    """compute and return the committor probabilites between A and B
+    
+    First try the linear algebra method.  If it fails, then use NGT
+    """
+    try:
+        rcalc = RatesLinalg(transition_states, A, B, T=T)
+        rcalc.compute_committors()
+        return rcalc.get_committors()
+    except LinalgError:
+        print "sparse linear algebra method failed.  Using NGT instead"
+        rcalc = RateCalculation(transition_states, A, B, T=T)
+        rcalc.compute_rates_and_committors()
+        return rcalc.get_committors()
         
 
-
-#
-# only testing stuff below here
-#
-
-def test():
-    from pele.systems import LJCluster
-    from pele.landscape import ConnectManager
-    from pele.thermodynamics import get_thermodynamic_information
-    system = LJCluster(13)
-    system.params.structural_quench_params.tol = 1e-6
-    db = system.create_database("lj13.db")
-    
-    if db.number_of_minima() < 10:
-        bh = system.get_basinhopping(db, outstream=None)
-        bh.run(50)
-        
-        manager = ConnectManager(db, strategy="gmin")
-        for i in range(10):
-            min1, min2 = manager.get_connect_job("gmin")
-            connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)
-            connect.connect()
-        
-
-    connect = system.get_double_ended_connect(db.minima()[0], db.minima()[-1], db, verbosity=0)
-    connect.connect()
-        
-    
-    A = [db.minima()[0]]
-    B = [db.minima()[-1]]
-    
-    get_thermodynamic_information(system, db, nproc=2)
-    
-    graph = database2graph(db)
-    rcalc = RateCalculation(graph, A, B, T=1.)
-    rAB, rBA = rcalc.compute_rates()
-    print "rates", rAB, rBA
-
-if __name__ == "__main__":
-    test()
