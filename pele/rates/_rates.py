@@ -39,19 +39,12 @@ def log_equilibrium_occupation_probability(minimum, T):
             - 0.5 * minimum.fvib)
 
 
-class RateCalculation(object):
-    """compute transition rates from a database of minima and transition states
+class _Minima2Rates(object):
+    """prepare a list of transition states for a rate calculation
     
-    Parameters 
-    ----------
-    transition_states: iteratable
-        list (or iterator) of transition states that define the rate network
-    A, B : iterables
-        groups of minima specifying the reactant and product groups.  The rates
-        returned will be the rate from A to B and vice versa.
-    T : float
-        temperature at which to do the the calculation.  Should be in units of
-        energy, i.e. include the factor of k_B if necessary.
+    Compute rate constants, and equilibrium occupation probabilities.
+    Also, make sure the network of minima is sensible and all
+    connected.
     """
     def __init__(self, transition_states, A, B, T=1., 
                   use_fvib=True):
@@ -62,7 +55,7 @@ class RateCalculation(object):
         self.use_fvib = use_fvib
         self.initialized = False
 
-    def initialize(self):
+    def run(self):
         """compute rate constants from transition states and check and reduce graph
         
         also compute equilibrium occupation probabilities
@@ -91,9 +84,6 @@ class RateCalculation(object):
                   - (ts.energy - min1.energy) * self.beta)
         else:
             return -(ts.energy - min1.energy) * self.beta
-    
-    def _min2node(self, minimum):
-        return minimum
     
     def _transition_state_ok(self, ts):
         if ts.invalid:
@@ -143,19 +133,11 @@ class RateCalculation(object):
             rates = dict(( (uv,np.exp(log_k - self.max_log_rate)) for uv, log_k in log_rates.iteritems() ))
         else:
             self.max_log_rate = 0.
+            self.rate_norm = 1.
             rates = dict(( (uv,np.exp(log_k)) for uv, log_k in log_rates.iteritems() ))
         self.rate_constants = rates
         return self.rate_constants
         
-#     def _make_kmc_graph(self):
-#         """make the rate graph from the rate constants"""
-#         self._compute_rate_constants()
-#         self.kmc_graph = kmcgraph_from_rates(self.rate_constants)
-
-#        # translate the product and reactant set into the new node definition  
-#        self.Anodes = set([self._min2node(m) for m in self.A]) 
-#        self.Bnodes = set([self._min2node(m) for m in self.B]) 
-
     def _log_equilibrium_occupation_probability(self, minimum):
         """return the log equilibrium occupation probability
         
@@ -181,8 +163,7 @@ class RateCalculation(object):
         for m in nodes:
             if m.invalid:
                 continue
-            x = self._min2node(m)
-            log_weights[x] = self._log_equilibrium_occupation_probability(m)
+            log_weights[m] = self._log_equilibrium_occupation_probability(m)
         
         # normalize the weights to avoid overflow or underflow when taking the exponential
         weight_max = max(log_weights.itervalues())
@@ -191,54 +172,79 @@ class RateCalculation(object):
                             ))
         return self.weights
 
+class RateCalculation(object):
+    """compute transition rates from a database of minima and transition states
+    
+    Parameters 
+    ----------
+    transition_states: iteratable
+        list (or iterator) of transition states that define the rate network
+    A, B : iterables
+        groups of minima specifying the reactant and product groups.  The rates
+        returned will be the rate from A to B and vice versa.
+    T : float
+        temperature at which to do the the calculation.  Should be in units of
+        energy, i.e. include the factor of k_B if necessary.
+    """
+    def __init__(self, transition_states, A, B, T=1., 
+                  use_fvib=True):
+        self.minima2rates = _Minima2Rates(transition_states, A, B, T=T,
+                                         use_fvib=use_fvib)
+
     def compute_rates(self):
         """compute the rates from A to B and vice versa"""
-        if not self.initialized:
-            self.initialize()
-        self.reducer = NGT(self.rate_constants, self.A, self.B, weights=self.weights)
+        self.minima2rates.run()
+        self.reducer = NGT(self.minima2rates.rate_constants, 
+                           self.minima2rates.A, self.minima2rates.B, 
+                           weights=self.minima2rates.weights)
         self.reducer.compute_rates()
 
     def compute_rates_and_committors(self):
         """compute the rates from A to B and vice versa"""
-        if not self.initialized:
-            self.initialize()
-        self.reducer = NGT(self.rate_constants, self.A, self.B, weights=self.weights)
+        self.minima2rates.run()
+        self.reducer = NGT(self.minima2rates.rate_constants, 
+                           self.minima2rates.A, self.minima2rates.B, 
+                           weights=self.minima2rates.weights)
         self.reducer.compute_rates_and_committors()
 
     def get_rate_AB(self):
-        return self.reducer.get_rate_AB() * np.exp(self.max_log_rate)
+        return self.reducer.get_rate_AB() / self.minima2rates.rate_norm
 
     def get_rate_BA(self):
-        return self.reducer.get_rate_BA() * np.exp(self.max_log_rate)
+        return self.reducer.get_rate_BA() / self.minima2rates.rate_norm
 
     def get_rate_AB_SS(self):
-        return self.reducer.get_rate_AB_SS() * np.exp(self.max_log_rate)
+        return self.reducer.get_rate_AB_SS() / self.minima2rates.rate_norm
 
     def get_rate_BA_SS(self):
-        return self.reducer.get_rate_BA_SS() * np.exp(self.max_log_rate)
+        return self.reducer.get_rate_BA_SS() / self.minima2rates.rate_norm
     
     def get_committors(self):
         committors = self.reducer.get_committors()
         return committors
 
-class RatesLinalg(RateCalculation):
+class RatesLinalg(object):
     """this class duplicates the behavior in RateCalculation, but with the linalg solver"""
     _initialized = False
     _times_computed = False
+    def __init__(self, transition_states, A, B, T=1., 
+                  use_fvib=True):
+        self.minima2rates = _Minima2Rates(transition_states, A, B, T=T,
+                                         use_fvib=use_fvib)
+
     def initialize(self):
-        self._initialized = True
-        self._compute_rate_constants()
-        self.rate_constants = reduce_rates(self.rate_constants, self.A, self.B)
-        self._get_equilibrium_occupation_probabilities()
-        self.two_state_rates = TwoStateRates(self.rate_constants, self.A, self.B, 
-                                             weights=self.weights, check_rates=False)
+        self.minima2rates.run()
+        self.two_state_rates = TwoStateRates(self.minima2rates.rate_constants, 
+                                             self.minima2rates.A, self.minima2rates.B, 
+                                             weights=self.minima2rates.weights)
 
     def compute_rates(self):
         if not self._initialized:
             self.initialize()
         if not self._times_computed:
             self.two_state_rates.compute_rates()
-        return self.two_state_rates.get_rate_AB() / self.rate_norm
+        self._times_computed = True
+        return self.two_state_rates.get_rate_AB() / self.minima2rates.rate_norm
     
     def get_mfptimes(self):
         if not self._initialized:
@@ -247,8 +253,9 @@ class RatesLinalg(RateCalculation):
             self.two_state_rates.compute_rates()
         times = self.two_state_rates.mfpt_computer.mfpt_dict
         
-        self.mfpt_dict = dict(( (m, t * self.rate_norm) for m,t in times.iteritems() ))
-        for m in self.B:
+        self.mfpt_dict = dict(( (m, t * self.minima2rates.rate_norm) 
+                                for m,t in times.iteritems() ))
+        for m in self.minima2rates.B:
             self.mfpt_dict[m] = 0.
         return self.mfpt_dict
     
@@ -257,9 +264,9 @@ class RatesLinalg(RateCalculation):
             self.initialize()
         self.two_state_rates.compute_committors()
         self.committors = self.two_state_rates.committor_dict
-        for m in self.A:
+        for m in self.minima2rates.A:
             self.committors[m] = 0.
-        for m in self.B:
+        for m in self.minima2rates.B:
             self.committors[m] = 1.
         return self.committors
     
