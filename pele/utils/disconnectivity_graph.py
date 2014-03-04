@@ -751,7 +751,7 @@ class DisconnectivityGraph(object):
     # functions which return the line segments that make up the visual graph
     #######################################################################
 
-    def _get_line_segment_recursive(self, line_segments,line_colours, tree, eoffset):
+    def _get_line_segment_recursive(self, line_segments, line_colours, tree, eoffset):
         """
         add the line segment connecting this tree to its parent
         """
@@ -827,6 +827,11 @@ class DisconnectivityGraph(object):
         """
         get all the line segments for drawing the connection between 
         each minimum to it's parent node.
+        
+        Returns
+        -------
+        line_segments : list
+            list of line segments.  each line segment has the form ((x1, x2), (y1, y2))
         """
         line_segments = []
         line_colours = []
@@ -1070,12 +1075,16 @@ class DisconnectivityGraph(object):
         #set up how the figure should look
         ax.tick_params(axis='y', direction='out')
         ax.yaxis.tick_left()
+        # make the borders a bit prettier
         ax.spines['left'].set_color('black')
         ax.spines['left'].set_linewidth(0.5)
         ax.spines['top'].set_color('none')
         ax.spines['bottom'].set_color('none')
         ax.spines['right'].set_color('none')
 #        plt.box(on=True)
+
+        if title is not None:
+            ax.set_title(title)
 
         #draw the minima as points
         if show_minima: 
@@ -1089,17 +1098,20 @@ class DisconnectivityGraph(object):
         linecollection.set_color(self.line_colours)
         ax.add_collection(linecollection)
         
-        if title is not None:
-            ax.set_title(title)
         
         # scale the axes appropriately
-        ax.relim()
-        ax.autoscale_view(scalex=True, scaley=True, tight=None)
-        ax.set_ylim(top=self.Emax)
-        #remove xtics            
+        # note: do not call ax.relim().  As of matplotlib version 1.3
+        # ax.relim() does not take Collections into account so it does
+        # not compute the limits correctly.  ax.autoscale_view() seems to work just fine
+        ax.autoscale_view(scalex=True, scaley=True, tight=False)
+        ax.set_ybound(upper=self.Emax)
+        
+        # remove xtics
+        # note: the xticks are removed after ax.autoscale_view() is called.
+        # If it is the other way around the lines are too close the image border          
         ax.set_xticks([])
         self.axes = ax
-
+        
     def label_minima(self, minima_labels, axes=None, 
                      rotation=60., **kwargs):
         """label the specified minima
