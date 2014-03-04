@@ -484,8 +484,14 @@ class DoubleEndedConnect(object):
             if min1 is None or min2 is None:
                 break
             
-            #try to connect those minima            
-            local_success = self._localConnect(min1, min2)
+            #try to connect those minima
+            from pele.optimize.optimization_exceptions import LineSearchError
+            try:
+                local_success = self._localConnect(min1, min2)
+            except LineSearchError as err:
+                print err
+                print "caught line search error, aborting connection attempt"
+                break
             
             if False and i % 10 == 0:
                 #do some sanity checks
