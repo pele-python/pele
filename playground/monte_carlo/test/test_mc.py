@@ -1,38 +1,35 @@
 import numpy as np
+import abc
 from pele.utils.rotations import vector_random_uniform_hypersphere
 from pele.potentials import Harmonic
 from playground.monte_carlo import RandomCoordsDisplacement, MetropolisTest, RecordEnergyHistogram, MC
-
-import abc
 from pele.optimize import Result
 
-class _base_mcrunner(object):
+class _base_MCrunner(object):
     __metaclass__ = abc.ABCMeta
     
     @abc.abstractmethod
     def get_results(self):
         """Must return a result object, generally must contain at least final configuration and energy"""
 
-class test_mc(_base_mcrunner):
+class test_mc(_base_MCrunner):
     
-    def __init__(self, ndim = 20, niter=10000000, temperature=1.0,stepsize=0.8, binsize=0.01,k=1.0,Emin=7.0,Emax=11.0):
+    def __init__(self, ndim = 20, niter=10000000, temperature=1.0,stepsize=0.8, binsize=0.01,k=1.0):
         self.niter = niter
         self.ndim = ndim
         self.temperature = temperature
         self.stepsize = stepsize/np.sqrt(ndim)
         self.binsize = binsize
         self.k = k
-        self.Emax = Emax
-        self.Emin = Emin
-   
+        Emax = 25   
         #declare np array of desired dimensionality for origin of harmonic potential
         self.origin = np.zeros(self.ndim)
         #declare np array for actual coordinates
-        self.coords = vector_random_uniform_hypersphere(self.ndim) * np.sqrt(2*self.Emax) #coordinates sampled from Pow(ndim)
+        self.coords = vector_random_uniform_hypersphere(self.ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
         #declare np array where to save histogram at the end
         
         self.harmonic = Harmonic(self.origin,self.k)
-        self.histogram = RecordEnergyHistogram(0,25,self.binsize)
+        self.histogram = RecordEnergyHistogram(0,Emax,self.binsize)
         self.step = RandomCoordsDisplacement(self.ndim)
         self.metropolis = MetropolisTest()
         #set up mc
@@ -61,22 +58,22 @@ class test_mc(_base_mcrunner):
         plt.hist(val, weights=self.result.hist,bins=len(self.result.hist))
         plt.show()
     
-    def print_dos_from_histogram(self):    
+    def print_dos_from_histogram(self,Emin=7.0,Emax=11.0):    
         """print the dos from histogram data"""
         
         # Open a file
         myfile = open("harmonic_dos.dat", "wb")
         
-        E=self.Emin
+        E=Emin
         sumh = 0.0
         hist = self.result.hist
-        n = int((self.Emax-self.Emin)/self.binsize)
-        nstart = int(self.Emin/self.binsize)
+        n = int((Emax-Emin)/self.binsize)
+        nstart = int(Emin/self.binsize)
         for i in xrange(nstart,nstart+n):
             sumh += hist[i] * np.exp(self.temperature*E) * self.binsize
             E += self.binsize
                       
-        E = self.Emin
+        E = Emin
         for i in xrange(nstart,nstart+n):
             h = hist[i] * np.exp(self.temperature*E) / sumh
             myfile.write("{0} \t {1} \n".format(E,h))
@@ -84,20 +81,20 @@ class test_mc(_base_mcrunner):
         
         myfile.close()
         
-    def print_analytical_dos(self):
+    def print_analytical_dos(self,Emin=7.0,Emax=11.0):
         """prints the analytical dos"""
         
         myfile = open("analytical_dos.dat", "wb")
         
-        E=self.Emin
-        n = int((self.Emax-self.Emin)/self.binsize)
-        nstart = int(self.Emin/self.binsize)
+        E=Emin
+        n = int((Emax-Emin)/self.binsize)
+        nstart = int(Emin/self.binsize)
         sumh=0.0
         for i in xrange(nstart,nstart+n):
             sumh += pow(E,self.ndim/2.0-1.0) * self.binsize
             E += self.binsize
               
-        E = self.Emin
+        E = Emin
         for i in xrange(nstart,nstart+n):
             h = pow(E,self.ndim/2.0-1.0)/sumh
             myfile.write("{0} \t {1} \n".format(E,h))

@@ -4,18 +4,21 @@ import random
 from mpi4py import MPI
 
 class MPI_Parallel_Tempering(object):
-    def __init__(self, mc_runner, Tmax, Tmin, mciter = 100):
-        self.mcrunner = mc_runner
+    def __init__(self, mcrunner, Tmax, Tmin, mciter = 100):
+        self.mcrunner = mcrunner
         self.comm = MPI.COMM_WORLD
         self.nproc = self.comm.Get_size() #total number of processors (replicas)
-        self.rank = self.comm.Get_rank() #this is the unique identifier for the process  
+        self.rank = self.comm.Get_rank() #this is the unique identifier for the process
+        print "processor {0} ready".format(self.rank)
         self.Tmax = Tmax
         self.Tmin = Tmin
         self.exchange_dic = {1:'right',-1:'left'}
-        self.exchange_choice = random.choice(self.exchange_pattern.keys())
+        self.exchange_choice = random.choice(self.exchange_dic.keys())
         self.ex_outstream = open("exchanges", "w")
         self.ptiter = 0
-        self.no_exchange_int = 1000000 #this number in exchange pattern means that no exchange should be attempted
+        self.no_exchange_int = 12345 #this number in exchange pattern means that no exchange should be attempted
+        self.initialised = False #flag
+        self.nodelist = [i for i in xrange(self.nproc)]
         
     def _get_temps(self):
         """
@@ -102,22 +105,23 @@ class MPI_Parallel_Tempering(object):
         assert(dest == source)
         old_data = data.copy() #this is for a test that has to be removed after initial implementation
         self.comm.Sendrecv_replace(data, dest=dest,source=source)
-        assert(data != old_data) #this is a test that has to be removed after initial implementation
+        #assert(data.any() != old_data.any()) #this is a test that has to be removed after initial implementation
+        print "processor {0} p-to-p exchange was successful".format(self.rank)
         return data
     
-    def _find_exchange_pairs(self, Earray):
+    def _find_exchange_buddy(self, Earray):
         """
         This function determines the exchange pattern alternating swaps with right and left neighbours.
         An exchange pattern array is constructed, filled with self.no_exchange_int which
         signifies that no exchange should be attempted. This value is replaced with the
-        rank of the processor with which to perform the swap if the swap attempt is successful.
+        rank of the processor with which to perassert(self.initialised is True)form the swap if the swap attempt is successful.
         The exchange partner is then scattered to the other processors.
         """        
         if (self.rank == 0):
             assert(len(Earray)==len(self.Tarray))
-            exchange_pattern = np.array([self.no_exchange_int for i in xrange(len(Earray))],dtype='i')
+            exchange_pattern = np.array([self.no_exchange_int for i in xrange(len(Earray))],dtype='int32')
             for i in xrange(0,self.nproc,2):
-                print 'exchange choice: ',self.exchange_pattern[self.exchange_choice] #this is a print statement that has to be removed after initial implementation
+                print 'exchange choice: ',self.exchange_dic[self.exchange_choice] #this is a print statement that has to be removed after initial implementation
                 E1 = Earray[i]
                 T1 = self.Tarray[i]
                 E2 = Earray[i+self.exchange_choice]
@@ -126,46 +130,87 @@ class MPI_Parallel_Tempering(object):
                 deltabeta = 1./T1 - 1./T2
                 w = min( 1. , np.exp( deltaE * deltabeta ) )
                 rand = np.random.rand()
+                print "E1 {0} T1 {1} E2 {2} T2 {3} w {4}".format(E1,T1,E2,T2,w) 
                 if w > rand:
                     #accept exchange
-                    self.ex_outstream.write("accepting exchange %d %d %g %g %g %g %d\n" % (i, i+self.exchange_choice, E1, E2, T1, T2, self.ptiter))
+                    self.ex_outstream.write("accepting exchange %d %d %g %g %g %g %d\n" % (self.nodelist[i], self.nodelist[i+self.exchange_choice], E1, E2, T1, T2, self.ptiter))
                     assert(exchange_pattern[i] == self.no_exchange_int)                      #verify that is not using the same processor twice for swaps
                     assert(exchange_pattern[i+self.exchange_choice] == self.no_exchange_int) #verify that is not using the same processor twice for swaps
-                    exchange_pattern[i] = i+self.exchange_choice
-                    exchange_pattern[i+self.exchange_choice] = i
+                    exchange_pattern[i] = self.nodelist[i+self.exchange_choice]
+                    exchange_pattern[i+self.exchange_choice] = self.nodelist[i]
             ############end of for loop###############
         else:
             exchange_pattern = None
-            
-        self.exchange_choice *= -1 #swap direction of exchange choice
-        return exchange_pattern
         
-    def _exchange_pairs(self, Earray, data):
+        self.exchange_choice *= -1 #swap direction of exchange choice
+        print "exchange_pattern",exchange_pattern
+        #now scatter the exchange pattern so that everybody knows who their buddy is
+        exchange_buddy = self._scatter_single_value(np.array(exchange_pattern,dtype='d'))
+        print "processor {0} buddy {1}".format(self.rank,exchange_buddy)
+        return int(exchange_buddy)
+        
+    def _exchange_pairs(self, exchange_buddy, data):
         """
-        return data from the pair exchange
+        return data from the pair exchange, otherwise return the data unaltered
         """
-        exchange_pattern = self._find_exchange_pairs(Earray)
-        exchange_buddy = self._scatter_single_value(exchange_pattern)
         if (exchange_buddy != self.no_exchange_int):
             #the replica sends to exchange_partner and receives from it (replacing source with self.rank would cause a deadlock)
             data = self._point_to_point_exchange_replace(exchange_buddy, exchange_buddy, data) 
         return data
     
-    def one_iteration(self, T, config):
+    def one_iteration(self, config, energy):
+        """Perform one parallel tempering iteration, this consists of the following steps:
+        *set the coordinates
+        *set the control parameter, say temperature
+        *run the MCrunner for a predefined number of steps
+        *collect the results (energy and new coordinates)
+        *send the energy of the last configuration to root
+        *perform pair exchanges
+        *return the configuration, possibly after swap
+        """
+        #set configuration and temperature at which want to perform run
+        self.mcrunner.set_config(config, energy)
+        #now run the MCMC walk
         self.mcrunner.run()
-        # E, data = -> return energy and configuration from MCMC and configuration
+        #collect the results
+        result = self.mcrunner.get_results()
+        E = result.energy
+        config = result.coords
+        print "processor {0} energy {1}".format(self.rank, E)
+        #gather energies, only root will do so
         Earray = self._gather_energies(E)
-        config = self._exchange_pairs(Earray, config)
-        return config
+        print "Earray", Earray
+        #find and perform swaps
+        exchange_buddy = self._find_exchange_buddy(Earray)
+        #swap configurations
+        self.config = self._exchange_pairs(exchange_buddy, config)
+        #swap energies
+        E = self._exchange_pairs(exchange_buddy, np.array([E],dtype='d'))
+        assert(len(E)==1)
+        self.energy = E[0]
+        #increase parallel tempering count
+        self.ptiter = self.ptiter + 1
+        
+
+    def _initialise(self):
+        self._get_temps()
+        self.config, self.energy = self.mcrunner.get_config()
+        self.T = self._scatter_single_value(self.Tarray)
+        print "processor {0} temperature {1}".format(self.rank,self.T)
+        self.mcrunner.set_control(self.T)
+        self.initialised = True
             
-    def run(self, max_ptiter = 1000000):
-        # -> config_array find configurations
-        Tarray = self._get_temps()
-        # config = -> scatter/broadcast initial configurations
-        T = self._scatter_single_value(Tarray)
-        while self.ptiter < max_ptiter:
-            config = self.one_iteration(T, config)
-            
+    def run(self, max_ptiter = 10):
+        """Run consists of multiple single iterations, plus initialisation if MPI_PT has not been initialised yet 
+        """
+        if self.initialised is False:
+            self._initialise()
+        ptiter = 0
+        while ptiter < 10:
+            print "processor {0} iteration {1}".format(self.rank,ptiter)
+            self.one_iteration(self.config, self.energy)
+            ptiter += 1
+
             
             
             

@@ -162,6 +162,7 @@ void MC::run(size_t max_iter)
 {
 	while(_niter < max_iter)
 		this->one_iteration();
+	_niter = 0;
 }
 
 }

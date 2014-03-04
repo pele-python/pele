@@ -32,6 +32,9 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
         cdef np.ndarray[double, ndim=1] ccoords = np.array(coords, dtype=float)
         self.thisptr.set_coordinates(_pele.Array[double](<double*> ccoords.data, ccoords.size), energy)
     
+    def set_temperature(self, T):
+        self.thisptr.set_temperature(T)
+    
     def get_energy(self):
         energy = self.thisptr.get_energy()
         return energy
