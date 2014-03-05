@@ -99,7 +99,6 @@ class MPI_Parallel_Tempering(object):
         """
         assert(dest == source)
         self.comm.Sendrecv_replace(data, dest=dest,source=source)
-        #print "processor {0} p-to-p exchange was successful".format(self.rank)
         return data
     
     @abc.abstractmethod
@@ -114,11 +113,13 @@ class MPI_Parallel_Tempering(object):
         
     def _exchange_pairs(self, exchange_buddy, data):
         """
-        return data from the pair exchange, otherwise return the data unaltered
+        return data from the pair exchange, otherwise return the data unaltered.
+        the replica sends to exchange_partner and receives from it (replacing source with self.rank would cause a deadlock)
         """
         if (exchange_buddy != self.no_exchange_int):
-            #the replica sends to exchange_partner and receives from it (replacing source with self.rank would cause a deadlock)
+            #print "processor {0} p-to-p exchange, old data {1}".format(self.rank, data)
             data = self._point_to_point_exchange_replace(exchange_buddy, exchange_buddy, data) 
+            #print "processor {0} p-to-p exchange, new data {1}".format(self.rank, data)
         return data
     
     @abc.abstractmethod
