@@ -35,7 +35,6 @@ class _base_MCrunner(object):
         """set current configuration and its energy"""
         self.mc.set_coordinates(coords, energy)
     
-    @abc.abstractmethod
     def get_results(self):
         """Must return a result object, generally must contain at least final configuration and energy"""
         res = self.result

@@ -4,6 +4,13 @@ import numpy as np
 import random
 from mpi4py import MPI
 
+"""
+An optimal Parallel Tempering strategy should make sure that all MCMC walks take roughly the same amount of time. 
+Besides this fundamental consideration, note that root (rank=0) is not an evil master but rather an enlightened dictator that leads by
+example: root is responsible to assign jobs and control parameters (e.g. temperature) to the slaves but it also performs MCMC walks along 
+with them. For this reason it might be optimal to give root a set of control parameters for which the simulation is leaner so that it 
+can start doing its own things while the slave finish their work.  
+"""
 class MPI_Parallel_Tempering(object):
     """
     Abstract method for MPI Parallel Tempering calculations, it implements all the basic MPI routines. The initialisation
@@ -21,7 +28,7 @@ class MPI_Parallel_Tempering(object):
         self.max_ptiter = max_ptiter
         self.ex_outstream = open("exchanges", "w")
         self.ptiter = 0
-        self.no_exchange_int = 12345 #this number in exchange pattern means that no exchange should be attempted
+        self.no_exchange_int = -12345 #this NEGATIVE number in exchange pattern means that no exchange should be attempted
         self.initialised = False #flag
         self.nodelist = [i for i in xrange(self.nproc)]
         print "processor {0} ready".format(self.rank)
@@ -122,13 +129,33 @@ class MPI_Parallel_Tempering(object):
             #print "processor {0} p-to-p exchange, new data {1}".format(self.rank, data)
         return data
     
+    def _attempt_exchange(self):
+        """
+        this function brings together all the functions necessary to attempt a configuration swap, it is structures as
+        following:
+        *root gathers the energies from the slaves
+        
+        """
+        #gather energies, only root will do so
+        Earray = self._gather_energies(self.energy)
+        if Earray is not None:
+            print "Earray", Earray
+        #find exchange buddy
+        exchange_buddy = self._find_exchange_buddy(Earray)
+        #attempt configurations swap
+        self.config = self._exchange_pairs(exchange_buddy, self.config)
+        #swap energies
+        E = self._exchange_pairs(exchange_buddy, np.array([self.energy],dtype='d'))
+        assert(len(E)==1)
+        self.energy = E[0]
+    
     @abc.abstractmethod
     def _initialise(self):
         """
         perform all the tasks required prior to starting the computation
         """
     
-    def one_iteration(self, config, energy):
+    def one_iteration(self):
         """Perform one parallel tempering iteration, this consists of the following steps:
         *set the coordinates
         *run the MCrunner for a predefined number of steps
@@ -138,28 +165,16 @@ class MPI_Parallel_Tempering(object):
         *return the configuration, possibly after swap
         """
         #set configuration and temperature at which want to perform run
-        self.mcrunner.set_config(config, energy)
+        self.mcrunner.set_config(self.config, self.energy)
         #now run the MCMC walk
         self.mcrunner.run()
         #collect the results
         result = self.mcrunner.get_results()
-        E = result.energy
-        config = result.coords
-        #gather energies, only root will do so
-        Earray = self._gather_energies(E)
-        if Earray is not None:
-            print "Earray", Earray
-        #find and perform swaps
-        exchange_buddy = self._find_exchange_buddy(Earray)
-        #swap configurations
-        self.config = self._exchange_pairs(exchange_buddy, config)
-        #swap energies
-        E = self._exchange_pairs(exchange_buddy, np.array([E],dtype='d'))
-        assert(len(E)==1)
-        self.energy = E[0]
-        
+        self.energy = result.energy
+        self.config = result.coords
+        self._attempt_exchange()
         #increase parallel tempering count
-        self.ptiter = self.ptiter + 1
+        self.ptiter += 1
             
     def run(self):
         """Run consists of multiple single iterations, plus initialisation if MPI_PT has not been initialised yet 
@@ -169,7 +184,7 @@ class MPI_Parallel_Tempering(object):
         ptiter = 0
         while (ptiter < self.max_ptiter):
             print "processor {0} iteration {1}".format(self.rank,ptiter)
-            self.one_iteration(self.config, self.energy)
+            self.one_iteration()
             ptiter += 1
 
 class MPI_PT_Simple(MPI_Parallel_Tempering):
