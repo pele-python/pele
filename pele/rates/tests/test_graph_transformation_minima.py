@@ -21,7 +21,13 @@ def create_random_database(system, db, nmin=20, nts=10):
     if db.number_of_transition_states() < nts:
         manager = ConnectManager(db, strategy="gmin")
         for i in range(nts):
-            min1, min2 = manager.get_connect_job("gmin")
+            try:
+                min1, min2 = manager.get_connect_job("gmin")
+            except Exception, e:
+                if not "couldn't find any random minima pair to connect" in str(e):
+                    raise
+                
+                    
             connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)
             connect.connect()
         
@@ -35,12 +41,14 @@ def create_random_database(system, db, nmin=20, nts=10):
 class TestGraphRatesLJ(unittest.TestCase):
     def setUp(self):
         current_dir = os.path.dirname(__file__)
-        dbfname = current_dir + "/lj13.db"
-        self.system = LJCluster(13)
+        dbfname = os.path.join(current_dir, "lj15.sqlite")
+        print dbfname
+        self.system = LJCluster(15)
         self.system.params.structural_quench_params.tol = 1e-6
-        self.db = self.system.create_database(dbfname)
+        self.db = self.system.create_database(dbfname, createdb=False)
         
-        create_random_database(self.system, self.db, 10, 20)
+#        create_random_database(self.system, self.db, 10, 20)
+#        get_thermodynamic_information(self.system, self.db, nproc=2)
     
     def do_test_rates(self, A, B):
         rcalc = RateCalculation(self.db.transition_states(), A, B)

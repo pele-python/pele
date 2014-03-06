@@ -5,6 +5,8 @@ import networkx as nx
 from pele.rates import RateCalculation
 from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
+np.random.seed(0)
+
 def make_rates_complete(nnodes=10):
     rates = dict()
     for i in range(nnodes):
