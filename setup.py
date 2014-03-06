@@ -113,6 +113,17 @@ setup(name='pele',
                 "pele.angleaxis",
                 "pele.thermodynamics",
                 "pele.rates",
+                # add the test directories
+                "pele.potentials.tests",
+                "pele.mindist.tests",
+                "pele.optimize.tests",
+                "pele.transition_states.tests",
+                "pele.transition_states.nebtesting",
+                "pele.utils.tests",
+                "pele.storage.tests",
+                "pele.accept_tests.tests",
+                "pele.systems.tests",
+                "pele.rates.tests",
                 ],
       ext_modules=ext_modules
         )
