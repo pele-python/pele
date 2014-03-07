@@ -221,3 +221,11 @@ http://pele-python.github.com/pele/
 Notes
 =====
 pele has recently been renamed from pygmin
+
+Tests
+=====
+Pele has a large suite of unit tests.  They can be run using the nose testing
+framework (which can be installed using pip).  The tests are run from the top
+directory with this command::
+
+  nosetests pele
