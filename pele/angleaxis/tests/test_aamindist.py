@@ -3,7 +3,7 @@ from copy import deepcopy
 from pele.angleaxis.molecules import create_water
 from pele.angleaxis import RBTopology
 import pele.angleaxis.aamindist as am
-import gmin_ as GMIN
+#import gmin_ as GMIN
 from pele.potentials import GMINPotential
 import unittest
 
