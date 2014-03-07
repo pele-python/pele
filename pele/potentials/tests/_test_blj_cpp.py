@@ -9,6 +9,7 @@ import _base_test
 
 class TestBLJ_CPP(_base_test._BaseTest):
     def setUp(self):
+        np.random.seed(1)
         current_dir = os.path.dirname(__file__)
         xyz = read_xyz(open(current_dir + "/_blj13_min.xyz", "r"))
         self.xmin = xyz.coords.reshape(-1).copy()
@@ -24,6 +25,7 @@ class TestBLJ_CPP(_base_test._BaseTest):
 
 class TestBLJ_CPP_Cut(unittest.TestCase):
     def setUp(self):
+        np.random.seed(1)
         self.rcut = 2.5
         self.atom1 = np.random.uniform(-1,1,[3])
         v = vec_random_ndim(3)

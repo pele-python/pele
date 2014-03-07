@@ -65,6 +65,7 @@ class TestNgtCpp10(unittest.TestCase):
 
 class TestNgtCppRandom(unittest.TestCase):
     def do_tst(self, A, B, nnodes=20, nedges=20):
+        np.random.seed(0)
         maker = _MakeRandomGraph(nnodes=20, nedges=20, node_set=A+B)
         maker.run()
         reducer = NGT(maker.rates, A, B, debug=False)  
