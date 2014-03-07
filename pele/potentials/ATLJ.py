@@ -188,6 +188,5 @@ def main():
     #print lj.getEnergyGradientWeave(coords)
 
 if __name__ == "__main__":
-    #main()
-    unittest.main()
+    main()
 

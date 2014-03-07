@@ -77,5 +77,4 @@ def main():
     #quench( coords, lj.getEnergyGradientNumerical, iprint=1 )
 
 if __name__ == "__main__":
-    unittest.main()
     main()
