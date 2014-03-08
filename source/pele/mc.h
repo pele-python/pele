@@ -70,7 +70,8 @@ protected:
 	list< shared_ptr<AcceptTest> > _accept_tests;
 	list< shared_ptr<ConfTest> > _conf_tests;
 	shared_ptr<TakeStep> _takestep;
-	size_t _niter, _neval, _accept_count, _reject_count;
+	size_t _niter, _nitercount, _neval, _accept_count, _reject_count;
+	/*nitercount is the cumulative count, it does not get reset at the end of run*/
 public:
 	/*need to keep these public to make them accessible to tests and actions*/
 	double _stepsize, _temperature, _energy;
@@ -94,12 +95,12 @@ public:
 	double get_energy(){return _energy;}
 	Array<double> get_coords(){return _coords;}
 	double get_accepted_fraction(){return ((double) _accept_count)/(_accept_count+_reject_count);};
-
+	size_t get_iterations_count(){return _nitercount;};
 };
 
 MC::MC(pele::BasePotential * potential, Array<double>& coords, double temperature, double stepsize):
 		_coords(coords.copy()),_trial_coords(_coords.copy()), _potential(potential),
-			_niter(0), _neval(0), _accept_count(0),_reject_count(0),
+			_niter(0), _nitercount(0), _neval(0), _accept_count(0),_reject_count(0),
 		_stepsize(stepsize), _temperature(temperature)
 
 		{
@@ -156,6 +157,7 @@ void MC::one_iteration()
 	}
 
 	++_niter;
+	++_nitercount;
 }
 
 void MC::run(size_t max_iter)

@@ -84,6 +84,7 @@ cdef extern from "pele/mc.h" namespace "pele":
         double get_energy() except +
         _pele.Array[double] get_coords() except +
         double get_accepted_fraction() except +
+        size_t get_iterations_count() except +
 
 cdef class _Cdef_BaseMC(object):
     """This class is the python interface for the c++ pele::MC base class implementation

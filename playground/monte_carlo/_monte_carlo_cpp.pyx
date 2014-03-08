@@ -55,6 +55,10 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
         accepted_frac = self.thisptr.get_accepted_fraction()
         return accepted_frac
     
+    def get_iterations_count(self):
+        n = self.thisptr.get_iterations_count()
+        return n
+    
     def one_iteration(self):
         self.thisptr.one_iteration()
     

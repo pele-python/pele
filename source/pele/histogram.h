@@ -77,11 +77,12 @@ void Histogram::add_entry(double E){
 		_hist.push_back(1);
 		++_niter;
 		_max = floor((E/_bin)+1)*_bin; //round to nearest increment
-		_N = round((_max - _min) / _bin);
+		_N = round((_max - _min) / _bin); //was round
 		if ( (int) _hist.size() != _N)
 		{
 			std::cout<<" E "<<E<<"\n niter "<<_niter<<"\n size "<<_hist.size()<<"\n min "<<_min<<"\n max "<<_max<<"\n i "<<i<<"\n N "<<_N<<std::endl;
 			assert( (int) _hist.size() == _N);
+			exit (EXIT_FAILURE);
 		}
 		std::cout<<"resized above at niter "<<_niter<<std::endl;
 	}
@@ -92,11 +93,12 @@ void Histogram::add_entry(double E){
 		_hist.insert(_hist.begin(),1);
 		++_niter;
 		_min = floor((E/_bin))*_bin; //round to nearest increment
-		_N = round((_max-_min)/_bin);
+		_N = round((_max-_min)/_bin); //was round
 		if ( (int) _hist.size() != _N)
 		{
 			std::cout<<" E "<<E<<"\n niter "<<_niter<<"\n size "<<_hist.size()<<"\n min "<<_min<<"\n max "<<_max<<"\n i "<<i<<"\n N "<<_N<<std::endl;
 			assert( (int) _hist.size() == _N);
+			exit (EXIT_FAILURE);
 		}
 		std::cout<<"resized below at niter "<<_niter<<std::endl;
 	}

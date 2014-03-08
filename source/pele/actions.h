@@ -14,36 +14,44 @@ using std::sqrt;
 
 namespace pele{
 
-/*Adjust Step*/
+/*Adjust Step
+ * 	factor is a multiplicative factor by which the stepsize is adjusted
+ * 	niter determines the number of steps for which the action should take effect
+ * 	factor must be 0<f<1, if rejected make step shorter, if accepted make step longer
+*/
 
 class AdjustStep : public Action {
 protected:
 	double _factor;
+	size_t _niter, _count;
 public:
-	AdjustStep(double factor);
+	AdjustStep(double factor, size_t niter);
 	virtual ~AdjustStep() {}
 	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
 };
 
-AdjustStep::AdjustStep(double factor):
-			_factor(factor){}
+AdjustStep::AdjustStep(double factor, size_t niter):
+			_factor(factor),_niter(niter),_count(0){}
 
 
 void AdjustStep::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
-		if (accepted == false)
-			mc->_stepsize *= _factor;
-		else
-			mc->_stepsize /= _factor;
+	_count = mc->get_iterations_count();
+	if (_count < _niter)
+		{
+			if (accepted == false)
+				mc->_stepsize *= _factor;
+			else
+				mc->_stepsize /= _factor;
+		}
 	}
 
 /*Record energy histogram
- * Note:
- * the histogram has to be initialised elsewhere and it is passed by reference
- * */
+*/
 
 class RecordEnergyHistogram : public Action {
 protected:
 	pele::Histogram * _hist;
+	double _bin;
 public:
 	RecordEnergyHistogram(double min, double max, double bin);
 	virtual ~RecordEnergyHistogram() {delete _hist;}
@@ -59,10 +67,22 @@ public:
 
 	virtual void print_terminal(size_t ntot){
 				_hist->print_terminal(ntot);};
+
+	virtual double get_Emax(){
+		double max_;
+		max_ = _hist->max();
+		return max_;
+	};
+
+	virtual double get_Emin(){
+			double min_;
+			min_ = _hist->min();
+			return min_;
+		};
 };
 
 RecordEnergyHistogram::RecordEnergyHistogram(double min, double max, double bin):
-			_hist(new pele::Histogram(min, max, bin)){}
+			_hist(new pele::Histogram(min, max, bin)),_bin(bin){}
 
 void RecordEnergyHistogram::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
 		_hist->add_entry(energy);

@@ -2,7 +2,7 @@ import numpy as np
 import abc
 from pele.utils.rotations import vector_random_uniform_hypersphere
 from pele.potentials import Harmonic
-from playground.monte_carlo import RandomCoordsDisplacement, MetropolisTest, RecordEnergyHistogram, MC
+from playground.monte_carlo import RandomCoordsDisplacement, MetropolisTest, AdjustStep, RecordEnergyHistogram, MC
 from pele.optimize import Result
 
 class _base_MCrunner(object):
@@ -43,6 +43,14 @@ class _base_MCrunner(object):
         res.accepted_frac = self.mc.get_accepted_fraction()
         return res
     
+    def get_iterations_count(self):
+        n = self.mc.get_iterations_count()
+        return n
+    
+    def get_accepted_fraction(self):
+        n = self.mc.get_accepted_fraction()
+        return n
+    
     @abc.abstractmethod
     def set_control(self):
         """set control parameter, this could be temperature or some other control parameter like stiffness of the harmonic potential"""
@@ -54,19 +62,20 @@ class _base_MCrunner(object):
 class Metropolis_MCrunner(_base_MCrunner):
     """This class is derived from the _base_MCrunner abstract method and performs Metropolis Monte Carlo
     """
-    def __init__(self, potential, coords, temperature=1.0, niter=10000000, stepsize=0.8, hEmin=0, hEmax=25, hbinsize=0.01):
+    def __init__(self, potential, coords, temperature=1.0, niter=1000000, stepsize=0.8, hEmin=0, hEmax=100, hbinsize=0.01, adjustf=0.75, adjustf_niter = 1000):
         super(Metropolis_MCrunner,self).__init__(potential, coords, temperature, stepsize, niter)
                                
         #construct test/action classes       
         self.binsize = hbinsize
         self.histogram = RecordEnergyHistogram(hEmin,hEmax,self.binsize)
+        #self.adjust_step = AdjustStep(adjustf, adjustf_niter)
         self.step = RandomCoordsDisplacement(self.ndim)
         self.metropolis = MetropolisTest()
-        
         #set up mc
         self.mc.set_takestep(self.step)
         self.mc.add_accept_test(self.metropolis)
         self.mc.add_action(self.histogram)
+        #self.mc.add_action(self.adjust_step)
         
     def get_results(self):
         """returns a results object"""
@@ -81,6 +90,14 @@ class Metropolis_MCrunner(_base_MCrunner):
         self.temperature = T
         self.mc.set_temperature(T)
     
+    def dump_histogram(self, fname):
+        Emin, Emax = self.histogram.get_Ebounds()
+        hist = np.array(self.result.hist)
+        Energies, step = np.linspace(Emin,Emax,num=len(hist),endpoint=False,retstep=True)
+        assert(abs(step - self.binsize) < self.binsize/100)
+        #print "energies len {}, hist len {}".format(len(Energies),len(hist))
+        np.savetxt(fname, np.column_stack((Energies,hist)), delimiter='\t') 
+        
     def plot_histogram(self):
         import pylab as plt
         val = [i*self.binsize for i in xrange(len(self.result.hist))]
