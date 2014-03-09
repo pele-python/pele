@@ -1,4 +1,5 @@
 import unittest
+from itertools import izip
 import networkx as nx
 
 from pele.landscape import TSGraph
@@ -103,6 +104,18 @@ class TestGraph(unittest.TestCase):
         
         self.assertTrue(graph.has_edge(1,2))
         self.assertTrue(graph.has_edge(2,1))
+    
+    def test_connected_components(self):
+        tsgraph = TSGraph(self.db)
+        cc = nx.connected_components(tsgraph.graph)
+        for nodes in cc:
+            for u, v in izip(nodes[:-1], nodes[1:]):
+                self.assertTrue(tsgraph.areConnected(u, v))
+                
+        for nodes1, nodes2 in izip(cc[:-1], cc[1:]):
+            for u in nodes1:
+                for v in nodes2:
+                    self.assertFalse(tsgraph.areConnected(u, v))
 
 if __name__ == "__main__":
     unittest.main()

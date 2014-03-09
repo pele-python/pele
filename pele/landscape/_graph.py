@@ -37,40 +37,15 @@ def database2graph(db, Emax=None):
     return g
 
 
-class _ConnectedComponents():
+class _ConnectedComponents(nx.utils.UnionFind):
     """
-    a class to build and maintain a dict of connected components
+    a class to build and maintain the connected components
     
     This allows connections to be determined much more rapidly because
-    the breadth first search algorithm (connected_components, bidirectional_dijkstra) 
-    need be run only infrequently.
-    
-    TODO: I think this could be significantly improved by using a disjoint set
-    data structure (nx.utils.UnionFind)
+    the breadth first search algorithm is slow
     """
-    def __init__(self, graph):
-        self.graph = graph
-        self.need_rebuild = True
-    
-    def build(self):
-        cc = nx.connected_components(self.graph)
-        component = dict()
-        #cc is a list of lists
-        for i in range(len(cc)):
-            nodes = cc[i]
-            for n in nodes:
-                component[n] = i
-        self.component = component
-        self.need_rebuild = False
-    
-    def setRebuild(self):
-        self.need_rebuild = True
-
-    def areConnected(self, min1, min2):
-        if self.need_rebuild:
-            self.build()
-        return self.component[min1] == self.component[min2]
-            
+    def are_connected(self, m1, m2):
+        return self[m1] == self[m2]
 
 class TSGraph(object):
     '''
@@ -110,7 +85,7 @@ class TSGraph(object):
     def __init__(self, database, minima=None, no_edges=False):
         self.graph = nx.Graph()
         self.storage = database
-        self.connected_components = _ConnectedComponents(self.graph)
+        self.connected_components = _ConnectedComponents()
         self.minima = minima
         self.no_edges = no_edges
         self.refresh()
@@ -124,6 +99,7 @@ class TSGraph(object):
         if not self.no_edges:
             for ts in self.storage.transition_states():
                 self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+                self.connected_components.union(ts.minimum1, ts.minimum2)
 
     def _build_from_list(self, minima):
         """
@@ -139,9 +115,9 @@ class TSGraph(object):
                 if m1 in minima:
                     if m2 in minima:
                         self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+                        self.connected_components.union(ts.minimum1, ts.minimum2)
 
     def refresh(self):
-        self.connected_components.setRebuild()
         if self.minima is None:
             self._build_all()
         else:
@@ -151,26 +127,16 @@ class TSGraph(object):
         """
         add a minimum to the database and graph
         """
-        if not self.graph.has_node(minimum):
-            self.connected_components.setRebuild()
         self.graph.add_node(minimum)
         return minimum
     
     def addTransitionState(self, ts):
-        self.connected_components.setRebuild()
         self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+        self.connected_components.union(ts.minimum1, ts.minimum2)
         return ts
             
     def areConnected(self, min1, min2):
-        return self.connected_components.areConnected(min1, min2)
-        try:
-            ret = nx.bidirectional_dijkstra(self.graph, min1, min2)
-            if ret != None:
-                return True
-            else: 
-                return False
-        except nx.NetworkXNoPath:
-            return False
+        return self.connected_components.are_connected(min1, min2)
         
     def getPath(self, min1, min2):
         try:
@@ -183,7 +149,7 @@ class TSGraph(object):
         delete minima2.  all transition states pointing to min2 should
         now point to min1
         """
-        self.connected_components.setRebuild()
+        self.connected_components.union(min1, min2)
         #make the edges of min2 now point to min1
         for v, data in self.graph[min2].iteritems():
             if v == min1: continue
