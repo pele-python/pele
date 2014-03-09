@@ -21,7 +21,13 @@ def create_random_database(system, db, nmin=20, nts=10):
     if db.number_of_transition_states() < nts:
         manager = ConnectManager(db, strategy="gmin")
         for i in range(nts):
-            min1, min2 = manager.get_connect_job("gmin")
+            try:
+                min1, min2 = manager.get_connect_job("gmin")
+            except Exception, e:
+                if not "couldn't find any random minima pair to connect" in str(e):
+                    raise
+                
+                    
             connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)
             connect.connect()
         
@@ -35,14 +41,16 @@ def create_random_database(system, db, nmin=20, nts=10):
 class TestGraphRatesLJ(unittest.TestCase):
     def setUp(self):
         current_dir = os.path.dirname(__file__)
-        dbfname = current_dir + "/lj13.db"
-        self.system = LJCluster(13)
+        dbfname = os.path.join(current_dir, "lj15.sqlite")
+        print dbfname
+        self.system = LJCluster(15)
         self.system.params.structural_quench_params.tol = 1e-6
-        self.db = self.system.create_database(dbfname)
+        self.db = self.system.create_database(dbfname, createdb=False)
         
-        create_random_database(self.system, self.db, 10, 20)
+#        create_random_database(self.system, self.db, 10, 20)
+#        get_thermodynamic_information(self.system, self.db, nproc=2)
     
-    def do_test_rates(self, A, B):
+    def do_tst_rates(self, A, B):
         rcalc = RateCalculation(self.db.transition_states(), A, B)
         rcalc.compute_rates()
         rAB = rcalc.get_rate_AB()
@@ -53,7 +61,7 @@ class TestGraphRatesLJ(unittest.TestCase):
         
         self.assertAlmostEqual(rAB, rAB_la, 7)
         
-    def do_test_committors(self, A, B):
+    def do_tst_committors(self, A, B):
         rcalc = RateCalculation(self.db.transition_states(), A, B)
         rcalc.compute_rates_and_committors()
         committors = rcalc.get_committors()
@@ -67,14 +75,14 @@ class TestGraphRatesLJ(unittest.TestCase):
     def test(self):
         A = [self.db.minima()[0]]
         B = [self.db.minima()[-1]]
-        self.do_test_rates(A, B)
-        self.do_test_committors(A, B)
+        self.do_tst_rates(A, B)
+        self.do_tst_committors(A, B)
 
     def test2(self):
         A = self.db.minima()[:2]
         B = self.db.minima()[2:4]
-        self.do_test_rates(A, B)
-        self.do_test_committors(A, B)
+        self.do_tst_rates(A, B)
+        self.do_tst_committors(A, B)
 
 class TestOptimCollagen(unittest.TestCase):
     """test a known value for a large database"""

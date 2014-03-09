@@ -34,7 +34,7 @@ class TestExactMatchAtomicCluster(unittest.TestCase):
         self.match.transform.permute(x, perm)
         
     
-    def are_same_test(self, tform):
+    def are_same_check(self, tform):
         x1 = self.rc()
         x2 = x1.copy()
         
@@ -56,7 +56,7 @@ class TestExactMatchAtomicCluster(unittest.TestCase):
 #        self.match.apply_transformation(x2_tformed, transform)
 #        self.assertAlmostEqual(np.linalg.norm(x1_bkup - x2_tformed), 0., 3)
         
-    def find_transform_test(self, tform):
+    def find_transform_check(self, tform):
         x1 = self.rc()
         x2 = x1.copy()
         
@@ -79,21 +79,21 @@ class TestExactMatchAtomicCluster(unittest.TestCase):
         self.match.apply_transformation(x2_tformed, transform)
         self.assertAlmostEqual(np.linalg.norm(x1_bkup - x2_tformed), 0., 3)
 
-    def apply_tests(self, tform):
-        self.are_same_test(tform)
-        self.find_transform_test(tform)
+    def apply_checks(self, tform):
+        self.are_same_check(tform)
+        self.find_transform_check(tform)
 
     def test_translate(self):
-        self.apply_tests(self.rtrans)
+        self.apply_checks(self.rtrans)
 
     def test_rotate(self):
-        self.apply_tests(self.rrot)
+        self.apply_checks(self.rrot)
         
     def test_permute(self):
-        self.apply_tests(self.rperm)
+        self.apply_checks(self.rperm)
         
     def test_invert(self):
-        self.apply_tests(self.rperm)
+        self.apply_checks(self.rperm)
     
     def fchain(self, flist):
         """return a function which applies all of the functions in flist to the input"""
@@ -103,28 +103,28 @@ class TestExactMatchAtomicCluster(unittest.TestCase):
         return function_chain
     
     def test_2(self):
-        """run apply_tests() on all combinations of length 2 of the transformations
+        """run apply_checks() on all combinations of length 2 of the transformations
         """
         flist_all = [self.invert, self.rrot, self.rtrans, self.rperm]
         for flist in itertools.product(flist_all, repeat=2):
             tform = self.fchain(flist)
-            self.apply_tests(tform)
+            self.apply_checks(tform)
         
     def test_3(self):
-        """run apply_tests() on all combinations of lenth 3 of the transformations
+        """run apply_checks() on all combinations of lenth 3 of the transformations
         """
         flist_all = [self.invert, self.rrot, self.rtrans, self.rperm]
         for flist in itertools.product(flist_all, repeat=3):
             tform = self.fchain(flist)
-            self.apply_tests(tform)
+            self.apply_checks(tform)
         
     def test_4(self):
-        """run apply_tests() on all combinations of lenth 4 of the transformations
+        """run apply_checks() on all combinations of lenth 4 of the transformations
         """
         flist_all = [self.invert, self.rrot, self.rtrans, self.rperm]
         for flist in itertools.product(flist_all, repeat=4):
             tform = self.fchain(flist)
-            self.apply_tests(tform)
+            self.apply_checks(tform)
         
         
 

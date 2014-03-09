@@ -5,6 +5,7 @@ from pele.rates._kmc import KineticMonteCarlo
 from pele.rates._rate_calculations import GraphReduction
 from test_graph_transformation import _MakeRandomGraph, _three_state_graph
 
+np.random.seed(0)
 
 class TestKMC(unittest.TestCase):
     def setUp(self):

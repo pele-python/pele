@@ -35,7 +35,7 @@ class TestMinimizers_NFEV(unittest.TestCase):
                            ]
         
     
-    def do_test(self, minimizer):
+    def do_tst(self, minimizer):
         self.pot.nfev = 0
         ret = minimizer(self.x0, self.pot)
         self.assertEqual(ret.nfev, self.pot.nfev)
@@ -43,22 +43,22 @@ class TestMinimizers_NFEV(unittest.TestCase):
         
         
     def test1(self):
-        self.do_test(_quench.lbfgs_py)
+        self.do_tst(_quench.lbfgs_py)
 
     def test2(self):
-        self.do_test(_quench.mylbfgs)
+        self.do_tst(_quench.mylbfgs)
 
     def test3(self):
-        self.do_test(_quench.fire)
+        self.do_tst(_quench.fire)
 
     def test4(self):
-        self.do_test(_quench.lbfgs_scipy)
+        self.do_tst(_quench.lbfgs_scipy)
 
     def test5(self):
-        self.do_test(_quench.bfgs_scipy)
+        self.do_tst(_quench.bfgs_scipy)
 
     def test6(self):
-        self.do_test(_quench.cg)
+        self.do_tst(_quench.cg)
 
         
         

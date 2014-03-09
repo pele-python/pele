@@ -9,8 +9,8 @@ class _BaseTest(unittest.TestCase):
 #        print e
 #        self.assertAlmostEqual(e, self.target_E, 4)
     
-    def grad_test(self, x):
-        log= logging.getLogger( "BaseTest.grad_test" )
+    def grad_t(self, x):
+        log= logging.getLogger( "BaseTest.grad_t" )
         e, g = self.pot.getEnergyGradient(x)
         e1 = self.pot.getEnergy(x)
         numerical_g = self.pot.NumericalDerivative(x)
@@ -32,7 +32,7 @@ class _BaseTest(unittest.TestCase):
         log.debug( "g= %r", g)
         self.assertAlmostEqual(e, self.Emin, 4)
         self.assertLess(np.max(np.abs(g)), 1e-3)
-        self.grad_test(self.xmin)
+        self.grad_t(self.xmin)
 
     def test_hess_min(self):
         log= logging.getLogger( "BaseTest.test_hess_min" )
@@ -42,7 +42,7 @@ class _BaseTest(unittest.TestCase):
         self.assertGreater(np.min(eigenvals), -1e-4)
     
     def test_random(self):
-        self.grad_test(self.xmin+self.xrandom)
+        self.grad_t(self.xmin+self.xrandom)
     
 
     
