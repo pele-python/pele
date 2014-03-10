@@ -16,32 +16,38 @@ namespace pele{
 
 /*Adjust Step
  * 	factor is a multiplicative factor by which the stepsize is adjusted
- * 	niter determines the number of steps for which the action should take effect
+ * 	niter determines the number of steps for which the action should take effect (generally
+ * 	we want to adjust the step size only at the beginning of a simulation)
  * 	factor must be 0<f<1, if rejected make step shorter, if accepted make step longer
 */
 
 class AdjustStep : public Action {
 protected:
-	double _factor;
+	double _target, _factor, _acceptedf;
 	size_t _niter, _count;
 public:
-	AdjustStep(double factor, size_t niter);
+	AdjustStep(double target, double factor, size_t niter);
 	virtual ~AdjustStep() {}
 	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
 };
 
-AdjustStep::AdjustStep(double factor, size_t niter):
-			_factor(factor),_niter(niter),_count(0){}
+AdjustStep::AdjustStep(double target, double factor, size_t niter):
+			_target(target),_factor(factor),_acceptedf(0),
+			_niter(niter),_count(0){}
 
 
 void AdjustStep::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
 	_count = mc->get_iterations_count();
 	if (_count < _niter)
 		{
-			if (accepted == false)
+			_acceptedf = mc->get_accepted_fraction();
+			//std::cout<<"acceptance "<<_acceptedf<<std::endl;
+			//std::cout<<"stepsize before"<<mc->_stepsize<<std::endl;
+			if (_acceptedf < _target)
 				mc->_stepsize *= _factor;
 			else
 				mc->_stepsize /= _factor;
+			//std::cout<<"stepsize after"<<mc->_stepsize<<std::endl;
 		}
 	}
 
@@ -87,7 +93,6 @@ RecordEnergyHistogram::RecordEnergyHistogram(double min, double max, double bin)
 void RecordEnergyHistogram::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
 		_hist->add_entry(energy);
 }
-
 
 
 }

@@ -28,5 +28,7 @@ echo "Compiling _takestep_cpp.pyx"
 cython --cplus -a playground/monte_carlo/_takestep_cpp.pyx
 echo "Compiling _accept_test_cpp.pyx"
 cython --cplus -a playground/monte_carlo/_accept_test_cpp.pyx
+echo "Compiling _conf_test_cpp.pyx"
+cython --cplus -a playground/monte_carlo/_conf_test_cpp.pyx
 echo "Compiling _action_cpp.pyx"
 cython --cplus -a playground/monte_carlo/_action_cpp.pyx

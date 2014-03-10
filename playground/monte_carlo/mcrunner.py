@@ -62,20 +62,20 @@ class _base_MCrunner(object):
 class Metropolis_MCrunner(_base_MCrunner):
     """This class is derived from the _base_MCrunner abstract method and performs Metropolis Monte Carlo
     """
-    def __init__(self, potential, coords, temperature=1.0, niter=1000000, stepsize=0.8, hEmin=0, hEmax=100, hbinsize=0.01, adjustf=0.75, adjustf_niter = 1000):
+    def __init__(self, potential, coords, temperature=1.0, niter=1000000, stepsize=0.8, hEmin=0, hEmax=100, hbinsize=0.01, acceptance=0.5, adjustf=0.9999, adjustf_niter = 5000):
         super(Metropolis_MCrunner,self).__init__(potential, coords, temperature, stepsize, niter)
                                
         #construct test/action classes       
         self.binsize = hbinsize
         self.histogram = RecordEnergyHistogram(hEmin,hEmax,self.binsize)
-        #self.adjust_step = AdjustStep(adjustf, adjustf_niter)
+        self.adjust_step = AdjustStep(acceptance, adjustf, adjustf_niter)
         self.step = RandomCoordsDisplacement(self.ndim)
         self.metropolis = MetropolisTest()
         #set up mc
         self.mc.set_takestep(self.step)
         self.mc.add_accept_test(self.metropolis)
         self.mc.add_action(self.histogram)
-        #self.mc.add_action(self.adjust_step)
+        self.mc.add_action(self.adjust_step)
         
     def get_results(self):
         """returns a results object"""

@@ -60,6 +60,16 @@ public:
 
 /*
  * Monte Carlo
+ * _coords and _trialcoords are arrays that store coordinates and trial coordinates respectively
+ * _potential is on object of Pele::BasePotential type that defines the interaction potential
+ * _E_reject_count is the count of rejections due to an energy test (e.g. Metropolis)
+ * _conf_reject_count is the count of rejections due to a configuration test (e.g. spherical container)
+ * _niter is the count of steps whithin a MCMC run, it is reset to zero at the end of the run
+ * _nitercoutn is the cumulative number of MCMC steps taken by the class
+ * _neval is the number of energy evaluations
+ * _stepsize the is the stepsize to pass to takestep
+ * _temperature is the temperature at which the simulation is performed
+ * _energy is the current energy of the system
  */
 
 class MC {
@@ -70,7 +80,7 @@ protected:
 	list< shared_ptr<AcceptTest> > _accept_tests;
 	list< shared_ptr<ConfTest> > _conf_tests;
 	shared_ptr<TakeStep> _takestep;
-	size_t _niter, _nitercount, _neval, _accept_count, _reject_count;
+	size_t _niter, _nitercount, _neval, _accept_count, _E_reject_count, _conf_reject_count;
 	/*nitercount is the cumulative count, it does not get reset at the end of run*/
 public:
 	/*need to keep these public to make them accessible to tests and actions*/
@@ -94,14 +104,14 @@ public:
 	}
 	double get_energy(){return _energy;}
 	Array<double> get_coords(){return _coords;}
-	double get_accepted_fraction(){return ((double) _accept_count)/(_accept_count+_reject_count);};
+	double get_accepted_fraction(){return ((double) _accept_count)/(_accept_count+_E_reject_count+_conf_reject_count);};
 	size_t get_iterations_count(){return _nitercount;};
 };
 
 MC::MC(pele::BasePotential * potential, Array<double>& coords, double temperature, double stepsize):
 		_coords(coords.copy()),_trial_coords(_coords.copy()), _potential(potential),
-			_niter(0), _nitercount(0), _neval(0), _accept_count(0),_reject_count(0),
-		_stepsize(stepsize), _temperature(temperature)
+			_niter(0), _nitercount(0), _neval(0), _accept_count(0),_E_reject_count(0),
+			_conf_reject_count(0), _stepsize(stepsize), _temperature(temperature)
 
 		{
 			_energy = _potential->get_energy(_coords);
@@ -123,6 +133,7 @@ void MC::one_iteration()
 	for (auto& test : _conf_tests ){
 		success = test->test(_trial_coords, this);
 		if (success == false)
+			++_conf_reject_count;
 			break;
 	}
 
@@ -135,7 +146,7 @@ void MC::one_iteration()
 			success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
 			if (success == false)
 			{
-				++_reject_count;
+				++_E_reject_count;
 				break;
 			}
 		}
@@ -149,7 +160,7 @@ void MC::one_iteration()
 			++_accept_count;
 		}
 
-		/*consider moving actions outside the accepted configuration test condition
+		/*consider moving actions outside the accepted configuration test condition?
 		(currently if conf test is rejected we don't record the state)*/
 		for (auto& action : _actions){
 				action->action(_coords, _energy, success, this);

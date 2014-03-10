@@ -17,8 +17,8 @@ if __name__ == "__main__":
     start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
     
     #Parallel Tempering
-    mcrunner = Metropolis_MCrunner(potential, start_coords, niter=1e5, adjustf_niter = 10000)
-    ptrunner = MPI_PT_Simple(mcrunner, 0.2,1.6, max_ptiter=1000, pfreq=1000)
+    mcrunner = Metropolis_MCrunner(potential, start_coords, niter=1e5, adjustf_niter = 50000)
+    ptrunner = MPI_PT_Simple(mcrunner, 0.2,1.6, max_ptiter=10000, pfreq=1000)
     ptrunner.run()
             
             

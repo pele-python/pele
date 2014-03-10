@@ -13,13 +13,13 @@ from _pele_mc cimport cppAction,_Cdef_Action
 
 cdef extern from "pele/actions.h" namespace "pele": 
     cdef cppclass cppAdjustStep "pele::AdjustStep":
-        cppAdjustStep(double, size_t) except +
+        cppAdjustStep(double, double, size_t) except +
         
 cdef class _Cdef_AdjustStep(_Cdef_Action):
     """This class is the python interface for the c++ pele::AdjustStep action class implementation
     """
-    def __cinit__(self, factor, niter):
-        self.thisptr = <cppAction*>new cppAdjustStep(factor, niter)
+    def __cinit__(self, target, factor, niter):
+        self.thisptr = <cppAction*>new cppAdjustStep(target, factor, niter)
         
 class AdjustStep(_Cdef_AdjustStep):
     """This class is the python interface for the c++ AdjustStep implementation.
