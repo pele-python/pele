@@ -2,7 +2,7 @@ import numpy as np
 import abc
 from pele.utils.rotations import vector_random_uniform_hypersphere
 from pele.potentials import Harmonic
-from playground.monte_carlo import RandomCoordsDisplacement, MetropolisTest, AdjustStep, RecordEnergyHistogram, MC
+from playground.monte_carlo import RandomCoordsDisplacement, MetropolisTest, CheckSphericalContainer, AdjustStep, RecordEnergyHistogram, MC
 from pele.optimize import Result
 
 class _base_MCrunner(object):
@@ -62,7 +62,7 @@ class _base_MCrunner(object):
 class Metropolis_MCrunner(_base_MCrunner):
     """This class is derived from the _base_MCrunner abstract method and performs Metropolis Monte Carlo
     """
-    def __init__(self, potential, coords, temperature=1.0, niter=1000000, stepsize=0.8, hEmin=0, hEmax=100, hbinsize=0.01, acceptance=0.5, adjustf=0.9999, adjustf_niter = 5000):
+    def __init__(self, potential, coords, temperature=1.0, niter=1000000, stepsize=0.8, hEmin=0, hEmax=100, hbinsize=0.01, radius=5.0, acceptance=0.5, adjustf=0.9999, adjustf_niter = 5000):
         super(Metropolis_MCrunner,self).__init__(potential, coords, temperature, stepsize, niter)
                                
         #construct test/action classes       
@@ -71,9 +71,11 @@ class Metropolis_MCrunner(_base_MCrunner):
         self.adjust_step = AdjustStep(acceptance, adjustf, adjustf_niter)
         self.step = RandomCoordsDisplacement(self.ndim)
         self.metropolis = MetropolisTest()
+        self.conftest = CheckSphericalContainer(radius)
         #set up mc
         self.mc.set_takestep(self.step)
         self.mc.add_accept_test(self.metropolis)
+        self.mc.add_conf_test(self.conftest)
         self.mc.add_action(self.histogram)
         self.mc.add_action(self.adjust_step)
         
@@ -156,13 +158,13 @@ if __name__ == "__main__":
     potential = Harmonic(origin,k)
     
     #build start configuration
-    Emax = 25
+    Emax = 1
     start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
     
     #MCMC 
     test = Metropolis_MCrunner(potential, start_coords)
     test.run()
     results = test.get_results()
-    test.print_dos_from_histogram()
-    test.print_analytical_dos()
+    #test.print_dos_from_histogram()
+    #test.print_analytical_dos()
     test.plot_histogram()

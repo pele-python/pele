@@ -13,7 +13,7 @@ if __name__ == "__main__":
     potential = Harmonic(origin,k)
     
     #build start configuration
-    Emax = 25
+    Emax = 2
     start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
     
     #Parallel Tempering
