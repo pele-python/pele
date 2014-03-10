@@ -62,7 +62,7 @@ class _base_MCrunner(object):
 class Metropolis_MCrunner(_base_MCrunner):
     """This class is derived from the _base_MCrunner abstract method and performs Metropolis Monte Carlo
     """
-    def __init__(self, potential, coords, temperature=1.0, niter=1000000, stepsize=0.8, hEmin=0, hEmax=100, hbinsize=0.01, radius=5.0, acceptance=0.5, adjustf=0.9999, adjustf_niter = 5000):
+    def __init__(self, potential, coords, temperature=1.0, niter=1000000, stepsize=0.1, hEmin=-20, hEmax=1000, hbinsize=0.01, radius=2.5, acceptance=0.5, adjustf=0.9999, adjustf_niter = 5000):
         super(Metropolis_MCrunner,self).__init__(potential, coords, temperature, stepsize, niter)
                                
         #construct test/action classes       
