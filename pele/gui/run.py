@@ -2,16 +2,18 @@ import matplotlib
 matplotlib.use("QT4Agg")
 import traceback    
 import sys
-import copy
 import numpy as np
 
 from PyQt4 import QtCore, QtGui, Qt
 
+from pele.landscape import TSGraph
+from pele.storage import Database
+from pele.utils.events import Signal
+from pele.config import config
+
 from pele.gui.MainWindow import Ui_MainWindow 
 from pele.gui.bhrunner import BHManager
-from pele.landscape import TSGraph
 from pele.gui.dlg_params import DlgParams
-from pele.config import config
 from pele.gui.ui.dgraph_dlg import DGraphDialog
 #from pele.gui.connect_explorer_dlg import ConnectExplorerDialog
 from pele.gui.connect_run_dlg import ConnectViewer
@@ -19,9 +21,7 @@ from pele.gui.takestep_explorer import TakestepExplorer
 from pele.gui.normalmode_browser import NormalmodeBrowser
 from pele.gui._list_views import ListViewManager
 from pele.gui._cv_viewer import HeatCapacityViewer
-from pele.rates import RateCalculation
 from pele.gui._rate_gui import RateViewer
-from pele.utils.events import Signal
 from pele.gui.graph_viewer import GraphViewDialog
 
 
@@ -135,11 +135,12 @@ class MainGUI(QtGui.QMainWindow):
         connect to an existing database at location filename
         """
         self.list_manager.clear()
-        
-        if isinstance(database, basestring):
-            self.system.database = self.system.create_database(db=database)
-        else:
+
+        # note: database can be either Database, or string, or QString        
+        if isinstance(database, Database):
             self.system.database = database
+        else:
+            self.system.database = self.system.create_database(db=database)
         #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
