@@ -48,14 +48,13 @@ if __name__ == "__main__":
         compare_potentials(pot1, pot2, coords)
     except ImportError:
         print "could not import c++ potential"
-        raise
-#    try:
-#        from c_potential.mypotential import MyPotC
-#        pot2 = MyPotC(natoms)
-#        print "testing c potential"
-#        compare_potentials(pot1, pot2, coords)
-#    except ImportError:
-#        print "could not import c potential"
+    try:
+        from c_potential.mypotential import MyPotC
+        pot2 = MyPotC(natoms)
+        print "testing c potential"
+        compare_potentials(pot1, pot2, coords)
+    except ImportError:
+        print "could not import c potential"
     try:
         from fortran_iso_c_bindings.mypotential import MyPotIsoC
         print "testing fortran potential with iso_c_bindings"
@@ -63,4 +62,3 @@ if __name__ == "__main__":
         compare_potentials(pot1, pot2, coords)
     except ImportError:
         print "could not import fortran iso_c_bindings potential"
-        raise
