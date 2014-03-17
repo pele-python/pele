@@ -18,38 +18,56 @@ namespace pele{
  * 	factor is a multiplicative factor by which the stepsize is adjusted
  * 	niter determines the number of steps for which the action should take effect (generally
  * 	we want to adjust the step size only at the beginning of a simulation)
+ * 	navg is the number of steps over which the acceptance is averaged
  * 	factor must be 0<f<1, if rejected make step shorter, if accepted make step longer
 */
 
 class AdjustStep : public Action {
 protected:
 	double _target, _factor, _acceptedf;
-	size_t _niter, _count;
+	size_t _niter, _navg, _count, _naccepted, _nrejected;
 public:
-	AdjustStep(double target, double factor, size_t niter);
+	AdjustStep(double target, double factor, size_t niter, size_t navg);
 	virtual ~AdjustStep() {}
 	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
 };
 
-AdjustStep::AdjustStep(double target, double factor, size_t niter):
+AdjustStep::AdjustStep(double target, double factor, size_t niter, size_t navg):
 			_target(target),_factor(factor),_acceptedf(0),
-			_niter(niter),_count(0){}
+			_niter(niter),_navg(navg),_count(0),_naccepted(0),
+			_nrejected(0){}
 
 
 void AdjustStep::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
+
 	_count = mc->get_iterations_count();
+
 	if (_count < _niter)
 		{
-			_acceptedf = mc->get_accepted_fraction();
-			//std::cout<<"acceptance "<<_acceptedf<<std::endl;
-			//std::cout<<"stepsize before"<<mc->_stepsize<<std::endl;
-			if (_acceptedf < _target)
-				mc->_stepsize *= _factor;
+			if (accepted == true)
+				++_naccepted;
 			else
-				mc->_stepsize /= _factor;
-			//std::cout<<"stepsize after"<<mc->_stepsize<<std::endl;
+				++_nrejected;
+
+			if(_count % _navg == 0)
+			{
+				_acceptedf = (double) _naccepted / (_naccepted + _nrejected);
+
+				//std::cout<<"acceptance "<<_acceptedf<<std::endl;
+				//std::cout<<"stepsize before"<<mc->_stepsize<<std::endl;
+				if (_acceptedf < _target)
+					mc->_stepsize *= _factor;
+				else
+					mc->_stepsize /= _factor;
+				//std::cout<<"stepsize after"<<mc->_stepsize<<std::endl;
+
+				//now reset to zero memory of acceptance and rejection
+				_naccepted = 0;
+				_nrejected = 0;
+			}
+
 		}
-	}
+}
 
 /*Record energy histogram
 */

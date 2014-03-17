@@ -38,7 +38,7 @@ public:
 RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N):
 		_seed(std::chrono::system_clock::now().time_since_epoch().count()),
 		_generator(_seed), _distribution(0.0,1.0), _dr(N),
-		_N(N), _rootN(sqrt((double) N))
+		_N(N)
 		{
 			std::cout<<"seed TakeStep:"<<_seed<<std::endl;
 		}
@@ -46,14 +46,12 @@ RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N):
 void RandomCoordsDisplacement::takestep(Array<double>& coords, double stepsize, MC * mc){
 	double norm2=0;
 	double rand;
-	assert(coords.size() == _N);
+	//assert(coords.size() == _N);
 	for(size_t i=0; i<_N;++i){
 		rand = _distribution(_generator);
-		_dr[i] = rand;
-		norm2 += rand*rand;
+		_dr[i] = rand*stepsize;
 	}
 
-	_dr *= _rootN * stepsize/sqrt(norm2);
 	coords += _dr;
 }
 

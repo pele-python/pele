@@ -106,6 +106,7 @@ public:
 	Array<double> get_coords(){return _coords;}
 	double get_accepted_fraction(){return ((double) _accept_count)/(_accept_count+_E_reject_count+_conf_reject_count);};
 	size_t get_iterations_count(){return _nitercount;};
+	double get_stepsize(){return _stepsize;};
 };
 
 MC::MC(pele::BasePotential * potential, Array<double>& coords, double temperature, double stepsize):

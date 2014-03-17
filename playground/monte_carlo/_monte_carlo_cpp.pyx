@@ -59,6 +59,10 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
         n = self.thisptr.get_iterations_count()
         return n
     
+    def get_stepsize(self):
+        s = self.thisptr.get_stepsize()
+        return s
+    
     def one_iteration(self):
         self.thisptr.one_iteration()
     

@@ -234,11 +234,16 @@ class MPI_PT_Simple(MPI_Parallel_Tempering):
             directory = "{0}/{1}".format(base_directory,self.rank)
             fname = "{0}/parameters".format(directory)
             accepted_frac = self.mcrunner.get_accepted_fraction()
-            stepsize = self.mcrunner.stepsize
+            init_stepsize = self.mcrunner.stepsize
+            fin_stepsize = self.mcrunner.get_stepsize()
+            ncount = self.mcrunner.get_iterations_count()
             f = open(fname,'a')
             f.write('node:\t{0}\n'.format(self.rank))
             f.write('temperature:\t{0}\n'.format(self.T))
-            f.write('step size:\t{0}\n'.format(stepsize))
+            f.write('initial step size:\t{0}\n'.format(init_stepsize))
+            f.write('adapted step size:\t{0}\n'.format(fin_stepsize))
+            f.write('PT iterations:\t{0}\n'.format(self.ptiter))
+            f.write('total MC iterations:\t{0}\n'.format(ncount))
             f.write('acceptance fraction:\t{0}\n'.format(accepted_frac))
             f.close()
             
@@ -252,7 +257,8 @@ class MPI_PT_Simple(MPI_Parallel_Tempering):
         if (self.rank == 0):
             CTE = np.exp( np.log( self.Tmax / self.Tmin ) / (self.nproc-1) )
             Tarray = [self.Tmin * CTE**i for i in range(self.nproc)]
-            self.Tarray = np.array(Tarray[::-1],dtype='d') 
+            #Tarray = np.linspace(self.Tmin,self.Tmax,num=self.nproc)
+            self.Tarray = np.array(Tarray[::-1],dtype='d')
         else:
             self.Tarray = None
     
@@ -277,7 +283,8 @@ class MPI_PT_Simple(MPI_Parallel_Tempering):
         """        
         if (self.rank == 0):
             assert(len(Earray)==len(self.Tarray))
-            exchange_pattern = np.array([self.no_exchange_int for i in xrange(len(Earray))],dtype='int32')
+            exchange_pattern = np.empty(len(Earray),dtype='int32')
+            exchange_pattern.fill(self.no_exchange_int)
             self.anyswap = False
             for i in xrange(0,self.nproc,2):
                 print 'exchange choice: ',self.exchange_dic[self.exchange_choice] #this is a print statement that has to be removed after initial implementation

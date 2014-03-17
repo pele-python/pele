@@ -40,7 +40,6 @@ class _base_MCrunner(object):
         res = self.result
         res.coords = self.mc.get_coords()
         res.energy = self.mc.get_energy()
-        res.accepted_frac = self.mc.get_accepted_fraction()
         return res
     
     def get_iterations_count(self):
@@ -51,6 +50,10 @@ class _base_MCrunner(object):
         n = self.mc.get_accepted_fraction()
         return n
     
+    def get_stepsize(self):
+        s = self.mc.get_stepsize()
+        return s
+    
     @abc.abstractmethod
     def set_control(self):
         """set control parameter, this could be temperature or some other control parameter like stiffness of the harmonic potential"""
@@ -60,111 +63,130 @@ class _base_MCrunner(object):
         self.mc.run(self.niter)
         
 class Metropolis_MCrunner(_base_MCrunner):
-    """This class is derived from the _base_MCrunner abstract method and performs Metropolis Monte Carlo
+    """This class is derived from the _base_MCrunner abstract
+     method and performs Metropolis Monte Carlo
     """
-    def __init__(self, potential, coords, temperature=1.0, niter=1000000, stepsize=0.1, hEmin=-20, hEmax=1000, hbinsize=0.01, radius=2.5, acceptance=0.5, adjustf=0.9999, adjustf_niter = 5000):
-        super(Metropolis_MCrunner,self).__init__(potential, coords, temperature, stepsize, niter)
+    def __init__(self, potential, coords, temperature=1.0, niter=1e5,
+                  stepsize=1, hEmin=0, hEmax=100, hbinsize=0.01, radius=2.5,
+                   acceptance=0.5, adjustf=0.9, adjustf_niter = 1e4, adjustf_navg = 100):
+        
+        super(Metropolis_MCrunner,self).__init__(potential, coords, temperature,
+                                                  stepsize, niter)
                                
         #construct test/action classes       
         self.binsize = hbinsize
         self.histogram = RecordEnergyHistogram(hEmin,hEmax,self.binsize)
-        self.adjust_step = AdjustStep(acceptance, adjustf, adjustf_niter)
+        self.adjust_step = AdjustStep(acceptance, adjustf, adjustf_niter, adjustf_navg)
         self.step = RandomCoordsDisplacement(self.ndim)
         self.metropolis = MetropolisTest()
         self.conftest = CheckSphericalContainer(radius)
         #set up mc
         self.mc.set_takestep(self.step)
         self.mc.add_accept_test(self.metropolis)
-        self.mc.add_conf_test(self.conftest)
+        #self.mc.add_conf_test(self.conftest)
         self.mc.add_action(self.histogram)
         self.mc.add_action(self.adjust_step)
         
-    def get_results(self):
-        """returns a results object"""
-        res = self.result
-        res.coords = self.mc.get_coords()
-        res.energy = self.mc.get_energy()
-        res.accepted_frac = self.mc.get_accepted_fraction()
-        res.hist = self.histogram.get_histogram()
-        return res
-    
     def set_control(self, T):
         self.temperature = T
         self.mc.set_temperature(T)
     
     def dump_histogram(self, fname):
         Emin, Emax = self.histogram.get_Ebounds()
-        hist = np.array(self.result.hist)
+        histl = self.histogram.get_histogram()
+        hist = np.array(histl)
         Energies, step = np.linspace(Emin,Emax,num=len(hist),endpoint=False,retstep=True)
         assert(abs(step - self.binsize) < self.binsize/100)
         #print "energies len {}, hist len {}".format(len(Energies),len(hist))
-        np.savetxt(fname, np.column_stack((Energies,hist)), delimiter='\t') 
+        np.savetxt(fname, np.column_stack((Energies,hist)), delimiter='\t')
+        #return hist 
         
     def plot_histogram(self):
         import pylab as plt
-        val = [i*self.binsize for i in xrange(len(self.result.hist))]
-        plt.hist(val, weights=self.result.hist,bins=len(self.result.hist))
+        hist = self.histogram.get_histogram()
+        val = [i*self.binsize for i in xrange(len(hist))]
+        plt.hist(val, weights=hist,bins=len(hist))
         plt.show()
     
-    def print_dos_from_histogram(self,Emin=7.0,Emax=11.0):    
-        """print the dos from histogram data"""
-        
-        # Open a file
-        myfile = open("harmonic_dos.dat", "wb")
-        
-        E=Emin
-        sumh = 0.0
-        hist = self.result.hist
-        n = int((Emax-Emin)/self.binsize)
-        nstart = int(Emin/self.binsize)
-        for i in xrange(nstart,nstart+n):
-            sumh += hist[i] * np.exp(self.temperature*E) * self.binsize
-            E += self.binsize
-                      
-        E = Emin
-        for i in xrange(nstart,nstart+n):
-            h = hist[i] * np.exp(self.temperature*E) / sumh
-            myfile.write("{0} \t {1} \n".format(E,h))
-            E += self.binsize
-        
-        myfile.close()
-        
-    def print_analytical_dos(self,Emin=7.0,Emax=11.0):
-        """prints the analytical dos"""
-        
-        myfile = open("analytical_dos.dat", "wb")
-        
-        E=Emin
-        n = int((Emax-Emin)/self.binsize)
-        nstart = int(Emin/self.binsize)
-        sumh=0.0
-        for i in xrange(nstart,nstart+n):
-            sumh += pow(E,self.ndim/2.0-1.0) * self.binsize
-            E += self.binsize
-              
-        E = Emin
-        for i in xrange(nstart,nstart+n):
-            h = pow(E,self.ndim/2.0-1.0)/sumh
-            myfile.write("{0} \t {1} \n".format(E,h))
-            E += self.binsize
-        
-        myfile.close()
+#    def print_dos_from_histogram(self,Emin=7.0,Emax=11.0):    
+#        """print the dos from histogram data"""
+#        
+#        # Open a file
+#        myfile = open("harmonic_dos.dat", "wb")
+#        
+#        E=Emin
+#        sumh = 0.0
+#        histl = self.histogram.get_histogram()
+#        hist = np.array(histl)
+#        n = int((Emax-Emin)/self.binsize)
+#        nstart = int(Emin/self.binsize)
+#        for i in xrange(nstart,nstart+n):
+#            sumh += hist[i] * np.exp(self.temperature*E) * self.binsize
+#            E += self.binsize
+#                      
+#        E = Emin
+#        for i in xrange(nstart,nstart+n):
+#            h = hist[i] * np.exp(self.temperature*E) / sumh
+#            myfile.write("{0} \t {1} \n".format(E,h))
+#            E += self.binsize
+#        
+#        myfile.close()
+#        
+#    def print_analytical_dos(self,Emin=7.0,Emax=11.0):
+#        """prints the analytical dos"""
+#        
+#        myfile = open("analytical_dos.dat", "wb")
+#        
+#        E=Emin
+#        n = int((Emax-Emin)/self.binsize)
+#        nstart = int(Emin/self.binsize)
+#        sumh=0.0
+#        for i in xrange(nstart,nstart+n):
+#            sumh += pow(E,self.ndim/2.0-1.0) * self.binsize
+#            E += self.binsize
+#              
+#        E = Emin
+#        for i in xrange(nstart,nstart+n):
+#            h = pow(E,self.ndim/2.0-1.0)/sumh
+#            myfile.write("{0} \t {1} \n".format(E,h))
+#            E += self.binsize
+#        
+#        myfile.close()
         
 if __name__ == "__main__":
     #build harmonic potential
-    ndim = 20
+    ndim = 3
     k=1
     origin = np.zeros(ndim)
     potential = Harmonic(origin,k)
     
+    cvs = []
     #build start configuration
-    Emax = 1
-    start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
+    temperatures = [0.2,0.27,0.362,0.487,0.65,0.88,1.18,1.6]
+    stepsizes=[0.378,0.467,0.467,0.577,0.712,0.88,0.88,1.34]
+    for k,T in enumerate(temperatures):
+        for j in xrange(100):
+            Emax = 3
+            start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
+            
+            #MCMC 
+            test = Metropolis_MCrunner(potential, start_coords,  temperature=T, niter=1e7, stepsize=stepsizes[k], adjustf = 0.9, adjustf_niter = 1000, radius=10000)
+            test.run()
+            #collect the results
+            #test.plot_histogram()
+            hist = test.dump_histogram('histogram_T12')
+            binenergy = [i*0.01 for i in xrange(len(hist))]
+            
+            average = np.average(binenergy,weights=hist)
+                
+            average2 = np.average(np.square(binenergy),weights=hist)
+                
+            cv =  (average2 - average**2)/(T**2) + 1.5
+            
+            print 'heat capacity ',cv
     
-    #MCMC 
-    test = Metropolis_MCrunner(potential, start_coords)
-    test.run()
-    results = test.get_results()
-    #test.print_dos_from_histogram()
-    #test.print_analytical_dos()
-    test.plot_histogram()
+            cvs.append(cv)
+        temp = np.empty(len(cvs))
+        temp.fill(T)
+        np.savetxt('heat_capacities_{}'.format(T), np.column_stack((temp,cvs)),delimiter='\t')
+        cvs =[]
