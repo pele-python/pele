@@ -82,13 +82,5 @@ bool EnergyWindowTest::test(Array<double> &trial_coords, double trial_energy, Ar
 	return success;
 }
 
-class CheckSphericalContainer:public ConfTest{
-protected:
-	double _radius2;
-public:
-	CheckSphericalContainer(double radius);
-	virtual ~CheckSphericalContainer(){}
-};
-
 }
 #endif

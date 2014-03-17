@@ -161,8 +161,7 @@ void MC::one_iteration()
 			++_accept_count;
 		}
 
-		/*consider moving actions outside the accepted configuration test condition?
-		(currently if conf test is rejected we don't record the state)*/
+		/*currently if conf test is rejected we don't record the state*/
 		for (auto& action : _actions){
 				action->action(_coords, _energy, success, this);
 			}

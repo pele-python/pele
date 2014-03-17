@@ -1,75 +1,44 @@
 import numpy as np
-import abc
+from playground.monte_carlo import _base_MCrunner, RandomCoordsDisplacement, MetropolisTest 
+from playground.monte_carlo import CheckSphericalContainer, AdjustStep, RecordEnergyHistogram
 from pele.utils.rotations import vector_random_uniform_hypersphere
 from pele.potentials import Harmonic
-from playground.monte_carlo import RandomCoordsDisplacement, MetropolisTest, CheckSphericalContainer, AdjustStep, RecordEnergyHistogram, MC
-from pele.optimize import Result
 
-class _base_MCrunner(object):
-    """
-    Abstract method for MC runners, all MC runners should derive from this base class
-    *potential should be constructed outside of this class and passed
-    *coords are the initial coordinates
-    *niter is the total number of MC iterations
-    """
-    __metaclass__ = abc.ABCMeta
-    
-    def __init__(self, potential, coords, temperature, stepsize, niter):
-        self.potential = potential
-        self.ndim = len(coords)
-        self.start_coords = coords
-        self.temperature = temperature
-        self.stepsize = stepsize/np.sqrt(self.ndim)
-        self.niter = niter
-        self.mc = MC(self.potential, self.start_coords, self.temperature, self.stepsize)    
-        self.result = Result()
-        self.result.message = []
-        
-    def get_config(self):
-        """Return the coordinates of the current configuration and its associated energy"""
-        coords = self.mc.get_coords()
-        energy = self.mc.get_energy()
-        return coords, energy
-    
-    def set_config(self, coords, energy):
-        """set current configuration and its energy"""
-        self.mc.set_coordinates(coords, energy)
-    
-    def get_results(self):
-        """Must return a result object, generally must contain at least final configuration and energy"""
-        res = self.result
-        res.coords = self.mc.get_coords()
-        res.energy = self.mc.get_energy()
-        return res
-    
-    def get_iterations_count(self):
-        n = self.mc.get_iterations_count()
-        return n
-    
-    def get_accepted_fraction(self):
-        n = self.mc.get_accepted_fraction()
-        return n
-    
-    def get_stepsize(self):
-        s = self.mc.get_stepsize()
-        return s
-    
-    @abc.abstractmethod
-    def set_control(self):
-        """set control parameter, this could be temperature or some other control parameter like stiffness of the harmonic potential"""
-    
-    def run(self):
-        """run MCMC walk"""
-        self.mc.run(self.niter)
-        
+"""
+pele::MCrunner
+
+Specific implementations of MCrunners, generally they should follow this pattern:
+* construct _base_MCrunner
+* construct takestep, accept test, configuration test, action classes
+* add these to the pele::MC class
+* write a set_control function, for example you may want to set the temperature 
+  (this is done this way to be compatible with the MPI replica exchange/parallel tempering
+  implementation)
+* add other functionalities that you may find desirable, e.g. dump histogram to file
+"""
+
 class Metropolis_MCrunner(_base_MCrunner):
     """This class is derived from the _base_MCrunner abstract
-     method and performs Metropolis Monte Carlo
+     method and performs Metropolis Monte Carlo. This particular implementation of the algorithm: 
+     * runs niter steps per run call 
+     * takes steps by sampling a random vector in a n dimensional hypersphere (n is the number of coordinates);
+     * adjust the step size for the first adjustf_niter steps (averaging the acceptance for adjust_navg steps
+       and adjusting the stepsize by a factor of 'adjustf') to meet some target acceptance 'acceptance'.
+     * configuration test: accept if within a spherical box of radius 'radius'
+     * acceptance test: metropolis for some particular temperature
+     * record energy histogram (the energy histogram is resizable, but the bounds are defined by hEmin and hEmax,
+       furthermore the bin size is set with hbinsize. Care must be taken because the array is resizable, if the step size
+       is small and extremely high or low energies are sampled the memory for the histogram will be reallocated and this 
+       might cause a badalloc error, if trying to allocate a huge array. If you are sampling unwanted extremely high or low energies
+       then you might want to add a pele::EnergyWindow test that guarantees to keep you within a specific energy range and/or 
+       make the stepsize larger or you might want to re-think about your simulation. Generally you shouldn't be 
+       spanning energies that differ by several orders of magnitude, if that is the case, resizable or not resizable arrays are
+       not the problem, you'd be incurring in memory issues no matter what you do, unless you write to disk at every iteration)
     """
     def __init__(self, potential, coords, temperature=1.0, niter=1e5,
                   stepsize=1, hEmin=0, hEmax=100, hbinsize=0.01, radius=2.5,
                    acceptance=0.5, adjustf=0.9, adjustf_niter = 1e4, adjustf_navg = 100):
-        
+        #construct base class
         super(Metropolis_MCrunner,self).__init__(potential, coords, temperature,
                                                   stepsize, niter)
                                
@@ -80,7 +49,8 @@ class Metropolis_MCrunner(_base_MCrunner):
         self.step = RandomCoordsDisplacement(self.ndim)
         self.metropolis = MetropolisTest()
         self.conftest = CheckSphericalContainer(radius)
-        #set up mc
+        
+        #set up pele:MC
         self.mc.set_takestep(self.step)
         self.mc.add_accept_test(self.metropolis)
         self.mc.add_conf_test(self.conftest)
@@ -88,20 +58,30 @@ class Metropolis_MCrunner(_base_MCrunner):
         self.mc.add_action(self.adjust_step)
         
     def set_control(self, T):
+        """set temperature, canonical control parameter"""
         self.temperature = T
         self.mc.set_temperature(T)
     
     def dump_histogram(self, fname):
+        """write histogram to fname"""
         Emin, Emax = self.histogram.get_Ebounds()
         histl = self.histogram.get_histogram()
         hist = np.array(histl)
         Energies, step = np.linspace(Emin,Emax,num=len(hist),endpoint=False,retstep=True)
         assert(abs(step - self.binsize) < self.binsize/100)
-        #print "energies len {}, hist len {}".format(len(Energies),len(hist))
         np.savetxt(fname, np.column_stack((Energies,hist)), delimiter='\t')
-        #return hist 
+    
+    def get_histogram(self):
+        """returns a energy list and a histogram list"""
+        Emin, Emax = self.histogram.get_Ebounds()
+        histl = self.histogram.get_histogram()
+        hist = np.array(histl)
+        Energies, step = np.linspace(Emin,Emax,num=len(hist),endpoint=False,retstep=True)
+        assert(abs(step - self.binsize) < self.binsize/100)
+        return Energies, hist
         
-    def plot_histogram(self):
+    def show_histogram(self):
+        """shows the histogram"""
         import pylab as plt
         hist = self.histogram.get_histogram()
         val = [i*self.binsize for i in xrange(len(hist))]
@@ -173,9 +153,8 @@ if __name__ == "__main__":
             test = Metropolis_MCrunner(potential, start_coords,  temperature=T, niter=1e7, stepsize=stepsizes[k], adjustf = 0.9, adjustf_niter = 1000, radius=10000)
             test.run()
             #collect the results
-            #test.plot_histogram()
-            hist = test.dump_histogram('histogram_T12')
-            binenergy = [i*0.01 for i in xrange(len(hist))]
+            #test.show_histogram()
+            binenergy, hist = test.get_histogram()
             
             average = np.average(binenergy,weights=hist)
                 
