@@ -1,10 +1,5 @@
-import numpy as np
-cimport numpy as np
-from pele.potentials import _pele, _pythonpotential
-from pele.potentials cimport _pele
 cimport cython
 import sys
-from libcpp cimport bool as cbool
 from _pele_mc cimport cppTakeStep,_Cdef_TakeStep
 
 #===============================================================================

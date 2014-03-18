@@ -134,38 +134,58 @@ class Metropolis_MCrunner(_base_MCrunner):
 #        myfile.close()
         
 if __name__ == "__main__":
-    #build harmonic potential
-    ndim = 3
-    k=1
-    origin = np.zeros(ndim)
-    potential = Harmonic(origin,k)
+#    #build harmonic potential
+#    ndim = 3
+#    k=1
+#    origin = np.zeros(ndim)
+#    potential = Harmonic(origin,k)
+#    
+#    Emax = 3
+#    start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
+#    
+#    #MCMC 
+#    test = Metropolis_MCrunner(potential, start_coords,  temperature=0.2, niter=1e8, stepsize=1, adjustf = 0.9, adjustf_niter = 1000, radius=10000)
+#    test.run()
+#    #collect the results
+#    #test.show_histogram()
     
-    cvs = []
+    from pele.optimize import LBFGS_CPP
+    from pele.potentials import LJ
+    import time
+    
+    nparticles = 31
+    ndim = nparticles * 3
+    pot = LJ()
     #build start configuration
-    temperatures = [0.2,0.27,0.362,0.487,0.65,0.88,1.18,1.6]
-    stepsizes=[0.378,0.467,0.467,0.577,0.712,0.88,0.88,1.34]
-    for k,T in enumerate(temperatures):
-        for j in xrange(100):
-            Emax = 3
-            start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
-            
-            #MCMC 
-            test = Metropolis_MCrunner(potential, start_coords,  temperature=T, niter=1e7, stepsize=stepsizes[k], adjustf = 0.9, adjustf_niter = 1000, radius=10000)
-            test.run()
-            #collect the results
-            #test.show_histogram()
-            binenergy, hist = test.get_histogram()
-            
-            average = np.average(binenergy,weights=hist)
-                
-            average2 = np.average(np.square(binenergy),weights=hist)
-                
-            cv =  (average2 - average**2)/(T**2) + 1.5
-            
-            print 'heat capacity ',cv
+#    Emax = 3
+#    xrand = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
+#    e, grad = pot.getEnergyGradient(xrand)
+#    lbfgs = LBFGS_CPP(xrand, pot, energy=e, gradient=grad)
+#    res = lbfgs.run()
+#    print res.coords
+    #start_coords6 = np.array([1,1,1,1,1,-1,1,-1,1,-1,1,1,1,-1,-1,-1,1,-1])
+    start_coords = np.array([-0.77948249,-0.1563986,1.14725592,1.13438658,0.68768745,-1.01400641,
+                               0.03889983,0.2795145,0.50005794,1.55312878,-0.80384468,0.0632129,
+                               1.28113216,1.08082843,0.01281633,-0.51859703,-1.14310736,-0.642079,
+                               -0.74400707,0.77214221,-0.78159587,-0.39137658,0.88003139,1.31292537,
+                               -1.41406151,0.73317798,0.91291251,-1.36912846,-0.86828268,0.03339192,
+                               -0.28968205,-0.50094652,-1.53635188,0.68474233,-0.60974182,0.72916478,
+                               1.06365511,0.41981176,0.88587376,0.52582521,-0.97592561,-0.30476306,
+                               -0.11140428,-0.10604705,-0.53162998,-0.32339665,-0.71798417,0.33592738,
+                               0.3464601,-1.37722735,-1.30968712,-0.12150755,-1.02059093,1.37780291,
+                               -1.15472311,-0.25677839,-0.88824791,0.25781619,0.90928202,-0.35987022,
+                               0.45434582,1.56354974,-1.20590082,0.41425323,1.2978406,0.67123977,
+                               -0.96365292,0.14063053,0.1074299,0.11754687,0.52112844,-1.41019987,
+                               0.89892003,0.05030545,-0.14158607,-0.61370579,1.16407401,0.25903675,
+                               0.76311679,-0.34748748,-1.16950066,0.2565447,0.01168485,1.54106553,
+                               0.24769915,-1.6362588,0.5225262,-0.85826368,-1.5714381,0.73425918,
+                               -1.64261439,0.95488524,-0.16297967]) 
     
-            cvs.append(cv)
-        temp = np.empty(len(cvs))
-        temp.fill(T)
-        np.savetxt('heat_capacities_{}'.format(T), np.column_stack((temp,cvs)),delimiter='\t')
-        cvs =[]
+    #Parallel Tempering
+    test = Metropolis_MCrunner(pot, start_coords,  temperature=0.2, niter=1e7, hEmin=-140, stepsize=0.05, adjustf = 0.9, adjustf_niter = 3000, radius=3)
+    start=time.time()
+    test.run()
+    end=time.time()
+    print end-start
+    
+    

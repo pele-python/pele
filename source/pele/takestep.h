@@ -24,8 +24,7 @@ class RandomCoordsDisplacement:public TakeStep{
 protected:
 	size_t _seed;
 	std::mt19937_64 _generator;
-	std::normal_distribution<double> _distribution;
-	pele::Array<double> _dr;
+	std::uniform_real_distribution<double> _distribution;
 	size_t _N;
 	double _rootN;
 public:
@@ -37,9 +36,9 @@ public:
 
 RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N):
 		_seed(std::chrono::system_clock::now().time_since_epoch().count()),
-		_generator(_seed), _distribution(0.0,1.0), _dr(N),
-		_N(N)
+		_generator(_seed), _distribution(0.0,1.0), _N(N)
 		{
+
 			std::cout<<"seed TakeStep:"<<_seed<<std::endl;
 		}
 
@@ -49,10 +48,8 @@ void RandomCoordsDisplacement::takestep(Array<double>& coords, double stepsize, 
 	//assert(coords.size() == _N);
 	for(size_t i=0; i<_N;++i){
 		rand = _distribution(_generator);
-		_dr[i] = rand*stepsize;
+		coords[i] += rand*stepsize;
 	}
-
-	coords += _dr;
 }
 
 }

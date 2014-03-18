@@ -2,11 +2,8 @@
 #cython: wraparound=False
 ##aaacython: noncheck=True
 
-import numpy as np
-cimport numpy as np 
-from pele.potentials import _pele, _pythonpotential
+from pele.potentials import _pele
 from pele.potentials cimport _pele
-from pele.potentials import _pythonpotential
 from libcpp cimport bool as cbool
 
 #===============================================================================

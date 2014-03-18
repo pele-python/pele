@@ -1,10 +1,8 @@
 import numpy as np
 cimport numpy as np
-from pele.potentials import _pele, _pythonpotential
+from pele.potentials import _pele
 from pele.potentials cimport _pele
-from pele.optimize import Result
 cimport cython
-from pele.potentials import _pythonpotential
 import sys
 from libcpp cimport bool as cbool
 from _pele_mc cimport *
