@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 import os
 import tempfile
 import numpy as np
@@ -49,7 +48,7 @@ class ParallelTemperingTest(unittest.TestCase):
                         
             cv =  (average2 - average**2)/(T**2) + float(self.ndim)/2
                         
-            self.assertLess(cv-self.ndim,0.001)
+            self.assertLess(cv-self.ndim,0.001,'failed for replica of rank {}'.format(i))
             
 if __name__ == "__main__":
     logging.basicConfig(filename='ParallelTempering.log',level=logging.DEBUG)  
