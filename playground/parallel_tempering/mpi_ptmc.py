@@ -100,8 +100,13 @@ class MPI_PT_RLhandshake(_MPI_Parallel_Tempering):
         status = self.mcrunner.get_status()
         status.frac_acc_swaps = float(self.swap_accepted_count) / (self.swap_accepted_count+self.swap_rejected_count)
         f = self.status_stream
+        if self.ptiter == 0:
+            f.write('#')
+            for key, value in status.iteritems():
+                f.write('{:<12}\t'.format(key))
+            f.write('\n')
         for key, value in status.iteritems():
-            f.write('{0}: {1} '.format(key,value))
+            f.write('{:>12.3f}\t'.format(value))
         f.write('\n')
     
     def _get_temps(self):
