@@ -22,7 +22,7 @@ class _base_MCrunner(object):
         self.ndim = len(coords)
         self.start_coords = coords
         self.temperature = temperature
-        self.stepsize = stepsize/np.sqrt(self.ndim)
+        self.stepsize = stepsize
         self.niter = niter
         self.mc = MC(self.potential, self.start_coords, self.temperature, self.stepsize)    
         self.result = Result()

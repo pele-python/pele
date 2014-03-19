@@ -48,7 +48,7 @@ void RandomCoordsDisplacement::takestep(Array<double>& coords, double stepsize, 
 	//assert(coords.size() == _N);
 	for(size_t i=0; i<_N;++i){
 		rand = _distribution(_generator);
-		coords[i] += rand*stepsize;
+		coords[i] += (0.5-rand)*stepsize;
 	}
 }
 
