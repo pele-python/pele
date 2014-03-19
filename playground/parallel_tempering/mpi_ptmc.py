@@ -5,6 +5,7 @@ import random
 import os
 from mpi4py import MPI
 from playground.parallel_tempering import _MPI_Parallel_Tempering
+import time
 
 """
 An optimal Parallel Tempering strategy should make sure that all MCMC walks take roughly the same amount of time. 
@@ -13,6 +14,21 @@ example: root is responsible to assign jobs and control parameters (e.g. tempera
 with them. For this reason it might be optimal to give root a set of control parameters for which the simulation is leaner so that it 
 can start doing its own things while the slaves finish their work.  
 """
+
+def trymakedir(path):
+    """this function deals with common race conditions"""
+    while True:
+        if not os.path.exists(path): 
+            try:
+                os.makedirs(path)
+                break
+            except OSError, e:
+                if e.errno != 17:
+                    raise
+                # time.sleep might help here
+                pass
+        else:
+            break
 
 class MPI_PT_RLhandshake(_MPI_Parallel_Tempering):
     """
@@ -25,50 +41,68 @@ class MPI_PT_RLhandshake(_MPI_Parallel_Tempering):
         self.exchange_choice = random.choice(self.exchange_dic.keys()) 
         self.anyswap = False #set to true if any swap will happen
         self.permutation_pattern = np.zeros(self.nproc,dtype='int32') #this is useful to print exchange permutations
-        
+            
     def _print(self):
-        base_directory = "ptmc_results"
-        if (self.ptiter == 0 and self.rank == 0):
-            if not os.path.exists(base_directory):
-                os.makedirs(base_directory)
+        self._all_dump_histogram()
+        self._all_print_status()
+        self._master_print_permutations()
+    
+    def _print_initialise(self):
+        base_directory = self.base_directory
+        trymakedir(base_directory)
+        directory = "{0}/{1}".format(base_directory,self.rank)
+        trymakedir(directory)
+        self._master_print_temperatures()
+        self._all_print_parameters()
+        self.status_stream = open('{0}/{1}'.format(directory,'status'),'w')
+        if self.rank == 0:
+            self.permutations_stream = open(r'{0}/rem_permutations'.format(base_directory),'w')
+    
+    def _master_print_temperatures(self):
+        base_directory = self.base_directory
+        if (self.rank == 0):
             fname = "{0}/temperatures".format(base_directory)
             np.savetxt(fname, self.Tarray, delimiter='\t')
+    
+    def _all_print_parameters(self):
+        base_directory = self.base_directory
+        directory = "{0}/{1}".format(base_directory,self.rank)
+        fname = "{0}/{1}".format(directory, 'parameters')
+        init_stepsize = self.mcrunner.stepsize
+        ncount = self.mcrunner.niter
+        f = open(fname,'a')
+        f.write('node:\t{0}\n'.format(self.rank))
+        f.write('temperature:\t{0}\n'.format(self.T))
+        f.write('initial step size:\t{0}\n'.format(init_stepsize))
+        f.write('PT iterations:\t{0}\n'.format(self.max_ptiter))
+        f.write('total MC iterations:\t{0}\n'.format(ncount))
+        f.close()
         
+    def _master_print_permutations(self):
         if (self.rank == 0 and self.anyswap == True):
-            fname = "{0}/rem_permutations".format(base_directory)
-            f = open(fname,'a')
             iteration = self.mcrunner.get_iterations_count()
+            f = self.permutations_stream
             f.write('{0}\t'.format(iteration))
             for p in self.permutation_pattern:
                 f.write('{0}\t'.format(p))
             f.write('\n')
-            f.close()
-                        
+   
+    def _all_dump_histogram(self):
+        """for this to work the directory must have been initialised in _print_initialise"""
+        base_directory = self.base_directory
         if (self.ptiter % self.pfreq == 0):
             directory = "{0}/{1}".format(base_directory,self.rank)
-            if not os.path.exists(directory):
-                os.makedirs(directory)
             iteration = self.mcrunner.get_iterations_count()
             fname = "{0}/Visits.his.{1}".format(directory,float(iteration))
             self.mcrunner.dump_histogram(fname)
-        
-        if (self.ptiter == self.max_ptiter-1):
-            directory = "{0}/{1}".format(base_directory,self.rank)
-            fname = "{0}/parameters".format(directory)
-            accepted_frac = self.mcrunner.get_accepted_fraction()
-            init_stepsize = self.mcrunner.stepsize
-            fin_stepsize = self.mcrunner.get_stepsize()
-            ncount = self.mcrunner.get_iterations_count()
-            f = open(fname,'a')
-            f.write('node:\t{0}\n'.format(self.rank))
-            f.write('temperature:\t{0}\n'.format(self.T))
-            f.write('initial step size:\t{0}\n'.format(init_stepsize))
-            f.write('adapted step size:\t{0}\n'.format(fin_stepsize))
-            f.write('PT iterations:\t{0}\n'.format(self.ptiter))
-            f.write('total MC iterations:\t{0}\n'.format(ncount))
-            f.write('acceptance fraction:\t{0}\n'.format(accepted_frac))
-            f.close()
-            
+    
+    def _all_print_status(self):
+        status = self.mcrunner.get_status()
+        status.frac_acc_swaps = float(self.swap_accepted_count) / (self.swap_accepted_count+self.swap_rejected_count)
+        f = self.status_stream
+        for key, value in status.iteritems():
+            f.write('{0}: {1} '.format(key,value))
+        f.write('\n')
     
     def _get_temps(self):
         """
@@ -94,6 +128,7 @@ class MPI_PT_RLhandshake(_MPI_Parallel_Tempering):
         if self.verbose:
             print "processor {0} temperature {1}".format(self.rank,self.T)
         self.mcrunner.set_control(self.T)
+        self._print_initialise()
         self.initialised = True
     
     def _find_exchange_buddy(self, Earray):

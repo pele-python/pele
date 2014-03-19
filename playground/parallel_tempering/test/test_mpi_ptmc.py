@@ -14,9 +14,9 @@ if __name__ == "__main__":
     start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
     
     #Parallel Tempering
-    mcrunner = Metropolis_MCrunner(potential, start_coords, niter=1e6, stepsize=0.5, hEmax = 2000, adjustf = 0.95, 
-                                   adjustf_niter = 5000, radius=1000)
-    ptrunner = MPI_PT_RLhandshake(mcrunner, 0.2,1.6, max_ptiter=10, pfreq=2, verbose=True)
+    mcrunner = Metropolis_MCrunner(potential, start_coords, niter=1e6, stepsize=0.5, hEmax = 100, adjustf = 0.95, 
+                                   adjustf_niter = 5000, radius=100000)
+    ptrunner = MPI_PT_RLhandshake(mcrunner, 0.2,1.6, max_ptiter=101, pfreq=20, verbose=False)
     ptrunner.run()
             
             

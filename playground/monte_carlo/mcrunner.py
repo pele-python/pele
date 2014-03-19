@@ -1,8 +1,6 @@
 import numpy as np
 from playground.monte_carlo import _base_MCrunner, RandomCoordsDisplacement, MetropolisTest 
 from playground.monte_carlo import CheckSphericalContainer, AdjustStep, RecordEnergyHistogram
-from pele.utils.rotations import vector_random_uniform_hypersphere
-from pele.potentials import Harmonic
 
 """
 pele::MCrunner
@@ -134,20 +132,7 @@ class Metropolis_MCrunner(_base_MCrunner):
 #        myfile.close()
         
 if __name__ == "__main__":
-#    #build harmonic potential
-#    ndim = 3
-#    k=1
-#    origin = np.zeros(ndim)
-#    potential = Harmonic(origin,k)
-#    
-#    Emax = 3
-#    start_coords = vector_random_uniform_hypersphere(ndim) * np.sqrt(2*Emax) #coordinates sampled from Pow(ndim)
-#    
-#    #MCMC 
-#    test = Metropolis_MCrunner(potential, start_coords,  temperature=0.2, niter=1e8, stepsize=1, adjustf = 0.9, adjustf_niter = 1000, radius=10000)
-#    test.run()
-#    #collect the results
-#    #test.show_histogram()
+    #to run harmonic potential go to tests
     
     from pele.optimize import LBFGS_CPP
     from pele.potentials import LJ
@@ -164,6 +149,7 @@ if __name__ == "__main__":
 #    res = lbfgs.run()
 #    print res.coords
     #start_coords6 = np.array([1,1,1,1,1,-1,1,-1,1,-1,1,1,1,-1,-1,-1,1,-1])
+    #lj31 stable coords, from minimisation, convenient keeping it in this form for profiling
     start_coords = np.array([-0.77948249,-0.1563986,1.14725592,1.13438658,0.68768745,-1.01400641,
                                0.03889983,0.2795145,0.50005794,1.55312878,-0.80384468,0.0632129,
                                1.28113216,1.08082843,0.01281633,-0.51859703,-1.14310736,-0.642079,
@@ -182,7 +168,8 @@ if __name__ == "__main__":
                                -1.64261439,0.95488524,-0.16297967]) 
     
     #Parallel Tempering
-    test = Metropolis_MCrunner(pot, start_coords,  temperature=0.2, niter=1e7, hEmin=-140, stepsize=0.05, adjustf = 0.9, adjustf_niter = 3000, radius=3)
+    test = Metropolis_MCrunner(pot, start_coords,  temperature=0.2, niter=1e7, hEmin=-140, 
+                               stepsize=0.05, adjustf = 0.9, adjustf_niter = 3000, radius=3)
     start=time.time()
     test.run()
     end=time.time()

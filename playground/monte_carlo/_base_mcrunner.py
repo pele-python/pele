@@ -64,6 +64,16 @@ class _base_MCrunner(object):
         s = self.mc.get_stepsize()
         return s
     
+    def get_status(self):
+        status = Result()
+        status.iteration = self.mc.get_iterations_count()
+        status.acc_frac = self.mc.get_accepted_fraction()
+        status.conf_reject_frac = self.mc.get_conf_rejection_fraction()
+        status.step_size = self.mc.get_stepsize()
+        status.energy = self.mc.get_energy()
+        status.neval = self.mc.get_neval()
+        return status
+    
     def run(self):
         """run MCMC walk"""
         self.mc.run(self.niter)

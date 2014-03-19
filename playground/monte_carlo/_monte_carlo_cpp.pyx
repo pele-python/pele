@@ -57,6 +57,14 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
         n = self.thisptr.get_iterations_count()
         return n
     
+    def get_conf_rejection_fraction(self):
+        f = self.thisptr.get_conf_rejection_fraction()
+        return f
+    
+    def get_neval(self):
+        neval = self.thisptr.get_neval()
+        return neval
+    
     def get_stepsize(self):
         s = self.thisptr.get_stepsize()
         return s

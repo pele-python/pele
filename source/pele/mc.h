@@ -70,6 +70,7 @@ public:
  * _stepsize the is the stepsize to pass to takestep
  * _temperature is the temperature at which the simulation is performed
  * _energy is the current energy of the system
+ * _success records whether the step has been accepted or rejected
  */
 
 class MC {
@@ -81,10 +82,11 @@ protected:
 	list< shared_ptr<ConfTest> > _conf_tests;
 	shared_ptr<TakeStep> _takestep;
 	size_t _niter, _nitercount, _neval, _accept_count, _E_reject_count, _conf_reject_count;
+	bool _success;
 	/*nitercount is the cumulative count, it does not get reset at the end of run*/
 public:
 	/*need to keep these public to make them accessible to tests and actions*/
-	double _stepsize, _temperature, _energy;
+	double _stepsize, _temperature, _energy, _trial_energy;
 
 	MC(pele::BasePotential * potential, Array<double>& coords, double temperature, double stepsize);
 
@@ -103,27 +105,30 @@ public:
 		_energy = energy;
 	}
 	double get_energy(){return _energy;}
+	double get_trial_energy(){return _trial_energy;}
 	Array<double> get_coords(){return _coords;}
 	double get_accepted_fraction(){return ((double) _accept_count)/(_accept_count+_E_reject_count+_conf_reject_count);};
+	double get_conf_rejection_fraction(){return ((double)_conf_reject_count)/_nitercount;};
 	size_t get_iterations_count(){return _nitercount;};
+	size_t get_neval(){return _neval;};
 	double get_stepsize(){return _stepsize;};
 };
 
 MC::MC(pele::BasePotential * potential, Array<double>& coords, double temperature, double stepsize):
 		_coords(coords.copy()),_trial_coords(_coords.copy()), _potential(potential),
 			_niter(0), _nitercount(0), _neval(0), _accept_count(0),_E_reject_count(0),
-			_conf_reject_count(0), _stepsize(stepsize), _temperature(temperature)
+			_conf_reject_count(0), _success(true),_stepsize(stepsize), _temperature(temperature)
 
 		{
 			_energy = _potential->get_energy(_coords);
+			_trial_energy = _energy;
 			//std::cout<<"Energy is "<<_energy<<std::endl;
 			++_neval;
 		}
 
 void MC::one_iteration()
 {
-	double trial_energy;
-	bool success = true;
+	_success = true;
 
 	for(size_t i=0; i<_coords.size();++i){
 		_trial_coords[i] = _coords[i];
@@ -132,38 +137,38 @@ void MC::one_iteration()
 	_takestep->takestep(_trial_coords, _stepsize, this);
 
 	for (auto& test : _conf_tests ){
-		success = test->test(_trial_coords, this);
-		if (success == false)
+		_success = test->test(_trial_coords, this);
+		if (_success == false)
 			++_conf_reject_count;
 			break;
 	}
 
-	if (success == true)
+	if (_success == true)
 	{
-		trial_energy = _potential->get_energy(_trial_coords);
+		_trial_energy = _potential->get_energy(_trial_coords);
 		++_neval;
 		
 		for (auto& test : _accept_tests ){
-			success = test->test(_trial_coords, trial_energy, _coords, _energy, _temperature, this);
-			if (success == false)
+			_success = test->test(_trial_coords, _trial_energy, _coords, _energy, _temperature, this);
+			if (_success == false)
 			{
 				++_E_reject_count;
 				break;
 			}
 		}
 
-		if (success == true){
+		if (_success == true){
 			for(size_t i=0;i<_coords.size();++i)
 			{
 			  _coords[i] = _trial_coords[i];
 			}
-			_energy = trial_energy;
+			_energy = _trial_energy;
 			++_accept_count;
 		}
 
 		/*currently if conf test is rejected we don't record the state*/
 		for (auto& action : _actions){
-				action->action(_coords, _energy, success, this);
+				action->action(_coords, _energy, _success, this);
 			}
 	}
 

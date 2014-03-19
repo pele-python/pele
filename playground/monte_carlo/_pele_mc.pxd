@@ -82,6 +82,8 @@ cdef extern from "pele/mc.h" namespace "pele":
         _pele.Array[double] get_coords() except +
         double get_accepted_fraction() except +
         size_t get_iterations_count() except +
+        double get_conf_rejection_fraction() except +
+        size_t get_neval() except +
         double get_stepsize() except +
 
 cdef class _Cdef_BaseMC(object):

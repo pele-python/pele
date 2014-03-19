@@ -34,6 +34,10 @@ class _MPI_Parallel_Tempering(object):
         self.no_exchange_int = -12345 #this NEGATIVE number in exchange pattern means that no exchange should be attempted
         self.initialised = False #flag
         self.nodelist = [i for i in xrange(self.nproc)]
+        self.swap_accepted_count = 0
+        self.swap_rejected_count = 0
+        self.base_directory = os.path.join(os.getcwd(),'ptmc_results')
+        
         print "processor {0} ready".format(self.rank)
     
     @abc.abstractmethod
@@ -49,7 +53,7 @@ class _MPI_Parallel_Tempering(object):
     @abc.abstractmethod
     def _initialise(self):
         """
-        perform all the tasks required prior to starting the computation
+        perform all the tasks required prior to starting the computation, including initialising the output files
         """
     
     @abc.abstractmethod
@@ -73,8 +77,9 @@ class _MPI_Parallel_Tempering(object):
         self.config = result.coords
         self._attempt_exchange()
         #print and increase parallel tempering count
-        self._print() 
+        self._print()
         self.ptiter += 1
+         
             
     def run(self):
         """Run consists of multiple single iterations, plus initialisation if MPI_PT has not been initialised yet 
@@ -173,6 +178,9 @@ class _MPI_Parallel_Tempering(object):
             #print "processor {0} p-to-p exchange, old data {1}".format(self.rank, data)
             data = self._point_to_point_exchange_replace(exchange_buddy, exchange_buddy, data) 
             #print "processor {0} p-to-p exchange, new data {1}".format(self.rank, data)
+            self.swap_accepted_count+=1
+        else:
+            self.swap_rejected_count+=1
         return data
     
     def _attempt_exchange(self):
