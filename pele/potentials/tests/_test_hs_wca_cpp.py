@@ -6,7 +6,7 @@ import logging
 
 from pele.optimize import ModifiedFireCPP
 from pele.potentials import _hs_wca_cpp
-from pele.optimize import lbfgs_cpp
+from pele.optimize._quench import lbfgs_cpp
 import _base_test
 
 def minimize(coords, pot):

@@ -27,7 +27,7 @@ cdef class WCA(_pele.BasePotential):
             self.thisptr = <_pele.cBasePotential*>new cWCA(sig**6, sig**12, eps)
         else:
             self.periodic = True
-            bv = np.array(boxvec, dypte=float)
+            bv = np.array(boxvec, dtype=float)
             self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig**6, sig**12, eps,
                                                                   <double*> bv.data)
 cdef class WCANeighborList(_pele.BasePotential):
