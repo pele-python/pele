@@ -24,17 +24,17 @@ protected:
 	std::uniform_real_distribution<double> _distribution;
 
 public:
-	MetropolisTest();
+	MetropolisTest(size_t rseed);
 	virtual ~MetropolisTest() {}
 	virtual bool test(Array<double> &trial_coords, double trial_energy, Array<double> & old_coords, double old_energy, double temperature, MC * mc);
 	virtual size_t get_seed(){return _seed;}
 };
 
-MetropolisTest::MetropolisTest():
-		_seed(std::chrono::system_clock::now().time_since_epoch().count()),
-		_generator(_seed), _distribution(0.0,1.0)
+MetropolisTest::MetropolisTest(size_t rseed):
+		_seed(rseed), _generator(_seed), _distribution(0.0,1.0)
 		{
 			std::cout<<"seed Metropolis:"<<_seed<<std::endl;
+			//std::chrono::system_clock::now().time_since_epoch().count()
 		}
 
 bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy, Array<double>& old_coords, double old_energy, double temperature, MC * mc)

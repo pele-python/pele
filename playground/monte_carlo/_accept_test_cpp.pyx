@@ -9,13 +9,13 @@ from _pele_mc cimport cppAcceptTest,_Cdef_AcceptTest
 
 cdef extern from "pele/accept_test.h" namespace "pele":
     cdef cppclass cppMetropolisTest "pele::MetropolisTest":
-        cppMetropolisTest() except +
+        cppMetropolisTest(size_t) except +
 
 cdef class _Cdef_Metropolis(_Cdef_AcceptTest):
     """This class is the python interface for the c++ pele::MetropolisTest acceptance test class implementation
     """
-    def __cinit__(self):
-        self.thisptr = <cppAcceptTest*>new cppMetropolisTest()
+    def __cinit__(self, rseed):
+        self.thisptr = <cppAcceptTest*>new cppMetropolisTest(rseed)
         
         
 class MetropolisTest(_Cdef_Metropolis):

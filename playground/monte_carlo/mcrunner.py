@@ -32,6 +32,9 @@ class Metropolis_MCrunner(_base_MCrunner):
        make the stepsize larger or you might want to re-think about your simulation. Generally you shouldn't be 
        spanning energies that differ by several orders of magnitude, if that is the case, resizable or not resizable arrays are
        not the problem, you'd be incurring in memory issues no matter what you do, unless you write to disk at every iteration)
+     * NOTE: some of the modules (e.g. take step and acceptance tests) require to be seeded. Users are free to do this as they think
+     * is best, here we generate a random integer in [0,i32max) where i32max is the largest signed integer, for each seed. Each module
+     * has a separate rng engine, therefore it's best if each receives a different randomly sampled seed
     """
     def __init__(self, potential, coords, temperature=1.0, niter=1e5,
                   stepsize=1, hEmin=0, hEmax=100, hbinsize=0.01, radius=2.5,
@@ -41,11 +44,13 @@ class Metropolis_MCrunner(_base_MCrunner):
                                                   stepsize, niter)
                                
         #construct test/action classes       
+        i32max = np.iinfo(np.int32).max
+        
         self.binsize = hbinsize
         self.histogram = RecordEnergyHistogram(hEmin,hEmax,self.binsize)
         self.adjust_step = AdjustStep(acceptance, adjustf, adjustf_niter, adjustf_navg)
-        self.step = RandomCoordsDisplacement(self.ndim)
-        self.metropolis = MetropolisTest()
+        self.step = RandomCoordsDisplacement(self.ndim, np.random.randint(i32max))
+        self.metropolis = MetropolisTest(np.random.randint(i32max))
         self.conftest = CheckSphericalContainer(radius)
         
         #set up pele:MC
@@ -169,7 +174,7 @@ if __name__ == "__main__":
     
     #Parallel Tempering
     test = Metropolis_MCrunner(pot, start_coords,  temperature=0.2, niter=1e7, hEmin=-140, 
-                               stepsize=0.05, adjustf = 0.9, adjustf_niter = 3000, radius=3)
+                               stepsize=0.5, adjustf = 0.9, adjustf_niter = 5000, radius=3)
     start=time.time()
     test.run()
     end=time.time()

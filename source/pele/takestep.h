@@ -28,15 +28,14 @@ protected:
 	size_t _N;
 	double _rootN;
 public:
-	RandomCoordsDisplacement(size_t N);
+	RandomCoordsDisplacement(size_t N, size_t rseed);
 	virtual ~RandomCoordsDisplacement() {}
 	virtual void takestep(Array<double>& coords, double stepsize, MC * mc);
 	virtual size_t get_seed(){return _seed;}
 };
 
-RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N):
-		_seed(std::chrono::system_clock::now().time_since_epoch().count()),
-		_generator(_seed), _distribution(0.0,1.0), _N(N)
+RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N, size_t rseed):
+		_seed(rseed),_generator(_seed), _distribution(0.0,1.0), _N(N)
 		{
 
 			std::cout<<"seed TakeStep:"<<_seed<<std::endl;

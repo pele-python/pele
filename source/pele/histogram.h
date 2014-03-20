@@ -61,7 +61,7 @@ Histogram::Histogram(double min, double max, double bin):
 			std::cout<<"histogram is of size "<<_N<<std::endl;
 		}
 
-void Histogram::add_entry(double E){
+inline void Histogram::add_entry(double E){
 	int i;
 	E = E + _eps; //this is a dirty hack, not entirely sure of its generality and possible consequences, tests seem to be fine
 	i = floor((E-_min)/_bin);
@@ -87,7 +87,7 @@ void Histogram::add_entry(double E){
 	}*/
 }
 
-void Histogram::resize(double E, int i){
+inline void Histogram::resize(double E, int i){
 	int newlen;
 	if (i >= _N)
 		{
