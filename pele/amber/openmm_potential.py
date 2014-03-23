@@ -93,14 +93,19 @@ class OpenMMAmberPotential(BasePotential):
 
 if __name__ == "__main__":
     
-    # read one conformation from pdb file 
+    # create potential for the molecule in coords.pdb
+    prmtopFname = '../../examples/amber/aladipep/coords.prmtop' 
+    inpcrdFname	= '../../examples/amber/aladipep/coords.inpcrd' 
+    pot = OpenMMAmberPotential(prmtopFname, inpcrdFname)  
+
+    # read coordinates from pdb file 
     from simtk.openmm.app import pdbfile as openmmpdb
-    pdb = openmmpdb.PDBFile('coords.pdb')
+    pdb = openmmpdb.PDBFile('../../examples/amber/aladipep/coords.pdb')
     
     coords = pdb.getPositions() / angstrom   
     coords = numpy.reshape(numpy.transpose(coords), 3*len(coords), 1)
 
-    pot = amberPot()    
+    # compute energy and gradients   	
     e = pot.getEnergy(coords)
     print 'Energy (kJ/mol) = '
     print e
@@ -121,3 +126,20 @@ if __name__ == "__main__":
     print np.max(np.abs(gnum-g)) / np.max(np.abs(gnum))
     
     
+#$ python openmm_potential.py
+#Energy (kJ/mol) = 
+#-13.2272103351
+#Energy (kJ/mol) = 
+#-13.2272103351
+#Analytic Gradient = 
+#[0.5474055271317946 -1.3862268604248615 -0.34820375884655835
+# 0.557332675020795 -1.3579497787292465]
+#Numerical Gradient = 
+#[ 0.21390981 -1.1717879  -0.09397455  0.1569264  -1.22877131]
+#Num vs Analytic Gradient =
+#1.93645994676 19.2856516597
+#0.100409360334
+
+
+
+
