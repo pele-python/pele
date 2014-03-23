@@ -1,13 +1,15 @@
-from pele.amber import OpenMMAmberPotential 
+from pele.amber.openmm_potential import OpenMMAmberPotential 
+from simtk.unit import   kilocalories_per_mole, kilojoules_per_mole, nanometer, angstrom, picosecond 
+import numpy 
 
 # create potential for the molecule in coords.pdb
-prmtopFname = '../../examples/amber/aladipep/coords.prmtop' 
-inpcrdFname	= '../../examples/amber/aladipep/coords.inpcrd' 
+prmtopFname = '../aladipep/coords.prmtop' 
+inpcrdFname	= '../aladipep/coords.inpcrd' 
 pot = OpenMMAmberPotential(prmtopFname, inpcrdFname)  
 
 # read coordinates from pdb file 
 from simtk.openmm.app import pdbfile as openmmpdb
-pdb = openmmpdb.PDBFile('../../examples/amber/aladipep/coords.pdb')
+pdb = openmmpdb.PDBFile('../aladipep/coords.pdb')
     
 coords = pdb.getPositions() / angstrom   
 coords = numpy.reshape(numpy.transpose(coords), 3*len(coords), 1)
