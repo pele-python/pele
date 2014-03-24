@@ -44,7 +44,7 @@ namespace pele {
             if (r <= r0)
             {
             	E = _infty;
-            	std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<", less than their hard core separation"<<std::endl;
+            	//std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<", less than their hard core separation"<<std::endl;
             }
             else if(r < coff )
             	E = 4.*_eps*(-C6*ir6 + C12*ir12) + _eps;
@@ -72,7 +72,7 @@ namespace pele {
 			{
 				E = _infty;
 				*gij = _infty;
-				std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<"less than their hard core separation"<<std::endl;
+				//std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<"less than their hard core separation"<<std::endl;
 			}
 			else if(r < coff)
 			{
