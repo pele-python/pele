@@ -48,13 +48,9 @@ class AMBERSystem(BaseSystem):
         
         self.prmtopFname = prmtopFname
         self.inpcrdFname = inpcrdFname
-#        self.prmtop_name = prmtopFname
-#        self.inpcrd_name = inpcrdFname
-
         self.parse_prmtop()
         
-#  uncommenting next line - 23 Mar 2014. ss2029 
-        self.potential = self.get_potential()
+       #  self.potential = self.get_potential()
         
         self.set_params(self.params)
 #        self.natoms = self.potential.prmtop.topology._numAtoms              
@@ -83,6 +79,14 @@ class AMBERSystem(BaseSystem):
         self.bonds = [(a1.index, a2.index) for a1, a2 in 
                  self.prmtop_parsed.atoms.edges_iter()]
          
+#    def get_minimizer(self, **kwargs):
+#        """return a function to minimize the structure"""
+#        # overriding the C++ minimizer which is giving an error with openmm potential 
+#        pot = self.get_potential()
+#        # kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
+#        # return lambda coords: lbfgs_cpp(coords, pot, **kwargs)
+#	from pele.optimize import lbfgs_py
+#        return lambda coords: lbfgs_py(coords, pot, **kwargs)
 
     def get_ndof(self):
         return 3. * len(self.atom_names)
@@ -141,54 +145,77 @@ class AMBERSystem(BaseSystem):
         return self 
     
     def get_potential(self):
-        # OpenMM related 
-        import openmm_potential  
-        try:
-            return self.potential
-        except AttributeError:
-            pass
+  	"""  First attempts to get the potential from GMIN, then from OpenMM. If both fail, sets it to None """ 
+ 
+        if hasattr(self, 'potential'):
+		if self.potential is not None: 
+			return self.potential 
+
+	# default is None 
+        self.potential = None 
+
+        # get potential from GMIN 
         if os.path.exists('min.in') and os.path.exists('data') :
-#            print '\nFiles min.in and data found. trying to import ambgmin_ now ..' 
+            print '\nFiles min.in and data found. trying to import ambgmin_ now ..' 
             try:
                 import ambgmin_
                 import gmin_potential
                 self.potential        = gmin_potential.GMINAmberPotential(self.prmtopFname, self.inpcrdFname)
                 print '\namberSystem> Using GMIN Amber potential ..'
+		return self.potential ; 
             except ImportError:
                 # using OpenMM because ambgmin_ could not be imported 
-                print '\namberSystem> Using OpenMM amber potential because ambgmin_ not imported ..'
-                self.potential    = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
-        else:
-            # using OpenMM because min.in and data files not found 
-            print '\namberSystem> Using OpenMM amber potential because min.in and data files not found..'
-            self.potential    = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
+                print '\namberSystem> could not import ambgmin_. Will try OpenMM .. '
+
+        # get potential from OpenMM 
+        try:
+        	import openmm_potential  
+            	self.potential   = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
+                print '\namberSystem> Using OpenMM amber potential ..'
+
+        	# check for openmm version
+	        # data structures changed between openmm4 and 5
+	        # crude check - todo  
+	        if hasattr(self.potential.prmtop.topology._bonds,'index'):
+	            self.OpenMMVer = 5
+	        else:
+	            self.OpenMMVer = 4
         
+                return self.potential
+        except AttributeError:
+            	print '\namberSystem> could not import openmm_potential ..'
         
-        # check for openmm version
-        # data structures changed between openmm4 and 5
-        # crude check - todo  
-        if hasattr(self.potential.prmtop.topology._bonds,'index'):
-            self.OpenMMVer = 5
-        else:
-            self.OpenMMVer = 4
+	if self.potenial == None : 
+		print '\namberSystem> potential not set. Could not import GMIN or OpenMM potential.' 
         
-        return self.potential           
- 
         
     def get_random_configuration(self):
-        """a starting point for basinhopping, etc."""
-#        from simtk.openmm.app import pdbfile as openmmpdbReader
-#        pdb = openmmpdbReader.PDBFile('coords.pdb')  # todo: coords.pdb is hardcoded
+        """set coordinates before calling BH etc."""
+        """ returns a 1-D numpy array of length 3xNatoms """
+	
+	# using pele.amber.read_amber and inpcrd   
         from pele.amber.read_amber import read_amber_coords  
 
-        print self.inpcrdFname 
-        
         coords = read_amber_coords(self.inpcrdFname)
-        print "Number of coordinates:", len(coords)
-#        pdb.getPositions() / openmm_angstrom
-#        coords = np.reshape(np.transpose(coords), 3*len(coords), 1)
-        return coords 
+        print "amberSystem> Number of coordinates:", len(coords)
+        coords = np.reshape( np.transpose(coords), len(coords),1)  
 
+	# -- OpenMM 
+        #from simtk.unit import angstrom as openmm_angstrom 
+        
+        ##  using pdb 
+        #from simtk.openmm.app import pdbfile as openmmpdbReader
+        #pdb = openmmpdbReader.PDBFile('coords.pdb')  # todo: coords.pdb is hardcoded
+        #coords = pdb.getPositions() / openmm_angstrom
+        #coords = np.reshape(np.transpose(coords), 3*len(coords),1 )
+
+        ##  using input inpcrd 
+	#from simtk.openmm.app import AmberInpcrdFile
+        #inpcrd = AmberInpcrdFile( self.inpcrdFname )   
+	#coords = inpcrd.getPositions() / openmm_angstrom 
+        #coords = np.reshape(np.transpose(coords), 3*len(coords),1 )
+
+        return coords 
 
     def get_metric_tensor(self, coords):
         """metric tensor for all masses m_i=1.0 """
@@ -544,6 +571,8 @@ class AMBERSystem(BaseSystem):
         pdb = openmmpdb.PDBFile(pdbfname)        
         coords = pdb.getPositions() / openmm_angstrom   
         coords = np.reshape(np.transpose(coords), 3*len(coords), 1)
+
+        self.potential = self.get_potential()
                        
         e = self.potential.getEnergy(coords)
         print 'Energy (kJ/mol) = '
@@ -599,6 +628,8 @@ class AMBERSystem(BaseSystem):
             
     def test_BH(self,db,nsteps):
                         
+        self.potential = self.get_potential()
+
         from pele.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
         takeStepRnd   = RandomDisplacement( stepsize=2 )
         tsAdaptive = AdaptiveStepsizeTemperature(takeStepRnd, interval=10, verbose=True)
