@@ -15,6 +15,7 @@ from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
 from simtk.openmm import * 
 from simtk.unit import   kilocalories_per_mole, kilojoules_per_mole, nanometer, angstrom, picosecond 
 import simtk.openmm.app.forcefield as openmmff
+import numpy as np 
 
 __all__ = ["OpenMMAmberPotential"]
 
@@ -69,7 +70,8 @@ class OpenMMAmberPotential(BasePotential):
         potE = self.simulation.context.getState(getEnergy=True).getPotentialEnergy()
 
         # remove units from potE and then convert to kcal/mol to be consistent with GMIN   
-        return potE / kilojoules_per_mole / self.kJtokCal
+        ee = potE / kilojoules_per_mole / self.kJtokCal
+        return float( ee ) 
 
 #'''  ------------------------------------------------------------------- '''
     def getEnergyGradient(self, coords):
@@ -87,8 +89,9 @@ class OpenMMAmberPotential(BasePotential):
         # xply to -1 to convert gradient ; divide by 10 to convert to kJ/mol/angstroms 
         grad = -forcee / ( kilojoules_per_mole / nanometer ) / 10 / self.kJtokCal # todo - 10 is hardcoded   
                 
-        # remove units before returning   
-        return E, grad.reshape(-1)  
+        # remove units before returning  
+        grad = np.array(grad, dtype=float) 
+        return float(E), grad.reshape(-1)  
 '''  ------------------------------------------------------------------- '''
 
 if __name__ == "__main__":
