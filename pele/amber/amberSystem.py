@@ -42,7 +42,6 @@ from read_amber import parse_topology_file
 __all__ = ["AMBERSystem"]
 
 class AMBERSystem(BaseSystem):
-
     
     def __init__(self, prmtopFname, inpcrdFname):
         super(AMBERSystem, self).__init__()
@@ -54,7 +53,8 @@ class AMBERSystem(BaseSystem):
 
         self.parse_prmtop()
         
-#        self.potential = self.get_potential()
+#  uncommenting next line - 23 Mar 2014. ss2029 
+        self.potential = self.get_potential()
         
         self.set_params(self.params)
 #        self.natoms = self.potential.prmtop.topology._numAtoms              
@@ -65,8 +65,6 @@ class AMBERSystem(BaseSystem):
         self.params.takestep_random_displacement = BaseParameters()
         self.params.takestep_random_displacement.stepsize = 2.
                 
- 
-
         self.params.basinhopping.insert_rejected = False 
         
 #        self.sanitycheck = True  # todo: this should be part of params and show up in GUI
@@ -182,12 +180,15 @@ class AMBERSystem(BaseSystem):
 #        from simtk.openmm.app import pdbfile as openmmpdbReader
 #        pdb = openmmpdbReader.PDBFile('coords.pdb')  # todo: coords.pdb is hardcoded
         from pele.amber.read_amber import read_amber_coords  
+
+        print self.inpcrdFname 
         
         coords = read_amber_coords(self.inpcrdFname)
         print "Number of coordinates:", len(coords)
 #        pdb.getPositions() / openmm_angstrom
 #        coords = np.reshape(np.transpose(coords), 3*len(coords), 1)
         return coords 
+
 
     def get_metric_tensor(self, coords):
         """metric tensor for all masses m_i=1.0 """
@@ -705,26 +706,26 @@ NAB start
 if __name__ == "__main__":
     
     # create new amber system    
-    sysAmb  = AMBERSystem('/home/ss2029/WORK/PyGMIN/examples/amber/coords.prmtop', '/home/ss2029/WORK/PyGMIN/examples/amber/coords.inpcrd')
+    sysAmb  = AMBERSystem('../../examples/amber/aladipep/coords.prmtop', '../../examples/amber/aladipep/coords.inpcrd')
     
     # load existing database 
     from pele.storage import Database
-    dbcurr = Database(db="/home/ss2029/WORK/PyGMIN/examples/amber/aladipep.db")
+    dbcurr = Database(db="../../examples/amber/aladipep/aladipep.db")
                         
-    
     coords = sysAmb.get_random_configuration()
-    aa = sysAmb.get_metric_tensor(coords)
+    # aa = sysAmb.get_metric_tensor(coords)
     
-    exit()  
     # ------- TEST gui 
     from pele.gui import run as gr    
     gr.run_gui(sysAmb)
     
     # ------ Test potential 
-    sysAmb.test_potential('coords.pdb')
+    sysAmb.test_potential("../../examples/amber/aladipep/coords.pdb")
     
     # ------ BH 
-    sysAmb.test_BH(dbcurr)
+    nsteps = 100 
+    sysAmb.test_BH(dbcurr, nsteps)
+    exit()  
     
     # ------- Connect runs 
     sysAmb.test_connect(dbcurr)  
