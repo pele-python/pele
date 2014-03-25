@@ -35,7 +35,6 @@ print 'Num vs Analytic Gradient ='
 print np.max(np.abs(gnum-g)), np.max(np.abs(gnum))
 print np.max(np.abs(gnum-g)) / np.max(np.abs(gnum))
 
-
 # --- Test  AMBERSystem class 
 from pele.amber.amberSystem import AMBERSystem 
 
@@ -52,16 +51,29 @@ sysAmb.test_potential("../aladipep/coords.pdb")
     
 # ------ BH 
 print 'testing BH' 
-nsteps = 10
+nsteps = 1
 sysAmb.test_BH(dbcurr, nsteps)
+
+for minimum in dbcurr.minima():
+    print minimum._id, minimum.energy    
+
+# -- test connect 
+dbcurr = Database(db="aladipep.db")
+sysAmb.test_connect(dbcurr) 
+
+
+#print "---------id, m1_id, m2_id, tsener"
+#for ts in dbcurr.transition_states() :
+#    print ts._id, ts._minimum1_id, ts._minimum2_id,  ts.energy      
+            
+# connect to existing db 
+#    sysOpenMM.create_database(db=dbcurr)   
+
+
 
 # ------- TEST gui 
 #from pele.gui import run as gr    
-#gr.run_gui(sysAmb)
-
-
-
-
+#gr.run_gui(sysAmb, db="aladipep.db")
 
 
 
