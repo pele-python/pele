@@ -6,38 +6,9 @@ from scipy.special import gamma
 from playground.monte_carlo import Metropolis_MCrunner
 from pele.potentials import HS_WCA, LJ
 from pele.optimize._quench import lbfgs_cpp
+from utils import *
 
-#def volume_nball(radius,n):
-#    volume = 2*np.power(np.pi,n/2)*np.power(radius,n)/(n*gamma(n/2))
-#    return volume
-
-def cround(r):
-    if r > 0.0:
-        r = np.floor(r + 0.5)
-    else:
-        r = np.ceil(r - 0.5)
-    return r
-
-def trymakedir(path):
-    """this function deals with common race conditions"""
-    while True:
-        if not os.path.exists(path): 
-            try:
-                os.makedirs(path)
-                break
-            except OSError, e:
-                if e.errno != 17:
-                    raise
-                # time.sleep might help here
-                pass
-        else:
-            break
-
-def put_in_box(x, boxvec):
-    x = x.reshape(-1, len(boxvec))
-    x -= boxvec * np.round(x / boxvec)
-
-class _Generate_Packings(object):
+class _Generate_Packing(object):
     """
     this is an abstract class that implements the basic components of a generate packing class,
     and declares a number of abstract methods which should be implemented in all inheriting classes
@@ -48,20 +19,21 @@ class _Generate_Packings(object):
     *ndim: dimensionality of the problem (i.e. size of the coordinates array)
     *packing_frac: target packing fraction
     *boxv: an array of size bdim that contains the vectors defining the box
-    *boxl: box side length
+    *boxl: box side length, this is converted by the the class to a boxv array
     """
     __metaclass__ = abc.ABCMeta
     
-    def __init__(self, method, nparticles, bdim=3, boxv = None, boxl=1, packing_frac=0.4, max_iter = 1):
+    def __init__(self, method, nparticles, bdim=3, boxv = None, boxl=1.0, packing_frac=0.4, max_iter = 1):
         self.method = method
         assert(bdim==3) #currently PBC only implemented for 3d case
         self.nparticles = nparticles
         self.bdim = bdim
         self.ndim = self.nparticles * self.bdim
-        self.boxv = boxv
-        self.boxl = boxl
+        if boxv is None:
+            self.boxv = np.array([boxl for _ in xrange(self.bdim)],dtype='d')
+        else:
+            self.boxv = np.array(boxv,dtype='d')
         self.packing_frac = packing_frac
-        self.initiliased=False
         self.base_directory = os.path.join(os.getcwd(),'packings')
         self.iteration = 0
         self.max_iter = max_iter
@@ -91,18 +63,12 @@ class _Generate_Packings(object):
     def _resize_box(self):
         """adjust the box size to meet the target packing fraction"""
         vol_part = self._get_particles_volume()
-        if (self.boxv == None):
-            self.boxl = np.power(vol_part/self.packing_frac,1./3)
-        else:
-            vol_box = np.prod(self.boxv)
-            phi = vol_part/vol_box #instanteneous pack frac
-            a = np.power(phi/self.packing_frac,1./3)
-            self.boxv *= a
+        vol_box = np.prod(self.boxv)
+        phi = vol_part/vol_box #instanteneous pack frac
+        a = np.power(phi/self.packing_frac,1./3)
+        self.boxv *= a
         ###test###
-        if (self.boxv == None):
-            vol_box = self.boxl**self.bdim
-        else:
-            vol_box = np.prod(self.boxv)
+        vol_box = np.prod(self.boxv)
         phi = vol_part/vol_box
         assert(phi - self.packing_frac < 1e-4)
         ##endtest## 
@@ -117,7 +83,9 @@ class _Generate_Packings(object):
         """writes the simulation parameters"""
         fname = '{}/packings.config'.format(self.base_directory)
         f = open(fname,'w')
+        f.write('#AUTOMATICALLY GENERATED FILE - DO NOT MODIFY BY HAND\n')
         f.write('#Generate_Packings base class input parameters\n')
+        f.write('[PACKING]\n')
         f.write('method: {}\n'.format(self.method))
         f.write('nparticles: {}\n'.format(self.nparticles))
         f.write('packing_fraction: {}\n'.format(self.packing_frac))
@@ -125,13 +93,10 @@ class _Generate_Packings(object):
         f.write('ndim: {}\n'.format(self.ndim))
         f.write('max_iter: {}\n'.format(self.max_iter))
         assert(self.box_resized)
-        if self.boxv is None:
-            f.write('boxl: {}\n'.format(self.boxl))
-        else:
-            f.write('boxv: ')
-            for val in self.boxv:
-                f.write('{} \t'.format(val))
-            f.write('\n')
+        f.write('boxv: ')
+        for val in self.boxv:
+            f.write('{} '.format(val))
+        f.write('\n')
         f.close()
         
     def _print(self):
@@ -153,7 +118,7 @@ class _Generate_Packings(object):
             self.one_iteration()
             
 
-class HS_Generate_Packing(_Generate_Packings):
+class HS_Generate_Packing(_Generate_Packing):
     """
     *PARAMETERS
     *hs_radii: array with the radii of the particles, if none sample particle sizes from a normal distribution
@@ -163,7 +128,7 @@ class HS_Generate_Packing(_Generate_Packings):
     *eps: LJ interaction energy of WCA part of the HS potential, here irrelevant because 'sca' is set to 0
     """    
     def __init__(self, nparticles, method='quench', bdim=3, boxl=1, boxv=None, packing_frac=0.35, hs_radii=None, 
-                 mu = 1, sig = 0.2, max_iter = 10):
+                 mu = 1, sig = 0.05, max_iter = 10):
         super(HS_Generate_Packing,self).__init__(method, nparticles, bdim=bdim, boxv = boxv, boxl=boxl,
                                                  packing_frac=packing_frac, max_iter = max_iter)
         ##constants#
@@ -180,10 +145,7 @@ class HS_Generate_Packing(_Generate_Packings):
         if self.method is 'quench':
             #this is necessary to initialise the radii if using the quench routine
             self._initialise_coords_quench()
-        if self.boxv is None:
-            self.potential = HS_WCA(self.eps, self.sca, self.hs_radii, boxl=self.boxl)
-        else:
-            self.potential = HS_WCA(self.eps, self.sca, self.hs_radii, boxv=self.boxv)
+        self.potential = HS_WCA(self.eps, self.sca, self.hs_radii, boxvec=self.boxv)
         self._print_initialise()
         self.initialised = True     
     
@@ -214,8 +176,6 @@ class HS_Generate_Packing(_Generate_Packings):
     
     def _check_overlaps(self):
         """check that no two particles are overlapping (using nearest image convention)"""
-        if self.boxv is None:
-            boxv = np.array([self.boxl for _ in xrange(self.bdim)])
         no_overlap = True
         for i in xrange(self.nparticles):
             if no_overlap == True:
@@ -224,7 +184,7 @@ class HS_Generate_Packing(_Generate_Packings):
                     for k in xrange(self.bdim):
                         #use distances to nearest image convention
                         dij += np.square((self.coords[i*self.bdim+k] - self.coords[j*self.bdim+k]) -
-                                          cround((self.coords[i*self.bdim+k] - self.coords[j*self.bdim+k]) / boxv[k]) * boxv[k])
+                                          cround((self.coords[i*self.bdim+k] - self.coords[j*self.bdim+k]) / self.boxv[k]) * self.boxv[k])
                     if i != j:
                         dij = np.sqrt(dij)
                         dmin = self.hs_radii[i]+self.hs_radii[j]
@@ -241,13 +201,10 @@ class HS_Generate_Packing(_Generate_Packings):
     
     def _sample_random_coords(self):
         """returns random coordinates for the particles uniformly distributed in the box"""
-        if self.boxv is None:
-            coords = (np.random.rand(self.ndim))*self.boxl
-        else:
-            coords =  np.empty(self.ndim)
-            for i in xrange(self.nparticles):
-                for j in xrange(self.bdim):
-                    coords[i*self.bdim+j] = (np.random.rand())*self.boxv[j]
+        coords =  np.empty(self.ndim)
+        for i in xrange(self.nparticles):
+            for j in xrange(self.bdim):
+                coords[i*self.bdim+j] = (np.random.rand())*self.boxv[j]
         return coords
     
     def _build_distance_matrix(self):
@@ -258,7 +215,7 @@ class HS_Generate_Packing(_Generate_Packings):
                 for k in xrange(self.bdim):
                     #use distances to closest image
                     dij += np.square((self.coords[i*self.bdim+k] - self.coords[j*self.bdim+k]) -
-                                      cround((self.coords[i*self.bdim+k] - self.coords[j*self.bdim+k]) / self.boxl) * self.boxl)
+                                      cround((self.coords[i*self.bdim+k] - self.coords[j*self.bdim+k]) / self.boxv[k]) * self.boxv[k])
                 distances[i,j] = np.sqrt(dij)
         return distances
     
@@ -285,10 +242,7 @@ class HS_Generate_Packing(_Generate_Packings):
         the gap 
         """
         no_overlap = False
-        if self.boxv is None:
-            pot = LJ(sig=self.boxl,boxl=self.boxl)
-        else:
-            pot = LJ(sig=self.boxv[0],boxv=self.boxv) # choice of sigma might have to be different
+        pot = LJ(sig=self.boxv[0],boxvec=self.boxv) # choice of sigma might have to be different
         
         while no_overlap == False:
             no_overlap = True
@@ -335,9 +289,7 @@ class HS_Generate_Packing(_Generate_Packings):
         no_overlap = False
         while no_overlap == False:
             no_overlap = True 
-            #coords = vector_random_uniform_hypersphere(self.ndim)#* np.sqrt(2*3) #coordinates sampled from Pow(ndim)
             self.coords = self._sample_random_coords()
-            #assert(res.success is True) #checks that a minimum configuration has been found
             print "generated new start coords "
             #check that no two particles are overlapping (using nearest image convention)
             no_overlap = self._check_overlaps()
@@ -345,30 +297,27 @@ class HS_Generate_Packing(_Generate_Packings):
     def _correct_coords(self):
         """this function returns the nearest images in the central box, useful for dumping the configurations"""
         coords = self.coords.copy()
-        if self.boxv == None:
-            boxv = [self.boxl for _ in xrange(self.bdim)]
-        put_in_box(coords,boxv)
+        put_in_box(coords,self.boxv)
         return coords
     
     def _dump_configuration(self):
         """write coordinates to file .xyzd"""
         coords = self._correct_coords()
         directory = self.base_directory
-        fname = "{0}/packing{1}.xyzd".format(directory,float(self.iteration))
+        fname = "{0}/packing{1}.xyzd".format(directory,self.iteration)
         f = open(fname,'w')
         for i in xrange(self.nparticles):
             f.write('{:<12}\t{:<12}\t{:<12}\t{:<12}\n'.format(coords[i*self.bdim],coords[i*self.bdim+1],
-                                                               coords[i*self.bdim+2],self.hs_radii[i]))
+                                                               coords[i*self.bdim+2],self.hs_radii[i]*2))
         f.close()
     
     def _write_opengl_input(self):
         """write opengl input file"""
         coords = self._correct_coords()
-        if self.boxv == None:
-            boxv = [self.boxl for _ in xrange(self.bdim)]
+        boxv = self.boxv
         colour = 13
         directory = self.base_directory
-        fname = "{0}/packing{1}.dat".format(directory,float(self.iteration))
+        fname = "{0}/packing{1}.dat".format(directory,self.iteration)
         f = open(fname,'w')
         f.write('{}\n'.format(self.nparticles))
         f.write('{} {} {}\n'.format(-boxv[0]/2,-boxv[1]/2,-boxv[2]/2))
@@ -385,7 +334,7 @@ class HS_Generate_Packing(_Generate_Packings):
             
 if __name__ == "__main__":
     
-    nparticles = 50
+    nparticles = 60
     sim = HS_Generate_Packing(nparticles)
     sim.run()
     

@@ -18,7 +18,7 @@ namespace pele {
 					pele::Array<double> v = pele::Array<double>(), pele::Array<double> g = pele::Array<double>(),
 					pele::Array<double> m = pele::Array<double>());
 
-		void oneiteration()
+		inline void oneiteration()
 			  {
 				   /* the minuses in the following expressions are due to the fact that
 				   * the gradients rather than the forces appear in the expression

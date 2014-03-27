@@ -49,7 +49,7 @@ class BaseIntegrator
 
 	  virtual ~BaseIntegrator() {}
 
-	  virtual void oneiteration()
+	  virtual inline void oneiteration()
 	  {
 		  throw std::runtime_error("BaseIterator::oneiteration must be overloaded");
 	  }

@@ -115,7 +115,7 @@ namespace pele{
 		  _integrator(potential_, x_, _dtstart, _maxstep)
   	  	  {}
 
-  void MODIFIED_FIRE::one_iteration()
+  inline void MODIFIED_FIRE::one_iteration()
   {
 	  double ifnorm, vnorm, P;
 	  size_t k;
