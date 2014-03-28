@@ -58,11 +58,11 @@ bool CheckSphericalContainer::test(Array<double> &trial_coords, MC * mc)
  * _optimizer: pointer to object of class GradientOptimizer performing minimisation according to some potential
  * 				passed to the object during its construction
  * _origin: coordinates to which the quenched structure is compared to
- * _rattlers: array of 1s or 0s if indicates a rattler, 	0 -> rattler
+ * _rattlers: array of 1s or 0s: if not indicates a rattler,0 -> rattler
  * 															1 -> jammed particle
  * 			this convention removes if statements in the for loop and replaces them with
  * 			arithmetic operation (distance[i] *= rattlers[i]), distance is set artificially to
- * 			zero if the particle is a rattler
+ * 			zero if the particle is a rattler. note _rattlers.size() = coords.size()
  * _distance: array containing the Euclidean distance between trial_coords and origin
  * _d: norm of distance
  * _rms: root mean square displacement from origin
@@ -102,11 +102,14 @@ CheckSameMinimum::CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<do
 
 bool CheckSameMinimum::test(Array<double> &trial_coords, MC * mc)
 {
+	bool quench_success;
+
 	_optimizer->reset(trial_coords);
 	_optimizer->run();
 	_E = _optimizer->get_f();
+	quench_success = _optimizer->get_success();
 	//first test: minimisation must have converged and energy must be within some reasonable range of Eor
-	if ((_optimizer->get_success() == false) || (abs(_E - _Eor) > _Etol))
+	if ((quench_success == false) || (abs(_E - _Eor) > _Etol))
 	  return false;
 
 	//copy coordinates of quenched structure
@@ -114,7 +117,7 @@ bool CheckSameMinimum::test(Array<double> &trial_coords, MC * mc)
 	//compute distances subtracting the origin's coordinates
 	_distance -= _origin;
 	//set to 0 distances of rattlers
-	_distance *= rattlers;
+	_distance *= _rattlers;
 	//compute rms displacement from origin
 	_d = norm(_distance);
 	_rms = _d / sqrt(_Nnoratt);
