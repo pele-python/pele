@@ -6,7 +6,6 @@
 #include "array.h"
 #include "optimizer.h"
 #include "base_integrator.h"
-#include "velocity_verlet_fire.h"
 #include "forward_euler_fire.h"
 
 using std::vector;
@@ -80,7 +79,7 @@ namespace pele{
 
       void initialize_func_gradient()
             {
-    	  	  	nfev_ += 1; 					//this accounts for the energy evaluation done by the integrator
+    	  	  	nfev_ += 1; 					//this accounts for the energy evaluation done by the integrator (g is computed by the constructor of the integrator)
     	  	  	_integrator.wrap_v(_v); 		//the velocity array wraps the integrator velocity array so that it updates concurrently
                 _integrator.wrap_g(g_); 		//the gradient array wraps the integrator gradient array so that it updates concurrently
                 _integrator.wrap_E(f_);			//the function value (E) wraps the integrator energy so that it updates concurrently
@@ -100,7 +99,33 @@ namespace pele{
     	  	  throw std::runtime_error("MODIFIED_FIRE::set_func_gradient: this function is not implemented "
     	  			  "because the gradient is already initialised by BaseIntegrator");
           }
-  };
+
+      inline void reset(Array<double>& x0)
+      {
+    	  //arrays are already wrapped by the integrator, must not wrap them again, just update their values, dont's use array.copy()
+    	  // or will wrap a copy to the array
+    	  assert(x0.size() == x_.size());
+    	  iter_number_ = 0;
+    	  for(int k=0; k<x_.size();++k){x_[k] = x0[k];}
+    	  f_ = potential_->get_energy_gradient(x_, g_);
+    	  nfev_ = 1;
+    	  //fire specific
+    	  _fire_iter_number = 0;
+    	  _dt = _dtstart;
+    	  _a = _astart;
+    	  _fold = f_;
+    	  rms_ = norm(g_) / sqrt(g_.size());
+    	  for(int k=0; k<x_.size();++k){
+			  _xold[k] = x0[k];
+			  _gold[k] = g_[k];
+			  _v[k] = -g_[k]*_dt;
+    	  }
+    	  _integrator.set_dt(_dt);
+    	  func_initialized_ = true;
+      }
+
+
+	};
 
   MODIFIED_FIRE::MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double>& x0, double dtstart, double dtmax, double maxstep,
 		  size_t Nmin, double finc, double fdec, double fa, double astart, double tol, bool stepback):

@@ -8,18 +8,6 @@ from utils import *
 import ConfigParser
 import re
 
-def read_xyzd(fname):
-    coords = []
-    radii = []
-    f = open(fname, "r")
-    while True:
-        xyzd = f.readline()
-        if not xyzd: break
-        x, y, z, d = xyzd.split()
-        coords.extend([float(x),float(y),float(z)])
-        radii.extend([float(d)/2])
-    return np.array(coords), np.array(radii)
-
 class _Generate_Jammed_Packing(object):
     """
     this is an abstract class that implements the basic components of a generate packing class,
@@ -74,20 +62,6 @@ class _Generate_Jammed_Packing(object):
     @abc.abstractmethod
     def _dump_configuration(self, n):
         """writes a configuration file, e.g .xyzd, n is the unique identifier of the structure"""
-    
-#    def _resize_box(self):
-#        """adjust the box size to meet the target packing fraction"""
-#        vol_part = self._get_particles_volume()
-#        vol_box = np.prod(self.boxv)
-#        phi = vol_part/vol_box #instanteneous pack frac
-#        a = np.power(phi/self.packing_frac,1./3)
-#        self.boxv *= a
-#        ###test###
-#        vol_box = np.prod(self.boxv)
-#        phi = vol_part/vol_box
-#        assert(phi - self.packing_frac < 1e-4)
-#        ##endtest## 
-#        self.box_resized = True
             
     def _print_initialise(self):
         base_directory = self.base_directory

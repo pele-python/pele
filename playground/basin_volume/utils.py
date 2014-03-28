@@ -32,3 +32,15 @@ def trymakedir(path):
 def put_in_box(x, boxvec):
     x = x.reshape(-1, len(boxvec))
     x -= boxvec * np.round(x / boxvec)
+    
+def read_xyzd(fname):
+    coords = []
+    radii = []
+    f = open(fname, "r")
+    while True:
+        xyzd = f.readline()
+        if not xyzd: break
+        x, y, z, d = xyzd.split()
+        coords.extend([float(x),float(y),float(z)])
+        radii.extend([float(d)/2])
+    return np.array(coords), np.array(radii)

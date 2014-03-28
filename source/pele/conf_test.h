@@ -7,7 +7,8 @@
 #include <chrono>
 #include "array.h"
 #include "mc.h"
-
+#include "modified_fire.h"
+#include "optimizer.h"
 
 using std::runtime_error;
 using pele::Array;
@@ -50,6 +51,77 @@ bool CheckSphericalContainer::test(Array<double> &trial_coords, MC * mc)
 
   //printf("check spherical OK ");
   return true;
+}
+
+
+/*check same minimum class
+ * _optimizer: pointer to object of class GradientOptimizer performing minimisation according to some potential
+ * 				passed to the object during its construction
+ * _origin: coordinates to which the quenched structure is compared to
+ * _rattlers: array of 1s or 0s if indicates a rattler, 	0 -> rattler
+ * 															1 -> jammed particle
+ * 			this convention removes if statements in the for loop and replaces them with
+ * 			arithmetic operation (distance[i] *= rattlers[i]), distance is set artificially to
+ * 			zero if the particle is a rattler
+ * _distance: array containing the Euclidean distance between trial_coords and origin
+ * _d: norm of distance
+ * _rms: root mean square displacement from origin
+ * _E = energy of the quenched state
+ * _dtol: tolerance on distances
+ * _Etol: tolerance on energies (a minimum should be whithin this value from _Emin)
+ * _Eor: energy of the origin
+ * _Nnoratt: total number of non rattlers
+ * */
+
+class CheckSameMinimum:public ConfTest{
+protected:
+	pele::GradientOptimizer * _optimizer;
+	Array<double> _origin, _rattlers, _distance;
+	double _Eor, _Etol, _dtol, _E, _d, _rms;
+	int _Nnoratt;
+public:
+	CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> rattlers, double Eor, double Etol, double dtol);
+	virtual bool test(Array<double> &trial_coords, MC * mc);
+	virtual ~CheckSameMinimum(){}
+	double get_distance(){return _d;}
+	Array<double> get_distance_array(){
+		Array<double> x(_darray.copy());
+		return x;
+	}
+};
+
+CheckSameMinimum::CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> rattlers,
+		double Eor, double Etol, double dtol):
+		_optimizer(optimizer), _origin(origin), _rattlers(rattlers),
+		_distance(origin.size()),_Eor(Eor),_Etol(Etol),_dtol(dtol),
+		_E(_Eor),_d(0),_rms(0),_Nnoratt(0){
+		for(int i=0;i<_rattlers.size();++i){
+			_Nnoratt += _rattlers[i];
+		}
+}
+
+bool CheckSameMinimum::test(Array<double> &trial_coords, MC * mc)
+{
+	_optimizer->reset(trial_coords);
+	_optimizer->run();
+	_E = _optimizer->get_f();
+	//first test: minimisation must have converged and energy must be within some reasonable range of Eor
+	if ((_optimizer->get_success() == false) || (abs(_E - _Eor) > _Etol))
+	  return false;
+
+	//copy coordinates of quenched structure
+	_distance = (_optimizer->get_x()).copy();
+	//compute distances subtracting the origin's coordinates
+	_distance -= _origin;
+	//set to 0 distances of rattlers
+	_distance *= rattlers;
+	//compute rms displacement from origin
+	_d = norm(_distance);
+	_rms = _d / sqrt(_Nnoratt);
+	if (_rms > _dtol)
+		return false;
+	else
+		return true;
 }
 
 }

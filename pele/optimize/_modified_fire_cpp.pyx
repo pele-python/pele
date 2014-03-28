@@ -19,7 +19,8 @@ cdef extern from "pele/modified_fire.h" namespace "pele":
         void one_iteration() except +
         int stop_criterion_satisfied() except +
         void set_func_gradient(double energy, _pele.Array[double] grad) except +
-
+        void reset(_pele.Array[double] coords) except+
+        
         double get_f() except +
         _pele.Array[double] get_x() except +
         _pele.Array[double] get_g() except +
@@ -113,6 +114,10 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(object):
         res.nfev = self.thisptr.get_nfev()
         res.success = bool(self.thisptr.success())
         return res
+    
+    def reset(self, coords):
+        cdef np.ndarray[double, ndim=1] ccoords = np.array(coords, dtype=float)
+        self.thisptr.reset(_pele.Array[double](<double*> ccoords.data, ccoords.size))
     
     def one_iteration(self):
         self.thisptr.one_iteration()
