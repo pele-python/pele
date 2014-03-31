@@ -56,8 +56,8 @@ class Metropolis_MCrunner(_base_MCrunner):
         #set up pele:MC
         self.mc.set_takestep(self.step)
         self.mc.add_accept_test(self.metropolis)
-        #self.mc.add_conf_test(self.conftest)
-        #self.mc.add_action(self.histogram)
+        self.mc.add_conf_test(self.conftest)
+        self.mc.add_action(self.histogram)
         self.mc.add_action(self.adjust_step)
         
     def set_control(self, T):

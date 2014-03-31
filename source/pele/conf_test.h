@@ -76,10 +76,10 @@ class CheckSameMinimum:public ConfTest{
 protected:
 	pele::GradientOptimizer * _optimizer;
 	Array<double> _origin, _rattlers, _distance;
-	double _Eor, _Etol, _dtol, _E, _d, _rms;
+	double _dtol, _d, _rms;
 	int _Nnoratt;
 public:
-	CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> rattlers, double Eor, double Etol, double dtol);
+	CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> rattlers, double dtol);
 	virtual bool test(Array<double> &trial_coords, MC * mc);
 	virtual ~CheckSameMinimum(){}
 	double get_distance(){return _d;}
@@ -89,11 +89,10 @@ public:
 	}
 };
 
-CheckSameMinimum::CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> rattlers,
-		double Eor, double Etol, double dtol):
+CheckSameMinimum::CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> rattlers, double dtol):
 		_optimizer(optimizer), _origin(origin), _rattlers(rattlers),
-		_distance(origin.size()),_Eor(Eor),_Etol(Etol),_dtol(dtol),
-		_E(_Eor),_d(0),_rms(0),_Nnoratt(0){
+		_distance(origin.size()),_dtol(dtol),_d(0),
+		_rms(0),_Nnoratt(0){
 		for(int i=0;i<_rattlers.size();++i){
 			_Nnoratt += _rattlers[i];
 		}
@@ -105,10 +104,9 @@ bool CheckSameMinimum::test(Array<double> &trial_coords, MC * mc)
 
 	_optimizer->reset(trial_coords);
 	_optimizer->run();
-	_E = _optimizer->get_f();
 	quench_success = _optimizer->success();
-	//first test: minimisation must have converged and energy must be within some reasonable range of Eor
-	if ((quench_success == false) || (abs(_E - _Eor) > _Etol))
+	//first test: minimisation must have converged
+	if (quench_success == false)
 	  return false;
 
 	//copy coordinates of quenched structure

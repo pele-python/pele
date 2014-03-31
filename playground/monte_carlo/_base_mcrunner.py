@@ -29,7 +29,7 @@ class _base_MCrunner(object):
         self.result.message = []
     
     @abc.abstractmethod
-    def set_control(self):
+    def set_control(self, c):
         """set control parameter, this could be temperature or some other control parameter like stiffness of the harmonic potential"""
     
     def get_config(self):

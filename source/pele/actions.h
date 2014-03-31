@@ -92,13 +92,13 @@ public:
 	virtual void print_terminal(size_t ntot){
 				_hist->print_terminal(ntot);};
 
-	virtual double get_Emax(){
+	virtual double get_max(){
 		double max_;
 		max_ = _hist->max();
 		return max_;
 	};
 
-	virtual double get_Emin(){
+	virtual double get_min(){
 			double min_;
 			min_ = _hist->min();
 			return min_;
@@ -111,6 +111,46 @@ RecordEnergyHistogram::RecordEnergyHistogram(double min, double max, double bin)
 void RecordEnergyHistogram::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
 		_hist->add_entry(energy);
 }
+
+/*Record displacement square histogram
+*/
+
+class RecordDisp2Histogram : public RecordEnergyHistogram {
+protected:
+	pele::Array<double> _origin, _rattlers, _distance;
+	size_t _N;
+public:
+	RecordDisp2Histogram(pele::Array<double> origin, pele::Array<double> rattlers, double min, double max, double bin);
+	virtual ~RecordDisp2Histogram() {delete _hist;}
+	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
+};
+
+RecordDisp2Histogram::RecordDisp2Histogram(pele::Array<double> origin, pele::Array<double> rattlers, double min, double max, double bin):
+		RecordEnergyHistogram(min, max, bin),
+		_origin(origin.copy()),_rattlers(rattlers.copy()),
+		_distance(origin.size()),_N(origin.size()){}
+
+void RecordDisp2Histogram::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
+		double _d;
+
+		_distance.assign(coords);
+		//compute distances subtracting the origin's coordinates
+		_distance -= _origin;
+		//set to 0 distances of rattlers
+		for (size_t j = 0; j < _N; ++j){
+			_distance[j] *= _rattlers[j];
+		}
+		//compute square displacement from origin
+		_d = norm(_distance);
+		_hist->add_entry(_d*_d);
+}
+
+
+
+
+
+
+
 
 
 }

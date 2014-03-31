@@ -34,8 +34,8 @@ cdef extern from "pele/actions.h" namespace "pele":
         cppRecordEnergyHistogram(double, double, double) except +
         _pele.Array[double] get_histogram() except +
         void print_terminal(size_t) except +
-        double get_Emax() except +
-        double get_Emin() except +
+        double get_max() except +
+        double get_min() except +
         
 cdef class _Cdef_RecordEnergyHistogram(_Cdef_Action):
     """This class is the python interface for the c++ pele::RecordEnergyHistogram acceptance test class implementation
@@ -62,8 +62,8 @@ cdef class _Cdef_RecordEnergyHistogram(_Cdef_Action):
     
     def get_Ebounds(self):
         cdef cppRecordEnergyHistogram* newptr3 = <cppRecordEnergyHistogram*> self.thisptr
-        Emin = newptr3.get_Emin()
-        Emax = newptr3.get_Emax()
+        Emin = newptr3.get_min()
+        Emax = newptr3.get_max()
         return Emin, Emax
         
 class RecordEnergyHistogram(_Cdef_RecordEnergyHistogram):

@@ -12,8 +12,8 @@ cdef extern from "pele/conf_test.h" namespace "pele":
     cdef cppclass cppCheckSphericalContainer "pele::CheckSphericalContainer":
         cppCheckSphericalContainer(double) except+
     cdef cppclass cppCheckSameMinimum "pele::CheckSameMinimum":
-        cppCheckSameMinimum(_pele_opt.cGradientOptimizer *, _pele.Array[double], _pele.Array[double] rattlers, 
-                            double, double, double) except+
+        cppCheckSameMinimum(_pele_opt.cGradientOptimizer *, _pele.Array[double], 
+                            _pele.Array[double] rattlers, double) except+
 
 #===============================================================================
 # Check spherical container
@@ -39,12 +39,12 @@ cdef class _Cdef_CheckSameMinimum(_Cdef_ConfTest):
     
     cdef _pele_opt.GradientOptimizer opt # this is stored so that the memory is not freed
     
-    def __cinit__(self, optimizer, origin, rattlers, Eor, Etol, dtol):
+    def __cinit__(self, optimizer, origin, rattlers, dtol):
         cdef np.ndarray[double, ndim=1] orginc = np.array(origin, dtype=float)
         cdef np.ndarray[double, ndim=1] rattlersc = np.array(rattlers, dtype=float)
         cdef _pele_opt.GradientOptimizer opt = optimizer
         self.thisptr = <cppConfTest*>new cppCheckSameMinimum(opt.thisptr, _pele.Array[double](<double*> orginc.data, orginc.size), 
-                                                             _pele.Array[double](<double*> rattlersc.data, rattlersc.size), Eor, Etol, dtol)
+                                                             _pele.Array[double](<double*> rattlersc.data, rattlersc.size), dtol)
         
 class CheckSameMinimum(_Cdef_CheckSameMinimum):
     """This class is the python interface for the c++ CheckSameMinimum implementation.

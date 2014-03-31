@@ -142,7 +142,7 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
     
     def _generate_packing_coords(self):
         """quenches the imported structure using FIRE"""
-        res = modifiedfire_cpp(self.coords,self.potential,nsteps=1e5)
+        res = modifiedfire_cpp(self.coords,self.potential,nsteps=1e5, tol=1e-4)
         assert(res.success == True)
         self.coords = res.coords
         self.energy = res.energy
