@@ -2,6 +2,8 @@
 
 echo "Compiling _pele.pyx"
 cython --cplus pele/potentials/_pele.pyx 
+echo "Compiling _pele_opt.pyx"
+cython --cplus -a pele/optimize/_pele_opt.pyx 
 echo "Compiling _lj.pyx"
 cython --cplus pele/potentials/_lj_cpp.pyx 
 #echo "Compiling _lj_cython.pyx"

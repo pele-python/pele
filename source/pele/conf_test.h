@@ -7,7 +7,6 @@
 #include <chrono>
 #include "array.h"
 #include "mc.h"
-#include "modified_fire.h"
 #include "optimizer.h"
 
 using std::runtime_error;
@@ -69,8 +68,8 @@ bool CheckSphericalContainer::test(Array<double> &trial_coords, MC * mc)
  * _E = energy of the quenched state
  * _dtol: tolerance on distances
  * _Etol: tolerance on energies (a minimum should be whithin this value from _Emin)
- * _Eor: energy of the origin
- * _Nnoratt: total number of non rattlers
+ * _Eor: energy of the origin (must pass it because CheckSameMinimum knows nothing about the potential used by the optimiser)
+ * _Nnoratt: total number of non rattlers degrees of freedom
  * */
 
 class CheckSameMinimum:public ConfTest{
@@ -85,7 +84,7 @@ public:
 	virtual ~CheckSameMinimum(){}
 	double get_distance(){return _d;}
 	Array<double> get_distance_array(){
-		Array<double> x(_darray.copy());
+		Array<double> x(_distance.copy());
 		return x;
 	}
 };
@@ -107,7 +106,7 @@ bool CheckSameMinimum::test(Array<double> &trial_coords, MC * mc)
 	_optimizer->reset(trial_coords);
 	_optimizer->run();
 	_E = _optimizer->get_f();
-	quench_success = _optimizer->get_success();
+	quench_success = _optimizer->success();
 	//first test: minimisation must have converged and energy must be within some reasonable range of Eor
 	if ((quench_success == false) || (abs(_E - _Eor) > _Etol))
 	  return false;
@@ -117,7 +116,10 @@ bool CheckSameMinimum::test(Array<double> &trial_coords, MC * mc)
 	//compute distances subtracting the origin's coordinates
 	_distance -= _origin;
 	//set to 0 distances of rattlers
-	_distance *= _rattlers;
+	size_t N = _distance.size();
+	for (size_t j = 0; j < N; ++j){
+		_distance[j] *= _rattlers[j];
+	}
 	//compute rms displacement from origin
 	_d = norm(_distance);
 	_rms = _d / sqrt(_Nnoratt);

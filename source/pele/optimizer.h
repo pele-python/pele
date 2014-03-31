@@ -155,13 +155,16 @@ public :
         }
         // copy the function and gradient
         f_ = f;
-        size_t N = x_.size();
+        g_.assign(grad);
+        /*size_t N = x_.size();
         for (size_t j2 = 0; j2 < N; ++j2){
             g_[j2] = grad[j2];
-        }
+        }*/
         rms_ = norm(g_) / sqrt(g_.size());
         func_initialized_ = true;
     }
+
+    virtual void reset(pele::Array<double> x0){throw std::runtime_error("GradientOptimizer::reset must be overloaded");}
 
     // functions for setting the parameters
     void set_tol(double tol) { tol_ = tol; }

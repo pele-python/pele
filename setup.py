@@ -151,7 +151,12 @@ cxx_modules = [
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    
+    Extension("pele.optimize._pele_opt", 
+              ["pele/optimize/_pele_opt.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
     Extension("pele.optimize._lbfgs_cpp", 
               ["pele/optimize/_lbfgs_cpp.cpp", "source/lbfgs.cpp"] + include_sources,
               include_dirs=include_dirs,

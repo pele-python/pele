@@ -100,13 +100,12 @@ namespace pele{
     	  			  "because the gradient is already initialised by BaseIntegrator");
           }
 
-      inline void reset(Array<double>& x0)
+      inline void reset(Array<double> x0)
       {
     	  //arrays are already wrapped by the integrator, must not wrap them again, just update their values, dont's use array.copy()
     	  // or will wrap a copy to the array
-    	  assert(x0.size() == x_.size());
     	  iter_number_ = 0;
-    	  for(int k=0; k<x_.size();++k){x_[k] = x0[k];}
+    	  x_.assign(x0);
     	  f_ = potential_->get_energy_gradient(x_, g_);
     	  nfev_ = 1;
     	  //fire specific
@@ -115,9 +114,9 @@ namespace pele{
     	  _a = _astart;
     	  _fold = f_;
     	  rms_ = norm(g_) / sqrt(g_.size());
+    	  _xold.assign(x_);
+    	  _gold.assign(g_);
     	  for(int k=0; k<x_.size();++k){
-			  _xold[k] = x0[k];
-			  _gold[k] = g_[k];
 			  _v[k] = -g_[k]*_dt;
     	  }
     	  _integrator.set_dt(_dt);
@@ -150,10 +149,7 @@ namespace pele{
 
 	  //save old configuration in case next step has P < 0
 	  _fold = f_; //set f_ old before integration step
-	  for(k=0; k<x_.size();++k) //save x as xold (gold is saved in the integrator)
-	  {
-		  _xold[k] = x_[k];
-	  }
+	  _xold.assign(x_); //save x as xold (gold is saved in the integrator)
 
 	  /*equation written in this conditional statement _v = (1- _a)*_v + _a * funit * vnorm*/
 	  ifnorm = 1. / norm(g_);
@@ -186,21 +182,15 @@ namespace pele{
 		  _a = _astart;
 		  _fire_iter_number = 0;
 		  _integrator.set_dt(_dt);
-
-		  for(k=0; k<x_.size();++k)
-		  {
-			_v[k] = 0;
-		  }
+		  _v.assign(0);
 
 		  //reset position and gradient to the one before the step (core of modified fire) reset velocity to initial (0)
 		  if (_stepback == true)
 		  {
 			  f_ = _fold;
-			  for(k=0; k<x_.size();++k) //reset position and gradient to the one before the step (core of modified fire) reset velocity to initial (0)
-			  {
-				  x_[k] = _xold[k];
-				  g_[k] = _gold[k]; //gold is updated in velocity verlet and its wrapped in function_gradient_initializer
-			  }
+			  //reset position and gradient to the one before the step (core of modified fire) reset velocity to initial (0)
+			  x_.assign(_xold);
+			  g_.assign(_gold);
 		  }
 	  }
   }
