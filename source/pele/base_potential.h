@@ -63,12 +63,20 @@ namespace pele {
         }
 
         /**
+		 * compute the hessian.  If not overloaded it will compute the numerical hessian
+		 */
+		virtual void hessian(Array<double> x, Array<double> hess)
+		{
+			numerical_hessian(x, hess);
+		}
+
+        /**
          * compute the numerical gradient
          */
         virtual void numerical_hessian(Array<double> x, Array<double> hess, double eps=1e-6)
         {
             if (hess.size() != x.size()*x.size()) {
-                throw std::invalid_argument("hess.size() be the same as x.size()");
+                throw std::invalid_argument("hess.size() be the same as x.size()*x.size()");
             }
             size_t const N = x.size();
 

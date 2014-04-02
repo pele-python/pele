@@ -164,7 +164,7 @@ public :
         func_initialized_ = true;
     }
 
-    virtual void reset(pele::Array<double> x0){throw std::runtime_error("GradientOptimizer::reset must be overloaded");}
+    virtual void reset(pele::Array<double> &x0){throw std::runtime_error("GradientOptimizer::reset must be overloaded");}
 
     // functions for setting the parameters
     void set_tol(double tol) { tol_ = tol; }

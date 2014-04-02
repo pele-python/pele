@@ -77,7 +77,7 @@ namespace pele {
 			else if(r < coff)
 			{
 				E = 4.*_eps*(- C6 * ir6 + C12 * ir12) + _eps;
-				*gij = 4.*_eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / (dr*r); // this is -g|gij| (for consistency with the loop in pairwise potential)
+				*gij = 4.*_eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / r; //2/4/13 removed 1/dr, this is -g|gij| (for consistency with the loop in pairwise potential)
 			}
 			else
 			{

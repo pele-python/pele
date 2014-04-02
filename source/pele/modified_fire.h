@@ -100,7 +100,7 @@ namespace pele{
     	  			  "because the gradient is already initialised by BaseIntegrator");
           }
 
-      inline void reset(Array<double> x0)
+      inline void reset(Array<double> &x0)
       {
     	  //arrays are already wrapped by the integrator, must not wrap them again, just update their values, dont's use array.copy()
     	  // or will wrap a copy to the array
@@ -120,7 +120,6 @@ namespace pele{
 			  _v[k] = -g_[k]*_dt;
     	  }
     	  _integrator.set_dt(_dt);
-    	  func_initialized_ = true;
       }
 
 

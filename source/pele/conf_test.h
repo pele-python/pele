@@ -1,6 +1,7 @@
 #ifndef _PELE_CONF_TEST_H__
 #define _PELE_CONF_TEST_H__
 
+#include <iostream>
 #include <math.h>
 #include <algorithm>
 #include <random>
@@ -8,6 +9,7 @@
 #include "array.h"
 #include "mc.h"
 #include "optimizer.h"
+#include "distance.h"
 
 using std::runtime_error;
 using pele::Array;
@@ -74,12 +76,14 @@ bool CheckSphericalContainer::test(Array<double> &trial_coords, MC * mc)
 
 class CheckSameMinimum:public ConfTest{
 protected:
+	pele::periodic_distance _periodic_dist;
 	pele::GradientOptimizer * _optimizer;
-	Array<double> _origin, _rattlers, _distance;
+	Array<double> _origin, _hs_radii, _rattlers, _distance;
 	double _dtol, _d, _rms;
-	int _Nnoratt;
+	size_t _N, _Nnoratt, _nparticles, _ialign;
 public:
-	CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> rattlers, double dtol);
+	CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> hs_radii, Array<double> boxvec,
+			Array<double> rattlers, double dtol);
 	virtual bool test(Array<double> &trial_coords, MC * mc);
 	virtual ~CheckSameMinimum(){}
 	double get_distance(){return _d;}
@@ -87,36 +91,94 @@ public:
 		Array<double> x(_distance.copy());
 		return x;
 	}
+	inline bool check_overlap(Array<double> &trial_coords);
+	inline void align(Array<double> &trial_coords);
 };
 
-CheckSameMinimum::CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> rattlers, double dtol):
-		_optimizer(optimizer), _origin(origin), _rattlers(rattlers),
-		_distance(origin.size()),_dtol(dtol),_d(0),
-		_rms(0),_Nnoratt(0){
-		for(int i=0;i<_rattlers.size();++i){
-			_Nnoratt += _rattlers[i];
+CheckSameMinimum::CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> hs_radii,
+		Array<double> boxvec, Array<double> rattlers, double dtol):
+		_periodic_dist(boxvec[0], boxvec[1], boxvec[2]),
+		_optimizer(optimizer), _origin(origin), _hs_radii(hs_radii.copy()),
+		_rattlers(rattlers), _distance(origin.size(),0),_dtol(dtol),_d(0),
+		_rms(0),_N(origin.size()),_Nnoratt(0), _nparticles(_N/3), _ialign(0){
+			for(size_t i=0;i<_N;++i){_Nnoratt += _rattlers[i];}
+			//also find first non rattler
+			for(size_t i=0;i<_N;++i){
+				if (_rattlers[i] == 1){
+					_ialign=3; //i ->3 is only for testing reasons!!!!!!!!!
+					break;}
+			}
 		}
+
+inline void CheckSameMinimum::align(Array<double> &trial_coords){
+	size_t i,j, i1;
+	double dr[3];
+
+	//not sure whether I should be using periodic distance here
+	_periodic_dist.get_rij(dr, &_origin[_ialign*3], &trial_coords[_ialign*3]);
+	//std::cout<<"dr "<<dr[0]<<" "<<dr[1]<<" "<<dr[2]<<std::endl;
+	for(i=0;i<_nparticles;++i){
+			i1 = 3*i;
+			for(j=0;j<3;++j){
+				trial_coords[i1+j] += dr[j];
+			}
+	}
+}
+
+inline bool CheckSameMinimum::check_overlap(Array<double> &trial_coords){
+	size_t i,j, i1, j1;
+	double dr[3];
+	double dij2,dij;
+
+	for(i=0;i<_nparticles;++i){
+		i1 = 3*i;
+		for(j=0;j<_nparticles;++j){
+			if(i != j){
+				j1 = 3*j;
+				_periodic_dist.get_rij(dr, &trial_coords[i1], &trial_coords[j1]);
+				dij2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+				dij = sqrt(dij2);
+				dij -= (_hs_radii[i] + _hs_radii[j]);
+				if (dij <= 0)
+					return false;
+				}
+			}
+		}
+
+	return true;
 }
 
 bool CheckSameMinimum::test(Array<double> &trial_coords, MC * mc)
 {
-	bool quench_success;
+	bool quench_success, no_overlap;
+	size_t nfev;
+
+	no_overlap = this->check_overlap(trial_coords);
+
+	if (! no_overlap)
+		return false;
 
 	_optimizer->reset(trial_coords);
 	_optimizer->run();
-	quench_success = _optimizer->success();
+
+	//add number of energy evaluations to mc eval count
+	nfev = _optimizer->get_niter();
+	mc->_neval += nfev;
+
 	//first test: minimisation must have converged
-	if (quench_success == false)
-	  return false;
+	quench_success = _optimizer->success();
+	if (! quench_success)
+		return false;
 
 	//copy coordinates of quenched structure
-	_distance = (_optimizer->get_x()).copy();
+	_distance.assign(_optimizer->get_x());
+	//align
+	this->align(_distance);
 	//compute distances subtracting the origin's coordinates
 	_distance -= _origin;
 	//set to 0 distances of rattlers
-	size_t N = _distance.size();
-	for (size_t j = 0; j < N; ++j){
-		_distance[j] *= _rattlers[j];
+	for (size_t l = 0; l < _N; ++l){
+		_distance[l] *= _rattlers[l];
 	}
 	//compute rms displacement from origin
 	_d = norm(_distance);

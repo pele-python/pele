@@ -47,7 +47,7 @@ class Metropolis_MCrunner(_base_MCrunner):
         i32max = np.iinfo(np.int32).max
         
         self.binsize = hbinsize
-        self.histogram = RecordEnergyHistogram(hEmin,hEmax,self.binsize)
+        self.histogram = RecordEnergyHistogram(hEmin,hEmax,self.binsize, adjustf_niter)
         self.adjust_step = AdjustStep(acceptance, adjustf, adjustf_niter, adjustf_navg)
         self.step = RandomCoordsDisplacement(self.ndim, np.random.randint(i32max))
         self.metropolis = MetropolisTest(np.random.randint(i32max))
@@ -67,7 +67,7 @@ class Metropolis_MCrunner(_base_MCrunner):
     
     def dump_histogram(self, fname):
         """write histogram to fname"""
-        Emin, Emax = self.histogram.get_Ebounds()
+        Emin, Emax = self.histogram.get_bounds_val()
         histl = self.histogram.get_histogram()
         hist = np.array(histl)
         Energies, step = np.linspace(Emin,Emax,num=len(hist),endpoint=False,retstep=True)
@@ -76,7 +76,7 @@ class Metropolis_MCrunner(_base_MCrunner):
     
     def get_histogram(self):
         """returns a energy list and a histogram list"""
-        Emin, Emax = self.histogram.get_Ebounds()
+        Emin, Emax = self.histogram.get_bounds_val()
         histl = self.histogram.get_histogram()
         hist = np.array(histl)
         Energies, step = np.linspace(Emin,Emax,num=len(hist),endpoint=False,retstep=True)

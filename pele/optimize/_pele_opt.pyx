@@ -14,11 +14,11 @@ cdef class GradientOptimizer(object):
     
     Notes
     -----
-    for direct access to the underlying c++ potential use self.thisptr
+    for direct access to the underlying c++ optimizer use self.thisptr
     """
     def __cinit__(self, *args, **kwargs):
         # store an instance to the current c++ class, will be used in every call
-        self.thisptr = NULL#<cBasePotential*>new cBasePotential()
+        self.thisptr = NULL #<cBasePotential*>new cBasePotential()
     
     def __dealloc__(self):
         if self.thisptr != NULL:

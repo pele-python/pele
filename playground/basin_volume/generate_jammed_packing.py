@@ -113,7 +113,7 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
     *mu: average particle size, passable to normal distribution
     *sig: standard deviaton of normal distribution from which to sample particles
     *sca: determines % by which the hs is inflated
-    *eps: LJ interaction energy of WCA part of the HS potential, here irrelevant because 'sca' is set to 0
+    *eps: LJ interaction energy of WCA part of the HS potential
     """    
     def __init__(self, packing_frac=0.7, packings_dir='packings'):
         super(HS_Generate_Jammed_Packing,self).__init__(packing_frac=packing_frac, packings_dir=packings_dir)
@@ -142,7 +142,7 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
     
     def _generate_packing_coords(self):
         """quenches the imported structure using FIRE"""
-        res = modifiedfire_cpp(self.coords,self.potential,nsteps=1e5, tol=1e-4)
+        res = modifiedfire_cpp(self.coords,self.potential,nsteps=1e6, tol=1e-5)
         assert(res.success == True)
         self.coords = res.coords
         self.energy = res.energy
@@ -208,7 +208,7 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
         f = open(fname,'w')
         for i in xrange(self.nparticles):
             f.write('{:<12}\t{:<12}\t{:<12}\t{:<12}\n'.format(coords[i*self.bdim],coords[i*self.bdim+1],
-                                                               coords[i*self.bdim+2],self.hs_radii[i]))
+                                                               coords[i*self.bdim+2],self.hs_radii[i]*2))
         f.close()
     
     def _write_opengl_input(self,n):

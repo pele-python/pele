@@ -76,8 +76,9 @@ class RecordEnergyHistogram : public Action {
 protected:
 	pele::Histogram * _hist;
 	double _bin;
+	size_t _eqsteps, _count;
 public:
-	RecordEnergyHistogram(double min, double max, double bin);
+	RecordEnergyHistogram(double min, double max, double bin, size_t eqsteps);
 	virtual ~RecordEnergyHistogram() {delete _hist;}
 
 	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
@@ -105,10 +106,13 @@ public:
 		};
 };
 
-RecordEnergyHistogram::RecordEnergyHistogram(double min, double max, double bin):
-			_hist(new pele::Histogram(min, max, bin)),_bin(bin){}
+RecordEnergyHistogram::RecordEnergyHistogram(double min, double max, double bin, size_t eqsteps):
+			_hist(new pele::Histogram(min, max, bin)),_bin(bin),
+			_eqsteps(eqsteps),_count(0){}
 
 void RecordEnergyHistogram::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
+	_count = mc->get_iterations_count();
+	if (_count > _eqsteps)
 		_hist->add_entry(energy);
 }
 
@@ -120,29 +124,32 @@ protected:
 	pele::Array<double> _origin, _rattlers, _distance;
 	size_t _N;
 public:
-	RecordDisp2Histogram(pele::Array<double> origin, pele::Array<double> rattlers, double min, double max, double bin);
+	RecordDisp2Histogram(pele::Array<double> origin, pele::Array<double> rattlers, double min, double max, double bin, size_t eqsteps);
 	virtual ~RecordDisp2Histogram() {delete _hist;}
 	virtual void action(Array<double> &coords, double energy, bool accepted, MC* mc);
 };
 
-RecordDisp2Histogram::RecordDisp2Histogram(pele::Array<double> origin, pele::Array<double> rattlers, double min, double max, double bin):
-		RecordEnergyHistogram(min, max, bin),
+RecordDisp2Histogram::RecordDisp2Histogram(pele::Array<double> origin, pele::Array<double> rattlers, double min, double max, double bin, size_t eqsteps):
+		RecordEnergyHistogram(min, max, bin, eqsteps),
 		_origin(origin.copy()),_rattlers(rattlers.copy()),
 		_distance(origin.size()),_N(origin.size()){}
 
 void RecordDisp2Histogram::action(Array<double> &coords, double energy, bool accepted, MC* mc) {
 		double _d;
-
-		_distance.assign(coords);
-		//compute distances subtracting the origin's coordinates
-		_distance -= _origin;
-		//set to 0 distances of rattlers
-		for (size_t j = 0; j < _N; ++j){
-			_distance[j] *= _rattlers[j];
+		_count = mc->get_iterations_count();
+		if (_count > _eqsteps)
+		{
+			_distance.assign(coords);
+			//compute distances subtracting the origin's coordinates
+			_distance -= _origin;
+			//set to 0 distances of rattlers
+			for (size_t j = 0; j < _N; ++j){
+				_distance[j] *= _rattlers[j];
+			}
+			//compute square displacement from origin
+			_d = norm(_distance);
+			_hist->add_entry(_d*_d);
 		}
-		//compute square displacement from origin
-		_d = norm(_distance);
-		_hist->add_entry(_d*_d);
 }
 
 

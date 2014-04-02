@@ -25,7 +25,7 @@ cdef extern from "pele/optimizer.h" namespace "pele":
         void set_max_iter(int) except+
         void set_iprint(int) except+
         void set_verbosity(int) except+
-        void reset(_pele.Array[double]) except+
+        void reset(_pele.Array[double]&) except+
         _pele.Array[double] get_x() except+
         _pele.Array[double] get_g() except+
         double get_f() except+
