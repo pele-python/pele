@@ -66,6 +66,8 @@ namespace pele {
             if (_reference_count != NULL){
                 *_reference_count += 1;
             }
+//            std::cout << "copy constructor: reference count " << _reference_count
+//                    << " " << *_reference_count << "\n";
         }
 
         /**
@@ -99,7 +101,11 @@ namespace pele {
 
         long int reference_count()
         {
-        	return *_reference_count;
+            if (_reference_count == NULL){
+                return 0;
+            } else {
+                return *_reference_count;
+            }
         }
 
         /**
@@ -113,14 +119,14 @@ namespace pele {
                 if (*_reference_count < 0)
                     throw std::logic_error("reference_count cannot be less than zero. Something went wrong");
                 if (*_reference_count == 0){
-                    delete[] _allocated_memory; 
-                    delete _reference_count; 
-                    _data = NULL; 
-                    _allocated_memory = NULL; 
-                    _reference_count = NULL;
-                    _size = 0; 
+                    delete[] _allocated_memory;
+                    delete _reference_count;
                 }
             }
+            _allocated_memory = NULL;
+            _reference_count = NULL;
+            _data = NULL;
+            _size = 0;
         }
 
         /*
