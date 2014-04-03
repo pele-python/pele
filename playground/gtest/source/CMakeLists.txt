@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 2.8.1)
+cmake_policy(SET CMP0015 NEW)
+set(pele_include ../../../source)
+
+set(gtest_dir ../gtest-1.7.0)
+set(gtest_include ${gtest_dir}/include/)
+set(gtest_lib_dir ${gtest_dir}/build/)
+set(gtest_libs gtest gtest_main)
+message("pele include directory ${pele_include}")
+message("gtest include directory ${gtest_include}")
+message("gtest lib directory ${gtest_lib}")
+
+include_directories(${pele_include} ${gtest_include})
+link_directories(${gtest_lib_dir})
+add_executable(test1 test1.cpp)
+target_link_libraries(test1 ${gtest_libs} pthread)
