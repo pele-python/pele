@@ -1,6 +1,16 @@
-https://googletest.googlecode.com/files/gtest-1.7.0.zip
-unzip gtest-1.7.0.zip
-mv gtest-1.7.0 source/gtest
-mkdir build && cd build
-cmake ../source
-make -j8
+get gtest
+---------
+get gtest from googlecode.com
+
+  wget https://googletest.googlecode.com/files/gtest-1.7.0.zip
+
+unzip it and put it in source/gtest
+
+  unzip gtest-1.7.0.zip
+  mv gtest-1.7.0 source/gtest
+
+build the tests
+
+  mkdir build && cd build
+  cmake ../source
+  make -j8
