@@ -17,5 +17,5 @@ add_subdirectory(gtest)
 set(gtest_libs gtest gtest_main)
 
 # compile the tests
-add_executable(test1 test1.cpp)
-target_link_libraries(test1 ${gtest_libs} pthread)
+add_executable(test_main test_array.hpp test_main.cpp)
+target_link_libraries(test_main ${gtest_libs} pthread)

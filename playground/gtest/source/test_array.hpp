@@ -94,8 +94,6 @@ TEST(array_test, free){
     v.free();
 }
 
-
-
 TEST(array_test, wrapping_copying){
     pele::Array<double> v(6);
     pele::Array<double> v3(6);
@@ -111,7 +109,7 @@ TEST(array_test, wrapping_copying){
     }
 }
 
-int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+//int main(int argc, char **argv) {
+//    testing::InitGoogleTest(&argc, argv);
+//    return RUN_ALL_TESTS();
+//}
