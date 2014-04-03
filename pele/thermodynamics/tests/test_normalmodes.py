@@ -11,8 +11,10 @@ class TestNormalModes(unittest.TestCase):
     def setUp(self):
         import pele.rates.tests.__init__ as f
         dirname = os.path.dirname(f.__file__)
-        dbfname = os.path.join(dirname, "lj13.db")
-        self.system = LJCluster(13)
+        dbfname = os.path.join(dirname, "lj15.sqlite")
+        if not os.path.exists(dbfname):
+            raise IOError("database file %s does not exist" % dbfname)
+        self.system = LJCluster(15)
         self.db = self.system.create_database(dbfname, createdb=False)
     
     def check(self, fvib_expected, coords, nzero, nnegative, metric=None): 

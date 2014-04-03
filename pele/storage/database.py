@@ -319,7 +319,7 @@ class Database(object):
         if not os.path.isfile(db) or db == ":memory:":
             newfile = True
             if not createdb:
-                raise IOError("createdb is False, but database does not exist")
+                raise IOError("createdb is False, but database does not exist (%s)" % db)
         else:
             newfile = False
 
