@@ -1,7 +1,10 @@
 #include "pele/array.h"
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 #include <gtest/gtest.h>
+
+using pele::Array;
 
 TEST(array_test, constructor1){
     pele::Array<double> v;
@@ -15,13 +18,18 @@ TEST(array_test, constructor2){
     ASSERT_TRUE(v.data());
 }
 
-
 TEST(array_test, constructor3){
     pele::Array<double> v(6, 10.);
     ASSERT_EQ (6, v.size());
     for (int i = 0; i < 6; ++i){
         ASSERT_NEAR(v[i], 10., 1e-10);
     }
+}
+
+TEST(array_test, constructor4){
+    pele::Array<double> v(0);
+    ASSERT_EQ (0, v.size());
+    ASSERT_TRUE(v.empty());
 }
 
 TEST(array_test, copy_constructor){
@@ -62,6 +70,13 @@ TEST(array_test, assignment_operator){
     ASSERT_EQ(v.size(), v2.size());
 }
 
+TEST(array_test, assignment_operator_fail){
+    // This throwing an error is consistent with the logic, but I wish it didn't fail
+    // Maybe someday we can change the logic so this won't have to fail
+    pele::Array<double> v;
+    ASSERT_THROW(v = Array<double>(), std::runtime_error);
+}
+
 TEST(array_test, wrap_ok){
     pele::Array<double> v(6);
     ASSERT_EQ(v.reference_count(), 1);
@@ -94,22 +109,66 @@ TEST(array_test, free){
     v.free();
 }
 
-TEST(array_test, wrapping_copying){
+TEST(array_test, copy){
     pele::Array<double> v(6);
-    pele::Array<double> v3(6);
-    ASSERT_NE(v.data(), v3.data());
-    v3 = v;
-    ASSERT_EQ(v.data(), v3.data());
-    v3 = v.copy();
-    ASSERT_NE(v.data(), v3.data());
-    v3.assign(v);
-    ASSERT_NE(v.data(), v3.data());
+    pele::Array<double> v2(6);
+    v2 = v.copy();
+    ASSERT_NE(v.data(), v2.data());
     for (int i = 0; i < 6; ++i){
-        ASSERT_NEAR(v[i], v3[i], 1e-10);
+        ASSERT_NEAR(v[i], v2[i], 1e-10);
+    }
+}
+TEST(array_test, assign){
+    pele::Array<double> v(6);
+    pele::Array<double> v2(6);
+    v2.assign(v);
+    ASSERT_NE(v.data(), v2.data());
+    for (int i = 0; i < 6; ++i){
+        ASSERT_NEAR(v[i], v2[i], 1e-10);
     }
 }
 
-//int main(int argc, char **argv) {
-//    testing::InitGoogleTest(&argc, argv);
-//    return RUN_ALL_TESTS();
-//}
+TEST(array_test, assign_fail){
+    pele::Array<double> v(6);
+    pele::Array<double> v2;
+    ASSERT_THROW(v2.assign(v), std::runtime_error);
+    v2 = Array<double>(1);
+    ASSERT_THROW(v2.assign(v), std::runtime_error);
+    v2.free();
+    v.free();
+    v2.assign(v); //this is pointless, but it shouldn't fail
+}
+
+TEST(array_test, vector_construct){
+    std::vector<double> vec(6);
+    pele::Array<double> v(vec);
+    ASSERT_FALSE(v.empty());
+    ASSERT_EQ(v.reference_count(), 0);
+    ASSERT_EQ(v.data(), vec.data());
+    ASSERT_EQ(v.size(), vec.size());
+    pele::Array<double> v2(v);
+    ASSERT_EQ(v.data(), v2.data());
+    v2.free();
+    v2 = v;
+    ASSERT_EQ(v.data(), v2.data());
+    v2.free();
+    v2.wrap(v);
+    ASSERT_EQ(v.data(), v2.data());
+
+    v.free();
+    v2.free();
+    vec[0] = 0; // the data in vec should not have been deallocated
+}
+
+TEST(array_test, resize){
+    Array<double> v(3);
+    double * old_data = v.data();
+    v.resize(6);
+    ASSERT_NE(v.data(), old_data);
+    v.resize(0);
+    ASSERT_TRUE(v.empty());
+    v.resize(6);
+    // you can't resize a wrapped array
+    Array<double> v2(v);
+    ASSERT_THROW(v.resize(7), std::runtime_error);
+}
