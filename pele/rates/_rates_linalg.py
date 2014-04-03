@@ -3,6 +3,7 @@ from itertools import izip
 from collections import defaultdict
 
 import numpy as np
+import scipy.sparse
 import scipy.sparse.linalg
 import networkx as nx
 
@@ -185,8 +186,11 @@ class CommittorLinalg(object):
             t0 = time.clock()
             committors = scipy.sparse.linalg.spsolve(self.matrix, self.right_side)
             self.time_solve += time.clock() - t0
-        if np.any(committors < 0) or np.any(committors > 1):
-            raise LinalgError("The committors are not all between 0 and 1")
+        eps = 1e-10
+        if np.any(committors < -eps) or np.any(committors > 1+eps):
+            qmax = committors.max()
+            qmin = committors.min()
+            raise LinalgError("The committors are not all between 0 and 1.  max=%.18g, min=%.18g" % (qmax, qmin))
         self.committor_dict = dict(((node, c) for node, c in izip(self.node_list, committors)))
 #        self.committors = committors
 #        print "committors", committors
