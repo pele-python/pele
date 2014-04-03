@@ -30,8 +30,17 @@ install:
   - pip install networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
+  # build the c++ tests
+  - cd playground/gtest
+  - cpp_test_dir=$PWD
+  - ./get_gtest.sh
+  - mkdir build && cd build
+  - cmake ../source
+  - make
 
 script:
   # avoid running in the checkout directory so nose finds built modules..
   - cd $HOME
   - nosetests pele
+  # do the c++ tests
+  - $cpp_test_dir/build/test_main
