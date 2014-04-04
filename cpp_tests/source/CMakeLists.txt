@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 #cmake_policy(SET CMP0015 NEW)
 
 # set the pele include directory
-set(pele_include ../../../source)
+set(pele_include ../../source)
 message("pele include directory ${pele_include}")
 
 # add gtest include directory

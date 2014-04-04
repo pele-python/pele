@@ -31,7 +31,7 @@ install:
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
   # build the c++ tests
-  - cd playground/gtest
+  - cd cpp_tests
   - cpp_test_dir=$PWD
   - ./get_gtest.sh
   - mkdir build && cd build
