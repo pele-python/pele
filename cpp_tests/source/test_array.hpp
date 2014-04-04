@@ -6,19 +6,26 @@
 
 using pele::Array;
 
-TEST(array_test, constructor1){
+TEST(ArrayTest, DefaultConstructor_IsOK){
     pele::Array<double> v;
     ASSERT_EQ(0, v.size());
     ASSERT_FALSE(v.data());
+    ASSERT_TRUE(v.empty());
 }
 
-TEST(array_test, constructor2){
+TEST(ArrayTest, Constructor_HandlesPositiveInput){
     pele::Array<double> v(6);
     ASSERT_EQ (6, v.size());
     ASSERT_TRUE(v.data());
 }
 
-TEST(array_test, constructor3){
+TEST(ArrayTest, Constructor_HandlesZero){
+    pele::Array<double> v(0);
+    ASSERT_EQ (0, v.size());
+    ASSERT_TRUE(v.empty());
+}
+
+TEST(ArrayTest, Constructor_SetsValue){
     pele::Array<double> v(6, 10.);
     ASSERT_EQ (6, v.size());
     for (int i = 0; i < 6; ++i){
@@ -26,13 +33,7 @@ TEST(array_test, constructor3){
     }
 }
 
-TEST(array_test, constructor4){
-    pele::Array<double> v(0);
-    ASSERT_EQ (0, v.size());
-    ASSERT_TRUE(v.empty());
-}
-
-TEST(array_test, copy_constructor){
+TEST(ArrayTest, CopyConstructor_WrapsCorrectly){
     // should wrap v
     pele::Array<double> v(6);
     pele::Array<double> v2(v);
@@ -40,7 +41,7 @@ TEST(array_test, copy_constructor){
     ASSERT_EQ(v.size(), v2.size());
 }
 
-TEST(array_test, copy_constructor_fail1){
+TEST(ArrayTest, FreeWrappedArray_Works){
     // I discovered an error with this test
     pele::Array<double> v(6);
     pele::Array<double> v2(v);
@@ -51,17 +52,13 @@ TEST(array_test, copy_constructor_fail1){
 }
 
 
-TEST(array_test, copy_constructor_fail){
+TEST(ArrayTest, CopyConstructorEmptyArray_Fails){
     // should wrap v
     pele::Array<double> v;
     ASSERT_THROW(pele::Array<double> v2(v), std::runtime_error);
-    pele::Array<double> v3(6);
-    pele::Array<double> v6(v3);
-//    v3.free();
-//    ASSERT_THROW(pele::Array<double> v4(v3), std::runtime_error);
 }
 
-TEST(array_test, assignment_operator){
+TEST(ArrayTest, AssignmentOperator_WrapsCorrectly){
     // should wrap v
     pele::Array<double> v(6);
     pele::Array<double> v2;
@@ -70,14 +67,16 @@ TEST(array_test, assignment_operator){
     ASSERT_EQ(v.size(), v2.size());
 }
 
-TEST(array_test, assignment_operator_fail){
+TEST(ArrayTest, AssignmentOperatorEmptyArray_Fails){
     // This throwing an error is consistent with the logic, but I wish it didn't fail
     // Maybe someday we can change the logic so this won't have to fail
     pele::Array<double> v;
     ASSERT_THROW(v = Array<double>(), std::runtime_error);
+    pele::Array<double> v2;
+    ASSERT_THROW(v = v2, std::runtime_error);
 }
 
-TEST(array_test, wrap_ok){
+TEST(ArrayTest, Wrap_Works){
     pele::Array<double> v(6);
     ASSERT_EQ(v.reference_count(), 1);
     pele::Array<double> v2;
@@ -87,29 +86,30 @@ TEST(array_test, wrap_ok){
     ASSERT_EQ(v2.reference_count(), v.reference_count());
 }
 
-TEST(array_test, wrap_fail){
+TEST(ArrayTest, WrapEmptyArray_Fails){
     // can't wrap an array with no data
     pele::Array<double> v;
     pele::Array<double> v2;
     ASSERT_THROW(v2.wrap(v), std::runtime_error);
 }
 
-TEST(array_test, wrap_self){
+TEST(ArrayTest, WrapSelf_DoesNothing){
     pele::Array<double> v(6);
     ASSERT_EQ(v.reference_count(), 1);
     v.wrap(v);
     ASSERT_EQ(v.reference_count(), 1);
 }
 
-TEST(array_test, free){
+TEST(ArrayTest, Free_Works){
     pele::Array<double> v(6);
     v.free();
     ASSERT_EQ (0, v.size());
     ASSERT_FALSE(v.data());
+    ASSERT_TRUE(v.empty());
     v.free();
 }
 
-TEST(array_test, copy){
+TEST(ArrayTest, Copy_WorksNotWrap){
     pele::Array<double> v(6);
     pele::Array<double> v2(6);
     v2 = v.copy();
@@ -118,7 +118,8 @@ TEST(array_test, copy){
         ASSERT_NEAR(v[i], v2[i], 1e-10);
     }
 }
-TEST(array_test, assign){
+
+TEST(ArrayTest, Assign_CopiesNoWrap){
     pele::Array<double> v(6);
     pele::Array<double> v2(6);
     v2.assign(v);
@@ -128,18 +129,20 @@ TEST(array_test, assign){
     }
 }
 
-TEST(array_test, assign_fail){
+TEST(ArrayTest, AssignWrongSize_Fails){
     pele::Array<double> v(6);
     pele::Array<double> v2;
     ASSERT_THROW(v2.assign(v), std::runtime_error);
     v2 = Array<double>(1);
+    ASSERT_THROW(v2.assign(v), std::runtime_error);
+    v2 = Array<double>(8);
     ASSERT_THROW(v2.assign(v), std::runtime_error);
     v2.free();
     v.free();
     v2.assign(v); //this is pointless, but it shouldn't fail
 }
 
-TEST(array_test, vector_construct){
+TEST(ArrayTest, ConstructFromVector_Wraps){
     std::vector<double> vec(6);
     pele::Array<double> v(vec);
     ASSERT_FALSE(v.empty());
@@ -160,7 +163,7 @@ TEST(array_test, vector_construct){
     vec[0] = 0; // the data in vec should not have been deallocated
 }
 
-TEST(array_test, resize){
+TEST(ArrayTest, Resize_Works){
     Array<double> v(3);
     double * old_data = v.data();
     v.resize(6);
