@@ -16,6 +16,9 @@ message("gtest include directory ${gtest_include}")
 add_subdirectory(gtest)
 set(gtest_libs gtest gtest_main)
 
+# build the lbfgs library
+add_library(lbfgs_lib ${pele_include}/lbfgs.cpp)
+
 # compile the tests
 add_executable(test_main test_array.hpp test_main.cpp)
-target_link_libraries(test_main ${gtest_libs} pthread)
+target_link_libraries(test_main lbfgs_lib ${gtest_libs} pthread)
