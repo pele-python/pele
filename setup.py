@@ -106,7 +106,7 @@ include_dirs = [numpy_include, "source"]
 depends = ["source/pele" + f for f in os.listdir("source/pele/") 
            if f.endswith(".cpp") or f.endswith(".h")]
 
-extra_compile_args = ["-std=c++0x","-Wall", "-Wextra", '-funroll-loops', "-march=native", "-mtune=native", "-O3"]
+extra_compile_args = ["-std=c++0x","-Wall", "-Wextra", "-O3", "-march=native", "-mtune=native"]
 # uncomment the next line to add extra optimization options
 # extra_compile_args = ["-Wall", '-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
 

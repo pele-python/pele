@@ -77,6 +77,7 @@ bool CheckSphericalContainer::test(Array<double> &trial_coords, MC * mc)
 class CheckSameMinimum:public ConfTest{
 protected:
 	pele::periodic_distance _periodic_dist;
+	pele::cartesian_distance _cartesian_dist;
 	pele::GradientOptimizer * _optimizer;
 	Array<double> _origin, _hs_radii, _rattlers, _distance;
 	double _dtol, _d, _rms;
@@ -85,7 +86,10 @@ public:
 	CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> hs_radii, Array<double> boxvec,
 			Array<double> rattlers, double dtol);
 	virtual bool test(Array<double> &trial_coords, MC * mc);
-	virtual ~CheckSameMinimum(){}
+	virtual ~CheckSameMinimum(){
+		if (_optimizer != NULL)
+			delete _optimizer;
+	}
 	double get_distance(){return _d;}
 	Array<double> get_distance_array(){
 		Array<double> x(_distance.copy());
@@ -93,11 +97,13 @@ public:
 	}
 	inline bool check_overlap(Array<double> &trial_coords);
 	inline void align(Array<double> &trial_coords);
+	inline void get_periodic_distance(Array<double> &trial_coords);
 };
 
 CheckSameMinimum::CheckSameMinimum(pele::GradientOptimizer * optimizer, Array<double> origin, Array<double> hs_radii,
 		Array<double> boxvec, Array<double> rattlers, double dtol):
 		_periodic_dist(boxvec[0], boxvec[1], boxvec[2]),
+		_cartesian_dist(pele::cartesian_distance()),
 		_optimizer(optimizer), _origin(origin), _hs_radii(hs_radii.copy()),
 		_rattlers(rattlers), _distance(origin.size(),0),_dtol(dtol),_d(0),
 		_rms(0),_N(origin.size()),_Nnoratt(0), _nparticles(_N/3), _ialign(0){
@@ -114,8 +120,9 @@ inline void CheckSameMinimum::align(Array<double> &trial_coords){
 	size_t i,j, i1;
 	double dr[3];
 
-	//not sure whether I should be using periodic distance here
-	_periodic_dist.get_rij(dr, &_origin[_ialign*3], &trial_coords[_ialign*3]);
+	//it shouldn't matter whether one uses periodic or cartesian distance here
+	//because the rms displacement at the end of the test is che
+	_cartesian_dist.get_rij(dr, &_origin[_ialign*3], &trial_coords[_ialign*3]);
 	//std::cout<<"dr "<<dr[0]<<" "<<dr[1]<<" "<<dr[2]<<std::endl;
 	for(i=0;i<_nparticles;++i){
 			i1 = 3*i;
@@ -124,6 +131,20 @@ inline void CheckSameMinimum::align(Array<double> &trial_coords){
 			}
 	}
 }
+
+inline void CheckSameMinimum::get_periodic_distance(Array<double> &trial_coords){
+	size_t i,i1;
+	double dr[3];
+
+	for(i=0;i<_nparticles;++i){
+		i1 = 3*i;
+		_periodic_dist.get_rij(dr, &_origin[i1], &trial_coords[i1]);
+		_distance[i1] = dr[0];
+		_distance[i1+1] = dr[1];
+		_distance[i1+2] = dr[2];
+		}
+}
+
 
 inline bool CheckSameMinimum::check_overlap(Array<double> &trial_coords){
 	size_t i,j, i1, j1;
@@ -170,12 +191,14 @@ bool CheckSameMinimum::test(Array<double> &trial_coords, MC * mc)
 	if (! quench_success)
 		return false;
 
-	//copy coordinates of quenched structure
+	//copy coordinates of quenched structure into _distance array
 	_distance.assign(_optimizer->get_x());
 	//align
 	this->align(_distance);
-	//compute distances subtracting the origin's coordinates
-	_distance -= _origin;
+
+	//compute distances subtracting the origin's coordinates using PBC
+	this->get_periodic_distance(_distance);
+
 	//set to 0 distances of rattlers
 	for (size_t l = 0; l < _N; ++l){
 		_distance[l] *= _rattlers[l];

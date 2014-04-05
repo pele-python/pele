@@ -22,34 +22,42 @@ namespace pele {
 
         long int *_reference_count;
     public:
-        Array() : _data(NULL), _allocated_memory(NULL), _size(0), _reference_count(NULL) {}
+        Array()
+            : _data(NULL), _allocated_memory(NULL), _size(0), _reference_count(NULL)
+        {}
 
         /** 
          * create array with specific size and allocate memory
          */
-        Array(size_t size) : _size(size) 
+        Array(size_t size)
+            : _data(NULL), _allocated_memory(NULL), _size(size), _reference_count(NULL)
         { 
-            _allocated_memory = new dtype[size]; 
-            _data = _allocated_memory;
-            _reference_count = new long int;
-            *_reference_count = 1;
+            if (size > 0){
+                _allocated_memory = new dtype[size];
+                _data = _allocated_memory;
+                _reference_count = new long int;
+                *_reference_count = 1;
+            }
         }
 
         /**
          * create array with specific size and values and allocate memory
          */
 
-        Array(size_t size, dtype val) : _size(size)
+        Array(size_t size, dtype val)
+            : _data(NULL), _allocated_memory(NULL), _size(size), _reference_count(NULL)
+        {
+            if (size > 0){
+                _allocated_memory = new dtype[size];
+                _data = _allocated_memory;
+                _reference_count = new long int;
+                *_reference_count = 1;
+                for (size_t i=0; i<_size; ++i)
                 {
-                    _allocated_memory = new dtype[size];
-                    _data = _allocated_memory;
-                    _reference_count = new long int;
-                    *_reference_count = 1;
-                    for (size_t i=0; i<_size; ++i)
-                    {
-                    	_data[i] = val;
-                    }
+                    _data[i] = val;
                 }
+            }
+        }
 
         /** 
          * wrap another array
@@ -66,6 +74,8 @@ namespace pele {
             if (_reference_count != NULL){
                 *_reference_count += 1;
             }
+//            std::cout << "copy constructor: reference count " << _reference_count
+//                    << " " << *_reference_count << "\n";
         }
 
         /**
@@ -99,7 +109,11 @@ namespace pele {
 
         long int reference_count()
         {
-        	return *_reference_count;
+            if (_reference_count == NULL){
+                return 0;
+            } else {
+                return *_reference_count;
+            }
         }
 
         /**
@@ -113,14 +127,14 @@ namespace pele {
                 if (*_reference_count < 0)
                     throw std::logic_error("reference_count cannot be less than zero. Something went wrong");
                 if (*_reference_count == 0){
-                    delete[] _allocated_memory; 
-                    delete _reference_count; 
-                    _data = NULL; 
-                    _allocated_memory = NULL; 
-                    _reference_count = NULL;
-                    _size = 0; 
+                    delete[] _allocated_memory;
+                    delete _reference_count;
                 }
             }
+            _allocated_memory = NULL;
+            _reference_count = NULL;
+            _data = NULL;
+            _size = 0;
         }
 
         /*
@@ -213,8 +227,8 @@ namespace pele {
          * data or if the data has not been allocated yet.
          */
         void resize(size_t size) {
-            if (_size == size){
-                // no need to do anything.
+            if (size == 0){
+                free();
                 return;
             }
             // do sanity checks
@@ -224,9 +238,13 @@ namespace pele {
                 // e.g. if this wraps data in a std::vector.
                 throw std::runtime_error("Array: cannot resize Arrays if not sole owner of data");
             }
+            if (_size == size){
+                // no need to do anything.
+                // note, this is dangerous, as no new memory will be created
+                return;
+            }
             // all seems ok. resize the array
-            if (_allocated_memory != NULL) delete[] _allocated_memory;
-            if (_reference_count != NULL) delete _reference_count;
+            free();
             _size = size;
             _allocated_memory = new dtype[_size];
             _data = _allocated_memory;
@@ -235,8 +253,8 @@ namespace pele {
         }
 
         /// access an element in the array
-        dtype &operator[](size_t i) { return _data[i]; }
-        dtype operator[](size_t i) const { return _data[i]; }
+        inline dtype &operator[](const size_t i) { return _data[i]; }
+        inline dtype const & operator[](const size_t i) const { return _data[i]; }
 
         /**
          * Assignment function: copy the data into the existing array

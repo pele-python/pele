@@ -81,16 +81,37 @@ cdef extern from "pele/actions.h" namespace "pele":
         void print_terminal(size_t) except +
         double get_max() except +
         double get_min() except +
+    cdef cppclass cppRecordDisp2HistogramPeriodic "pele::RecordDisp2HistogramPeriodic":
+        cppRecordDisp2HistogramPeriodic(_pele.Array[double],_pele.Array[double],double, double, double, size_t, double * boxvec) except +
+        _pele.Array[double] get_histogram() except +
+        void print_terminal(size_t) except +
+        double get_max() except +
+        double get_min() except +
 
 cdef class _Cdef_RecordDisp2Histogram(_Cdef_Action):
     """This class is the python interface for the c++ pele::RecordDisp2Histogram acceptance test class implementation
     """
-    def __cinit__(self, origin, rattlers, min, max, bin, eqsteps):
+    cpdef cbool periodic 
+    def __cinit__(self, origin, rattlers, min, max, bin, eqsteps, boxvec=None, boxl=None):
+        assert not (boxvec is not None and boxl is not None)
+        if boxl is not None:
+            boxvec = [boxl] * 3
+        cdef np.ndarray[double, ndim=1] bv
+        
         cdef np.ndarray[double, ndim=1] orginc = np.array(origin, dtype=float)
         cdef np.ndarray[double, ndim=1] rattlersc = np.array(rattlers, dtype=float)
-        self.thisptr = <cppAction*>new cppRecordDisp2Histogram(_pele.Array[double](<double*> orginc.data, orginc.size),
+        
+        if boxvec is None:
+            self.periodic = False
+            self.thisptr = <cppAction*>new cppRecordDisp2Histogram(_pele.Array[double](<double*> orginc.data, orginc.size),
                                                                _pele.Array[double](<double*> rattlersc.data, rattlersc.size),
                                                                min, max, bin, eqsteps)
+        else:
+            self.periodic = True
+            bv = np.array(boxvec, dtype=float)
+            self.thisptr = <cppAction*>new cppRecordDisp2HistogramPeriodic(_pele.Array[double](<double*> orginc.data, orginc.size),
+                                                               _pele.Array[double](<double*> rattlersc.data, rattlersc.size),
+                                                               min, max, bin, eqsteps, <double*> bv.data)
     @cython.boundscheck(False)
     def get_histogram(self):
         """return a histogram array"""
