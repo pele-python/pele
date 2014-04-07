@@ -79,5 +79,9 @@ TEST_F(LJTest, EnergyGradient_Works){
 TEST_F(LJTest, Hessian_Works){
     pele::LJ lj(c6, c12);
     Array<double> h(6*6);
+    Array<double> h_num(6*6);
     lj.get_hessian(x, h);
+    lj.numerical_hessian(x,h_num);
+    ASSERT_NEAR(h[1],h_num[1],1e-1);
+
 }
