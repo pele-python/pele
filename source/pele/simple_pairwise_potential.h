@@ -76,7 +76,7 @@ namespace pele
         inline void SimplePairwisePotential<pairwise_interaction,distance_policy>::get_hessian(Array<double> x, Array<double> hess)
         {
             double hij, dr[3], r, r2;
-            const size_t n = 3*x.size() * 3*x.size();
+            const size_t n = x.size() * x.size();
             const size_t natoms = x.size()/3;
             assert(hess.size() == n);
             hess.assign(0.);

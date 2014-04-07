@@ -28,6 +28,16 @@ TEST(LJInteractionTest, EnergyGradient_Works){
     ASSERT_NEAR(g, 9.2454671845389917, 1e-10);
 }
 
+TEST(LJInteractionTest, Hessian_Works){
+    double r2 = 1.1;
+    double c6 = 1.2;
+    double c12 = 2.3;
+    pele::lj_interaction ljint(c6, c12);
+    double h = 0;
+    ljint.hessian(r2, &h, 1, 2);
+    ASSERT_NEAR(h, 149.6972546707778, 1e-10);
+}
+
 class LJTest :  public ::testing::Test
 {
 public:
@@ -64,4 +74,10 @@ TEST_F(LJTest, EnergyGradient_Works){
     ASSERT_NEAR(g[0], -g[3], 1e-10);
     ASSERT_NEAR(g[1], -g[4], 1e-10);
     ASSERT_NEAR(g[2], -g[5], 1e-10);
+}
+
+TEST_F(LJTest, Hessian_Works){
+    pele::LJ lj(c6, c12);
+    Array<double> h(6*6);
+    lj.get_hessian(x, h);
 }
