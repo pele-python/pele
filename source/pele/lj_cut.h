@@ -58,6 +58,8 @@ namespace pele {
             *gij = (_12C12 * ir12 - _6C6 * ir6) * ir2 - _2A2;
             return -_C6*ir6 + _C12*ir12 + _A0 + _A2*r2;
         }
+
+        void inline hessian(double r2, double *hij, size_t atom_i, size_t atom_j) const {}
     };
 
     /**

@@ -27,9 +27,11 @@ namespace pele {
     struct lj_interaction {
         double const _C6, _C12;
         double const _6C6, _12C12;
+        double const _42C6, _156C12;
         lj_interaction(double C6, double C12) : 
             _C6(C6), _C12(C12),
-            _6C6(6.*_C6), _12C12(12.*_C12) 
+            _6C6(6.*_C6), _12C12(12.*_C12),
+            _42C6(42.*_C6), _156C12(156.*_C12)
         {}
 
         /* calculate energy from distance squared */
@@ -49,6 +51,13 @@ namespace pele {
 
             *gij = (_12C12 * ir12 - _6C6 * ir6) * ir2;
             return -_C6*ir6 + _C12*ir12;
+        }
+
+        void inline hessian(double r2, double *hij, size_t atom_i, size_t atom_j) const {
+        	double ir2 = 1.0/r2;
+        	double ir6 = ir2*ir2*ir2;
+        	double ir12 = ir6*ir6;
+        	*hij = (_156C12 * ir12 - _42C6 * ir6) * ir2;
         }
     };
 

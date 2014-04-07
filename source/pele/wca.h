@@ -58,6 +58,8 @@ namespace pele {
 
             return E;
         }
+
+        void inline hessian(double r2, double *hij, size_t atom_i, size_t atom_j) const {}
     };
 
 

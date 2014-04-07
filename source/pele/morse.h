@@ -43,6 +43,8 @@ struct morse_interaction
         *gij = 2.0 * _A * c * _rho * (c - 1.0) / r;
         return _A * c * (c - 2.0);
     }
+
+    void inline hessian(double r2, double *hij, size_t atom_i, size_t atom_j) const {}
 };
 
 /**

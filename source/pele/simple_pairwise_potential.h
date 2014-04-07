@@ -40,6 +40,7 @@ namespace pele
 
         virtual double get_energy(Array<double> x);
         virtual double get_energy_gradient(Array<double> x, Array<double> grad);
+        virtual void get_hessian(Array<double> x, Array<double> hess);
     };
 
     template<typename pairwise_interaction, typename distance_policy>
@@ -70,6 +71,103 @@ namespace pele
         }
         return e;
     }
+
+    template<typename pairwise_interaction, typename distance_policy>
+        inline void SimplePairwisePotential<pairwise_interaction,distance_policy>::get_hessian(Array<double> x, Array<double> hess)
+        {
+            double hij, dr[3], r, r2;
+            const size_t n = 3*x.size() * 3*x.size();
+            const size_t natoms = x.size()/3;
+            assert(hess.size() == n);
+            hess.assign(0.);
+
+
+            //LOOP ONLY OVER THE LOWER TRIANGULAR PART OF THE MATRIX
+            //build array of distances and interaction
+            Array<double*> arraydr(n);
+
+            for(size_t atomi=0; atomi<natoms; ++atomi) {
+				int i1 = 3*atomi;
+				for(size_t atomj=0; atomj<=atomi; ++atomj) {
+					int j1 = 3*atomj;
+					_dist->get_rij(dr, &x[i1], &x[j1]);
+					arraydr[natoms*atomi+atomj] = dr;
+					arraydr[natoms*atomj+atomi] = dr;
+				}
+            }
+
+            //LOOP ONLY OVER THE LOWER TRIANGULAR PART OF THE MATRIX
+            for(size_t atomi=0; atomi<natoms; ++atomi) {
+                int i1 = 3*atomi;
+                for(size_t atomj=0; atomj<=atomi; ++atomj) {
+                    int j1 = 3*atomj;
+
+                    //diagonal blocks
+                    if (atomi == atomj)
+                    {
+                    	//diagonal terms
+                    	for (size_t k=0;k<3;++k)
+                    	{
+                    		double Hii_diag = 0;
+                    		for (size_t a=0;a<natoms;++a){
+                    			if (a != atomi){
+                    				double* dr = arraydr[natoms*atomi+a];
+                    				r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+                    				r = sqrt(r2);
+                    				_interaction->hessian(r2, &hij, atomi, a);
+                    				Hii_diag += hij*(1 - dr[k]*dr[k]/r2)/r;
+                    			}
+                    		}
+                    		hess[3*natoms*(3*i1+k)+j1+k] = Hii_diag;
+                    		//non diagonal terms
+                    		for (size_t l = k+1;l<3;++l)
+                    		{
+                    			double Hii_off = 0;
+								for (size_t a=0;a<natoms;++a){
+									if (a != atomi){
+										double* dr = arraydr[natoms*atomi+a];
+										r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+										r = sqrt(r2);
+										_interaction->hessian(r2, &hij, atomi, a);
+										Hii_off -= hij*dr[k]*dr[l]/(r2*r);
+									}
+								}
+                    			hess[3*natoms*(3*i1+k)+j1+l] = Hii_off;
+                    			hess[3*natoms*(3*i1+l)+j1+k] = Hii_off;
+                    		}
+                    	}
+                    }
+                    //non diagonal blocks
+                    else
+                    {
+						//diagonal terms
+						for (size_t k=0;k<3;++k)
+						{
+							double* dr = arraydr[natoms*atomi+atomj];
+							r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+							r = sqrt(r2);
+							_interaction->hessian(r2, &hij, atomi, atomj);
+							double Hij_diag = hij*(1 - dr[k]*dr[k]/r2)/r;
+							hess[3*natoms*(3*i1+k)+j1+k] = Hij_diag;
+							hess[3*natoms*(3*j1+k)+i1+k] = Hij_diag;;
+							//non diagonal terms
+							for (size_t l = k+1;l<3;++l)
+							{
+								double* dr = arraydr[natoms*atomi+atomj];
+								r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+								r = sqrt(r2);
+								_interaction->hessian(r2, &hij, atomi, atomj);
+								double Hij_off = -hij*dr[k]*dr[l]/(r2*r);
+								hess[3*natoms*(3*i1+k)+j1+l] = Hij_off;
+								hess[3*natoms*(3*i1+l)+j1+k] = Hij_off;
+								hess[3*natoms*(3*j1+k)+i1+l] = Hij_off;
+								hess[3*natoms*(3*j1+l)+i1+k] = Hij_off;
+							}
+						}
+					}
+                }
+            }
+        }
 
     template<typename pairwise_interaction, typename distance_policy>
     inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy(Array<double> x)
