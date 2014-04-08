@@ -75,8 +75,7 @@ namespace pele
     template<typename pairwise_interaction, typename distance_policy>
         inline void SimplePairwisePotential<pairwise_interaction,distance_policy>::get_hessian(Array<double> x, Array<double> hess)
         {
-    		std::cout<<"I have been called"<<std::endl;
-            double hij, gij, dr[3], r, r2, e;
+    		double hij, gij, dr[3], r2, e;
             const size_t N = x.size();
             const size_t N2 = N*N;
             const size_t natoms = x.size()/3;

@@ -59,7 +59,9 @@ namespace pele {
             return -_C6*ir6 + _C12*ir12 + _A0 + _A2*r2;
         }
 
-        void inline hessian(double r2, double *hij, size_t atom_i, size_t atom_j) const {}
+        void inline hessian(double r2, double *hij, size_t atomi, size_t atomj) const {
+        	throw std::runtime_error("LJCut::hessian must be overloaded");
+        }
     };
 
     /**
