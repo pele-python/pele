@@ -17,6 +17,7 @@ cdef extern from "pele/base_potential.h" namespace "pele":
         cBasePotential() except +
         double get_energy(Array[double] &x) except +
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
+        void get_hessian(Array[double] &x, Array[double] &hess) except +
         void numerical_gradient(Array[double] &x, Array[double] &grad, double eps) except +
         void numerical_hessian(Array[double] &x, Array[double] &hess, double eps) except +
 

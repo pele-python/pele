@@ -42,7 +42,7 @@ class LJTest :  public ::testing::Test
 {
 public:
     double c6, c12, etrue;
-    Array<double> x;
+    Array<double> x, y;
     void SetUp(){
         c6 = 1.2;
         c12 = 2.3;
@@ -54,6 +54,12 @@ public:
         x[4]  = 0.55;
         x[5]  = 1.66;
         etrue = -0.10410023149146598;
+        y = Array<double>(9);
+        for(int i=0;i<6;++i)
+        	y[i] = x[i];
+        y[6] = 0.88;
+        y[7] = 1.1;
+        y[8] = 3.32;
     }
 };
 
@@ -82,6 +88,16 @@ TEST_F(LJTest, Hessian_Works){
     Array<double> h_num(6*6);
     lj.get_hessian(x, h);
     lj.numerical_hessian(x,h_num);
-    ASSERT_NEAR(h[1],h_num[1],1e-1);
+    for (int i; i<h.size();++i)
+    	ASSERT_NEAR(h[i],h_num[i],1e-6);
+}
 
+TEST_F(LJTest, Hessian_Works2){
+    pele::LJ lj(c6, c12);
+    Array<double> h(9*9);
+    Array<double> h_num(9*9);
+    lj.get_hessian(y, h);
+    lj.numerical_hessian(y,h_num);
+    for (int i; i<h.size();++i)
+    	ASSERT_NEAR(h[i],h_num[i],1e-6);
 }

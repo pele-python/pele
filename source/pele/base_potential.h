@@ -65,7 +65,7 @@ namespace pele {
         /**
 		 * compute the hessian.  If not overloaded it will compute the numerical hessian
 		 */
-		virtual void hessian(Array<double> x, Array<double> hess)
+		virtual void get_hessian(Array<double> x, Array<double> hess)
 		{
 			numerical_hessian(x, hess);
 		}
@@ -97,6 +97,20 @@ namespace pele {
 //                    hess[N*i + j] = (gplus[j] - gminus[j]) / (2.*eps);
                 }
             }
+            /*//print hessian
+            std::cout<<""<<std::endl;
+            std::cout<<""<<std::endl;
+            for (size_t i=0; i<hess.size(); ++i){
+				std::cout<<hess[i]<<" ";
+				int j = i+1;
+				if (j % (int) (3*sqrt(hess.size())) == 0)
+					std::cout<<"\n"<<std::endl;
+				else if (j % (int) sqrt(hess.size()) == 0)
+					std::cout<<""<<std::endl;
+				else if (j % 3 == 0){
+					std::cout<<"  ";
+				}
+			}*/
         }
 
     };

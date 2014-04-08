@@ -47,7 +47,7 @@ namespace pele {
 			double ir12 = ir6*ir6;
 			if(sqrt(r2) < _coff)
 			{
-				E = E = 4.*_eps*(-_C6*ir6 + _C12*ir12 + 1./4);
+				E = 4.*_eps*(-_C6*ir6 + _C12*ir12 + 1./4);
 				*gij = 4.*_eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
 			}
 			else

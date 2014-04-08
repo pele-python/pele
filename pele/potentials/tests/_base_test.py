@@ -41,6 +41,12 @@ class _BaseTest(unittest.TestCase):
         log.debug( "e= %r", eigenvals )
         self.assertGreater(np.min(eigenvals), -1e-4)
     
+    def test_hess_analytical_against_numerical(self):
+        log= logging.getLogger( "BaseTest.test_hess_analytical_against_numerical" )
+        h = self.pot.getHessian(self.xmin)
+        h_num = self.pot.NumericalHessian(self.xmin)
+        self.assertAlmostEqual(h.all(),h_num.all(), 1e-6)
+    
     def test_random(self):
         self.grad_test(self.xmin+self.xrandom)
     
