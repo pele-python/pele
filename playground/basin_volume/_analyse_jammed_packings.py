@@ -28,7 +28,7 @@ class _analyse_jammed_packings(object):
         self.eps=1.
         self.iteration = 0
         self.eigenvalues = []
-        self.nbins = 50
+        self.nbins = 100
         #construct mcrunner
         #self.coords is origin, set initial configuration and origin to be the same
         
@@ -60,27 +60,34 @@ class _analyse_jammed_packings(object):
     
     def _histogram_eigenvalues(self):
         #self.eigenvalues = np.array(self.eigenvalues,dtype='d')
-        self.histogram = np.histogram(self.eigenvalues,bins=self.nbins)
+        self.histogram, bins = np.histogram(self.eigenvalues,bins=self.nbins)
         #print self.histogram
         #n, bins, patches = pylab.hist(self.eigenvalues,self.nbins,histtype='bar')
-        #pylab.plot(bins)
-        #pylab.show()
+        width = bins[1] - bins[0]
+        center = (bins[:-1] + bins[1:]) / 2
+        pylab.bar(center, self.histogram, align='center', width=width)
+        pylab.show()
     
     def one_iteration(self,fname):
         """compute hessian and its eigenvalues
         """
+        self.hess_block = np.zeros((self.bdim,self.bdim));
         if self.iteration is 0:
             self._initialise()
         self._import_packing_configuration(fname)
         self.potential = HS_WCA(self.eps, self.sca, self.hs_radii, boxvec=self.boxv)
         hess = self.potential.getHessian(self.coords)
-        #hess_num = self.potential.NumericalHessian(self.coords)
-        #print hess - hess_num
+        #print hess
+        #hess = self.potential.NumericalHessian(self.coords)
         w, v = np.linalg.eig(hess)
+        print w
         self.eigenvalues.extend(w)
-#        #strips the integer unique identifier out of fname
-#        n = int(re.search(r'\d+',fname).group())
-#        self._print(n)
+        #break down hessian into diagonal elements and  compute their eigenvalues
+#        for i in xrange(self.nparticles):
+#            i1 = self.bdim*i
+#            self.hess_block = hess[i1:i1+self.bdim,i1:i1+self.bdim]
+#            w, v = np.linalg.eig(self.hess_block)
+#            self.eigenvalues.extend(w)
         self.iteration+=1        
     
     def run(self):
