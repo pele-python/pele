@@ -23,8 +23,8 @@ class _configure_bv_mcrunner(object):
                  hmax=3, hbinsize=1e-2, acceptance=0.2, adjustf=0.9, adjustf_niter = 2000, adjustf_navg = 100, 
                  opt_dtmax=1, opt_maxstep=0.5, opt_tol=1e-3, opt_nsteps=1e5, packings_dir='jammed_packings'):
         dname = fname
-        if dname.endswith('.xyzd'):
-            dname = dname[:-5]
+        if dname.endswith('.xyzdr'):
+            dname = dname[:-6]
         self.base_directory = os.path.join(os.getcwd(),'explore_bv_'+str(dname))
         self.packings_dir = os.path.join(os.getcwd(),packings_dir)
         self.configpath = os.path.join(packings_dir,'jammed_packings.config')
@@ -47,8 +47,6 @@ class _configure_bv_mcrunner(object):
         """initialisation function"""
         self._import_packing_config_file()
         self._import_packing_configuration()
-        #here there should be the import rattlers function
-        self.rattlers = None
         #change directory only at the end of initialise
         self._print_initialise()
         os.chdir(self.base_directory)
@@ -66,11 +64,13 @@ class _configure_bv_mcrunner(object):
         self.sca = configf.getfloat('JAMMED_PACKING','sca')
         
     def _import_packing_configuration(self):
-        """imports the coordinates and data relative to the shinitape of the particles
-            this should be run in initialise()
+        """imports the coordinates, data relative to the shape of the particles and
+        whether the particles are rattlers or not. Note that self.rattlers returned 
+        here is of size self.ndim but in generate_jammed_packings is of size self.nparticles.
+        This should be run in initialise()
         """
         path = os.path.join(self.packings_dir,self.fname)
-        self.coords, self.hs_radii = read_xyzd(path)
+        self.coords, self.hs_radii, self.rattlers = read_xyzdr(path)
             
     def _print_initialise(self):
         base_directory = self.base_directory
@@ -80,8 +80,8 @@ class _configure_bv_mcrunner(object):
     def _print_parameters(self):
         """writes the simulation parameters"""
         dname = self.fname 
-        if dname.endswith('.xyzd'):
-            dname = dname[:-5]
+        if dname.endswith('.xyzdr'):
+            dname = dname[:-6]
         fname = '{}/explore_{}.config'.format(self.base_directory,dname)
         f = open(fname,'w')
         f.write('#AUTOMATICALLY GENERATED FILE - DO NOT MODIFY BY HAND\n')
@@ -105,7 +105,7 @@ class _configure_bv_mcrunner(object):
 if __name__ == "__main__":
     
     sim = _configure_bv_mcrunner()
-    mcrunner = sim('jammed_packing0.xyzd')
+    mcrunner = sim('jammed_packing0.xyzdr')
     start=time.time()
     mcrunner.run()
     end=time.time()

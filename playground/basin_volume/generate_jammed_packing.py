@@ -108,6 +108,9 @@ class _Generate_Jammed_Packing(object):
             
 class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
     """
+    *this class generates packings and identifies rattlers by computing the hessian eigenvalues for each particle
+    *in the equilibrium jammed structure. A .xyzdr file is produced that contains the 3 system coordinates, the particle 
+    * diameter and if not it's a rattler (0 if a rattler, 1 otherwise)
     *PARAMETERS
     *hs_radii: array with the radii of the particles, if none sample particle sizes from a normal distribution
     *mu: average particle size, passable to normal distribution
@@ -115,16 +118,18 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
     *sca: determines % by which the hs is inflated
     *eps: LJ interaction energy of WCA part of the HS potential
     """    
-    def __init__(self, packing_frac=0.7, packings_dir='packings'):
+    def __init__(self, packing_frac=0.7, rattler_eval_tol=1.,packings_dir='packings'):
         super(HS_Generate_Jammed_Packing,self).__init__(packing_frac=packing_frac, packings_dir=packings_dir)
         
         ##constants#
         self.eps = 1.
+        self.rattler_eval_tol = rattler_eval_tol 
         ############
     
     def initialise(self):
         self._compute_sca()
         self.potential = HS_WCA(self.eps, self.sca, self.hs_radii, boxvec=self.boxv)
+        self.rattlers = np.empty(self.nparticles,dtype='d')
         self._print_initialise()
     
     def one_iteration(self,fname):
@@ -135,10 +140,25 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
         if self.iteration is 0:
             self.initialise()
         self._generate_packing_coords()
+        self._find_rattlers()
         #strips the integer unique identifier out of fname
         n = int(re.search(r'\d+',fname).group())
         self._print(n)
         self.iteration+=1
+    
+    def _find_rattlers(self):
+        hess = self.potential.getHessian(self.coords)
+        for i in xrange(self.nparticles):
+            i1 = self.bdim*i
+            hess_block = hess[i1:i1+self.bdim,i1:i1+self.bdim]
+            w, v = np.linalg.eig(hess_block)
+            rattler = np.less_equal(np.absolute(w),self.rattler_eval_tol)
+            if True in rattler:
+                self.rattlers[i] = 0.
+                print 'zero eigenvalue, particle {}'.format(i)
+                print w
+            else:
+                self.rattlers[i] = 1.
     
     def _generate_packing_coords(self):
         """quenches the imported structure using FIRE"""
@@ -201,21 +221,21 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
         return coords
     
     def _dump_configuration(self,n):
-        """write coordinates to file .xyzd"""
+        """write coordinates to file .xyzdr"""
         coords = self._correct_coords()
         directory = self.base_directory
-        fname = "{0}/jammed_packing{1}.xyzd".format(directory,n)
+        fname = "{0}/jammed_packing{1}.xyzdr".format(directory,n)
         f = open(fname,'w')
         for i in xrange(self.nparticles):
-            f.write('{:<12}\t{:<12}\t{:<12}\t{:<12}\n'.format(coords[i*self.bdim],coords[i*self.bdim+1],
-                                                               coords[i*self.bdim+2],self.hs_radii[i]*2))
+            f.write('{:<12}\t{:<12}\t{:<12}\t{:<12}\t{:<12}\n'.format(coords[i*self.bdim],coords[i*self.bdim+1],
+                                                               coords[i*self.bdim+2],self.hs_radii[i]*2,self.rattlers[i]))
         f.close()
     
     def _write_opengl_input(self,n):
         """write opengl input file"""
         coords = self._correct_coords()
         boxv = self.boxv
-        colour = 13
+        colour = 14
         directory = self.base_directory
         fname = "{0}/jammed_packing{1}.dat".format(directory,n)
         f = open(fname,'w')
@@ -228,7 +248,7 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
             for j in xrange(self.bdim):
                 f.write('{}\t'.format(coords[i*self.bdim+j]))
             f.write('{}\t'.format(self.hs_radii[i]*2*(1.+self.sca)))
-            f.write('{}\n'.format(colour))
+            f.write('{}\n'.format(colour-int(self.rattlers[i])))
         f.close()
 
             

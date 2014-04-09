@@ -45,7 +45,7 @@ class _BaseTest(unittest.TestCase):
         log= logging.getLogger( "BaseTest.test_hess_analytical_against_numerical" )
         h = self.pot.getHessian(self.xmin)
         h_num = self.pot.NumericalHessian(self.xmin)
-        self.assertAlmostEqual(h.all(),h_num.all(), 1e-6)
+        np.testing.assert_almost_equal(h,h_num,decimal=4)
     
     def test_random(self):
         self.grad_test(self.xmin+self.xrandom)

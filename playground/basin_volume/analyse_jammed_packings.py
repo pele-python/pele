@@ -9,7 +9,7 @@ import time
 import re
 import pylab
 
-class _analyse_jammed_packings(object):
+class analyse_jammed_packings(object):
     """
     this is an abstract class that implements the basic components of a configure bv_mcrunner class,
     and declares a number of abstract methods which should be implemented in all inheriting classes
@@ -27,10 +27,9 @@ class _analyse_jammed_packings(object):
         self._import_packing_config_file()
         self.eps=1.
         self.iteration = 0
-        self.eigenvalues = []
-        self.nbins = 100
-        #construct mcrunner
-        #self.coords is origin, set initial configuration and origin to be the same
+        self.block_evalues = []
+        self.whole_evalues = []
+        self.nbins = 500
         
     def _initialise(self):
         """initialisation function"""
@@ -60,14 +59,24 @@ class _analyse_jammed_packings(object):
     
     def _histogram_eigenvalues(self):
         #self.eigenvalues = np.array(self.eigenvalues,dtype='d')
-        self.histogram, bins = np.histogram(self.eigenvalues,bins=self.nbins)
-        #print self.histogram
-        #n, bins, patches = pylab.hist(self.eigenvalues,self.nbins,histtype='bar')
+        pylab.figure()
+        self.block_evalues = np.real(self.block_evalues)
+        self.block_histogram, bins = np.histogram(self.block_evalues ,bins=self.nbins)
         width = bins[1] - bins[0]
         center = (bins[:-1] + bins[1:]) / 2
-        pylab.bar(center, self.histogram, align='center', width=width)
+        pylab.bar(center, self.block_histogram, align='center', width=width)
+        pylab.savefig('blocks_histogram.eps')
         pylab.show()
-    
+        
+        pylab.figure()
+        self.whole_evalues = np.real(self.whole_evalues)
+        self.whole_histogram, bins = np.histogram(self.whole_evalues ,bins=self.nbins)
+        width = bins[1] - bins[0]
+        center = (bins[:-1] + bins[1:]) / 2
+        pylab.bar(center, self.whole_histogram, align='center', width=width)
+        pylab.savefig('whole_histogram.eps')
+        pylab.show()
+        
     def one_iteration(self,fname):
         """compute hessian and its eigenvalues
         """
@@ -77,18 +86,21 @@ class _analyse_jammed_packings(object):
         self._import_packing_configuration(fname)
         self.potential = HS_WCA(self.eps, self.sca, self.hs_radii, boxvec=self.boxv)
         hess = self.potential.getHessian(self.coords)
-        #print hess
-        #hess = self.potential.NumericalHessian(self.coords)
+        #hess_num = self.potential.NumericalHessian(self.coords)
+        #np.testing.assert_almost_equal(hess,hess_num,decimal=5)
         w, v = np.linalg.eig(hess)
-        print w
-        self.eigenvalues.extend(w)
+        self.whole_evalues.extend(w)
         #break down hessian into diagonal elements and  compute their eigenvalues
-#        for i in xrange(self.nparticles):
-#            i1 = self.bdim*i
-#            self.hess_block = hess[i1:i1+self.bdim,i1:i1+self.bdim]
-#            w, v = np.linalg.eig(self.hess_block)
-#            self.eigenvalues.extend(w)
-        self.iteration+=1        
+        for i in xrange(self.nparticles):
+            i1 = self.bdim*i
+            self.hess_block = hess[i1:i1+self.bdim,i1:i1+self.bdim]
+            w, v = np.linalg.eig(self.hess_block)
+            a = np.less_equal(np.absolute(w),1)
+            if True in a:
+                print 'zero eigenvalue, particle {}'.format(i)
+                print w
+            self.block_evalues.extend(w)
+        self.iteration+=1
     
     def run(self):
         """run generate packings"""
@@ -127,7 +139,7 @@ class _analyse_jammed_packings(object):
     
 if __name__ == "__main__":
     
-    analyse = _analyse_jammed_packings()
+    analyse = analyse_jammed_packings()
     start=time.time()
     analyse.run()
     end=time.time()
