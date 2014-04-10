@@ -30,6 +30,8 @@ class analyse_jammed_packings(object):
         self.block_evalues = []
         self.whole_evalues = []
         self.nbins = 500
+        self.nbins_low = 500
+        self.low_range = (-0.5,3)
         
     def _initialise(self):
         """initialisation function"""
@@ -55,26 +57,40 @@ class analyse_jammed_packings(object):
             this should be run in initialise()
         """
         path = os.path.join(self.packings_dir,fname)
-        self.coords, self.hs_radii = read_xyzd(path)
+        self.coords, self.hs_radii, self.rattlers = read_xyzdr(path)
     
     def _histogram_eigenvalues(self):
         #self.eigenvalues = np.array(self.eigenvalues,dtype='d')
-        pylab.figure()
         self.block_evalues = np.real(self.block_evalues)
+        pylab.figure()
         self.block_histogram, bins = np.histogram(self.block_evalues ,bins=self.nbins)
         width = bins[1] - bins[0]
         center = (bins[:-1] + bins[1:]) / 2
         pylab.bar(center, self.block_histogram, align='center', width=width)
         pylab.savefig('blocks_histogram.eps')
         pylab.show()
-        
         pylab.figure()
+        self.block_histogram_low, bins = np.histogram(self.block_evalues ,bins=self.nbins_low, range=self.low_range)
+        width = bins[1] - bins[0]
+        center = (bins[:-1] + bins[1:]) / 2
+        pylab.bar(center, self.block_histogram_low, align='center', width=width)
+        pylab.savefig('blocks_histogram_low{}.eps'.format(self.low_range[1]))
+        pylab.show()
+        
         self.whole_evalues = np.real(self.whole_evalues)
+        pylab.figure()
         self.whole_histogram, bins = np.histogram(self.whole_evalues ,bins=self.nbins)
         width = bins[1] - bins[0]
         center = (bins[:-1] + bins[1:]) / 2
         pylab.bar(center, self.whole_histogram, align='center', width=width)
         pylab.savefig('whole_histogram.eps')
+        pylab.show()
+        pylab.figure()
+        self.whole_histogram_low, bins = np.histogram(self.whole_evalues ,bins=self.nbins_low, range=self.low_range)
+        width = bins[1] - bins[0]
+        center = (bins[:-1] + bins[1:]) / 2
+        pylab.bar(center, self.whole_histogram_low, align='center', width=width)
+        pylab.savefig('whole_histogram_low{}.eps'.format(self.low_range[1]))
         pylab.show()
         
     def one_iteration(self,fname):
@@ -99,13 +115,14 @@ class analyse_jammed_packings(object):
             if True in a:
                 print 'zero eigenvalue, particle {}'.format(i)
                 print w
+                assert(self.rattlers[i1]==0)
             self.block_evalues.extend(w)
         self.iteration+=1
     
     def run(self):
         """run generate packings"""
         for fname in os.listdir(self.packings_dir):
-            if 'xyzd' in fname:
+            if 'xyzdr' in fname:
                 print fname
                 self.one_iteration(fname)
         self._histogram_eigenvalues()

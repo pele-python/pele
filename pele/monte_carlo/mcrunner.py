@@ -1,6 +1,6 @@
 import numpy as np
-from playground.monte_carlo import _base_MCrunner, RandomCoordsDisplacement, MetropolisTest 
-from playground.monte_carlo import CheckSphericalContainer, AdjustStep, RecordEnergyHistogram
+from pele.monte_carlo import _base_MCrunner, RandomCoordsDisplacement, MetropolisTest 
+from pele.monte_carlo import CheckSphericalContainer, AdjustStep, RecordEnergyHistogram
 
 """
 pele::MCrunner

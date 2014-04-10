@@ -1,7 +1,7 @@
 import numpy as np
 import abc
 from pele.optimize import Result
-from playground.monte_carlo import MC
+from pele.monte_carlo import MC
 
 class _base_MCrunner(object):
     """

@@ -3,7 +3,7 @@ import numpy as np
 import abc
 import os
 from scipy.special import gamma
-from playground.monte_carlo import Metropolis_MCrunner
+from mcrunner import HS_MCrunner
 from pele.potentials import HS_WCA, LJ
 from pele.optimize._quench import lbfgs_cpp
 from utils import *
@@ -111,6 +111,7 @@ class _Generate_Packing(object):
         self._generate_packing_coords()
         self._print()
         self.iteration+=1
+        print 'iteration ',self.iteration
         
     def run(self):
         """run generate packings"""
@@ -133,7 +134,7 @@ class HS_Generate_Packing(_Generate_Packing):
                                                  packing_frac=packing_frac, max_iter = max_iter)
         ##constants#
         self.eps = 1.
-        self.sca = 0.
+        self.sca = 0. #this must be 0 for hard spheres
         ############
         self.mu = mu
         self.sig = sig
@@ -228,7 +229,7 @@ class HS_Generate_Packing(_Generate_Packing):
     def _generate_packing_coords_quench(self):
         """do a MCMC walk using the quenched coordinates"""
         if (self.iteration == 0):
-            self.mcrunner = Metropolis_MCrunner(self.potential, self.coords, niter=1e5, stepsize=1e-4, adjustf = 0.9, 
+            self.mcrunner = HS_MCrunner(self.potential, self.coords, niter=1e5, stepsize=1e-4, adjustf = 0.9, 
                                        acceptance=0.2, adjustf_niter = 5000)
             self.energy = self.potential.getEnergy(self.coords)
         self.mcrunner.set_config(self.coords, self.energy)
@@ -334,8 +335,8 @@ class HS_Generate_Packing(_Generate_Packing):
             
 if __name__ == "__main__":
     
-    nparticles = 60
-    sim = HS_Generate_Packing(nparticles)
+    nparticles = 20
+    sim = HS_Generate_Packing(nparticles, sig = 0.2, max_iter = 1000)
     sim.run()
     
     

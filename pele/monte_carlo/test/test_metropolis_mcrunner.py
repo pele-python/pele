@@ -2,12 +2,12 @@ from __future__ import division
 import numpy as np
 from pele.utils.rotations import vector_random_uniform_hypersphere
 from pele.potentials import Harmonic
-from playground.monte_carlo import Metropolis_MCrunner
+from pele.monte_carlo import Metropolis_MCrunner
 import unittest
 import logging
 
 
-class MetropolisTest(unittest.TestCase):
+class TestMetropolis(unittest.TestCase):
     
     def test_heat_capacity(self):
         self.ndim = 3

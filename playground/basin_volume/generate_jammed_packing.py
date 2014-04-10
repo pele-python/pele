@@ -153,6 +153,7 @@ class HS_Generate_Jammed_Packing(_Generate_Jammed_Packing):
             hess_block = hess[i1:i1+self.bdim,i1:i1+self.bdim]
             w, v = np.linalg.eig(hess_block)
             rattler = np.less_equal(np.absolute(w),self.rattler_eval_tol)
+            #self.rattlers[i] = float(not True in rattler)
             if True in rattler:
                 self.rattlers[i] = 0.
                 print 'zero eigenvalue, particle {}'.format(i)

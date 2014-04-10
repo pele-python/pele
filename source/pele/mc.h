@@ -65,7 +65,7 @@ public:
  * _E_reject_count is the count of rejections due to an energy test (e.g. Metropolis)
  * _conf_reject_count is the count of rejections due to a configuration test (e.g. spherical container)
  * _niter is the count of steps whithin a MCMC run, it is reset to zero at the end of the run
- * _nitercoutn is the cumulative number of MCMC steps taken by the class
+ * _nitercount is the cumulative number of MCMC steps taken by the class
  * _neval is the number of energy evaluations
  * _stepsize the is the stepsize to pass to takestep
  * _temperature is the temperature at which the simulation is performed
