@@ -55,10 +55,10 @@ The following code will use the system class to initialize a basinhopping class
 and run basinhopping for 100 steps.  We use an :ref:`sqlite database
 <database>` to store the minima found::
 
-    sys = My1DSystem()
-    database = sys.create_database()
+    system = My1DSystem()
+    database = system.create_database()
     x0 = np.array([1.])
-    bh = sys.get_basinhopping(database=database, coords=x0)
+    bh = system.get_basinhopping(database=database, coords=x0)
     bh.run(100)
     print "found", len(database.minima()), "minima"
     min0 = database.minima()[0]
@@ -111,8 +111,8 @@ ready to use.
 .. tip::
   Loops in python are very slow.  The above functions getEnergy() and
   getEnergyGradient() will run *a lot* faster in a compiled language.  Good
-  choices might be cython or fortran (using f2py).  See the included potential
-  pele.potentials.LJ for an example of how to do this.
+  choices might be cython or c++ wrapped with cython.  See the included
+  potential pele.potentials.LJ for an example of how to do this.
 
 We are now ready to define the system class. ::
 
@@ -130,10 +130,10 @@ We can now run basinhopping in exactly the same way we did before::
 
     import numpy as np
     natoms = 8
-    sys = MySystem(natoms)
-    database = sys.create_database()
+    system = MySystem(natoms)
+    database = system.create_database()
     x0 = np.random.uniform(-1,1,[natoms*3])
-    bh = sys.get_basinhopping(database=database, coords=x0)
+    bh = system.get_basinhopping(database=database, coords=x0)
     bh.run(10)
     print "found", len(database.minima()), "minima"
     min0 = database.minima()[0]
@@ -180,7 +180,7 @@ build up the connected network.  A few additional functions are required.
 Many of the routines in DoubleEndedConnect need a distance metric which returns
 how far apart are two structures.  This is know as mindist (or minpermdist) in
 our lingo.  We use as our metric the root mean squared
-deviation, so in the simplist case the distance is just::
+deviation, so in the simplest case the distance is just::
 
   import numpy as np
   distance = np.linalg.norm(X1 - X2)
@@ -198,7 +198,7 @@ Some common symmetries are
 4. permutational invariance
 
 pele has all the utilities necessary for handling these cases, but they are,
-by definition system dependent, so you must manually specify them for your
+by definition, system dependent, so you must manually specify them for your
 system.  These should be implemented in the system class by overloading 
 MySystem.get_mindist().  See :ref:`Structure Alignment <structure_alignment>` for
 how more detailed information and help choosing which routine to use.
@@ -245,11 +245,13 @@ As a starting point we will use the database that we built up
 from the basinhopping run above. We will connect all minima to the lowest
 energy minimum. ::
 
-    minima = database.minima()
-    min1 = minima[0]
-    for min2 in minima[1:]:
-        connect = sys.get_double_ended_connect(min1, min2, database)
+    from pele.landscape import ConnectManager
+    manager = ConnectManager(database, strategy="gmin")
+    for i in xrange(database.number_of_minima()-1):
+        min1, min2 = manager.get_connect_job()
+        connect = system.get_double_ended_connect(min1, min2, database)
         connect.connect()
+
 
 
 We now have a fully connected database (though the basinhopping run was quite
@@ -257,13 +259,14 @@ short, so we may not have found the global minimum yet).
 As a final step, let's plot the connectivity in the database using a :ref:`disconnectivity
 graph <disconnectivity_graph>` ::
 
-    from pele.utils.disconnectivity_graph import DisconnectivityGraph
-    from pele.landscape import TSGraph
+    from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
     import matplotlib.pyplot as plt
     #convert the database to a networkx graph
-    graph = TSGraph(database).graph
+    graph = database2graph(database)
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()
     plt.show()
 
+.. figure:: dgraph_mypotential.png
+  :height: 300

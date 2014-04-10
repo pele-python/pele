@@ -502,6 +502,7 @@
     <addaction name="action_delete_minimum"/>
     <addaction name="action_merge_minima"/>
     <addaction name="action_edit_params"/>
+    <addaction name="action_compute_thermodynamic_info"/>
    </widget>
    <addaction name="menuSimulation"/>
    <addaction name="menuHelp"/>
@@ -541,6 +542,11 @@
   <action name="action_merge_minima">
    <property name="text">
     <string>Merge Minima</string>
+   </property>
+  </action>
+  <action name="action_compute_thermodynamic_info">
+   <property name="text">
+    <string>Compute thermodynamic info</string>
    </property>
   </action>
  </widget>

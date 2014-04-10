@@ -5,11 +5,11 @@ Rates (`pele.rates`)
 
 This module contains tools to quickly (and exactly) compute transition rates,
 first passage times and and commitor probabilities in a transition network.
-The resulting rates are exact, but the analysis can be orders of magnitude
-faster than doing a Kinetic Monte Carlo simulation.
+The resulting rates are exact, in the sense of Kinetic Monte Carlo, but the
+analysis can be orders of magnitude faster than doing a Kinetic Monte Carlo
 
 This module can also be found as an independent package at 
-https://github.com/js850/kmc_rates
+`<https://github.com/js850/kmc_rates>`_
 
 Description of the method
 -------------------------
@@ -19,7 +19,7 @@ described in the paper
 Calculating rate constants and committor probabilities for transition networks
 by graph transformation
 David Wales (2009) J. Chem. Phys., 130, 204111 
-http://dx.doi.org/10.1063/1.3133782
+`<http://dx.doi.org/10.1063/1.3133782>`_
 
 The method uses a graph renormalization method (renormalization in the sense of
 renormalization group theory) to compute exact Kinetic Monte Carlo rates and

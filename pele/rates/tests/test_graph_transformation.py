@@ -5,6 +5,16 @@ import networkx as nx
 from pele.rates import RateCalculation
 from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
+np.random.seed(0)
+
+def make_rates_complete(nnodes=10):
+    rates = dict()
+    for i in range(nnodes):
+        for j in range(i+1,nnodes):
+            rates[(i,j)] = float(i+j) / (i+1)
+            rates[(j,i)] = float(i+j) / (j+1)
+    return rates
+
 
 class _MakeRandomGraph(object):
     def __init__(self, nnodes=10, nedges=20, node_set=None):
@@ -46,25 +56,26 @@ class _MakeRandomGraph(object):
     
 
 
-
-def _three_state_graph():
+def _three_state_rates():
     tmatrix = [ [0., 1., 1.,], [1., 0., 1.,], [1., 1., 0.] ]
     rates = dict()
     for i in range(3):
         for j in range(3):
             if i != j:
                 rates[(i,j)] = tmatrix[i][j]
+    return rates
 
-    return kmcgraph_from_rates(rates)
+def _three_state_graph():
+    return kmcgraph_from_rates(_three_state_rates())
 
 class TestGraphReduction3(unittest.TestCase):
     def setUp(self):
-        self.graph = _three_state_graph()
+        self.rates = _three_state_rates()
         # all rates after graph renormalization should be 1.0
         self.final_rate = 1.0
 
     def _test_rate(self, i, j):
-        reducer = GraphReduction(self.graph, [i], [j], debug=False)
+        reducer = GraphReduction(self.rates, [i], [j], debug=False)
         reducer.check_graph()
         reducer.compute_rates()
         rAB = reducer.get_rate_AB()
@@ -85,10 +96,10 @@ class TestGraphReduction3(unittest.TestCase):
         self._test_rate(0,2)
 
 class TestGraphReductionRandom(unittest.TestCase):
-    def do_test(self, A, B, nnodes=20, nedges=20):
+    def do_tst(self, A, B, nnodes=20, nedges=20):
         maker = _MakeRandomGraph(nnodes=20, nedges=20, node_set=A+B)
         graph = maker.run()
-        reducer = GraphReduction(graph, A, B, debug=False)  
+        reducer = GraphReduction(maker.rates, A, B, debug=False)  
         reducer.check_graph()
         reducer.compute_rates()
         rAB = reducer.get_rate_AB()
@@ -100,15 +111,15 @@ class TestGraphReductionRandom(unittest.TestCase):
              
     def test(self):
         A, B = [0], [1]
-        self.do_test(A, B)
+        self.do_tst(A, B)
  
     def test_setA(self):
         A, B = [0, 1, 2], [3]
-        self.do_test(A, B)
+        self.do_tst(A, B)
   
     def test_setAB(self):
         A, B = [0, 1, 2], [3, 4, 5, 6]
-        self.do_test(A, B)
+        self.do_tst(A, B)
 
 
 if __name__ == "__main__":

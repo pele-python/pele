@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 
 import pele.utils.disconnectivity_graph as dg
 from pele.storage import Database
-from pele.landscape import TSGraph
 from pele.systems import LJCluster
 
 def get_database(natoms=13, nconn=5):
@@ -30,10 +29,10 @@ def get_database(natoms=13, nconn=5):
 
 def make_graph(database):
     #make a graph from the database
-    graphwrapper = TSGraph(db)
+    graph = dg.database2graph(db)
     
     #turn the graph into a disconnectivity graph
-    mydg = dg.DisconnectivityGraph(graphwrapper.graph, 
+    mydg = dg.DisconnectivityGraph(graph, 
                                    nlevels=5,
                                    center_gmin=False,
                                    order_by_energy=True,

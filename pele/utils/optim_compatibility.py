@@ -128,7 +128,51 @@ class OptimDBConverter(object):
 
     def setAccuracy(self,accuracy = 0.000001):
         self.db.accuracy = accuracy
+    
+    def ReadMinDataFast(self):
+        """read min.data file
         
+        this method uses bulk database inserts.  It is *MUCH* faster this way, but 
+        you have to be careful that this and the Minimum object stays in sync.  e.g.
+        minimum.invalid must be set to false manually here.
+        """
+        print "reading from", self.mindata
+        indx = 0
+#        f_len = file_len(self.mindata)
+        minima_dicts = []
+        for line in open(self.mindata,'r'):
+            sline = line.split()
+            
+            # get the coordinates corresponding to this minimum
+            if self.pointsmin_data is None:
+                coords = np.zeros(1)
+            else:
+                coords = self.pointsmin_data[indx,:]
+            
+            
+            # read data from the min.data line            
+            e, fvib = map(float,sline[:2]) # energy and vibrational free energy
+            pg = int(sline[2]) # point group order
+            
+            # create the minimum object and attach the data
+            # must add minima like this.  If you use db.addMinimum()
+            # some minima with similar energy might be assumed to be duplicates
+            min_dict = dict(energy=e, coords=coords, invalid=False,
+                            fvib=fvib, pgorder=pg
+                            )
+            minima_dicts.append(min_dict)
+            
+            indx += 1
+#            if indx % 50 == 0:
+#                self.db.session.commit()
+        
+        self.db.engine.execute(Minimum.__table__.insert(), minima_dicts) 
+        self.db.session.commit()
+
+        
+        print "--->finished loading %s minima" % indx
+    
+    
     def ReadMindata(self):
         print "reading from", self.mindata
         indx = 0
@@ -163,6 +207,55 @@ class OptimDBConverter(object):
                 self.db.session.commit()
         
         print "--->finished loading %s minima" % indx
+
+    def ReadTSdataFast(self):
+        """read ts.data file
+        
+        this method uses bulk database inserts.  It is *MUCH* faster this way, but 
+        you have to be careful that this and the TransitionState object stays in sync.  e.g.
+        ts.invalid must be set to false manually here.
+
+        """
+        print "reading from", self.tsdata
+
+        indx = 0
+        ts_dicts = []
+        for line in open(self.tsdata,'r'):
+            sline = line.split()
+
+            # get the coordinates corresponding to this minimum
+            if self.pointsts_data is None:
+                coords = np.zeros(1)
+            else:
+                coords = self.pointsts_data[indx,:]
+
+            # read data from the min.ts line            
+            e, fvib = map(float, sline[:2]) # get energy and fvib
+            pg = int(sline[2]) # point group order
+            m1indx, m2indx = map(int, sline[3:5])
+#            m1indx -= 1
+#            m2indx -= 1
+#            min1 = self.index2min[m1indx - 1] # minus 1 for fortran indexing
+#            min2 = self.index2min[m2indx - 1] # minus 1 for fortran indexing
+
+            # must add transition states like this.  If you use db.addtransitionState()
+            # some transition states might be assumed to be duplicates
+            tsdict = dict(energy=e, coords=coords, invalid=False,
+                          fvib=fvib, pgorder=pg, 
+                          _minimum1_id=m1indx,
+                          _minimum2_id=m2indx
+                          )
+            ts_dicts.append(tsdict)
+            
+            indx += 1
+#            if indx % 50 == 0:
+#                self.db.session.commit()
+        self.db.engine.execute(TransitionState.__table__.insert(), ts_dicts)
+        self.db.session.commit()
+
+
+        print "--->finished loading %s transition states" % indx
+
 
     def ReadTSdata(self):
         print "reading from", self.tsdata
@@ -228,7 +321,7 @@ class OptimDBConverter(object):
                 self.pointsmin_data = None
             else:
                 raise
-        self.ReadMindata()
+        self.ReadMinDataFast()
         self.db.session.commit()
     
     def load_transition_states(self):
@@ -240,10 +333,16 @@ class OptimDBConverter(object):
             else:
                 raise
 
-        self.ReadTSdata()
+        self.ReadTSdataFast()
         self.db.session.commit()
     
     def convert(self):
-        
         self.load_minima()
         self.load_transition_states()
+    
+    def convert_no_coords(self):
+        self.pointsmin_data = None
+        self.pointsts_data = None
+        self.ReadMinDataFast()
+        self.ReadTSdataFast()
+

@@ -1,3 +1,8 @@
+import glob
+import os
+import sys
+import subprocess
+
 from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
 from numpy.distutils.misc_util import has_cxx_sources
@@ -9,6 +14,20 @@ os.environ["CXX"] = "g++-4.6"
 ## Numpy header files 
 numpy_lib = os.path.split(np.__file__)[0] 
 numpy_include = os.path.join(numpy_lib, 'core/include') 
+
+
+def generate_cython():
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    print("Cythonizing sources")
+    p = subprocess.call([sys.executable,
+                          os.path.join(cwd, 'cythonize.py'),
+                          'pele'],
+                         cwd=cwd)
+    if p != 0:
+        raise RuntimeError("Running cythonize failed!")
+
+generate_cython()
+
 
 #
 # compile fortran extension modules
@@ -54,14 +73,20 @@ fmodules.add_module("pele/transition_states/_NEB_utils.f90")
 fmodules.add_module("pele/angleaxis/_aadist.f90")
 fmodules.add_module("pele/accept_tests/_spherical_container.f90")
 
+
+#
+# pure cython modules
+#
+extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',]
+
 cxx_modules = [
             Extension("pele.optimize._cython_lbfgs", ["pele/optimize/_cython_lbfgs.c"],
                       include_dirs=[numpy_include],
-                      extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',],
+                      extra_compile_args=extra_compile_args,
                       ),
             Extension("pele.potentials._cython_tools", ["pele/potentials/_cython_tools.c"],
                       include_dirs=[numpy_include],
-                      extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',],
+                      extra_compile_args=extra_compile_args,
                       ),
 
                ]
@@ -74,7 +99,6 @@ setup(name='pele',
       description="Python implementation of GMIN, OPTIM, and PATHSAMPLE",
       url='https://github.com/pele-python/pele',
       packages=["pele",
-                "pele.application",
                 "pele.potentials",
                 "pele.gui",
                 "pele.gui.ui",
@@ -91,9 +115,30 @@ setup(name='pele',
                 "pele.systems",
                 "pele.angleaxis",
                 "pele.thermodynamics",
+                "pele.rates",
+                # add the test directories
+                "pele.potentials.tests",
+                "pele.potentials.test_functions",
+                "pele.mindist.tests",
+                "pele.optimize.tests",
+                "pele.transition_states.tests",
+                "pele.landscape.tests",
+                "pele.utils.tests",
+                "pele.storage.tests",
+                "pele.accept_tests.tests",
+                "pele.systems.tests",
+                "pele.thermodynamics.tests",
+                "pele.rates.tests",
                 ],
-      ext_modules=ext_modules
+      ext_modules=ext_modules,
+      # data files needed for the tests
+      data_files=[('pele/potentials/tests', list(glob.glob('pele/potentials/tests/*.xyz'))),
+                  ('pele/transition_states/tests', list(glob.glob('pele/transition_states/tests/*.xyz'))),
+                  ('pele/rates/tests', list(glob.glob('pele/rates/tests/*.data')) + list(glob.glob('pele/rates/tests/*.sqlite'))),
+                  ('pele/storage/tests/', list(glob.glob('pele/storage/tests/*sqlite'))),
+                 ]
         )
+
 
 #
 # build the c++ files
@@ -103,10 +148,15 @@ include_sources = ["source/pele" + f for f in os.listdir("source/pele")
                    if f.endswith(".cpp")]
 include_dirs = [numpy_include, "source"]
 
-depends = ["source/pele" + f for f in os.listdir("source/pele/") 
-           if f.endswith(".cpp") or f.endswith(".h")]
+depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/") 
+           if f.endswith(".cpp") or f.endswith(".h") or f.endswith(".hpp")]
 
-extra_compile_args = ["-std=c++0x","-Wall", "-Wextra", "-O3", "-march=native", "-mtune=native"]
+# note: on my computer (ubuntu 12.04 gcc version 4.6.3), when compiled with the
+# flag -march=native I run into problems.  Everything seems to run ok, but when
+# I run it through valgrind, valgrind complains about an unrecognized
+# instruction.  I don't have a clue what is causing this, but it's probably
+# better to be on the safe side and not use -march=native
+extra_compile_args = ["-Wall", "-Wextra", "-O3", '-funroll-loops']
 # uncomment the next line to add extra optimization options
 # extra_compile_args = ["-Wall", '-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
 
@@ -115,20 +165,20 @@ extra_compile_args = ["-std=c++0x","-Wall", "-Wextra", "-O3", "-march=native", "
 
 cxx_modules = [
     Extension("pele.potentials._lj_cpp", 
-              ["pele/potentials/_lj_cpp.cpp"] + include_sources,
+              ["pele/potentials/_lj_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
                
     Extension("pele.potentials._morse_cpp", 
-              ["pele/potentials/_morse_cpp.cpp"] + include_sources,
+              ["pele/potentials/_morse_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
     Extension("pele.potentials._hs_wca_cpp", 
-              ["pele/potentials/_hs_wca_cpp.cpp"] + include_sources,
+              ["pele/potentials/_hs_wca_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
              extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
@@ -157,6 +207,7 @@ cxx_modules = [
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
+    
     Extension("pele.optimize._lbfgs_cpp", 
               ["pele/optimize/_lbfgs_cpp.cpp", "source/lbfgs.cpp"] + include_sources,
               include_dirs=include_dirs,
@@ -206,12 +257,21 @@ cxx_modules = [
               language="c++", depends=depends,
               ),
     Extension("pele.potentials._pythonpotential", 
-              ["pele/potentials/_pythonpotential.cpp"] + include_sources,
+              ["pele/potentials/_pythonpotential.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
                ]
+
+cxx_modules.append(
+    Extension("pele.rates._ngt_cpp", 
+              ["pele/rates/_ngt_cpp.cxx"] + ["sources/pele/graph.hpp", "sources/pele/ngt.hpp"],
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", 
+              )
+                   )
 
 setup(ext_modules=cxx_modules,
       )

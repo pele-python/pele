@@ -1,40 +1,51 @@
 '''Wrapper to represent a storage class as a graph'''
 import networkx as nx
 
-__all__ = ["TSGraph", "Graph"]
+__all__ = ["TSGraph", "Graph", "database2graph"]
+
+def database2graph(db, Emax=None):
+    '''
+    make a networkx graph from a database 
+    
+    Parameters
+    ----------
+    db : pele Database
+    Emax : float optional
+        including only transition states with energy < Emax
+    '''
+    from pele.storage.database import Minimum, TransitionState
+    g = nx.Graph()
+    # js850> It's not strictly necessary to add the minima explicitly here,
+    # but for some reason it is much faster if you do (factor of 2).  Even 
+    # if this means there are many more minima in the graph.  I'm not sure 
+    # why this is.  This step is already often the bottleneck of the d-graph 
+    # calculation.
+    if Emax is not None:
+        minima = db.session.query(Minimum).filter(Minimum.energy <= Emax)
+    else:
+        minima = db.session.query(Minimum)
+    g.add_nodes_from(minima)
+    # if we order by energy first and add the transition states with the largest energy first
+    # then we will take the smallest energy transition state in the case of duplicates
+    if Emax is not None:
+        ts = db.session.query(TransitionState).filter(TransitionState.energy <= Emax)\
+                                              .order_by(-TransitionState.energy)
+    else:
+        ts = db.session.query(TransitionState).order_by(-TransitionState.energy)
+    for t in ts:
+        g.add_edge(t.minimum1, t.minimum2, ts=t)
+    return g
 
 
-class _ConnectedComponents():
+class _ConnectedComponents(nx.utils.UnionFind):
     """
-    a class to build and maintain a dict of connected components
+    a class to build and maintain the connected components
     
     This allows connections to be determined much more rapidly because
-    the breadth first search algorithm (connected_components, bidirectional_dijkstra) 
-    need be run only infrequently.
+    the breadth first search algorithm is slow
     """
-    def __init__(self, graph):
-        self.graph = graph
-        self.need_rebuild = True
-    
-    def build(self):
-        cc = nx.connected_components(self.graph)
-        component = dict()
-        #cc is a list of lists
-        for i in range(len(cc)):
-            nodes = cc[i]
-            for n in nodes:
-                component[n] = i
-        self.component = component
-        self.need_rebuild = False
-    
-    def setRebuild(self):
-        self.need_rebuild = True
-
-    def areConnected(self, min1, min2):
-        if self.need_rebuild:
-            self.build()
-        return self.component[min1] == self.component[min2]
-            
+    def are_connected(self, m1, m2):
+        return self[m1] == self[m2]
 
 class TSGraph(object):
     '''
@@ -74,7 +85,7 @@ class TSGraph(object):
     def __init__(self, database, minima=None, no_edges=False):
         self.graph = nx.Graph()
         self.storage = database
-        self.connected_components = _ConnectedComponents(self.graph)
+        self.connected_components = _ConnectedComponents()
         self.minima = minima
         self.no_edges = no_edges
         self.refresh()
@@ -88,6 +99,7 @@ class TSGraph(object):
         if not self.no_edges:
             for ts in self.storage.transition_states():
                 self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+                self.connected_components.union(ts.minimum1, ts.minimum2)
 
     def _build_from_list(self, minima):
         """
@@ -103,9 +115,9 @@ class TSGraph(object):
                 if m1 in minima:
                     if m2 in minima:
                         self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+                        self.connected_components.union(ts.minimum1, ts.minimum2)
 
     def refresh(self):
-        self.connected_components.setRebuild()
         if self.minima is None:
             self._build_all()
         else:
@@ -115,26 +127,16 @@ class TSGraph(object):
         """
         add a minimum to the database and graph
         """
-        if not self.graph.has_node(minimum):
-            self.connected_components.setRebuild()
         self.graph.add_node(minimum)
         return minimum
     
     def addTransitionState(self, ts):
-        self.connected_components.setRebuild()
         self.graph.add_edge(ts.minimum1, ts.minimum2, ts=ts)
+        self.connected_components.union(ts.minimum1, ts.minimum2)
         return ts
             
     def areConnected(self, min1, min2):
-        return self.connected_components.areConnected(min1, min2)
-        try:
-            ret = nx.bidirectional_dijkstra(self.graph, min1, min2)
-            if ret != None:
-                return True
-            else: 
-                return False
-        except nx.NetworkXNoPath:
-            return False
+        return self.connected_components.are_connected(min1, min2)
         
     def getPath(self, min1, min2):
         try:
@@ -147,7 +149,7 @@ class TSGraph(object):
         delete minima2.  all transition states pointing to min2 should
         now point to min1
         """
-        self.connected_components.setRebuild()
+        self.connected_components.union(min1, min2)
         #make the edges of min2 now point to min1
         for v, data in self.graph[min2].iteritems():
             if v == min1: continue
@@ -161,117 +163,14 @@ class TSGraph(object):
                 self.graph.add_edge(min1, v, **data)
         self.graph.remove_node(min2)
 
+class Graph(TSGraph):
+    """this is included for backwards compatibility"""
+    pass
 
 #
 # below here only for testing
 #
 
-def create_random_database(nmin=20, nts=None, natoms=2):
-    """
-    create a database for test purposes
-    """
-    from pele.storage import Database
-    import numpy as np
-    
-    if nts is None:
-        nts = nmin
-    db = Database()
-    #generate random structures
-    minlist = []
-    for i in range(nmin):
-        coords = np.random.uniform(-1,1,natoms*3)
-        e = float(i) #make up a fake energy
-        minlist.append( db.addMinimum(e, coords) )
-    #add random transition states
-    for i in range(nts):
-        j1, j2 = 1, 1
-        while j1 == j2:
-            j1, j2 = np.random.randint(0, nmin, 2)
-        m1, m2 = minlist[j1], minlist[j2] 
-        coords = np.random.uniform(-1,1,natoms*3)
-        e = float(j1 + j2)
-        db.addTransitionState(e, coords, m1, m2)
-    return db
-
-class Graph(TSGraph):
-    """this is included for backwards compatibility"""
-    pass
 
 
-
-import unittest
-class TestGraph(unittest.TestCase):
-    def setUp(self):
-        self.db = create_random_database()
-    
-    def test_hi(self):
-        graph = TSGraph(self.db)
-        ng = graph.graph.number_of_nodes()
-        nd = len(self.db.minima()) 
-        self.assertEqual(ng, nd, "all nodes not imported")
-        
-        ntsg = graph.graph.number_of_edges()
-        ntsd = len(self.db.transition_states()) 
-        self.assertEqual(ntsg, ntsd, "all transition states not imported")
-    
-    def test_minima_keyword(self):
-        nmin = 3
-        minima = list(self.db.minima())
-        minima = minima[:nmin]
-        graph = TSGraph(self.db, minima=minima, no_edges=True)
-        ng = graph.graph.number_of_nodes()
-        self.assertEqual(ng, nmin)
-        
-        self.assertEqual(graph.graph.number_of_edges(), 0)
-    
-    def test_merge_minima(self):
-        graph = TSGraph(self.db)
-        #select two minima with at least one edge
-        minima = []
-        for n in graph.graph.nodes():
-            if graph.graph.degree(n) > 0:
-                minima.append(n)
-            if len(minima) == 2:
-                break
-        nedges = [graph.graph.degree(n) for n in minima]
-        min1, min2 = minima
-        neighbors = graph.graph.neighbors(min2)
-        graph.mergeMinima(min1, min2)
-        self.db.mergeMinima(min1, min2)
-
-        self.assertNotIn(min2, graph.graph.nodes())
-        
-        #make sure the edges were copied
-        for n in neighbors:
-            if n == min1: continue
-            edge_exists = (graph.graph.has_edge(min1, n)
-                           or graph.graph.has_edge(n, min1))
-            self.assert_(edge_exists)
-            
-
-        #make sure the new edges have transition state data attached
-        for v in graph.graph.neighbors(min1):
-            data = graph.graph.get_edge_data(v, min1)
-            self.assertIn("ts", data.keys())
-
-        #make sure min2 is not in database
-        self.assertNotIn(min2, self.db.minima())
-        
-    def test_networkx(self):
-        """check how networkx works"""
-        graph = nx.Graph()
-        graph.add_edge(1, 2, ts=1)
-        graph.add_edge(2, 1, ts=2)
-        self.assertEqual(graph.number_of_edges(), 1)
-        
-        data = graph.get_edge_data(1, 2)
-        self.assertIsNotNone(data)
-        self.assertDictEqual(graph.get_edge_data(1, 2),
-                             graph.get_edge_data(2, 1))
-        
-        self.assertTrue(graph.has_edge(1,2))
-        self.assertTrue(graph.has_edge(2,1))
-
-if __name__ == "__main__":
-    unittest.main()
 

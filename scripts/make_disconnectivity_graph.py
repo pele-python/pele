@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 import pele.utils.disconnectivity_graph as dg
 from pele.storage import Database
+from pele.utils.optim_compatibility import OptimDBConverter
 
 
 try:
@@ -16,88 +17,31 @@ try:
     use_gui = True
 except ImportError:
     use_gui = False
+
+def read_minA(fname, db):
+    """load data from min.A or min.B"""
+    with open(fname) as fin:
+        ids = []
+        for i, line in enumerate(fin):
+            if i == 0:
+                nminima = int(line.split()[0])
+            else:
+                sline = line.split()
+                ids += map(int, sline)
     
+    assert nminima == len(ids)
+    print len(ids), "minima read from file:", fname
+    return [db.getMinimum(mid) for mid in ids]
 
-global _id_count
-_id_count = 0
-
-class FakeMinimum(object):
-    """
-    a class to duplicate some of the functionality of the Minimum class
-    """
-    def __init__(self, energy, coords):
-        self.energy = energy
-        self.coords = coords
-        global _id_count
-        self._id = _id_count
-        _id_count += 1
-
-    def __eq__(self, m):
-        """m can be integer or Minima object"""
-        assert self._id is not None
-        if isinstance(m, FakeMinimum):
-            assert m._id is not None
-            return self._id == m._id
-        else:
-            return self._id == m
-        
-    def __hash__(self):
-        assert self._id is not None
-        return self._id
-    
-
-class FakeTransitionState(object):
-    """
-    a class to duplicate some of the functionality of the 
-    TransitionState class
-    """
-    def __init__(self, energy, coords, min1, min2):
-        self.energy = energy
-        self.coords = coords
-        self.minimum1 = min1
-        self.minimum2 = min2
-        global _id_count
-        self._id = _id_count
-        _id_count += 1
-
-
-def make_graph_from_files(mindata="min.data", tsdata="ts.data"):
-    """skip making the database because it takes too long"""
-    graph = nx.Graph()
-    id2min = {}
-    print "adding minima from", mindata
-    count = 0
-    with open(mindata, "r") as fin:
-        for line in fin:
-            sline = line.split()
-            energy = float(sline[0])
-            coords = np.array([0.])
-            minimum = FakeMinimum(energy, coords)
-            id2min[minimum._id] = minimum
-            graph.add_node(minimum)
-#            count += 1
-#            if count % 1000 == 0:
-#                print count, minimum._id
-
-    count = 0
-    print "adding transition states from", tsdata
-    with open(tsdata, "r") as fin:
-        for line in fin:
-            sline = line.split()
-            energy = float(sline[0])
-            m1id = int(sline[3]) - 1
-            m2id = int(sline[4]) - 1
-            m1 = id2min[m1id]
-            m2 = id2min[m2id]
-            coords = np.array([0.])
-            ts = FakeTransitionState(energy, coords, m1, m2)
-            graph.add_edge(m1, m2, ts=ts)
-#            count += 1
-#            if count % 100 == 0:
-#                print count
-
-    return graph 
-
+def read_AB(db):
+    minA = "min.A"
+    minB = "min.B"
+    if os.path.isfile(minA) and os.path.isfile(minA):
+        A = read_minA(minA, db) 
+        B = read_minA(minB, db)
+        return A,B
+    else:
+        return None
 
 def usage():
     print "usage:"
@@ -162,9 +106,14 @@ def main():
             exit(1)
     
     
+    groups = None
+    
     if OPTIM:
         #make database from min.data ts.data
-        graph = make_graph_from_files()
+        db = Database()
+        converter = OptimDBConverter(db)
+        converter.convert_no_coords()
+        groups = read_AB(db)
     else:
         if len(args) == 0:
             print "you must specify database file"
@@ -183,18 +132,20 @@ def main():
         kwargs["show_minima"] = False
         md = DGraphDialog(db, params=kwargs)
         md.rebuild_disconnectivity_graph()
+        if groups is not None:
+            md.dgraph_widget.dg.color_by_group(groups)
+            md.dgraph_widget.redraw_disconnectivity_graph()
         md.show()
         sys.exit(app.exec_())
         
-    if not OPTIM: 
-        # make graph from database
-        t0 = time.time()
-        if "Emax" in kwargs and use_gui:
-            graph = reduced_db2graph(db, kwargs['Emax'])
-        else:
-            graph = dg.database2graph(db)
-        t1 = time.time()
-        print "loading the data into a transition state graph took", t1-t0, "seconds"
+    # make graph from database
+    t0 = time.time()
+    if "Emax" in kwargs and use_gui:
+        graph = reduced_db2graph(db, kwargs['Emax'])
+    else:
+        graph = dg.database2graph(db)
+    t1 = time.time()
+    print "loading the data into a transition state graph took", t1-t0, "seconds"
 
     # do the disconnectivity graph analysis
     mydg = dg.DisconnectivityGraph(graph, **kwargs)

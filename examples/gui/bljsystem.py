@@ -25,7 +25,7 @@ class BLJDialog(QtGui.QDialog):
         self.setWindowTitle("Create binary Lennard-Jones system")
         self.natoms = None
 #        self.ui.buttonBox.Ok.setDefault(True)
-        self.ui.buttonBox.Ok.setDefault(True)
+#        self.ui.buttonBox.Ok.setDefault(True)
     
     def get_input(self):
         self.natoms = int(self.ui.lineEdit_natoms.text())

@@ -9,6 +9,10 @@ at several levels of energy Elevel into
 groups of minima (basins) that are connected by transition states of energy
 less than Elevel.
 
+.. image:: dgraph_lj38.png
+  :height: 250
+.. image:: dgraph_lj16.png
+  :height: 250
 
 .. currentmodule:: pele.utils.disconnectivity_graph
 .. autosummary:: 
@@ -23,13 +27,12 @@ states connecting them.  Assuming you already have a database, here is how
 you turn it into a disconnectivity graph.  
 
 First you must convert the database to a networkx graph. This can be done
-using pele's graph wrapper `TSGraph` ::
+via the following ::
 
-    from pele.landscape import TSGraph
-    graphwrapper = TSGraph(database)
-    graph = graphwrapper.graph
+    from pele.utils.disconnectivity_graph import database2graph
+    graph = database2graph(database)
 
-Now we pass graphwrapper to the class DisconnectivityGraph ::
+Now we pass the graph to the class DisconnectivityGraph ::
 
   from pele.utils import DisconnectivityGraph 
   dg = DisconnectivityGraph(graph)
@@ -53,4 +56,4 @@ disconnectivity graph script
 There is a handy script in pele which lets you create a disconnectivity
 graph from a database file directly from the command line.  see the file
 
-pele/scripts/make_disconnectivity_graph.py
+`pele/scripts/make_disconnectivity_graph.py`

@@ -36,7 +36,7 @@ class TestLBFGS_CPP_PP(unittest.TestCase):
             
 
 class TestLBFGS_CPP(unittest.TestCase):
-    def do_test(self, pot, **kwargs):
+    def do_tst(self, pot, **kwargs):
         lbfgs = LBFGS_CPP(_xrand, pot, **kwargs)
         res = lbfgs.run()
         self.assertAlmostEqual(res.energy, _emin, 4)
@@ -45,10 +45,10 @@ class TestLBFGS_CPP(unittest.TestCase):
         self.assertGreater(res.nfev, 0)
         
     def test_E(self):
-        self.do_test(_E())
+        self.do_tst(_E())
 
     def test_EG(self):
-        self.do_test(_EG())
+        self.do_tst(_EG())
 
     def assert_same(self, res1, res2):
         self.assertEqual(res1.energy, res2.energy)
@@ -89,13 +89,13 @@ class TestLBFGS_CPP(unittest.TestCase):
         self.event_called = False
         def myevent(*args, **kwargs): 
             self.event_called = True
-        self.do_test(_EG(), events=[myevent])
+        self.do_tst(_EG(), events=[myevent])
         self.assertTrue(self.event_called)
         
 
 
 class TestLBFGS_CPP_PassGrad(unittest.TestCase):
-    def do_test(self, pot):
+    def do_tst(self, pot):
         e, grad = pot.getEnergyGradient(_xrand)
         lbfgs = LBFGS_CPP(_xrand, pot, energy=e, gradient=grad)
         res = lbfgs.run()
@@ -105,10 +105,10 @@ class TestLBFGS_CPP_PassGrad(unittest.TestCase):
         self.assertGreater(res.nfev, 0)
         
     def test_E(self):
-        self.do_test(_E())
+        self.do_tst(_E())
 
     def test_EG(self):
-        self.do_test(_EG())
+        self.do_tst(_EG())
 
 class TestLBFGS_CPP_Raises(unittest.TestCase):
     def test_raises(self):

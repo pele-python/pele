@@ -91,10 +91,11 @@ class ConnectViewer(QtGui.QMainWindow):
     
     """
     def __init__(self, system, database, min1=None, min2=None, parent=None, app=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)    
+        QtGui.QMainWindow.__init__(self, parent=parent)
         self.ui = UI()
         self.ui.setupUi(self)
         self.ui.centralwidget.hide()
+        self.setWindowTitle("Double ended connect")
         
         self.app = app
         self.system = system

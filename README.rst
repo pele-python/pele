@@ -1,26 +1,29 @@
-PELE : Python Energy Landscape Explorer
+pele : Python Energy Landscape Explorer
 +++++++++++++++++++++++++++++++++++++++
 
-tools for global optimization and energy landscape exploration.
+Tools for global optimization and energy landscape exploration.
 
-The code is hosted at
+Source code: https://github.com/pele-python/pele
 
-https://github.com/pele-python/pele
+Documentation: http://pele-python.github.io/pele/
 
-for documentation, see
 
-http://pele-python.github.com/pele/
 
-The code project upon which this python package is based can be found at
+.. figure:: lj38_gmin_dgraph.png
 
-http://www-wales.ch.cam.ac.uk/software.html
+  Images: The global minimum energy structure of a 38 atom Lennard-Jones cluster.  On
+  the right is a disconnectivity graph showing a visualization of the energy
+  landscape.  The competing low energy basins are shown in color.
 
 pele is a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
-programs written by David Wales of Cambridge University and collaborators.
-pele has recently been renamed.  The previous name of the project was pygmin.
+programs written by David Wales of Cambridge University and collaborators
+(http://www-wales.ch.cam.ac.uk/software.html).  
 
-pele has tools for energy minization, global optimization, saddle point
-(transition state) search and much more.  Some of the algorithms implemented are
+Description
+===========
+pele has tools for energy minimization, global optimization, saddle point
+(transition state) search, data analysis, visualization and much more.  Some of
+the algorithms implemented are:
 
 1. Basinhopping global optimization
 
@@ -42,7 +45,9 @@ pele has tools for energy minization, global optimization, saddle point
 
 6. Structure alignment algorithms
 
-7. Thermodynamic information (e.g. heat capacity) via the Harmonic Superposition Approximation
+7. Thermodynamics (e.g. heat capacity) via the Harmonic Superposition Approximation
+
+8. Transition rates analysis
 
 INSTALLATION
 ============
@@ -118,7 +123,7 @@ Compilation
 -----------
 
 Compilation is required for use of the fast potentials, those written in C
-and/or fortran).  Theoretically you should be able to use any fortran compiler,
+and/or fortran.  Theoretically you should be able to use any fortran compiler,
 but we mostly use gfortran, so it's the least likely to have problems.  This
 package uses the standard python setup utility (distutils).  There are lots of
 options for how and where to install. For more information::
@@ -149,69 +154,57 @@ standard location.
 Installing on Mac
 -----------------
 
-Everything installed very easily on my Macbook Air OSX Version 10.75 except the
-things needed for the gui.  There is a problem (not related to pele) with the
-combination of PyQt4, Qt4, and OpenGL.  If you don't want the gui you should be
-golden, but if you do, you may have to install a few things from source.  Below
-are the steps I took to get everything working
-
-I use the Enthought python distribution instead of the prepackaged one.  This
-seems to be standard, plus it includes numpy and scipy
-http://www.enthought.com/products/epd.php
+Everything installed very easily on my Macbook Air OSX Version 10.9.2 except
+the things needed for the gui.  If you don't want the gui you should be golden,
+but if you do, you may have to install a few things from source.  Below are the
+steps I took to get everything working
 
 If you want to use the gui you have to install PyQt4 and its dependencies.
-This is not as simple as it should be.  Even though my mac is 64 bit I had to
-compile everything with --arch=i386.  I even had to install Qt from source to
-get it with the 32 bit architecture.   Here are some rough instructions adapted
-from http://www.noktec.be/python/how-to-install-pyqt4-on-osx .  That website
-gives a good start, but it is not complete.
+This is not as simple as it should be, but is actually not too hard.  There is a good guide at
+http://www.pythonschool.net/mac_pyqt/. I had to install from source.
+This method is also detailed at
+http://sharewebegin.blogspot.co.uk/2013/06/install-pyqt-on-mac-osx-lion1084.html.
+This worked even though I'm using osx Mavericks
 
-1. install Qt4.8 from source.  We cannot use the dmg file becuse we need to
-   install it for i386 architecture.  
-   http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
+1. Ensure you're using a decent python installation, the osx pre-packaged one won't suffice.
+I use the Enthought Canopy python distribution https://www.enthought.com/products/canopy/
 
-   In the directory you unpack the tar.gz file run the following commands.
-   http://qt-project.org/doc/qt-4.8/install-x11.html .
+2. Install Qt4.8 using the pre-compiled binary http://qt-project.org/downloads
 
-   ::
-
-     ./configure -arch i386
-     make
-     make install
-
-   Make a note of the location of the qmake file that this installs.  We
-   will need it for the PyQt4 installation.
-  
-2. install SIP from source.
+3. Install SIP from source.
    http://www.riverbankcomputing.co.uk/software/sip/download
 
    In the directory you unpack the tar.gz file run the following commands
    ::
 
-     python configure.py --arch i386
+     python configure.py --arch=x86_64
      make
-     make install
+     sudo make install
 
-   This will install SIP for the version of python you use to run configure.py,
-   so make sure you're using the correct python version.  Running python
-   configure.py --help will tell you which python directory it will be
-   installed to.  This should be the same as when you type `which python`
+   You may need to use the -d flag to specify the install directory, but for me
+   it selected the correct location. If you get the error "SIP requires Python to be built as a framework",
+   don't worry, you can ignore this (http://python.6.x6.nabble.com/installing-sip-on-os-x-with-canopy-td5037076.html).
+   Simply comment out the following lines in sipconfig.py. They were at roughly line number 1675 for me.
+   ::
+
+    if "Python.framework" not in dl:
+        error("SIP requires Python to be built as a framework")
    
-3. install PyQt4 from source
+4. Install PyQt4 from source
    http://www.riverbankcomputing.co.uk/software/pyqt/download .
 
    In the directory you unpack the tar.gz file run the following commands
    ::
 
-     python configure.py -q <path to qmake in Qt4 folder>  --use-arch i386
-     make
-     make install
+     python configure-ng.py
+     make -j
+     sudo make install
 
-   You must specify (I think) the qmake file that was installed along with Qt4.
-   It should be in the Qt4 install directory.
-
-   The same warning for which version of python you use to run configure.py
-   applies here as well.
+   The -j flag specifies parallel compilation.  You may need to use the -q flag
+   to specify the location of the qmake program.  Pass the location of the
+   qmake file that is in the directory of Qt, which you installed in step 2.
+ 
+5. You're done!  Test if it works by running examples/gui/ljsystem.py
 
 If you have updates or more complete installation instructions please email or
 submit a pull request.
@@ -225,3 +218,14 @@ information can be found in the documentation at
 http://pele-python.github.com/pele/
 
 
+Notes
+=====
+pele has recently been renamed from pygmin
+
+Tests
+=====
+Pele has a large suite of unit tests.  They can be run using the nose testing
+framework (which can be installed using pip).  The tests are run from the top
+directory with this command::
+
+  nosetests pele

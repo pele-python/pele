@@ -1,3 +1,6 @@
+"""
+# distutils: language = C++
+"""
 import numpy as np
 cimport numpy as np
 from pele.potentials import _pele, _pythonpotential

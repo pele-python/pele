@@ -1,9 +1,13 @@
-from pele.optimize import _quench
-
 import unittest
+import numpy as np
+
+from pele.optimize import _quench
+from pele.systems import LJCluster
+
+
 class TestMinimizers(unittest.TestCase):
     def setUp(self):
-        from pele.systems import LJCluster
+        np.random.seed(0)
         natoms = 31
         self.system = LJCluster(natoms)
         self.pot = self.system.get_potential()

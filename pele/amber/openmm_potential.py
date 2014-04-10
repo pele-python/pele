@@ -15,6 +15,7 @@ from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
 from simtk.openmm import * 
 from simtk.unit import   kilocalories_per_mole, kilojoules_per_mole, nanometer, angstrom, picosecond 
 import simtk.openmm.app.forcefield as openmmff
+import numpy as np 
 
 __all__ = ["OpenMMAmberPotential"]
 
@@ -69,7 +70,8 @@ class OpenMMAmberPotential(BasePotential):
         potE = self.simulation.context.getState(getEnergy=True).getPotentialEnergy()
 
         # remove units from potE and then convert to kcal/mol to be consistent with GMIN   
-        return potE / kilojoules_per_mole / self.kJtokCal
+        ee = potE / kilojoules_per_mole / self.kJtokCal
+        return float( ee ) 
 
 #'''  ------------------------------------------------------------------- '''
     def getEnergyGradient(self, coords):
@@ -87,20 +89,26 @@ class OpenMMAmberPotential(BasePotential):
         # xply to -1 to convert gradient ; divide by 10 to convert to kJ/mol/angstroms 
         grad = -forcee / ( kilojoules_per_mole / nanometer ) / 10 / self.kJtokCal # todo - 10 is hardcoded   
                 
-        # remove units before returning   
-        return E, grad.reshape(-1)  
+        # remove units before returning  
+        grad = np.array(grad, dtype=float) 
+        return float(E), grad.reshape(-1)  
 '''  ------------------------------------------------------------------- '''
 
 if __name__ == "__main__":
     
-    # read one conformation from pdb file 
+    # create potential for the molecule in coords.pdb
+    prmtopFname = '../../examples/amber/aladipep/coords.prmtop' 
+    inpcrdFname	= '../../examples/amber/aladipep/coords.inpcrd' 
+    pot = OpenMMAmberPotential(prmtopFname, inpcrdFname)  
+
+    # read coordinates from pdb file 
     from simtk.openmm.app import pdbfile as openmmpdb
-    pdb = openmmpdb.PDBFile('coords.pdb')
+    pdb = openmmpdb.PDBFile('../../examples/amber/aladipep/coords.pdb')
     
     coords = pdb.getPositions() / angstrom   
     coords = numpy.reshape(numpy.transpose(coords), 3*len(coords), 1)
 
-    pot = amberPot()    
+    # compute energy and gradients   	
     e = pot.getEnergy(coords)
     print 'Energy (kJ/mol) = '
     print e
@@ -121,3 +129,20 @@ if __name__ == "__main__":
     print np.max(np.abs(gnum-g)) / np.max(np.abs(gnum))
     
     
+#$ python openmm_potential.py
+#Energy (kJ/mol) = 
+#-13.2272103351
+#Energy (kJ/mol) = 
+#-13.2272103351
+#Analytic Gradient = 
+#[0.5474055271317946 -1.3862268604248615 -0.34820375884655835
+# 0.557332675020795 -1.3579497787292465]
+#Numerical Gradient = 
+#[ 0.21390981 -1.1717879  -0.09397455  0.1569264  -1.22877131]
+#Num vs Analytic Gradient =
+#1.93645994676 19.2856516597
+#0.100409360334
+
+
+
+

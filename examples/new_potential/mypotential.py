@@ -5,9 +5,9 @@ an example of how to create a new potential.
 from pele.potentials import BasePotential
 
 class MyPot(BasePotential):
-    """a Lennard Jones potential with altered expoenents
+    """a Lennard Jones potential with altered exponents
     
-    V(r) = r**-24 - r**-12
+    V(r) = 4. * (r**-24 - r**-12)
     """
     def __init__(self, natoms):
         self.natoms = natoms #number of atoms
@@ -18,7 +18,7 @@ class MyPot(BasePotential):
         for i in range(self.natoms):
             for j in range(i):
                 r = np.sqrt(np.sum((coords[i,:] - coords[j,:])**2)) 
-                E += r**-24 - r**-12
+                E += 4. * (r**-24 - r**-12)
         return E
     
     def getEnergyGradient(self, coords):
@@ -29,8 +29,8 @@ class MyPot(BasePotential):
             for j in range(i):
                 dr = coords[i,:] - coords[j,:]
                 r = np.sqrt(np.sum(dr**2)) 
-                E += r**(-24) - r**(-12)
-                g = 24. * r**(-25) - 12. * r**(-13)
+                E += 4. * (r**(-24) - r**(-12))
+                g = 4. * ( 24. * r**(-25) - 12. * r**(-13))
                 grad[i,:] += -g * dr/r
                 grad[j,:] += g * dr/r
         return E, grad.reshape(-1)
@@ -62,30 +62,30 @@ class MySystem(BaseSystem):
 import numpy as np
 def run_basinhopping():
     natoms = 8
-    sys = MySystem(natoms)
-    database = sys.create_database()
+    system = MySystem(natoms)
+    database = system.create_database()
     x0 = np.random.uniform(-1,1,[natoms*3])
-    bh = sys.get_basinhopping(database=database, coords=x0)
+    bh = system.get_basinhopping(database=database, coords=x0)
     bh.run(10)
     print "found", len(database.minima()), "minima"
     min0 = database.minima()[0]
     print "lowest minimum found has energy", min0.energy
-    return sys, database
+    return system, database
 
-def run_double_ended_connect(sys, database):
-    #connect the all minima to the lowest minimum
-    minima = database.minima()
-    min1 = minima[0]
-    for min2 in minima[1:]:
-        connect = sys.get_double_ended_connect(min1, min2, database)
+def run_double_ended_connect(system, database):
+    # connect the all minima to the lowest minimum
+    from pele.landscape import ConnectManager
+    manager = ConnectManager(database, strategy="gmin")
+    for i in xrange(database.number_of_minima()-1):
+        min1, min2 = manager.get_connect_job()
+        connect = system.get_double_ended_connect(min1, min2, database)
         connect.connect()
 
-from pele.utils.disconnectivity_graph import DisconnectivityGraph
-from pele.landscape import TSGraph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
 import matplotlib.pyplot as plt
 
 def make_disconnectivity_graph(database):
-    graph = TSGraph(database).graph
+    graph = database2graph(database)
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()

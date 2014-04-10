@@ -2,16 +2,18 @@ import matplotlib
 matplotlib.use("QT4Agg")
 import traceback    
 import sys
-import copy
 import numpy as np
 
 from PyQt4 import QtCore, QtGui, Qt
 
+from pele.landscape import TSGraph
+from pele.storage import Database
+from pele.utils.events import Signal
+from pele.config import config
+
 from pele.gui.MainWindow import Ui_MainWindow 
 from pele.gui.bhrunner import BHManager
-from pele.landscape import TSGraph
 from pele.gui.dlg_params import DlgParams
-from pele.config import config
 from pele.gui.ui.dgraph_dlg import DGraphDialog
 #from pele.gui.connect_explorer_dlg import ConnectExplorerDialog
 from pele.gui.connect_run_dlg import ConnectViewer
@@ -19,9 +21,9 @@ from pele.gui.takestep_explorer import TakestepExplorer
 from pele.gui.normalmode_browser import NormalmodeBrowser
 from pele.gui._list_views import ListViewManager
 from pele.gui._cv_viewer import HeatCapacityViewer
-from pele.rates import RateCalculation
 from pele.gui._rate_gui import RateViewer
-from pele.utils.events import Signal
+from pele.gui.graph_viewer import GraphViewDialog
+
 
 
 def excepthook(ex_type, ex_value, traceback_obj):
@@ -133,11 +135,12 @@ class MainGUI(QtGui.QMainWindow):
         connect to an existing database at location filename
         """
         self.list_manager.clear()
-        
-        if isinstance(database, basestring):
-            self.system.database = self.system.create_database(db=database)
-        else:
+
+        # note: database can be either Database, or string, or QString        
+        if isinstance(database, Database):
             self.system.database = database
+        else:
+            self.system.database = self.system.create_database(db=database)
         #add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
@@ -308,15 +311,17 @@ class MainGUI(QtGui.QMainWindow):
         """
         if clicked is None: return
         self.pick_count = 0
-        from pele.gui.graph_viewer import GraphViewDialog
         if not hasattr(self, "graphview"):
             self.graphview = GraphViewDialog(self.system.database, parent=self, app=self.app)
             self.graphview.widget.on_minima_picked.connect(self.on_minimum_picked)
             self.graphview.widget.on_minima_picked.connect(self.SelectMinimum)
         self.graphview.show()
         self.graphview.widget.make_graph()
-        self.graphview.widget.show_graph()
-        return
+        try:
+            m1, m2 = self.get_selected_minima()
+            self.graphview.widget._show_minimum_energy_path(m1, m2)
+        except:
+            self.graphview.widget.show_graph()
         
     def on_pushNormalmodesMin_clicked(self, clicked=None):
         if clicked is None: return
@@ -502,7 +507,11 @@ class MainGUI(QtGui.QMainWindow):
         min1, min2 = self.get_selected_minima()
         self._merge_minima(min1, min2)
 
-
+    def on_action_compute_thermodynamic_info_triggered(self, checked=None):
+        if checked is None: return
+        def on_done(): print "done computing thermodynamic info"
+        self._on_done = on_done # because on_finish stores a weak reference
+        self.compute_thermodynamic_information(on_finish=self._on_done )
 
 #    def launch_connect_explorer(self):
 #        coords1, coords2 = self.get_selected_coords()
@@ -563,7 +572,7 @@ class MainGUI(QtGui.QMainWindow):
         self.takestep_explorer.show()
     
     def on_btn_heat_capacity_clicked(self, clicked=None):
-        if clicked is None: return 
+        if clicked is None: return
         self.cv_viewer = HeatCapacityViewer(self.system, self.system.database, parent=self)
         self.cv_viewer.show()
         self.cv_viewer.rebuild_cv_plot()

@@ -50,7 +50,7 @@ class TestFindTransitionState_NFEV(unittest.TestCase):
         self.pot = _PotWrapper(self.system.get_potential())
         self.x = self.system.get_random_minimized_configuration(tol=10.).coords
     
-    def do_test(self, **kwargs):
+    def do_tst(self, **kwargs):
         self.pot.nfev = 0
         opt = FindTransitionState(self.x, self.pot, **kwargs)
         ret = opt.run()
@@ -59,13 +59,13 @@ class TestFindTransitionState_NFEV(unittest.TestCase):
         self.assertGreater(ret.nfev, 0)
     
     def test(self):
-        self.do_test()
+        self.do_tst()
  
     def test1(self):
-        self.do_test(invert_gradient=True)
+        self.do_tst(invert_gradient=True)
 
     def test2(self):
-        self.do_test(lowestEigenvectorQuenchParams=dict(first_order=True)
+        self.do_tst(lowestEigenvectorQuenchParams=dict(first_order=True)
                      )
 
 

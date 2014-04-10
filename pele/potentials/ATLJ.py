@@ -1,6 +1,6 @@
 import numpy as np #to access np.exp() not built int exp
-from scipy import weave
-from scipy.weave import converters
+#from scipy import weave
+#from scipy.weave import converters
 
 from pele.potentials import LJ
 from pele.potentials import BasePotential
@@ -27,62 +27,62 @@ class ATLJ(BasePotential):
         self.lj = LJ(self.sig, self.eps)
 
     
-    def getEnergyWeave(self, coords):
-        """
-        use weave inline
-        """
-        Elj = self.lj.getEnergy(coords)
-        
-        natoms = coords.size/3
-        coords = np.reshape(coords, [natoms,3])
-        energy=0.
-        Z = self.Z
-        #support_code
-        code = """
-        double drij[3];
-        double drik[3];
-        double drjk[3];
-        energy = 0.;
-        for (int i=0; i < natoms; ++i){
-            for (int j=0; j<i; ++j){
-                for (int k=0; k<j; ++k){
-                
-                    double rij = 0.;
-                    double rik = 0.;
-                    double rjk = 0.;
-        
-                    for (int d=0; d<3; ++d){
-                        drij[d] = coords(i,d) - coords(j,d);
-                        rij += drij[d]*drij[d];
-                    }
-                    for (int d=0; d<3; ++d){
-                        drjk[d] = coords(j,d) - coords(k,d);
-                        rjk += drjk[d]*drjk[d];
-                    }
-                    for (int d=0; d<3; ++d){
-                        drik[d] = coords(i,d) - coords(k,d);
-                        rik += drik[d]*drik[d];
-                    }
-                    
-                    rij = sqrt(rij);
-                    rjk = sqrt(rjk);
-                    rik = sqrt(rik);
-                    
-                    double ctijk = ( -(drij[0]*drjk[0] + drij[1]*drjk[1] + drij[2]*drjk[2]) / (rij * rjk) );
-                    double ctjki = (  (drjk[0]*drik[0] + drjk[1]*drik[1] + drjk[2]*drik[2]) / (rjk * rik) );
-                    double ctkij = (  (drik[0]*drij[0] + drik[1]*drij[1] + drik[2]*drij[2]) / (rik * rij) );
-
-                    double r3 = rij*rjk*rik;
-                    energy += Z*(1. + 3. * ctijk * ctjki * ctkij) / (r3*r3*r3);
-                }
-            }
-        }
-        return_val= energy;
-        """
-        energy = weave.inline(code, ["coords", "energy", "Z", "natoms"], type_converters=converters.blitz, verbose=2)
-        #print "fast energy", Elj, energy
-        energy += Elj
-        return energy
+#    def getEnergyWeave(self, coords):
+#        """
+#        use weave inline
+#        """
+#        Elj = self.lj.getEnergy(coords)
+#        
+#        natoms = coords.size/3
+#        coords = np.reshape(coords, [natoms,3])
+#        energy=0.
+#        Z = self.Z
+#        #support_code
+#        code = """
+#        double drij[3];
+#        double drik[3];
+#        double drjk[3];
+#        energy = 0.;
+#        for (int i=0; i < natoms; ++i){
+#            for (int j=0; j<i; ++j){
+#                for (int k=0; k<j; ++k){
+#                
+#                    double rij = 0.;
+#                    double rik = 0.;
+#                    double rjk = 0.;
+#        
+#                    for (int d=0; d<3; ++d){
+#                        drij[d] = coords(i,d) - coords(j,d);
+#                        rij += drij[d]*drij[d];
+#                    }
+#                    for (int d=0; d<3; ++d){
+#                        drjk[d] = coords(j,d) - coords(k,d);
+#                        rjk += drjk[d]*drjk[d];
+#                    }
+#                    for (int d=0; d<3; ++d){
+#                        drik[d] = coords(i,d) - coords(k,d);
+#                        rik += drik[d]*drik[d];
+#                    }
+#                    
+#                    rij = sqrt(rij);
+#                    rjk = sqrt(rjk);
+#                    rik = sqrt(rik);
+#                    
+#                    double ctijk = ( -(drij[0]*drjk[0] + drij[1]*drjk[1] + drij[2]*drjk[2]) / (rij * rjk) );
+#                    double ctjki = (  (drjk[0]*drik[0] + drjk[1]*drik[1] + drjk[2]*drik[2]) / (rjk * rik) );
+#                    double ctkij = (  (drik[0]*drij[0] + drik[1]*drij[1] + drik[2]*drij[2]) / (rik * rij) );
+#
+#                    double r3 = rij*rjk*rik;
+#                    energy += Z*(1. + 3. * ctijk * ctjki * ctkij) / (r3*r3*r3);
+#                }
+#            }
+#        }
+#        return_val= energy;
+#        """
+#        energy = weave.inline(code, ["coords", "energy", "Z", "natoms"], type_converters=converters.blitz, verbose=2)
+#        #print "fast energy", Elj, energy
+#        energy += Elj
+#        return energy
 
 
 
@@ -135,48 +135,6 @@ class ATLJ(BasePotential):
         #return self.getEnergyGradientNumerical(coords)
         return self.getEnergyGradientFortran(coords)
 
-import unittest
-class TestATLJ(unittest.TestCase):
-    def testenergy(self):
-        natoms = 10
-        coords = np.random.uniform(-1,1,natoms*3)*2
-        
-        from pele.optimize import mylbfgs as quench
-        lj = LJ()
-        ret = quench(coords, lj)
-        coords = ret.coords
-        
-        
-        atlj = ATLJ(Z=3.)
-        e2 = atlj.getEnergySlow(coords)
-#        e1 = atlj.getEnergyWeave(coords)
-#        #print "%g - %g = %g" % (e1, e2, e1-e2)
-#        self.assertTrue( abs(e1 - e2) < 1e-12, "ATLJ: two energy methods give different results: %g - %g = %g" % (e1, e2, e1-e2) )
-
-        
-        e1 = atlj.getEnergyFortran(coords)
-        #print "%g - %g = %g" % (e1, e2, e1-e2)
-        #print e1/e2
-        self.assertTrue( abs(e1 - e2) < 1e-12, "ATLJ: fortran energy gives different results: %g - %g = %g" % (e1, e2, e1-e2) )
-
-    def testGradient(self):
-        natoms = 10
-        coords = np.random.uniform(-1,1,natoms*3)*2
-        
-        lj = LJ()
-        
-        
-        atlj = ATLJ(Z=3.)
-        
-        e, Gf = atlj.getEnergyGradientFortran(coords)
-        Gn = atlj.NumericalDerivative(coords)
-        print Gf
-        print Gn
-        maxdiff = np.max(np.abs(Gf-Gn))
-        maxnorm = np.max(np.abs(Gf+Gn)) / 2
-        maxrel = np.max( np.abs( (Gf-Gn)/(Gf+Gn)*2. ))
-        print "maximum relative difference in gradients",  maxdiff, maxdiff/maxnorm
-        self.assertTrue( maxdiff/maxnorm < 1e-4, "ATLJ: gradient differs from numerical gradient by %g" % (maxdiff) )
         
 
 
@@ -230,6 +188,5 @@ def main():
     #print lj.getEnergyGradientWeave(coords)
 
 if __name__ == "__main__":
-    #main()
-    unittest.main()
+    main()
 
