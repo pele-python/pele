@@ -1,3 +1,4 @@
+# distutils: language = c++
 cimport cython
 import sys
 from libcpp cimport bool as cbool

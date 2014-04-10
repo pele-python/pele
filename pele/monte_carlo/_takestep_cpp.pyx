@@ -1,3 +1,4 @@
+# distutils: language = c++
 cimport cython
 import sys
 from _pele_mc cimport cppTakeStep,_Cdef_TakeStep
