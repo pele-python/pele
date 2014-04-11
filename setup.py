@@ -7,8 +7,6 @@ from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
 from numpy.distutils.misc_util import has_cxx_sources
 import numpy as np
-#import os
-#os.environ["CXX"] = "g++-4.6"
 
 ## Numpy header files 
 numpy_lib = os.path.split(np.__file__)[0] 
