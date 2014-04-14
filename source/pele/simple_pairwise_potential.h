@@ -88,8 +88,7 @@ namespace pele
 					int j1 = 3*atomj;
 					_dist->get_rij(dr, &x[i1], &x[j1]);
 					r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
-					_interaction->hessian(r2, &hij, atomi, atomj);
-					e += _interaction->energy_gradient(r2, &gij, atomi, atomj);
+					e += _interaction->energy_gradient_hessian(r2, &gij, &hij, atomi, atomj);
 					for (size_t k=0;k<3;++k){
 						//diagonal block - diagonal terms
 						double Hii_diag = (hij+gij)*dr[k]*dr[k]/r2 - gij;

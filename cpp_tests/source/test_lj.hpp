@@ -33,8 +33,10 @@ TEST(LJInteractionTest, Hessian_Works){
     double c6 = 1.2;
     double c12 = 2.3;
     pele::lj_interaction ljint(c6, c12);
-    double h = 0;
-    ljint.hessian(r2, &h, 1, 2);
+    double h = 0, g = 0;
+    double e = ljint.energy_gradient_hessian(r2, &g, &h, 1, 2);
+    ASSERT_NEAR(e, 0.39671227804179443, 1e-10);
+    ASSERT_NEAR(g, 9.2454671845389917, 1e-10);
     ASSERT_NEAR(h, 149.6972546707778, 1e-10);
 }
 
