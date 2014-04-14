@@ -25,6 +25,13 @@ public:
         x[4]  = 0.55;
         x[5]  = 1.66;
         etrue = -1.6288465928749187;
+        y = Array<double>(9);
+        for(int i=0;i<6;++i)
+            y[i] = x[i];
+        y[6] = 0.88;
+        y[7] = 1.1;
+        y[8] = 3.32;
+
     }
 };
 
@@ -56,12 +63,12 @@ TEST_F(MorseTest, Hessian_Works){
         ASSERT_NEAR(h[i], h_num[i],1e-6);
 }
 
-//TEST_F(MorseTest, Hessian_Works2){
-//    pele::Morse lj(c6, c12);
-//    Array<double> h(9*9);
-//    Array<double> h_num(9*9);
-//    lj.get_hessian(y, h);
-//    lj.numerical_hessian(y,h_num);
-//    for (int i; i<h.size();++i)
-//        ASSERT_NEAR(h[i],h_num[i],1e-6);
-//}
+TEST_F(MorseTest, Hessian_Works2){
+    pele::Morse pot(rho, r0, A);
+    Array<double> h(9*9);
+    Array<double> h_num(9*9);
+    pot.get_hessian(y, h);
+    pot.numerical_hessian(y, h_num);
+    for (int i; i<h.size();++i)
+        ASSERT_NEAR(h[i],h_num[i],1e-6);
+}
