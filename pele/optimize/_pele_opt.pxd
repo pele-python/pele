@@ -35,7 +35,6 @@ cdef extern from "pele/optimizer.h" namespace "pele":
         int get_maxiter() except+
         cbool success() except+
         cbool stop_criterion_satisfied() except+
-        void compute_func_gradient(_pele.Array[double], double&, _pele.Array[double]) except+
         void initialize_func_gradient() except+
     
 cdef class GradientOptimizer:
