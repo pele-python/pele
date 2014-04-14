@@ -49,7 +49,7 @@ cdef class BasePotential(object):
     
     def getEnergyGradientHessian(self, np.ndarray[double, ndim=1] x not None):
         e, grad = self.getEnergyGradient(x)
-        hess = self.Hessian(x) #this should return the numerical hessian if hessian is not implemented
+        hess = self.NumericalHessian(x)
         return e, grad, hess
     
     def getHessian(self, np.ndarray[double, ndim=1] x not None):
@@ -65,23 +65,15 @@ cdef class BasePotential(object):
                                        )
         return grad
                 
-    def Hessian(self, np.ndarray[double, ndim=1] x not None):
-        # redirect the call to the c++ class
-        cdef np.ndarray[double, ndim=1] hess = np.zeros([x.size**2])
-        self.thisptr.get_hessian(Array[double](<double*> x.data, x.size),
-                                       Array[double](<double*> hess.data, hess.size))
-#        newhess = hess;
-        return np.reshape(hess, [x.size, x.size])    
-        
     def NumericalHessian(self, np.ndarray[double, ndim=1] x not None, double eps=1e-6):
         # redirect the call to the c++ class
-        cdef np.ndarray[double, ndim=1] hess_num = np.zeros([x.size**2])
+        cdef np.ndarray[double, ndim=1] hess = np.zeros([x.size**2])
         self.thisptr.numerical_hessian(Array[double](<double*> x.data, x.size),
-                                       Array[double](<double*> hess_num.data, hess_num.size),
+                                       Array[double](<double*> hess.data, hess.size),
                                        eps
                                        )
 #        newhess = hess;
-        return np.reshape(hess_num, [x.size, x.size])
+        return np.reshape(hess, [x.size, x.size])
 
 # This is a little test function to benchmark potential evaluation in a loop
 # in native code    
