@@ -101,3 +101,16 @@ TEST_F(LJTest, Hessian_Works2){
     for (int i; i<h.size();++i)
     	ASSERT_NEAR(h[i],h_num[i],1e-6);
 }
+
+TEST_F(LJTest, NumericalGradient_Works){
+    pele::LJ pot(c6, c12);
+    Array<double> g(6);
+    double e = pot.get_energy_gradient(x, g);
+    ASSERT_NEAR(e, etrue, 1e-10);
+    Array<double> gnum(6);
+    pot.numerical_gradient(x, gnum, 1e-6);
+    for (int k=0; k<6; ++k){
+        ASSERT_NEAR(g[k], gnum[k], 1e-6);
+    }
+}
+

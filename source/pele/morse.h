@@ -45,7 +45,9 @@ struct morse_interaction
     }
 
     void inline hessian(double r2, double *hij, size_t atom_i, size_t atom_j) const {
-    	throw std::runtime_error("Morse::hessian must be overloaded");
+        double r = sqrt(r2);
+        double c = exp(-_rho * (r - _r0));
+        *hij = 2.0 * _A * _rho * _rho * c *  (2.0 * c - 1.0);
     }
 };
 
