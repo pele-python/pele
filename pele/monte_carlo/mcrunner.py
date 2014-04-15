@@ -36,7 +36,7 @@ class Metropolis_MCrunner(_BaseMCRunner):
      * is best, here we generate a random integer in [0,i32max) where i32max is the largest signed integer, for each seed. Each module
      * has a separate rng engine, therefore it's best if each receives a different randomly sampled seed
     """
-    def __init__(self, potential, coords, temperature=1.0, stepsize=1, niter=1e5, 
+    def __init__(self, potential, coords, temperature, stepsize, niter, 
                  hEmin=0, hEmax=100, hbinsize=0.01, radius=2.5,
                  acceptance=0.5, adjustf=0.9, adjustf_niter = 1e4, adjustf_navg = 100):
         #construct base class
@@ -173,8 +173,11 @@ if __name__ == "__main__":
                                -1.64261439,0.95488524,-0.16297967]) 
     
     #Parallel Tempering
-    test = Metropolis_MCrunner(pot, start_coords,  temperature=0.2, niter=1e7, hEmin=-140, 
-                               stepsize=0.5, adjustf = 0.9, adjustf_niter = 5000, radius=3)
+    temperature=0.2
+    niter=1e7
+    stepsize=0.5
+    test = Metropolis_MCrunner(pot, start_coords,  temperature, stepsize, niter, 
+                               hEmin=-140, adjustf = 0.9, adjustf_niter = 5000, radius=3)
     start=time.time()
     test.run()
     end=time.time()
