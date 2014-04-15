@@ -159,7 +159,7 @@ depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/")
 # better to be on the safe side and not use -march=native
 extra_compile_args = ['-std=c++0x',"-Wall", "-Wextra", "-O3", '-funroll-loops']
 # uncomment the next line to add extra optimization options
-# extra_compile_args = ["-Wall", '-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
+#extra_compile_args = ["-std=c++0x","-Wall", '-Wextra','-pedantic','-O3', "-march=native", "-mtune=native"]
 
 # note: to compile with debug on and to override extra_compile_args use, e.g.
 # OPT="-g -O2 -march=native" python setup.py ...
