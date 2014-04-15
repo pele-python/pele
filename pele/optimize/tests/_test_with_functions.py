@@ -14,29 +14,29 @@ class TestOptimizersBeale(unittest.TestCase):
         self.x = self.pot.target_coords.copy() 
         self.x += np.random.uniform(-0.2, 0.2, self.x.shape)
 
-    def do_tst(self, minimizer, **kwargs):
+    def do_check(self, minimizer, **kwargs):
         ret = minimizer(self.x, self.pot, **kwargs)
         self.assertTrue(ret.success)
         self.assertAlmostEqual(ret.energy, self.pot.target_E, 3)
         self.assertLess(np.max(np.abs(ret.coords - self.pot.target_coords)), 1e-3)
     
     def test_lbfgs_py(self):
-        self.do_tst(_quench.lbfgs_py)
+        self.do_check(_quench.lbfgs_py)
 
     def test_lbfgs_cpp(self):
-        self.do_tst(_quench.lbfgs_cpp)
+        self.do_check(_quench.lbfgs_cpp)
 
     def test_mylbfgs(self):
-        self.do_tst(_quench.mylbfgs)
+        self.do_check(_quench.mylbfgs)
 
     def test_fire(self):
-        self.do_tst(_quench.fire, tol=1e-7)
+        self.do_check(_quench.fire, tol=1e-7)
 
     def test_lbfgs_scipy(self):
-        self.do_tst(_quench.lbfgs_scipy)
+        self.do_check(_quench.lbfgs_scipy)
 
     def test_bfgs_scipy(self):
-        self.do_tst(_quench.bfgs_scipy)
+        self.do_check(_quench.bfgs_scipy)
 
 
 class TestOptimizeBooth(TestOptimizersBeale):

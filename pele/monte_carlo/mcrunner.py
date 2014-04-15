@@ -1,5 +1,5 @@
 import numpy as np
-from pele.monte_carlo import _base_MCrunner, RandomCoordsDisplacement, MetropolisTest 
+from pele.monte_carlo import _BaseMCRunner, RandomCoordsDisplacement, MetropolisTest 
 from pele.monte_carlo import CheckSphericalContainer, AdjustStep, RecordEnergyHistogram
 
 """
@@ -15,7 +15,7 @@ Specific implementations of MCrunners, generally they should follow this pattern
 * add other functionalities that you may find desirable, e.g. dump histogram to file
 """
 
-class Metropolis_MCrunner(_base_MCrunner):
+class Metropolis_MCrunner(_BaseMCRunner):
     """This class is derived from the _base_MCrunner abstract
      method and performs Metropolis Monte Carlo. This particular implementation of the algorithm: 
      * runs niter steps per run call 
@@ -36,9 +36,9 @@ class Metropolis_MCrunner(_base_MCrunner):
      * is best, here we generate a random integer in [0,i32max) where i32max is the largest signed integer, for each seed. Each module
      * has a separate rng engine, therefore it's best if each receives a different randomly sampled seed
     """
-    def __init__(self, potential, coords, temperature=1.0, niter=1e5,
-                  stepsize=1, hEmin=0, hEmax=100, hbinsize=0.01, radius=2.5,
-                   acceptance=0.5, adjustf=0.9, adjustf_niter = 1e4, adjustf_navg = 100):
+    def __init__(self, potential, coords, temperature, stepsize, niter, 
+                 hEmin=0, hEmax=100, hbinsize=0.01, radius=2.5,
+                 acceptance=0.5, adjustf=0.9, adjustf_niter = 1e4, adjustf_navg = 100):
         #construct base class
         super(Metropolis_MCrunner,self).__init__(potential, coords, temperature,
                                                   stepsize, niter)
@@ -54,16 +54,16 @@ class Metropolis_MCrunner(_base_MCrunner):
         self.conftest = CheckSphericalContainer(radius)
         
         #set up pele:MC
-        self.mc.set_takestep(self.step)
-        self.mc.add_accept_test(self.metropolis)
-        self.mc.add_conf_test(self.conftest)
-        self.mc.add_action(self.histogram)
-        self.mc.add_action(self.adjust_step)
+        self.set_takestep(self.step)
+        self.add_accept_test(self.metropolis)
+        self.add_conf_test(self.conftest)
+        self.add_action(self.histogram)
+        self.add_action(self.adjust_step)
         
     def set_control(self, T):
         """set temperature, canonical control parameter"""
         self.temperature = T
-        self.mc.set_temperature(T)
+        self.set_temperature(T)
     
     def dump_histogram(self, fname):
         """write histogram to fname"""
@@ -173,8 +173,11 @@ if __name__ == "__main__":
                                -1.64261439,0.95488524,-0.16297967]) 
     
     #Parallel Tempering
-    test = Metropolis_MCrunner(pot, start_coords,  temperature=0.2, niter=1e7, hEmin=-140, 
-                               stepsize=0.5, adjustf = 0.9, adjustf_niter = 5000, radius=3)
+    temperature=0.2
+    niter=1e7
+    stepsize=0.5
+    test = Metropolis_MCrunner(pot, start_coords,  temperature, stepsize, niter, 
+                               hEmin=-140, adjustf = 0.9, adjustf_niter = 5000, radius=3)
     start=time.time()
     test.run()
     end=time.time()
