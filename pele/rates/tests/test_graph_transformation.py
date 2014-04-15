@@ -96,7 +96,7 @@ class TestGraphReduction3(unittest.TestCase):
         self._test_rate(0,2)
 
 class TestGraphReductionRandom(unittest.TestCase):
-    def do_tst(self, A, B, nnodes=20, nedges=20):
+    def do_check(self, A, B, nnodes=20, nedges=20):
         maker = _MakeRandomGraph(nnodes=20, nedges=20, node_set=A+B)
         graph = maker.run()
         reducer = GraphReduction(maker.rates, A, B, debug=False)  
@@ -111,15 +111,15 @@ class TestGraphReductionRandom(unittest.TestCase):
              
     def test(self):
         A, B = [0], [1]
-        self.do_tst(A, B)
+        self.do_check(A, B)
  
     def test_setA(self):
         A, B = [0, 1, 2], [3]
-        self.do_tst(A, B)
+        self.do_check(A, B)
   
     def test_setAB(self):
         A, B = [0, 1, 2], [3, 4, 5, 6]
-        self.do_tst(A, B)
+        self.do_check(A, B)
 
 
 if __name__ == "__main__":

@@ -121,7 +121,10 @@ namespace pele {
                 *gij = 0.;
 				*hij = 0.;
 			}
+
+			return E;
         }
+
     };
 
     //

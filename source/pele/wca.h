@@ -16,13 +16,15 @@ namespace pele {
      */
     struct WCA_interaction {
         double const _C6, _C12;
-        double const _6C6, _12C12;
+        double const _6C6, _12C12, _42C6, _156C12;
         double const _coff, _eps; //cutoff distance for WCA potential
 
-        WCA_interaction(double C6, double C12, double eps) :
-            _C6(C6), _C12(C12),
-            _6C6(6.*_C6), _12C12(12.*_C12),
-        	_coff(pow(2.*C6,1./6)), _eps(eps)
+        WCA_interaction(double sig, double eps) :
+            _C6(sig*sig*sig*sig*sig*sig),
+            _C12(_C6*_C6), _6C6(6.*_C6),
+            _12C12(12.*_C12), _42C6(42*_C6),
+            _156C12(156*_C12),
+        	_coff(pow(2.*_C6,1./6)), _eps(eps)
         {}
 
         /* calculate energy from distance squared */
@@ -60,7 +62,25 @@ namespace pele {
         }
 
         double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const {
-        	throw std::runtime_error("WCA::hessian must be overloaded");
+        	double E;
+        	double ir2 = 1.0/r2;
+        	double ir6 = ir2*ir2*ir2;
+        	double ir12 = ir6*ir6;
+
+        	if(sqrt(r2) < _coff)
+			{
+				E = 4.*_eps*(-_C6*ir6 + _C12*ir12) + _eps;
+				*gij = 4.*_eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
+				*hij = 4.*_eps*(- _42C6 * ir6 + _156C12 * ir12) * ir2;
+			}
+			else
+			{
+				E = 0.;
+				*gij = 0;
+				*hij=0;
+			}
+
+			return E;
         }
     };
 
@@ -76,8 +96,8 @@ namespace pele {
     class WCA : public SimplePairwisePotential< WCA_interaction >
     {
         public:
-            WCA(double C6, double C12, double eps)
-                : SimplePairwisePotential< WCA_interaction > ( new WCA_interaction(C6, C12, eps) ) {}
+            WCA(double sig, double eps)
+                : SimplePairwisePotential< WCA_interaction > ( new WCA_interaction(sig, eps) ) {}
     };
 
     /**
@@ -85,9 +105,9 @@ namespace pele {
      */
     class WCAPeriodic : public SimplePairwisePotential< WCA_interaction, periodic_distance > {
         public:
-            WCAPeriodic(double C6, double C12, double eps, double const *boxvec)
+            WCAPeriodic(double sig, double eps, double const *boxvec)
                 : SimplePairwisePotential< WCA_interaction, periodic_distance> (
-                        new WCA_interaction(C6, C12, eps),
+                        new WCA_interaction(sig, eps),
                         new periodic_distance(boxvec[0], boxvec[1], boxvec[2])
                         )
             {}
@@ -98,8 +118,8 @@ namespace pele {
      */
     class WCANeighborList : public SimplePairwiseNeighborList< WCA_interaction > {
         public:
-            WCANeighborList(Array<long int> & ilist, double C6, double C12, double eps)
-                :  SimplePairwiseNeighborList< WCA_interaction > ( new WCA_interaction(C6, C12, eps), ilist) {}
+            WCANeighborList(Array<long int> & ilist, double sig, double eps)
+                :  SimplePairwiseNeighborList< WCA_interaction > ( new WCA_interaction(sig, eps), ilist) {}
     };
 }
 #endif
