@@ -48,13 +48,20 @@ cdef class BasePotential(object):
         return grad
     
     def getEnergyGradientHessian(self, np.ndarray[double, ndim=1] x not None):
-        e, grad = self.getEnergyGradient(x)
-        hess = self.NumericalHessian(x)
-        return e, grad, hess
+        cdef np.ndarray[double, ndim=1] grad = np.zeros(x.size)
+        cdef np.ndarray[double, ndim=1] hess = np.zeros(x.size**2)
+        e = self.thisptr.get_energy_gradient_hessian(Array[double](<double*> x.data, x.size),
+                                             Array[double](<double*> grad.data, grad.size),
+                                             Array[double](<double*> hess.data, hess.size),
+                                             )
+        return e, grad, hess.reshape([x.size, x.size])
     
     def getHessian(self, np.ndarray[double, ndim=1] x not None):
-        e, grad, hess = self.getEnergyGradientHessian(x)
-        return hess
+        cdef np.ndarray[double, ndim=1] hess = np.zeros(x.size**2)
+        self.thisptr.get_hessian(Array[double](<double*> x.data, x.size),
+                                 Array[double](<double*> hess.data, hess.size),
+                                 )
+        return np.reshape(hess, [x.size, x.size])
     
     def NumericalDerivative(self, np.ndarray[double, ndim=1] x not None, double eps=1e-6):
         # redirect the call to the c++ class

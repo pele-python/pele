@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include "test_array.hpp"
+#include "test_base_potential.hpp"
 #include "test_lj.hpp"
 #include "test_lbfgs.hpp"
 #include "test_morse.hpp"

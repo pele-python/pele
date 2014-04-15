@@ -58,6 +58,12 @@ public:
         x[4]  = 0.55;
         x[5]  = 1.66;
         etrue = -0.10410023149146598;
+//        gtrue.resize(x.size());
+//        gtrue[0] = -0.07457726800542995;
+//        gtrue[1] = -0.076770717064413199;
+//        gtrue[2] = -0.2983090720217198;
+
+
         y = Array<double>(9);
         for(int i=0;i<6;++i)
         	y[i] = x[i];
@@ -91,9 +97,9 @@ TEST_F(LJTest, Hessian_Works){
     Array<double> h(6*6);
     Array<double> h_num(6*6);
     lj.get_hessian(x, h);
-    lj.numerical_hessian(x,h_num);
-    for (int i; i<h.size();++i)
-    	ASSERT_NEAR(h[i],h_num[i],1e-6);
+    lj.numerical_hessian(x, h_num);
+    for (int i=0; i<h.size();++i)
+    	ASSERT_NEAR(h[i], h_num[i],1e-6);
 }
 
 TEST_F(LJTest, Hessian_Works2){
@@ -102,8 +108,28 @@ TEST_F(LJTest, Hessian_Works2){
     Array<double> h_num(9*9);
     lj.get_hessian(y, h);
     lj.numerical_hessian(y,h_num);
-    for (int i; i<h.size();++i)
-    	ASSERT_NEAR(h[i],h_num[i],1e-6);
+    for (int i=0; i<h.size();++i)
+        ASSERT_NEAR(h[i],h_num[i],1e-6);
+}
+
+TEST_F(LJTest, EGradHess_AgreesWithNumerical){
+    pele::LJ lj(c6, c12);
+    Array<double> h(9*9), g(9), g_num(9);
+    Array<double> h_num(9*9);
+    double e = lj.get_energy_gradient_hessian(y, g, h);
+    double ecomp = lj.get_energy(y);
+    lj.numerical_gradient(y, g_num);
+    lj.numerical_hessian(y, h_num);
+
+//    std::cerr << "testing LJ " << g.size() << "\n";
+    EXPECT_NEAR(e, ecomp, 1e-10);
+    for (int i=0; i<g.size(); ++i){
+//        std::cerr << "g[i]" << g[i] << "\n";
+        ASSERT_NEAR(g[i], g_num[i], 1e-6);
+    }
+    for (int i=0; i<h.size(); ++i){
+        ASSERT_NEAR(h[i], h_num[i], 1e-6);
+    }
 }
 
 TEST_F(LJTest, NumericalGradient_Works){
