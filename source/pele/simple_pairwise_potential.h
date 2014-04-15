@@ -51,8 +51,7 @@ namespace pele
         const size_t n = x.size();
         const size_t natoms = x.size()/3;
 
-        for(size_t i=0; i<n; ++i)
-            grad[i] = 0.;
+        grad.assign(0.);
 
         for(size_t atomi=0; atomi<natoms; ++atomi) {
             int i1 = 3*atomi;
@@ -87,6 +86,7 @@ namespace pele
                 throw std::invalid_argument("the Hessian has the wrong size");
             }
             hess.assign(0.);
+            grad.assign(0.);
 
             for(size_t atomi=0; atomi<natoms; ++atomi) {
 				int i1 = 3*atomi;

@@ -124,7 +124,8 @@ TEST_F(LJTest, EGradHess_AgreesWithNumerical){
 //    std::cerr << "testing LJ " << g.size() << "\n";
     EXPECT_NEAR(e, ecomp, 1e-10);
     for (int i=0; i<g.size(); ++i){
-//        std::cerr << "g[i]" << g[i] << "\n";
+        //std::cerr << "g[i]" << g[i] << "\n";
+        //std::cerr << "g_num[i]" << g_num[i] << "\n";
         ASSERT_NEAR(g[i], g_num[i], 1e-6);
     }
     for (int i=0; i<h.size(); ++i){
