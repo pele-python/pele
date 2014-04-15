@@ -212,3 +212,7 @@ TEST_F(LJCutTest, Hessian_Works2){
     for (int i; i<h.size();++i)
         ASSERT_NEAR(h[i],h_num[i],1e-6);
 }
+
+/*
+ * test frozen atom potential
+ */
