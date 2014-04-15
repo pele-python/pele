@@ -6,6 +6,7 @@
 #include "test_lbfgs.hpp"
 #include "test_morse.hpp"
 #include "test_frozen.hpp"
+#include "test_wca.hpp"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
