@@ -59,7 +59,7 @@ namespace pele {
             return E;
         }
 
-        void inline hessian(double r2, double *hij, size_t atom_i, size_t atom_j) const {
+        double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const {
         	throw std::runtime_error("WCA::hessian must be overloaded");
         }
     };

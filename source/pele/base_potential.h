@@ -33,12 +33,28 @@ namespace pele {
         }
 
         /**
-         * compute the energy and gradient.  If not overloaded it will compute the numerical gradient
+         * compute the energy and gradient.
+         *
+         * If not overloaded it will compute the numerical gradient
          */
         virtual double get_energy_gradient(Array<double> x, Array<double> grad)
         {
             double energy = get_energy(x);
             numerical_gradient(x, grad);
+            return energy;
+        }
+
+        /**
+         * compute the energy and gradient and hessian.
+         *
+         * If not overloaded it will compute the Hessian numerically and use get_energy_gradient
+         * to get the energy and gradient.
+         */
+        virtual double get_energy_gradient_hessian(Array<double> x, Array<double> grad,
+                Array<double> hess)
+        {
+            double energy = get_energy_gradient(x, grad);
+            numerical_hessian(x, hess);
             return energy;
         }
 
@@ -63,11 +79,14 @@ namespace pele {
         }
 
         /**
-		 * compute the hessian.  If not overloaded it will compute the numerical hessian
+		 * compute the hessian.
+		 *
+		 * If not overloaded it will call get_energy_gradient_hessian
 		 */
 		virtual void get_hessian(Array<double> x, Array<double> hess)
 		{
-			numerical_hessian(x, hess);
+		    Array<double> grad(x.size());
+		    double e = get_energy_gradient_hessian(x, grad, hess);
 		}
 
         /**

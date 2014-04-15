@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+ADD_DEFINITIONS(-std=c++0x)
+
 #cmake_policy(SET CMP0015 NEW)
 
 # set the pele include directory
