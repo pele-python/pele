@@ -22,7 +22,7 @@ class TestMetropolis(unittest.TestCase):
         for T in temperatures:
             
             mcrunner = Metropolis_MCrunner(self.potential, self.start_coords, temperature=T, niter=1e6, stepsize=0.5, hEmax = 100, adjustf = 0.9, 
-                                   adjustf_niter = 1000, radius=100000)
+                                           adjustf_niter = 1000, radius=100000)
             #MCMC 
             mcrunner.run()
             
