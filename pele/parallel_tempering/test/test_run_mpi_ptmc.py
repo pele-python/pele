@@ -15,7 +15,7 @@ class ParallelTemperingTest(unittest.TestCase):
         self.ndim=3
         self.nprocs=4
         self.dir = os.getcwd()
-        self.cmd='mpiexec -n {0} python {1}/test_mpi_ptmc.py'.format(self.nprocs,self.dir)
+        self.cmd='mpiexec -n {0} python {1}/_test_mpi_ptmc.py'.format(self.nprocs,self.dir)
         # create a temporary directory using the context manager
         tmpdir=tempfile.mkdtemp()
         print('created temporary directory', tmpdir)

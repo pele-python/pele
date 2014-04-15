@@ -50,7 +50,7 @@ class TestGraphRatesLJ(unittest.TestCase):
 #        create_random_database(self.system, self.db, 10, 20)
 #        get_thermodynamic_information(self.system, self.db, nproc=2)
     
-    def do_tst_rates(self, A, B):
+    def do_check_rates(self, A, B):
         rcalc = RateCalculation(self.db.transition_states(), A, B)
         rcalc.compute_rates()
         rAB = rcalc.get_rate_AB()
@@ -61,7 +61,7 @@ class TestGraphRatesLJ(unittest.TestCase):
         
         self.assertAlmostEqual(rAB, rAB_la, 7)
         
-    def do_tst_committors(self, A, B):
+    def do_check_committors(self, A, B):
         rcalc = RateCalculation(self.db.transition_states(), A, B)
         rcalc.compute_rates_and_committors()
         committors = rcalc.get_committors()
@@ -75,14 +75,14 @@ class TestGraphRatesLJ(unittest.TestCase):
     def test(self):
         A = [self.db.minima()[0]]
         B = [self.db.minima()[-1]]
-        self.do_tst_rates(A, B)
-        self.do_tst_committors(A, B)
+        self.do_check_rates(A, B)
+        self.do_check_committors(A, B)
 
     def test2(self):
         A = self.db.minima()[:2]
         B = self.db.minima()[2:4]
-        self.do_tst_rates(A, B)
-        self.do_tst_committors(A, B)
+        self.do_check_rates(A, B)
+        self.do_check_committors(A, B)
 
 class TestOptimCollagen(unittest.TestCase):
     """test a known value for a large database"""

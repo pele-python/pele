@@ -20,9 +20,11 @@ class TestMetropolis(unittest.TestCase):
         temperatures = [0.2,0.27,0.362,0.487,0.65,0.88,1.18,1.6]
                 
         for T in temperatures:
-            
-            mcrunner = Metropolis_MCrunner(self.potential, self.start_coords, temperature=T, niter=1e6, stepsize=0.5, hEmax = 100, adjustf = 0.9, 
-                                   adjustf_niter = 1000, radius=100000)
+            temperature=T
+            stepsize=0.5
+            niter=1e6
+            mcrunner = Metropolis_MCrunner(self.potential, self.start_coords, temperature, stepsize, niter, hEmax = 100, adjustf = 0.9, 
+                                           adjustf_niter = 1000, radius=100000)
             #MCMC 
             mcrunner.run()
             
