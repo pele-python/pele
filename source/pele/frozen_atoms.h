@@ -114,9 +114,15 @@ namespace pele{
     template<typename PotentialType>
     class FrozenPotentialWrapper : public BasePotential
     {
-        protected:
+        /*
+    	protected:
             PotentialType *_underlying_potential;
             FrozenCoordsConverter _coords_converter;
+		*/
+    	public:
+    		FrozenCoordsConverter _coords_converter;
+    	protected:
+			PotentialType *_underlying_potential;
 
             FrozenPotentialWrapper(PotentialType *potential, 
                     Array<double> &reference_coords, 
