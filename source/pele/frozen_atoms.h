@@ -154,7 +154,7 @@ namespace pele{
                 double energy = _underlying_potential->get_energy_gradient(full_coords, gfull);
                 Array<double> gred = _coords_converter.get_reduced_coords(gfull);
                 for (size_t i = 0; i < gred.size(); ++i){
-                    reduced_grad[i] = gred[i];
+                    reduced_grad[ i] = gred[i];
                 }
                 return energy;
             }
