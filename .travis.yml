@@ -20,7 +20,6 @@ before_install:
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-qt4
   - test $MPI == openmpi && MPIPACKAGES='openmpi-bin openmpi-dev'          || true
   - sudo apt-get install -qq $MPIPACKAGES
-  - pip install -qq --use-mirrors mpi4py
   - wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
@@ -37,7 +36,7 @@ before_install:
 install:
   - conda create --yes -n pelenv python=$TRAVIS_PYTHON_VERSION nose pip cython numpy scipy matplotlib qt pyqt
   - source activate pelenv
-  - pip install networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl
+  - pip install --use-mirrors networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl mpi4py
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
   # build the c++ tests
