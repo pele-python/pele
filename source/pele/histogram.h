@@ -58,7 +58,9 @@ Histogram::Histogram(double min, double max, double bin):
 		_eps(std::numeric_limits<double>::epsilon()),_N((_max - _min) / bin),
 		_hist(_N,0),_niter(0)
 		{
+        #ifdef DEBUG
 			std::cout<<"histogram is of size "<<_N<<std::endl;
+        #endif
 		}
 
 inline void Histogram::add_entry(double E){

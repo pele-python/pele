@@ -37,8 +37,9 @@ public:
 RandomCoordsDisplacement::RandomCoordsDisplacement(size_t N, size_t rseed):
 		_seed(rseed),_generator(_seed), _distribution(0.0,1.0), _N(N)
 		{
-
+        #ifdef DEBUG
 			std::cout<<"seed TakeStep:"<<_seed<<std::endl;
+        #endif
 		}
 
 void RandomCoordsDisplacement::takestep(Array<double>& coords, double stepsize, MC * mc){
