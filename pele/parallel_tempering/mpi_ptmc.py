@@ -35,8 +35,8 @@ class MPI_PT_RLhandshake(_MPI_Parallel_Tempering):
     This class performs parallel tempering by a right-left handshake: alternates swaps with right and left 
     neighbours with geometrically distributed temperatures.
     """
-    def __init__(self, mcrunner, Tmax, Tmin, max_ptiter=10, pfreq=1, verbose=False):
-        super(MPI_PT_RLhandshake,self).__init__(mcrunner, Tmax, Tmin, max_ptiter, pfreq=pfreq, verbose=verbose)
+    def __init__(self, mcrunner, Tmax, Tmin, max_ptiter=10, pfreq=1, base_directory=None, verbose=False):
+        super(MPI_PT_RLhandshake,self).__init__(mcrunner, Tmax, Tmin, max_ptiter, pfreq=pfreq, base_directory=base_directory, verbose=verbose)
         self.exchange_dic = {1:'right',-1:'left'}
         self.exchange_choice = random.choice(self.exchange_dic.keys()) 
         self.anyswap = False #set to true if any swap will happen

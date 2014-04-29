@@ -19,7 +19,7 @@ class _MPI_Parallel_Tempering(object):
     """
     __metaclass__  = abc.ABCMeta
     
-    def __init__(self, mcrunner, Tmax, Tmin, max_ptiter, pfreq=1, verbose=False):
+    def __init__(self, mcrunner, Tmax, Tmin, max_ptiter, pfreq=1, base_directory=None, verbose=False):
         self.mcrunner = mcrunner
         self.comm = MPI.COMM_WORLD
         self.nproc = self.comm.Get_size() #total number of processors (replicas)
@@ -36,7 +36,10 @@ class _MPI_Parallel_Tempering(object):
         self.nodelist = [i for i in xrange(self.nproc)]
         self.swap_accepted_count = 0
         self.swap_rejected_count = 0
-        self.base_directory = os.path.join(os.getcwd(),'ptmc_results')
+        if base_directory is None:
+            self.base_directory = os.path.join(os.getcwd(),'ptmc_results')
+        else:
+            self.base_directory = base_directory
         
         print "processor {0} ready".format(self.rank)
     

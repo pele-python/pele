@@ -14,16 +14,14 @@ class ParallelTemperingTest(unittest.TestCase):
     def test_heat_capacity(self):
         self.ndim=3
         self.nprocs=4
-        self.dir = os.getcwd()
-        self.cmd='mpiexec -n {0} python {1}/_test_mpi_ptmc.py'.format(self.nprocs,self.dir)
+        testdir = os.path.dirname(__file__)
         # create a temporary directory using the context manager
         tmpdir=tempfile.mkdtemp()
-        print('created temporary directory', tmpdir)
-        os.chdir(tmpdir)
+        self.cmd='mpiexec -n {0} python {1}/_test_mpi_ptmc.py {2}'.format(self.nprocs,testdir,tmpdir)
+        #print('created temporary directory', tmpdir)
         os.system(self.cmd)
-        resdir = tmpdir+'/ptmc_results'
-        os.chdir(resdir)
-        temperatures = np.genfromtxt('temperatures', delimiter='\t')
+        resdir = tmpdir
+        temperatures = np.genfromtxt(resdir+'/temperatures', delimiter='\t')
         for i in xrange(self.nprocs):
             d = resdir+'/{}'.format(i)
             pre = 'Visits.his.'
