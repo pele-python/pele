@@ -134,6 +134,7 @@ setup(name='pele',
       ext_modules=ext_modules,
       # data files needed for the tests
       data_files=[('pele/potentials/tests', list(glob.glob('pele/potentials/tests/*.xyz'))),
+                  ('pele/potentials/tests', list(glob.glob('pele/potentials/tests/*.xyzdr'))),
                   ('pele/transition_states/tests', list(glob.glob('pele/transition_states/tests/*.xyz'))),
                   ('pele/rates/tests', list(glob.glob('pele/rates/tests/*.data')) + list(glob.glob('pele/rates/tests/*.sqlite'))),
                   ('pele/storage/tests/', list(glob.glob('pele/storage/tests/*sqlite'))),
