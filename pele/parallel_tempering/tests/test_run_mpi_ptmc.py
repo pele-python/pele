@@ -20,10 +20,9 @@ class ParallelTemperingTest(unittest.TestCase):
         self.cmd='mpiexec -n {0} python {1}/_test_mpi_ptmc.py {2}'.format(self.nprocs,testdir,tmpdir)
         #print('created temporary directory', tmpdir)
         os.system(self.cmd)
-        resdir = tmpdir
-        temperatures = np.genfromtxt(resdir+'/temperatures', delimiter='\t')
+        temperatures = np.genfromtxt(tmpdir+'/temperatures', delimiter='\t')
         for i in xrange(self.nprocs):
-            d = resdir+'/{}'.format(i)
+            d = tmpdir+'/{}'.format(i)
             pre = 'Visits.his.'
             files = os.listdir(d)
             ftlist = []
