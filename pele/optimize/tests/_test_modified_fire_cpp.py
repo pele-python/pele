@@ -35,8 +35,10 @@ class TestModifiedFireCPP_PP(unittest.TestCase):
 
 class TestModifiedFireCPP(unittest.TestCase):
     
-    def do_tst(self, pot, **kwargs):
-        modified_fire = ModifiedFireCPP(_xrand, pot, stepback=True, **kwargs)
+    def do_check(self, pot, **kwargs):
+        modified_fire = ModifiedFireCPP(np.zeros(4), pot, stepback=True, **kwargs)
+        res = modified_fire.run()
+        modified_fire.reset(_xrand)
         res = modified_fire.run()
         self.assertAlmostEqual(res.energy, _emin, 4)
         self.assertTrue(res.success)
@@ -44,10 +46,10 @@ class TestModifiedFireCPP(unittest.TestCase):
         self.assertGreater(res.nfev, 0)
         
     def test_E(self):
-        self.do_tst(_E())
+        self.do_check(_E())
 
     def test_EG(self):
-        self.do_tst(_EG())
+        self.do_check(_EG())
 
     def assert_same(self, res1, res2):
         self.assertEqual(res1.energy, res2.energy)
@@ -88,7 +90,7 @@ class TestModifiedFireCPP(unittest.TestCase):
         self.event_called = False
         def myevent(*args, **kwargs): 
             self.event_called = True
-        self.do_tst(_EG(), events=[myevent])
+        self.do_check(_EG(), events=[myevent])
         self.assertTrue(self.event_called)
         
 class TestModifiedFireCPP_Raises(unittest.TestCase):
@@ -99,7 +101,7 @@ class TestModifiedFireCPP_Raises(unittest.TestCase):
             modified_fire.run()
 
 #class TestModifiedFireCPP_PassGrad(unittest.TestCase):
-#    def do_tst(self, pot):
+#    def do_check(self, pot):
 #        e, grad = pot.getEnergyGradient(_xrand)
 #        modified_fire = ModifiedFireCPP(_xrand, pot, energy=e, gradient=grad)
 #        res = modified_fire.run()
@@ -109,10 +111,10 @@ class TestModifiedFireCPP_Raises(unittest.TestCase):
 #        self.assertGreater(res.nfev, 0)
 #        
 #    def test_E(self):
-#        self.do_tst(_E())
+#        self.do_check(_E())
 #
 #    def test_EG(self):
-#        self.do_tst(_EG())
+#        self.do_check(_EG())
 
 if __name__ == "__main__":
     unittest.main()

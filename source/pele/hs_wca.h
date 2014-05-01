@@ -44,7 +44,7 @@ namespace pele {
             if (r <= r0)
             {
             	E = _infty;
-            	std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<", less than their hard core separation"<<std::endl;
+            	//std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<", less than their hard core separation"<<std::endl;
             }
             else if(r < coff )
             	E = 4.*_eps*(-C6*ir6 + C12*ir12) + _eps;
@@ -72,12 +72,12 @@ namespace pele {
 			{
 				E = _infty;
 				*gij = _infty;
-				std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<"less than their hard core separation"<<std::endl;
+				//std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<"less than their hard core separation"<<std::endl;
 			}
 			else if(r < coff)
 			{
 				E = 4.*_eps*(- C6 * ir6 + C12 * ir12) + _eps;
-				*gij = 4.*_eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / (dr*r); // this is -g|gij| (for consistency with the loop in pairwise potential)
+				*gij = 4.*_eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / (dr*r); //1/dr because powers must be 7 and 13, this is -g|gij| (for consistency with the loop in pairwise potential)
 			}
 			else
 			{
@@ -88,6 +88,43 @@ namespace pele {
             return E;
 
         }
+
+        double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const {
+        	double E;
+			double r = sqrt(r2);
+			double r0 = _radii[atom_i] + _radii[atom_j]; //sum of the hard core radii
+			double dr = r - r0;
+			double ir2 = 1.0/(dr*dr);
+			double ir6 = ir2*ir2*ir2;
+			double ir12 = ir6*ir6;
+			double C3 = _prfac*r0*r0*r0;
+			double C6 = C3*C3;
+			double C12 = C6*C6;
+			double coff = r0*(1+_sca); //distance at which the soft cores are at contact
+
+			if (r <= r0)
+			{
+                E = _infty;
+                *gij = _infty;
+				*hij = _infty;
+				//std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<"less than their hard core separation"<<std::endl;
+			}
+			else if(r < coff)
+			{
+                E = 4.*_eps*(- C6 * ir6 + C12 * ir12) + _eps;
+                *gij = 4.*_eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / (dr*r); //1/dr because powers must be 7 and 13, this is -g|gij| (for consistency with the loop in pairwise potential)
+				*hij = 4.*_eps*(- 42 * C6 * ir6 + 156 * C12 * ir12) * ir2;
+			}
+			else
+			{
+                E = 0.;
+                *gij = 0.;
+				*hij = 0.;
+			}
+
+			return E;
+        }
+
     };
 
     //

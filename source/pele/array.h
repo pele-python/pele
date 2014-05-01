@@ -253,8 +253,8 @@ namespace pele {
         }
 
         /// access an element in the array
-        inline dtype &operator[](size_t i) { return _data[i]; }
-        inline dtype operator[](size_t i) const { return _data[i]; }
+        inline dtype &operator[](const size_t i) { return _data[i]; }
+        inline dtype const & operator[](const size_t i) const { return _data[i]; }
 
         /**
          * Assignment function: copy the data into the existing array

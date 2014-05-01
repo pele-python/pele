@@ -43,6 +43,15 @@ struct morse_interaction
         *gij = 2.0 * _A * c * _rho * (c - 1.0) / r;
         return _A * c * (c - 2.0);
     }
+
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const {
+        double r = sqrt(r2);
+        double c = exp(-_rho * (r - _r0));
+        double A_rho_2_c =
+        *gij = 2.0 * _A * c * _rho * (c - 1.0) / r;
+        *hij = 2.0 * _A * c * _rho * _rho * (2.0 * c - 1.0);
+        return _A * c * (c - 2.0);
+    }
 };
 
 /**

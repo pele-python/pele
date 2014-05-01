@@ -51,7 +51,7 @@ cdef class LJ(_pele.BasePotential):
             self.thisptr = <_pele.cBasePotential*>new cLJ(4.*eps*sig**6, 4.*eps*sig**12)
         else:
             self.periodic = True
-            bv = np.array(boxvec, dypte=float)
+            bv = np.array(boxvec, dtype=float)
             self.thisptr = <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sig**6, 4.*eps*sig**12,
                                                                   <double*> bv.data)
 

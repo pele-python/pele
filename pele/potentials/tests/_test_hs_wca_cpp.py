@@ -6,8 +6,23 @@ import logging
 
 from pele.optimize import ModifiedFireCPP
 from pele.potentials import _hs_wca_cpp
-from pele.optimize import lbfgs_cpp
+from pele.optimize._quench import lbfgs_cpp
 import _base_test
+
+def read_xyzdr(fname, bdim=3):
+    coords = []
+    radii = []
+    rattlers = []
+    f = open(fname, "r")
+    while True:
+        xyzdr = f.readline()
+        if not xyzdr: break
+        x, y, z, d, r = xyzdr.split()
+        coords.extend([float(x),float(y),float(z)])
+        radii.extend([float(d)/2])
+        for _ in xrange(bdim): 
+            rattlers.extend([float(r)])
+    return np.array(coords), np.array(radii), np.array(rattlers)
 
 def minimize(coords, pot):
     result = lbfgs_cpp(coords, pot)
@@ -15,34 +30,35 @@ def minimize(coords, pot):
 
 class TestHS_WCA_CPP(_base_test._BaseTest):
     def setUp(self):
-        boxlength=1.
-        sca = 0.9
-        self.natoms = 27 #because the atoms are placed on a plane square box, this integer must have an integer cubic root
-        soft_radius= float(boxlength)/(2*np.power(self.natoms,1./3))
-        xyz = []
-        hs_diameter = float(boxlength)/(np.power(self.natoms,1./3)*(1.+sca))
-        hs_radii = np.array([float(hs_diameter/2) for i in xrange(self.natoms)])
-        for i in xrange(3):
-            for j in xrange(3):
-                for k in xrange(3):
-                    xyz.append([soft_radius * (1+ 2*i), soft_radius * (1+ 2*j), soft_radius * (1+ 2*k)])
-        xyz = np.array(xyz)
-        x = xyz.reshape(-1).copy()        
-        max_step = 0.99*hs_diameter*sca * .03
-        self.xrandom = x + np.random.uniform(-max_step,max_step,[3*self.natoms])
-        self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii)
-        
-        #print "start minimising"
-        xyz = minimize(self.xrandom,self.pot)
-        #print "end minimising"
-        self.xmin = xyz[0].reshape(-1).copy()
-        self.Emin = float(xyz[1])
-        
+        current_dir = os.path.dirname(__file__)
+        xyz, hs_radii, rattlers = read_xyzdr(current_dir + "/_hswca20_min.xyzdr")
+        sca = 0.259921049895
+        boxv= [6.85206773233, 6.85206773233, 6.85206773233]
+        self.Emin = 182.943079825
+        self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii, boxvec = boxv)
+        self.natoms = 20
+        self.xmin = xyz
+        self.xrandom = np.random.uniform(-1,1,len(xyz))*1e-2
+
+#class TestHS_WCA_CPP_NeighborList(_base_test._BaseTest):
+#    def setUp(self):
+#        current_dir = os.path.dirname(__file__)
+#        xyz, hs_radii, rattlers = read_xyzdr(current_dir + "/_hswca20_min.xyzdr")
+#        sca = 0.259921049895
+#        boxv= [6.85206773233, 6.85206773233, 6.85206773233]
+#        self.Emin = 182.943079825
+#        np.random.seed(0)
+#        self.natoms = 20
+#        nlist = [[i,j] for i in xrange(self.natoms) for j in xrange(i+1,self.natoms)]
+#        nlist = np.array(nlist, dtype=np.int64).reshape(-1)
+#        self.pot = _hs_wca_cpp.HS_WCANeighborList(nlist, eps=1, sca=sca, radii=hs_radii)
+#        self.xrandom = np.random.uniform(-1,1,len(xyz)) *1e-2
+#        self.xmin = xyz
 
 class TestErrorPotential(unittest.TestCase):
     def setUp(self):
         self.pot = _hs_wca_cpp._ErrorPotential()
-        self.x = np.random.uniform(-1,1,[27*3])
+        self.x = np.random.uniform(-1,1,[9])
     def test(self):
         with self.assertRaises(RuntimeError):
             self.pot.getEnergy(self.x)
@@ -54,35 +70,6 @@ class TestErrorPotential(unittest.TestCase):
             self.pot.NumericalHessian(self.x)
 #        with self.assertRaises(NotImplementedError):
 #            pot.getEnergyGradient(_xrand)
-
-# this test was failing regularly, it should be fixed and added back in
-#class TestHS_WCA_CPP_NeighborList(_base_test._BaseTest):
-#    def setUp(self):
-#        self.natoms = 27
-#        nlist = [[i,j] for i in xrange(self.natoms) for j in xrange(i+1,self.natoms)]
-#        nlist = np.array(nlist, dtype=np.int64).reshape(-1)
-#         
-#        boxlength=1.
-#        sca = 0.9
-#        soft_radius= float(boxlength)/(2*np.power(self.natoms,1./3))
-#        xyz = []
-#        hs_diameter = float(boxlength)/(np.power(self.natoms,1./3)*(1.+sca))
-#        hs_radii = np.array([float(hs_diameter/2) for i in xrange(self.natoms)])
-#        for i in xrange(3):
-#            for j in xrange(3):
-#                for k in xrange(3):
-#                    xyz.append([soft_radius * (1+ 2*i), soft_radius * (1+ 2*j), soft_radius * (1+ 2*k)])
-#        xyz = np.array(xyz)
-#        x = xyz.reshape(-1).copy()        
-#        max_step = 0.99*hs_diameter*sca * .01
-#        self.xrandom = x + np.random.uniform(-max_step,max_step,[3*self.natoms])
-#        self.pot = _hs_wca_cpp.HS_WCANeighborList(nlist, eps=1, sca=sca, radii=hs_radii)
-#        
-#        #print "start minimising"
-#        xyz = minimize(self.xrandom,self.pot)
-#        #print "end minimising"
-#        self.xmin = xyz[0].reshape(-1).copy()
-#        self.Emin = float(xyz[1])
 
 
 if __name__ == "__main__":

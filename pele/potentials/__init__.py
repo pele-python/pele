@@ -61,6 +61,7 @@ from potential import *
 from _lj_cpp import LJ, BLJCut
 from _hs_wca_cpp import *
 from _wca_cpp import *
+from _harmonic_cpp import Harmonic
 from ATLJ import *
 from coldfusioncheck import *
 from gminpotential import *

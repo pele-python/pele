@@ -33,12 +33,28 @@ namespace pele {
         }
 
         /**
-         * compute the energy and gradient.  If not overloaded it will compute the numerical gradient
+         * compute the energy and gradient.
+         *
+         * If not overloaded it will compute the numerical gradient
          */
         virtual double get_energy_gradient(Array<double> x, Array<double> grad)
         {
             double energy = get_energy(x);
             numerical_gradient(x, grad);
+            return energy;
+        }
+
+        /**
+         * compute the energy and gradient and hessian.
+         *
+         * If not overloaded it will compute the Hessian numerically and use get_energy_gradient
+         * to get the energy and gradient.
+         */
+        virtual double get_energy_gradient_hessian(Array<double> x, Array<double> grad,
+                Array<double> hess)
+        {
+            double energy = get_energy_gradient(x, grad);
+            numerical_hessian(x, hess);
             return energy;
         }
 
@@ -63,12 +79,23 @@ namespace pele {
         }
 
         /**
+		 * compute the hessian.
+		 *
+		 * If not overloaded it will call get_energy_gradient_hessian
+		 */
+		virtual void get_hessian(Array<double> x, Array<double> hess)
+		{
+		    Array<double> grad(x.size());
+		    double e = get_energy_gradient_hessian(x, grad, hess);
+		}
+
+        /**
          * compute the numerical gradient
          */
         virtual void numerical_hessian(Array<double> x, Array<double> hess, double eps=1e-6)
         {
             if (hess.size() != x.size()*x.size()) {
-                throw std::invalid_argument("hess.size() be the same as x.size()");
+                throw std::invalid_argument("hess.size() be the same as x.size()*x.size()");
             }
             size_t const N = x.size();
 
@@ -89,6 +116,20 @@ namespace pele {
 //                    hess[N*i + j] = (gplus[j] - gminus[j]) / (2.*eps);
                 }
             }
+            /*//print hessian
+            std::cout<<""<<std::endl;
+            std::cout<<""<<std::endl;
+            for (size_t i=0; i<hess.size(); ++i){
+				std::cout<<hess[i]<<" ";
+				int j = i+1;
+				if (j % (int) (3*sqrt(hess.size())) == 0)
+					std::cout<<"\n"<<std::endl;
+				else if (j % (int) sqrt(hess.size()) == 0)
+					std::cout<<""<<std::endl;
+				else if (j % 3 == 0){
+					std::cout<<"  ";
+				}
+			}*/
         }
 
     };

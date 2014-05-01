@@ -130,6 +130,7 @@ setup(name='pele',
       ext_modules=ext_modules,
       # data files needed for the tests
       data_files=[('pele/potentials/tests', list(glob.glob('pele/potentials/tests/*.xyz'))),
+                  ('pele/potentials/tests', list(glob.glob('pele/potentials/tests/*.xyzdr'))),
                   ('pele/transition_states/tests', list(glob.glob('pele/transition_states/tests/*.xyz'))),
                   ('pele/rates/tests', list(glob.glob('pele/rates/tests/*.data')) + list(glob.glob('pele/rates/tests/*.sqlite'))),
                   ('pele/storage/tests/', list(glob.glob('pele/storage/tests/*sqlite'))),
@@ -153,9 +154,9 @@ depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/")
 # I run it through valgrind, valgrind complains about an unrecognized
 # instruction.  I don't have a clue what is causing this, but it's probably
 # better to be on the safe side and not use -march=native
-extra_compile_args = ["-Wall", "-Wextra", "-O3", '-funroll-loops']
+extra_compile_args = ['-std=c++0x',"-Wall", "-Wextra", "-O3", '-funroll-loops']
 # uncomment the next line to add extra optimization options
-# extra_compile_args = ["-Wall", '-Wextra','-pedantic','-funroll-loops','-O3', "-march=native", "-mtune=native", "-DNDEBUG"]
+#extra_compile_args = ["-std=c++0x","-Wall", '-Wextra','-pedantic','-O3', "-march=native", "-mtune=native"]
 
 # note: to compile with debug on and to override extra_compile_args use, e.g.
 # OPT="-g -O2 -march=native" python setup.py ...
@@ -183,11 +184,23 @@ cxx_modules = [
     Extension("pele.potentials._wca_cpp", 
               ["pele/potentials/_wca_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
-             extra_compile_args=extra_compile_args,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+             ),
+    Extension("pele.potentials._harmonic_cpp", 
+              ["pele/potentials/_harmonic_cpp.cxx"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
     Extension("pele.potentials._pele", 
               ["pele/potentials/_pele.cxx"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+    Extension("pele.optimize._pele_opt", 
+              ["pele/optimize/_pele_opt.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
