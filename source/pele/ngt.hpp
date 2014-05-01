@@ -67,26 +67,26 @@ public:
         debug(false),
         own_graph(false)
     {
-    	for (typename Acontainer::const_iterator iter = A.begin(); iter != A.end(); ++iter){
-    		_A.insert(_graph->get_node(*iter));
-    	}
-    	for (typename Bcontainer::const_iterator iter = B.begin(); iter != B.end(); ++iter){
-    		_B.insert(_graph->get_node(*iter));
-    	}
+        for (typename Acontainer::const_iterator iter = A.begin(); iter != A.end(); ++iter){
+            _A.insert(_graph->get_node(*iter));
+        }
+        for (typename Bcontainer::const_iterator iter = B.begin(); iter != B.end(); ++iter){
+            _B.insert(_graph->get_node(*iter));
+        }
 
-    	// make intermediates
-    	for (Graph::node_map_t::iterator miter = _graph->node_map_.begin(); miter != _graph->node_map_.end(); ++miter){
-    		node_ptr u = miter->second;
-    		if (_A.find(u) == _A.end() and _B.find(u) == _B.end()){
-    			intermediates.push_back(u);
-    		}
-    	}
+        // make intermediates
+        for (Graph::node_map_t::iterator miter = _graph->node_map_.begin(); miter != _graph->node_map_.end(); ++miter){
+            node_ptr u = miter->second;
+            if (_A.find(u) == _A.end() and _B.find(u) == _B.end()){
+                intermediates.push_back(u);
+            }
+        }
 
-//		cout << "number of nodes " << _graph->number_of_nodes() << "\n";
-//		cout << "A.size() " << _A.size() << "\n";
-//		cout << "B.size() " << _B.size() << "\n";
-//		cout << "intermediates.size() " << intermediates.size() << "\n";
-		assert(intermediates.size() + _A.size() + _B.size() == _graph->number_of_nodes());
+//        cout << "number of nodes " << _graph->number_of_nodes() << "\n";
+//        cout << "A.size() " << _A.size() << "\n";
+//        cout << "B.size() " << _B.size() << "\n";
+//        cout << "intermediates.size() " << intermediates.size() << "\n";
+        assert(intermediates.size() + _A.size() + _B.size() == _graph->number_of_nodes());
 
     }
 
@@ -349,7 +349,7 @@ public:
      * phase one of the rate calculation is to remove all intermediate nodes
      */
     void phase_one(){
-    	remove_intermediates();
+        remove_intermediates();
     }
 
     /*
@@ -359,19 +359,19 @@ public:
      * getting the results from this reduced graph.
      */
     void reduce_all_in_group(std::set<node_ptr> &to_remove, std::set<node_ptr> & to_keep){
-    	std::list<node_id> Aids, Bids;
-    	// copy the ids of the nodes in to_remove into Aids
-    	for (std::set<node_ptr>::iterator iter = to_remove.begin(); iter != to_remove.end(); ++iter){
-    		Aids.push_back((*iter)->id());
-    	}
+        std::list<node_id> Aids, Bids;
+        // copy the ids of the nodes in to_remove into Aids
+        for (std::set<node_ptr>::iterator iter = to_remove.begin(); iter != to_remove.end(); ++iter){
+            Aids.push_back((*iter)->id());
+        }
         // copy the ids of the nodes in to_keep into Bids
-    	for (std::set<node_ptr>::iterator iter = to_keep.begin(); iter != to_keep.end(); ++iter){
-    		Bids.push_back((*iter)->id());
-    	}
+        for (std::set<node_ptr>::iterator iter = to_keep.begin(); iter != to_keep.end(); ++iter){
+            Bids.push_back((*iter)->id());
+        }
 
-    	// note: should we sort the minima in to_remove?
+        // note: should we sort the minima in to_remove?
 
-    	if (Aids.size() > 1){
+        if (Aids.size() > 1){
             Graph working_graph(*_graph);
             std::list<node_id> empty_list;
             NGT working_ngt(working_graph, std::list<node_id>(), Bids);
@@ -408,23 +408,23 @@ public:
             final_omPxx[x] = working_ngt.get_node_one_minus_P(xptr);
             final_tau[x] = working_ngt.get_tau(xptr);
 
-    	} else if (Aids.size() == 1) {
-    	    // if there is only one node in A then we can just read off the results.
-    	    node_id x = Aids.back();
-    	    Aids.pop_back();
-    	    node_ptr xptr = _graph->get_node(x);
+        } else if (Aids.size() == 1) {
+            // if there is only one node in A then we can just read off the results.
+            node_id x = Aids.back();
+            Aids.pop_back();
+            node_ptr xptr = _graph->get_node(x);
             final_omPxx[x] = get_node_one_minus_P(xptr);
             final_tau[x] = get_tau(xptr);
-    	}
-    	assert(Aids.size() == 0);
+        }
+        assert(Aids.size() == 0);
     }
 
     /*
      * Phase two, compute final_tau and final_omPxx for each x separately in _A and in _B
      */
     void phase_two(){
-    	reduce_all_in_group(_A, _B);
-    	reduce_all_in_group(_B, _A);
+        reduce_all_in_group(_A, _B);
+        reduce_all_in_group(_B, _A);
     }
 
     /*

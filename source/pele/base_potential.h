@@ -79,15 +79,15 @@ namespace pele {
         }
 
         /**
-		 * compute the hessian.
-		 *
-		 * If not overloaded it will call get_energy_gradient_hessian
-		 */
-		virtual void get_hessian(Array<double> x, Array<double> hess)
-		{
-		    Array<double> grad(x.size());
-		    double e = get_energy_gradient_hessian(x, grad, hess);
-		}
+         * compute the hessian.
+         *
+         * If not overloaded it will call get_energy_gradient_hessian
+         */
+        virtual void get_hessian(Array<double> x, Array<double> hess)
+        {
+            Array<double> grad(x.size());
+            double e = get_energy_gradient_hessian(x, grad, hess);
+        }
 
         /**
          * compute the numerical gradient
@@ -120,16 +120,16 @@ namespace pele {
             std::cout<<""<<std::endl;
             std::cout<<""<<std::endl;
             for (size_t i=0; i<hess.size(); ++i){
-				std::cout<<hess[i]<<" ";
-				int j = i+1;
-				if (j % (int) (3*sqrt(hess.size())) == 0)
-					std::cout<<"\n"<<std::endl;
-				else if (j % (int) sqrt(hess.size()) == 0)
-					std::cout<<""<<std::endl;
-				else if (j % 3 == 0){
-					std::cout<<"  ";
-				}
-			}*/
+                std::cout<<hess[i]<<" ";
+                int j = i+1;
+                if (j % (int) (3*sqrt(hess.size())) == 0)
+                    std::cout<<"\n"<<std::endl;
+                else if (j % (int) sqrt(hess.size()) == 0)
+                    std::cout<<""<<std::endl;
+                else if (j % 3 == 0){
+                    std::cout<<"  ";
+                }
+            }*/
         }
 
     };
