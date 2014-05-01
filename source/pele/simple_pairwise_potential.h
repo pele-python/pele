@@ -48,8 +48,7 @@ namespace pele
     {
         double e=0.;
         double gij, dr[3];
-        const size_t n = x.size();
-        const size_t natoms = x.size()/3;
+        const size_t natoms = x.size() / 3;
 
         grad.assign(0.);
 
@@ -77,7 +76,6 @@ namespace pele
         {
     		double hij, gij, dr[3], r2, e;
             const size_t N = x.size();
-            const size_t N2 = N*N;
             const size_t natoms = x.size()/3;
             if (x.size() != grad.size()) {
                 throw std::invalid_argument("the gradient has the wrong size");

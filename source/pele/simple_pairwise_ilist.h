@@ -54,7 +54,6 @@ namespace pele
         double e=0.;
         double gij, dr[3];
         const size_t n = x.size();
-        const size_t natoms = x.size()/3;
         const size_t nlist = _neighbor_list.size();
         assert(x.size() == grad.size());
 
@@ -62,6 +61,7 @@ namespace pele
             grad[i] = 0.;
 
 #ifndef NDEBUG
+        const size_t natoms = x.size()/3;
         for(size_t i=0; i<nlist; ++i)
             assert(_neighbor_list[i] < (long int)natoms);
 #endif
