@@ -1,6 +1,7 @@
 #ifndef _PELE_HS_WCA_H
 #define _PELE_HS_WCA_H
 
+#include <limits>
 #include "simple_pairwise_potential.h"
 #include "simple_pairwise_ilist.h"
 #include "atomlist_potential.h"
@@ -24,7 +25,7 @@ namespace pele {
 
         HS_WCA_interaction(double eps, double sca, Array<double> radii) :
             _eps(eps), _sca(sca),
-            _infty(pow(10.0,10)), _prfac(sca*sca*sca/sqrt(2)),
+            _infty(std::numeric_limits<double>::max()), _prfac(sca*sca*sca/sqrt(2)),
             _radii(radii.copy())
     	{}
 
