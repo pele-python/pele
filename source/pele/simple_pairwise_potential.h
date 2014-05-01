@@ -88,6 +88,7 @@ namespace pele
             hess.assign(0.);
             grad.assign(0.);
 
+            e = 0;
             for(size_t atomi=0; atomi<natoms; ++atomi) {
 				int i1 = 3*atomi;
 				for (size_t atomj=atomi+1;atomj<natoms;++atomj){
