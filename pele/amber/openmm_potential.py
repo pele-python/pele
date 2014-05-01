@@ -98,7 +98,7 @@ if __name__ == "__main__":
     
     # create potential for the molecule in coords.pdb
     prmtopFname = '../../examples/amber/aladipep/coords.prmtop' 
-    inpcrdFname	= '../../examples/amber/aladipep/coords.inpcrd' 
+    inpcrdFname    = '../../examples/amber/aladipep/coords.inpcrd' 
     pot = OpenMMAmberPotential(prmtopFname, inpcrdFname)  
 
     # read coordinates from pdb file 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     coords = pdb.getPositions() / angstrom   
     coords = numpy.reshape(numpy.transpose(coords), 3*len(coords), 1)
 
-    # compute energy and gradients   	
+    # compute energy and gradients       
     e = pot.getEnergy(coords)
     print 'Energy (kJ/mol) = '
     print e
