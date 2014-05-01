@@ -85,7 +85,7 @@ class AMBERSystem(BaseSystem):
 #        pot = self.get_potential()
 #        # kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
 #        # return lambda coords: lbfgs_cpp(coords, pot, **kwargs)
-#	from pele.optimize import lbfgs_py
+#    from pele.optimize import lbfgs_py
 #        return lambda coords: lbfgs_py(coords, pot, **kwargs)
 
     def get_ndof(self):
@@ -145,13 +145,13 @@ class AMBERSystem(BaseSystem):
         return self 
     
     def get_potential(self):
-  	"""  First attempts to get the potential from GMIN, then from OpenMM. If both fail, sets it to None """ 
+      """  First attempts to get the potential from GMIN, then from OpenMM. If both fail, sets it to None """ 
  
         if hasattr(self, 'potential'):
-		if self.potential is not None: 
-			return self.potential 
+        if self.potential is not None: 
+            return self.potential 
 
-	# default is None 
+    # default is None 
         self.potential = None 
 
         # get potential from GMIN 
@@ -162,45 +162,45 @@ class AMBERSystem(BaseSystem):
                 import gmin_potential
                 self.potential        = gmin_potential.GMINAmberPotential(self.prmtopFname, self.inpcrdFname)
                 print '\namberSystem> Using GMIN Amber potential ..'
-		return self.potential ; 
+        return self.potential ; 
             except ImportError:
                 # using OpenMM because ambgmin_ could not be imported 
                 print '\namberSystem> could not import ambgmin_. Will try OpenMM .. '
 
         # get potential from OpenMM 
         try:
-        	import openmm_potential  
-            	self.potential   = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
+            import openmm_potential  
+                self.potential   = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
                 print '\namberSystem> Using OpenMM amber potential ..'
 
-        	# check for openmm version
-	        # data structures changed between openmm4 and 5
-	        # crude check - todo  
-	        if hasattr(self.potential.prmtop.topology._bonds,'index'):
-	            self.OpenMMVer = 5
-	        else:
-	            self.OpenMMVer = 4
+            # check for openmm version
+            # data structures changed between openmm4 and 5
+            # crude check - todo  
+            if hasattr(self.potential.prmtop.topology._bonds,'index'):
+                self.OpenMMVer = 5
+            else:
+                self.OpenMMVer = 4
         
                 return self.potential
         except AttributeError:
-            	print '\namberSystem> could not import openmm_potential ..'
+                print '\namberSystem> could not import openmm_potential ..'
         
-	if self.potenial == None : 
-		print '\namberSystem> potential not set. Could not import GMIN or OpenMM potential.' 
+    if self.potenial == None : 
+        print '\namberSystem> potential not set. Could not import GMIN or OpenMM potential.' 
         
         
     def get_random_configuration(self):
         """set coordinates before calling BH etc."""
         """ returns a 1-D numpy array of length 3xNatoms """
-	
-	# using pele.amber.read_amber and inpcrd   
+    
+    # using pele.amber.read_amber and inpcrd   
         from pele.amber.read_amber import read_amber_coords  
 
         coords = read_amber_coords(self.inpcrdFname)
         print "amberSystem> Number of coordinates:", len(coords)
         coords = np.reshape( np.transpose(coords), len(coords),1)  
 
-	# -- OpenMM 
+    # -- OpenMM 
         #from simtk.unit import angstrom as openmm_angstrom 
         
         ##  using pdb 
@@ -210,9 +210,9 @@ class AMBERSystem(BaseSystem):
         #coords = np.reshape(np.transpose(coords), 3*len(coords),1 )
 
         ##  using input inpcrd 
-	#from simtk.openmm.app import AmberInpcrdFile
+    #from simtk.openmm.app import AmberInpcrdFile
         #inpcrd = AmberInpcrdFile( self.inpcrdFname )   
-	#coords = inpcrd.getPositions() / openmm_angstrom 
+    #coords = inpcrd.getPositions() / openmm_angstrom 
         #coords = np.reshape(np.transpose(coords), 3*len(coords),1 )
 
         return coords 

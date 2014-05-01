@@ -55,10 +55,10 @@ namespace pele{
                 }
                 assert(imobile == _mobile_dof.size());
 
-                cout << "ndof " << ndof()
-                    << " ndof_frozen " << ndof_frozen()
-                    << " ndof_mobile " << ndof_mobile() 
-                    << "\n";
+//                cout << "ndof " << ndof()
+//                    << " ndof_frozen " << ndof_frozen()
+//                    << " ndof_mobile " << ndof_mobile()
+//                    << "\n";
                 //for (size_t i=0; i < _frozen_dof.size(); ++i){
                     //cout << _frozen_dof[i] << "\n";
                 //}
@@ -108,51 +108,97 @@ namespace pele{
                 return full_coords;
             }
 
+            /**
+             * Return the gradient of the full representation of the system.
+             * The gradient of the frozen degrees of freedom will be set to zero.
+             */
+            Array<double> get_full_grad(Array<double> const &reduced_grad){
+                if (reduced_grad.size() != ndof_mobile()) {
+                    std::invalid_argument("reduced_grad has the wrong size");
+                }
+                Array<double> full_grad(ndof(), 0.);
+                // replace the mobile degrees of freedom with those in reduced_grad
+                for (size_t i=0; i < _mobile_dof.size(); ++i){
+                    full_grad[_mobile_dof[i]] = reduced_grad[i];
+                }
+                return full_grad;
+            }
+
+            /**
+             * Return the Hessian of the reduced representation of the system.
+             */
+            Array<double> get_reduced_hessian(Array<double> const full_hess){
+                if (full_hess.size() != ndof()*ndof()) {
+                    std::invalid_argument("full_hessian has the wrong size");
+                }
+                Array<double> reduced_hess(ndof_mobile() * ndof_mobile());
+//                size_t const N = ndof_mobile();
+                for (size_t i=0; i < ndof_mobile(); ++i){
+                    for (size_t j=0; j < ndof_mobile(); ++j){
+                        size_t k_red = i * ndof_mobile() + j;
+                        size_t k_full = _mobile_dof[i] * ndof() + _mobile_dof[j];
+                        reduced_hess[k_red] = full_hess[k_full];
+                    }
+                }
+                return reduced_hess;
+            }
+
     };
 
 
     template<typename PotentialType>
     class FrozenPotentialWrapper : public BasePotential
     {
-        /*
-    	protected:
+        public:
+            FrozenCoordsConverter coords_converter;
+        protected:
             PotentialType *_underlying_potential;
-            FrozenCoordsConverter _coords_converter;
-		*/
-    	public:
-    		FrozenCoordsConverter _coords_converter;
-    	protected:
-			PotentialType *_underlying_potential;
 
             FrozenPotentialWrapper(PotentialType *potential, 
                     Array<double> &reference_coords, 
                     Array<long int> & frozen_dof) :
-                _underlying_potential(potential),
-                _coords_converter(reference_coords, frozen_dof) {}
+                coords_converter(reference_coords, frozen_dof),
+                _underlying_potential(potential)
+            {}
 
         public:
-            ~FrozenPotentialWrapper() 
+            ~FrozenPotentialWrapper()
             {
                 if (_underlying_potential != NULL) { delete _underlying_potential; }
             }
 
-            
+//            inline size_t ndof() const { return coords_converter.ndof(); }
+//            inline size_t ndof_frozen() const { return coords_converter.ndof_frozen(); }
+//            inline size_t ndof_mobile() const { return coords_converter.ndof_mobile(); }
+//            inline Array<double> get_reduced_coords(Array<double> const &full_coords){
+//                return coords_converter.get_reduced_coords(full_coords);
+//            }
+//            Array<double> get_full_coords(Array<double> const &reduced_coords){
+//                return coords_converter.get_full_coords(reduced_coords);
+//            }
+
             inline double get_energy(Array<double> reduced_coords) 
             {
-                Array<double> full_coords(_coords_converter.get_full_coords(reduced_coords));
+                if (reduced_coords.size() != coords_converter.ndof_mobile()){
+                    throw std::runtime_error("reduced coords does not have the right size");
+                }
+                Array<double> full_coords(coords_converter.get_full_coords(reduced_coords));
                 return _underlying_potential->get_energy(full_coords);
             }
 
             inline double get_energy_gradient(Array<double> reduced_coords, Array<double> reduced_grad) 
             {
-                if (reduced_grad.size() != _coords_converter.ndof_mobile()) {
+                if (reduced_coords.size() != coords_converter.ndof_mobile()){
+                    throw std::runtime_error("reduced coords does not have the right size");
+                }
+                if (reduced_grad.size() != coords_converter.ndof_mobile()) {
                     throw std::invalid_argument("reduced_grad has the wrong size");
                 }
                 
-                Array<double> full_coords(_coords_converter.get_full_coords(reduced_coords));
-                Array<double> gfull(_coords_converter.ndof());
+                Array<double> full_coords(coords_converter.get_full_coords(reduced_coords));
+                Array<double> gfull(coords_converter.ndof());
                 double energy = _underlying_potential->get_energy_gradient(full_coords, gfull);
-                Array<double> gred = _coords_converter.get_reduced_coords(gfull);
+                Array<double> gred = coords_converter.get_reduced_coords(gfull);
                 for (size_t i = 0; i < gred.size(); ++i){
                     reduced_grad[i] = gred[i];
                 }

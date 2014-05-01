@@ -24,63 +24,63 @@ namespace pele {
             _C12(_C6*_C6), _6C6(6.*_C6),
             _12C12(12.*_C12), _42C6(42*_C6),
             _156C12(156*_C12),
-        	_coff(pow(2.*_C6,1./6)), _eps(eps)
+            _coff(pow(2.*_C6,1./6)), _eps(eps)
         {}
 
         /* calculate energy from distance squared */
         double energy(double r2, size_t atom_i, size_t atom_j) const {
             double E;
-        	double ir2 = 1.0/r2;
+            double ir2 = 1.0/r2;
             double ir6 = ir2*ir2*ir2;
             double ir12 = ir6*ir6;
             if(sqrt(r2) < _coff)
-            	E = 4.*_eps*(-_C6*ir6 + _C12*ir12 + 1.0/4);
+                E = 4.*_eps*(-_C6*ir6 + _C12*ir12 + 1.0/4);
             else
-            	E = 0.;
+                E = 0.;
 
             return E;
         }
 
         /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
         double energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const {
-        	double E;
-			double ir2 = 1.0/r2;
-			double ir6 = ir2*ir2*ir2;
-			double ir12 = ir6*ir6;
-			if(sqrt(r2) < _coff)
-			{
-				E = 4.*_eps*(-_C6*ir6 + _C12*ir12 + 1./4);
-				*gij = 4.*_eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
-			}
-			else
-			{
-				E = 0.;
-				*gij = 0;
-			}
+            double E;
+            double ir2 = 1.0/r2;
+            double ir6 = ir2*ir2*ir2;
+            double ir12 = ir6*ir6;
+            if(sqrt(r2) < _coff)
+            {
+                E = 4.*_eps*(-_C6*ir6 + _C12*ir12 + 1./4);
+                *gij = 4.*_eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
+            }
+            else
+            {
+                E = 0.;
+                *gij = 0;
+            }
 
             return E;
         }
 
         double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const {
-        	double E;
-        	double ir2 = 1.0/r2;
-        	double ir6 = ir2*ir2*ir2;
-        	double ir12 = ir6*ir6;
+            double E;
+            double ir2 = 1.0/r2;
+            double ir6 = ir2*ir2*ir2;
+            double ir12 = ir6*ir6;
 
-        	if(sqrt(r2) < _coff)
-			{
-				E = 4.*_eps*(-_C6*ir6 + _C12*ir12) + _eps;
-				*gij = 4.*_eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
-				*hij = 4.*_eps*(- _42C6 * ir6 + _156C12 * ir12) * ir2;
-			}
-			else
-			{
-				E = 0.;
-				*gij = 0;
-				*hij=0;
-			}
+            if(sqrt(r2) < _coff)
+            {
+                E = 4.*_eps*(-_C6*ir6 + _C12*ir12) + _eps;
+                *gij = 4.*_eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
+                *hij = 4.*_eps*(- _42C6 * ir6 + _156C12 * ir12) * ir2;
+            }
+            else
+            {
+                E = 0.;
+                *gij = 0;
+                *hij=0;
+            }
 
-			return E;
+            return E;
         }
     };
 
