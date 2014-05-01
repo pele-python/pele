@@ -101,10 +101,10 @@ namespace pele {
 
         bool empty()
         {
-        	if (_data == NULL)
-        		return true;
-        	else
-        		return false;
+            if (_data == NULL)
+                return true;
+            else
+                return false;
         }
 
         long int reference_count()
@@ -261,7 +261,7 @@ namespace pele {
          *
          * arrays must be of same size  
          */
-		Array<dtype> &assign(Array<dtype> const & rhs) {
+        Array<dtype> &assign(Array<dtype> const & rhs) {
             if (_size != rhs.size()){
                 throw std::runtime_error("arrays must have the same size during assignment");
             }
@@ -289,7 +289,7 @@ namespace pele {
             return *this;
         }
 
-		Array<dtype> &operator+=(Array<dtype> const & rhs) {
+        Array<dtype> &operator+=(Array<dtype> const & rhs) {
             if (_size != rhs.size()){
                 throw std::runtime_error("operator+=: arrays must have the same size");
             }
@@ -298,7 +298,7 @@ namespace pele {
             return *this;
         }
 
-		Array<dtype> &operator-=(Array<dtype> const & rhs) {
+        Array<dtype> &operator-=(Array<dtype> const & rhs) {
             if (_size != rhs.size()){
                 throw std::runtime_error("operator-=: arrays must have the same size");
             }
@@ -307,13 +307,13 @@ namespace pele {
             return *this;
         }
 
-		Array<dtype> &operator*=(dtype rhs) {
+        Array<dtype> &operator*=(dtype rhs) {
             for (size_t i=0; i<_size; ++i)
                 _data[i] *= rhs;
             return *this;
         }
 
-		Array<dtype> &operator/=(dtype rhs) {
+        Array<dtype> &operator/=(dtype rhs) {
             if (_size != rhs.size()){
                 throw std::runtime_error("operator/=: arrays must have the same size");
             }
@@ -336,26 +336,26 @@ namespace pele {
         return out;
     }
 
-	/**
-	 * compute the dot product of two Arrays
-	 */
-	inline double dot(Array<double> const v1, Array<double> const v2)
-	{
-	  assert(v1.size() == v2.size());
-	  double dot = 0.;
-	  for (size_t i=0; i<v1.size(); ++i) {
-		dot += v1[i] * v2[i];
-	  }
-	  return dot;
-	}
+    /**
+     * compute the dot product of two Arrays
+     */
+    inline double dot(Array<double> const v1, Array<double> const v2)
+    {
+      assert(v1.size() == v2.size());
+      double dot = 0.;
+      for (size_t i=0; i<v1.size(); ++i) {
+        dot += v1[i] * v2[i];
+      }
+      return dot;
+    }
 
-	/**
-	 * compute the L2 norm of an Array
-	 */
-	inline double norm(Array<double> const v)
-	{
-	  return sqrt(dot(v, v));
-	}
+    /**
+     * compute the L2 norm of an Array
+     */
+    inline double norm(Array<double> const v)
+    {
+      return sqrt(dot(v, v));
+    }
 }
 
 //Array newa(old);  Array newa; newa.view(old)

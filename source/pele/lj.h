@@ -54,11 +54,11 @@ namespace pele {
         }
 
         double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const {
-        	double ir2 = 1.0/r2;
-        	double ir6 = ir2*ir2*ir2;
-        	double ir12 = ir6*ir6;
+            double ir2 = 1.0/r2;
+            double ir6 = ir2*ir2*ir2;
+            double ir12 = ir6*ir6;
             *gij = (_12C12 * ir12 - _6C6 * ir6) * ir2;
-        	*hij = (_156C12 * ir12 - _42C6 * ir6) * ir2;
+            *hij = (_156C12 * ir12 - _42C6 * ir6) * ir2;
             return -_C6*ir6 + _C12*ir12;
         }
     };

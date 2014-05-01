@@ -48,8 +48,7 @@ namespace pele
     {
         double e=0.;
         double gij, dr[3];
-        const size_t n = x.size();
-        const size_t natoms = x.size()/3;
+        const size_t natoms = x.size() / 3;
 
         grad.assign(0.);
 
@@ -75,9 +74,8 @@ namespace pele
         inline double SimplePairwisePotential<pairwise_interaction,distance_policy>::get_energy_gradient_hessian(Array<double> x,
                 Array<double> grad, Array<double> hess)
         {
-    		double hij, gij, dr[3], r2, e;
+            double hij, gij, dr[3], r2, e;
             const size_t N = x.size();
-            const size_t N2 = N*N;
             const size_t natoms = x.size()/3;
             if (x.size() != grad.size()) {
                 throw std::invalid_argument("the gradient has the wrong size");
@@ -88,43 +86,44 @@ namespace pele
             hess.assign(0.);
             grad.assign(0.);
 
+            e = 0;
             for(size_t atomi=0; atomi<natoms; ++atomi) {
-				int i1 = 3*atomi;
-				for (size_t atomj=atomi+1;atomj<natoms;++atomj){
-					int j1 = 3*atomj;
-					_dist->get_rij(dr, &x[i1], &x[j1]);
-					r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
-					e += _interaction->energy_gradient_hessian(r2, &gij, &hij, atomi, atomj);
-	                for(size_t k=0; k<3; ++k)
-	                    grad[i1+k] -= gij * dr[k];
-	                for(size_t k=0; k<3; ++k)
-	                    grad[j1+k] += gij * dr[k];
+                int i1 = 3*atomi;
+                for (size_t atomj=atomi+1;atomj<natoms;++atomj){
+                    int j1 = 3*atomj;
+                    _dist->get_rij(dr, &x[i1], &x[j1]);
+                    r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+                    e += _interaction->energy_gradient_hessian(r2, &gij, &hij, atomi, atomj);
+                    for(size_t k=0; k<3; ++k)
+                        grad[i1+k] -= gij * dr[k];
+                    for(size_t k=0; k<3; ++k)
+                        grad[j1+k] += gij * dr[k];
 
-					for (size_t k=0; k<3; ++k){
-						//diagonal block - diagonal terms
-						double Hii_diag = (hij+gij)*dr[k]*dr[k]/r2 - gij;
-						hess[N*(i1+k)+i1+k] += Hii_diag;
-						hess[N*(j1+k)+j1+k] += Hii_diag;
-						//off diagonal block - diagonal terms
-						double Hij_diag = -Hii_diag;
-						hess[N*(i1+k)+j1+k] = Hij_diag;
-						hess[N*(j1+k)+i1+k] = Hij_diag;
-						for (size_t l = k+1; l<3; ++l){
-							//diagonal block - off diagonal terms
-							double Hii_off = (hij+gij)*dr[k]*dr[l]/r2;
-							hess[N*(i1+k)+i1+l] += Hii_off;
-							hess[N*(i1+l)+i1+k] += Hii_off;
-							hess[N*(j1+k)+j1+l] += Hii_off;
-							hess[N*(j1+l)+j1+k] += Hii_off;
-							//off diagonal block - off diagonal terms
-							double Hij_off = -Hii_off;
-							hess[N*(i1+k)+j1+l] = Hij_off;
-							hess[N*(i1+l)+j1+k] = Hij_off;
-							hess[N*(j1+k)+i1+l] = Hij_off;
-							hess[N*(j1+l)+i1+k] = Hij_off;
-						}
-					}
-				}
+                    for (size_t k=0; k<3; ++k){
+                        //diagonal block - diagonal terms
+                        double Hii_diag = (hij+gij)*dr[k]*dr[k]/r2 - gij;
+                        hess[N*(i1+k)+i1+k] += Hii_diag;
+                        hess[N*(j1+k)+j1+k] += Hii_diag;
+                        //off diagonal block - diagonal terms
+                        double Hij_diag = -Hii_diag;
+                        hess[N*(i1+k)+j1+k] = Hij_diag;
+                        hess[N*(j1+k)+i1+k] = Hij_diag;
+                        for (size_t l = k+1; l<3; ++l){
+                            //diagonal block - off diagonal terms
+                            double Hii_off = (hij+gij)*dr[k]*dr[l]/r2;
+                            hess[N*(i1+k)+i1+l] += Hii_off;
+                            hess[N*(i1+l)+i1+k] += Hii_off;
+                            hess[N*(j1+k)+j1+l] += Hii_off;
+                            hess[N*(j1+l)+j1+k] += Hii_off;
+                            //off diagonal block - off diagonal terms
+                            double Hij_off = -Hii_off;
+                            hess[N*(i1+k)+j1+l] = Hij_off;
+                            hess[N*(i1+l)+j1+k] = Hij_off;
+                            hess[N*(j1+k)+i1+l] = Hij_off;
+                            hess[N*(j1+l)+i1+k] = Hij_off;
+                        }
+                    }
+                }
             }
             return e;
         }
