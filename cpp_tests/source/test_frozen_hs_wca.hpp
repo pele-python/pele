@@ -2,6 +2,7 @@
 #include "pele/frozen_atoms.h"
 #include "pele/hs_wca.h"
 #include "pele/modified_fire.h"
+//#include "pele/lj.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -12,6 +13,8 @@ using pele::HS_WCAFrozen;
 using pele::HS_WCAPeriodicFrozen;
 using pele::HS_WCA;
 using pele::HS_WCAPeriodic;
+//using pele::LJFrozen;
+//using pele::LJ;
 
 class FrozenHS_WCATest: public ::testing::Test{
 public:
@@ -25,9 +28,10 @@ public:
 		eps=1.0;
 		sca=1.2;
 		radii.resize(3);
-		radii[0] = 1.0;
-		radii[1] = 1.1;
-		radii[2] = 0.9;
+		double f = 0.3; // for too much overlap, numerical accuracy decreases
+		radii[0] = 1.0*f;
+		radii[1] = 1.1*f;
+		radii[2] = 0.9*f;
 		radii_small.resize(3);
 		radii_large.resize(3);
 		for (unsigned int i(0); i < radii.size(); ++i){
@@ -61,7 +65,7 @@ public:
 TEST_F(FrozenHS_WCATest, TestEnergy_Correct){
 	HS_WCA pot_nofreeze(eps,sca,radii);
 	HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	double e = pot.get_energy(xred);
 	double etrue =  pot_nofreeze.get_energy(x);
 	//std::cout << "etrue: " << etrue << std::endl;
@@ -71,7 +75,7 @@ TEST_F(FrozenHS_WCATest, TestEnergy_Correct){
 TEST_F(FrozenHS_WCATest, TestEnergy_Correct_Periodic){
 	HS_WCAPeriodic pot_nofreeze(eps, sca, radii, boxvec);
 	HS_WCAPeriodicFrozen pot(eps, sca, radii, boxvec, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	double e = pot.get_energy(xred);
 	double etrue =  pot_nofreeze.get_energy(x);
 	EXPECT_NEAR(e, etrue, 1e-10);
@@ -82,7 +86,7 @@ TEST_F(FrozenHS_WCATest, TestRepulsive_Correct){
 	HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
 	HS_WCAFrozen pot_small(eps, sca, radii_small, x, frozen_dof);
 	HS_WCAFrozen pot_large(eps, sca, radii_large, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	double e = pot.get_energy(xred);
 	double e_small = pot_small.get_energy(xred);
 	double e_large = pot_large.get_energy(xred);
@@ -97,7 +101,7 @@ TEST_F(FrozenHS_WCATest, TestRepulsive_Correct_Periodic){
 	HS_WCAPeriodicFrozen pot(eps, sca, radii, boxvec, x, frozen_dof);
 	HS_WCAPeriodicFrozen pot_small(eps, sca, radii_small, boxvec, x, frozen_dof);
 	HS_WCAPeriodicFrozen pot_large(eps, sca, radii_large, boxvec, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	double e = pot.get_energy(xred);
 	double e_small = pot_small.get_energy(xred);
 	double e_large = pot_large.get_energy(xred);
@@ -110,12 +114,12 @@ TEST_F(FrozenHS_WCATest, TestRepulsive_Correct_Periodic){
 TEST_F(FrozenHS_WCATest, TestEnergyGradient_Correct){
 	HS_WCA pot_nofreeze(eps,sca,radii);
 	HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	Array<double> gred(xred.size()), gtrue(x.size());
 	double e = pot.get_energy_gradient(xred,gred);
 	double etrue = pot_nofreeze.get_energy_gradient(x,gtrue);
 	EXPECT_NEAR(e, etrue, 1e-10);
-	auto gtrue_red = pot._coords_converter.get_reduced_coords(gtrue);
+	auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
 	for (int i=0; i<gred.size(); ++i){
 		EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
 	}
@@ -124,12 +128,12 @@ TEST_F(FrozenHS_WCATest, TestEnergyGradient_Correct){
 TEST_F(FrozenHS_WCATest, TestEnergyGradient_Correct_Periodic){
 	HS_WCAPeriodic pot_nofreeze(eps, sca, radii, boxvec);
 	HS_WCAPeriodicFrozen pot(eps, sca, radii, boxvec, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	Array<double> gred(xred.size()), gtrue(x.size());
 	double e = pot.get_energy_gradient(xred,gred);
 	double etrue = pot_nofreeze.get_energy_gradient(x,gtrue);
 	EXPECT_NEAR(e, etrue, 1e-10);
-	auto gtrue_red = pot._coords_converter.get_reduced_coords(gtrue);
+	auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
 	for (int i=0; i<gred.size(); ++i){
 		EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
 	}
@@ -138,11 +142,11 @@ TEST_F(FrozenHS_WCATest, TestEnergyGradient_Correct_Periodic){
 TEST_F(FrozenHS_WCATest, TestNumericalGradient_Correct){
 	HS_WCA pot_nofreeze(eps,sca,radii);
 	HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	Array<double> gred(xred.size()), gtrue(x.size());
 	pot.numerical_gradient(xred,gred);
 	pot_nofreeze.numerical_gradient(x,gtrue);
-	auto gtrue_red = pot._coords_converter.get_reduced_coords(gtrue);
+	auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
 	for (int i=0; i<gred.size(); ++i){
 		EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
 	}
@@ -151,13 +155,99 @@ TEST_F(FrozenHS_WCATest, TestNumericalGradient_Correct){
 TEST_F(FrozenHS_WCATest, TestNumericalGradient_Correct_Periodic){
 	HS_WCAPeriodic pot_nofreeze(eps, sca, radii, boxvec);
 	HS_WCAPeriodicFrozen pot(eps, sca, radii, boxvec, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	Array<double> gred(xred.size()), gtrue(x.size());
 	pot.numerical_gradient(xred,gred);
 	pot_nofreeze.numerical_gradient(x,gtrue);
-	auto gtrue_red = pot._coords_converter.get_reduced_coords(gtrue);
+	auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
 	for (int i=0; i<gred.size(); ++i){
 		EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
+	}
+}
+
+TEST_F(FrozenHS_WCATest, TestNumericalHessian_Correct){
+	HS_WCA pot_nofreeze(eps, sca, radii);
+	HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
+	Array<double> hred(xred.size()*xred.size()), htrue(x.size()*x.size());
+	pot.numerical_hessian(xred, hred);
+	pot_nofreeze.numerical_hessian(x, htrue);
+	auto htrue_red = pot.coords_converter.get_reduced_hessian(htrue);
+	for (int i=0; i<hred.size(); ++i){
+		EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
+	}
+}
+
+TEST_F(FrozenHS_WCATest, TestNumericalHessian_Correct_Periodic){
+	HS_WCAPeriodic pot_nofreeze(eps, sca, radii, boxvec);
+	HS_WCAPeriodicFrozen pot(eps, sca, radii, boxvec, x, frozen_dof);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
+	Array<double> hred(xred.size()*xred.size()), htrue(x.size()*x.size());
+	pot.numerical_hessian(xred, hred);
+	pot_nofreeze.numerical_hessian(x, htrue);
+	auto htrue_red = pot.coords_converter.get_reduced_hessian(htrue);
+	for (int i=0; i<hred.size(); ++i){
+		EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
+	}
+}
+
+TEST_F(FrozenHS_WCATest, TestEnergyGradientHessian_Correct){
+	HS_WCA pot_nofreeze(eps, sca, radii);
+	HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
+	//LJ pot_nofreeze(1.2, 2.3);
+	//LJFrozen pot(1.2, 2.3, x, frozen_dof);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
+	Array<double> gred(xred.size()), gtrue(x.size());
+	Array<double> hred(xred.size()*xred.size()), htrue(x.size()*x.size());
+	double e = pot.get_energy_gradient_hessian(xred, gred, hred);
+	double etrue =  pot_nofreeze.get_energy_gradient_hessian(x, gtrue, htrue);
+	EXPECT_NEAR(e, etrue, 1e-10);
+	auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
+	for (int i=0; i<gred.size(); ++i){
+		EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
+	}
+	auto htrue_red = pot.coords_converter.get_reduced_hessian(htrue);
+	for (int i=0; i<hred.size(); ++i){
+		EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
+	}
+}
+
+TEST_F(FrozenHS_WCATest, TestEnergyGradientHessian_Correct_Periodic){
+	HS_WCAPeriodic pot_nofreeze(eps, sca, radii, boxvec);
+	HS_WCAPeriodicFrozen pot(eps, sca, radii, boxvec, x, frozen_dof);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
+	Array<double> gred(xred.size()), gtrue(x.size());
+	Array<double> hred(xred.size()*xred.size()), htrue(x.size()*x.size());
+	double e = pot.get_energy_gradient_hessian(xred, gred, hred);
+	double etrue =  pot_nofreeze.get_energy_gradient_hessian(x, gtrue, htrue);
+	EXPECT_NEAR(e, etrue, 1e-10);
+	auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
+	for (int i=0; i<gred.size(); ++i){
+		EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
+	}
+	auto htrue_red = pot.coords_converter.get_reduced_hessian(htrue);
+	for (int i=0; i<hred.size(); ++i){
+		EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
+	}
+}
+
+TEST_F(FrozenHS_WCATest, TestEnergyGradientHessian_AgreesWithNumerical){
+	HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
+	Array<double> grad(xred.size());
+	Array<double> grad_num(grad.size());
+	Array<double> hess(xred.size()*xred.size());
+	Array<double> hess_num(hess.size());
+	const double energy = pot.get_energy_gradient_hessian(xred, grad, hess);
+	const double energy_comp(pot.get_energy(xred));
+	pot.numerical_gradient(xred, grad_num);
+	pot.numerical_hessian(xred, hess_num);
+	EXPECT_NEAR(energy, energy_comp, 1e-10);
+	for (unsigned int i(0); i < grad.size(); ++i){
+		EXPECT_NEAR(grad[i], grad_num[i], 1e-10);
+	}
+	for (unsigned int i(0); i < hess.size(); ++i){
+		EXPECT_NEAR(hess[i], hess_num[i], 1e-5);
 	}
 }
 
@@ -173,7 +263,7 @@ TEST_F(FrozenHS_WCATest, TestMinimizationFreezing_Correct){
 	EXPECT_NEAR( e_notfreeze_after, 0, 1e-10 );
 	// minimization for frozen HS_WCA
 	HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
-	auto xred = pot._coords_converter.get_reduced_coords(x);
+	auto xred = pot.coords_converter.get_reduced_coords(x);
 	const auto e_before = pot.get_energy(xred);
 	opt_t minimizer_red(&pot, xred, 1e-4, 1.0, 0.5);
 	minimizer_red.run();
@@ -182,7 +272,7 @@ TEST_F(FrozenHS_WCATest, TestMinimizationFreezing_Correct){
 	EXPECT_TRUE( e_after <= e_before );
 	EXPECT_TRUE( e_notfreeze_after <= e_after );
 	// verify that frozen dof are in fact frozen
-	const auto xred_after_inflated = pot._coords_converter.get_full_coords(xred_after);
+	const auto xred_after_inflated = pot.coords_converter.get_full_coords(xred_after);
 	for (unsigned int i(0); i < frozen_dof.size(); ++i){
 		const auto idx = frozen_dof[i];
 		EXPECT_NEAR( x[idx], xred_after_inflated[idx], 1e-10 );

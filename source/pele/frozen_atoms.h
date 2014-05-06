@@ -204,6 +204,31 @@ namespace pele{
                 }
                 return energy;
             }
+
+            inline double get_energy_gradient_hessian(Array<double> reduced_coords, Array<double> reduced_grad, Array<double> reduced_hess){
+            	if (reduced_coords.size() != coords_converter.ndof_mobile()){
+					throw std::runtime_error("reduced coords does not have the right size");
+				}
+				if (reduced_grad.size() != coords_converter.ndof_mobile()) {
+					throw std::invalid_argument("reduced_grad has the wrong size");
+				}
+				if (reduced_hess.size() != coords_converter.ndof_mobile()*coords_converter.ndof_mobile()){
+					throw std::invalid_argument("reduced_hess has the wrong size");
+				}
+				Array<double> full_coords(coords_converter.get_full_coords(reduced_coords));
+				Array<double> gfull(coords_converter.ndof());
+				Array<double> hfull(coords_converter.ndof()*coords_converter.ndof());
+				const double energy = _underlying_potential->get_energy_gradient_hessian(full_coords, gfull, hfull);
+				Array<double> gred = coords_converter.get_reduced_coords(gfull);
+				Array<double> hred = coords_converter.get_reduced_hessian(hfull);
+				for (size_t i = 0; i < gred.size(); ++i){
+						reduced_grad[i] = gred[i];
+				}
+				for (size_t i = 0; i < hred.size(); ++i){
+						reduced_hess[i] = hred[i];
+				}
+				return energy;
+            }
     };
 }
 
