@@ -14,15 +14,20 @@ cdef extern from "pele/harmonic.h" namespace "pele":
     cdef cppclass  cHarmonic "pele::Harmonic":
         cHarmonic(_pele.Array[double] coords, double k) except +
         void set_k(double) except +
+        double get_k() except +
     cdef cppclass  cHarmonicPeriodic "pele::HarmonicPeriodic":
         cHarmonicPeriodic(_pele.Array[double] coords, double k, double * boxvec) except +
         void set_k(double) except +
+        double get_k() except +
 
 cdef class Harmonic(_pele.BasePotential):
     """define the python interface to the c++ Harmonic potential implementation
     """
     cpdef bool periodic 
+    cdef cHarmonic* newptr
     def __cinit__(self, np.ndarray[double, ndim=1] coords, double k, boxvec=None, boxl=None):
+        self.newptr = <cHarmonic*> self.thisptr
+        
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:
             boxvec = [boxl] * 3
@@ -37,6 +42,9 @@ cdef class Harmonic(_pele.BasePotential):
             self.thisptr = <_pele.cBasePotential*>new cHarmonicPeriodic(_pele.Array[double](<double*> coords.data, coords.size), k, <double*> bv.data)
     
     def set_k(self, newk):
-        cdef cHarmonic* newptr = <cHarmonic*> self.thisptr
-        newptr.set_k(newk)
+        self.newptr.set_k(newk)
+        
+    def get_k(self):
+        k = self.newptr.get_k()
+        return k
   

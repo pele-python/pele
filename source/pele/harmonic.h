@@ -24,6 +24,7 @@ template<typename distance_policy = cartesian_distance >
         double get_energy(pele::Array<double> x);
         double get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
         void set_k(double newk){_k = newk;};
+        double get_k(){return _k;};
     };
 
 
