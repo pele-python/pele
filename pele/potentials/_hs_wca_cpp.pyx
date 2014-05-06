@@ -15,6 +15,10 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
         cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii, double * boxvec) except +
     cdef cppclass  cHS_WCANeighborList "pele::HS_WCANeighborList":
         cHS_WCANeighborList(_pele.Array[long] & ilist, double eps, double sca, _pele.Array[double] radii) except +    
+    cdef cppclass  cHS_WCAFrozen "pele::HS_WCAFrozen":
+        cHS_WCAFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double]& reference_coords, _pele.Array[long]& frozen_dof) except +
+    cdef cppclass  cHS_WCAPeriodicFrozen "pele::HS_WCAPeriodicFrozen":
+        cHS_WCAPeriodicFrozen(double eps, double sca, _pele.Array[double] radii, double* boxvec, _pele.Array[double]& reference_coords, _pele.Array[long]& frozen_dof) except +
 
 cdef class HS_WCA(_pele.BasePotential):
     """define the python interface to the c++ HS_WCA implementation
@@ -34,6 +38,30 @@ cdef class HS_WCA(_pele.BasePotential):
             self.periodic = True
             bv = np.array(boxvec, dtype=float)
             self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)
+
+cdef class HS_WCAFrozen(_pele.BasePotential):
+    """define the python interface to the c++ HS_WCAFrozen implementation
+    """
+    cpdef bool periodic
+    def __cinit__(self, np.ndarray[double, ndim=1] reference_coords, frozen_atoms, eps, sca, np.ndarray[double, ndim=1] radii, boxvec=None, boxl=None):
+        assert not (boxvec is not None and boxl is not None)
+        cdef np.ndarray[long, ndim=1] frozen_dof
+        frozen_dof = np.array([range(3*i,3*i+3) for i in frozen_atoms], dtype=int).reshape(-1) 
+                    
+        if boxl is not None:
+            boxvec = np.array([boxl] * 3)
+        cdef np.ndarray[double, ndim=1] bv
+          
+        if boxvec is None:
+            self.periodic = False
+            self.thisptr = <_pele.cBasePotential*>new cHS_WCAFrozen(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
+                        _pele.Array[long](<long *> frozen_dof.data, frozen_dof.size) )
+        else:
+            self.periodic = True
+            bv = np.array(boxvec, dtype=float)
+            assert bv.size == 3
+            self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodicFrozen(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data, _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
+                        _pele.Array[long](<long *> frozen_dof.data, frozen_dof.size) )
 
 cdef class HS_WCANeighborList(_pele.BasePotential):
     """define the python interface to the c++ HS_WCA implementation

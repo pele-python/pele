@@ -5,6 +5,7 @@
 #include "test_lj.hpp"
 #include "test_lbfgs.hpp"
 #include "test_morse.hpp"
+#include "test_frozen_hs_wca.hpp"
 #include "test_frozen.hpp"
 #include "test_wca.hpp"
 
