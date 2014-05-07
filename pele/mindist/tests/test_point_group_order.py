@@ -4,13 +4,15 @@ import nose
 
 import numpy as np
 from pele.mindist import PointGroupOrderCluster, ExactMatchAtomicCluster
+from pele.utils.xyz import read_xyz
 
 class TestPgorderLj75(unittest.TestCase):
     """as of Mar 5 2014 this test fails.  It needs to be fixed"""
     def test1(self):
         d = os.path.dirname(__file__)
-        fname = os.path.join(d, "coords.lj75.gmin")
-        coords = np.genfromtxt(fname)
+        fname = os.path.join(d, "coords.lj75.gmin.xyz")
+        xyz = read_xyz(open(fname, "r"))
+        coords = xyz.coords.reshape(-1)
         print fname
         self.assertEqual(coords.size, 75*3)
         
