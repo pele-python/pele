@@ -24,27 +24,27 @@ namespace pele{
     {
         private:
             std::vector<double> const _reference_coords;
-            std::vector<long int> _frozen_dof;
-            std::vector<long int> _mobile_dof;
+            std::vector<size_t> _frozen_dof;
+            std::vector<size_t> _mobile_dof;
         public:
             FrozenCoordsConverter(Array<double> const & reference_coords, 
-                    Array<long int> const & frozen_dof) :
+                    Array<size_t> const & frozen_dof) :
                 _reference_coords(reference_coords.begin(), reference_coords.end())
             {
                 //populate _frozen_dof after removing duplicates and sorting
-                std::set<long int> frozenset(frozen_dof.begin(), frozen_dof.end());
-                _frozen_dof = std::vector<long int>(frozenset.begin(), frozenset.end());
+                std::set<size_t> frozenset(frozen_dof.begin(), frozen_dof.end());
+                _frozen_dof = std::vector<size_t>(frozenset.begin(), frozenset.end());
                 std::sort(_frozen_dof.begin(), _frozen_dof.end());
 
                 // do a sanity check
                 if (_frozen_dof.size() > 0){
-                    if (_frozen_dof[_frozen_dof.size()-1] >= (long int)ndof()) {
+                    if (_frozen_dof[_frozen_dof.size()-1] >= (size_t)ndof()) {
                         throw std::runtime_error("index of frozen degree of freedom is out of bounds");
                     }
                 }
 
                 //populate _mobile_dof
-                _mobile_dof = vector<long int>(ndof() - ndof_frozen());
+                _mobile_dof = vector<size_t>(ndof() - ndof_frozen());
                 size_t imobile = 0;
                 for (size_t i=0; i<_reference_coords.size(); ++i){
                     // if degree of freedom i is not in frozen, add it to _mobile_dof
@@ -156,7 +156,7 @@ namespace pele{
 
             FrozenPotentialWrapper(PotentialType *potential, 
                     Array<double> &reference_coords, 
-                    Array<long int> & frozen_dof) :
+                    Array<size_t> & frozen_dof) :
                 coords_converter(reference_coords, frozen_dof),
                 _underlying_potential(potential)
             {}
