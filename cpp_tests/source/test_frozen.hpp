@@ -15,7 +15,7 @@ class FrozenLJTest :  public ::testing::Test
 public:
     double c6, c12, etrue;
     Array<double> x, y;
-    Array<long> frozen_dof;
+    Array<size_t> frozen_dof;
     virtual void SetUp(){
         c6 = 1.2;
         c12 = 2.3;
