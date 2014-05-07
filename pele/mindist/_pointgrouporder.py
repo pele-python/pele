@@ -37,7 +37,38 @@ class PointGroupOrderCluster(object):
         pgorder = 0
         for rot, invert in self.exact_match.standard_alignments(x1, x1):
             if invert: continue
-            if self.exact_match.check_match(x1, x1, rot, invert):
+            if self.exact_match.check_match(x1, x1, rot, invert, reoptimize_rotation=False):
                 pgorder += 1
+#                print "pgorder", pgorder
         
-        return inversion_multiplier*pgorder
+        return inversion_multiplier * pgorder
+
+def testlj75():
+    import numpy as np
+    coords = np.genfromtxt("tests/coords.lj75.gmin")
+    from pele.mindist import ExactMatchAtomicCluster
+    
+    permlist = [range(75)]
+    match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
+    calculator = PointGroupOrderCluster(match)
+    pgorder = calculator(coords)
+    print pgorder
+
+def testlj6():
+    from pele.systems import LJCluster
+    from pele.thermodynamics import get_thermodynamic_information
+    system = LJCluster(6)
+    db = system.create_database()
+    bh = system.get_basinhopping(db)
+    bh.setPrinting(ostream=None)
+    bh.run(10)
+    
+    get_thermodynamic_information(system, db)
+
+    for m in db.minima():
+        print m.energy, m.pgorder
+        
+    
+
+if __name__ == "__main__":
+    testlj6()

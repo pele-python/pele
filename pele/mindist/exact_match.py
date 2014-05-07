@@ -11,6 +11,8 @@ class StandardClusterAlignment(object):
     '''
     class to iterate over standard alignments for atomic clusters
 
+    Notes
+    -----
     Quickly determines alignments of clusters which are possible exact matches.
     It uses atoms which are far away from the center to determine possible
     rotations. The algorithm does the following:
@@ -255,7 +257,7 @@ class ExactMatchCluster(object):
                 return self.exact_transformation
         return None
 
-    def check_match(self, x1, x2, rot, invert):
+    def check_match(self, x1, x2, rot, invert, reoptimize_rotation=True):
         '''Give a rotation and inversion, make a more detailed comparison if the 2 structures match
 
         Parameters
@@ -279,17 +281,25 @@ class ExactMatchCluster(object):
 
         # apply the rotation to x2_trial
         self.transform.rotate(x2_trial, rot)
+        
 
         # get the best permutation
         dist, perm = self.measure.find_permutation(x1, x2_trial)
         x2_trial = self.transform.permute(x2_trial, perm)
 
-        # now find best rotational alignment, this is more reliable than just
-        # aligning the 2 reference atoms
-        dist, rot2 = self.measure.find_rotation(x1, x2_trial)
-        # further rotate x2_trial by rot2
-        self.transform.rotate(x2_trial, rot2)
-        # use the maximum distance, not rms as cutoff criterion
+#        print "after rotation and permutation: dist = ",  self.measure.get_dist(x1, x2_trial)
+
+        if reoptimize_rotation:
+            # now find best rotational alignment, this is more reliable than just
+            # aligning the 2 reference atoms
+            dist, rot2 = self.measure.find_rotation(x1, x2_trial)
+            # further rotate x2_trial by rot2
+            self.transform.rotate(x2_trial, rot2)
+            # use the maximum distance, not rms as cutoff criterion
+        else:
+            rot2 = np.eye(3)
+
+#        print "    after further improving the rotation: dist = ",  self.measure.get_dist(x1, x2_trial)
 
         self._last_checked_rotation = np.dot(rot2, rot)
         if  self.measure.get_dist(x1, x2_trial) < self.tol:
@@ -345,6 +355,8 @@ def test():
         #dist, x1n, x2n = findBestPermutation(xx1.flatten(), xx2.flatten())
         #print dist
         print i,ExactMatchCluster()(xx1.flatten(), xx2.flatten())
+
+
 
 
 if __name__ == '__main__':
