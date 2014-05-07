@@ -22,7 +22,7 @@ public:
 	double eps, sca, etrue;
 	Array<double> radii, radii_small, radii_large;
 	Array<double> x, y;
-	Array<long> frozen_dof;
+	Array<size_t> frozen_dof;
 	double* boxvec;
 	virtual void SetUp(){
 		eps=1.0;

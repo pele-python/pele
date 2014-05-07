@@ -16,7 +16,7 @@ cdef extern from "pele/lj.h" namespace "pele":
         cLJPeriodic(double C6, double C12, double * boxvec) except +
     cdef cppclass  cLJFrozen "pele::LJFrozen":
         cLJFrozen(double C6, double C12, _pele.Array[double] & reference_coords,
-                  _pele.Array[long] & frozen_dof) except +
+                  _pele.Array[size_t] & frozen_dof) except +
     cdef cppclass  cLJNeighborList "pele::LJNeighborList":
         cLJNeighborList(_pele.Array[long] & ilist, double C6, double C12) except +
 #    cdef cppclass  cLJAtomlist "pele::LJAtomList":
@@ -79,14 +79,14 @@ cdef class LJFrozen(_pele.BasePotential):
                    frozen_atoms, 
                    eps=1.0, sigma=1.0, boxvec=None):
 #        cdef np.ndarray[double, ndim=1] bv
-        cdef np.ndarray[long, ndim=1] frozen_dof
+        cdef np.ndarray[size_t, ndim=1] frozen_dof
         frozen_dof = np.array([range(3*i,3*i+3) for i in frozen_atoms], dtype=int).reshape(-1)
 
         if boxvec is None:
             self.periodic = False
             self.thisptr = <_pele.cBasePotential*>new cLJFrozen(4.*eps*sigma**6, 4.*eps*sigma**12,
                         _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
-                        _pele.Array[long](<long *> frozen_dof.data, frozen_dof.size)
+                        _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size)
                         )
         else:
             self.periodic = True
