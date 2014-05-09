@@ -7,6 +7,7 @@
 #include "distance.h"
 #include "frozen_atoms.h"
 #include <cmath>
+#include <memory>
 
 using std::exp;
 using std::sqrt;
@@ -62,7 +63,7 @@ class Morse: public SimplePairwisePotential<morse_interaction>
 public:
     Morse(double rho, double r0, double A) :
             SimplePairwisePotential<morse_interaction>(
-                    new morse_interaction(rho, r0, A))
+                    std::shared_ptr<morse_interaction>(new morse_interaction(rho, r0, A)))
     {
     }
 };

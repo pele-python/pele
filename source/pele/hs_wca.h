@@ -6,6 +6,7 @@
 #include "atomlist_potential.h"
 #include "distance.h"
 #include "frozen_atoms.h"
+#include <memory>
 
 using std::exp;
 using std::sqrt;
@@ -140,7 +141,8 @@ namespace pele {
     {
         public:
             HS_WCA(double eps, double sca, Array<double> radii)
-                : SimplePairwisePotential< HS_WCA_interaction > ( new HS_WCA_interaction(eps, sca, radii) ) {}
+                : SimplePairwisePotential< HS_WCA_interaction >(
+                        std::shared_ptr<HS_WCA_interaction>(new HS_WCA_interaction(eps, sca, radii)) ) {}
     };
 
     /**
@@ -150,8 +152,8 @@ namespace pele {
         public:
             HS_WCAPeriodic(double eps, double sca, Array<double> radii, double const *boxvec)
                 : SimplePairwisePotential< HS_WCA_interaction, periodic_distance> (
-                        new HS_WCA_interaction(eps, sca, radii),
-                        new periodic_distance(boxvec[0], boxvec[1], boxvec[2])
+                        std::shared_ptr<HS_WCA_interaction>(new HS_WCA_interaction(eps, sca, radii)),
+                        std::shared_ptr<periodic_distance>(new periodic_distance(boxvec[0], boxvec[1], boxvec[2]))
                         )
             {}
     };

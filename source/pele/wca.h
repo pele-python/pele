@@ -97,7 +97,8 @@ namespace pele {
     {
         public:
             WCA(double sig, double eps)
-                : SimplePairwisePotential< WCA_interaction > ( new WCA_interaction(sig, eps) ) {}
+                : SimplePairwisePotential< WCA_interaction > (
+                        std::shared_ptr<WCA_interaction>(new WCA_interaction(sig, eps)) ) {}
     };
 
     /**
@@ -107,8 +108,8 @@ namespace pele {
         public:
             WCAPeriodic(double sig, double eps, double const *boxvec)
                 : SimplePairwisePotential< WCA_interaction, periodic_distance> (
-                        new WCA_interaction(sig, eps),
-                        new periodic_distance(boxvec[0], boxvec[1], boxvec[2])
+                        std::shared_ptr<WCA_interaction>(new WCA_interaction(sig, eps)),
+                        std::shared_ptr<periodic_distance>(new periodic_distance(boxvec[0], boxvec[1], boxvec[2]))
                         )
             {}
     };
