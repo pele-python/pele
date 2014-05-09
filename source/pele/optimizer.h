@@ -21,6 +21,11 @@ namespace pele{
  */
 class Optimizer{
 public:
+    /**
+     * virtual destructor
+     */
+    virtual ~Optimizer() {}
+
     virtual void one_iteration() = 0;
 
     /**
@@ -104,6 +109,8 @@ public :
       rms_(1e10),
       func_initialized_(false)
     {}
+
+    virtual ~GradientOptimizer() {}
 
     /**
      * Do one iteration iteration of the optimization algorithm

@@ -43,7 +43,7 @@ namespace pele{
         /**
          * Destructor
          */
-        ~LBFGS() {}
+        virtual ~LBFGS() {}
 
         /**
          * Do one iteration iteration of the optimization algorithm
