@@ -110,7 +110,7 @@ namespace pele {
         public:
             LJFrozen(double C6, double C12, Array<double> & reference_coords, Array<size_t> & frozen_dof)
                 : FrozenPotentialWrapper< LJ > 
-                  ( new LJ(C6, C12), reference_coords, frozen_dof ) {}
+                  (std::shared_ptr<LJ>(new LJ(C6, C12)), reference_coords, frozen_dof ) {}
     };
 
     /**

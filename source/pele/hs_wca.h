@@ -165,7 +165,7 @@ namespace pele {
         public:
             HS_WCAFrozen(double eps, double sca, Array<double> radii, Array<double>& reference_coords, Array<size_t>& frozen_dof)
                 : FrozenPotentialWrapper< HS_WCA > 
-                  ( new HS_WCA(eps, sca, radii), reference_coords, frozen_dof ) {}
+                  ( std::shared_ptr<HS_WCA>(new HS_WCA(eps, sca, radii)), reference_coords, frozen_dof ) {}
     };
 
     /**
@@ -175,7 +175,8 @@ namespace pele {
             public:
                 HS_WCAPeriodicFrozen(double eps, double sca, Array<double> radii, double const* boxvec, Array<double>& reference_coords, Array<size_t>& frozen_dof)
                     : FrozenPotentialWrapper< HS_WCAPeriodic >
-                      ( new HS_WCAPeriodic(eps, sca, radii, boxvec), reference_coords, frozen_dof ) {}
+                      ( std::shared_ptr<HS_WCAPeriodic>(new HS_WCAPeriodic(eps, sca, radii, boxvec)),
+                              reference_coords, frozen_dof ) {}
     };
 
     /**
