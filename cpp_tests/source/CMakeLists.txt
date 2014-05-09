@@ -24,5 +24,10 @@ set(gtest_libs gtest gtest_main)
 message("gtest_libs ${gtest_libs}")
 
 # compile the tests
-add_executable(test_main test_main.cpp)
-target_link_libraries(test_main lbfgs_lib ${gtest_libs} pthread)
+#add_executable(test_main test_main.cpp)
+#target_link_libraries(test_main lbfgs_lib ${gtest_libs} pthread)
+
+FILE(GLOB sources *.cpp)
+
+add_executable(test_main ${sources})
+target_link_libraries(test_main lbfgs_lib gtest gtest_main pthread)
