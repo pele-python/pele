@@ -66,7 +66,7 @@ public:
 
         y = Array<double>(9);
         for(int i=0;i<6;++i)
-        	y[i] = x[i];
+            y[i] = x[i];
         y[6] = 0.88;
         y[7] = 1.1;
         y[8] = 3.32;
@@ -99,7 +99,7 @@ TEST_F(LJTest, Hessian_Works){
     lj.get_hessian(x, h);
     lj.numerical_hessian(x, h_num);
     for (int i=0; i<h.size();++i)
-    	ASSERT_NEAR(h[i], h_num[i],1e-6);
+        ASSERT_NEAR(h[i], h_num[i],1e-6);
 }
 
 TEST_F(LJTest, Hessian_Works2){
