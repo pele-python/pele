@@ -6,6 +6,7 @@
 #include <set>
 #include <assert.h>
 #include <iostream>
+#include <memory>
 
 #include "array.h"
 #include "base_potential.h"
@@ -152,9 +153,9 @@ namespace pele{
         public:
             FrozenCoordsConverter coords_converter;
         protected:
-            PotentialType *_underlying_potential;
+            std::shared_ptr<PotentialType> _underlying_potential;
 
-            FrozenPotentialWrapper(PotentialType *potential, 
+            FrozenPotentialWrapper(std::shared_ptr<PotentialType> potential,
                     Array<double> &reference_coords, 
                     Array<size_t> & frozen_dof) :
                 coords_converter(reference_coords, frozen_dof),
@@ -164,7 +165,6 @@ namespace pele{
         public:
             ~FrozenPotentialWrapper()
             {
-                if (_underlying_potential != NULL) { delete _underlying_potential; }
             }
 
 //            inline size_t ndof() const { return coords_converter.ndof(); }

@@ -86,7 +86,7 @@ namespace pele {
         virtual void get_hessian(Array<double> x, Array<double> hess)
         {
             Array<double> grad(x.size());
-            double e = get_energy_gradient_hessian(x, grad, hess);
+            get_energy_gradient_hessian(x, grad, hess);
         }
 
         /**

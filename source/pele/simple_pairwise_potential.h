@@ -4,6 +4,7 @@
 #include "base_potential.h"
 #include "array.h"
 #include "distance.h"
+#include <memory>
 
 namespace pele
 {
@@ -21,21 +22,22 @@ namespace pele
     class SimplePairwisePotential : public BasePotential
     {
     protected:
-        pairwise_interaction *_interaction;
-        distance_policy *_dist;
+        std::shared_ptr<pairwise_interaction> _interaction;
+        std::shared_ptr<distance_policy> _dist;
 
-        SimplePairwisePotential(pairwise_interaction *interaction,
-                distance_policy *dist=NULL) : 
+        SimplePairwisePotential(
+                std::shared_ptr<pairwise_interaction> interaction,
+                std::shared_ptr<distance_policy> dist=NULL) :
             _interaction(interaction), _dist(dist) 
         {
-            if(_dist == NULL) _dist = new distance_policy;
+            if(_dist == NULL) _dist = std::make_shared<distance_policy>();
         }
 
     public:
         virtual ~SimplePairwisePotential() 
         { 
-            if (_interaction != NULL) delete _interaction; 
-            if (_dist != NULL) delete _dist; 
+//            if (_interaction != NULL) delete _interaction;
+//            if (_dist != NULL) delete _dist;
         }
 
         virtual double get_energy(Array<double> x);

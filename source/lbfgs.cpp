@@ -19,7 +19,7 @@ namespace pele {
         cout << std::setprecision(12);
 
         // allocate space for s_ and y_
-        for (size_t i = 0; i < M_; ++i){
+        for (int i = 0; i < M_; ++i){
             s_.push_back(Array<double>(x_.size()));
             y_.push_back(Array<double>(x_.size()));
         }
