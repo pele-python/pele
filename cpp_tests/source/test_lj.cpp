@@ -65,8 +65,8 @@ public:
 
 
         y = Array<double>(9);
-        for(int i=0;i<6;++i)
-        	y[i] = x[i];
+        for(size_t i=0;i<6;++i)
+            y[i] = x[i];
         y[6] = 0.88;
         y[7] = 1.1;
         y[8] = 3.32;
@@ -98,8 +98,8 @@ TEST_F(LJTest, Hessian_Works){
     Array<double> h_num(6*6);
     lj.get_hessian(x, h);
     lj.numerical_hessian(x, h_num);
-    for (int i=0; i<h.size();++i)
-    	ASSERT_NEAR(h[i], h_num[i],1e-6);
+    for (size_t i=0; i<h.size();++i)
+        ASSERT_NEAR(h[i], h_num[i],1e-6);
 }
 
 TEST_F(LJTest, Hessian_Works2){
@@ -108,7 +108,7 @@ TEST_F(LJTest, Hessian_Works2){
     Array<double> h_num(9*9);
     lj.get_hessian(y, h);
     lj.numerical_hessian(y,h_num);
-    for (int i=0; i<h.size();++i)
+    for (size_t i=0; i<h.size();++i)
         ASSERT_NEAR(h[i],h_num[i],1e-6);
 }
 
@@ -123,12 +123,12 @@ TEST_F(LJTest, EGradHess_AgreesWithNumerical){
 
 //    std::cerr << "testing LJ " << g.size() << "\n";
     EXPECT_NEAR(e, ecomp, 1e-10);
-    for (int i=0; i<g.size(); ++i){
+    for (size_t i=0; i<g.size(); ++i){
         //std::cerr << "g[i]" << g[i] << "\n";
         //std::cerr << "g_num[i]" << g_num[i] << "\n";
         ASSERT_NEAR(g[i], g_num[i], 1e-6);
     }
-    for (int i=0; i<h.size(); ++i){
+    for (size_t i=0; i<h.size(); ++i){
         ASSERT_NEAR(h[i], h_num[i], 1e-6);
     }
 }
@@ -140,7 +140,7 @@ TEST_F(LJTest, NumericalGradient_Works){
     ASSERT_NEAR(e, etrue, 1e-10);
     Array<double> gnum(6);
     pot.numerical_gradient(x, gnum, 1e-6);
-    for (int k=0; k<6; ++k){
+    for (size_t k=0; k<6; ++k){
         ASSERT_NEAR(g[k], gnum[k], 1e-6);
     }
 }
@@ -168,7 +168,7 @@ public:
         x[5]  = 1.66;
         etrue = -0.089557709975460198;
         y = Array<double>(9);
-        for(int i=0;i<6;++i)
+        for(size_t i=0;i<6;++i)
             y[i] = x[i];
         y[6] = 0.88;
         y[7] = 1.1;
@@ -189,7 +189,7 @@ TEST_F(LJCutTest, EnergyGradient_Works){
     double e = pot.get_energy_gradient(x, g);
     EXPECT_NEAR(e, etrue, 1e-10);
     pot.numerical_gradient(x, gnum, 1e-6);
-    for (int k=0; k<6; ++k){
+    for (size_t k=0; k<6; ++k){
         EXPECT_NEAR(g[k], gnum[k], 1e-6);
     }
 }
@@ -200,7 +200,7 @@ TEST_F(LJCutTest, Hessian_Works){
     Array<double> h_num(6*6);
     pot.get_hessian(x, h);
     pot.numerical_hessian(x, h_num);
-    for (int i; i<h.size();++i)
+    for (size_t i=0; i<h.size();++i)
         EXPECT_NEAR(h[i], h_num[i],1e-6);
 }
 
@@ -210,7 +210,7 @@ TEST_F(LJCutTest, Hessian_Works2){
     Array<double> h_num(9*9);
     pot.get_hessian(y, h);
     pot.numerical_hessian(y, h_num);
-    for (int i; i<h.size();++i)
+    for (size_t i=0; i<h.size();++i)
         ASSERT_NEAR(h[i],h_num[i],1e-6);
 }
 

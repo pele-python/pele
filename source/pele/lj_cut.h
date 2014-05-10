@@ -83,7 +83,8 @@ namespace pele {
     class LJCut : public SimplePairwisePotential< lj_interaction_cut_smooth > {
         public:
             LJCut(double C6, double C12, double rcut)
-                : SimplePairwisePotential< lj_interaction_cut_smooth > ( new  lj_interaction_cut_smooth(C6, C12, rcut) ) {}
+                : SimplePairwisePotential< lj_interaction_cut_smooth > (
+                        std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut) ) {}
     };
 
     /**
@@ -93,8 +94,8 @@ namespace pele {
         public:
             LJCutPeriodic(double C6, double C12, double rcut, double const *boxvec)
                 : SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance> ( 
-                        new lj_interaction_cut_smooth(C6, C12, rcut), 
-                        new periodic_distance(boxvec[0], boxvec[1], boxvec[2])
+                        std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
+                        std::make_shared<periodic_distance>(boxvec[0], boxvec[1], boxvec[2])
                         ) 
             {}
     };

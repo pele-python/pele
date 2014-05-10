@@ -6,6 +6,7 @@
 #include "atomlist_potential.h"
 #include "distance.h"
 #include "frozen_atoms.h"
+#include <memory>
 
 using std::exp;
 using std::sqrt;
@@ -140,7 +141,8 @@ namespace pele {
     {
         public:
             HS_WCA(double eps, double sca, Array<double> radii)
-                : SimplePairwisePotential< HS_WCA_interaction > ( new HS_WCA_interaction(eps, sca, radii) ) {}
+                : SimplePairwisePotential< HS_WCA_interaction >(
+                        std::make_shared<HS_WCA_interaction>(eps, sca, radii) ) {}
     };
 
     /**
@@ -150,8 +152,8 @@ namespace pele {
         public:
             HS_WCAPeriodic(double eps, double sca, Array<double> radii, double const *boxvec)
                 : SimplePairwisePotential< HS_WCA_interaction, periodic_distance> (
-                        new HS_WCA_interaction(eps, sca, radii),
-                        new periodic_distance(boxvec[0], boxvec[1], boxvec[2])
+                        std::make_shared<HS_WCA_interaction>(eps, sca, radii),
+                        std::make_shared<periodic_distance>(boxvec[0], boxvec[1], boxvec[2])
                         )
             {}
     };
@@ -160,20 +162,21 @@ namespace pele {
      * Frozen particle HS_WCA potential
      */
     class HS_WCAFrozen : public FrozenPotentialWrapper<HS_WCA> {
-		public:
-			HS_WCAFrozen(double eps, double sca, Array<double> radii, Array<double>& reference_coords, Array<size_t>& frozen_dof)
-				: FrozenPotentialWrapper< HS_WCA > 
-				  ( new HS_WCA(eps, sca, radii), reference_coords, frozen_dof ) {}
-	};
+        public:
+            HS_WCAFrozen(double eps, double sca, Array<double> radii, Array<double>& reference_coords, Array<size_t>& frozen_dof)
+                : FrozenPotentialWrapper< HS_WCA > 
+                  ( std::make_shared<HS_WCA>(eps, sca, radii), reference_coords, frozen_dof ) {}
+    };
 
     /**
      * Frozen particle HS_WCAPeriodic potential
      */
     class HS_WCAPeriodicFrozen : public FrozenPotentialWrapper<HS_WCAPeriodic> {
-    		public:
-    			HS_WCAPeriodicFrozen(double eps, double sca, Array<double> radii, double const* boxvec, Array<double>& reference_coords, Array<size_t>& frozen_dof)
-    				: FrozenPotentialWrapper< HS_WCAPeriodic >
-    				  ( new HS_WCAPeriodic(eps, sca, radii, boxvec), reference_coords, frozen_dof ) {}
+            public:
+                HS_WCAPeriodicFrozen(double eps, double sca, Array<double> radii, double const* boxvec, Array<double>& reference_coords, Array<size_t>& frozen_dof)
+                    : FrozenPotentialWrapper< HS_WCAPeriodic >
+                      ( std::make_shared<HS_WCAPeriodic>(eps, sca, radii, boxvec),
+                              reference_coords, frozen_dof ) {}
     };
 
     /**

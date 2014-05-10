@@ -4,23 +4,28 @@ ADD_DEFINITIONS(-std=c++0x)
 
 #cmake_policy(SET CMP0015 NEW)
 
+# Add and compile the gtest library
+set(gtest_src ../gtest)
+set(gtest_binary_dir googletest)
+set(gtest_include ${gtest_src}/include/)
+include_directories(${gtest_include})
+message("gtest include directory ${gtest_include}")
+add_subdirectory(../gtest ${gtest_binary_dir})
+set(gtest_libs gtest gtest_main)
+message("gtest_libs ${gtest_libs}")
+
+
 # set the pele include directory
 set(pele_include ../../source)
+include_directories(${pele_include})
 message("pele include directory ${pele_include}")
 
-# add gtest include directory
-set(gtest_include gtest/include/)
+# build the pele library
+FILE(GLOB pele_sources ${pele_include}/*.cpp)
+add_library(pele_lib ${pele_sources})
 
-include_directories(${pele_include} ${gtest_include})
+# get all the source files
+FILE(GLOB sources *.cpp)
 
-# compile the gtest library
-message("gtest include directory ${gtest_include}")
-add_subdirectory(gtest)
-set(gtest_libs gtest gtest_main)
-
-# build the lbfgs library
-add_library(lbfgs_lib ${pele_include}/lbfgs.cpp)
-
-# compile the tests
-add_executable(test_main test_array.hpp test_main.cpp)
-target_link_libraries(test_main lbfgs_lib ${gtest_libs} pthread)
+add_executable(test_main ${sources})
+target_link_libraries(test_main pele_lib gtest gtest_main pthread)

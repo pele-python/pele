@@ -111,6 +111,7 @@ TEST(ArrayTest, Free_Works){
 
 TEST(ArrayTest, Copy_WorksNotWrap){
     pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = i;
     pele::Array<double> v2(6);
     v2 = v.copy();
     EXPECT_NE(v.data(), v2.data());
@@ -121,6 +122,7 @@ TEST(ArrayTest, Copy_WorksNotWrap){
 
 TEST(ArrayTest, Assign_CopiesNoWrap){
     pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = i;
     pele::Array<double> v2(6);
     v2.assign(v);
     EXPECT_NE(v.data(), v2.data());

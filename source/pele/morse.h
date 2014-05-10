@@ -7,6 +7,7 @@
 #include "distance.h"
 #include "frozen_atoms.h"
 #include <cmath>
+#include <memory>
 
 using std::exp;
 using std::sqrt;
@@ -47,7 +48,7 @@ struct morse_interaction
     double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const {
         double r = sqrt(r2);
         double c = exp(-_rho * (r - _r0));
-        double A_rho_2_c =
+        //double A_rho_2_c =
         *gij = 2.0 * _A * c * _rho * (c - 1.0) / r;
         *hij = 2.0 * _A * c * _rho * _rho * (2.0 * c - 1.0);
         return _A * c * (c - 2.0);
@@ -62,7 +63,7 @@ class Morse: public SimplePairwisePotential<morse_interaction>
 public:
     Morse(double rho, double r0, double A) :
             SimplePairwisePotential<morse_interaction>(
-                    new morse_interaction(rho, r0, A))
+                    std::make_shared<morse_interaction>(rho, r0, A) )
     {
     }
 };

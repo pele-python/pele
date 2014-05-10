@@ -7,7 +7,7 @@ get gtest from googlecode.com
 unzip it and put it in source/gtest
 
   unzip gtest-1.7.0.zip
-  mv gtest-1.7.0 source/gtest
+  mv gtest-1.7.0 gtest
 
 build the tests
 
