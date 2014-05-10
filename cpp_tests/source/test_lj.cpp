@@ -200,7 +200,7 @@ TEST_F(LJCutTest, Hessian_Works){
     Array<double> h_num(6*6);
     pot.get_hessian(x, h);
     pot.numerical_hessian(x, h_num);
-    for (size_t i; i<h.size();++i)
+    for (size_t i=0; i<h.size();++i)
         EXPECT_NEAR(h[i], h_num[i],1e-6);
 }
 
@@ -210,7 +210,7 @@ TEST_F(LJCutTest, Hessian_Works2){
     Array<double> h_num(9*9);
     pot.get_hessian(y, h);
     pot.numerical_hessian(y, h_num);
-    for (size_t i; i<h.size();++i)
+    for (size_t i=0; i<h.size();++i)
         ASSERT_NEAR(h[i],h_num[i],1e-6);
 }
 
