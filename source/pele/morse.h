@@ -63,7 +63,7 @@ class Morse: public SimplePairwisePotential<morse_interaction>
 public:
     Morse(double rho, double r0, double A) :
             SimplePairwisePotential<morse_interaction>(
-                    std::shared_ptr<morse_interaction>(new morse_interaction(rho, r0, A)))
+                    std::make_shared<morse_interaction>(rho, r0, A) )
     {
     }
 };

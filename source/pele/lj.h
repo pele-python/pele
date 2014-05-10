@@ -77,7 +77,7 @@ namespace pele {
         public:
             LJ(double C6, double C12)
                 : SimplePairwisePotential< lj_interaction > (
-                        std::shared_ptr<lj_interaction>(new lj_interaction(C6, C12)) ) {}
+                        std::make_shared<lj_interaction>(C6, C12) ) {}
     };
 
     /**
@@ -87,8 +87,8 @@ namespace pele {
         public:
             LJPeriodic(double C6, double C12, double const *boxvec)
                 : SimplePairwisePotential< lj_interaction, periodic_distance> ( 
-                        std::shared_ptr<lj_interaction>(new lj_interaction(C6, C12)),
-                        std::shared_ptr<periodic_distance>(new periodic_distance(boxvec[0], boxvec[1], boxvec[2]))
+                        std::make_shared<lj_interaction>(C6, C12),
+                        std::make_shared<periodic_distance>(boxvec[0], boxvec[1], boxvec[2])
                         ) 
             {}
     };
@@ -110,7 +110,7 @@ namespace pele {
         public:
             LJFrozen(double C6, double C12, Array<double> & reference_coords, Array<size_t> & frozen_dof)
                 : FrozenPotentialWrapper< LJ > 
-                  (std::shared_ptr<LJ>(new LJ(C6, C12)), reference_coords, frozen_dof ) {}
+                  (std::make_shared<LJ>(C6, C12), reference_coords, frozen_dof ) {}
     };
 
     /**

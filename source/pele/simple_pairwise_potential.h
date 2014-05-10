@@ -30,7 +30,7 @@ namespace pele
                 std::shared_ptr<distance_policy> dist=NULL) :
             _interaction(interaction), _dist(dist) 
         {
-            if(_dist == NULL) _dist = std::shared_ptr<distance_policy>(new distance_policy);
+            if(_dist == NULL) _dist = std::make_shared<distance_policy>();
         }
 
     public:

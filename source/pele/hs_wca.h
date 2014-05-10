@@ -142,7 +142,7 @@ namespace pele {
         public:
             HS_WCA(double eps, double sca, Array<double> radii)
                 : SimplePairwisePotential< HS_WCA_interaction >(
-                        std::shared_ptr<HS_WCA_interaction>(new HS_WCA_interaction(eps, sca, radii)) ) {}
+                        std::make_shared<HS_WCA_interaction>(eps, sca, radii) ) {}
     };
 
     /**
@@ -152,8 +152,8 @@ namespace pele {
         public:
             HS_WCAPeriodic(double eps, double sca, Array<double> radii, double const *boxvec)
                 : SimplePairwisePotential< HS_WCA_interaction, periodic_distance> (
-                        std::shared_ptr<HS_WCA_interaction>(new HS_WCA_interaction(eps, sca, radii)),
-                        std::shared_ptr<periodic_distance>(new periodic_distance(boxvec[0], boxvec[1], boxvec[2]))
+                        std::make_shared<HS_WCA_interaction>(eps, sca, radii),
+                        std::make_shared<periodic_distance>(boxvec[0], boxvec[1], boxvec[2])
                         )
             {}
     };
@@ -165,7 +165,7 @@ namespace pele {
         public:
             HS_WCAFrozen(double eps, double sca, Array<double> radii, Array<double>& reference_coords, Array<size_t>& frozen_dof)
                 : FrozenPotentialWrapper< HS_WCA > 
-                  ( std::shared_ptr<HS_WCA>(new HS_WCA(eps, sca, radii)), reference_coords, frozen_dof ) {}
+                  ( std::make_shared<HS_WCA>(eps, sca, radii), reference_coords, frozen_dof ) {}
     };
 
     /**
@@ -175,7 +175,7 @@ namespace pele {
             public:
                 HS_WCAPeriodicFrozen(double eps, double sca, Array<double> radii, double const* boxvec, Array<double>& reference_coords, Array<size_t>& frozen_dof)
                     : FrozenPotentialWrapper< HS_WCAPeriodic >
-                      ( std::shared_ptr<HS_WCAPeriodic>(new HS_WCAPeriodic(eps, sca, radii, boxvec)),
+                      ( std::make_shared<HS_WCAPeriodic>(eps, sca, radii, boxvec),
                               reference_coords, frozen_dof ) {}
     };
 
