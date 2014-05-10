@@ -34,7 +34,7 @@ public:
         radii[2] = 0.9*f;
         radii_small.resize(3);
         radii_large.resize(3);
-        for (unsigned int i(0); i < radii.size(); ++i){
+        for (size_t i(0); i < radii.size(); ++i){
             radii_small[i] = radii[i]/3.;
             radii_large[i] = radii[i]*1.3;
         }
@@ -120,7 +120,7 @@ TEST_F(FrozenHS_WCATest, TestEnergyGradient_Correct){
     double etrue = pot_nofreeze.get_energy_gradient(x,gtrue);
     EXPECT_NEAR(e, etrue, 1e-10);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
 }
@@ -134,7 +134,7 @@ TEST_F(FrozenHS_WCATest, TestEnergyGradient_Correct_Periodic){
     double etrue = pot_nofreeze.get_energy_gradient(x,gtrue);
     EXPECT_NEAR(e, etrue, 1e-10);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
 }
@@ -147,7 +147,7 @@ TEST_F(FrozenHS_WCATest, TestNumericalGradient_Correct){
     pot.numerical_gradient(xred,gred);
     pot_nofreeze.numerical_gradient(x,gtrue);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
 }
@@ -160,7 +160,7 @@ TEST_F(FrozenHS_WCATest, TestNumericalGradient_Correct_Periodic){
     pot.numerical_gradient(xred,gred);
     pot_nofreeze.numerical_gradient(x,gtrue);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
 }
@@ -173,7 +173,7 @@ TEST_F(FrozenHS_WCATest, TestNumericalHessian_Correct){
     pot.numerical_hessian(xred, hred);
     pot_nofreeze.numerical_hessian(x, htrue);
     auto htrue_red = pot.coords_converter.get_reduced_hessian(htrue);
-    for (int i=0; i<hred.size(); ++i){
+    for (size_t i=0; i<hred.size(); ++i){
         EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
     }
 }
@@ -186,7 +186,7 @@ TEST_F(FrozenHS_WCATest, TestNumericalHessian_Correct_Periodic){
     pot.numerical_hessian(xred, hred);
     pot_nofreeze.numerical_hessian(x, htrue);
     auto htrue_red = pot.coords_converter.get_reduced_hessian(htrue);
-    for (int i=0; i<hred.size(); ++i){
+    for (size_t i=0; i<hred.size(); ++i){
         EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
     }
 }
@@ -203,11 +203,11 @@ TEST_F(FrozenHS_WCATest, TestEnergyGradientHessian_Correct){
     double etrue =  pot_nofreeze.get_energy_gradient_hessian(x, gtrue, htrue);
     EXPECT_NEAR(e, etrue, 1e-10);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
     auto htrue_red = pot.coords_converter.get_reduced_hessian(htrue);
-    for (int i=0; i<hred.size(); ++i){
+    for (size_t i=0; i<hred.size(); ++i){
         EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
     }
 }
@@ -222,11 +222,11 @@ TEST_F(FrozenHS_WCATest, TestEnergyGradientHessian_Correct_Periodic){
     double etrue =  pot_nofreeze.get_energy_gradient_hessian(x, gtrue, htrue);
     EXPECT_NEAR(e, etrue, 1e-10);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
     auto htrue_red = pot.coords_converter.get_reduced_hessian(htrue);
-    for (int i=0; i<hred.size(); ++i){
+    for (size_t i=0; i<hred.size(); ++i){
         EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
     }
 }
@@ -243,10 +243,10 @@ TEST_F(FrozenHS_WCATest, TestEnergyGradientHessian_AgreesWithNumerical){
     pot.numerical_gradient(xred, grad_num);
     pot.numerical_hessian(xred, hess_num);
     EXPECT_NEAR(energy, energy_comp, 1e-10);
-    for (unsigned int i(0); i < grad.size(); ++i){
+    for (size_t i(0); i < grad.size(); ++i){
         EXPECT_NEAR(grad[i], grad_num[i], 1e-10);
     }
-    for (unsigned int i(0); i < hess.size(); ++i){
+    for (size_t i(0); i < hess.size(); ++i){
         EXPECT_NEAR(hess[i], hess_num[i], 1e-5);
     }
 }
@@ -273,7 +273,7 @@ TEST_F(FrozenHS_WCATest, TestMinimizationFreezing_Correct){
     EXPECT_TRUE( e_notfreeze_after <= e_after );
     // verify that frozen dof are in fact frozen
     const auto xred_after_inflated = pot.coords_converter.get_full_coords(xred_after);
-    for (unsigned int i(0); i < frozen_dof.size(); ++i){
+    for (size_t i(0); i < frozen_dof.size(); ++i){
         const auto idx = frozen_dof[i];
         EXPECT_NEAR( x[idx], xred_after_inflated[idx], 1e-10 );
     }

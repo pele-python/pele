@@ -54,7 +54,7 @@ TEST_F(FrozenLJTest, TestEnergyGradient_Correct){
     double etrue =  pot_nofreeze.get_energy_gradient(x, gtrue);
     EXPECT_NEAR(e, etrue, 1e-10);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
 }
@@ -67,7 +67,7 @@ TEST_F(FrozenLJTest, TestNumericalGradient_Correct){
     pot.numerical_gradient(xred, gred);
     pot_nofreeze.numerical_gradient(x, gtrue);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
 }
@@ -83,7 +83,7 @@ TEST_F(FrozenLJTest, TestNumericalHessian_Correct){
 //    std::cerr << htrue << "\n";
 //    std::cerr << hred << "\n";
 //    std::cerr << htrue_red << "\n";
-    for (int i=0; i<hred.size(); ++i){
+    for (size_t i=0; i<hred.size(); ++i){
         EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
     }
 }
@@ -98,7 +98,7 @@ TEST_F(FrozenLJTest, TestEnergyGradientHessian_Correct){
     double etrue =  pot_nofreeze.get_energy_gradient_hessian(x, gtrue, htrue);
     EXPECT_NEAR(e, etrue, 1e-10);
     auto gtrue_red = pot.coords_converter.get_reduced_coords(gtrue);
-    for (int i=0; i<gred.size(); ++i){
+    for (size_t i=0; i<gred.size(); ++i){
         EXPECT_NEAR(gtrue_red[i], gred[i], 1e-10);
     }
 //    std::cerr << gred << "\n";
@@ -109,7 +109,7 @@ TEST_F(FrozenLJTest, TestEnergyGradientHessian_Correct){
 //    std::cerr << htrue << "\n";
 //    std::cerr << hred << "\n";
 //    std::cerr << htrue_red << "\n";
-    for (int i=0; i<hred.size(); ++i){
+    for (size_t i=0; i<hred.size(); ++i){
         EXPECT_NEAR(htrue_red[i], hred[i], 1e-10);
     }
 }

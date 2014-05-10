@@ -47,7 +47,7 @@ TEST_F(WCATest, EnergyGradient_AgreesWithNumerical){
     double ecomp = pot.get_energy(x);
     ASSERT_NEAR(e, ecomp, 1e-10);
     pot.numerical_gradient(x, gnum, 1e-6);
-    for (int k=0; k<6; ++k){
+    for (size_t k=0; k<6; ++k){
         ASSERT_NEAR(g[k], gnum[k], 1e-6);
     }
 }
@@ -62,10 +62,10 @@ TEST_F(WCATest, EnergyGradientHessian_AgreesWithNumerical){
     pot.numerical_hessian(x, hnum);
 
     EXPECT_NEAR(e, ecomp, 1e-10);
-    for (int i=0; i<g.size(); ++i){
+    for (size_t i=0; i<g.size(); ++i){
         ASSERT_NEAR(g[i], gnum[i], 1e-6);
     }
-    for (int i=0; i<h.size(); ++i){
+    for (size_t i=0; i<h.size(); ++i){
         ASSERT_NEAR(h[i], hnum[i], 1e-6);
     }
 }
@@ -115,7 +115,7 @@ TEST_F(HS_WCATest, EnergyGradient_AgreesWithNumerical){
     double ecomp = pot.get_energy(x);
     ASSERT_NEAR(e, ecomp, 1e-10);
     pot.numerical_gradient(x, gnum, 1e-6);
-    for (int k=0; k<6; ++k){
+    for (size_t k=0; k<6; ++k){
         ASSERT_NEAR(g[k], gnum[k], 1e-6);
     }
 }
@@ -130,10 +130,10 @@ TEST_F(HS_WCATest, EnergyGradientHessian_AgreesWithNumerical){
     pot.numerical_hessian(x, hnum);
 
     EXPECT_NEAR(e, ecomp, 1e-10);
-    for (int i=0; i<g.size(); ++i){
+    for (size_t i=0; i<g.size(); ++i){
         ASSERT_NEAR(g[i], gnum[i], 1e-6);
     }
-    for (int i=0; i<h.size(); ++i){
+    for (size_t i=0; i<h.size(); ++i){
         ASSERT_NEAR(h[i], hnum[i], 1e-3);
     }
 }

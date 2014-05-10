@@ -26,7 +26,7 @@ public:
         x[5]  = 1.66;
         etrue = -1.6288465928749187;
         y = Array<double>(9);
-        for(int i=0;i<6;++i)
+        for(size_t i=0;i<6;++i)
             y[i] = x[i];
         y[6] = 0.88;
         y[7] = 1.1;
@@ -48,7 +48,7 @@ TEST_F(MorseTest, EnergyGradient_Works){
     double e = pot.get_energy_gradient(x, g);
     ASSERT_NEAR(e, etrue, 1e-10);
     pot.numerical_gradient(x, gnum, 1e-6);
-    for (int k=0; k<6; ++k){
+    for (size_t k=0; k<6; ++k){
         ASSERT_NEAR(g[k], gnum[k], 1e-6);
     }
 }
@@ -59,7 +59,7 @@ TEST_F(MorseTest, Hessian_Works){
     Array<double> h_num(6*6);
     pot.get_hessian(x, h);
     pot.numerical_hessian(x, h_num);
-    for (int i; i<h.size();++i)
+    for (size_t i; i<h.size();++i)
         ASSERT_NEAR(h[i], h_num[i],1e-6);
 }
 
@@ -69,6 +69,6 @@ TEST_F(MorseTest, Hessian_Works2){
     Array<double> h_num(9*9);
     pot.get_hessian(y, h);
     pot.numerical_hessian(y, h_num);
-    for (int i; i<h.size();++i)
+    for (size_t i; i<h.size();++i)
         ASSERT_NEAR(h[i],h_num[i],1e-6);
 }

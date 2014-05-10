@@ -86,7 +86,7 @@ namespace pele{
                 _integrator.wrap_gold(_gold);     //the gradient array wraps the integrator gradient array so that it updates concurrently
                 _fold = f_;
                 rms_ = norm(g_) / sqrt(g_.size());
-                for(int k=0; k<x_.size();++k) //set initial velocities (using forward Euler)
+                for(size_t k=0; k<x_.size();++k) //set initial velocities (using forward Euler)
                   {
                       _v[k] = -g_[k]*_dt;
                   }
@@ -116,7 +116,7 @@ namespace pele{
           rms_ = norm(g_) / sqrt(g_.size());
           _xold.assign(x_);
           _gold.assign(g_);
-          for(int k=0; k<x_.size();++k){
+          for(size_t k=0; k<x_.size();++k){
               _v[k] = -g_[k]*_dt;
           }
           _integrator.set_dt(_dt);
@@ -141,7 +141,7 @@ namespace pele{
   inline void MODIFIED_FIRE::one_iteration()
   {
       double ifnorm, vnorm, P;
-      size_t k;
+      //size_t k;
       nfev_ += 1;
       iter_number_ += 1;
       _fire_iter_number += 1; //this is different from iter_number_ which does not get reset
