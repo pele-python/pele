@@ -148,15 +148,13 @@ public:
     {
         // delete all nodes
         typedef std::map<node_id, Node *> maptype;
-        for (maptype::iterator iter = node_map_.begin();
-                iter != node_map_.end(); ++iter){
-            node_ptr node = iter->second;
+        for (auto mapval : node_map_){
+            node_ptr node = mapval.second;
             delete node;
         }
         // delete all edges
-        for (std::set<edge_ptr>::iterator iter = edge_list_.begin();
-                iter != edge_list_.end(); ++iter){
-            delete *iter;
+        for (auto edge : edge_list_){
+            delete edge;
         }
     }
 
@@ -257,8 +255,7 @@ public:
         to_delete.insert(u->out_edge_begin(), u->out_edge_end());
 
         // remove the edges from the edge list
-        for (eiter = to_delete.begin(); eiter != to_delete.end(); ++eiter){
-            edge_ptr edge = *eiter;
+        for (auto edge : to_delete){
             edge_list_.erase(edge);
         }
 
@@ -266,8 +263,7 @@ public:
         node_map_.erase(u->id());
 
         // deallocate the memory
-        for (eiter = to_delete.begin(); eiter != to_delete.end(); ++eiter){
-            edge_ptr edge = *eiter;
+        for (auto edge : to_delete){
             delete edge;
         }
 
@@ -280,14 +276,14 @@ public:
     Graph(Graph & graph):
         next_node_id_(0)
     {
-        for (node_map_t::iterator miter = graph.node_map_.begin(); miter != graph.node_map_.end(); ++miter){
-            node_ptr u = miter->second;
+        for (auto mapval : graph.node_map_){
+            node_ptr u = mapval.second;
 //            std::cout << "making node " << u->id() << "\n";
             node_ptr unew = this->add_node(u->id());
             unew->tau = u->tau;
         }
 
-        for (edge_list_t::iterator eiter = graph.edge_list_.begin(); eiter != graph.edge_list_.end(); ++eiter){
+        for (auto eiter = graph.edge_list_.begin(); eiter != graph.edge_list_.end(); ++eiter){
             edge_ptr edge = *eiter;
             node_id uid = edge->tail()->id();
             node_id vid = edge->head()->id();
