@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 #include <iostream>
+#include <memory>
 #include "array.h"
 #include "base_potential.h"
 
@@ -39,7 +40,9 @@ class BaseIntegrator
       pele::Array<double> _x;
       double _dt, _dtstart, _Estart, _maxstep;
       pele::Array<double> _gold, _v, _g, _m, _dx;
+      double _defaultE;
       double * _E;
+      int _wrap_E_count;
 
         public:
 
@@ -47,7 +50,10 @@ class BaseIntegrator
       BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, double maxstep, pele::Array<double> &v,
               pele::Array<double> &g, pele::Array<double> &m);
 
-      virtual ~BaseIntegrator() {}
+      virtual ~BaseIntegrator() {
+          /*if (_wrap_E == false)
+              delete _E;*/
+      }
 
       virtual inline void oneiteration()
       {
@@ -97,10 +103,13 @@ class BaseIntegrator
           gold.wrap(_gold);
       }
 
-      void wrap_E(double &E){
-          double Eval = *_E;
-          _E = &E; //relocate address
-          *_E = Eval;
+      void wrap_E(double* E){
+          if (_wrap_E_count > 0)
+              throw std::runtime_error("BaseIntegrator::wrap_E: _E is already wrapping the location of another object");
+
+          _E = E; //relocate address
+          *_E = _defaultE;
+          ++_wrap_E_count;
       }
 
       double get_energy(){ return *_E; }
@@ -109,66 +118,62 @@ class BaseIntegrator
     BaseIntegrator::BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, double maxstep,
             pele::Array<double> &v, pele::Array<double> &g, pele::Array<double> &m):
                 _potential(potential), _x(x), _dt(dt), _dtstart(dt),
-                _maxstep(maxstep), _gold(x.size()), _dx(x.size()),
-                _E(new double)
+                _maxstep(maxstep), _gold(x.size()), _dx(x.size()),_defaultE(10.0),
+                _E(&_defaultE),_wrap_E_count(0)
+    {
+        if (g.empty())
+        {
+            _g.resize(x.size());
+        }
+        else
+        {
+            assert(g.size() == x.size());
+            _g.wrap(g); // NOTE: wrap gradient, it does not copy it
+        }
 
-                  {
-                      size_t i,j;
-                      size_t k;
+        _defaultE = _potential->get_energy_gradient(_x, _g); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
+        _Estart = _defaultE;
 
-                      if (g.empty())
-                      {
-                          _g.resize(x.size());
-                      }
-                      else
-                      {
-                        assert(g.size() == x.size());
-                        _g.wrap(g); // NOTE: wrap gradient, it does not copy it
-                      }
+        for(size_t k=0; k<_g.size();++k)
+        {
+            _gold[k] = _g[k];
+        }
 
-                      *_E = _potential->get_energy_gradient(_x, _g); //potential.energy_gradient returns the energy and modifies the gradient vector by reference
-                        _Estart = *_E;
+        if (v.empty())
+        {
+            _v.resize(x.size());
+            for(size_t k=0; k<x.size();++k)
+            {
+                _v[k] = 0;
+            }
+        }
+        else
+        {
+            assert(v.size() == x.size());
+            _v.wrap(v); // NOTE: wrap velocity, it does not copy it
+        }
 
-                        for(k=0; k<_g.size();++k)
-                              {
-                                    _gold[k] = _g[k];
-                              }
+        if (m.empty())
+        {
+            _m.resize(x.size());
+            for(size_t k=0; k<x.size();++k)
+            {
+                _m[k] = 1.;
+            }
+        }
+        else
+        {
+            assert(m.size() == x.size()/3);
+            size_t j = 0;
+            _m.resize(m.size());
 
-                        if (v.empty())
-                        {
-                            _v.resize(x.size());
-                            for(k=0; k<x.size();++k)
-                                  {
-                                      _v[k] = 0;
-                                  }
-                        }
-                        else
-                        {
-                            assert(v.size() == x.size());
-                            _v.wrap(v); // NOTE: wrap velocity, it does not copy it
-                        }
-
-                        if (m.empty())
-                        {
-                            _m.resize(x.size());
-                              for(k=0; k<x.size();++k)
-                                    {
-                                          _m[k] = 1.;
-                                    }
-                        }
-                        else
-                        {
-                            assert(m.size() == x.size()/3);
-                            j = 0;
-                            _m.resize(m.size());
-
-                            for(i=0; i != x.size(); ++i)
-                            {
-                                _m[i] = m[j];
-                                if ((i+1)%3 == 0){ ++j; }
-                            }
-                        }
-                }
+            for(size_t i=0; i != x.size(); ++i)
+            {
+                _m[i] = m[j];
+                if ((i+1)%3 == 0){ ++j; }
+            }
+        }
+    }
 
 }
 

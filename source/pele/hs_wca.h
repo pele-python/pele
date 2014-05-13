@@ -31,7 +31,7 @@ namespace pele {
         {}
 
         /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-        double energy(double r2, size_t atomi, size_t atomj) const {
+        double inline energy(double r2, size_t atomi, size_t atomj) const {
             double E;
             double r = sqrt(r2);
             double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
@@ -57,7 +57,7 @@ namespace pele {
         }
 
         /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-        double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const {
+        double inline energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const {
             double E;
             double r = sqrt(r2);
             double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii

@@ -14,7 +14,7 @@ protected:
     double _k;
     size_t _nparticles;
     BaseHarmonic(pele::Array<double> origin, double k):
-            _origin(origin.copy()),_distance(origin.copy()),
+            _origin(origin.copy()),_distance(origin.size()),
             _k(k), _nparticles(origin.size()/3){}
 public:
     virtual ~BaseHarmonic(){}
@@ -65,7 +65,7 @@ public:
 };
 
 /**
- * Harmonic with cartesian distancea and fixed centre of mass
+ * Harmonic with cartesian distance and fixed centre of mass
  */
 class HarmonicCOM : public BaseHarmonic{
 public:
