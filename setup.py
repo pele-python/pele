@@ -133,6 +133,7 @@ setup(name='pele',
                   ('pele/potentials/tests', list(glob.glob('pele/potentials/tests/*.xyzdr'))),
                   ('pele/transition_states/tests', list(glob.glob('pele/transition_states/tests/*.xyz'))),
                   ('pele/rates/tests', list(glob.glob('pele/rates/tests/*.data')) + list(glob.glob('pele/rates/tests/*.sqlite'))),
+                  ('pele/mindist/tests', list(glob.glob('pele/mindist/tests/*.xyz')) + list(glob.glob('pele/mindist/tests/*.sqlite'))),
                   ('pele/storage/tests/', list(glob.glob('pele/storage/tests/*sqlite'))),
                  ]
         )
