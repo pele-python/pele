@@ -3,8 +3,8 @@ import numpy as np
 
 __all__= ["PointGroupOrderCluster"]
 
-def rotation_in_list(rot, rot_list, eps=1e-6):
-    """return tru if rot is in rot_list"""
+def _rotation_in_list(rot, rot_list, eps=1e-6):
+    """return true if the rotation matrix is already in the list"""
     for r in rot_list:
         if np.linalg.norm(rot - r) < eps:
             return True
@@ -43,17 +43,16 @@ class PointGroupOrderCluster(object):
             if self.exact_match(x1, x2, check_inversion=False):
                 inversion_multiplier = 2
                 
-        pgorder = 0
         rot_list = []
         for rot, invert in self.exact_match.standard_alignments(x1, x1):
             if invert: continue
             match = self.exact_match.check_match(x1, x1, rot, invert)
             if match is not None:
                 # check if the rotation matrix has already been found.
-                if not rotation_in_list(match.rotation, rot_list):
+                if not _rotation_in_list(match.rotation, rot_list):
                     rot_list.append(match.rotation)
-                    pgorder += 1
-        
+
+        pgorder = len(rot_list)
         return inversion_multiplier * pgorder
 
 def testlj75():
