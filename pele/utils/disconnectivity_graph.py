@@ -195,7 +195,7 @@ class _MakeTree(object):
     def make_tree(self):
         """make the disconnectivity tree"""
         # make list of transition states sorted so that lower energies are to the right
-        tslist = self.transition_states
+        tslist = filter(lambda ts: ts.minimum1 != ts.minimum2, self.transition_states)
         # remove duplicate entries and sort
         tslist = list(set(tslist))
         tslist.sort(key=lambda ts: -self.get_energy(ts))

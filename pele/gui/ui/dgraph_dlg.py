@@ -28,7 +28,7 @@ def check_thermodynamic_info(transition_states):
     return True  
 
 
-def minimum_energy_path(graph, m1, m2):
+def minimum_energy_path_old(graph, m1, m2):
     """find the minimum energy path between m1 and m2 and color the dgraph appropriately"""
     # add weight attribute to the graph
     # note: this is not actually the minimum energy path.  
@@ -40,6 +40,24 @@ def minimum_energy_path(graph, m1, m2):
     path = nx.shortest_path(graph, m1, m2, weight="weight")
     return path
     
+def minimum_energy_path(graph, m1, m2):
+    for u, v, data in graph.edges_iter(data=True):
+        data["energy"] = data["ts"].energy
+    mst = nx.minimum_spanning_tree(graph, weight="energy")
+    path = nx.shortest_path(mst, m1, m2)
+    return path
+
+#    transition_states = [data["ts"] for u, v, data in graph.edges_iter(data=True)]
+#    transition_states.sort(key=lambda ts: ts.energy) # small energies to the left
+#
+#    subtrees = nx.utils.UnionFind()
+#    for ts in transition_states:
+#        u, v = ts.minimum1, ts.minimum2
+#        if subtrees[u] != subtrees[v]:
+#            subtrees.union(u,v)
+#        if subtrees[m1] == subtrees[m2]:
+#            break
+#    if subtrees
 
 class TreeLeastCommonAncestor(object):
     """Find the least common ancestor to a set of trees"""
