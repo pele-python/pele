@@ -148,7 +148,7 @@ public:
     {
         // delete all nodes
         typedef std::map<node_id, Node *> maptype;
-        for (auto mapval : node_map_){
+        for (auto const & mapval : node_map_){
             node_ptr node = mapval.second;
             delete node;
         }
@@ -276,7 +276,7 @@ public:
     Graph(Graph & graph):
         next_node_id_(0)
     {
-        for (auto mapval : graph.node_map_){
+        for (auto const & mapval : graph.node_map_){
             node_ptr u = mapval.second;
 //            std::cout << "making node " << u->id() << "\n";
             node_ptr unew = this->add_node(u->id());

@@ -72,7 +72,7 @@ public:
         }
 
         // make intermediates
-        for (auto mapval : _graph->node_map_){
+        for (auto const & mapval : _graph->node_map_){
             node_ptr u = mapval.second;
             if (_A.find(u) == _A.end() and _B.find(u) == _B.end()){
                 intermediates.push_back(u);
@@ -103,7 +103,7 @@ public:
 
         // add nodes to the graph and sum the rate constants for all out edges for each node.
         std::map<node_ptr, double> sum_out_rates;
-        for (auto mapvals : rate_constants){
+        for (auto const & mapvals : rate_constants){
             node_ptr u = _graph->add_node(mapvals.first.first);
             node_ptr v = _graph->add_node(mapvals.first.second);
             double k = mapvals.second;
@@ -128,7 +128,7 @@ public:
         }
 
         // set Puv for each edge
-        for (auto mapval : rate_constants){
+        for (auto const & mapval : rate_constants){
             node_ptr u = _graph->get_node(mapval.first.first);
             node_ptr v = _graph->get_node(mapval.first.second);
             double k = mapval.second;
