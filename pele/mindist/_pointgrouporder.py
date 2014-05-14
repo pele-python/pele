@@ -1,6 +1,15 @@
 from pele.mindist import StandardClusterAlignment
+import numpy as np
 
 __all__= ["PointGroupOrderCluster"]
+
+def rotation_in_list(rot, rot_list, eps=1e-6):
+    """return tru if rot is in rot_list"""
+    for r in rot_list:
+        if np.linalg.norm(rot - r) < eps:
+            return True
+    return False
+            
 
 class PointGroupOrderCluster(object):
     ''' Determines the point group order of a cluster
@@ -35,11 +44,15 @@ class PointGroupOrderCluster(object):
                 inversion_multiplier = 2
                 
         pgorder = 0
+        rot_list = []
         for rot, invert in self.exact_match.standard_alignments(x1, x1):
             if invert: continue
-            if self.exact_match.check_match(x1, x1, rot, invert, reoptimize_rotation=False):
-                pgorder += 1
-#                print "pgorder", pgorder
+            match = self.exact_match.check_match(x1, x1, rot, invert)
+            if match is not None:
+                # check if the rotation matrix has already been found.
+                if not rotation_in_list(match.rotation, rot_list):
+                    rot_list.append(match.rotation)
+                    pgorder += 1
         
         return inversion_multiplier * pgorder
 
