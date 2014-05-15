@@ -47,10 +47,12 @@ class LJTest :  public ::testing::Test
 public:
     double c6, c12, etrue;
     Array<double> x, y;
+    size_t natoms;
     virtual void SetUp(){
+        natoms = 2;
         c6 = 1.2;
         c12 = 2.3;
-        x = Array<double>(6);
+        x = Array<double>(3*natoms);
         x[0]  = 0.1;
         x[1]  = 0.2;
         x[2]  = 0.3;
@@ -215,5 +217,74 @@ TEST_F(LJCutTest, Hessian_Works2){
 }
 
 /*
- * test frozen atom potential
+ * LJNeighborList tests
  */
+
+class LJNeighborListTest :  public LJTest
+{
+};
+
+TEST_F(LJNeighborListTest, Energy_Works){
+    pele::Array<long> ilist(size_t(natoms*(natoms - 1)));
+    size_t k = 0;
+    for (size_t i=0; i < natoms; ++i){
+        for (size_t j=0; j<i; ++j){
+            ilist[k] = i;
+            ilist[k+1] = j;
+            k += 2;
+        }
+    }
+    pele::LJNeighborList pot(ilist, c6, c12);
+    double e = pot.get_energy(x);
+    EXPECT_NEAR(e, etrue, 1e-10);
+}
+
+TEST_F(LJNeighborListTest, EnergyGradient_Works){
+    pele::Array<long> ilist(size_t(natoms*(natoms - 1)));
+    size_t k = 0;
+    for (size_t i=0; i < natoms; ++i){
+        for (size_t j=0; j<i; ++j){
+            ilist[k] = i;
+            ilist[k+1] = j;
+            k += 2;
+        }
+    }
+    pele::LJNeighborList pot(ilist, c6, c12);
+    Array<double> g(3*natoms);
+    Array<double> gnum(3*natoms);
+    double e = pot.get_energy_gradient(x, g);
+    EXPECT_NEAR(e, etrue, 1e-10);
+    pot.numerical_gradient(x, gnum, 1e-6);
+    for (size_t k=0; k<6; ++k){
+        EXPECT_NEAR(g[k], gnum[k], 1e-6);
+    }
+}
+
+TEST_F(LJNeighborListTest, EnergyGradientHessian_AgreesWithNumerical){
+    pele::Array<long> ilist(size_t(natoms*(natoms - 1)));
+    size_t k = 0;
+    for (size_t i=0; i < natoms; ++i){
+        for (size_t j=0; j<i; ++j){
+            ilist[k] = i;
+            ilist[k+1] = j;
+            k += 2;
+        }
+    }
+    pele::LJNeighborList pot(ilist, c6, c12);
+    Array<double> h(x.size()*x.size());
+    Array<double> hnum(h.size());
+    Array<double> g(x.size());
+    Array<double> gnum(x.size());
+    double e = pot.get_energy_gradient_hessian(x, g, h);
+    double ecomp = pot.get_energy(x);
+    pot.numerical_gradient(x, gnum);
+    pot.numerical_hessian(x, hnum);
+
+    EXPECT_NEAR(e, ecomp, 1e-10);
+    for (size_t i=0; i<g.size(); ++i){
+        ASSERT_NEAR(g[i], gnum[i], 1e-6);
+    }
+    for (size_t i=0; i<h.size(); ++i){
+        ASSERT_NEAR(h[i], hnum[i], 1e-3);
+    }
+}
