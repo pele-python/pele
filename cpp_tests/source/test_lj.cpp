@@ -98,7 +98,7 @@ public:
     }
 
     virtual void SetUp(){
-        natoms = 2;
+        natoms = 3;
         c6 = 1.2;
         c12 = 2.3;
         x.resize(3*natoms);
@@ -108,14 +108,11 @@ public:
         x[3]  = 0.44;
         x[4]  = 0.55;
         x[5]  = 1.66;
-        etrue = -0.10410023149146598;
 
-//        y = Array<double>(9);
-//        for(size_t i=0;i<6;++i)
-//            y[i] = x[i];
-//        y[6] = 0.88;
-//        y[7] = 1.1;
-//        y[8] = 3.32;
+        x[6] = 0;
+        x[7] = 0;
+        x[8] = -3.;
+        etrue = -0.10512486948441067;
 
         setup_potential();
     }
@@ -149,20 +146,20 @@ public:
         c6 = 1.2;
         c12 = 2.3;
         rcut = 2.5;
-        x = Array<double>(6);
+        size_t natoms = 3;
+        x = Array<double>(3*natoms);
         x[0]  = 0.1;
         x[1]  = 0.2;
         x[2]  = 0.3;
         x[3]  = 0.44;
         x[4]  = 0.55;
         x[5]  = 1.66;
+
+        x[6] = 0;
+        x[7] = 0;
+        x[8] = -3.;
+
         etrue = -0.089557709975460198;
-        y = Array<double>(9);
-        for(size_t i=0;i<6;++i)
-            y[i] = x[i];
-        y[6] = 0.88;
-        y[7] = 1.1;
-        y[8] = 3.32;
 
         pot = std::shared_ptr<pele::BasePotential> (new pele::LJCut(c6, c12, rcut));
 
@@ -179,16 +176,6 @@ TEST_F(LJCutTest, EnergyGradient_AgreesWithNumerical){
 
 TEST_F(LJCutTest, EnergyGradientHessian_AgreesWithNumerical){
     test_energy_gradient_hessian();
-}
-
-TEST_F(LJCutTest, Hessian_Works2){
-    pele::LJCut pot(c6, c12, rcut);
-    Array<double> h(9*9);
-    Array<double> h_num(9*9);
-    pot.get_hessian(y, h);
-    pot.numerical_hessian(y, h_num);
-    for (size_t i=0; i<h.size();++i)
-        ASSERT_NEAR(h[i],h_num[i],1e-6);
 }
 
 /*
