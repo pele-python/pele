@@ -361,7 +361,6 @@ namespace pele {
             return *this;
         }
 
-
         /*
          * Binary Arithmetic Operators + - *
          */
@@ -426,6 +425,30 @@ namespace pele {
             return result;
         }
 
+
+    /*SOME OTHER ARITHMETIC UTILITIES*/
+
+        //returns the sum of all elements (reduces the array)
+        const dtype sum(){
+            if (_data == NULL)
+                throw std::runtime_error("array::sum(): array is empty, can't sum array elements");
+
+            dtype sum_array=0;
+            for (size_t i=0; i<_size; ++i)
+                sum_array += _data[i] ;
+            return sum_array;
+        }
+
+        //returns the product of all elements (reduces the array)
+        const dtype prod(){
+            if (_data == NULL)
+                throw std::runtime_error("array::prod(): array is empty, can't take product of array elements");
+
+            dtype prod_array=1;
+            for (size_t i=0; i<_size; ++i)
+                prod_array *= _data[i] ;
+            return prod_array;
+        }
     };
 
     // for array printing

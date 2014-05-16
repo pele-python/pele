@@ -555,3 +555,21 @@ TEST(ArrayTest, Bin_Div_Operator_Const){
 
     EXPECT_EQ(c,2);
 }
+
+////////
+TEST(ArrayTest, Sum_Function){
+    pele::Array<double> v(6);
+
+    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+
+    EXPECT_NEAR(v.sum(),12,1e-10);
+}
+
+TEST(ArrayTest, Prod_Function){
+    pele::Array<double> v(6);
+
+    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+
+    EXPECT_NEAR(v.prod(),64,1e-10);
+}
+
