@@ -15,7 +15,14 @@ build
 *.sqlite
 *.pyo
 *.db
-*.sqlite
+*.png
+*.eps
+*.ps
+*.log
+*.html
+pele/*/*cxx
+cpp_tests/build
+cpp_tests/gtest
 
 cythonize.dat
 examples/new_potential/cpp_potential/mypotential.cpp

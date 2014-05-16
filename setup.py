@@ -133,6 +133,7 @@ setup(name='pele',
                   ('pele/potentials/tests', list(glob.glob('pele/potentials/tests/*.xyzdr'))),
                   ('pele/transition_states/tests', list(glob.glob('pele/transition_states/tests/*.xyz'))),
                   ('pele/rates/tests', list(glob.glob('pele/rates/tests/*.data')) + list(glob.glob('pele/rates/tests/*.sqlite'))),
+                  ('pele/mindist/tests', list(glob.glob('pele/mindist/tests/*.xyz')) + list(glob.glob('pele/mindist/tests/*.sqlite'))),
                   ('pele/storage/tests/', list(glob.glob('pele/storage/tests/*sqlite'))),
                  ]
         )
@@ -154,7 +155,7 @@ depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/")
 # I run it through valgrind, valgrind complains about an unrecognized
 # instruction.  I don't have a clue what is causing this, but it's probably
 # better to be on the safe side and not use -march=native
-extra_compile_args = ['-std=c++0x',"-Wall", "-Wextra", "-O3", '-funroll-loops']
+extra_compile_args = ['-std=c++0x',"-Wall", "-O3", '-funroll-loops']
 # uncomment the next line to add extra optimization options
 #extra_compile_args = ["-std=c++0x","-Wall", '-Wextra','-pedantic','-O3', "-march=native", "-mtune=native"]
 
