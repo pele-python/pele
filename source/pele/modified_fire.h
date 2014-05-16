@@ -79,11 +79,11 @@ namespace pele{
 
       void initialize_func_gradient()
             {
-                    nfev_ += 1;                     //this accounts for the energy evaluation done by the integrator (g is computed by the constructor of the integrator)
-                    _integrator.wrap_v(_v);         //the velocity array wraps the integrator velocity array so that it updates concurrently
+                nfev_ += 1;                     //this accounts for the energy evaluation done by the integrator (g is computed by the constructor of the integrator)
+                _integrator.wrap_v(_v);         //the velocity array wraps the integrator velocity array so that it updates concurrently
                 _integrator.wrap_g(g_);         //the gradient array wraps the integrator gradient array so that it updates concurrently
-                _integrator.wrap_E(f_);            //the function value (E) wraps the integrator energy so that it updates concurrently
-                _integrator.wrap_gold(_gold);     //the gradient array wraps the integrator gradient array so that it updates concurrently
+                _integrator.wrap_E(&f_);        //the function value (E) wraps the integrator energy so that it updates concurrently
+                _integrator.wrap_gold(_gold);   //the gradient array wraps the integrator gradient array so that it updates concurrently
                 _fold = f_;
                 rms_ = norm(g_) / sqrt(g_.size());
                 for(size_t k=0; k<x_.size();++k) //set initial velocities (using forward Euler)
