@@ -556,6 +556,23 @@ TEST(ArrayTest, Bin_Div_Operator_Const){
     EXPECT_EQ(c,2);
 }
 
+TEST(ArrayTest, Bin_All_Operator){
+    double c = 2;
+    pele::Array<double> v1(6,1);
+    pele::Array<double> v2(6,2);
+    pele::Array<double> v4(6,4);
+
+    pele::Array<double> v = v4/(v1*v2);
+    v -= 2;
+
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 0);
+        EXPECT_EQ(v1[i],1);
+        EXPECT_EQ(v2[i],2);
+        EXPECT_EQ(v4[i],4);
+    }
+}
+
 ////////
 TEST(ArrayTest, Sum_Function){
     pele::Array<double> v(6);
