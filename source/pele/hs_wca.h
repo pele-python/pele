@@ -26,12 +26,12 @@ namespace pele {
 
         HS_WCA_interaction(double eps, double sca, Array<double> radii) :
             _eps(eps), _sca(sca),
-            _infty(pow(10.0,10)), _prfac(sca*sca*sca/sqrt(2)),
+            _infty(pow(10.0,50)), _prfac(sca*sca*sca/sqrt(2)),
             _radii(radii.copy())
         {}
 
         /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-        double energy(double r2, size_t atomi, size_t atomj) const {
+        double inline energy(double r2, size_t atomi, size_t atomj) const {
             double E;
             double r = sqrt(r2);
             double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
@@ -57,7 +57,7 @@ namespace pele {
         }
 
         /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-        double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const {
+        double inline energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const {
             double E;
             double r = sqrt(r2);
             double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii

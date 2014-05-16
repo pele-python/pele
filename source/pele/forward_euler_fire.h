@@ -17,8 +17,9 @@ namespace pele {
         ForwardEuler(pele::BasePotential * potential, pele::Array<double> x, double dt, double maxstep,
                     pele::Array<double> v = pele::Array<double>(), pele::Array<double> g = pele::Array<double>(),
                     pele::Array<double> m = pele::Array<double>());
+        virtual ~ForwardEuler(){};
 
-        inline void oneiteration()
+        virtual inline void oneiteration()
               {
                    /* the minuses in the following expressions are due to the fact that
                    * the gradients rather than the forces appear in the expression
@@ -44,7 +45,7 @@ namespace pele {
                   *_E = _potential->get_energy_gradient(_x, _g);    //update gradient
               }
 
-        void run(size_t const N)
+        virtual void run(size_t const N)
                 {
                    for(size_t i =0; i < N; ++i)
                    {
