@@ -261,12 +261,15 @@ namespace pele {
          *
          * arrays must be of same size  
          */
-        Array<dtype> &assign(Array<dtype> const & rhs) {
-            if (_size != rhs.size()){
-                throw std::runtime_error("arrays must have the same size during assignment");
+        Array<dtype> &assign(const Array<dtype> & rhs) {
+            if (this != &rhs) //check for self assignement
+            {
+                if (_size != rhs.size()){
+                    throw std::runtime_error("arrays must have the same size during assignment");
+                }
+                for (size_t i=0; i<_size; ++i)
+                    _data[i] = rhs[i];
             }
-            for (size_t i=0; i<_size; ++i)
-                _data[i] = rhs[i];
             return *this;
         }
 
@@ -277,19 +280,27 @@ namespace pele {
         }
 
 
-        /**
-         * Assignment operator: wrap the data
+        /*
+         * Assignment operator: WRAP the data
          */
-        Array<dtype> &operator=(Array<dtype> const & rhs) {
+
+        Array<dtype> &operator=(const Array<dtype> & rhs){
             //if (_data != NULL) {
                 //std::cout << "operator=: cannot assign an array unless the array is unallocated\n";
                 //throw std::runtime_error("cannot assign an array unless the array is unallocated");
             //}
-            wrap(rhs);
+            if (this != &rhs) //check for self assignement
+            {
+                wrap(rhs);
+            }
             return *this;
         }
 
-        Array<dtype> &operator+=(Array<dtype> const & rhs) {
+        /*
+         * Compound Assignment Operators += -= *=
+         */
+
+        Array<dtype> &operator+=(const Array<dtype> & rhs){
             if (_size != rhs.size()){
                 throw std::runtime_error("operator+=: arrays must have the same size");
             }
@@ -298,7 +309,13 @@ namespace pele {
             return *this;
         }
 
-        Array<dtype> &operator-=(Array<dtype> const & rhs) {
+        Array<dtype> &operator+=(const dtype &rhs) {
+            for (size_t i=0; i<_size; ++i)
+                _data[i] += rhs;
+            return *this;
+       }
+
+        Array<dtype> &operator-=(const Array<dtype> & rhs){
             if (_size != rhs.size()){
                 throw std::runtime_error("operator-=: arrays must have the same size");
             }
@@ -307,18 +324,107 @@ namespace pele {
             return *this;
         }
 
-        Array<dtype> &operator*=(dtype rhs) {
+        Array<dtype> &operator-=(const dtype &rhs) {
             for (size_t i=0; i<_size; ++i)
-                _data[i] *= rhs;
+                _data[i] -= rhs;
+            return *this;
+       }
+
+        Array<dtype> &operator*=(const Array<dtype> & rhs){
+            if (_size != rhs.size()){
+                throw std::runtime_error("operator*=: arrays must have the same size");
+            }
+            for (size_t i=0; i<_size; ++i)
+                _data[i] *= rhs[i];
             return *this;
         }
 
-        Array<dtype> &operator/=(dtype rhs) {
+        Array<dtype> &operator*=(const dtype &rhs) {
+            for (size_t i=0; i<_size; ++i)
+                _data[i] *= rhs;
+            return *this;
+       }
+
+
+        Array<dtype> &operator/=(const Array<dtype> & rhs){
+            if (_size != rhs.size()){
+                throw std::runtime_error("operator/=: arrays must have the same size");
+            }
+            for (size_t i=0; i<_size; ++i)
+                _data[i] /= rhs[i];
+            return *this;
+        }
+
+        Array<dtype> &operator/=(const  dtype &rhs) {
             for (size_t i=0; i<_size; ++i)
                 _data[i] /= rhs;
             return *this;
         }
 
+
+        /*
+         * Binary Arithmetic Operators + - *
+         */
+
+        const Array<dtype> operator+(const Array<dtype> &rhs) const {
+            if (_size != rhs.size()){
+                throw std::runtime_error("binary arithmetic operator +: arrays must have the same size");
+            }
+            Array<dtype> result(this->copy());
+            result += rhs;
+            return result;
+        }
+
+        const Array<dtype> operator+(const dtype &rhs) const {
+            Array<dtype> result(this->copy());
+            result += rhs;
+            return result;
+        }
+
+        const Array<dtype> operator-(const Array<dtype> &rhs) const {
+            if (_size != rhs.size()){
+                throw std::runtime_error("binary arithmetic operator -: arrays must have the same size");
+            }
+            Array<dtype> result(this->copy());
+            result -= rhs;
+            return result;
+        }
+
+        const Array<dtype> operator-(const dtype &rhs) const {
+            Array<dtype> result(this->copy());
+            result -= rhs;
+            return result;
+        }
+
+        const Array<dtype> operator*(const Array<dtype> &rhs) const {
+            if (_size != rhs.size()){
+                throw std::runtime_error("binary arithmetic operator *: arrays must have the same size");
+            }
+            Array<dtype> result(this->copy());
+            result *= rhs;
+            return result;
+        }
+
+        const Array<dtype> operator*(const dtype &rhs) const {
+            Array<dtype> result(this->copy());
+            result *= rhs;
+            return result;
+        }
+
+        const Array<dtype> operator/(const Array<dtype> &rhs) const {
+            if (_size != rhs.size()){
+                throw std::runtime_error("binary arithmetic operator /: arrays must have the same size");
+            }
+            Array<dtype> result(this->copy());
+            result /= rhs;
+            return result;
+        }
+
+        const Array<dtype> operator/(const dtype &rhs) const {
+            Array<dtype> result(this->copy());
+            result /= rhs;
+            return result;
+        }
 
     };
 
