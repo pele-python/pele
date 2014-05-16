@@ -159,6 +159,14 @@ class RBTopology(aatopology.AATopology):
         return masses
         
     def add_sites(self, sites):
+        """
+        add sites to the Rigid Body topology
+        
+        Parameters
+        ----------
+        sites : RigidFragment
+            usually this will be an object of type RigidFragment
+        """
         aatopology.AATopology.add_sites(self, sites)
         for site in sites:
             nsite_atoms = len(site.atom_positions)
