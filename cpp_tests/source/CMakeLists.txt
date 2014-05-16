@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
+enable_language(CXX)
 ADD_DEFINITIONS(-std=c++0x)
+ADD_DEFINITIONS(-Wall)
 
 #cmake_policy(SET CMP0015 NEW)
 

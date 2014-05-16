@@ -1,6 +1,15 @@
 from pele.mindist import StandardClusterAlignment
+import numpy as np
 
 __all__= ["PointGroupOrderCluster"]
+
+def _rotation_in_list(rot, rot_list, eps=1e-6):
+    """return true if the rotation matrix is already in the list"""
+    for r in rot_list:
+        if np.linalg.norm(rot - r) < eps:
+            return True
+    return False
+            
 
 class PointGroupOrderCluster(object):
     ''' Determines the point group order of a cluster
@@ -34,10 +43,44 @@ class PointGroupOrderCluster(object):
             if self.exact_match(x1, x2, check_inversion=False):
                 inversion_multiplier = 2
                 
-        pgorder = 0
+        rot_list = []
         for rot, invert in self.exact_match.standard_alignments(x1, x1):
             if invert: continue
-            if self.exact_match.check_match(x1, x1, rot, invert):
-                pgorder += 1
+            match = self.exact_match.check_match(x1, x1, rot, invert)
+            if match is not None:
+                # check if the rotation matrix has already been found.
+                if not _rotation_in_list(match.rotation, rot_list):
+                    rot_list.append(match.rotation)
+
+        pgorder = len(rot_list)
+        return inversion_multiplier * pgorder
+
+def testlj75():
+    import numpy as np
+    coords = np.genfromtxt("tests/coords.lj75.gmin")
+    from pele.mindist import ExactMatchAtomicCluster
+    
+    permlist = [range(75)]
+    match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
+    calculator = PointGroupOrderCluster(match)
+    pgorder = calculator(coords)
+    print pgorder
+
+def testlj6():
+    from pele.systems import LJCluster
+    from pele.thermodynamics import get_thermodynamic_information
+    system = LJCluster(6)
+    db = system.create_database()
+    bh = system.get_basinhopping(db)
+    bh.setPrinting(ostream=None)
+    bh.run(10)
+    
+    get_thermodynamic_information(system, db)
+
+    for m in db.minima():
+        print m.energy, m.pgorder
         
-        return inversion_multiplier*pgorder
+    
+
+if __name__ == "__main__":
+    testlj6()
