@@ -29,12 +29,29 @@ cdef class GradientOptimizer(object):
     
     def one_iteration(self):
         self.thisptr.one_iteration()
+        res = self.get_result()
+        for event in self.events:
+            event(coords=res.coords, energy=res.energy, rms=res.rms)
+        return res
         
     def run(self, niter=None):
-        if niter is None:
-            self.thisptr.run()
+        if not self.events:
+            # if we don't need to call python events then we can
+            # go just let the c++ optimizer do it's thing
+            if niter is None:
+                self.thisptr.run()
+            else:
+                self.thisptr.run(niter)
         else:
-            self.thisptr.run(niter)
+            # we need to call python events after each iteration.
+            if niter is None:
+                niter = self.get_maxiter() - self.get_niter()
+    
+            for i in xrange(niter):
+                if self.stop_criterion_satisfied():
+                    break
+                self.one_iteration()
+            
         return self.get_result()
             
     def reset(self, coords):
