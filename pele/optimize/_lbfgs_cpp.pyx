@@ -17,16 +17,6 @@ cdef extern from "pele/lbfgs.h" namespace "pele":
     cdef cppclass cppLBFGS "pele::LBFGS":
         cppLBFGS(_pele.cBasePotential *, _pele.Array[double], double, int) except +
 
-        void run() except +
-        void run(int niter) except +
-        void one_iteration() except +
-        int stop_criterion_satisfied() except +
-        void set_func_gradient(double energy, _pele.Array[double] grad) except +
-
-        double get_f() except +
-        _pele.Array[double] get_x() except +
-        _pele.Array[double] get_g() except +
-        
         void set_H0(double) except +
         void set_tol(double) except +
         void set_maxstep(double) except +
@@ -35,20 +25,14 @@ cdef extern from "pele/lbfgs.h" namespace "pele":
         void set_iprint(int) except +
         void set_verbosity(int) except +
 
-        double get_rms() except +
         double get_H0() except +
-        int get_nfev() except +
-        int get_niter() except +
-        int get_maxiter() except +
-        int success() except +
+
 
 
 cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
     """This class is the python interface for the c++ LBFGS implementation
     """
-#     cdef cppLBFGS *thisptr
     cdef _pele.BasePotential pot # this is stored so that the memory is not freed
-#     cpdef events
     cdef cppLBFGS *lbfgs_ptr
     
     def __cinit__(self, x0, potential, double tol=1e-5, int M=4, double maxstep=0.1, 
@@ -82,6 +66,10 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
         if self.events is None: 
             self.events = []
         
+    def get_result(self):
+        res = _pele_opt.GradientOptimizer.get_result(self)
+        res["H0"] = float(self.lbfgs_ptr.get_H0())
+        return res
 
 class LBFGS_CPP(_Cdef_LBFGS_CPP):
     """This class is the python interface for the c++ LBFGS implementation
