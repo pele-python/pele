@@ -47,6 +47,7 @@ cdef class _Cdef_LBFGS_CPP(object):
     """
     cdef cppLBFGS *thisptr
     cdef _pele.BasePotential pot # this is stored so that the memory is not freed
+    cpdef events
     
     def __cinit__(self, x0, potential, double tol=1e-5, int M=4, double maxstep=0.1, 
                   double maxErise=1e-4, double H0=0.1, int iprint=-1,
@@ -75,6 +76,10 @@ cdef class _Cdef_LBFGS_CPP(object):
         if energy is not None and gradient is not None:
             g_ = gradient
             self.thisptr.set_func_gradient(energy, _pele.Array[double](<double*> g_.data, g_.size))
+
+        self.events = events
+        if self.events is None: 
+            self.events = []
         
     def __dealloc__(self):
         if self.thisptr != NULL:
@@ -82,11 +87,25 @@ cdef class _Cdef_LBFGS_CPP(object):
             self.thisptr = NULL
         
     def run(self, niter=None):
-        if niter is None:
-            self.thisptr.run()
+        if not self.events:
+            # if we don't need to call python events then we can
+            # go just let the c++ optimizer do it's thing
+            if niter is None:
+                self.thisptr.run()
+            else:
+                self.thisptr.run(niter)
         else:
-            self.thisptr.run(niter)
+            # we need to call python events after each iteration.
+            if niter is None:
+                niter = self.get_maxiter() - self.get_niter()
+    
+            for i in xrange(niter):
+                if self.stop_criterion_satisfied():
+                    break
+                self.one_iteration()
+            
         return self.get_result()
+            
 
     @cython.boundscheck(False)
     def get_result(self):
@@ -124,6 +143,9 @@ cdef class _Cdef_LBFGS_CPP(object):
     
     def one_iteration(self):
         self.thisptr.one_iteration()
+        res = self.get_result()
+        for event in self.events:
+            event(coords=res.coords, energy=res.energy, rms=res.rms)
     
     def stop_criterion_satisfied(self):
         return bool(self.thisptr.stop_criterion_satisfied())
@@ -137,39 +159,9 @@ cdef class _Cdef_LBFGS_CPP(object):
 class LBFGS_CPP(_Cdef_LBFGS_CPP):
     """This class is the python interface for the c++ LBFGS implementation
     """
-    def __init__(self, x0, potential, double tol=1e-4, int M=4, double maxstep=0.1, 
-                  double maxErise=1e-4, double H0=0.1, int iprint=-1,
-                  energy=None, gradient=None,
-                  int nsteps=10000, int verbosity=0, events=None):
-        self._need_python = events is not None
 
-        self.events = events
-        if self.events is None: 
-            self.events = []
     
-    def one_iteration(self):
-        """do one iteration"""
-        _Cdef_LBFGS_CPP.one_iteration(self)
-        res = self.get_result()
-        for event in self.events:
-            event(coords=res.coords, energy=res.energy, rms=res.rms)
+#     def one_iteration(self):
+#         """do one iteration"""
+#         _Cdef_LBFGS_CPP.one_iteration(self)
     
-    def run(self, niter=None):
-        """run the lbfgs algorithm
-        
-        this overloads the underlying implementation so that the purely python 
-        events can be called. If events are not called this simply calls the 
-        purely cpp version.
-        """
-        if not self._need_python:
-            return _Cdef_LBFGS_CPP.run(self, niter)
-
-        if niter is None:
-            niter = self.get_maxiter() - self.get_niter()
-
-        for i in xrange(niter):
-            if self.stop_criterion_satisfied():
-                break
-            self.one_iteration()
-        
-        return self.get_result()
