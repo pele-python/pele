@@ -465,7 +465,7 @@ namespace pele {
     /**
      * compute the dot product of two Arrays
      */
-    inline double dot(Array<double> const v1, Array<double> const v2)
+    inline double dot(Array<double> const &v1, Array<double> const &v2)
     {
       assert(v1.size() == v2.size());
       double dot = 0.;
@@ -478,7 +478,7 @@ namespace pele {
     /**
      * compute the L2 norm of an Array
      */
-    inline double norm(Array<double> const v)
+    inline double norm(Array<double> const &v)
     {
       return sqrt(dot(v, v));
     }
