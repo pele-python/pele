@@ -16,6 +16,7 @@ namespace pele {
         Array<size_t> _atoms1;
         Array<size_t> _atoms2;
         bool _one_list;
+        size_t _ndim;
 
         AtomListPotential(pairwise_interaction * interaction, distance_policy * dist,
                 Array<size_t> & atoms1, Array<size_t> & atoms2) :
@@ -23,7 +24,8 @@ namespace pele {
                     _dist(dist),
                     _atoms1(atoms1.copy()),
                     _atoms2(atoms2.copy()),
-                    _one_list(false)
+                    _one_list(false),
+                    _ndim(dist->get_ndim())
         {}
 
         AtomListPotential(pairwise_interaction * interaction, distance_policy * dist,
@@ -32,7 +34,8 @@ namespace pele {
                     _dist(dist),
                     _atoms1(atoms1.copy()),
                     _atoms2(_atoms1),
-                    _one_list(true)
+                    _one_list(true),
+                    _ndim(dist->get_ndim())
         {}
 
 
@@ -52,15 +55,16 @@ namespace pele {
 
             for(size_t i=0; i<_atoms1.size(); ++i) {
                 size_t atom1 = _atoms1[i];
-                size_t i1 = 3 * atom1;
+                size_t i1 = _ndim * atom1;
                 if (_one_list)
                     jstart = i+1;
                 for(size_t j=jstart; j<_atoms2.size(); ++j) {
                     size_t atom2 = _atoms2[j];
-                    size_t i2 = 3 * atom2;
-                    double dr[3];
+                    size_t i2 = _ndim * atom2;
+                    std::vector<double> dr(_ndim);
                     _dist->get_rij(dr, &x[i1], &x[i2]);
-                    double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+                    double r2 = 0;
+                    for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
                     e += _interaction->energy(r2, atom1, atom2);
                 }
             }
@@ -72,26 +76,29 @@ namespace pele {
         virtual inline double add_energy_gradient(Array<double> x, Array<double> grad)
         {
             double e=0.;
-            double gij, dr[3];
+            double gij;
             size_t jstart = 0;
+            std::vector<double> dr(_ndim);
 
             for(size_t i=0; i<_atoms1.size(); ++i) {
                 size_t atom1 = _atoms1[i];
-                size_t i1 = 3 * atom1;
+                size_t i1 = _ndim * atom1;
                 if (_one_list){
                     jstart = i+1;
                 }
                 for(size_t j=jstart; j<_atoms2.size(); ++j) {
                     size_t atom2 = _atoms2[j];
-                    size_t i2 = 3 * atom2;
+                    size_t i2 = _ndim * atom2;
 
                     _dist->get_rij(dr, &x[i1], &x[i2]);
 
-                    double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+                    double r2 = 0;
+                    for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
+
                     e += _interaction->energy_gradient(r2, &gij, atom1, atom2);
-                    for(size_t k=0; k<3; ++k)
+                    for(size_t k=0; k<_ndim; ++k)
                         grad[i1+k] -= gij * dr[k];
-                    for(size_t k=0; k<3; ++k)
+                    for(size_t k=0; k<_ndim; ++k)
                         grad[i2+k] += gij * dr[k];
                 }
             }

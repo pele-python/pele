@@ -28,7 +28,7 @@ namespace pele
    * compute the cartesian distance
    */
   struct cartesian_distance {
-    inline void get_rij(double *  r_ij, 
+    inline void get_rij(std::vector<double> &r_ij,
                  double const * const r1, 
                  double const * const r2) 
     {
@@ -36,7 +36,21 @@ namespace pele
       r_ij[1] = r1[1] - r2[1];
       r_ij[2] = r1[2] - r2[2];
     } 
+
+    inline size_t get_ndim(){return 3;}
   };
+
+  struct cartesian_distance2D {
+      inline void get_rij(std::vector<double> &r_ij,
+                   double const * const r1,
+                   double const * const r2)
+      {
+        r_ij[0] = r1[0] - r2[0];
+        r_ij[1] = r1[1] - r2[1];
+      }
+
+      inline size_t get_ndim(){return 2;}
+    };
 
   /**
    * periodic boundary conditions in rectangular box
@@ -70,7 +84,7 @@ namespace pele
           _iboxz(1./_boxz)
       { throw std::runtime_error("the empty constructor is not available for periodic boundaries"); }
 
-      inline void get_rij(double * r_ij, 
+      inline void get_rij(std::vector<double> &r_ij,
                      double const * const r1, 
                      double const * const r2) 
       {
@@ -81,6 +95,44 @@ namespace pele
           r_ij[1] -= round(r_ij[1] * _iboxy) * _boxy;
           r_ij[2] -= round(r_ij[2] * _iboxz) * _boxz;
       } 
+
+      inline size_t get_ndim(){return 3;}
   };
+
+  class periodic_distance2D {
+      public:
+        double const _boxx;
+        double const _boxy;
+        double const _iboxx;
+        double const _iboxy;
+
+        periodic_distance2D(double boxx, double boxy) :
+            _boxx(boxx),
+            _boxy(boxy),
+            _iboxx(1./_boxx),
+            _iboxy(1./_boxy)
+        {}
+
+        /* this constructor exists only so the compiler doesn't complain.
+         * It should never be used */
+        periodic_distance2D() :
+            _boxx(1000.),
+            _boxy(1000.),
+            _iboxx(1./_boxx),
+            _iboxy(1./_boxy)
+        { throw std::runtime_error("the empty constructor is not available for periodic boundaries"); }
+
+        inline void get_rij(std::vector<double> &r_ij,
+                       double const * const r1,
+                       double const * const r2)
+        {
+            r_ij[0] = r1[0] - r2[0];
+            r_ij[1] = r1[1] - r2[1];
+            r_ij[0] -= round(r_ij[0] * _iboxx) * _boxx;
+            r_ij[1] -= round(r_ij[1] * _iboxy) * _boxy;
+        }
+
+        inline size_t get_ndim(){return 2;}
+    };
 }
 #endif
