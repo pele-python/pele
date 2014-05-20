@@ -5,7 +5,7 @@ Cythonize pyx files into C files as needed.
 
 Usage: cythonize [root_dir]
 
-Default [root_dir] is 'scipy'.
+Default [root_dir] is 'pele'.
 
 Checks pyx files to see if they have been changed relative to their
 corresponding C files.  If they have, then runs cython on these files to
@@ -54,8 +54,8 @@ def process_pyx(fromfile, tofile):
     try:
         from Cython.Compiler.Version import version as cython_version
         from distutils.version import LooseVersion
-        if LooseVersion(cython_version) < LooseVersion('0.19'):
-            raise Exception('Building SciPy requires Cython >= 0.19')
+        if LooseVersion(cython_version) < LooseVersion('0.16'):
+            raise Exception('Building pele requires Cython >= 0.16')
 
     except ImportError:
         pass
