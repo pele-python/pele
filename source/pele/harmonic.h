@@ -72,11 +72,11 @@ protected:
     size_t _ndim;
 public:
     HarmonicCOM(pele::Array<double> origin, double k, size_t ndim)
-        : BaseHarmonic(origin, k){}
+        : BaseHarmonic(origin, k),_ndim(ndim){}
 
     virtual void inline get_distance(pele::Array<double> x){
         assert(x.size() == _origin.size());
-        pele::Array<double> delta_com(3,0);
+        pele::Array<double> delta_com(_ndim,0);
 
         for(size_t i=0;i<_nparticles;++i)
         {
