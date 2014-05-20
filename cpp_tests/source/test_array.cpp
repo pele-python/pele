@@ -177,3 +177,182 @@ TEST(ArrayTest, Resize_Works){
     Array<double> v2(v);
     EXPECT_THROW(v.resize(7), std::runtime_error);
 }
+
+TEST(ArrayTest, SumOperator_Array){
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = -1;
+    pele::Array<double> v2(6);
+    for (size_t i=0; i<v2.size(); ++i) v2[i] = 1;
+    v += v2;
+    EXPECT_NE(v.data(), v2.data());
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 0);
+        EXPECT_EQ(v2[i], 1);
+    }
+}
+
+TEST(ArrayTest, SumOperator_ArraySelf){
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+
+    double* old_v_data = v.data();
+
+    v += v;
+
+    EXPECT_EQ(v.data(), old_v_data); //check that memory has not moved
+
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 2);
+    }
+}
+
+TEST(ArrayTest, SumOperator_Const){
+    double c = 1;
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = -1;
+    v += c;
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 0);
+    }
+    EXPECT_EQ(c,1);
+}
+
+///////////
+
+TEST(ArrayTest, DifOperator_Array){
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    pele::Array<double> v2(6);
+    for (size_t i=0; i<v2.size(); ++i) v2[i] = 1;
+    v -= v2;
+    EXPECT_NE(v.data(), v2.data());
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 0);
+        EXPECT_EQ(v2[i], 1);
+    }
+}
+
+TEST(ArrayTest, DifOperator_ArraySelf){
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+
+    double* old_v_data = v.data();
+
+    v -= v;
+
+    EXPECT_EQ(v.data(), old_v_data); //check that memory has not moved
+
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 0);
+    }
+}
+
+TEST(ArrayTest, DifOperator_Const){
+    double c = 1;
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    v -= c;
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 0);
+    }
+    EXPECT_EQ(c,1);
+}
+
+///////////
+
+TEST(ArrayTest, ProdOperator_Array){
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    pele::Array<double> v2(6);
+    for (size_t i=0; i<v2.size(); ++i) v2[i] = 10;
+    v *= v2;
+    EXPECT_NE(v.data(), v2.data());
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 10);
+        EXPECT_EQ(v2[i], 10);
+    }
+}
+
+TEST(ArrayTest, ProdOperator_ArraySelf){
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+
+    double* old_v_data = v.data();
+
+    v *= v;
+
+    EXPECT_EQ(v.data(), old_v_data); //check that memory has not moved
+
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 1);
+    }
+}
+
+TEST(ArrayTest, ProdOperator_Const){
+    double c = 10;
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    v *= c;
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 10);
+    }
+    EXPECT_EQ(c,10);
+}
+
+///////////
+
+TEST(ArrayTest, DivOperator_Array){
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+    pele::Array<double> v2(6);
+    for (size_t i=0; i<v2.size(); ++i) v2[i] = 2;
+    v /= v2;
+    EXPECT_NE(v.data(), v2.data());
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 1);
+        EXPECT_EQ(v2[i], 2);
+    }
+}
+
+TEST(ArrayTest, DivOperator_ArraySelf){
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+
+    double* old_v_data = v.data();
+
+    v /= v;
+
+    EXPECT_EQ(v.data(), old_v_data); //check that memory has not moved
+
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 1);
+    }
+}
+
+TEST(ArrayTest, DivOperator_Const){
+    double c = 2;
+    pele::Array<double> v(6);
+    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+    v /= c;
+    for (int i = 0; i < 6; ++i){
+        EXPECT_EQ(v[i], 1);
+    }
+    EXPECT_EQ(c,2);
+}
+
+TEST(ArrayTest, SumFunction){
+    pele::Array<double> v(6);
+
+    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+
+    EXPECT_NEAR(v.sum(),12,1e-10);
+}
+
+TEST(ArrayTest, ProdFunction){
+    pele::Array<double> v(6);
+
+    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+
+    EXPECT_NEAR(v.prod(),64,1e-10);
+}
+
