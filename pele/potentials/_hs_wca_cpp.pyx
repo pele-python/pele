@@ -13,6 +13,10 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
         cHS_WCA(double eps, double sca, _pele.Array[double] radii) except +
     cdef cppclass  cHS_WCAPeriodic "pele::HS_WCAPeriodic":
         cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii, double * boxvec) except +
+    cdef cppclass  cHS_WCA2D "pele::HS_WCA2D":
+        cHS_WCA2D(double eps, double sca, _pele.Array[double] radii) except +
+    cdef cppclass  cHS_WCAPeriodic2D "pele::HS_WCAPeriodic2D":
+        cHS_WCAPeriodic2D(double eps, double sca, _pele.Array[double] radii, double * boxvec) except +
     cdef cppclass  cHS_WCANeighborList "pele::HS_WCANeighborList":
         cHS_WCANeighborList(_pele.Array[long] & ilist, double eps, double sca, _pele.Array[double] radii) except +    
     cdef cppclass  cHS_WCAFrozen "pele::HS_WCAFrozen":
@@ -25,19 +29,26 @@ cdef class HS_WCA(_pele.BasePotential):
     """
     cpdef bool periodic 
     #thickness of the wca shell is sca * R where R is the hard core radius of the sphere
-    def __cinit__(self, eps, sca, np.ndarray[double, ndim=1] radii, boxvec=None, boxl=None):
+    def __cinit__(self, eps, sca, np.ndarray[double, ndim=1] radii, ndim=3, boxvec=None, boxl=None):
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:
-            boxvec = [boxl] * 3
+            boxvec = [boxl] * ndim
         cdef np.ndarray[double, ndim=1] bv
                 
         if boxvec is None:
             self.periodic = False
-            self.thisptr = <_pele.cBasePotential*>new cHS_WCA(eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
+            if ndim == 2:
+                self.thisptr = <_pele.cBasePotential*>new cHS_WCA2D(eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
+            else:
+                self.thisptr = <_pele.cBasePotential*>new cHS_WCA(eps, sca, _pele.Array[double](<double*> radii.data, radii.size))
         else:
             self.periodic = True
+            assert(len(boxvec)==ndim)
             bv = np.array(boxvec, dtype=float)
-            self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)
+            if ndim == 2:
+                self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic2D(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)
+            else:
+                self.thisptr = <_pele.cBasePotential*>new cHS_WCAPeriodic(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), <double*> bv.data)
 
 cdef class HS_WCAFrozen(_pele.BasePotential):
     """define the python interface to the c++ HS_WCAFrozen implementation

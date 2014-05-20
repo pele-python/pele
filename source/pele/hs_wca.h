@@ -145,6 +145,17 @@ namespace pele {
                         std::make_shared<HS_WCA_interaction>(eps, sca, radii) ) {}
     };
 
+
+    class HS_WCA2D : public SimplePairwisePotential< HS_WCA_interaction, cartesian_distance2D >
+    {
+        public:
+            HS_WCA2D(double eps, double sca, Array<double> radii)
+                : SimplePairwisePotential< HS_WCA_interaction, cartesian_distance2D >(
+                        std::make_shared<HS_WCA_interaction>(eps, sca, radii),
+                        std::make_shared<cartesian_distance2D>()
+                ) {}
+    };
+
     /**
      * Pairwise HS_WCA potential in a rectangular box
      */
@@ -158,6 +169,16 @@ namespace pele {
             {}
     };
     
+    class HS_WCAPeriodic2D : public SimplePairwisePotential< HS_WCA_interaction, periodic_distance2D > {
+        public:
+            HS_WCAPeriodic2D(double eps, double sca, Array<double> radii, double const *boxvec)
+                : SimplePairwisePotential< HS_WCA_interaction, periodic_distance2D> (
+                        std::make_shared<HS_WCA_interaction>(eps, sca, radii),
+                        std::make_shared<periodic_distance2D>(boxvec[0], boxvec[1])
+                        )
+            {}
+    };
+
     /**
      * Frozen particle HS_WCA potential
      */

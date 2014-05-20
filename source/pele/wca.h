@@ -17,14 +17,14 @@ namespace pele {
     struct WCA_interaction {
         double const _C6, _C12;
         double const _6C6, _12C12, _42C6, _156C12;
-        double const _coff, _eps; //cutoff distance for WCA potential
+        double const _coff2, _eps; //cutoff distance for WCA potential
 
         WCA_interaction(double sig, double eps) :
             _C6(sig*sig*sig*sig*sig*sig),
             _C12(_C6*_C6), _6C6(6.*_C6),
             _12C12(12.*_C12), _42C6(42*_C6),
             _156C12(156*_C12),
-            _coff(pow(2.*_C6,1./6)), _eps(eps)
+            _coff2(pow(2.,1./3)*sig*sig), _eps(eps)
         {}
 
         /* calculate energy from distance squared */
@@ -33,23 +33,23 @@ namespace pele {
             double ir2 = 1.0/r2;
             double ir6 = ir2*ir2*ir2;
             double ir12 = ir6*ir6;
-            if(sqrt(r2) < _coff)
-                E = 4.*_eps*(-_C6*ir6 + _C12*ir12 + 1.0/4);
+            if(r2 < _coff2)
+                E = 4.*_eps*(-_C6*ir6 + _C12*ir12) + _eps;
             else
                 E = 0.;
 
             return E;
         }
 
-        /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
+        /* calculate energy and gradient from distance squared, gradient is in -(dv/drij)/|rij| */
         double energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const {
             double E;
             double ir2 = 1.0/r2;
             double ir6 = ir2*ir2*ir2;
             double ir12 = ir6*ir6;
-            if(sqrt(r2) < _coff)
+            if(r2 < _coff2)
             {
-                E = 4.*_eps*(-_C6*ir6 + _C12*ir12 + 1./4);
+                E = 4.*_eps*(-_C6*ir6 + _C12*ir12) + _eps;
                 *gij = 4.*_eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
             }
             else
@@ -67,7 +67,7 @@ namespace pele {
             double ir6 = ir2*ir2*ir2;
             double ir12 = ir6*ir6;
 
-            if(sqrt(r2) < _coff)
+            if(r2 < _coff2)
             {
                 E = 4.*_eps*(-_C6*ir6 + _C12*ir12) + _eps;
                 *gij = 4.*_eps*(- _6C6 * ir6 + _12C12 * ir12) * ir2;
@@ -101,6 +101,16 @@ namespace pele {
                         std::make_shared<WCA_interaction>(sig, eps) ) {}
     };
 
+    class WCA2D : public SimplePairwisePotential< WCA_interaction, cartesian_distance2D >
+        {
+            public:
+                WCA2D(double sig, double eps)
+                    : SimplePairwisePotential< WCA_interaction, cartesian_distance2D> (
+                            std::make_shared<WCA_interaction>(sig, eps),
+                            std::make_shared<cartesian_distance2D>()
+                    ) {}
+        };
+
     /**
      * Pairwise WCA potential in a rectangular box
      */
@@ -110,6 +120,19 @@ namespace pele {
                 : SimplePairwisePotential< WCA_interaction, periodic_distance> (
                         std::make_shared<WCA_interaction>(sig, eps),
                         std::make_shared<periodic_distance>(boxvec[0], boxvec[1], boxvec[2])
+                        )
+            {}
+    };
+
+    /**
+     * Pairwise WCA potential in a rectangular box
+     */
+    class WCAPeriodic2D : public SimplePairwisePotential< WCA_interaction, periodic_distance2D > {
+        public:
+            WCAPeriodic2D(double sig, double eps, double const *boxvec)
+                : SimplePairwisePotential< WCA_interaction, periodic_distance2D> (
+                        std::make_shared<WCA_interaction>(sig, eps),
+                        std::make_shared<periodic_distance2D>(boxvec[0], boxvec[1])
                         )
             {}
     };
