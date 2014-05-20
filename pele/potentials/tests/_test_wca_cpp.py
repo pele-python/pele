@@ -13,7 +13,8 @@ def minimize(coords, pot):
 
 class TestWCA_CPP(_base_test._BaseTest):
     def setUp(self):
-        self.pot = _wca_cpp.WCA(ndim=3) 
+        boxv=[6,6,6]
+        self.pot = _wca_cpp.WCA(ndim=3, boxvec = boxv) 
         self.natoms = 13
         self.xrandom = np.random.uniform(-1,1,[3*self.natoms])*5.
         xyz = minimize(self.xrandom,self.pot)
@@ -22,13 +23,13 @@ class TestWCA_CPP(_base_test._BaseTest):
 
 class TestWCA2D_CPP(_base_test._BaseTest):
     def setUp(self):
-        self.pot = _wca_cpp.WCA(ndim=2) 
+        boxv=[6,6]
+        self.pot = _wca_cpp.WCA(ndim=2,boxvec = boxv) 
         self.natoms = 13
-        self.xrandom = np.random.uniform(-1,1,[2*self.natoms])*5.
+        self.xrandom = np.random.uniform(-1,1,[2*self.natoms])
         xyz = minimize(self.xrandom,self.pot)
         self.xmin = xyz[0].reshape(-1).copy()
         self.Emin = float(xyz[1])
-        print self.Emin
 
 class TestErrorPotential(unittest.TestCase):
     def setUp(self):

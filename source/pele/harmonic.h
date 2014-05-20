@@ -68,8 +68,10 @@ public:
  * Harmonic with cartesian distance and fixed centre of mass
  */
 class HarmonicCOM : public BaseHarmonic{
+protected:
+    size_t _ndim;
 public:
-    HarmonicCOM(pele::Array<double> origin, double k)
+    HarmonicCOM(pele::Array<double> origin, double k, size_t ndim)
         : BaseHarmonic(origin, k){}
 
     virtual void inline get_distance(pele::Array<double> x){
@@ -78,8 +80,8 @@ public:
 
         for(size_t i=0;i<_nparticles;++i)
         {
-            size_t i1 = i*3;
-            for(size_t j=0;j<3;++j){
+            size_t i1 = i*_ndim;
+            for(size_t j=0;j<_ndim;++j){
                 double d = x[i1+j] - _origin[i1+j];
                 _distance[i1+j] = d;
                 delta_com[j] += d;
@@ -90,8 +92,8 @@ public:
 
         for(size_t i=0;i<_nparticles;++i)
         {
-            size_t i1 = i*3;
-            for(size_t j=0;j<3;++j)
+            size_t i1 = i*_ndim;
+            for(size_t j=0;j<_ndim;++j)
                 _distance[i1+j] -= delta_com[j];
         }
     }

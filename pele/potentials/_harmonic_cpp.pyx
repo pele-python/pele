@@ -18,15 +18,16 @@ cdef extern from "pele/harmonic.h" namespace "pele":
     cdef cppclass  cHarmonic "pele::Harmonic":
         cHarmonic(_pele.Array[double] coords, double k) except +
     cdef cppclass  cHarmonicCOM "pele::HarmonicCOM":
-        cHarmonicCOM(_pele.Array[double] coords, double k) except +
+        cHarmonicCOM(_pele.Array[double] coords, double k, size_t ndim) except +
         
 cdef class Harmonic(_pele.BasePotential):
     """define the python interface to the c++ Harmonic potential implementation
     """
     cdef cBaseHarmonic* newptr
-    def __cinit__(self, np.ndarray[double, ndim=1] coords, double k, com=False):
+    def __cinit__(self, np.ndarray[double, ndim=1] coords, double k, com=False, ndim=None):
         if com is True:
-            self.thisptr = <_pele.cBasePotential*>new cHarmonicCOM(_pele.Array[double](<double*> coords.data, coords.size),k)
+            assert(ndim != None)
+            self.thisptr = <_pele.cBasePotential*>new cHarmonicCOM(_pele.Array[double](<double*> coords.data, coords.size),k,ndim)
         else:
             self.thisptr = <_pele.cBasePotential*>new cHarmonic(_pele.Array[double](<double*> coords.data, coords.size),k)
             
