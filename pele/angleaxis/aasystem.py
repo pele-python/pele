@@ -59,6 +59,8 @@ class AASystem(BaseSystem):
         raise NotImplementedError
 
     def get_random_configuration(self):
+        # js850> this is a bit sketchy because nrigid might not be defined here.
+        # probably we can get the number of molecules some other way.
         coords = 5.*np.random.random(6*self.nrigid)
         ca = self.aasystem.coords_adapter(coords)
         for p in ca.rotRigid:

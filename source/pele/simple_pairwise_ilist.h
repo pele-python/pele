@@ -13,7 +13,7 @@ using std::cout;
 namespace pele
 {
     /**
-     * This class loops though atom pairs, computes the distances and get's the
+     * This class loops though atom pairs, computes the distances and gets the
      * value of the energy and gradient from the class pairwise_interaction.
      * pairwise_interaction is a passed parameter and defines the actual
      * potential function.
