@@ -261,12 +261,15 @@ namespace pele {
          *
          * arrays must be of same size  
          */
-        Array<dtype> &assign(Array<dtype> const & rhs) {
-            if (_size != rhs.size()){
-                throw std::runtime_error("arrays must have the same size during assignment");
+        Array<dtype> &assign(const Array<dtype> & rhs) {
+            if (this != &rhs) //check for self assignement
+            {
+                if (_size != rhs.size()){
+                    throw std::runtime_error("arrays must have the same size during assignment");
+                }
+                for (size_t i=0; i<_size; ++i)
+                    _data[i] = rhs[i];
             }
-            for (size_t i=0; i<_size; ++i)
-                _data[i] = rhs[i];
             return *this;
         }
 
@@ -277,19 +280,27 @@ namespace pele {
         }
 
 
-        /**
-         * Assignment operator: wrap the data
+        /*
+         * Assignment operator: WRAP the data
          */
-        Array<dtype> &operator=(Array<dtype> const & rhs) {
+
+        Array<dtype> &operator=(const Array<dtype> & rhs){
             //if (_data != NULL) {
                 //std::cout << "operator=: cannot assign an array unless the array is unallocated\n";
                 //throw std::runtime_error("cannot assign an array unless the array is unallocated");
             //}
-            wrap(rhs);
+            if (this != &rhs) //check for self assignement
+            {
+                wrap(rhs);
+            }
             return *this;
         }
 
-        Array<dtype> &operator+=(Array<dtype> const & rhs) {
+        /*
+         * Compound Assignment Operators += -= *=
+         */
+
+        Array<dtype> &operator+=(const Array<dtype> & rhs){
             if (_size != rhs.size()){
                 throw std::runtime_error("operator+=: arrays must have the same size");
             }
@@ -298,7 +309,13 @@ namespace pele {
             return *this;
         }
 
-        Array<dtype> &operator-=(Array<dtype> const & rhs) {
+        Array<dtype> &operator+=(const dtype &rhs) {
+            for (size_t i=0; i<_size; ++i)
+                _data[i] += rhs;
+            return *this;
+       }
+
+        Array<dtype> &operator-=(const Array<dtype> & rhs){
             if (_size != rhs.size()){
                 throw std::runtime_error("operator-=: arrays must have the same size");
             }
@@ -307,19 +324,66 @@ namespace pele {
             return *this;
         }
 
-        Array<dtype> &operator*=(dtype rhs) {
+        Array<dtype> &operator-=(const dtype &rhs) {
             for (size_t i=0; i<_size; ++i)
-                _data[i] *= rhs;
+                _data[i] -= rhs;
+            return *this;
+       }
+
+        Array<dtype> &operator*=(const Array<dtype> & rhs){
+            if (_size != rhs.size()){
+                throw std::runtime_error("operator*=: arrays must have the same size");
+            }
+            for (size_t i=0; i<_size; ++i)
+                _data[i] *= rhs[i];
             return *this;
         }
 
-        Array<dtype> &operator/=(dtype rhs) {
+        Array<dtype> &operator*=(const dtype &rhs) {
+            for (size_t i=0; i<_size; ++i)
+                _data[i] *= rhs;
+            return *this;
+       }
+
+
+        Array<dtype> &operator/=(const Array<dtype> & rhs){
+            if (_size != rhs.size()){
+                throw std::runtime_error("operator/=: arrays must have the same size");
+            }
+            for (size_t i=0; i<_size; ++i)
+                _data[i] /= rhs[i];
+            return *this;
+        }
+
+        Array<dtype> &operator/=(const  dtype &rhs) {
             for (size_t i=0; i<_size; ++i)
                 _data[i] /= rhs;
             return *this;
         }
 
+    /*SOME OTHER ARITHMETIC UTILITIES*/
 
+        //returns the sum of all elements (reduces the array)
+        const dtype sum(){
+            if (_data == NULL)
+                throw std::runtime_error("array::sum(): array is empty, can't sum array elements");
+
+            dtype sum_array=0;
+            for (size_t i=0; i<_size; ++i)
+                sum_array += _data[i] ;
+            return sum_array;
+        }
+
+        //returns the product of all elements (reduces the array)
+        const dtype prod(){
+            if (_data == NULL)
+                throw std::runtime_error("array::prod(): array is empty, can't take product of array elements");
+
+            dtype prod_array=1;
+            for (size_t i=0; i<_size; ++i)
+                prod_array *= _data[i] ;
+            return prod_array;
+        }
     };
 
     // for array printing
@@ -336,7 +400,7 @@ namespace pele {
     /**
      * compute the dot product of two Arrays
      */
-    inline double dot(Array<double> const v1, Array<double> const v2)
+    inline double dot(Array<double> const &v1, Array<double> const &v2)
     {
       assert(v1.size() == v2.size());
       double dot = 0.;
@@ -349,7 +413,7 @@ namespace pele {
     /**
      * compute the L2 norm of an Array
      */
-    inline double norm(Array<double> const v)
+    inline double norm(Array<double> const &v)
     {
       return sqrt(dot(v, v));
     }
