@@ -14,7 +14,8 @@ setup(ext_modules=[
     Extension("mypotential", 
               ["_mypotential.hpp", "mypotential.cpp"],
               include_dirs=include_dirs,
-              language="c++"
+              language="c++",
+              extra_compile_args=["-std=c++0x"],
               ),
     ]
     )
