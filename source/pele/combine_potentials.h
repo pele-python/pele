@@ -44,25 +44,44 @@ namespace pele {
         virtual double get_energy(Array<double> x)
         {
             double energy = 0.;
-            std::list<BasePotential*>::iterator iter;
-            for (iter = _potentials.begin();
-                    iter != _potentials.end(); ++iter){
-                energy += (*iter)->get_energy(x);
+            for (auto pot_ptr : _potentials){
+                energy += pot_ptr->get_energy(x);
             }
             return energy;
         }
 
         virtual double get_energy_gradient(Array<double> x, Array<double> grad)
         {
-            double energy = 0.;
-            for (size_t i=0; i<grad.size(); ++i){
-                grad[i] = 0;
+            if (x.size() != grad.size()) {
+                throw std::invalid_argument("the gradient has the wrong size");
             }
 
+            double energy = 0.;
+            grad.assign(0.);
+
+            for (auto pot_ptr : _potentials){
+                energy += pot_ptr->add_energy_gradient(x, grad);
+            }
+            return energy;
+        }
+
+        virtual double get_energy_gradient_hessian(Array<double> x, Array<double> grad,
+                Array<double> hess)
+        {
+            if (x.size() != grad.size()) {
+                throw std::invalid_argument("the gradient has the wrong size");
+            }
+            if (hess.size() != x.size() * x.size()) {
+                throw std::invalid_argument("the Hessian has the wrong size");
+            }
+
+            double energy = 0.;
+            grad.assign(0.);
+            hess.assign(0.);
+
             std::list<BasePotential*>::iterator iter;
-            for (iter = _potentials.begin();
-                    iter != _potentials.end(); ++iter){
-                energy += (*iter)->add_energy_gradient(x, grad);
+            for (auto pot_ptr : _potentials){
+                energy += pot_ptr->add_energy_gradient_hessian(x, grad, hess);
             }
             return energy;
         }
