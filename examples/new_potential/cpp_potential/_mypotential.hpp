@@ -6,6 +6,7 @@
  */
 
 
+#include <memory>
 #include "pele/simple_pairwise_potential.h"
 #include "pele/distance.h"
 
@@ -45,6 +46,18 @@ namespace pele {
             double energy = 4. * _eps * (_sig24 * ir24 - _sig12 * ir12);
             return energy;
         }
+
+        double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const {
+            double ir2 = 1.0/r2;
+            double ir6 = ir2*ir2*ir2;
+            double ir12 = ir6*ir6;
+            double ir24 = ir12*ir12;
+
+            double energy = 4. * _eps * (_sig24 * ir24 - _sig12 * ir12);
+            *gij = 4. * _eps * (24. * _sig24 * ir24 - 12. * _sig12 * ir12) * ir2;
+            *hij = 4. * _eps * (24. * 25. * _sig24 * ir24 - 12. * 13 * _sig12 * ir12) * ir2;
+            return energy;
+        }
     };
 
 
@@ -58,6 +71,6 @@ namespace pele {
     class MyPot : public SimplePairwisePotential< mypot_interaction, cartesian_distance > {
         public:
             MyPot(double sig, double eps)
-                : SimplePairwisePotential< mypot_interaction, cartesian_distance > ( new mypot_interaction(sig, eps) ) {}
+                : SimplePairwisePotential< mypot_interaction, cartesian_distance > ( std::make_shared<mypot_interaction>(sig, eps)) {}
     };
 }
