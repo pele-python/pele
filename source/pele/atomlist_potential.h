@@ -11,13 +11,15 @@ namespace pele {
     class AtomListPotential : public BasePotential
     {
     protected:
-        pairwise_interaction * _interaction;
-        distance_policy * _dist;
+        std::shared_ptr<pairwise_interaction> _interaction;
+        std::shared_ptr<distance_policy> _dist;
         Array<size_t> _atoms1;
         Array<size_t> _atoms2;
         bool _one_list;
 
-        AtomListPotential(pairwise_interaction * interaction, distance_policy * dist,
+        AtomListPotential(
+                std::shared_ptr<pairwise_interaction> interaction,
+                std::shared_ptr<distance_policy> dist,
                 Array<size_t> & atoms1, Array<size_t> & atoms2) :
                     _interaction(interaction),
                     _dist(dist),
@@ -26,7 +28,9 @@ namespace pele {
                     _one_list(false)
         {}
 
-        AtomListPotential(pairwise_interaction * interaction, distance_policy * dist,
+        AtomListPotential(
+                std::shared_ptr<pairwise_interaction> interaction,
+                std::shared_ptr<distance_policy> dist,
                 Array<size_t> & atoms1) :
                     _interaction(interaction),
                     _dist(dist),
@@ -37,13 +41,8 @@ namespace pele {
 
 
     public:
-        virtual ~AtomListPotential()
-        {
-            if (_interaction != NULL) delete _interaction;
-            if (_dist != NULL) delete _dist;
-            _interaction = NULL;
-            _dist = NULL;
-        }
+        //virtual ~AtomListPotential()
+        //{ }
 
         virtual inline double get_energy(Array<double> x)
         {
