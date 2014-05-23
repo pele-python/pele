@@ -34,7 +34,7 @@ class TestFindLowestEigenvector(unittest.TestCase):
 
 class TestFindLowestEigenvector_NFEV(unittest.TestCase):
     def setUp(self, **kwargs):
-        from pele.optimize.tests._test_nfev import _PotWrapper
+        from pele.optimize.tests.test_nfev import _PotWrapper
         natoms = 18
         self.system = LJCluster(natoms)
         self.x = self.system.get_random_minimized_configuration(tol=100.).coords

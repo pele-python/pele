@@ -108,14 +108,14 @@ namespace pele {
         public:
         LJCutAtomList(double C6, double C12, double rcut, Array<size_t> atoms1, Array<size_t> atoms2) :
             AtomListPotential<lj_interaction_cut_smooth, cartesian_distance>(
-                    new lj_interaction_cut_smooth(C6, C12, rcut),
-                    new cartesian_distance(),
+                    std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
+                    std::make_shared<cartesian_distance>(),
                     atoms1, atoms2)
         {}
         LJCutAtomList(double C6, double C12, double rcut, Array<size_t> atoms1) :
             AtomListPotential<lj_interaction_cut_smooth, cartesian_distance>(
-                    new lj_interaction_cut_smooth(C6, C12, rcut),
-                    new cartesian_distance(),
+                    std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
+                    std::make_shared<cartesian_distance>(),
                     atoms1)
         {}
     };
