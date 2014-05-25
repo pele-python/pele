@@ -153,7 +153,7 @@ namespace pele
     template <>
     class periodic_distance <2>{
       public:
-        static const size_t _ndim = 3;
+        static const size_t _ndim = 2;
         double const _boxx;
         double const _boxy;
         double const _iboxx;
