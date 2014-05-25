@@ -146,35 +146,35 @@ namespace pele {
     };
 
 
-    class HS_WCA2D : public SimplePairwisePotential< HS_WCA_interaction, cartesian_distance2D >
+    class HS_WCA2D : public SimplePairwisePotential< HS_WCA_interaction, cartesian_distance<2> >
     {
         public:
             HS_WCA2D(double eps, double sca, Array<double> radii)
-                : SimplePairwisePotential< HS_WCA_interaction, cartesian_distance2D >(
+                : SimplePairwisePotential< HS_WCA_interaction, cartesian_distance<2> >(
                         std::make_shared<HS_WCA_interaction>(eps, sca, radii),
-                        std::make_shared<cartesian_distance2D>()
+                        std::make_shared<cartesian_distance<2>>()
                 ) {}
     };
 
     /**
      * Pairwise HS_WCA potential in a rectangular box
      */
-    class HS_WCAPeriodic : public SimplePairwisePotential< HS_WCA_interaction, periodic_distance > {
+    class HS_WCAPeriodic : public SimplePairwisePotential< HS_WCA_interaction, periodic_distance<3> > {
         public:
             HS_WCAPeriodic(double eps, double sca, Array<double> radii, double const *boxvec)
-                : SimplePairwisePotential< HS_WCA_interaction, periodic_distance> (
+                : SimplePairwisePotential< HS_WCA_interaction, periodic_distance<3>> (
                         std::make_shared<HS_WCA_interaction>(eps, sca, radii),
-                        std::make_shared<periodic_distance>(boxvec[0], boxvec[1], boxvec[2])
+                        std::make_shared<periodic_distance<3>>(boxvec)
                         )
             {}
     };
     
-    class HS_WCAPeriodic2D : public SimplePairwisePotential< HS_WCA_interaction, periodic_distance2D > {
+    class HS_WCAPeriodic2D : public SimplePairwisePotential< HS_WCA_interaction, periodic_distance<2> > {
         public:
             HS_WCAPeriodic2D(double eps, double sca, Array<double> radii, double const *boxvec)
-                : SimplePairwisePotential< HS_WCA_interaction, periodic_distance2D> (
+                : SimplePairwisePotential< HS_WCA_interaction, periodic_distance<2>> (
                         std::make_shared<HS_WCA_interaction>(eps, sca, radii),
-                        std::make_shared<periodic_distance2D>(boxvec[0], boxvec[1])
+                        std::make_shared<periodic_distance<2>>(boxvec)
                         )
             {}
     };
