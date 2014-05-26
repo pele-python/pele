@@ -25,7 +25,7 @@ namespace pele {
         }
 
         /**
-         * compute the energy and gradient, but don't intialize the gradient to zero
+         * compute the energy and gradient, but don't initialize the gradient to zero
          */
         virtual double add_energy_gradient(Array<double> x, Array<double> grad)
         {
@@ -44,8 +44,18 @@ namespace pele {
             return energy;
         }
 
+
         /**
-         * compute the energy and gradient and hessian.
+         * compute the energy, gradient, and Hessian, but don't initialize the gradient or hessian to zero
+         */
+        virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad,
+                Array<double> hess)
+        {
+            throw std::runtime_error("BasePotential::add_energy_gradient_hessian must be overloaded");
+        }
+
+        /**
+         * compute the energy and gradient and Hessian.
          *
          * If not overloaded it will compute the Hessian numerically and use get_energy_gradient
          * to get the energy and gradient.

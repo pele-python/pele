@@ -10,7 +10,7 @@ from pele.utils.rotations import vec_random_ndim
 
 class TestTransverseWalker_NFEV(unittest.TestCase):
     def setUp(self):
-        from pele.optimize.tests._test_nfev import _PotWrapper
+        from pele.optimize.tests.test_nfev import _PotWrapper
         self.system = LJCluster(18)
         self.pot = _PotWrapper(self.system.get_potential())
     
