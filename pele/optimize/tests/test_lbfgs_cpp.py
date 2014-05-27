@@ -77,7 +77,20 @@ class TestLBFGS_CPP(unittest.TestCase):
         res2 = lbfgs2.run(5)
         res2 = lbfgs2.run(5)
         self.assert_same(res1, res2)
-        
+    
+    def test_result(self):
+        lbfgs = LBFGS_CPP(_xrand, _EG())
+        res = lbfgs.one_iteration()
+        self.assertIn("H0", res)
+        self.assertIn("energy", res)
+        self.assertIn("grad", res)
+        self.assertIn("success", res)
+        self.assertIn("coords", res)
+        self.assertIn("rms", res)
+        self.assertIn("nsteps", res)
+        self.assertIn("nfev", res)
+
+      
     def test_event_raise(self):
         class EventException(BaseException): pass
         def myevent(*args, **kwargs): raise EventException
