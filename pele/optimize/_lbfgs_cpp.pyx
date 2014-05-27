@@ -38,13 +38,15 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
     def __cinit__(self, x0, potential, double tol=1e-5, int M=4, double maxstep=0.1, 
                   double maxErise=1e-4, double H0=0.1, int iprint=-1,
                   energy=None, gradient=None,
-                  int nsteps=10000, int verbosity=0, events=None):
+                  int nsteps=10000, int verbosity=0, events=None, logger=None):
         if not issubclass(potential.__class__, _pele.BasePotential):
             if verbosity > 0:
                 print "LBFGS_CPP: potential is not subclass of BasePotential; wrapping it.", potential
 #                print "           Wrapping the potential like this is dangerous.  All python exceptions will be ignored"
             potential = _pythonpotential.CppPotentialWrapper(potential)
         self.pot = potential # so that the memory is not freed
+        if logger is not None:
+            print "warning c++ LBFGS is ignoring logger"
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
         self.thisptr = <_pele_opt.cGradientOptimizer*>new cppLBFGS(self.pot.thisptr, 
                _pele.Array[double](<double*> x0c.data, x0c.size),
