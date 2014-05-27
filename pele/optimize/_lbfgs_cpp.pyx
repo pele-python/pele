@@ -21,6 +21,7 @@ cdef extern from "pele/lbfgs.h" namespace "pele":
         void set_tol(double) except +
         void set_maxstep(double) except +
         void set_max_f_rise(double) except +
+        void set_use_relative_f(int) except +
         void set_max_iter(int) except +
         void set_iprint(int) except +
         void set_verbosity(int) except +
@@ -38,7 +39,8 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
     def __cinit__(self, x0, potential, double tol=1e-5, int M=4, double maxstep=0.1, 
                   double maxErise=1e-4, double H0=0.1, int iprint=-1,
                   energy=None, gradient=None,
-                  int nsteps=10000, int verbosity=0, events=None, logger=None):
+                  int nsteps=10000, int verbosity=0, events=None, logger=None,
+                  rel_energy=False):
         if not issubclass(potential.__class__, _pele.BasePotential):
             if verbosity > 0:
                 print "LBFGS_CPP: potential is not subclass of BasePotential; wrapping it.", potential
@@ -58,6 +60,8 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
         self.lbfgs_ptr.set_max_iter(nsteps)
         self.lbfgs_ptr.set_verbosity(verbosity)
         self.lbfgs_ptr.set_iprint(iprint)
+        if rel_energy:
+            self.lbfgs_ptr.set_use_relative_f(1)
         
         cdef np.ndarray[double, ndim=1] g_  
         if energy is not None and gradient is not None:

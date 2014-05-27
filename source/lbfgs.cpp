@@ -11,6 +11,7 @@ namespace pele {
         GradientOptimizer(potential, x0, tol),
         M_(M),
         max_f_rise_(1e-4),
+        use_relative_f_(false),
         rho_(M_),
         H0_(0.1),
         k_(0)
@@ -183,6 +184,13 @@ namespace pele {
             compute_func_gradient(xnew, fnew, gnew);
 
             double df = fnew - f_;
+            if (use_relative_f_) {
+                double fabs = 1e-100; 
+                if (f_ != 0) {
+                    fabs = abs(f_);
+                }
+                df /= fabs;
+            }
             if (df < max_f_rise_){
                 break;
             }

@@ -104,6 +104,13 @@ class TestLBFGS_CPP(unittest.TestCase):
             self.event_called = True
         self.do_check(_EG(), events=[myevent])
         self.assertTrue(self.event_called)
+    
+    def test_logger(self):
+        self.do_check(_EG(), logger=True)
+
+    def test_rel_energy(self):
+        self.do_check(_EG(), rel_energy=True)
+
         
 
 
