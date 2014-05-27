@@ -90,12 +90,12 @@ namespace pele {
     /**
      * Pairwise Lennard-Jones potential with smooth cutoff in a rectangular box
      */
-    class LJCutPeriodic : public SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance > {
+    class LJCutPeriodic : public SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance<3>> {
         public:
             LJCutPeriodic(double C6, double C12, double rcut, double const *boxvec)
-                : SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance> ( 
+                : SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance<3>> (
                         std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
-                        std::make_shared<periodic_distance>(boxvec[0], boxvec[1], boxvec[2])
+                        std::make_shared<periodic_distance<3>>(boxvec)
                         ) 
             {}
     };
@@ -104,18 +104,18 @@ namespace pele {
      * Pairwise Lennard-Jones potential with smooth cutoff with loops done
      * using atom lists
      */
-    class LJCutAtomList : public AtomListPotential<lj_interaction_cut_smooth, cartesian_distance> {
+    class LJCutAtomList : public AtomListPotential<lj_interaction_cut_smooth, cartesian_distance<3>> {
         public:
         LJCutAtomList(double C6, double C12, double rcut, Array<size_t> atoms1, Array<size_t> atoms2) :
-            AtomListPotential<lj_interaction_cut_smooth, cartesian_distance>(
+            AtomListPotential<lj_interaction_cut_smooth, cartesian_distance<3>>(
                     std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
-                    std::make_shared<cartesian_distance>(),
+                    std::make_shared<cartesian_distance<3>>(),
                     atoms1, atoms2)
         {}
         LJCutAtomList(double C6, double C12, double rcut, Array<size_t> atoms1) :
-            AtomListPotential<lj_interaction_cut_smooth, cartesian_distance>(
+            AtomListPotential<lj_interaction_cut_smooth, cartesian_distance<3>>(
                     std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
-                    std::make_shared<cartesian_distance>(),
+                    std::make_shared<cartesian_distance<3>>(),
                     atoms1)
         {}
     };

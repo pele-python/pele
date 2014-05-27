@@ -18,13 +18,13 @@ namespace pele
      * potential function.
      */
     template<typename pairwise_interaction, 
-                 typename distance_policy = cartesian_distance >
+                 typename distance_policy = cartesian_distance<3> >
     class SimplePairwisePotential : public BasePotential
     {
     protected:
+        static const size_t _ndim = distance_policy::_ndim;
         std::shared_ptr<pairwise_interaction> _interaction;
         std::shared_ptr<distance_policy> _dist;
-        size_t _ndim;
 
         SimplePairwisePotential(
                 std::shared_ptr<pairwise_interaction> interaction,
@@ -32,7 +32,6 @@ namespace pele
             _interaction(interaction), _dist(dist)
         {
             if(_dist == NULL) _dist = std::make_shared<distance_policy>();
-            _ndim = dist->get_ndim();
         }
 
     public:
@@ -52,7 +51,7 @@ namespace pele
     {
         double e=0.;
         double gij;
-        std::vector<double> dr(_ndim);
+        double dr[_ndim];
         const size_t natoms = x.size() / _ndim;
 
         grad.assign(0.);
@@ -81,7 +80,7 @@ namespace pele
                 Array<double> grad, Array<double> hess)
         {
             double hij, gij, e;
-            std::vector<double> dr(_ndim);
+            double dr[_ndim];
             const size_t N = x.size();
             const size_t natoms = x.size()/_ndim;
             if (x.size() != grad.size()) {
@@ -143,12 +142,12 @@ namespace pele
     {
         double e=0.;
         size_t const natoms = x.size()/_ndim;
+        double dr[_ndim];
 
         for(size_t atomi=0; atomi<natoms; ++atomi) {
             size_t i1 = _ndim*atomi;
             for(size_t atomj=atomi+1; atomj<natoms; ++atomj) {
                 size_t j1 = _ndim*atomj;
-                std::vector<double> dr(_ndim);
                 _dist->get_rij(dr, &x[i1], &x[j1]);
                 double r2 = 0;
                 for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
