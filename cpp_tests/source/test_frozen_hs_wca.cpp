@@ -2,7 +2,6 @@
 #include "pele/frozen_atoms.h"
 #include "pele/hs_wca.h"
 #include "pele/modified_fire.h"
-//#include "pele/lj.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -13,8 +12,10 @@ using pele::HS_WCAFrozen;
 using pele::HS_WCAPeriodicFrozen;
 using pele::HS_WCA;
 using pele::HS_WCAPeriodic;
-//using pele::LJFrozen;
-//using pele::LJ;
+using pele::HS_WCA2D;
+using pele::HS_WCA2DFrozen;
+using pele::HS_WCAPeriodic2D;
+using pele::HS_WCAPeriodic2DFrozen;
 
 class FrozenHS_WCATest: public ::testing::Test{
 public:
