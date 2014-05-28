@@ -134,7 +134,6 @@ class LJCutTest :  public PotentialTest
 {
 public:
     double c6, c12, rcut;
-    Array<double> y;
     size_t natoms;
 
     virtual void setup_potential(){
@@ -206,5 +205,44 @@ TEST_F(LJCutAtomListTest, EnergyGradient_AgreesWithNumerical){
 }
 
 TEST_F(LJCutAtomListTest, EnergyGradientHessian_AgreesWithNumerical){
+    test_energy_gradient_hessian();
+}
+
+class LJCutPeriodicAtomListTest :  public LJCutTest
+{
+public:
+
+    virtual void setup_potential(){
+        //make the box huge, soe the energy is not affected
+        //but displace some of the atoms, to check that the distances are being
+        //computed correctly
+        pele::Array<double> boxvec(3);
+        boxvec[0] = 110.;
+        boxvec[1] = 121.;
+        boxvec[2] = 132.;
+        x[0] += 2 * boxvec[0];
+        x[4] += 1 * boxvec[1];
+        x[5] += 3 * boxvec[2];
+        pele::Array<size_t> atoms(natoms);
+        for (size_t i =0; i<atoms.size(); ++i){
+            atoms[i] = i;
+        }
+        pot = std::shared_ptr<pele::BasePotential> (new pele::LJCutPeriodicAtomList(
+                c6, c12, rcut, boxvec, atoms
+                ));
+    }
+
+};
+
+
+TEST_F(LJCutPeriodicAtomListTest, Energy_Works){
+    test_energy();
+}
+
+TEST_F(LJCutPeriodicAtomListTest, EnergyGradient_AgreesWithNumerical){
+    test_energy_gradient();
+}
+
+TEST_F(LJCutPeriodicAtomListTest, EnergyGradientHessian_AgreesWithNumerical){
     test_energy_gradient_hessian();
 }
