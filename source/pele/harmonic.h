@@ -12,17 +12,17 @@ class BaseHarmonic : public BasePotential {
 protected:
     pele::Array<double> _origin, _distance;
     double _k;
-    size_t _nparticles;
-    BaseHarmonic(pele::Array<double> origin, double k):
+    size_t _ndim, _nparticles;
+    BaseHarmonic(pele::Array<double> origin, double k, size_t ndim):
             _origin(origin.copy()),_distance(origin.size()),
-            _k(k), _nparticles(origin.size()/3){}
+            _k(k), _ndim(ndim), _nparticles(origin.size()/_ndim){}
 public:
     virtual ~BaseHarmonic(){}
     virtual void get_distance(pele::Array<double> x)=0;
     virtual double inline get_energy(pele::Array<double> x);
     virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
-    virtual void set_k(double newk){_k = newk;};
-    virtual double get_k(){return _k;};
+    void set_k(double newk){_k = newk;};
+    double get_k(){return _k;};
 };
 
 
@@ -52,8 +52,8 @@ double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Arr
  */
 class Harmonic : public BaseHarmonic{
 public:
-    Harmonic(pele::Array<double> origin, double k)
-        : BaseHarmonic(origin, k){}
+    Harmonic(pele::Array<double> origin, double k, size_t ndim)
+        : BaseHarmonic(origin, k, ndim){}
 
     virtual void inline get_distance(pele::Array<double> x){
         assert(x.size() == _origin.size());
@@ -68,11 +68,9 @@ public:
  * Harmonic with cartesian distance and fixed centre of mass
  */
 class HarmonicCOM : public BaseHarmonic{
-protected:
-    size_t _ndim;
 public:
     HarmonicCOM(pele::Array<double> origin, double k, size_t ndim)
-        : BaseHarmonic(origin, k),_ndim(ndim){}
+        : BaseHarmonic(origin, k, ndim){}
 
     virtual void inline get_distance(pele::Array<double> x){
         assert(x.size() == _origin.size());
