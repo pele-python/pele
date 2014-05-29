@@ -27,26 +27,26 @@ cdef class Harmonic(_pele.BasePotential):
     cdef origin
     cdef k
     cdef pcom
-    cdef pndim
+    cdef pbdim
     
-    def __cinit__(self, np.ndarray[double, ndim=1] coords, double pk, com, ndim):
+    def __cinit__(self, coords, pk, bdim=3, com=False):
         
         cdef np.ndarray[double, ndim=1] origin = coords
         cdef double k = pk
         cdef bool pcom = com
-        cdef int pndim = ndim
+        cdef int pbdim = bdim
         
         if com is True:
-            self.thisptr = <_pele.cBasePotential*>new cHarmonicCOM(_pele.Array[double](<double*> origin.data, origin.size), k, pndim)
+            self.thisptr = <_pele.cBasePotential*>new cHarmonicCOM(_pele.Array[double](<double*> origin.data, origin.size), k, pbdim)
         else:
-            self.thisptr = <_pele.cBasePotential*>new cHarmonic(_pele.Array[double](<double*> origin.data, origin.size), k, pndim)
+            self.thisptr = <_pele.cBasePotential*>new cHarmonic(_pele.Array[double](<double*> origin.data, origin.size), k, pbdim)
             
         self.newptr = <cBaseHarmonic*> self.thisptr
         
         self.origin = origin
         self.k = k
         self.pcom = pcom
-        self.pndim = pndim
+        self.pbdim = pbdim
         
     def set_k(self, newk):
         self.k = newk
@@ -57,5 +57,5 @@ cdef class Harmonic(_pele.BasePotential):
         return k
     
     def __reduce__(self):
-        return (Harmonic,(self.origin, self.k, self.pcom, self.pndim))
+        return (Harmonic,(self.origin, self.k, self.pbdim, self.pcom))
         
