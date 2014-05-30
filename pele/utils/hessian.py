@@ -86,10 +86,10 @@ def get_eig(hess, **kwargs):
     """ 
     return np.linalg.eigh(hess, **kwargs)
 
-def sort_eigs(evals, evecs):
+def sort_eigs(evals, evecs, reverse=False):
     """return the sorted eigenvalues and eigenvectors"""
     mylist = [(evals[i], evecs[:,i]) for i in range(len(evals))]
-    sortlist = sorted(mylist, key=lambda x:x[0])
+    sortlist = sorted(mylist, key=lambda x:x[0], reverse=reverse)
     evals = np.array([wv[0] for wv in sortlist])
     evecs = evecs.copy()
     for i in range(len(evals)):
