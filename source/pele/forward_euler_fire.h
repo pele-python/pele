@@ -24,17 +24,14 @@ namespace pele {
                    /* the minuses in the following expressions are due to the fact that
                    * the gradients rather than the forces appear in the expression
                    */
-                  size_t i;
-                  double normdx;
-
-                  for(i =0; i < _x.size(); ++i) //this was after get_energy_gradient, moved for testing
+                  for(size_t i =0; i < _x.size(); ++i) //this was after get_energy_gradient, moved for testing
                   {
                       _v[i] -= _dt * _g[i] / _m[i];     //update velocity
                       _dx[i] = _dt * _v[i];    //build displacement vector
                       _gold[i] = _g[i]; //save gradient as old g
                   }
 
-                  normdx = norm(_dx);
+                  double normdx = norm(_dx);
 
                   if(normdx > _maxstep){
                     _dx *= (_maxstep / normdx); //resize displacement vector is greater than _maxstep
