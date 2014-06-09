@@ -10,6 +10,7 @@ namespace pele {
 
 class BaseHarmonic : public BasePotential {
 protected:
+    virtual void _get_distance(const pele::Array<double>& x)=0;
     pele::Array<double> _origin, _distance;
     double _k;
     size_t _ndim, _nparticles;
@@ -18,7 +19,6 @@ protected:
             _k(k), _ndim(ndim), _nparticles(origin.size()/_ndim){}
 public:
     virtual ~BaseHarmonic(){}
-    virtual void get_distance(pele::Array<double> x)=0;
     virtual double inline get_energy(pele::Array<double> x);
     virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
     void set_k(double newk){_k = newk;};
@@ -29,7 +29,7 @@ public:
 /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
 double inline BaseHarmonic::get_energy(pele::Array<double> x) {
     double norm2 = 0;
-    this->get_distance(x);
+    this->_get_distance(x);
     for(size_t i=0;i<x.size();++i)
         norm2 += _distance[i]*_distance[i];
     return 0.5 * _k * norm2;
@@ -39,7 +39,7 @@ double inline BaseHarmonic::get_energy(pele::Array<double> x) {
 double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad) {
     assert(grad.size() == _origin.size());
     double norm2 = 0;
-    this->get_distance(x);
+    this->_get_distance(x);
     for(size_t i=0;i<x.size();++i){
         norm2 += _distance[i]*_distance[i];
         grad[i] = _k * _distance[i];
@@ -55,7 +55,7 @@ public:
     Harmonic(pele::Array<double> origin, double k, size_t ndim)
         : BaseHarmonic(origin, k, ndim){}
 
-    virtual void inline get_distance(pele::Array<double> x){
+    virtual void inline _get_distance(const pele::Array<double>& x){
         assert(x.size() == _origin.size());
         for(size_t i=0;i<x.size();++i)
         {
@@ -72,7 +72,7 @@ public:
     HarmonicCOM(pele::Array<double> origin, double k, size_t ndim)
         : BaseHarmonic(origin, k, ndim){}
 
-    virtual void inline get_distance(pele::Array<double> x){
+    virtual void inline _get_distance(const pele::Array<double>& x){
         assert(x.size() == _origin.size());
         pele::Array<double> delta_com(_ndim,0);
 
