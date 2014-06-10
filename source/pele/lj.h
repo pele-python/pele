@@ -83,12 +83,12 @@ namespace pele {
     /**
      * Pairwise Lennard-Jones potential in a rectangular box
      */
-    class LJPeriodic : public SimplePairwisePotential< lj_interaction, periodic_distance > {
+    class LJPeriodic : public SimplePairwisePotential< lj_interaction, periodic_distance<3> > {
         public:
             LJPeriodic(double C6, double C12, double const *boxvec)
-                : SimplePairwisePotential< lj_interaction, periodic_distance> ( 
+                : SimplePairwisePotential< lj_interaction, periodic_distance<3>> (
                         std::make_shared<lj_interaction>(C6, C12),
-                        std::make_shared<periodic_distance>(boxvec[0], boxvec[1], boxvec[2])
+                        std::make_shared<periodic_distance<3>>(boxvec)
                         ) 
             {}
     };

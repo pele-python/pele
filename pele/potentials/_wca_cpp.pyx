@@ -15,23 +15,34 @@ cdef extern from "pele/wca.h" namespace "pele":
         cWCAPeriodic(double sig, double eps, double * boxvec) except +
     cdef cppclass  cWCANeighborList "pele::WCANeighborList":
         cWCANeighborList(_pele.Array[long] & ilist, double sig, double eps) except +
+    cdef cppclass  cWCA2D "pele::WCA2D":
+        cWCA2D(double sig, double eps) except +
+    cdef cppclass  cWCAPeriodic2D "pele::WCAPeriodic2D":
+        cWCAPeriodic2D(double sig, double eps, double * boxvec) except +
 
 cdef class WCA(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation
     """
     cpdef bool periodic 
-    def __cinit__(self, sig=1.0, eps=1.0, boxvec=None, boxl=None):
+    def __cinit__(self, sig=1.0, eps=1.0, ndim=3, boxvec=None, boxl=None):
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:
-            boxvec = [boxl] * 3
+            boxvec = [boxl] * ndim
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
             self.periodic = False
-            self.thisptr = <_pele.cBasePotential*>new cWCA(sig, eps)
+            if ndim == 2:
+                self.thisptr = <_pele.cBasePotential*>new cWCA2D(sig, eps)
+            else:
+                self.thisptr = <_pele.cBasePotential*>new cWCA(sig, eps)
         else:
             self.periodic = True
+            assert(len(boxvec)==ndim)
             bv = np.array(boxvec, dtype=float)
-            self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig, eps, <double*> bv.data)
+            if ndim == 2:
+                self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic2D(sig, eps, <double*> bv.data)
+            else:
+                self.thisptr = <_pele.cBasePotential*>new cWCAPeriodic(sig, eps, <double*> bv.data)
             
 cdef class WCANeighborList(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation

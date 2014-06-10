@@ -104,6 +104,10 @@ namespace pele{
       {
           //arrays are already wrapped by the integrator, must not wrap them again, just update their values, dont's use array.copy()
           // or will wrap a copy to the array
+          if (!func_initialized_)
+          {
+              initialize_func_gradient();
+          }
           iter_number_ = 0;
           x_.assign(x0);
           f_ = potential_->get_energy_gradient(x_, g_);

@@ -21,6 +21,11 @@ namespace pele{
                              * given step.  This is the criterion for the
                              * backtracking line search.
                              */
+        bool use_relative_f_; /**< If True, then max_f_rise is the relative
+                              * maximum the function is allowed to rise during
+                              * a step.  
+                              * (f_new - f_old) / abs(f_old) < max_f_rise
+                              */
 
         // places to store the lbfgs memory
         std::vector<Array<double> > s_;
@@ -60,8 +65,12 @@ namespace pele{
         }
         void set_max_f_rise(double max_f_rise) { max_f_rise_ = max_f_rise; }
 
+        void set_use_relative_f(int use_relative_f) { 
+            use_relative_f_ = (bool) use_relative_f;
+        }
+
         // functions for accessing the results
-        double get_H0() { return H0_; }
+        double get_H0() const { return H0_; }
 
     private:
 

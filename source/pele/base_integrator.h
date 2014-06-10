@@ -50,10 +50,7 @@ class BaseIntegrator
       BaseIntegrator(pele::BasePotential * potential, pele::Array<double> x, double dt, double maxstep, pele::Array<double> &v,
               pele::Array<double> &g, pele::Array<double> &m);
 
-      virtual ~BaseIntegrator() {
-          /*if (_wrap_E == false)
-              delete _E;*/
-      }
+      virtual ~BaseIntegrator() {}
 
       virtual inline void oneiteration()
       {
@@ -163,7 +160,8 @@ class BaseIntegrator
         }
         else
         {
-            assert(m.size() == x.size()/3);
+            throw std::runtime_error("BaseIterator::BaseIterator passing masses, feature not implemented");
+            /*assert(m.size() == x.size()/3);
             size_t j = 0;
             _m.resize(m.size());
 
@@ -171,7 +169,7 @@ class BaseIntegrator
             {
                 _m[i] = m[j];
                 if ((i+1)%3 == 0){ ++j; }
-            }
+            }*/
         }
     }
 
