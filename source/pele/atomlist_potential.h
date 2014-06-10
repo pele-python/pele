@@ -16,6 +16,7 @@ namespace pele {
         Array<size_t> _atoms1;
         Array<size_t> _atoms2;
         bool _one_list;
+        static const size_t _ndim = distance_policy::_ndim;
 
         AtomListPotential(
                 std::shared_ptr<pairwise_interaction> interaction,
@@ -48,18 +49,20 @@ namespace pele {
         {
             double e=0.;
             size_t jstart = 0;
+            double dr[_ndim];
 
             for(size_t i=0; i<_atoms1.size(); ++i) {
                 size_t atom1 = _atoms1[i];
-                size_t i1 = 3 * atom1;
+                size_t i1 = _ndim * atom1;
                 if (_one_list)
                     jstart = i+1;
                 for(size_t j=jstart; j<_atoms2.size(); ++j) {
                     size_t atom2 = _atoms2[j];
-                    size_t i2 = 3 * atom2;
-                    double dr[3];
+                    size_t i2 = _ndim * atom2;
+
                     _dist->get_rij(dr, &x[i1], &x[i2]);
-                    double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+                    double r2 = 0;
+                    for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
                     e += _interaction->energy(r2, atom1, atom2);
                 }
             }
@@ -74,26 +77,29 @@ namespace pele {
                 throw std::invalid_argument("the gradient has the wrong size");
             }
             double e=0.;
-            double gij, dr[3];
+            double gij;
             size_t jstart = 0;
+            double dr[_ndim];;
 
             for(size_t i=0; i<_atoms1.size(); ++i) {
                 size_t atom1 = _atoms1[i];
-                size_t i1 = 3 * atom1;
+                size_t i1 = _ndim * atom1;
                 if (_one_list){
                     jstart = i+1;
                 }
                 for(size_t j=jstart; j<_atoms2.size(); ++j) {
                     size_t atom2 = _atoms2[j];
-                    size_t i2 = 3 * atom2;
+                    size_t i2 = _ndim * atom2;
 
                     _dist->get_rij(dr, &x[i1], &x[i2]);
 
-                    double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+                    double r2 = 0;
+                    for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
+
                     e += _interaction->energy_gradient(r2, &gij, atom1, atom2);
-                    for(size_t k=0; k<3; ++k)
+                    for(size_t k=0; k<_ndim; ++k)
                         grad[i1+k] -= gij * dr[k];
-                    for(size_t k=0; k<3; ++k)
+                    for(size_t k=0; k<_ndim; ++k)
                         grad[i2+k] += gij * dr[k];
                 }
             }
@@ -112,32 +118,34 @@ namespace pele {
             }
 
             double e=0.;
-            double hij, gij, dr[3];
+            double hij, gij;
             size_t jstart = 0;
+            double dr[_ndim];
             const size_t N = x.size();
 
             for(size_t i=0; i<_atoms1.size(); ++i) {
                 size_t atom1 = _atoms1[i];
-                size_t i1 = 3 * atom1;
+                size_t i1 = _ndim * atom1;
 
                 if (_one_list){
                     jstart = i+1;
                 }
                 for(size_t j=jstart; j<_atoms2.size(); ++j) {
                     size_t atom2 = _atoms2[j];
-                    size_t i2 = 3 * atom2;
+                    size_t i2 = _ndim * atom2;
 
                     _dist->get_rij(dr, &x[i1], &x[i2]);
+                    double r2 = 0;
+                    for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
 
-                    double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
                     e += _interaction->energy_gradient_hessian(r2, &gij, &hij, atom1, atom2);
-                    for(size_t k=0; k<3; ++k)
+                    for(size_t k=0; k<_ndim; ++k)
                         grad[i1+k] -= gij * dr[k];
-                    for(size_t k=0; k<3; ++k)
+                    for(size_t k=0; k<_ndim; ++k)
                         grad[i2+k] += gij * dr[k];
 
 
-                    for (size_t k=0; k<3; ++k){
+                    for (size_t k=0; k<_ndim; ++k){
                         //diagonal block - diagonal terms
                         double Hii_diag = (hij+gij)*dr[k]*dr[k]/r2 - gij;
                         hess[N*(i1+k)+i1+k] += Hii_diag;
@@ -146,7 +154,7 @@ namespace pele {
                         double Hij_diag = -Hii_diag;
                         hess[N*(i1+k)+i2+k] = Hij_diag;
                         hess[N*(i2+k)+i1+k] = Hij_diag;
-                        for (size_t l = k+1; l<3; ++l){
+                        for (size_t l = k+1; l<_ndim; ++l){
                             //diagonal block - off diagonal terms
                             double Hii_off = (hij+gij)*dr[k]*dr[l]/r2;
                             hess[N*(i1+k)+i1+l] += Hii_off;

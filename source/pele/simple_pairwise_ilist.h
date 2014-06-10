@@ -18,13 +18,14 @@ namespace pele
      * pairwise_interaction is a passed parameter and defines the actual
      * potential function.
      */
-    template<typename pairwise_interaction, typename distance_policy=cartesian_distance >
+    template<typename pairwise_interaction, typename distance_policy=cartesian_distance<3> >
     class SimplePairwiseNeighborList : public BasePotential
     {
         protected:
             pairwise_interaction *_interaction;
             distance_policy *_dist;
             std::vector<long int> const _neighbor_list;
+            static const size_t _ndim = distance_policy::_ndim;
 
             SimplePairwiseNeighborList(pairwise_interaction *interaction, 
                     Array<long int> const & neighbor_list, distance_policy *dist=NULL ) : 
@@ -52,7 +53,7 @@ namespace pele
                    grad)
     {
         double e=0.;
-        double gij, dr[3];
+        double gij, dr[_ndim];
         const size_t n = x.size();
         const size_t nlist = _neighbor_list.size();
         assert(x.size() == grad.size());
@@ -61,7 +62,7 @@ namespace pele
             grad[i] = 0.;
 
 #ifndef NDEBUG
-        const size_t natoms = x.size()/3;
+        const size_t natoms = x.size()/_ndim;
         for(size_t i=0; i<nlist; ++i)
             assert(_neighbor_list[i] < (long int)natoms);
 #endif
@@ -69,18 +70,19 @@ namespace pele
         for(size_t i=0; i<nlist; i+=2) {
             size_t atom1 = _neighbor_list[i];
             size_t atom2 = _neighbor_list[i+1];
-            size_t i1 = 3 * atom1;
-            size_t i2 = 3 * atom2;
+            size_t i1 = _ndim * atom1;
+            size_t i2 = _ndim * atom2;
 
-            for(size_t k=0; k<3; ++k)
+            for(size_t k=0; k<_ndim; ++k)
                 dr[k] = x[i1+k] - x[i2+k];
 
-            double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+            double r2 = 0;
+            for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
 
             e += _interaction->energy_gradient(r2, &gij, atom1, atom2);
-            for(size_t k=0; k<3; ++k)
+            for(size_t k=0; k<_ndim; ++k)
                 grad[i1+k] -= gij * dr[k];
-            for(size_t k=0; k<3; ++k)
+            for(size_t k=0; k<_ndim; ++k)
                 grad[i2+k] += gij * dr[k];
         }
 
@@ -92,18 +94,19 @@ namespace pele
            distance_policy>::get_energy(Array<double> x)
     {
         double e=0.;
-//        size_t const natoms = x.size()/3;
+//        size_t const natoms = x.size()/_ndim;
         size_t const nlist = _neighbor_list.size();
 
         for(size_t i=0; i<nlist; i+=2) {
             size_t atom1 = _neighbor_list[i];
             size_t atom2 = _neighbor_list[i+1];
-            size_t i1 = 3 * atom1;
-            size_t i2 = 3 * atom2;
-            double dr[3];
-            for(size_t k=0; k<3; ++k)
+            size_t i1 = _ndim * atom1;
+            size_t i2 = _ndim * atom2;
+            double dr[_ndim];
+            for(size_t k=0; k<_ndim; ++k)
                 dr[k] = x[i1+k] - x[i2+k];
-            double r2 = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+            double r2 = 0;
+            for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
             e += _interaction->energy(r2, atom1, atom2);
         }
 
