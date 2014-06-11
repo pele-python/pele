@@ -26,7 +26,7 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(_pele_opt.GradientOptimizer):
     
     def __cinit__(self, x0, potential, double dtstart = 0.1, double dtmax = 1, double maxstep=0.5, size_t Nmin=5, double finc=1.1, 
                   double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-3, cbool stepback = True, 
-                  int iprint=-1, energy=None, gradient=None, int nsteps=100000, int verbosity=0, events = None):
+                  int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0, events = None):
         
         if not issubclass(potential.__class__, _pele.BasePotential):
             if verbosity > 0:

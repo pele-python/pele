@@ -5,8 +5,6 @@
 #include "base_potential.h"
 #include "array.h"
 #include "optimizer.h"
-#include "base_integrator.h"
-#include "forward_euler_fire.h"
 
 using std::vector;
 
@@ -48,13 +46,12 @@ namespace pele{
 
     class MODIFIED_FIRE : public GradientOptimizer{
     private :
-      double _dtstart, _dt, _dtmax, _maxstep, _Nmin, _finc, _fdec, _fa, _astart, _a, _fold;
-      pele::Array<double> _v, _xold, _gold;
+      double _dtstart, _dt, _dtmax, _maxstep, _Nmin, _finc, _fdec, _fa, _astart, _a, _fold, _ifnorm, _vnorm;
+      pele::Array<double> _v, _dx, _xold, _gold;
       size_t _fire_iter_number, _N;
       bool _stepback;
-      //pele::VelocityVerlet _integrator; //create VelocityVerlet integrator
-      pele::ForwardEuler _integrator; //create ForwardEuler integrator
-
+      inline void _ForwardEuler_integration();
+      inline void _VelocityVerlet_integration();
     public :
 
         /**
@@ -65,7 +62,7 @@ namespace pele{
       /**
        * Destructorgit undo rebase
        */
-      ~MODIFIED_FIRE() {}
+      virtual ~MODIFIED_FIRE() {}
 
       /**
        * Do one iteration iteration of the optimization algorithm
@@ -74,31 +71,46 @@ namespace pele{
       void one_iteration();
 
       /**
-       * Overload initialize_func_gradient from parent class (here we need to wrap the integrator)
+       * Overload initialize_func_gradient from parent class
        */
 
       void initialize_func_gradient()
             {
-                nfev_ += 1;                     //this accounts for the energy evaluation done by the integrator (g is computed by the constructor of the integrator)
-                _integrator.wrap_v(_v);         //the velocity array wraps the integrator velocity array so that it updates concurrently
-                _integrator.wrap_g(g_);         //the gradient array wraps the integrator gradient array so that it updates concurrently
-                _integrator.wrap_E(&f_);        //the function value (E) wraps the integrator energy so that it updates concurrently
-                _integrator.wrap_gold(_gold);   //the gradient array wraps the integrator gradient array so that it updates concurrently
+                nfev_ += 1;                     //this accounts for the energy evaluation done by the integrator
+                f_ = potential_->get_energy_gradient(x_, g_);
                 _fold = f_;
-                rms_ = norm(g_) / sqrt(g_.size());
                 for(size_t k=0; k<x_.size();++k) //set initial velocities (using forward Euler)
                   {
                       _v[k] = -g_[k]*_dt;
                   }
+                _ifnorm = 1./norm(g_);
+                _vnorm = norm(_v);
+                rms_ = 1. / (_ifnorm*sqrt(_N));
                 func_initialized_ = true;
             }
 
-      //consider removing set func gradient, it doesn't fit in this wrapping framework
       void set_func_gradient(double f, Array<double> grad)
-          {
-                throw std::runtime_error("MODIFIED_FIRE::set_func_gradient: this function is not implemented "
-                        "because the gradient is already initialised by BaseIntegrator");
+      {
+          if (grad.size() != g_.size()){
+              throw std::invalid_argument("the gradient has the wrong size");
           }
+          if (iter_number_ > 0){
+              cout << "warning: setting f and grad after the first iteration.  this is dangerous.\n";
+          }
+
+          // copy the function and gradient
+          f_ = f;
+          _fold = f_;
+          g_.assign(grad);
+          for(size_t k=0; k<x_.size();++k) //set initial velocities (using forward Euler)
+            {
+                _v[k] = -g_[k]*_dt;
+            }
+          _ifnorm = 1./norm(g_);
+          _vnorm = norm(_v);
+          rms_ = 1. / (_ifnorm*sqrt(_N));
+          func_initialized_ = true;
+      }
 
       inline void reset(Array<double> &x0)
       {
@@ -117,13 +129,14 @@ namespace pele{
           _dt = _dtstart;
           _a = _astart;
           _fold = f_;
-          rms_ = norm(g_) / sqrt(g_.size());
           _xold.assign(x_);
           _gold.assign(g_);
           for(size_t k=0; k<x_.size();++k){
               _v[k] = -g_[k]*_dt;
           }
-          _integrator.set_dt(_dt);
+          _ifnorm = 1./norm(g_);
+          _vnorm = norm(_v);
+          rms_ = 1. / (_ifnorm*sqrt(_N));
       }
 
 
@@ -136,37 +149,78 @@ namespace pele{
           _dtmax(dtmax), _maxstep(maxstep), _Nmin(Nmin),
           _finc(finc), _fdec(fdec), _fa(fa),
           _astart(astart), _a(astart), _fold(f_),
-          _v(x0.size(),0), _xold(x0.copy()),_gold(g_.copy()),
+          _ifnorm(0),_vnorm(0),
+          _v(x0.size(),0), _dx(x0.size()), _xold(x0.copy()),_gold(g_.copy()),
           _fire_iter_number(0), _N(x_.size()),
-          _stepback(stepback),
-          _integrator(potential_, x_, _dtstart, _maxstep)
-              {}
+          _stepback(stepback){}
+
+
+  inline void MODIFIED_FIRE::_VelocityVerlet_integration()
+  {
+      /* the minuses in the following expressions are due to the fact that
+       * the gradients rather than the forces appear in the expression
+       */
+      for(size_t i=0; i<_N; ++i)
+      {
+          _v[i] -= 0.5 * _dt * (_gold[i] + g_[i]);         //update velocity assumes all masses 1
+          _dx[i] = _dt * (_v[i] - 0.5 * _dt * g_[i]);      //build displacement vector, assumes all masses 1
+      }
+      _gold.assign(g_);             //save gradient as old g
+      double normdx = norm(_dx);
+
+      if(normdx > _maxstep){
+          _dx *= (_maxstep / normdx); //resize displacement vector is greater than _maxstep
+      }
+
+      x_ += _dx;
+
+      f_ = potential_->get_energy_gradient(x_, g_);    //update gradient
+  }
+
+  inline void MODIFIED_FIRE::_ForwardEuler_integration()
+  {
+      /* the minuses in the following expressions are due to the fact that
+       * the gradients rather than the forces appear in the expression
+       */
+      for(size_t i=0; i<_N; ++i) //this was after get_energy_gradient, moved for testing
+      {
+          _v[i] -= _dt * g_[i];     //update velocity, assumes all masses are 1
+          _dx[i] = _dt * _v[i];     //build displacement vector
+      }
+
+      _gold.assign(g_);             //save gradient as old g
+      double normdx = norm(_dx);
+
+      if(normdx > _maxstep){
+          _dx *= (_maxstep / normdx); //resize displacement vector is greater than _maxstep
+      }
+
+      x_ += _dx;
+
+      f_ = potential_->get_energy_gradient(x_, g_);    //update gradient
+  }
 
   inline void MODIFIED_FIRE::one_iteration()
   {
-      double ifnorm, vnorm, P;
-      //size_t k;
       nfev_ += 1;
       iter_number_ += 1;
       _fire_iter_number += 1; //this is different from iter_number_ which does not get reset
 
       //save old configuration in case next step has P < 0
       _fold = f_; //set f_ old before integration step
-      _xold.assign(x_); //save x as xold (gold is saved in the integrator)
+      _xold.assign(x_); //save x as xold, gold saved in integrator (because velocity verlet needs it, if vv is used)
 
       /*equation written in this conditional statement _v = (1- _a)*_v + _a * funit * vnorm*/
-      ifnorm = 1. / norm(g_);
-      vnorm = norm(_v);
 
-      for (size_t i =0; i < _v.size(); ++i)
+      for (size_t i=0; i < _N; ++i)
       {
-          _v[i] = (1. - _a) * _v[i] - _a * g_[i] * ifnorm * vnorm;
+          _v[i] = (1. - _a) * _v[i] - _a * g_[i] * _ifnorm * _vnorm;
       }
 
       /*run MD*/
-      _integrator.oneiteration();
+      this->_ForwardEuler_integration();
 
-      P = -1 * dot(_v,g_);
+      double P = -1 * dot(_v,g_);
 
       if (P > 0)
       {
@@ -174,17 +228,17 @@ namespace pele{
           {
               _dt = std::min(_dt* _finc, _dtmax);
               _a *= _fa;
-              _integrator.set_dt(_dt);
           }
 
-          rms_ = 1. / (ifnorm * sqrt(_N)); //update rms
+          _ifnorm = 1./norm(g_);
+          _vnorm = norm(_v);
+          rms_ = 1. / (_ifnorm * sqrt(_N)); //update rms
       }
       else
       {
           _dt *= _fdec;
           _a = _astart;
           _fire_iter_number = 0;
-          _integrator.set_dt(_dt);
           _v.assign(0);
 
           //reset position and gradient to the one before the step (core of modified fire) reset velocity to initial (0)
