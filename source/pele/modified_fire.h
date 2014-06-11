@@ -46,7 +46,7 @@ namespace pele{
 
     class MODIFIED_FIRE : public GradientOptimizer{
     private :
-      double _dtstart, _dt, _dtmax, _maxstep, _Nmin, _finc, _fdec, _fa, _astart, _a, _fold;
+      double _dtstart, _dt, _dtmax, _maxstep, _Nmin, _finc, _fdec, _fa, _astart, _a, _fold, _ifnorm, _vnorm;
       pele::Array<double> _v, _dx, _xold, _gold;
       size_t _fire_iter_number, _N;
       bool _stepback;
@@ -79,11 +79,13 @@ namespace pele{
                 nfev_ += 1;                     //this accounts for the energy evaluation done by the integrator
                 f_ = potential_->get_energy_gradient(x_, g_);
                 _fold = f_;
-                rms_ = norm(g_) / sqrt(g_.size());
                 for(size_t k=0; k<x_.size();++k) //set initial velocities (using forward Euler)
                   {
                       _v[k] = -g_[k]*_dt;
                   }
+                _ifnorm = 1./norm(g_);
+                _vnorm = norm(_v);
+                rms_ = 1. / (_ifnorm*sqrt(_N));
                 func_initialized_ = true;
             }
 
@@ -100,12 +102,13 @@ namespace pele{
           f_ = f;
           _fold = f_;
           g_.assign(grad);
-          rms_ = norm(g_) / sqrt(g_.size());
           for(size_t k=0; k<x_.size();++k) //set initial velocities (using forward Euler)
             {
                 _v[k] = -g_[k]*_dt;
             }
-
+          _ifnorm = 1./norm(g_);
+          _vnorm = norm(_v);
+          rms_ = 1. / (_ifnorm*sqrt(_N));
           func_initialized_ = true;
       }
 
@@ -126,12 +129,14 @@ namespace pele{
           _dt = _dtstart;
           _a = _astart;
           _fold = f_;
-          rms_ = norm(g_) / sqrt(g_.size());
           _xold.assign(x_);
           _gold.assign(g_);
           for(size_t k=0; k<x_.size();++k){
               _v[k] = -g_[k]*_dt;
           }
+          _ifnorm = 1./norm(g_);
+          _vnorm = norm(_v);
+          rms_ = 1. / (_ifnorm*sqrt(_N));
       }
 
 
@@ -144,6 +149,7 @@ namespace pele{
           _dtmax(dtmax), _maxstep(maxstep), _Nmin(Nmin),
           _finc(finc), _fdec(fdec), _fa(fa),
           _astart(astart), _a(astart), _fold(f_),
+          _ifnorm(0),_vnorm(0),
           _v(x0.size(),0), _dx(x0.size()), _xold(x0.copy()),_gold(g_.copy()),
           _fire_iter_number(0), _N(x_.size()),
           _stepback(stepback){}
@@ -205,12 +211,10 @@ namespace pele{
       _xold.assign(x_); //save x as xold, gold saved in integrator (because velocity verlet needs it, if vv is used)
 
       /*equation written in this conditional statement _v = (1- _a)*_v + _a * funit * vnorm*/
-      double ifnorm = 1./norm(g_);
-      double vnorm = norm(_v);
 
-      for (size_t i =0; i < _N; ++i)
+      for (size_t i=0; i < _N; ++i)
       {
-          _v[i] = (1. - _a) * _v[i] - _a * g_[i] * ifnorm * vnorm;
+          _v[i] = (1. - _a) * _v[i] - _a * g_[i] * _ifnorm * _vnorm;
       }
 
       /*run MD*/
@@ -226,7 +230,9 @@ namespace pele{
               _a *= _fa;
           }
 
-          rms_ = 1. / (ifnorm * sqrt(_N)); //update rms
+          _ifnorm = 1./norm(g_);
+          _vnorm = norm(_v);
+          rms_ = 1. / (_ifnorm * sqrt(_N)); //update rms
       }
       else
       {
