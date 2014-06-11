@@ -1,5 +1,5 @@
-#ifndef _PELE_LOWESTEIGPOTENTIAL_H
-#define _PELE_LOWESTEIGPOTENTIAL_H
+#ifndef _PELE_LOWEST_EIG_POTENTIAL_H
+#define _PELE_LOWEST_EIG_POTENTIAL_H
 
 #include "base_potential.h"
 #include "array.h"
@@ -51,6 +51,7 @@ inline void OrthogonalizeTranslational::orthogonalize(Array<double>& coords, Arr
         for(size_t j=0;j<_ndim;++j)
             vector[j] -= dot_prod[i]*_tr_evec[i][j];
     }
+
 }
 
 /*
@@ -72,12 +73,13 @@ public:
     virtual ~LowestEigPotential(){}
     virtual double inline get_energy(pele::Array<double> x);
     virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
+    void reset_coords(pele::Array<double> new_coords);
 };
 
 /*constructor*/
 
 LowestEigPotential::LowestEigPotential(pele::BasePotential * potential, pele::Array<double> coords, size_t bdim, double d):
-        _potential(potential), _coords(coords), _coordsd(coords), _g(_coords.size()), _gd(_coords.size()), _bdim(bdim),
+        _potential(potential), _coords(coords), _coordsd(coords.size()), _g(_coords.size()), _gd(_coords.size()), _bdim(bdim),
         _natoms(_coords.size()/_bdim), _d(d), _orthog(_natoms,_bdim)
     {
         double e = _potential->get_energy_gradient(_coords,_g);
@@ -88,6 +90,7 @@ double inline LowestEigPotential::get_energy(pele::Array<double> x) {
 
     _orthog.orthogonalize(_coords, x);
     double normx = norm(x);
+
     for(size_t i=0;i<x.size();++i)
         _coordsd[i] = _coords[i] + _d*x[i]/normx;
 
@@ -102,7 +105,9 @@ double inline LowestEigPotential::get_energy(pele::Array<double> x) {
 double inline LowestEigPotential::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad) {
 
     _orthog.orthogonalize(_coords, x);
+
     double normx = norm(x);
+
     for(size_t i=0;i<x.size();++i)
         _coordsd[i] = _coords[i] + _d*x[i]/normx;;
 
@@ -115,6 +120,12 @@ double inline LowestEigPotential::get_energy_gradient(pele::Array<double> x, pel
     }
 
     return mu;
+}
+
+void LowestEigPotential::reset_coords(pele::Array<double> new_coords)
+{
+    _coords.assign(new_coords);
+    double e = _potential->get_energy_gradient(_coords,_g);
 }
 
 }
