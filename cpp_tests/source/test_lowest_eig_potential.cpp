@@ -18,7 +18,7 @@ class LowestEigPotentialTest :  public ::testing::Test
     public:
     std::shared_ptr<pele::BasePotential> _potential;
     std::shared_ptr<pele::BasePotential> _lowesteigpot;
-    std::shared_ptr<pele::LBFGS> _lbfgs;
+    std::shared_ptr<pele::GradientOptimizer> _lbfgs;
     size_t _natoms, _bdim, _ndim, _M;
     pele::Array<double> _x, _g, _ranvec;
     pele::Array<double> ev0, ev1, ev2;

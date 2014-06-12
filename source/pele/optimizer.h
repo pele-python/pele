@@ -43,12 +43,12 @@ public:
     /**
      * accessors
      */
-    virtual Array<double> get_x() = 0;
-    virtual Array<double> get_g() = 0;
-    virtual double get_f() = 0;
-    virtual double get_rms() = 0;
-    virtual int get_nfev() = 0;
-    virtual int get_niter() = 0;
+    virtual Array<double> get_x() const = 0;
+    virtual Array<double> get_g() const = 0;
+    virtual double get_f() const = 0;
+    virtual double get_rms() const = 0;
+    virtual int get_nfev() const = 0;
+    virtual int get_niter() const = 0;
     virtual bool success() = 0;
 };
 
@@ -182,13 +182,13 @@ public :
 
 
     // functions for accessing the status of the optimizer
-    Array<double> get_x() { return x_.copy(); } //debug
-    Array<double> get_g() { return g_.copy(); }
-    double get_f() { return f_; }
-    double get_rms() { return rms_; }
-    int get_nfev() { return nfev_; }
-    int get_niter() { return iter_number_; }
-    int get_maxiter() { return maxiter_; }
+    Array<double> get_x() const { return x_.copy(); } //debug
+    Array<double> get_g() const { return g_.copy(); }
+    double get_f() const { return f_; }
+    double get_rms() const { return rms_; }
+    int get_nfev() const { return nfev_; }
+    int get_niter() const { return iter_number_; }
+    int get_maxiter() const { return maxiter_; }
     bool success() { return stop_criterion_satisfied(); }
 
     /**
