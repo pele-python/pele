@@ -18,15 +18,15 @@ class OrthogonalizeTranslational : public Orthogonalize{
 protected:
     std::vector<pele::Array<double>> _tr_evec;
     size_t _natoms, _bdim, _ndim;
-    double _d;
+    double _d, _tol;
 public:
-    OrthogonalizeTranslational(size_t natoms, size_t bdim);
+    OrthogonalizeTranslational(size_t natoms, size_t bdim, double tol=1e-6);
     virtual ~OrthogonalizeTranslational(){}
     virtual inline void orthogonalize(Array<double>& coords, Array<double>& vector);
 };
 
-OrthogonalizeTranslational::OrthogonalizeTranslational(size_t natoms, size_t bdim):
-        _natoms(natoms),_bdim(bdim),_ndim(bdim*natoms)
+OrthogonalizeTranslational::OrthogonalizeTranslational(size_t natoms, size_t bdim, double tol):
+        _natoms(natoms),_bdim(bdim),_ndim(bdim*natoms),_tol(tol)
 {
     /*initialize translational eigenvectors to canonical orthonormal basis*/
     double v = 1/sqrt(_natoms);
@@ -41,17 +41,29 @@ OrthogonalizeTranslational::OrthogonalizeTranslational(size_t natoms, size_t bdi
 
 inline void OrthogonalizeTranslational::orthogonalize(Array<double>& coords, Array<double>& vector)
 {
+    bool success = true;
     pele::Array<double> dot_prod(_bdim);
-
-    for (size_t i=0; i<_bdim;++i)
-        dot_prod[i] = dot(_tr_evec[i],vector);
-
-    for (size_t i=0; i<_bdim;++i)
-    {
-        for(size_t j=0;j<_ndim;++j)
-            vector[j] -= dot_prod[i]*_tr_evec[i][j];
+    vector /= norm(vector);
+    //generally in this loop success will be set to false
+    for (size_t i=0; i<_bdim;++i){
+      dot_prod[i] = dot(_tr_evec[i],vector);
+      if(std::abs(dot_prod[i]) > _tol){success = false;};
     }
 
+    while (success == false)
+    {
+        success = true;
+        for (size_t i=0; i<_bdim;++i)
+        {
+            for(size_t j=0;j<_ndim;++j)
+                vector[j] -= dot_prod[i]*_tr_evec[i][j];
+        }
+        vector /= norm(vector);
+        for (size_t i=0; i<_bdim;++i){
+            dot_prod[i] = dot(_tr_evec[i],vector);
+            if (std::abs(dot_prod[i]) > _tol){success = false;};
+        }
+    }
 }
 
 /*
@@ -69,7 +81,7 @@ protected:
     double _d;
     OrthogonalizeTranslational _orthog;
 public:
-    LowestEigPotential(pele::BasePotential * potential, pele::Array<double> coords, size_t bdim, double d=1e-6);
+    LowestEigPotential(pele::BasePotential * potential, pele::Array<double> coords, size_t bdim, double d=1e-4);
     virtual ~LowestEigPotential(){}
     virtual double inline get_energy(pele::Array<double> x);
     virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
@@ -88,11 +100,10 @@ LowestEigPotential::LowestEigPotential(pele::BasePotential * potential, pele::Ar
 /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
 double inline LowestEigPotential::get_energy(pele::Array<double> x) {
 
-    _orthog.orthogonalize(_coords, x);
-    double normx = norm(x);
+    _orthog.orthogonalize(_coords, x); //takes care of orthogonalizing and normalizing x
 
     for(size_t i=0;i<x.size();++i)
-        _coordsd[i] = _coords[i] + _d*x[i]/normx;
+        _coordsd[i] = _coords[i] + _d*x[i];
 
     double ed = _potential->get_energy_gradient(_coordsd,_gd);
     _gd -= _g;
@@ -104,12 +115,10 @@ double inline LowestEigPotential::get_energy(pele::Array<double> x) {
 /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
 double inline LowestEigPotential::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad) {
 
-    _orthog.orthogonalize(_coords, x);
-
-    double normx = norm(x);
+    _orthog.orthogonalize(_coords, x);  //takes care of orthogonalizing and normalizing x
 
     for(size_t i=0;i<x.size();++i)
-        _coordsd[i] = _coords[i] + _d*x[i]/normx;;
+        _coordsd[i] = _coords[i] + _d*x[i];
 
     double ed = _potential->get_energy_gradient(_coordsd,_gd);
     _gd -= _g;

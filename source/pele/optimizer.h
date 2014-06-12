@@ -189,6 +189,7 @@ public :
     int get_nfev() const { return nfev_; }
     int get_niter() const { return iter_number_; }
     int get_maxiter() const { return maxiter_; }
+    double get_tol() const {return tol_;}
     bool success() { return stop_criterion_satisfied(); }
 
     /**
