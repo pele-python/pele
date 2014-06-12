@@ -182,8 +182,8 @@ public :
 
 
     // functions for accessing the status of the optimizer
-    Array<double> get_x() { return x_; }
-    Array<double> get_g() { return g_; }
+    Array<double> get_x() { return x_.copy(); } //debug
+    Array<double> get_g() { return g_.copy(); }
     double get_f() { return f_; }
     double get_rms() { return rms_; }
     int get_nfev() { return nfev_; }

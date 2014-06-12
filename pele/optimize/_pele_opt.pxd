@@ -39,4 +39,5 @@ cdef extern from "pele/optimizer.h" namespace "pele":
     
 cdef class GradientOptimizer:
     cdef cGradientOptimizer *thisptr      # hold a C++ instance which we're wrapping
-    
+    #cdef _pele.BasePotential pot # this is stored so that the memory is not freed
+    cpdef events
