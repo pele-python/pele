@@ -81,7 +81,7 @@ protected:
     double _d;
     OrthogonalizeTranslational _orthog;
 public:
-    LowestEigPotential(pele::BasePotential * potential, pele::Array<double> coords, size_t bdim, double d=1e-4);
+    LowestEigPotential(pele::BasePotential * potential, pele::Array<double> coords, size_t bdim, double d=1e-6);
     virtual ~LowestEigPotential(){}
     virtual double inline get_energy(pele::Array<double> x);
     virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
