@@ -219,6 +219,7 @@ namespace pele{
 
       /*run MD*/
       this->_ForwardEuler_integration();
+      //this->_VelocityVerlet_integration();
 
       double P = -1 * dot(_v,g_);
 
