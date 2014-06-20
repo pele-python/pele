@@ -49,7 +49,7 @@ class LowestEigPot(BasePotential):
         is not None then one potential call will be saved. 
     """
     def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6,
-                  first_order=False, gradient=None, verbosity=1):
+                  first_order=True, gradient=None, verbosity=1):
         self.pot = pot
         self.first_order = first_order
         self.nfev = 0
@@ -188,7 +188,7 @@ class FindLowestEigenVector(object):
         of least curvature
     """
     def __init__(self, coords, pot, eigenvec0=None, orthogZeroEigs=0, dx=1e-6,
-                  first_order=False, gradient=None, **minimizer_kwargs):
+                  first_order=True, gradient=None, **minimizer_kwargs):
         
         self.minimizer_kwargs = minimizer_kwargs
         
@@ -252,7 +252,7 @@ class FindLowestEigenVector(object):
 
 def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, dx=1e-3,
 #                          minimizer_state=None, 
-                          first_order=False, gradient=None, 
+                          first_order=True, gradient=None, 
                           **minimizer_kwargs):
     """Compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization
 

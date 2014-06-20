@@ -13,23 +13,28 @@ def minimize(coords, pot):
 
 class TestWCA_CPP(_base_test._BaseTest):
     def setUp(self):
-        boxv=[6,6,6]
+        boxv=[3,3,3]
         self.pot = _wca_cpp.WCA(ndim=3, boxvec = boxv) 
-        self.natoms = 13
-        self.xrandom = np.random.uniform(-1,1,[3*self.natoms])*5.
-        xyz = minimize(self.xrandom,self.pot)
+        self.natoms = 25
+        self.xrandom = np.random.uniform(-1,1,[3*self.natoms])*0.001
+        
+        xyz = np.random.uniform(-1,1,[3*self.natoms])
+        xyz = minimize(xyz,self.pot)
+        xyz = minimize(xyz[0],self.pot)
         self.xmin = xyz[0].reshape(-1).copy()
         self.Emin = float(xyz[1])
 
 class TestWCA2D_CPP(_base_test._BaseTest):
     def setUp(self):
-        boxv=[6,6]
+        boxv=[3,3]
         self.pot = _wca_cpp.WCA(ndim=2,boxvec = boxv) 
-        self.natoms = 13
-        self.xrandom = np.random.uniform(-1,1,[2*self.natoms])
-        xyz = minimize(self.xrandom,self.pot)
-        self.xmin = xyz[0].reshape(-1).copy()
-        self.Emin = float(xyz[1])
+        self.natoms = 25
+        self.xrandom = np.random.uniform(-1,1,[2*self.natoms])*0.01
+        xy = np.random.uniform(-1,1,[2*self.natoms])
+        xy = minimize(xy,self.pot)
+        xy = minimize(xy[0],self.pot)
+        self.xmin = xy[0].reshape(-1).copy()
+        self.Emin = float(xy[1])
 
 class TestErrorPotential(unittest.TestCase):
     def setUp(self):

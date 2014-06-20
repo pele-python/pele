@@ -111,7 +111,7 @@ class TestEig(unittest.TestCase):
 
     def test_smallest_eig_nohess(self):
         ws, vs = get_smallest_eig(self.h)
-        w, v = get_smallest_eig_nohess(self.x, self.system, tol=1e-9, dx=1e-3)
+        w, v = get_smallest_eig_nohess(self.x, self.system, tol=1e-9, dx=1e-6)
 #        print vs.shape, v.shape
         self.assertAlmostEqual(ws, w, 1)
         dot = np.dot(v, vs) / (np.linalg.norm(v) * np.linalg.norm(vs))
