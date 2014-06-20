@@ -9,6 +9,53 @@ from pele.landscape import database2graph
 
 __all__ = ["DisconnectivityGraph"]
 
+class TreeLeastCommonAncestor(object):
+    """Find the least common ancestor to a set of trees"""
+    def __init__(self, trees):
+        self.start_trees = trees
+        self.run()
+    
+    def run(self):
+        # find all common ancestors
+        common_ancestors = set()
+        for tree in self.start_trees:
+            parents = set(tree.get_ancestors())
+            parents.add(tree)
+            if len(common_ancestors) == 0:
+                common_ancestors.update(parents)
+            else:
+                # remove all elements that are not common
+                common_ancestors.intersection_update(parents)
+                assert len(common_ancestors) > 0
+
+        if len(common_ancestors) == 0:
+            raise Exception("the trees don't have any common ancestors")
+        
+        # sort the common ancestors by the number of ancestors each has
+        common_ancestors = list(common_ancestors)
+        if len(common_ancestors) > 1:
+            common_ancestors.sort(key=lambda tree: len(list(tree.get_ancestors())))
+
+        # the least common ancestor is the one with the most ancestors
+        self.least_common_ancestor = common_ancestors[-1]
+        return self.least_common_ancestor
+    
+    def get_all_paths_to_common_ancestor(self):
+        """return all the ancestors of all the input trees up to the least common ancestor"""
+        trees = set(self.start_trees)
+        for tree in self.start_trees:
+            for parent in tree.get_ancestors():
+                trees.add(parent)
+                if parent == self.least_common_ancestor:
+                    break
+        return trees
+        
+            
+#            for tree in common_ancestors:
+#                for parent in tree.get_ancestors():
+#                    if parent in common_ancestors
+#            
+#        return iter(common_ancestors).next()
 
 
 class Tree(object):
@@ -305,12 +352,12 @@ class ColorDGraphByGroups(object):
     If all minima are contained in groups but more than one group 
     is represented, the node will be the colour of the last group listed
     """
-    def __init__(self, tree_graph, groups):
+    def __init__(self, tree_graph, groups, colors=None):
         self.tree_graph = tree_graph
         
         # set the colors
         self._minimum_to_color = dict()
-        self.color_list = self.get_list_of_colors(len(groups))
+        self.color_list = self.get_list_of_colors(len(groups), colors=colors)
         for color, group in izip(self.color_list, groups):
             for minimum in group:
                 self._minimum_to_color[minimum] = color
@@ -322,10 +369,20 @@ class ColorDGraphByGroups(object):
         colormap = cm.get_cmap("Dark2", lut=number)
         colors = [colormap(i) for i in np.linspace(0., 1., number)]
         return colors
+    
+    def parse_list_of_colors(self, number, colors):
+        from matplotlib.colors import ColorConverter
+        cconvert = ColorConverter()
+        if number != len(colors):
+            raise ValueError("the length of colors must be the number of groups")
+        rgbcolors = [cconvert.to_rgb(c) for c in colors]
+        return rgbcolors 
         
          
-    def get_list_of_colors(self, number):
+    def get_list_of_colors(self, number, colors=None):
         """return a list of colors for the groups"""
+        if colors is not None:
+            return self.parse_list_of_colors(number, colors)
         try:
             import brewer2mpl
         except ImportError:
@@ -751,10 +808,7 @@ class DisconnectivityGraph(object):
     # functions which return the line segments that make up the visual graph
     #######################################################################
 
-    def _get_line_segment_recursive(self, line_segments, line_colours, tree, eoffset):
-        """
-        add the line segment connecting this tree to its parent
-        """
+    def _get_line_segment_single(self, line_segments, line_colours, tree, eoffset):
         color_default = (0., 0., 0.)
         if tree.parent is None:
             # this is a top level tree.  Add a short decorative vertical line
@@ -819,6 +873,11 @@ class DisconnectivityGraph(object):
                 line_segments.append( ([xself, xparent], [yhigh, yparent]) )
                 line_colours.append(color)
 
+    def _get_line_segment_recursive(self, line_segments, line_colours, tree, eoffset):
+        """
+        add the line segment connecting this tree to its parent
+        """
+        self._get_line_segment_single(line_segments, line_colours, tree, eoffset)
         for subtree in tree.get_branches():
             self._get_line_segment_recursive(line_segments, line_colours, subtree, eoffset)
 
@@ -1002,7 +1061,7 @@ class DisconnectivityGraph(object):
 #        self.line_segments = line_segments
 
 
-    def color_by_group(self, groups):
+    def color_by_group(self, groups, colors=None):
         """color the graph based on specified grouping of minima
     
         Parameters
@@ -1020,7 +1079,7 @@ class DisconnectivityGraph(object):
         If all minima are contained in groups but more than one group 
         is represented, the node will be the colour of the last group listed
         """
-        colorer = ColorDGraphByGroups(self.tree_graph, groups)
+        colorer = ColorDGraphByGroups(self.tree_graph, groups, colors=None)
         colorer.run()
 
     def color_by_value(self, minimum_to_value, colormap=None, 
@@ -1088,7 +1147,8 @@ class DisconnectivityGraph(object):
 
         #draw the minima as points
         if show_minima: 
-            xpos, energies = self.get_minima_layout()     
+            xpos, minima = self.get_minima_layout()
+            energies = [m.energy for m in minima]
             ax.plot(xpos, energies, 'o')
         
         # draw the line segments 
@@ -1105,6 +1165,8 @@ class DisconnectivityGraph(object):
         # not compute the limits correctly.  ax.autoscale_view() seems to work just fine
         ax.autoscale_view(scalex=True, scaley=True, tight=False)
         ax.set_ybound(upper=self.Emax)
+        xmin, xmax = ax.get_xlim()
+        ax.set_xlim(xmin-0.5, xmax+0.5)
         
         # remove xtics
         # note: the xticks are removed after ax.autoscale_view() is called.

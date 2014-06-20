@@ -8,7 +8,7 @@ import networkx as nx
 import matplotlib.colors as col
 
 import dgraph_browser
-from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph, TreeLeastCommonAncestor
 from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
 from pele.rates import RatesLinalg, RateCalculation, compute_committors
@@ -59,53 +59,6 @@ def minimum_energy_path(graph, m1, m2):
 #            break
 #    if subtrees
 
-class TreeLeastCommonAncestor(object):
-    """Find the least common ancestor to a set of trees"""
-    def __init__(self, trees):
-        self.start_trees = trees
-        self.run()
-    
-    def run(self):
-        # find all common ancestors
-        common_ancestors = set()
-        for tree in self.start_trees:
-            parents = set(tree.get_ancestors())
-            parents.add(tree)
-            if len(common_ancestors) == 0:
-                common_ancestors.update(parents)
-            else:
-                # remove all elements that are not common
-                common_ancestors.intersection_update(parents)
-                assert len(common_ancestors) > 0
-
-        if len(common_ancestors) == 0:
-            raise Exception("the trees don't have any common ancestors")
-        
-        # sort the common ancestors by the number of ancestors each has
-        common_ancestors = list(common_ancestors)
-        if len(common_ancestors) > 1:
-            common_ancestors.sort(key=lambda tree: len(list(tree.get_ancestors())))
-
-        # the least common ancestor is the one with the most ancestors
-        self.least_common_ancestor = common_ancestors[-1]
-        return self.least_common_ancestor
-    
-    def get_all_paths_to_common_ancestor(self):
-        """return all the ancestors of all the input trees up to the least common ancestor"""
-        trees = set(self.start_trees)
-        for tree in self.start_trees:
-            for parent in tree.get_ancestors():
-                trees.add(parent)
-                if parent == self.least_common_ancestor:
-                    break
-        return trees
-        
-            
-#            for tree in common_ancestors:
-#                for parent in tree.get_ancestors():
-#                    if parent in common_ancestors
-#            
-#        return iter(common_ancestors).next()
         
         
         
