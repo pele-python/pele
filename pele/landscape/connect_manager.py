@@ -122,7 +122,7 @@ class ConnectManagerUntrap(BaseConnectManager):
         self.minpairs = deque()
         
         graph = TSGraph(self.database).graph
-        cclist = nx.connected_components(graph)
+        cclist = list(nx.connected_components(graph))
         
         # get the largest cluster
         group1 = cclist[0]
@@ -192,7 +192,7 @@ class ConnectManagerCombine(BaseConnectManager):
         self.minpairs = deque()
         
         graph = TSGraph(self.database).graph
-        cclist = nx.connected_components(graph)
+        cclist = list(nx.connected_components(graph))
 
         # remove clusters with fewer than clust_min
         cclist = [cc for cc in cclist if len(cc) >= self.clust_min]
