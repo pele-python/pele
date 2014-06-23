@@ -58,7 +58,7 @@ namespace pele
 
         for(size_t atomi=0; atomi<natoms; ++atomi) {
             int i1 = _ndim*atomi;
-            for(size_t atomj=atomi+1; atomj<natoms; ++atomj) {
+            for(size_t atomj=0; atomj<atomi; ++atomj) {
                 int j1 = _ndim*atomj;
 
                 _dist->get_rij(dr, &x[i1], &x[j1]);
@@ -79,7 +79,7 @@ namespace pele
         inline double SimplePairwisePotential<pairwise_interaction,distance_policy>::get_energy_gradient_hessian(Array<double> x,
                 Array<double> grad, Array<double> hess)
         {
-            double hij, gij, e;
+            double hij, gij;
             double dr[_ndim];
             const size_t N = x.size();
             const size_t natoms = x.size()/_ndim;
@@ -92,10 +92,10 @@ namespace pele
             hess.assign(0.);
             grad.assign(0.);
 
-            e = 0;
+            double e = 0.;
             for(size_t atomi=0; atomi<natoms; ++atomi) {
                 int i1 = _ndim*atomi;
-                for (size_t atomj=atomi+1;atomj<natoms;++atomj){
+                for (size_t atomj=0;atomj<atomi;++atomj){
                     int j1 = _ndim*atomj;
                     _dist->get_rij(dr, &x[i1], &x[j1]);
                     double r2 = 0;
@@ -146,7 +146,7 @@ namespace pele
 
         for(size_t atomi=0; atomi<natoms; ++atomi) {
             size_t i1 = _ndim*atomi;
-            for(size_t atomj=atomi+1; atomj<natoms; ++atomj) {
+            for(size_t atomj=0; atomj<atomi; ++atomj) {
                 size_t j1 = _ndim*atomj;
                 _dist->get_rij(dr, &x[i1], &x[j1]);
                 double r2 = 0;
