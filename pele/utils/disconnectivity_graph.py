@@ -608,7 +608,7 @@ class DisconnectivityGraph(object):
         this was copied and only slightly modified from the original
         source
         """
-        cc=nx.connected_components(G)
+        cc = nx.connected_components(G)
         graph_list=[]
         for c in cc:
             graph_list.append(G.subgraph(c))
@@ -883,7 +883,7 @@ class DisconnectivityGraph(object):
         #make sure we include the subgraph containing min0
         if len(min0list) == 0:
             #use the biggest connected cluster
-            cc = nx.connected_components(graph)
+            cc = list(nx.connected_components(graph))
             used_nodes += cc[0] #list is ordered by size of cluster
         else:
             for min0 in min0list:
