@@ -1,6 +1,7 @@
 import numpy as np
 import unittest
 import logging
+from itertools import izip
 
 class _BaseTest(unittest.TestCase):
     
@@ -45,7 +46,9 @@ class _BaseTest(unittest.TestCase):
         log= logging.getLogger( "BaseTest.test_hess_analytical_against_numerical" )
         h = self.pot.getHessian(self.xmin)
         h_num = self.pot.NumericalHessian(self.xmin)
-        np.testing.assert_almost_equal(h,h_num,decimal=4)
+        h = h.reshape(-1).copy()
+        h_num = h_num.reshape(-1).copy()
+        np.allclose(h,h_num,rtol=1e-7)
     
     def test_random(self):
         self.grad_t(self.xmin+self.xrandom)
