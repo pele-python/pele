@@ -151,13 +151,34 @@ PYTHONPATH environment variable.  This is not necessary if you install to a
 standard location.
 
 
-Installing on Mac
------------------
+Installing on OS X
+------------------
+Most things installed very easily on my Macbook Air OS X Version 10.9 but it
+turns out that python distutils doesn't play very nicely with clang, the osx c
+compiler.  
 
-Everything installed very easily on my Macbook Air OSX Version 10.9.2 except
-the things needed for the gui.  If you don't want the gui you should be golden,
-but if you do, you may have to install a few things from source.  Below are the
-steps I took to get everything working
+I was seeing erros of the type:
+
+    error: no type named 'shared_ptr' in namespace 'std'
+
+This is a strange error because I'm using clang version 5.1 and the c++11 class
+shared_ptr has been part of clang since 3.2.  Some googling suggested I try
+using the flag '-stdlib=libc++', which gave me the error:
+
+    clang: error: invalid deployment target for -stdlib=libc++ (requires OS X 10.7 or later)
+
+Again, very strange becuase I have OS X version 10.9.  But this error message
+eventually led me to figure out how to get past this.  It appears that
+distutils is setting the environment variable MACOSX_DEPLOYMENT_TARGET to have
+the wrong value.  I'm still not sure why, but setting the environment variable
+correctly before running setup.py fixes the problem.  So, for an in-place build
+I would run
+
+    MACOSX_DEPLOYMENT_TARGET=10.9 python setup.py build_ext -i
+
+
+Installing GUI on OS X
+----------------------
 
 If you want to use the gui you have to install PyQt4 and its dependencies.
 This is not as simple as it should be, but is actually not too hard.  There is a good guide at
