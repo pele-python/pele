@@ -6,6 +6,9 @@
 
 using pele::Array;
 
+// to silence "unused variable" warnings from the compiler
+#define UNUSED(var) ((void) var)
+
 TEST(ArrayTest, DefaultConstructor_IsOK){
     pele::Array<double> v;
     EXPECT_EQ(0, v.size());
@@ -354,5 +357,35 @@ TEST(ArrayTest, ProdFunction){
     for (size_t i=0; i<v.size(); ++i) v[i] = 2;
 
     EXPECT_NEAR(v.prod(),64,1e-10);
+}
+
+TEST(ArrayTest, Iterator_Works){
+    pele::Array<double> v(6,-1);
+    size_t count = 0;
+    for (Array<double>::iterator iter = v.begin(); iter != v.end(); ++iter){
+        *iter = count;
+        count++;
+    }
+    for (count=0; count<v.size(); ++count){
+        EXPECT_EQ(v[count], count);
+    }
+}
+
+
+TEST(ArrayTest, ConstArray_NotModifiable){
+    pele::Array<double> const v(6,0);
+
+    double x = v[0];
+    v.empty();
+    double const * d = v.data();
+    v.data();
+    size_t count = 0;
+    for (Array<double>::const_iterator iter = v.begin(); iter != v.end(); ++iter){
+        x = *iter;
+        count++;
+    }
+    EXPECT_EQ(count, v.size());
+    UNUSED( d);
+    UNUSED(x);
 }
 

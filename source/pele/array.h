@@ -99,7 +99,7 @@ namespace pele {
 
         /*Returns whether the array is empty (i.e. whether its size is 0).*/
 
-        bool empty()
+        bool empty() const
         {
             if (_data == NULL)
                 return true;
@@ -107,7 +107,7 @@ namespace pele {
                 return false;
         }
 
-        long int reference_count()
+        long int reference_count() const
         {
             if (_reference_count == NULL){
                 return 0;
@@ -197,7 +197,7 @@ namespace pele {
         /**
          * Return true if this is the sole owner of the data
          */
-        bool sole_owner()
+        bool sole_owner() const
         {
             assert((_reference_count==NULL) == (_allocated_memory==NULL)); //both null or both not null
             if (_reference_count == NULL){
@@ -283,7 +283,6 @@ namespace pele {
         /*
          * Assignment operator: WRAP the data
          */
-
         Array<dtype> &operator=(const Array<dtype> & rhs){
             //if (_data != NULL) {
                 //std::cout << "operator=: cannot assign an array unless the array is unallocated\n";
@@ -299,7 +298,6 @@ namespace pele {
         /*
          * Compound Assignment Operators += -= *=
          */
-
         Array<dtype> &operator+=(const Array<dtype> & rhs){
             if (_size != rhs.size()){
                 throw std::runtime_error("operator+=: arrays must have the same size");
@@ -343,7 +341,7 @@ namespace pele {
             for (size_t i=0; i<_size; ++i)
                 _data[i] *= rhs;
             return *this;
-       }
+        }
 
 
         Array<dtype> &operator/=(const Array<dtype> & rhs){
@@ -364,7 +362,7 @@ namespace pele {
     /*SOME OTHER ARITHMETIC UTILITIES*/
 
         //returns the sum of all elements (reduces the array)
-        const dtype sum(){
+        const dtype sum() const {
             if (_data == NULL)
                 throw std::runtime_error("array::sum(): array is empty, can't sum array elements");
 
@@ -375,7 +373,7 @@ namespace pele {
         }
 
         //returns the product of all elements (reduces the array)
-        const dtype prod(){
+        const dtype prod() const {
             if (_data == NULL)
                 throw std::runtime_error("array::prod(): array is empty, can't take product of array elements");
 
