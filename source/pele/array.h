@@ -6,8 +6,31 @@
 #include <stdexcept>
 #include <iostream>
 #include <math.h>
+#include <memory>
 
 namespace pele {
+
+template<typename dtype>
+class _ArrayMemory{
+public:
+    dtype *_data;
+    dtype *_allocated_memory;
+    size_t _size;
+
+    _ArrayMemory()
+        : _data(NULL), _allocated_memory(NULL), _size(0)
+    {}
+};
+
+template<typename dtype>
+class NewArray : public std::shared_ptr<_ArrayMemory<dtype> >
+{
+    NewArray()
+        : std::shared_ptr<_ArrayMemory<dtype> >(new _ArrayMemory<dtype>())
+    {}
+};
+
+
     /**
      * Simple wrapper class for arrays
      *
