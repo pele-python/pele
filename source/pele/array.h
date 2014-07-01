@@ -243,20 +243,24 @@ public:
             val += rhs;
         }
         return *this;
-   }
+    }
 
     Array<dtype> &operator-=(const Array<dtype> & rhs){
         if (size() != rhs.size()){
             throw std::runtime_error("operator-=: arrays must have the same size");
         }
-        for (size_t i=0; i<size(); ++i)
-            data()[i] -= rhs[i];
+        const_iterator iter = rhs.begin();
+        for (dtype & val : *this){
+            val -= *iter;
+            ++iter;
+        }
         return *this;
     }
 
     Array<dtype> &operator-=(const dtype &rhs) {
-        for (size_t i=0; i<size(); ++i)
-            data()[i] -= rhs;
+        for (dtype & val : (*this)){
+            val -= rhs;
+        }
         return *this;
    }
 
@@ -264,14 +268,18 @@ public:
         if (size() != rhs.size()){
             throw std::runtime_error("operator*=: arrays must have the same size");
         }
-        for (size_t i=0; i<size(); ++i)
-            data()[i] *= rhs[i];
+        const_iterator iter = rhs.begin();
+        for (dtype & val : *this){
+            val *= *iter;
+            ++iter;
+        }
         return *this;
     }
 
     Array<dtype> &operator*=(const dtype &rhs) {
-        for (size_t i=0; i<size(); ++i)
-            data()[i] *= rhs;
+        for (dtype & val : (*this)){
+            val *= rhs;
+        }
         return *this;
     }
 
@@ -280,38 +288,48 @@ public:
         if (size() != rhs.size()){
             throw std::runtime_error("operator/=: arrays must have the same size");
         }
-        for (size_t i=0; i<size(); ++i)
-            data()[i] /= rhs[i];
+        const_iterator iter = rhs.begin();
+        for (dtype & val : *this){
+            val /= *iter;
+            ++iter;
+        }
         return *this;
     }
 
     Array<dtype> &operator/=(const  dtype &rhs) {
-        for (size_t i=0; i<size(); ++i)
-            data()[i] /= rhs;
+        for (dtype & val : (*this)){
+            val /= rhs;
+        }
         return *this;
     }
 
 /*SOME OTHER ARITHMETIC UTILITIES*/
 
-    //returns the sum of all elements (reduces the array)
+    /**
+     * returns the sum of all elements (reduces the array)
+     */
     const dtype sum() const {
         if (empty()){
             throw std::runtime_error("array::sum(): array is empty, can't sum array elements");
         }
         dtype sum_array=0;
-        for (size_t i=0; i<size(); ++i)
-            sum_array += data()[i] ;
+        for (dtype const & val : (*this)){
+            sum_array += val;
+        }
         return sum_array;
     }
 
-    //returns the product of all elements (reduces the array)
+    /**
+     * returns the product of all elements (reduces the array)
+     */
     const dtype prod() const {
         if (empty())
             throw std::runtime_error("array::prod(): array is empty, can't take product of array elements");
 
-        dtype prod_array=1;
-        for (size_t i=0; i<size(); ++i)
-            prod_array *= data()[i] ;
+        dtype prod_array = 1;
+        for (dtype const & val : (*this)){
+            prod_array *= val;
+        }
         return prod_array;
     }
 

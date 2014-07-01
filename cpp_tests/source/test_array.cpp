@@ -287,7 +287,7 @@ TEST(ArrayTest, ProdOperator_Array){
 
 TEST(ArrayTest, ProdOperator_ArraySelf){
     pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
 
     double* old_v_data = v.data();
 
@@ -296,7 +296,7 @@ TEST(ArrayTest, ProdOperator_ArraySelf){
     EXPECT_EQ(v.data(), old_v_data); //check that memory has not moved
 
     for (int i = 0; i < 6; ++i){
-        EXPECT_EQ(v[i], 1);
+        EXPECT_EQ(v[i], 4);
     }
 }
 
