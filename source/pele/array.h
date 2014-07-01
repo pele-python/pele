@@ -13,21 +13,289 @@ namespace pele {
 template<typename dtype>
 class _ArrayMemory{
 public:
+    std::vector<dtype> _vector;
     dtype *_data;
-    dtype *_allocated_memory;
     size_t _size;
+    bool _owned;
 
     _ArrayMemory()
-        : _data(NULL), _allocated_memory(NULL), _size(0)
+        : _vector(), _data(_vector.data()), _size(_vector.size()), _owned(true)
     {}
+
+    _ArrayMemory(size_t size)
+        : _vector(size), _data(_vector.data()), _size(_vector.size()), _owned(true)
+    {}
+
+    _ArrayMemory(size_t size, dtype & val)
+        : _vector(size, val), _data(_vector.data()), _size(_vector.size()), _owned(true)
+    {}
+
+    /**
+     * wrap some data that is passed.  Do not take ownership of the data.
+     */
+    _ArrayMemory(dtype * data, size_t size)
+        : _vector(), _data(data), _size(size), _owned(false)
+    {}
+
+
+    bool owned() const { return _owned; }
+
+    /**
+     * free all the memory and resize to zero
+     */
+    void free()
+    {
+        _vector.clear();
+        _data = _vector.data();
+        _size = 0;
+        _owned = true;
+    }
+
+
+
+    void resize(size_t size) {
+//        if (!_owned){
+//            raise std::runtime_error("can't resize an array that is not owned")
+//        }
+        _vector.resize(size);
+        _data = _vector.data();
+        _size = size;
+        _owned = true;
+    }
+
+    size_t size() const {
+//        if (_owned)
+//            return _vector.size();
+//        else
+        return _size;
+    }
+
+    /// return pointer to data
+    dtype *data() { return _data; }
+    dtype const *data() const { return _data; }
+
+
+
 };
 
 template<typename dtype>
-class NewArray : public std::shared_ptr<_ArrayMemory<dtype> >
+class NewArray
 {
+    std::shared_ptr<_ArrayMemory<dtype> > _vector;
     NewArray()
-        : std::shared_ptr<_ArrayMemory<dtype> >(new _ArrayMemory<dtype>())
+        : _vector(new _ArrayMemory<dtype>())
     {}
+    NewArray(size_t size)
+        : _vector(new _ArrayMemory<dtype>(size))
+    {}
+    NewArray(size_t size, dtype & val)
+    : _vector(new _ArrayMemory<dtype>(size, val))
+    {}
+
+    /**
+     * wrap some data that is passed.  Do not take ownership of the data.
+     */
+    NewArray(dtype *data, size_t size)
+    : _vector(new _ArrayMemory<dtype>(data, size))
+    {}
+
+    /**
+     * wrap a vector.  This memory should never be deleted.
+     */
+    NewArray(std::vector<dtype> &x)
+    : _vector(new _ArrayMemory<dtype>(x.data(), x.size()))
+    {}
+
+    /**
+     * wrap another array is implemented by shared_ptr parent class
+     */
+     NewArray(NewArray<dtype> & x)
+         : _vector(x._vector)
+     {}
+
+    /*
+     * wrap another array
+     */
+    void wrap(NewArray<dtype> x)
+    {
+        _vector = x._vector;
+    }
+
+    /**
+     * return pointer to data
+     */
+    inline dtype *data() { return _vector->data(); }
+    inline dtype const *data() const { return _vector->_data(); }
+
+    /**
+     * return the size of the array
+     */
+    inline size_t size() const { return _vector->size(); }
+
+    /**
+     * access an element in the array
+     */
+    inline dtype &operator[](const size_t i) { return data()[i]; }
+    inline dtype const & operator[](const size_t i) const { return data()[i]; }
+
+    /**
+     * return iterators over data
+     */
+    typedef dtype * iterator;
+    typedef dtype const * const_iterator;
+    iterator begin() { return data(); }
+    iterator end() { return data() + size(); }
+    const_iterator begin() const { return data(); }
+    const_iterator end() const { return data() + size(); }
+
+    /**
+     * test if they wrap the same data
+     */
+    bool operator==(NewArray<dtype> const rhs) const {
+        return _vector.get() == rhs._vector.get();
+    }
+
+
+    /**
+     * Assignment function: copy the data into the existing array
+     *
+     * arrays must be of same size
+     */
+    NewArray<dtype> &assign(const NewArray<dtype> & rhs) {
+        if ((*this) != rhs) //check for self assignment
+        {
+            if (size() != rhs.size()){
+                throw std::runtime_error("arrays must have the same size during assignment");
+            }
+            for (size_t i=0; i<size(); ++i)
+                data()[i] = rhs[i];
+        }
+        return *this;
+    }
+
+    NewArray<dtype> &assign(dtype d) {
+        for(size_t i=0; i<size(); ++i)
+            data()[i] = d;
+        return *this;
+    }
+
+    /**
+     * return a copy of the array.
+     */
+    NewArray<dtype> const copy() const
+    {
+        NewArray<dtype> newarray(size());
+        newarray.assign(*this);
+        return newarray;
+    }
+
+
+
+    void resize(size_t size){
+        _vector->resize(size);
+    }
+
+    /*Returns whether the array is empty (i.e. whether its size is 0).*/
+
+    inline bool empty() const
+    {
+        return size() == 0;
+    }
+
+    long int reference_count() const
+    {
+        return _vector.use_count();
+    }
+
+    /*
+     * Compound Assignment Operators += -= *=
+     */
+    NewArray<dtype> &operator+=(const NewArray<dtype> & rhs){
+        if (size() != rhs.size()){
+            throw std::runtime_error("operator+=: arrays must have the same size");
+        }
+        for (size_t i=0; i<size(); ++i)
+            data()[i] += rhs[i];
+        return *this;
+    }
+
+    NewArray<dtype> &operator+=(const dtype &rhs) {
+        for (size_t i=0; i<size(); ++i)
+            data()[i] += rhs;
+        return *this;
+   }
+
+    NewArray<dtype> &operator-=(const NewArray<dtype> & rhs){
+        if (size() != rhs.size()){
+            throw std::runtime_error("operator-=: arrays must have the same size");
+        }
+        for (size_t i=0; i<size(); ++i)
+            data()[i] -= rhs[i];
+        return *this;
+    }
+
+    NewArray<dtype> &operator-=(const dtype &rhs) {
+        for (size_t i=0; i<size(); ++i)
+            data()[i] -= rhs;
+        return *this;
+   }
+
+    NewArray<dtype> &operator*=(const NewArray<dtype> & rhs){
+        if (size() != rhs.size()){
+            throw std::runtime_error("operator*=: arrays must have the same size");
+        }
+        for (size_t i=0; i<size(); ++i)
+            data()[i] *= rhs[i];
+        return *this;
+    }
+
+    NewArray<dtype> &operator*=(const dtype &rhs) {
+        for (size_t i=0; i<size(); ++i)
+            data()[i] *= rhs;
+        return *this;
+    }
+
+
+    NewArray<dtype> &operator/=(const NewArray<dtype> & rhs){
+        if (size() != rhs.size()){
+            throw std::runtime_error("operator/=: arrays must have the same size");
+        }
+        for (size_t i=0; i<size(); ++i)
+            data()[i] /= rhs[i];
+        return *this;
+    }
+
+    NewArray<dtype> &operator/=(const  dtype &rhs) {
+        for (size_t i=0; i<size(); ++i)
+            data()[i] /= rhs;
+        return *this;
+    }
+
+/*SOME OTHER ARITHMETIC UTILITIES*/
+
+    //returns the sum of all elements (reduces the array)
+    const dtype sum() const {
+        if (empty()){
+            throw std::runtime_error("array::sum(): array is empty, can't sum array elements");
+        }
+        dtype sum_array=0;
+        for (size_t i=0; i<size(); ++i)
+            sum_array += data()[i] ;
+        return sum_array;
+    }
+
+    //returns the product of all elements (reduces the array)
+    const dtype prod() const {
+        if (empty())
+            throw std::runtime_error("array::prod(): array is empty, can't take product of array elements");
+
+        dtype prod_array=1;
+        for (size_t i=0; i<size(); ++i)
+            prod_array *= data()[i] ;
+        return prod_array;
+    }
+
+
 };
 
 
@@ -210,7 +478,9 @@ class NewArray : public std::shared_ptr<_ArrayMemory<dtype> >
             return newarray;
         }
 
-        /// return pointer to data
+        /**
+         * return pointer to data
+         */
         dtype *data() { return _data; }
         dtype const *data() const { return _data; }
 
