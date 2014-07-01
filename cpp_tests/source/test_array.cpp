@@ -116,6 +116,19 @@ TEST(ArrayTest, Free_Works){
     v.free();
 }
 
+TEST(ArrayTest, Free_Unwraps){
+    pele::Array<double> v1(6);
+    pele::Array<double> v2(v1);
+    EXPECT_EQ(size_t(2), v1.reference_count());
+    EXPECT_TRUE(v1 == v2);
+    v2.free();
+    EXPECT_EQ(size_t(1), v1.reference_count());
+    EXPECT_EQ(size_t(1), v2.reference_count());
+    EXPECT_TRUE(v1 != v2);
+    EXPECT_EQ(size_t(0), v2.size());
+    EXPECT_EQ(size_t(6), v1.size());
+}
+
 TEST(ArrayTest, Copy_WorksNotWrap){
     pele::Array<double> v(6);
     for (size_t i=0; i<v.size(); ++i) v[i] = i;
@@ -195,10 +208,25 @@ TEST(ArrayTest, RangeBasedFor_Works){
     }
 }
 
+TEST(ArrayTest, EqualityOperator_Works){
+    Array<double> v1(3);
+    Array<double> v2(3);
+    EXPECT_FALSE(v1 == v2);
+    v1.wrap(v2);
+    EXPECT_TRUE(v1 == v2);
+}
+
+TEST(ArrayTest, InEqualityOperator_Works){
+    Array<double> v1(3);
+    Array<double> v2(3);
+    EXPECT_TRUE(v1 != v2);
+    v1.wrap(v2);
+    EXPECT_FALSE(v1 != v2);
+}
+
 TEST(ArrayTest, SumOperator_Array){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = -1;
-    pele::Array<double> v2(6);
+    pele::Array<double> v(6,-1);
+    pele::Array<double> v2(6,1);
     for (size_t i=0; i<v2.size(); ++i) v2[i] = 1;
     v += v2;
     EXPECT_NE(v.data(), v2.data());
@@ -209,9 +237,7 @@ TEST(ArrayTest, SumOperator_Array){
 }
 
 TEST(ArrayTest, SumOperator_ArraySelf){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
-
+    pele::Array<double> v(6,1);
     double* old_v_data = v.data();
 
     v += v;
@@ -261,8 +287,7 @@ TEST(ArrayTest, DifOperator_ArraySelf){
 
 TEST(ArrayTest, DifOperator_Const){
     double c = 1;
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    pele::Array<double> v(6,1);
     v -= c;
     for (int i = 0; i < 6; ++i){
         EXPECT_EQ(v[i], 0);
@@ -273,21 +298,18 @@ TEST(ArrayTest, DifOperator_Const){
 ///////////
 
 TEST(ArrayTest, ProdOperator_Array){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
-    pele::Array<double> v2(6);
-    for (size_t i=0; i<v2.size(); ++i) v2[i] = 10;
+    pele::Array<double> v(6, 2);
+    pele::Array<double> v2(6 ,10);
     v *= v2;
     EXPECT_NE(v.data(), v2.data());
     for (int i = 0; i < 6; ++i){
-        EXPECT_EQ(v[i], 10);
+        EXPECT_EQ(v[i], 20);
         EXPECT_EQ(v2[i], 10);
     }
 }
 
 TEST(ArrayTest, ProdOperator_ArraySelf){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+    pele::Array<double> v(6, 2);
 
     double* old_v_data = v.data();
 
@@ -302,22 +324,19 @@ TEST(ArrayTest, ProdOperator_ArraySelf){
 
 TEST(ArrayTest, ProdOperator_Const){
     double c = 10;
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    pele::Array<double> v(6, 2);
     v *= c;
     for (int i = 0; i < 6; ++i){
-        EXPECT_EQ(v[i], 10);
+        EXPECT_EQ(v[i], 20);
     }
-    EXPECT_EQ(c,10);
+    EXPECT_EQ(c, 10);
 }
 
 ///////////
 
 TEST(ArrayTest, DivOperator_Array){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
-    pele::Array<double> v2(6);
-    for (size_t i=0; i<v2.size(); ++i) v2[i] = 2;
+    pele::Array<double> v(6,2);
+    pele::Array<double> v2(6,2);
     v /= v2;
     EXPECT_NE(v.data(), v2.data());
     for (int i = 0; i < 6; ++i){
@@ -327,8 +346,7 @@ TEST(ArrayTest, DivOperator_Array){
 }
 
 TEST(ArrayTest, DivOperator_ArraySelf){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+    pele::Array<double> v(6,2);
 
     double* old_v_data = v.data();
 
@@ -343,8 +361,7 @@ TEST(ArrayTest, DivOperator_ArraySelf){
 
 TEST(ArrayTest, DivOperator_Const){
     double c = 2;
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+    pele::Array<double> v(6,2);
     v /= c;
     for (int i = 0; i < 6; ++i){
         EXPECT_EQ(v[i], 1);
@@ -353,19 +370,13 @@ TEST(ArrayTest, DivOperator_Const){
 }
 
 TEST(ArrayTest, SumFunction){
-    pele::Array<double> v(6);
-
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
-
-    EXPECT_NEAR(v.sum(),12,1e-10);
+    pele::Array<double> v(6,2);
+    EXPECT_EQ(v.sum(), 12);
 }
 
 TEST(ArrayTest, ProdFunction){
-    pele::Array<double> v(6);
-
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
-
-    EXPECT_NEAR(v.prod(),64,1e-10);
+    pele::Array<double> v(6,2);
+    EXPECT_EQ(v.prod(), 64);
 }
 
 TEST(ArrayTest, Iterator_Works){
@@ -394,7 +405,7 @@ TEST(ArrayTest, ConstArray_NotModifiable){
         count++;
     }
     EXPECT_EQ(count, v.size());
-    UNUSED( d);
+    UNUSED(d);
     UNUSED(x);
 }
 
