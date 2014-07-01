@@ -112,10 +112,13 @@ public:
      * Note, the input here is a const array, but this constructs a modifiable array.  This
      * is a loophole around the const declaration, but i'm not sure there is any way around it.
      * The compiler complains if this is not here.  e.g. for constructions like Array(x.copy())
-     */
+     *
+     * This is commented because it just duplicates the default copy constructor
+     *
      Array(Array<dtype> const & x)
          : _memory(x._memory)
      {}
+     */
 
     /*
      * wrap another array
@@ -151,6 +154,17 @@ public:
     inline iterator end() { return data() + size(); }
     inline const_iterator begin() const { return data(); }
     inline const_iterator end() const { return data() + size(); }
+
+    /*
+     * Assignment operator: WRAP the data
+     *
+     * This is commented because it just duplicates the default assignment operator
+     *
+    Array<dtype> &operator=(const Array<dtype> & rhs){
+        _memory = rhs._memory;
+    }
+    */
+
 
     /**
      * equality operator
