@@ -349,6 +349,26 @@ public:
         return prod_array;
     }
 
+    /**
+     * return a view of the array.
+     *
+     * This is commented in case we ever want to add the functionality again.
+     * This is an outline, it will need some modifications to actually work.
+     *
+    Array<dtype> view(size_t ibegin, size_t iend)
+    {
+        if (iend <= ibegin) {
+            throw std::invalid_argument("iend must larger than ibegin");
+        }
+        if (iend > size()) {
+            throw std::invalid_argument("iend cannot be larger than array size");
+        }
+        Array<dtype> newarray(*this);
+        newarray._memory._data += ibegin;
+        newarray._memory._size = iend - ibegin;
+        return newarray;
+    }
+    */
 
 };
 
