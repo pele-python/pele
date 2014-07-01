@@ -13,7 +13,11 @@ using pele::BasePotential;
 class HarmonicE : public pele::BasePotential
 {
 public:
-    double get_energy(Array<double> x){
+    int call_count;
+    HarmonicE() : call_count(0) {}
+
+    virtual double get_energy(Array<double> x){
+        call_count += 1;
         double energy = 0;
         for (size_t k=0; k<x.size(); ++k){
             energy += x[k] * x[k];
@@ -46,8 +50,10 @@ TEST_F(BasePotentialTest, EOnlyEnergy_Works){
     HarmonicE pot;
     BasePotential * ptr = &pot;
     double e = pot.get_energy(x);
+    EXPECT_EQ(1, pot.call_count);
     EXPECT_NEAR(e, etrue, 1e-10);
     double e_ptr = ptr->get_energy(x);
+    EXPECT_EQ(2, pot.call_count);
     EXPECT_NEAR(e_ptr, etrue, 1e-10);
 }
 
@@ -55,6 +61,7 @@ TEST_F(BasePotentialTest, EOnlyGrad_Works){
     HarmonicE pot;
     double e = pot.get_energy_gradient(x, g);
     EXPECT_NEAR(e, etrue, 1e-10);
+    EXPECT_EQ(1+2*x.size(), pot.call_count);
 
     // the gradient is computed numerically
     for (size_t k=0; k<x.size(); ++k){
@@ -66,6 +73,10 @@ TEST_F(BasePotentialTest, EOnlyHess_Works){
     HarmonicE pot;
     double e = pot.get_energy_gradient_hessian(x, g, hess);
     EXPECT_NEAR(e, etrue, 1e-10);
+    int count_energy_grad = 1+2*x.size();
+    int count_hess = 2*x.size()*count_energy_grad;
+    EXPECT_EQ(count_energy_grad + count_hess, pot.call_count);
+
 
     // the gradient is computed numerically
     for (size_t k=0; k<x.size(); ++k){
@@ -81,6 +92,9 @@ TEST_F(BasePotentialTest, EOnlyHess_Works){
 TEST_F(BasePotentialTest, EOnlyGetHess_Works){
     HarmonicE pot;
     pot.get_hessian(x, hess);
+    int count_energy_grad = 1+2*x.size();
+    int count_hess = 2*x.size()*count_energy_grad;
+    EXPECT_EQ(count_energy_grad + count_hess, pot.call_count);
 
     // the hessian is computed numerically
     for (size_t k=0; k<hess.size(); ++k){
