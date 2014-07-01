@@ -409,3 +409,19 @@ TEST(ArrayTest, ConstArray_NotModifiable){
     UNUSED(x);
 }
 
+TEST(ArrayDotTest, Dot_Works){
+    pele::Array<double> v1(6, 3);
+    pele::Array<double> v2(6, 2);
+
+    double d = pele::dot(v1, v2);
+    EXPECT_EQ(3*2*6, d);
+}
+
+TEST(ArrayNormTest, Norm_Works){
+    pele::Array<double> v1(6, 3);
+
+    double d = pele::norm(v1);
+    EXPECT_NEAR(sqrt(3*3*6), d, 1e-10);
+}
+
+
