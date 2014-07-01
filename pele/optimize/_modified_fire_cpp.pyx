@@ -1,23 +1,11 @@
-"""
-# distutils: language = C++
-"""
+# distutils: language = c++
+# distutils: sources = modified_fire.cpp
+
 import numpy as np
 cimport numpy as np
 cimport cython
-cimport pele.optimize._pele_opt as _pele_opt
 from pele.potentials import _pele, _pythonpotential
-from pele.potentials cimport _pele
-from pele.optimize import Result
-import sys
 from libcpp cimport bool as cbool
-
-
-# import the externally defined modified_fire implementation
-cdef extern from "pele/modified_fire.h" namespace "pele":
-    cdef cppclass cppMODIFIED_FIRE "pele::MODIFIED_FIRE":
-        cppMODIFIED_FIRE(_pele.cBasePotential * , _pele.Array[double], 
-                         double, double, double, size_t , double, double, 
-                         double, double, double, cbool) except +
 
 cdef class _Cdef_MODIFIED_FIRE_CPP(_pele_opt.GradientOptimizer):
     """This class is the python interface for the c++ MODIFIED_FIRE implementation

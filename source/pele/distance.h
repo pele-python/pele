@@ -193,6 +193,7 @@ namespace pele
      */
 
     class DistanceInterface{
+    protected:
     public:
         virtual void get_rij(double * const r_ij, double const * const r1, double const * const r2) const =0;
         virtual ~DistanceInterface(){}
@@ -203,7 +204,6 @@ namespace pele
     protected:
         cartesian_distance<ndim> _dist;
     public:
-        virtual ~CartesianDistanceWrapper(){}
         static const size_t _ndim = ndim;
         inline void get_rij(double * const r_ij,
                 double const * const r1,
@@ -218,7 +218,6 @@ namespace pele
         protected:
             periodic_distance<ndim> _dist;
         public:
-            virtual ~PeriodicDistanceWrapper(){}
             static const size_t _ndim = ndim;
             PeriodicDistanceWrapper(double const * const box):
                 _dist(box){};

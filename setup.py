@@ -214,7 +214,7 @@ cxx_modules = [
               language="c++", depends=depends,
               ),
     Extension("pele.optimize._modified_fire_cpp", 
-              ["pele/optimize/_modified_fire_cpp.cxx"] + include_sources,
+              ["pele/optimize/_modified_fire_cpp.cxx", "source/modified_fire.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
