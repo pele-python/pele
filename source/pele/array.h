@@ -7,6 +7,7 @@
 #include <iostream>
 #include <math.h>
 #include <memory>
+#include <algorithm>
 
 namespace pele {
 
@@ -175,15 +176,13 @@ public:
             if (size() != rhs.size()){
                 throw std::runtime_error("arrays must have the same size during assignment");
             }
-            for (size_t i=0; i<size(); ++i)
-                data()[i] = rhs[i];
+            std::copy(rhs.begin(), rhs.end(), begin());
         }
         return *this;
     }
 
     Array<dtype> &assign(dtype d) {
-        for(size_t i=0; i<size(); ++i)
-            data()[i] = d;
+        std::fill(begin(), end(), d);
         return *this;
     }
 
@@ -231,14 +230,18 @@ public:
         if (size() != rhs.size()){
             throw std::runtime_error("operator+=: arrays must have the same size");
         }
-        for (size_t i=0; i<size(); ++i)
-            data()[i] += rhs[i];
+        const_iterator iter = rhs.begin();
+        for (dtype & val : *this){
+            val += *iter;
+            ++iter;
+        }
         return *this;
     }
 
     Array<dtype> &operator+=(const dtype &rhs) {
-        for (size_t i=0; i<size(); ++i)
-            data()[i] += rhs;
+        for (dtype & val : (*this)){
+            val += rhs;
+        }
         return *this;
    }
 

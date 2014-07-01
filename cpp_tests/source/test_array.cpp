@@ -185,6 +185,16 @@ TEST(ArrayTest, Resize_Works){
 //    EXPECT_THROW(v.resize(7), std::runtime_error);
 }
 
+TEST(ArrayTest, RangeBasedFor_Works){
+    Array<double> v(3,0);
+    for (double & val : v){
+        val += 1;
+    }
+    for (size_t i=0; i<v.size(); ++i){
+        EXPECT_EQ(1,v[i]);
+    }
+}
+
 TEST(ArrayTest, SumOperator_Array){
     pele::Array<double> v(6);
     for (size_t i=0; i<v.size(); ++i) v[i] = -1;
@@ -215,8 +225,7 @@ TEST(ArrayTest, SumOperator_ArraySelf){
 
 TEST(ArrayTest, SumOperator_Const){
     double c = 1;
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = -1;
+    pele::Array<double> v(6, -1);
     v += c;
     for (int i = 0; i < 6; ++i){
         EXPECT_EQ(v[i], 0);
@@ -227,10 +236,8 @@ TEST(ArrayTest, SumOperator_Const){
 ///////////
 
 TEST(ArrayTest, DifOperator_Array){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
-    pele::Array<double> v2(6);
-    for (size_t i=0; i<v2.size(); ++i) v2[i] = 1;
+    pele::Array<double> v(6,1);
+    pele::Array<double> v2(6,1);
     v -= v2;
     EXPECT_NE(v.data(), v2.data());
     for (int i = 0; i < 6; ++i){
@@ -240,9 +247,7 @@ TEST(ArrayTest, DifOperator_Array){
 }
 
 TEST(ArrayTest, DifOperator_ArraySelf){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
-
+    pele::Array<double> v(6,1);
     double* old_v_data = v.data();
 
     v -= v;
