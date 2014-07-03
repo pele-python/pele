@@ -11,11 +11,17 @@
 
 namespace pele {
 
+/**
+ * This manages the data of the Array class.  This can act as a simple wrapper for a
+ * vector, or wrap an externally allocated block of memory.
+ */
 template<typename dtype>
 class _ArrayMemory{
     std::vector<dtype> _vector;
-    dtype *_data;
-    size_t _size;
+    dtype *_data; /** _data will either point to the beginning of _vector, or to the beginning of the
+                       block of externally allocated memory.  _data is a simple pointer and will not
+                       represent allocated memory. */
+    size_t _size;  /** the size of the block of memory, whether in vector or external. */
 
 public:
     _ArrayMemory()
@@ -55,6 +61,10 @@ template<typename dtype>
 class Array
 {
     std::shared_ptr<_ArrayMemory<dtype> > _memory;
+    dtype * _data; /** _data will usually be a copy of memory->data().  If this
+                        is a view of another array then _data will be
+                        _memory->data() + ibegin */
+    size_t _size;   /** The size of the array. */
 public:
     /**
      * default constructor
@@ -62,35 +72,46 @@ public:
      * create an array of size 0
      */
     Array()
-        : _memory(new _ArrayMemory<dtype>())
+        : _memory(new _ArrayMemory<dtype>()),
+          _data(_memory->data()),
+          _size(_memory->size())
     {}
 
     /**
      * construct an array with a given size
      */
     Array(size_t size)
-        : _memory(new _ArrayMemory<dtype>(size))
+        : _memory(new _ArrayMemory<dtype>(size)),
+          _data(_memory->data()),
+          _size(_memory->size())
     {}
 
     /**
      * construct an array with a given size, each element is a copy of val
      */
     Array(size_t size, dtype const & val)
-    : _memory(new _ArrayMemory<dtype>(size, val))
+        : _memory(new _ArrayMemory<dtype>(size, val)),
+          _data(_memory->data()),
+          _size(_memory->size())
+
     {}
 
     /**
      * wrap some data that is passed.  Do not take ownership of the data.
      */
     Array(dtype *data, size_t size)
-    : _memory(new _ArrayMemory<dtype>(data, size))
+        : _memory(new _ArrayMemory<dtype>(data, size)),
+          _data(_memory->data()),
+          _size(_memory->size())
     {}
 
     /**
      * wrap a vector.  This memory should never be deleted.
      */
     Array(std::vector<dtype> &x)
-    : _memory(new _ArrayMemory<dtype>(x.data(), x.size()))
+        : _memory(new _ArrayMemory<dtype>(x.data(), x.size())),
+          _data(_memory->data()),
+          _size(_memory->size())
     {}
 
     /**
@@ -104,6 +125,8 @@ public:
      *
      Array(Array<dtype> const & x)
          : _memory(x._memory)
+           _data(x._data),
+           _size(x._size)
      {}
      */
 
@@ -113,18 +136,20 @@ public:
     inline void wrap(Array<dtype> x)
     {
         _memory = x._memory;
+        _data = x._data;
+        _size = x._size;
     }
 
     /**
      * return pointer to data
      */
-    inline dtype *data() { return _memory->data(); }
-    inline dtype const *data() const { return _memory->data(); }
+    inline dtype *data() { return _data; }
+    inline dtype const *data() const { return _data; }
 
     /**
      * return the size of the array
      */
-    inline size_t size() const { return _memory->size(); }
+    inline size_t size() const { return _size; }
 
     /**
      * access an element in the array
@@ -149,6 +174,8 @@ public:
      *
     Array<dtype> &operator=(const Array<dtype> & rhs){
         _memory = rhs._memory;
+        _data = rhs._data;
+        _size = rhs._size;
     }
     */
 
@@ -159,7 +186,7 @@ public:
      * test if they wrap the same data
      */
     inline bool operator==(Array<dtype> const rhs) const {
-        return _memory.get() == rhs._memory.get();
+        return data() == rhs.data() and size() == rhs.size();
     }
     inline bool operator!=(Array<dtype> const rhs) const {
         return !operator==(rhs);
@@ -205,6 +232,8 @@ public:
      */
     inline void free(){
         _memory = std::make_shared<_ArrayMemory<dtype> >();
+        _data = _memory->data();
+        _size = _memory->size();
     }
 
     /**
@@ -331,11 +360,8 @@ public:
 
     /**
      * return a view of the array.
-     *
-     * This is commented in case we ever want to add the functionality again.
-     * This is an outline, it will need some modifications to actually work.
-     *
-    Array<dtype> view(size_t ibegin, size_t iend)
+     */
+    Array<dtype> view(size_t ibegin, size_t iend) const
     {
         if (iend <= ibegin) {
             throw std::invalid_argument("iend must larger than ibegin");
@@ -344,11 +370,10 @@ public:
             throw std::invalid_argument("iend cannot be larger than array size");
         }
         Array<dtype> newarray(*this);
-        newarray._memory._data += ibegin;
-        newarray._memory._size = iend - ibegin;
+        newarray._data += ibegin;
+        newarray._size = iend - ibegin;
         return newarray;
     }
-    */
 
 };
 

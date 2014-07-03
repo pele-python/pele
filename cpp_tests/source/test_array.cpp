@@ -396,6 +396,40 @@ TEST(ArrayTest, ConstArray_NotModifiable){
     UNUSED(x);
 }
 
+TEST(ArrayTest, View_Works){
+    pele::Array<size_t> v(6);
+    for (size_t i=0; i<v.size(); ++i){
+        v[i] = i;
+    }
+    pele::Array<size_t> v2 = v.view(1,3);
+    EXPECT_EQ(v[0], 0);
+    EXPECT_EQ(v2[0], 1);
+    EXPECT_EQ(v2[1], 2);
+    EXPECT_EQ(v2.size(), 2);
+    EXPECT_FALSE(v == v2);
+
+    pele::Array<size_t> v3 = v2.view(1,2);
+    EXPECT_EQ(v3[0], 2);
+    EXPECT_EQ(v3.size(), 1);
+
+    EXPECT_EQ(v.size(), 6);
+    EXPECT_EQ(v[0], 0);
+}
+
+TEST(ArrayTest, FullView_IsSame){
+    pele::Array<size_t> v(6);
+    pele::Array<size_t> v2 = v.view(0,6);
+    EXPECT_TRUE(v == v2);
+}
+
+TEST(ArrayTest, BadInput_Fails){
+    pele::Array<size_t> v(6);
+    pele::Array<size_t> v2;
+    ASSERT_THROW(v2 = v.view(-1,2), std::invalid_argument);
+    ASSERT_THROW(v2 = v.view(3,2), std::invalid_argument);
+    ASSERT_THROW(v2 = v.view(0,7), std::invalid_argument);
+}
+
 TEST(ArrayDotTest, Dot_Works){
     pele::Array<double> v1(6, 3);
     pele::Array<double> v2(6, 2);
