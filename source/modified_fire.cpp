@@ -40,7 +40,7 @@ namespace pele{
 
     MODIFIED_FIRE::MODIFIED_FIRE(pele::BasePotential * potential, pele::Array<double>& x0, double dtstart, double dtmax, double maxstep,
       size_t Nmin, double finc, double fdec, double fa, double astart, double tol, bool stepback):
-      GradientOptimizer(potential,x0,tol=1e-4), //call GradientOptimizer constructor
+      GradientOptimizer(potential,x0,tol), //call GradientOptimizer constructor
       _dtstart(dtstart), _dt(dtstart),
       _dtmax(dtmax), _maxstep(maxstep), _Nmin(Nmin),
       _finc(finc), _fdec(fdec), _fa(fa),
