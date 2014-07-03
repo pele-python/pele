@@ -30,12 +30,12 @@ public:
         rcut = 2.5;
         natoms = 4;
         ntypeA = 2;
-        atomsA.resize(ntypeA);
+        atomsA = pele::Array<size_t>(ntypeA);
         for (size_t i =0; i<atomsA.size(); ++i){
             atomsA[i] = i;
         }
         size_t ntypeB = natoms - ntypeA;
-        atomsB.resize(ntypeB);
+        atomsB = pele::Array<size_t>(ntypeB);
         for (size_t i = 0; i<ntypeB; ++i){
             atomsB[i] = i + ntypeA;
         }

@@ -35,14 +35,14 @@ public:
     virtual void SetUp(){
         eps=1.0;
         sca=1.2;
-        radii.resize(3);
+        radii = Array<double>(3);
         double f = 0.3; // for too much overlap, numerical accuracy decreases
         radii[0] = 1.0*f;
         radii[1] = 1.1*f;
         radii[2] = 0.9*f;
         radii2d = radii;
-        radii_small.resize(3);
-        radii_large.resize(3);
+        radii_small = Array<double>(3);
+        radii_large = Array<double>(3);
         for (size_t i(0); i < radii.size(); ++i){
             radii_small[i] = radii[i]/3.;
             radii_large[i] = radii[i]*1.3;
@@ -54,7 +54,7 @@ public:
         boxvec[2] = 7;
         boxvec2d[0] = 5;
         boxvec2d[1] = 6;
-        x.resize(9);
+        x = Array<double>(9);
         x[0] = 0.1;
         x[1] = 0.2;
         x[2] = 0.3;
@@ -64,14 +64,14 @@ public:
         x[6] = 0.88;
         x[7] = 1.1;
         x[8] = 3.32;
-        x2d.resize(6);
+        x2d = Array<double>(6);
         x2d[0] = 0.1;
         x2d[1] = 0.11;
         x2d[2] = 0.6;
         x2d[3] = 0.66;
         x2d[4] = 2.2;
         x2d[5] = 2.3;
-        frozen_dof.resize(3);
+        frozen_dof = Array<size_t>(3);
         frozen_dof[0] = 0;
         frozen_dof[1] = 3;
         frozen_dof[2] = 4;

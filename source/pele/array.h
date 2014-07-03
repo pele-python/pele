@@ -37,19 +37,6 @@ public:
         : _vector(), _data(data), _size(size)
     {}
 
-    /**
-     * resize the vector
-     * 
-     * This function does not guarantee that the data is preserved.
-     * If it was previously wrapping externally allocated memory, that is
-     * definitely lost.
-     */
-    void resize(size_t size) {
-        _vector.resize(size);
-        _data = _vector.data();
-        _size = size;
-    }
-
     /*
      * return the size of the array
      */
@@ -211,13 +198,6 @@ public:
         Array<dtype> newarray(size());
         newarray.assign(*this);
         return newarray;
-    }
-
-    /**
-     * resize the array
-     */
-    inline void resize(size_t size){
-        _memory->resize(size);
     }
 
     /**

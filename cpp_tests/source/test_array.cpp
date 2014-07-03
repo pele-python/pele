@@ -185,19 +185,6 @@ TEST(ArrayTest, ConstructFromVector_Wraps){
     vec[0] = 0; // the data in vec should not have been deallocated
 }
 
-TEST(ArrayTest, Resize_Works){
-    Array<double> v(3);
-    double * old_data = v.data();
-    v.resize(6);
-    EXPECT_NE(v.data(), old_data);
-    v.resize(0);
-    EXPECT_TRUE(v.empty());
-    v.resize(6);
-    // you can't resize a wrapped array
-//    Array<double> v2(v);
-//    EXPECT_THROW(v.resize(7), std::runtime_error);
-}
-
 TEST(ArrayTest, RangeBasedFor_Works){
     Array<double> v(3,0);
     for (double & val : v){

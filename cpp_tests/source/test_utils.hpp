@@ -10,6 +10,8 @@
 #include <cmath>
 #include <memory>
 
+using pele::Array;
+
 class PotentialTest :  public ::testing::Test
 {
 public:
@@ -23,8 +25,8 @@ public:
     }
 
     void test_energy_gradient(){
-        g.resize(x.size());
-        gnum.resize(g.size());
+        g = Array<double>(x.size());
+        gnum = Array<double>(g.size());
         double e = pot->get_energy_gradient(x, g);
         EXPECT_NEAR(e, etrue, 1e-10);
         pot->numerical_gradient(x, gnum, 1e-6);
@@ -34,10 +36,10 @@ public:
     }
 
     void test_energy_gradient_hessian(){
-        g.resize(x.size());
-        gnum.resize(g.size());
-        h.resize(x.size()*x.size());
-        hnum.resize(h.size());
+        g = Array<double>(x.size());
+        gnum = Array<double>(g.size());
+        h = Array<double>(x.size()*x.size());
+        hnum = Array<double>(h.size());
         double e = pot->get_energy_gradient_hessian(x, g, h);
         double ecomp = pot->get_energy(x);
         pot->numerical_gradient(x, gnum);

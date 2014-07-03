@@ -32,9 +32,9 @@ public:
     double etrue;
     Array<double> x, g, gtrue, hess, htrue;
     virtual void SetUp(){
-        x.resize(2);
-        g.resize(2);
-        hess.resize(2*2);
+        x = Array<double>(2);
+        g = Array<double>(2);
+        hess = Array<double>(2*2);
         htrue = Array<double>(4, 0.);
         x[0] = 1.;
         x[1] = 1.5;
