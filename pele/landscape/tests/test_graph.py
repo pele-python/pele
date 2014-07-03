@@ -107,7 +107,7 @@ class TestGraph(unittest.TestCase):
     
     def test_connected_components(self):
         tsgraph = TSGraph(self.db)
-        cc = nx.connected_components(tsgraph.graph)
+        cc = list(nx.connected_components(tsgraph.graph))
         for nodes in cc:
             for u, v in izip(nodes[:-1], nodes[1:]):
                 self.assertTrue(tsgraph.areConnected(u, v))

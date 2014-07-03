@@ -93,12 +93,14 @@ namespace pele {
     /**
      * Pairwise WCA potential
      */
-    class WCA : public SimplePairwisePotential< WCA_interaction >
+    class WCA : public SimplePairwisePotential< WCA_interaction, cartesian_distance<3>>
     {
         public:
             WCA(double sig, double eps)
-                : SimplePairwisePotential< WCA_interaction > (
-                        std::make_shared<WCA_interaction>(sig, eps) ) {}
+                : SimplePairwisePotential< WCA_interaction, cartesian_distance<3>>(
+                        std::make_shared<WCA_interaction>(sig, eps),
+                        std::make_shared<cartesian_distance<3>>()
+                        ){}
     };
 
     class WCA2D : public SimplePairwisePotential< WCA_interaction, cartesian_distance<2> >

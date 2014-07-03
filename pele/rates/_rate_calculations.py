@@ -440,7 +440,7 @@ class GraphReduction(object):
 
         # check A and B are connected
         undirected_graph = self.graph.to_undirected()
-        cc = nx.connected_components(undirected_graph)
+        cc = list(nx.connected_components(undirected_graph))
         if len(cc) != 1:
 #            print "warning, graph is not fully connected.  There are", len(cc), "components"
             self._check_A_B_connected(cc)
