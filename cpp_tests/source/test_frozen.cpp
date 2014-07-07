@@ -19,7 +19,7 @@ public:
     virtual void SetUp(){
         c6 = 1.2;
         c12 = 2.3;
-        x.resize(9);
+        x = Array<double>(9);
         x[0] = 0.1;
         x[1] = 0.2;
         x[2] = 0.3;
@@ -29,7 +29,7 @@ public:
         x[6] = 0.88;
         x[7] = 1.1;
         x[8] = 3.32;
-        frozen_dof.resize(3);
+        frozen_dof = Array<size_t>(3);
         frozen_dof[0] = 0;
         frozen_dof[1] = 3;
         frozen_dof[2] = 4;

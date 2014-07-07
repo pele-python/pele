@@ -60,7 +60,7 @@ public:
         natoms = 3;
         c6 = 1.2;
         c12 = 2.3;
-        x.resize(3*natoms);
+        x = Array<double>(3*natoms);
         x[0]  = 0.1;
         x[1]  = 0.2;
         x[2]  = 0.3;

@@ -48,18 +48,22 @@ TEST(ArrayTest, FreeWrappedArray_Works){
     // I discovered an error with this test
     pele::Array<double> v(6);
     pele::Array<double> v2(v);
+    pele::Array<double> v3(v);
+    EXPECT_EQ(3, v.reference_count());
+    EXPECT_EQ(3, v2.reference_count());
     v.free();
-    EXPECT_EQ(0, v.reference_count());
-    EXPECT_EQ(1, v2.reference_count());
-//    ASSERT_THROW(pele::Array<double> v3(v), std::runtime_error);
+    EXPECT_EQ(1, v.reference_count());
+    EXPECT_EQ(2, v2.reference_count());
+    EXPECT_EQ(2, v3.reference_count());
+    //    ASSERT_THROW(pele::Array<double> v3(v), std::runtime_error);
 }
 
 
-TEST(ArrayTest, CopyConstructorEmptyArray_Fails){
-    // should wrap v
-    pele::Array<double> v;
-    ASSERT_THROW(pele::Array<double> v2(v), std::runtime_error);
-}
+//TEST(ArrayTest, CopyConstructorEmptyArray_Fails){
+//    // should wrap v
+//    pele::Array<double> v;
+//    ASSERT_THROW(pele::Array<double> v2(v), std::runtime_error);
+//}
 
 TEST(ArrayTest, AssignmentOperator_WrapsCorrectly){
     // should wrap v
@@ -70,14 +74,14 @@ TEST(ArrayTest, AssignmentOperator_WrapsCorrectly){
     EXPECT_EQ(v.size(), v2.size());
 }
 
-TEST(ArrayTest, AssignmentOperatorEmptyArray_Fails){
-    // This throwing an error is consistent with the logic, but I wish it didn't fail
-    // Maybe someday we can change the logic so this won't have to fail
-    pele::Array<double> v;
-    ASSERT_THROW(v = Array<double>(), std::runtime_error);
-    pele::Array<double> v2;
-    ASSERT_THROW(v = v2, std::runtime_error);
-}
+//TEST(ArrayTest, AssignmentOperatorEmptyArray_Fails){
+//    // This throwing an error is consistent with the logic, but I wish it didn't fail
+//    // Maybe someday we can change the logic so this won't have to fail
+//    pele::Array<double> v;
+//    ASSERT_THROW(v = Array<double>(), std::runtime_error);
+//    pele::Array<double> v2;
+//    ASSERT_THROW(v = v2, std::runtime_error);
+//}
 
 TEST(ArrayTest, Wrap_Works){
     pele::Array<double> v(6);
@@ -89,12 +93,12 @@ TEST(ArrayTest, Wrap_Works){
     EXPECT_EQ(v2.reference_count(), v.reference_count());
 }
 
-TEST(ArrayTest, WrapEmptyArray_Fails){
-    // can't wrap an array with no data
-    pele::Array<double> v;
-    pele::Array<double> v2;
-    ASSERT_THROW(v2.wrap(v), std::runtime_error);
-}
+//TEST(ArrayTest, WrapEmptyArray_Fails){
+//    // can't wrap an array with no data
+//    pele::Array<double> v;
+//    pele::Array<double> v2;
+//    ASSERT_THROW(v2.wrap(v), std::runtime_error);
+//}
 
 TEST(ArrayTest, WrapSelf_DoesNothing){
     pele::Array<double> v(6);
@@ -107,9 +111,22 @@ TEST(ArrayTest, Free_Works){
     pele::Array<double> v(6);
     v.free();
     EXPECT_EQ (0, v.size());
-    EXPECT_FALSE(v.data());
+//    EXPECT_FALSE(v.data());
     EXPECT_TRUE(v.empty());
     v.free();
+}
+
+TEST(ArrayTest, Free_Unwraps){
+    pele::Array<double> v1(6);
+    pele::Array<double> v2(v1);
+    EXPECT_EQ(size_t(2), v1.reference_count());
+    EXPECT_TRUE(v1 == v2);
+    v2.free();
+    EXPECT_EQ(size_t(1), v1.reference_count());
+    EXPECT_EQ(size_t(1), v2.reference_count());
+    EXPECT_TRUE(v1 != v2);
+    EXPECT_EQ(size_t(0), v2.size());
+    EXPECT_EQ(size_t(6), v1.size());
 }
 
 TEST(ArrayTest, Copy_WorksNotWrap){
@@ -151,7 +168,7 @@ TEST(ArrayTest, ConstructFromVector_Wraps){
     std::vector<double> vec(6);
     pele::Array<double> v(vec);
     EXPECT_FALSE(v.empty());
-    EXPECT_EQ(v.reference_count(), 0);
+    EXPECT_EQ(v.reference_count(), 1);
     EXPECT_EQ(v.data(), vec.data());
     EXPECT_EQ(v.size(), vec.size());
     pele::Array<double> v2(v);
@@ -168,23 +185,35 @@ TEST(ArrayTest, ConstructFromVector_Wraps){
     vec[0] = 0; // the data in vec should not have been deallocated
 }
 
-TEST(ArrayTest, Resize_Works){
-    Array<double> v(3);
-    double * old_data = v.data();
-    v.resize(6);
-    EXPECT_NE(v.data(), old_data);
-    v.resize(0);
-    EXPECT_TRUE(v.empty());
-    v.resize(6);
-    // you can't resize a wrapped array
-    Array<double> v2(v);
-    EXPECT_THROW(v.resize(7), std::runtime_error);
+TEST(ArrayTest, RangeBasedFor_Works){
+    Array<double> v(3,0);
+    for (double & val : v){
+        val += 1;
+    }
+    for (size_t i=0; i<v.size(); ++i){
+        EXPECT_EQ(1,v[i]);
+    }
+}
+
+TEST(ArrayTest, EqualityOperator_Works){
+    Array<double> v1(3);
+    Array<double> v2(3);
+    EXPECT_FALSE(v1 == v2);
+    v1.wrap(v2);
+    EXPECT_TRUE(v1 == v2);
+}
+
+TEST(ArrayTest, InEqualityOperator_Works){
+    Array<double> v1(3);
+    Array<double> v2(3);
+    EXPECT_TRUE(v1 != v2);
+    v1.wrap(v2);
+    EXPECT_FALSE(v1 != v2);
 }
 
 TEST(ArrayTest, SumOperator_Array){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = -1;
-    pele::Array<double> v2(6);
+    pele::Array<double> v(6,-1);
+    pele::Array<double> v2(6,1);
     for (size_t i=0; i<v2.size(); ++i) v2[i] = 1;
     v += v2;
     EXPECT_NE(v.data(), v2.data());
@@ -195,9 +224,7 @@ TEST(ArrayTest, SumOperator_Array){
 }
 
 TEST(ArrayTest, SumOperator_ArraySelf){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
-
+    pele::Array<double> v(6,1);
     double* old_v_data = v.data();
 
     v += v;
@@ -211,8 +238,7 @@ TEST(ArrayTest, SumOperator_ArraySelf){
 
 TEST(ArrayTest, SumOperator_Const){
     double c = 1;
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = -1;
+    pele::Array<double> v(6, -1);
     v += c;
     for (int i = 0; i < 6; ++i){
         EXPECT_EQ(v[i], 0);
@@ -223,10 +249,8 @@ TEST(ArrayTest, SumOperator_Const){
 ///////////
 
 TEST(ArrayTest, DifOperator_Array){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
-    pele::Array<double> v2(6);
-    for (size_t i=0; i<v2.size(); ++i) v2[i] = 1;
+    pele::Array<double> v(6,1);
+    pele::Array<double> v2(6,1);
     v -= v2;
     EXPECT_NE(v.data(), v2.data());
     for (int i = 0; i < 6; ++i){
@@ -236,9 +260,7 @@ TEST(ArrayTest, DifOperator_Array){
 }
 
 TEST(ArrayTest, DifOperator_ArraySelf){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
-
+    pele::Array<double> v(6,1);
     double* old_v_data = v.data();
 
     v -= v;
@@ -252,8 +274,7 @@ TEST(ArrayTest, DifOperator_ArraySelf){
 
 TEST(ArrayTest, DifOperator_Const){
     double c = 1;
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    pele::Array<double> v(6,1);
     v -= c;
     for (int i = 0; i < 6; ++i){
         EXPECT_EQ(v[i], 0);
@@ -264,21 +285,18 @@ TEST(ArrayTest, DifOperator_Const){
 ///////////
 
 TEST(ArrayTest, ProdOperator_Array){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
-    pele::Array<double> v2(6);
-    for (size_t i=0; i<v2.size(); ++i) v2[i] = 10;
+    pele::Array<double> v(6, 2);
+    pele::Array<double> v2(6 ,10);
     v *= v2;
     EXPECT_NE(v.data(), v2.data());
     for (int i = 0; i < 6; ++i){
-        EXPECT_EQ(v[i], 10);
+        EXPECT_EQ(v[i], 20);
         EXPECT_EQ(v2[i], 10);
     }
 }
 
 TEST(ArrayTest, ProdOperator_ArraySelf){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    pele::Array<double> v(6, 2);
 
     double* old_v_data = v.data();
 
@@ -287,28 +305,25 @@ TEST(ArrayTest, ProdOperator_ArraySelf){
     EXPECT_EQ(v.data(), old_v_data); //check that memory has not moved
 
     for (int i = 0; i < 6; ++i){
-        EXPECT_EQ(v[i], 1);
+        EXPECT_EQ(v[i], 4);
     }
 }
 
 TEST(ArrayTest, ProdOperator_Const){
     double c = 10;
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 1;
+    pele::Array<double> v(6, 2);
     v *= c;
     for (int i = 0; i < 6; ++i){
-        EXPECT_EQ(v[i], 10);
+        EXPECT_EQ(v[i], 20);
     }
-    EXPECT_EQ(c,10);
+    EXPECT_EQ(c, 10);
 }
 
 ///////////
 
 TEST(ArrayTest, DivOperator_Array){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
-    pele::Array<double> v2(6);
-    for (size_t i=0; i<v2.size(); ++i) v2[i] = 2;
+    pele::Array<double> v(6,2);
+    pele::Array<double> v2(6,2);
     v /= v2;
     EXPECT_NE(v.data(), v2.data());
     for (int i = 0; i < 6; ++i){
@@ -318,8 +333,7 @@ TEST(ArrayTest, DivOperator_Array){
 }
 
 TEST(ArrayTest, DivOperator_ArraySelf){
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+    pele::Array<double> v(6,2);
 
     double* old_v_data = v.data();
 
@@ -334,8 +348,7 @@ TEST(ArrayTest, DivOperator_ArraySelf){
 
 TEST(ArrayTest, DivOperator_Const){
     double c = 2;
-    pele::Array<double> v(6);
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
+    pele::Array<double> v(6,2);
     v /= c;
     for (int i = 0; i < 6; ++i){
         EXPECT_EQ(v[i], 1);
@@ -344,19 +357,13 @@ TEST(ArrayTest, DivOperator_Const){
 }
 
 TEST(ArrayTest, SumFunction){
-    pele::Array<double> v(6);
-
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
-
-    EXPECT_NEAR(v.sum(),12,1e-10);
+    pele::Array<double> v(6,2);
+    EXPECT_EQ(v.sum(), 12);
 }
 
 TEST(ArrayTest, ProdFunction){
-    pele::Array<double> v(6);
-
-    for (size_t i=0; i<v.size(); ++i) v[i] = 2;
-
-    EXPECT_NEAR(v.prod(),64,1e-10);
+    pele::Array<double> v(6,2);
+    EXPECT_EQ(v.prod(), 64);
 }
 
 TEST(ArrayTest, Iterator_Works){
@@ -385,7 +392,57 @@ TEST(ArrayTest, ConstArray_NotModifiable){
         count++;
     }
     EXPECT_EQ(count, v.size());
-    UNUSED( d);
+    UNUSED(d);
     UNUSED(x);
 }
+
+TEST(ArrayTest, View_Works){
+    pele::Array<size_t> v(6);
+    for (size_t i=0; i<v.size(); ++i){
+        v[i] = i;
+    }
+    pele::Array<size_t> v2 = v.view(1,3);
+    EXPECT_EQ(v[0], 0);
+    EXPECT_EQ(v2[0], 1);
+    EXPECT_EQ(v2[1], 2);
+    EXPECT_EQ(v2.size(), 2);
+    EXPECT_FALSE(v == v2);
+
+    pele::Array<size_t> v3 = v2.view(1,2);
+    EXPECT_EQ(v3[0], 2);
+    EXPECT_EQ(v3.size(), 1);
+
+    EXPECT_EQ(v.size(), 6);
+    EXPECT_EQ(v[0], 0);
+}
+
+TEST(ArrayTest, FullView_IsSame){
+    pele::Array<size_t> v(6);
+    pele::Array<size_t> v2 = v.view(0,6);
+    EXPECT_TRUE(v == v2);
+}
+
+TEST(ArrayTest, BadInput_Fails){
+    pele::Array<size_t> v(6);
+    pele::Array<size_t> v2;
+    ASSERT_THROW(v2 = v.view(-1,2), std::invalid_argument);
+    ASSERT_THROW(v2 = v.view(3,2), std::invalid_argument);
+    ASSERT_THROW(v2 = v.view(0,7), std::invalid_argument);
+}
+
+TEST(ArrayDotTest, Dot_Works){
+    pele::Array<double> v1(6, 3);
+    pele::Array<double> v2(6, 2);
+
+    double d = pele::dot(v1, v2);
+    EXPECT_EQ(3*2*6, d);
+}
+
+TEST(ArrayNormTest, Norm_Works){
+    pele::Array<double> v1(6, 3);
+
+    double d = pele::norm(v1);
+    EXPECT_NEAR(sqrt(3*3*6), d, 1e-10);
+}
+
 

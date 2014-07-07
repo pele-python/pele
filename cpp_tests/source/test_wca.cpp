@@ -19,7 +19,7 @@ public:
     virtual void SetUp(){
         sig = 1.4;
         eps = 2.1;
-        x.resize(9);
+        x = Array<double>(9);
         x[0] = 0.1;
         x[1] = 0.2;
         x[2] = 0.3;
@@ -30,8 +30,8 @@ public:
         x[7] = 1.1;
         x[8] = 3.32;
         etrue = 0.9009099166892105;
-        g.resize(x.size());
-        gnum.resize(x.size());
+        g = Array<double>(x.size());
+        gnum = Array<double>(x.size());
     }
 };
 
@@ -82,7 +82,7 @@ public:
     virtual void SetUp(){
         eps = 2.1;
         sca = 1.4;
-        x.resize(9);
+        x = Array<double>(9);
         x[0] = 0.1;
         x[1] = 0.2;
         x[2] = 0.3;
@@ -92,14 +92,14 @@ public:
         x[6] = 0.88;
         x[7] = 1.1;
         x[8] = 3.32;
-        radii.resize(3);
+        radii = Array<double>(3);
         double f = .35;
         radii[0] = .91 * f;
         radii[1] = 1.1 * f;
         radii[2] = 1.13 * f;
         etrue = 42.956308546349518;
-        g.resize(x.size());
-        gnum.resize(x.size());
+        g = Array<double>(x.size());
+        gnum = Array<double>(x.size());
     }
 };
 
