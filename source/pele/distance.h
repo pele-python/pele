@@ -25,6 +25,7 @@
 
 namespace pele
 {
+
   /**
    * compute the cartesian distance
    */
@@ -185,5 +186,48 @@ namespace pele
             r_ij[1] -= round(r_ij[1] * _iboxy) * _boxy;
         }
     };
+
+    /*
+     * Interface classes to pass a generic non template pointer to DistanceInterface
+     * (this should reduce the need for templating where best performance is not essential)
+     */
+
+    class DistanceInterface{
+    protected:
+    public:
+        virtual void get_rij(double * const r_ij, double const * const r1, double const * const r2) const =0;
+        virtual ~DistanceInterface(){}
+    };
+
+    template<size_t ndim>
+    class CartesianDistanceWrapper : public DistanceInterface{
+    protected:
+        cartesian_distance<ndim> _dist;
+    public:
+        static const size_t _ndim = ndim;
+        inline void get_rij(double * const r_ij,
+                double const * const r1,
+                double const * const r2) const
+        {
+            _dist.get_rij(r_ij, r1, r2);
+        }
+    };
+
+    template<size_t ndim>
+        class PeriodicDistanceWrapper : public DistanceInterface{
+        protected:
+            periodic_distance<ndim> _dist;
+        public:
+            static const size_t _ndim = ndim;
+            PeriodicDistanceWrapper(double const * const box):
+                _dist(box){};
+            inline void get_rij(double * const r_ij,
+                    double const * const r1,
+                    double const * const r2) const
+            {
+                _dist.get_rij(r_ij, r1, r2);
+            }
+        };
+
 }
 #endif
