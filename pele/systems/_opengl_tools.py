@@ -78,7 +78,55 @@ def draw_atomic_binary(coordslinear, index, Aatoms, Batoms, subtract_com=False,
         color = [0.00, 0.25, 0., 1.]
     
     draw_atoms(coords, Batoms, color, radius=rB)
-
+    
+def draw_atomic_binary_polydisperse(coordslinear, index, bdim=3, subtract_com=False, radii=None, Batoms=None):
+    """
+    tell the gui how to represent your system using openGL objects
+    
+    Parameters
+    ----------
+    coords : array
+    bdim : box dimension
+    index : int
+        we can have more than one molecule on the screen at one time.  index tells
+        which one to draw.  They are viewed at the same time, so they should be
+        visually distinct, e.g. different colors.  accepted values are 1 or 2
+    Batoms: list of atoms of type B        
+    """
+    from OpenGL import GL,GLU
+    assert(radii is not None)
+    if Batoms is None:
+        Batoms = np.ones(len(coordslinear)/bdim)
+    
+    if bdim == 2:
+        #insert 0 every 2 coordinates
+        j = 0
+        for i in xrange(2,len(coordslinear)+1,2):
+            coordslinear.insert(i+j,0.0)
+            j+=1
+    
+    coords = coordslinear.reshape(-1, 3)
+    
+    if subtract_com:
+        com = np.mean(coords, axis=0)
+        coords = coords - com[np.newaxis,:]
+        
+    for i, _ in enumerate(coords):
+        if Batoms[i] == 1:
+            if index == 1:
+                color = [0.65, 0.0, 0.0, 1.]
+            else:
+                color = [0.00, 0.65, 0., 1.]
+        else:
+            if index == 1:
+                color = [0.25, 0.00, 1., 1.]
+            else:
+                color = [0.00, 0.25, 1., 1.]
+                
+        draw_atoms(coords, [i], color, radius=radii[i])
+        
+    
+    
 def draw_cone(X1, X2, rbase=0.1, rtop=0.0):
     """draw a cylinder from X1 to X2"""
     from OpenGL import GL,GLUT, GLU

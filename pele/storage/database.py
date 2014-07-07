@@ -422,8 +422,8 @@ class Database(object):
             if self.compareMinima:
                 if not self.compareMinima(new, m):
                     continue
-            return True
-        return False
+            return m
+        return None
         
     def addMinimum(self, E, coords, commit=True, max_n_minima=-1, pgorder=None, fvib=None):
         """add a new minimum to database

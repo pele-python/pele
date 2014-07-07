@@ -2,8 +2,9 @@
 cimport pele.potentials._pele as _pele
 import numpy as np
 cimport numpy as np
-from cpython cimport bool
+#from cpython cimport bool 
 from ctypes import c_size_t as size_t
+from libcpp cimport bool as cbool
 
 #===============================================================================
 # THIS POTENTIAL NEEDS TO BE CLEANED UP
@@ -11,13 +12,13 @@ from ctypes import c_size_t as size_t
 
 # use external c++ class
 cdef extern from "pele/harmonic.h" namespace "pele":
-    cdef cppclass  cBaseHarmonic "pele::BaseHarmonic":
+    cdef cppclass cBaseHarmonic "pele::BaseHarmonic":
         cBaseHarmonic(_pele.Array[double] coords, double k, size_t ndim) except +
         void set_k(double) except +
         double get_k() except +
-    cdef cppclass  cHarmonic "pele::Harmonic":
+    cdef cppclass cHarmonic "pele::Harmonic":
         cHarmonic(_pele.Array[double] coords, double k, size_t ndim) except +
-    cdef cppclass  cHarmonicCOM "pele::HarmonicCOM":
+    cdef cppclass cHarmonicCOM "pele::HarmonicCOM":
         cHarmonicCOM(_pele.Array[double] coords, double k, size_t ndim) except +
 
 cdef class Harmonic(_pele.BasePotential):
@@ -33,10 +34,10 @@ cdef class Harmonic(_pele.BasePotential):
         
         cdef np.ndarray[double, ndim=1] origin = coords
         cdef double k = pk
-        cdef bool pcom = com
+        cdef cbool pcom = com
         cdef int pbdim = bdim
         
-        if com is True:
+        if pcom is True:
             self.thisptr = <_pele.cBasePotential*>new cHarmonicCOM(_pele.Array[double](<double*> origin.data, origin.size), k, pbdim)
         else:
             self.thisptr = <_pele.cBasePotential*>new cHarmonic(_pele.Array[double](<double*> origin.data, origin.size), k, pbdim)
