@@ -30,7 +30,7 @@ class LowestEigPotentialTest :  public ::testing::Test
         _ndim=_bdim*_natoms;
         _c6 = 1.2;
         _c12 = 2.3;
-        _x.resize(_bdim*_natoms);
+        _x = Array<double>(_bdim*_natoms);
         _x[0] = 0.1;
         _x[1] = 0.2;
         _x[2] = 0.3;
@@ -43,9 +43,9 @@ class LowestEigPotentialTest :  public ::testing::Test
         _x[9] = 0;
         _x[10] = +0.5;
         _x[11] = 0.;
-        ev0.resize(_ndim);
-        ev1.resize(_ndim);
-        ev2.resize(_ndim);
+        ev0 = Array<double>(_ndim);
+        ev1 = Array<double>(_ndim);
+        ev2 = Array<double>(_ndim);
         ev0.assign(0.0);
         ev1.assign(0.0);
         ev2.assign(0.0);
@@ -63,8 +63,8 @@ class LowestEigPotentialTest :  public ::testing::Test
         _M = 4;
         _lbfgs = std::shared_ptr<pele::LBFGS> (new pele::LBFGS(_potential.get(), _x, _tol, _M));
         //setup lowesteigtest
-        _g.resize(_ndim);
-        _ranvec.resize(_ndim);
+        _g = Array<double>(_ndim);
+        _ranvec = Array<double>(_ndim);
         for(size_t j=0;j<_ndim;++j)
             _ranvec[j] = (double) j;
         _ranvec /= norm(_ranvec);
@@ -138,9 +138,9 @@ public:
         _bdim = 3;
         _ndim = _natoms*_bdim;
         _orthog = std::shared_ptr<pele::Orthogonalize> (new pele::OrthogonalizeTranslational(_natoms, _bdim));
-        ev0.resize(_ndim);
-        ev1.resize(_ndim);
-        ev2.resize(_ndim);
+        ev0 = Array<double>(_ndim);
+        ev1 = Array<double>(_ndim);
+        ev2 = Array<double>(_ndim);
         ev0.assign(0.0);
         ev1.assign(0.0);
         ev2.assign(0.0);
@@ -151,8 +151,8 @@ public:
             ev1[j] = v;
         for(size_t j=2;j<_ndim;j+=_bdim)
             ev2[j] = v;
-        _vector.resize(_ndim);
-        _coords.resize(_ndim);
+        _vector = Array<double>(_ndim);
+        _coords = Array<double>(_ndim);
         for(size_t j=0;j<_ndim;++j)
             _vector[j] = (double) j;
         _vector /= norm(_vector);
