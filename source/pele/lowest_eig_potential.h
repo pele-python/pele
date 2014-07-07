@@ -5,6 +5,7 @@
 #include "array.h"
 #include <algorithm>
 #include <vector>
+#include <cmath>
 
 namespace pele {
 
