@@ -42,6 +42,11 @@ class TestDisconnectivityGraph(unittest.TestCase):
         dgraph.calculate()
         dgraph.plot()
 
+    def test_show_minima(self):
+        dgraph = DisconnectivityGraph(self.tsgraph)
+        dgraph.calculate()
+        dgraph.plot(show_minima=True)
+
     def test_color_groups(self):
         dgraph = DisconnectivityGraph(self.tsgraph)
         dgraph.calculate()
