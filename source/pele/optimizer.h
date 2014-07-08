@@ -19,7 +19,7 @@ namespace pele{
  * this defines the basic interface for optimizers.  All pele optimizers
  * should derive from this class.
  */
-class Optimizer{
+class Optimizer {
 public:
     /**
      * virtual destructor
@@ -56,7 +56,7 @@ public:
  * This defines the basic interface for optimizers.  All pele optimizers
  * should derive from this class.
  */
-class GradientOptimizer : public Optimizer{
+class GradientOptimizer : public Optimizer {
 protected :
     // input parameters
     /**
@@ -92,22 +92,20 @@ protected :
 
 public :
     GradientOptimizer(pele::BasePotential * potential,
-          const pele::Array<double> x0,
-          double tol=1e-4)
-    :
-      potential_(potential),
-      tol_(tol),
-      maxstep_(0.1),
-      maxiter_(1000),
-      iprint_(-1),
-      verbosity_(0),
-      iter_number_(0),
-      nfev_(0),
-      x_(x0.copy()),
-      f_(0.),
-      g_(x0.size()),
-      rms_(1e10),
-      func_initialized_(false)
+          const pele::Array<double> x0, double tol=1e-4)
+        : potential_(potential),
+          tol_(tol),
+          maxstep_(0.1),
+          maxiter_(1000),
+          iprint_(-1),
+          verbosity_(0),
+          iter_number_(0),
+          nfev_(0),
+          x_(x0.copy()),
+          f_(0.),
+          g_(x0.size()),
+          rms_(1e10),
+          func_initialized_(false)
     {}
 
     virtual ~GradientOptimizer() {}
@@ -130,9 +128,8 @@ public :
 
         // iterate until the stop criterion is satisfied or maximum number of
         // iterations is reached
-        for (int i = 0; i < niter; ++i)
-        {
-          if (stop_criterion_satisfied()){
+        for (int i = 0; i < niter; ++i) {
+          if (stop_criterion_satisfied()) {
             break;
           }
           one_iteration();
@@ -171,7 +168,10 @@ public :
         func_initialized_ = true;
     }
 
-    virtual void reset(pele::Array<double> &x0){throw std::runtime_error("GradientOptimizer::reset must be overloaded");}
+    virtual void reset(pele::Array<double> &x0)
+    {
+        throw std::runtime_error("GradientOptimizer::reset must be overloaded");
+    }
 
     // functions for setting the parameters
     void set_tol(double tol) { tol_ = tol; }

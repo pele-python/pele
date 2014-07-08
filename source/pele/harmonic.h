@@ -14,20 +14,23 @@ protected:
     pele::Array<double> _origin, _distance;
     double _k;
     size_t _ndim, _nparticles;
-    BaseHarmonic(pele::Array<double> origin, double k, size_t ndim):
-            _origin(origin.copy()),_distance(origin.size()),
-            _k(k), _ndim(ndim), _nparticles(origin.size()/_ndim){}
+    BaseHarmonic(pele::Array<double> origin, double k, size_t ndim)
+        : _origin(origin.copy()), _distance(origin.size()),
+          _k(k), _ndim(ndim), _nparticles(origin.size()/_ndim)
+    {}
+
 public:
     virtual ~BaseHarmonic(){}
     virtual double inline get_energy(pele::Array<double> x);
     virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
-    void set_k(double newk){_k = newk;};
-    double get_k(){return _k;};
+    void set_k(double newk) {_k = newk;};
+    double get_k() {return _k;};
 };
 
 
 /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-double inline BaseHarmonic::get_energy(pele::Array<double> x) {
+double inline BaseHarmonic::get_energy(pele::Array<double> x) 
+{
     double norm2 = 0;
     this->_get_distance(x);
     for(size_t i=0;i<x.size();++i)
@@ -36,7 +39,8 @@ double inline BaseHarmonic::get_energy(pele::Array<double> x) {
 }
 
 /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad) {
+double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad) 
+{
     assert(grad.size() == _origin.size());
     double norm2 = 0;
     this->_get_distance(x);
@@ -53,9 +57,11 @@ double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Arr
 class Harmonic : public BaseHarmonic{
 public:
     Harmonic(pele::Array<double> origin, double k, size_t ndim)
-        : BaseHarmonic(origin, k, ndim){}
+        : BaseHarmonic(origin, k, ndim)
+    {}
 
-    virtual void inline _get_distance(const pele::Array<double>& x){
+    virtual void inline _get_distance(const pele::Array<double>& x)
+    {
         assert(x.size() == _origin.size());
         for(size_t i=0;i<x.size();++i)
         {
@@ -70,9 +76,11 @@ public:
 class HarmonicCOM : public BaseHarmonic{
 public:
     HarmonicCOM(pele::Array<double> origin, double k, size_t ndim)
-        : BaseHarmonic(origin, k, ndim){}
+        : BaseHarmonic(origin, k, ndim)
+    {}
 
-    virtual void inline _get_distance(const pele::Array<double>& x){
+    virtual void inline _get_distance(const pele::Array<double>& x)
+    {
         assert(x.size() == _origin.size());
         pele::Array<double> delta_com(_ndim,0);
 
