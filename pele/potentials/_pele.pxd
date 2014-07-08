@@ -11,6 +11,7 @@ cdef extern from "pele/array.h" namespace "pele":
         Array(dtype*, size_t n) except +
         size_t size() except +
         dtype *data() except +
+        dtype & operator[](size_t) except +
 
 cdef extern from "pele/base_potential.h" namespace "pele":
     cdef cppclass  cBasePotential "pele::BasePotential":
