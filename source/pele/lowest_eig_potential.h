@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include <cmath>
+#include <memory>
 
 namespace pele {
 
@@ -79,13 +80,13 @@ inline void OrthogonalizeTranslational::orthogonalize(Array<double>& coords,
 
 class LowestEigPotential : public BasePotential {
 protected:
-    pele::BasePotential * _potential;
+    std::shared_ptr<pele::BasePotential> _potential;
     pele::Array<double> _coords, _coordsd, _g, _gd;
     size_t _bdim, _natoms;
     double _d;
     OrthogonalizeTranslational _orthog;
 public:
-    LowestEigPotential(pele::BasePotential * potential, pele::Array<double>
+    LowestEigPotential(std::shared_ptr<pele::BasePotential> potential, pele::Array<double>
             coords, size_t bdim, double d=1e-6);
     virtual ~LowestEigPotential(){}
     virtual double inline get_energy(pele::Array<double> x);
@@ -96,13 +97,13 @@ public:
 
 /*constructor*/
 
-LowestEigPotential::LowestEigPotential(pele::BasePotential * potential,
+LowestEigPotential::LowestEigPotential(std::shared_ptr<pele::BasePotential> potential,
         pele::Array<double> coords, size_t bdim, double d)
     : _potential(potential), _coords(coords), _coordsd(coords.size()),
       _g(_coords.size()), _gd(_coords.size()), _bdim(bdim),
       _natoms(_coords.size()/_bdim), _d(d), _orthog(_natoms,_bdim)
 {
-    double e = _potential->get_energy_gradient(_coords,_g);
+    _potential->get_energy_gradient(_coords,_g);
 }
 
 /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
@@ -114,7 +115,7 @@ double inline LowestEigPotential::get_energy(pele::Array<double> x)
         _coordsd[i] = _coords[i] + _d*x[i];
     }
 
-    double ed = _potential->get_energy_gradient(_coordsd,_gd);
+    _potential->get_energy_gradient(_coordsd,_gd);
     _gd -= _g;
     double mu = dot(_gd,x)/_d;
 
@@ -131,7 +132,7 @@ double inline LowestEigPotential::get_energy_gradient(pele::Array<double> x,
         _coordsd[i] = _coords[i] + _d*x[i];
     }
 
-    double ed = _potential->get_energy_gradient(_coordsd,_gd);
+    _potential->get_energy_gradient(_coordsd,_gd);
     _gd -= _g;
     double mu = dot(_gd,x)/_d;
     for (size_t i=0;i<x.size();++i) {
@@ -144,7 +145,7 @@ double inline LowestEigPotential::get_energy_gradient(pele::Array<double> x,
 void LowestEigPotential::reset_coords(pele::Array<double> new_coords)
 {
     _coords.assign(new_coords);
-    double e = _potential->get_energy_gradient(_coords,_g);
+    _potential->get_energy_gradient(_coords,_g);
 }
 
 }

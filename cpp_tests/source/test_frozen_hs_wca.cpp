@@ -337,26 +337,26 @@ TEST_F(FrozenHS_WCATest, TestEnergyGradientHessian_AgreesWithNumerical_2D){
 
 TEST_F(FrozenHS_WCATest, TestMinimizationFreezing_Correct){
     // minimization for non-frozen HS_WCA
-    HS_WCA pot_nofreeze(eps,sca,radii);
-    const auto e_notfreeze_before = pot_nofreeze.get_energy(x);
-    opt_t minimizer(&pot_nofreeze, x, 1e-4, 1.0, 0.5);
+    auto  pot_nofreeze = std::make_shared<HS_WCA>(eps,sca,radii);
+    const auto e_notfreeze_before = pot_nofreeze->get_energy(x);
+    opt_t minimizer(pot_nofreeze, x, 1e-4, 1.0, 0.5);
     minimizer.run();
     const auto x_after = minimizer.get_x();
-    const auto e_notfreeze_after = pot_nofreeze.get_energy(x_after);
+    const auto e_notfreeze_after = pot_nofreeze->get_energy(x_after);
     EXPECT_TRUE( e_notfreeze_after <= e_notfreeze_before );
     EXPECT_NEAR( e_notfreeze_after, 0, 1e-10 );
     // minimization for frozen HS_WCA
-    HS_WCAFrozen pot(eps, sca, radii, x, frozen_dof);
-    auto xred = pot.coords_converter.get_reduced_coords(x);
-    const auto e_before = pot.get_energy(xred);
-    opt_t minimizer_red(&pot, xred, 1e-4, 1.0, 0.5);
+    auto pot = std::make_shared<HS_WCAFrozen>(eps, sca, radii, x, frozen_dof);
+    auto xred = pot->coords_converter.get_reduced_coords(x);
+    const auto e_before = pot->get_energy(xred);
+    opt_t minimizer_red(pot, xred, 1e-4, 1.0, 0.5);
     minimizer_red.run();
     const auto xred_after = minimizer_red.get_x();
-    const auto e_after = pot.get_energy(xred_after);
+    const auto e_after = pot->get_energy(xred_after);
     EXPECT_TRUE( e_after <= e_before );
     EXPECT_TRUE( e_notfreeze_after <= e_after );
     // verify that frozen dof are in fact frozen
-    const auto xred_after_inflated = pot.coords_converter.get_full_coords(xred_after);
+    const auto xred_after_inflated = pot->coords_converter.get_full_coords(xred_after);
     for (size_t i(0); i < frozen_dof.size(); ++i){
         const auto idx = frozen_dof[i];
         EXPECT_NEAR( x[idx], xred_after_inflated[idx], 1e-10 );
@@ -364,25 +364,25 @@ TEST_F(FrozenHS_WCATest, TestMinimizationFreezing_Correct){
 }
 
 TEST_F(FrozenHS_WCATest, TestMinimizationFreezing_Correct_2D){
-    HS_WCA2D pot_nofreeze(eps,sca,radii2d);
-    const auto e_notfreeze_before = pot_nofreeze.get_energy(x2d);
-    opt_t minimizer(&pot_nofreeze, x2d, 1e-4, 1.0, 0.5);
+    auto pot_nofreeze = std::make_shared<HS_WCA2D>(eps,sca,radii2d);
+    const auto e_notfreeze_before = pot_nofreeze->get_energy(x2d);
+    opt_t minimizer(pot_nofreeze, x2d, 1e-4, 1.0, 0.5);
     minimizer.run();
     const auto x_after = minimizer.get_x();
-    const auto e_notfreeze_after = pot_nofreeze.get_energy(x_after);
+    const auto e_notfreeze_after = pot_nofreeze->get_energy(x_after);
     EXPECT_TRUE( e_notfreeze_after <= e_notfreeze_before );
     EXPECT_NEAR( e_notfreeze_after, 0, 1e-10 );
-    HS_WCA2DFrozen pot(eps, sca, radii2d, x2d, frozen_dof_2d);
-    auto xred = pot.coords_converter.get_reduced_coords(x2d);
-    const auto e_before = pot.get_energy(xred);
-    opt_t minimizer_red(&pot, xred, 1e-4, 1.0, 0.5);
+    auto pot = std::make_shared<HS_WCA2DFrozen>(eps, sca, radii2d, x2d, frozen_dof_2d);
+    auto xred = pot->coords_converter.get_reduced_coords(x2d);
+    const auto e_before = pot->get_energy(xred);
+    opt_t minimizer_red(pot, xred, 1e-4, 1.0, 0.5);
     minimizer_red.run();
     const auto xred_after = minimizer_red.get_x();
-    const auto e_after = pot.get_energy(xred_after);
+    const auto e_after = pot->get_energy(xred_after);
     EXPECT_TRUE( e_after <= e_before );
     EXPECT_TRUE( e_notfreeze_after <= e_after );
     // verify that frozen dof are in fact frozen
-    const auto xred_after_inflated = pot.coords_converter.get_full_coords(xred_after);
+    const auto xred_after_inflated = pot->coords_converter.get_full_coords(xred_after);
     for (size_t i(0); i < frozen_dof_2d.size(); ++i){
 	const auto idx = frozen_dof_2d[i];
 	EXPECT_NEAR( x2d[idx], xred_after_inflated[idx], 1e-10 );

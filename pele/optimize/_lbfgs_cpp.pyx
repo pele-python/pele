@@ -19,7 +19,7 @@ from cpython cimport bool as cbool
 # import the externally defined ljbfgs implementation
 cdef extern from "pele/lbfgs.h" namespace "pele":
     cdef cppclass cppLBFGS "pele::LBFGS":
-        cppLBFGS(_pele.cBasePotential *, _pele.Array[double], double, int) except +
+        cppLBFGS(shared_ptr[_pele.cBasePotential], _pele.Array[double], double, int) except +
 
         void set_H0(double) except +
         void set_tol(double) except +
@@ -54,7 +54,7 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
             print "warning c++ LBFGS is ignoring logger"
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
         self.thisptr = shared_ptr[_pele_opt.cGradientOptimizer]( <_pele_opt.cGradientOptimizer*>
-                new cppLBFGS(self.pot.thisptr.get(), 
+                new cppLBFGS(self.pot.thisptr, 
                              _pele.Array[double](<double*> x0c.data, x0c.size),
                              tol, M) )
         cdef cppLBFGS* lbfgs_ptr = <cppLBFGS*> self.thisptr.get()

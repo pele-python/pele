@@ -2,6 +2,7 @@
 #define _PELE_LBFGS_H__
 
 #include <vector>
+#include <memory>
 #include "base_potential.h"
 #include "array.h"
 #include "optimizer.h"
@@ -39,7 +40,7 @@ public:
     /**
      * Constructor
      */
-    LBFGS( pele::BasePotential * potential, const pele::Array<double> x0,
+    LBFGS( std::shared_ptr<pele::BasePotential> potential, const pele::Array<double> x0,
             double tol = 1e-4, int M = 4);
 
     /**

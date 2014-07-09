@@ -38,7 +38,7 @@ namespace pele{
  *
  */
 
-MODIFIED_FIRE::MODIFIED_FIRE(pele::BasePotential * potential,
+MODIFIED_FIRE::MODIFIED_FIRE(std::shared_ptr<pele::BasePotential> potential,
         pele::Array<double>& x0, double dtstart, double dtmax, double maxstep,
         size_t Nmin, double finc, double fdec, double fa, double astart, double
         tol, bool stepback)
