@@ -78,8 +78,11 @@ public:
     double _box[ndim];
     double _ibox[ndim];
 
-    periodic_distance(double const * const box)
+    periodic_distance(Array<double> const box)
     {
+        if (box.size() != _ndim) {
+            throw std::invalid_argument("box.size() must be equal to ndim");
+        }
         for (size_t i=0;i<ndim;++i) {
             _box[i] = box[i];
             _ibox[i] = 1/box[i];
@@ -114,14 +117,18 @@ public:
     double const _iboxy;
     double const _iboxz;
 
-    periodic_distance(double const * const box) 
+    periodic_distance(Array<double> const box)
         : _boxx(box[0]),
           _boxy(box[1]),
           _boxz(box[2]),
           _iboxx(1./_boxx),
           _iboxy(1./_boxy),
           _iboxz(1./_boxz)
-    {}
+    {
+        if (box.size() != _ndim) {
+            throw std::invalid_argument("box.size() must be equal to ndim");
+        }
+    }
 
     /* this constructor exists only so the compiler doesn't complain.
     * It should never be used */
@@ -152,12 +159,16 @@ public:
     double const _iboxx;
     double const _iboxy;
 
-    periodic_distance(double const * const box) 
+    periodic_distance(Array<double> const box)
         : _boxx(box[0]),
           _boxy(box[1]),
           _iboxx(1./_boxx),
           _iboxy(1./_boxy)
-    {}
+    {
+        if (box.size() != _ndim) {
+            throw std::invalid_argument("box.size() must be equal to ndim");
+        }
+    }
 
     /* this constructor exists only so the compiler doesn't complain.
      * It should never be used */
@@ -206,7 +217,7 @@ protected:
     periodic_distance<ndim> _dist;
 public:
     static const size_t _ndim = ndim;
-    PeriodicDistanceWrapper(double const * const box)
+    PeriodicDistanceWrapper(Array<double> const box)
         : _dist(box)
     {};
 

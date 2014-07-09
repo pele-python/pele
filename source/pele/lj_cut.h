@@ -96,7 +96,7 @@ public:
  */
 class LJCutPeriodic : public SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance<3>> {
 public:
-    LJCutPeriodic(double C6, double C12, double rcut, double const *boxvec)
+    LJCutPeriodic(double C6, double C12, double rcut, Array<double> const boxvec)
         : SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance<3>> (
                 std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
                 std::make_shared<periodic_distance<3>>(boxvec)
@@ -133,20 +133,16 @@ public:
             Array<size_t> atoms1, Array<size_t> atoms2) 
         : AtomListPotential<lj_interaction_cut_smooth, periodic_distance<3> >(
                 std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
-                std::make_shared<periodic_distance<3>>(boxvec.data()), atoms1,
+                std::make_shared<periodic_distance<3>>(boxvec), atoms1,
                 atoms2)
-    {
-        assert(boxvec.size() == 3);
-    }
+    {}
 
     LJCutPeriodicAtomList(double C6, double C12, double rcut, pele::Array<double> boxvec,
             Array<size_t> atoms1) 
         : AtomListPotential<lj_interaction_cut_smooth, periodic_distance<3>>(
                 std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
-                std::make_shared<periodic_distance<3>>(boxvec.data()), atoms1)
-    {
-        assert(boxvec.size() == 3);
-    }
+                std::make_shared<periodic_distance<3>>(boxvec), atoms1)
+    {}
 };
 
 }

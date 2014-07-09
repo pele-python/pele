@@ -30,8 +30,8 @@ public:
     Array<double> x2d;
     Array<size_t> frozen_dof;
     Array<size_t> frozen_dof_2d;
-    double* boxvec;
-    double* boxvec2d;
+    Array<double> boxvec;
+    Array<double> boxvec2d;
     virtual void SetUp(){
         eps=1.0;
         sca=1.2;
@@ -47,8 +47,8 @@ public:
             radii_small[i] = radii[i]/3.;
             radii_large[i] = radii[i]*1.3;
         }
-        boxvec = new double[3];
-        boxvec2d = new double[2];
+        boxvec = Array<double>(3);
+        boxvec2d = Array<double>(3);
         boxvec[0] = 5;
         boxvec[1] = 6;
         boxvec[2] = 7;
@@ -76,10 +76,6 @@ public:
         frozen_dof[1] = 3;
         frozen_dof[2] = 4;
         frozen_dof_2d = frozen_dof;
-    }
-    virtual void TearDown() {
-        delete[] boxvec;
-        delete[] boxvec2d;
     }
 };
 

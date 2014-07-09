@@ -15,7 +15,7 @@ cdef extern from "pele/lj.h" namespace "pele":
     cdef cppclass  cLJ "pele::LJ":
         cLJ(double C6, double C12) except +
     cdef cppclass  cLJPeriodic "pele::LJPeriodic":
-        cLJPeriodic(double C6, double C12, double * boxvec) except +
+        cLJPeriodic(double C6, double C12, _pele.Array[double] boxvec) except +
     cdef cppclass  cLJFrozen "pele::LJFrozen":
         cLJFrozen(double C6, double C12, _pele.Array[double] & reference_coords,
                   _pele.Array[size_t] & frozen_dof) except +
@@ -26,7 +26,7 @@ cdef extern from "pele/lj_cut.h" namespace "pele":
     cdef cppclass  cLJCut "pele::LJCut":
         cLJCut(double C6, double C12, double rcut) except +
     cdef cppclass  cLJCutPeriodic "pele::LJCutPeriodic":
-        cLJCutPeriodic(double C6, double C12, double rcut, double * boxvec) except +
+        cLJCutPeriodic(double C6, double C12, double rcut, _pele.Array[double] boxvec) except +
     cdef cppclass  cLJCutAtomlist "pele::LJCutAtomList":
         cLJCutAtomlist(double C6, double C12, double rcut,
                     _pele.Array[size_t] & atoms1,
@@ -50,7 +50,7 @@ cdef class LJ(_pele.BasePotential):
             self.periodic = True
             bv = np.array(boxvec, dtype=float)
             self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sig**6, 4.*eps*sig**12,
-                                                                  <double*> bv.data) )
+                                                              _pele.Array[double](<double*> bv.data, bv.size)) )
 
 cdef class LJCut(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
@@ -65,7 +65,7 @@ cdef class LJCut(_pele.BasePotential):
             self.periodic = True
             bv = np.array(boxvec)
             self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
-                                                                     <double*> bv.data) )
+                                                                 _pele.Array[double](<double*> bv.data, bv.size)) )
 
 
 cdef class LJFrozen(_pele.BasePotential):
@@ -89,8 +89,8 @@ cdef class LJFrozen(_pele.BasePotential):
             self.periodic = True
             raise NotImplementedError("periodic LJ with frozen atoms is not implemented yet")
 #            bv = np.array(boxvec)
-#            self.thisptr = <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12,
-#                                                                  <double*> bv.data)
+#            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12,
+#                                                                  <double*> bv.data) )
 
 
 cdef class LJNeighborList(_pele.BasePotential):

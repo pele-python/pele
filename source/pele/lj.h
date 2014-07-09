@@ -90,7 +90,7 @@ class LJ : public SimplePairwisePotential< lj_interaction > {
  */
 class LJPeriodic : public SimplePairwisePotential< lj_interaction, periodic_distance<3> > {
 public:
-    LJPeriodic(double C6, double C12, double const *boxvec)
+    LJPeriodic(double C6, double C12, Array<double> const boxvec)
         : SimplePairwisePotential< lj_interaction, periodic_distance<3>> (
                 std::make_shared<lj_interaction>(C6, C12),
                 std::make_shared<periodic_distance<3>>(boxvec)
