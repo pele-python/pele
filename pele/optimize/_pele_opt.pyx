@@ -1,15 +1,17 @@
 # distutils: language = c++
+import sys
+
 import numpy as np
-cimport numpy as np
+
 from pele.potentials import _pele
-from pele.potentials cimport _pele
+from pele.optimize import Result
+
+cimport numpy as np
 from libcpp cimport bool as cbool
 cimport cython
-from pele.optimize import Result
-import sys
-# basic gradient optimizer interface stuff
 
-# This is the base class for all gradient optimizers
+from pele.potentials cimport _pele
+
 cdef class GradientOptimizer(object):
     """this class defines the python interface for c++ gradient optimizers 
     

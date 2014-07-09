@@ -1,10 +1,12 @@
 # distutils: language = c++
-cimport pele.potentials._pele as _pele
 import numpy as np
-cimport numpy as np
-#from cpython cimport bool 
+
 from ctypes import c_size_t as size_t
 from libcpp cimport bool as cbool
+cimport numpy as np
+
+cimport pele.potentials._pele as _pele
+from pele.potentials._pele cimport shared_ptr
 
 #===============================================================================
 # THIS POTENTIAL NEEDS TO BE CLEANED UP
@@ -38,14 +40,14 @@ cdef class Harmonic(_pele.BasePotential):
         self.bdim = bdim
         
         if self.com is True:
-            self.thisptr = <_pele.cBasePotential*>new cHarmonicCOM(_pele.Array[double](<double*> corigin.data, corigin.size), 
-                                                                   self.k, self.bdim)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cHarmonicCOM(_pele.Array[double](<double*> corigin.data, corigin.size), 
+                                                                   self.k, self.bdim) )
         else:
-            self.thisptr = <_pele.cBasePotential*>new cHarmonic(_pele.Array[double](<double*> corigin.data, corigin.size), 
-                                                                self.k, self.bdim)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cHarmonic(_pele.Array[double](<double*> corigin.data, corigin.size), 
+                                                                self.k, self.bdim) )
             
         self.origin = corigin
-        self.newptr = <cBaseHarmonic*> self.thisptr
+        self.newptr = <cBaseHarmonic*> self.thisptr.get()
         
     def set_k(self, newk):
         self.k = newk

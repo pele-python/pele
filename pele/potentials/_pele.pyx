@@ -15,33 +15,17 @@ cdef class BasePotential(object):
     -----
     for direct access to the underlying c++ potential use self.thisptr
     """
-    def __cinit__(self, *args, **kwargs):
-        # store an instance to the current c++ class, will be used in every call
-        self.thisptr = NULL#<cBasePotential*>new cBasePotential()
-    
-    def __dealloc__(self):
-        if self.thisptr != NULL:
-            del self.thisptr
-            self.thisptr = NULL
-    
-#    def getEnergyGradientInplace(self,
-#                        np.ndarray[double, ndim=1] x not None,
-#                        np.ndarray[double, ndim=1] grad not None):
-#        # redirect the call to the c++ class
-#        e = self.thisptr.get_energy_gradient(Array[double](<double*> x.data, x.size),
-#                                             Array[double](<double*> grad.data, grad.size))
-#        return e
         
     def getEnergyGradient(self, np.ndarray[double, ndim=1] x not None):
         # redirect the call to the c++ class
         cdef np.ndarray[double, ndim=1] grad = x.copy()
-        e = self.thisptr.get_energy_gradient(Array[double](<double*> x.data, x.size),
+        e = self.thisptr.get().get_energy_gradient(Array[double](<double*> x.data, x.size),
                                              Array[double](<double*> grad.data, grad.size))
         return e, grad
     
     def getEnergy(self, np.ndarray[double, ndim=1] x not None):
         # redirect the call to the c++ class
-        return self.thisptr.get_energy(Array[double](<double*> x.data, x.size))
+        return self.thisptr.get().get_energy(Array[double](<double*> x.data, x.size))
     
     def getGradient(self, np.ndarray[double, ndim=1] x not None):
         e, grad = self.getEnergyGradient(x)
@@ -50,7 +34,7 @@ cdef class BasePotential(object):
     def getEnergyGradientHessian(self, np.ndarray[double, ndim=1] x not None):
         cdef np.ndarray[double, ndim=1] grad = np.zeros(x.size)
         cdef np.ndarray[double, ndim=1] hess = np.zeros(x.size**2)
-        e = self.thisptr.get_energy_gradient_hessian(Array[double](<double*> x.data, x.size),
+        e = self.thisptr.get().get_energy_gradient_hessian(Array[double](<double*> x.data, x.size),
                                              Array[double](<double*> grad.data, grad.size),
                                              Array[double](<double*> hess.data, hess.size),
                                              )
@@ -58,7 +42,7 @@ cdef class BasePotential(object):
     
     def getHessian(self, np.ndarray[double, ndim=1] x not None):
         cdef np.ndarray[double, ndim=1] hess = np.zeros(x.size**2)
-        self.thisptr.get_hessian(Array[double](<double*> x.data, x.size),
+        self.thisptr.get().get_hessian(Array[double](<double*> x.data, x.size),
                                  Array[double](<double*> hess.data, hess.size),
                                  )
         return np.reshape(hess, [x.size, x.size])
@@ -66,7 +50,7 @@ cdef class BasePotential(object):
     def NumericalDerivative(self, np.ndarray[double, ndim=1] x not None, double eps=1e-6):
         # redirect the call to the c++ class
         cdef np.ndarray[double, ndim=1] grad = np.zeros([x.size])
-        self.thisptr.numerical_gradient(Array[double](<double*> x.data, x.size),
+        self.thisptr.get().numerical_gradient(Array[double](<double*> x.data, x.size),
                                        Array[double](<double*> grad.data, grad.size),
                                        eps
                                        )
@@ -75,7 +59,7 @@ cdef class BasePotential(object):
     def NumericalHessian(self, np.ndarray[double, ndim=1] x not None, double eps=1e-6):
         # redirect the call to the c++ class
         cdef np.ndarray[double, ndim=1] hess = np.zeros([x.size**2])
-        self.thisptr.numerical_hessian(Array[double](<double*> x.data, x.size),
+        self.thisptr.get().numerical_hessian(Array[double](<double*> x.data, x.size),
                                        Array[double](<double*> hess.data, hess.size),
                                        eps
                                        )

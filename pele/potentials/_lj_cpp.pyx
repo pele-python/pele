@@ -1,12 +1,14 @@
 """
 # distutils: language = C++
 """
+import numpy as np
+from ctypes import c_size_t as size_t
 
 cimport pele.potentials._pele as _pele
-import numpy as np
+from pele.potentials._pele cimport shared_ptr
 cimport numpy as np
 from cpython cimport bool
-from ctypes import c_size_t as size_t
+
 
 # use external c++ class
 cdef extern from "pele/lj.h" namespace "pele":
@@ -19,11 +21,6 @@ cdef extern from "pele/lj.h" namespace "pele":
                   _pele.Array[size_t] & frozen_dof) except +
     cdef cppclass  cLJNeighborList "pele::LJNeighborList":
         cLJNeighborList(_pele.Array[long] & ilist, double C6, double C12) except +
-#    cdef cppclass  cLJAtomlist "pele::LJAtomList":
-#        cLJAtomlist(double C6, double C12, 
-#                    _pele.Array[size_t] & atoms1,
-#                    _pele.Array[size_t] & atoms2,
-#                    ) except +
 
 cdef extern from "pele/lj_cut.h" namespace "pele":
     cdef cppclass  cLJCut "pele::LJCut":
@@ -48,12 +45,12 @@ cdef class LJ(_pele.BasePotential):
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
             self.periodic = False
-            self.thisptr = <_pele.cBasePotential*>new cLJ(4.*eps*sig**6, 4.*eps*sig**12)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJ(4.*eps*sig**6, 4.*eps*sig**12) )
         else:
             self.periodic = True
             bv = np.array(boxvec, dtype=float)
-            self.thisptr = <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sig**6, 4.*eps*sig**12,
-                                                                  <double*> bv.data)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sig**6, 4.*eps*sig**12,
+                                                                  <double*> bv.data) )
 
 cdef class LJCut(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
@@ -63,12 +60,12 @@ cdef class LJCut(_pele.BasePotential):
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
             self.periodic = False
-            self.thisptr = <_pele.cBasePotential*>new cLJCut(4.*eps*sigma**6, 4.*eps*sigma**12, rcut)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJCut(4.*eps*sigma**6, 4.*eps*sigma**12, rcut) )
         else:
             self.periodic = True
             bv = np.array(boxvec)
-            self.thisptr = <_pele.cBasePotential*>new cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
-                                                                     <double*> bv.data)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
+                                                                     <double*> bv.data) )
 
 
 cdef class LJFrozen(_pele.BasePotential):
@@ -84,12 +81,13 @@ cdef class LJFrozen(_pele.BasePotential):
 
         if boxvec is None:
             self.periodic = False
-            self.thisptr = <_pele.cBasePotential*>new cLJFrozen(4.*eps*sigma**6, 4.*eps*sigma**12,
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJFrozen(4.*eps*sigma**6, 4.*eps*sigma**12,
                         _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
                         _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size)
-                        )
+                        ) )
         else:
             self.periodic = True
+            raise NotImplementedError("periodic LJ with frozen atoms is not implemented yet")
 #            bv = np.array(boxvec)
 #            self.thisptr = <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12,
 #                                                                  <double*> bv.data)
@@ -99,7 +97,8 @@ cdef class LJNeighborList(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):
-        self.thisptr = <_pele.cBasePotential*>new cLJNeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12)
+        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new cLJNeighborList( 
+                     _pele.Array[long](<long*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12) )
 
 cdef class BLJCut(_pele.BasePotential):
     def __cinit__(self, natoms, ntypeA, boxl=None, rcut=2.5, epsAA=1., sigAA=1., 
@@ -121,12 +120,14 @@ cdef class BLJCut(_pele.BasePotential):
                                    cLJCutAtomlist(4.*epsBB*sigBB**6, 4.*epsBB*sigBB**12, rcut*sigBB,
                                                   atomsB
                                                   ))
-        self.thisptr = <_pele.cBasePotential*> combpot
+        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> combpot )
 
     
 cdef class _ErrorPotential(_pele.BasePotential):
     """this is a test potential which should raise an exception when called
+    
+    for testing purposes only
     """
     def __cinit__(self):
-        self.thisptr = <_pele.cBasePotential*>new _pele.cBasePotential()
+        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new _pele.cBasePotential() )
   

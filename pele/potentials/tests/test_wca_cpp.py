@@ -36,22 +36,6 @@ class TestWCA2D_CPP(_base_test._BaseTest):
         self.xmin = xy[0].reshape(-1).copy()
         self.Emin = float(xy[1])
 
-class TestErrorPotential(unittest.TestCase):
-    def setUp(self):
-        self.pot = _wca_cpp._ErrorPotential()
-        self.x = np.random.uniform(-1,1,[9])
-    def test(self):
-        with self.assertRaises(RuntimeError):
-            self.pot.getEnergy(self.x)
-        with self.assertRaises(RuntimeError):
-            self.pot.getEnergyGradient(self.x)
-        with self.assertRaises(RuntimeError):
-            self.pot.NumericalDerivative(self.x)
-        with self.assertRaises(RuntimeError):
-            self.pot.NumericalHessian(self.x)
-#        with self.assertRaises(NotImplementedError):
-#            pot.getEnergyGradient(_xrand)
-
 class TestWCA_CPP_NeighborList(_base_test._BaseTest):
     def setUp(self):
         self.natoms = 13

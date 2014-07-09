@@ -1,15 +1,18 @@
 """
 # distutils: language = C++
 """
+import sys
+
 import numpy as np
-cimport numpy as np
+
 from pele.potentials import _pele, _pythonpotential
-cimport pele.optimize._pele_opt as _pele_opt
 from pele.potentials cimport _pele
 from pele.optimize import Result
-cimport cython
 from pele.potentials import _pythonpotential
-import sys
+
+cimport numpy as np
+cimport pele.optimize._pele_opt as _pele_opt
+cimport cython
 from cpython cimport bool as cbool
 
 # import the externally defined ljbfgs implementation
@@ -50,7 +53,7 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
         if logger is not None:
             print "warning c++ LBFGS is ignoring logger"
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
-        self.thisptr = <_pele_opt.cGradientOptimizer*>new cppLBFGS(self.pot.thisptr, 
+        self.thisptr = <_pele_opt.cGradientOptimizer*>new cppLBFGS(self.pot.thisptr.get(), 
                _pele.Array[double](<double*> x0c.data, x0c.size),
                tol, M)
         self.lbfgs_ptr = <cppLBFGS*> self.thisptr

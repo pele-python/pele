@@ -24,7 +24,7 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(_pele_opt.GradientOptimizer):
         
         cdef _pele.BasePotential pot = potential
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
-        self.thisptr = <_pele_opt.cGradientOptimizer*>new cppMODIFIED_FIRE(pot.thisptr, 
+        self.thisptr = <_pele_opt.cGradientOptimizer*>new cppMODIFIED_FIRE(pot.thisptr.get(), 
                                                                _pele.Array[double](<double*> x0c.data, x0c.size),
                                                                dtstart, dtmax, maxstep, Nmin, finc, fdec, fa, astart, tol, stepback)
         opt = self.thisptr
