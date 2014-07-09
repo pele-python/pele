@@ -108,18 +108,18 @@ cdef class BLJCut(_pele.BasePotential):
         cdef _pele.Array[size_t] atomsA = _pele.Array[size_t](<size_t*> atomsAnp.data, <size_t>atomsAnp.size)
         cdef _pele.Array[size_t] atomsB = _pele.Array[size_t](<size_t*> atomsBnp.data, <size_t>atomsBnp.size)
         cdef _pele.cCombinedPotential* combpot = new _pele.cCombinedPotential()
-        combpot.add_potential(<_pele.cBasePotential*>new 
+        combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                    cLJCutAtomlist(4.*epsAA*sigAA**6, 4.*epsAA*sigAA**12, rcut*sigAA,
                                                   atomsA
-                                                  ))
-        combpot.add_potential(<_pele.cBasePotential*>new 
+                                                  )))
+        combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                    cLJCutAtomlist(4.*epsAB*sigAB**6, 4.*epsAB*sigAB**12, rcut*sigAB,
                                                   atomsA, atomsB
-                                                  ))
-        combpot.add_potential(<_pele.cBasePotential*>new 
+                                                  )))
+        combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                    cLJCutAtomlist(4.*epsBB*sigBB**6, 4.*epsBB*sigBB**12, rcut*sigBB,
                                                   atomsB
-                                                  ))
+                                                  )))
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> combpot )
 
     

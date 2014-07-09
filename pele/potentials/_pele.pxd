@@ -47,10 +47,13 @@ cdef extern from "pele/base_potential.h" namespace "pele":
 cdef class BasePotential:
     cdef shared_ptr[cBasePotential] thisptr      # hold a C++ instance which we're wrapping
 
+#===============================================================================
+# pele::CombinedPotential
+#===============================================================================
 cdef extern from "pele/combine_potentials.h" namespace "pele":
     cdef cppclass  cCombinedPotential "pele::CombinedPotential":
         cCombinedPotential() except +
         double get_energy(Array[double] &x) except +
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
-        void add_potential(cBasePotential * potential) except +
+        void add_potential(shared_ptr[cBasePotential] potential) except +
     
