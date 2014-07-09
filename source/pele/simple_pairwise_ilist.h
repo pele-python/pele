@@ -7,6 +7,7 @@
 #include "array.h"
 #include "distance.h"
 #include <iostream>
+#include <memory>
 
 using std::cout;
 
@@ -22,26 +23,22 @@ template<typename pairwise_interaction, typename distance_policy=cartesian_dista
 class SimplePairwiseNeighborList : public BasePotential
 {
 protected:
-    pairwise_interaction *_interaction;
-    distance_policy *_dist;
+    std::shared_ptr<pairwise_interaction> _interaction;
+    std::shared_ptr<distance_policy> _dist;
     std::vector<long int> const _neighbor_list;
     static const size_t _ndim = distance_policy::_ndim;
 
-    SimplePairwiseNeighborList(pairwise_interaction *interaction, 
-            Array<long int> const & neighbor_list, distance_policy *dist=NULL ) 
+    SimplePairwiseNeighborList(std::shared_ptr<pairwise_interaction> interaction,
+            Array<long int> const & neighbor_list, std::shared_ptr<distance_policy> dist=NULL )
         : _interaction(interaction), 
           _dist(dist),
           _neighbor_list(neighbor_list.begin(), neighbor_list.end())
     {
-        if(_dist == 0) _dist = new distance_policy;
+        if(_dist == NULL) _dist = std::make_shared<distance_policy>();
     }
 
 public:
-    virtual ~SimplePairwiseNeighborList()
-    { 
-        if (_interaction != NULL) delete _interaction; 
-        if (_dist != NULL) delete _dist; 
-    }
+    virtual ~SimplePairwiseNeighborList() {}
 
     virtual double get_energy(Array<double> x);
     virtual double get_energy_gradient(Array<double> x, Array<double> grad);

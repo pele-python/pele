@@ -142,7 +142,8 @@ public:
 class WCANeighborList : public SimplePairwiseNeighborList< WCA_interaction > {
 public:
     WCANeighborList(Array<long int> & ilist, double sig, double eps)
-        :  SimplePairwiseNeighborList< WCA_interaction > ( new WCA_interaction(sig, eps), ilist) 
+        :  SimplePairwiseNeighborList< WCA_interaction > (
+                std::make_shared<WCA_interaction>(sig, eps), ilist)
     {}
 };
 }

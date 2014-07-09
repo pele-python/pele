@@ -218,7 +218,8 @@ public:
 class HS_WCANeighborList : public SimplePairwiseNeighborList< HS_WCA_interaction > {
 public:
     HS_WCANeighborList(Array<long int> & ilist, double eps, double sca, Array<double> radii)
-        :  SimplePairwiseNeighborList< HS_WCA_interaction > ( new HS_WCA_interaction(eps, sca, radii), ilist) 
+        :  SimplePairwiseNeighborList< HS_WCA_interaction > (
+                std::make_shared<HS_WCA_interaction>(eps, sca, radii), ilist)
     {}
 };
 }
