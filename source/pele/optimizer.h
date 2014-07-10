@@ -161,10 +161,6 @@ public :
         // copy the function and gradient
         f_ = f;
         g_.assign(grad);
-        /*size_t N = x_.size();
-        for (size_t j2 = 0; j2 < N; ++j2){
-            g_[j2] = grad[j2];
-        }*/
         rms_ = norm(g_) / sqrt(g_.size());
         func_initialized_ = true;
     }
@@ -223,9 +219,8 @@ protected :
     {
         // compute the func and gradient at the current locations
         // and store them
-        size_t N = x_.size();
         compute_func_gradient(x_, f_, g_);
-        rms_ = norm(g_) / sqrt(N);
+        rms_ = norm(g_) / sqrt(x_.size());
         func_initialized_ = true;
     }
 

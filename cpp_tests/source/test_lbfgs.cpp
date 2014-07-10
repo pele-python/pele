@@ -36,3 +36,43 @@ TEST(LbfgsLJ, TwoAtom_Works){
     double rms = pele::norm(g) / sqrt(g.size());
     ASSERT_NEAR(rms, lbfgs.get_rms(), 1e-10);
 }
+
+TEST(LbfgsLJ, Reset_Works){
+    auto lj = std::make_shared<pele::LJ> (1., 1.);
+    Array<double> x0(6, 0);
+    x0[0] = 2.;
+    // lbfgs1 will minimize straight from x0
+    pele::LBFGS lbfgs1(lj, x0);
+    lbfgs1.run();
+
+    // lbfgs2 will first minimize from x2 (!=x0) then reset from x0
+    // it should end up exactly the same as lbfgs1
+    Array<double> x2 = x0.copy();
+    x2[1] = 2;
+    pele::LBFGS lbfgs2(lj, x2);
+    double H0 = lbfgs2.get_H0();
+    lbfgs2.run();
+    // now reset from x0
+    lbfgs2.reset(x0);
+    lbfgs2.set_H0(H0);
+    lbfgs2.run();
+
+    cout << lbfgs1.get_x() << "\n";
+    cout << lbfgs2.get_x() << "\n";
+
+    ASSERT_EQ(lbfgs1.get_nfev(), lbfgs2.get_nfev());
+    ASSERT_EQ(lbfgs1.get_niter(), lbfgs2.get_niter());
+
+    for (size_t i=0; i<x0.size(); ++i){
+        ASSERT_DOUBLE_EQ(lbfgs1.get_x()[i], lbfgs2.get_x()[i]);
+    }
+    ASSERT_DOUBLE_EQ(lbfgs1.get_f(), lbfgs2.get_f());
+    ASSERT_DOUBLE_EQ(lbfgs1.get_rms(), lbfgs2.get_rms());
+//    ASSERT_EQ(lbfgs1.get_niter(), lbfgs1.get_niter());
+//    ASSERT_GT(lbfgs.get_niter(), 1);
+//    ASSERT_LT(lbfgs.get_rms(), 1e-4);
+//    ASSERT_LT(lbfgs.get_rms(), 1e-4);
+//    ASSERT_NEAR(lbfgs.get_f(), -.25, 1e-10);
+
+
+}

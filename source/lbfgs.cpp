@@ -219,4 +219,18 @@ double LBFGS::backtracking_linesearch(Array<double> step)
     rms_ = norm(gnew) / sqrt(gnew.size());
     return stepsize * factor;
 }
+
+void LBFGS::reset(pele::Array<double> &x0)
+{
+    if (x0.size() != x_.size()){
+        throw std::invalid_argument("The number of degrees of freedom (x0.size()) cannot change when calling reset()");
+    }
+    k_ = 0;
+    iter_number_ = 0;
+    nfev_ = 0;
+    x_.assign(x0);
+    initialize_func_gradient();
+}
+
+
 }
