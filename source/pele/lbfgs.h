@@ -30,9 +30,17 @@ private:
                           */
 
     // places to store the lbfgs memory
+    /** s_ stores the changes in position for the previous M steps */
     std::vector<Array<double> > s_;
+    /** y_ stores the changes in gradient for the previous M steps */
     std::vector<Array<double> > y_;
+    /** rho stores 1/dot(y_, s_) for the previous M steps */
     Array<double> rho_;
+    /**
+     * H0 is the initial estimate for the diagonal component of the inverse Hessian.
+     * It is an input parameter, but the estimate is improved during the run.
+     * H0 is a scalar, which means that we use the same value for all degrees of freedom.
+     */
     double H0_;
     int k_; /**< Counter for how many times the memory has been updated */
 
@@ -70,6 +78,14 @@ public:
 
     // functions for accessing the results
     inline double get_H0() const { return H0_; }
+
+    /**
+     * reset the lbfgs optimizer to start a new minimization from x0
+     *
+     * H0 is not reset because the current value of H0 is probably better than the input value.
+     * You can use set_H0() to change H0.
+     */
+    virtual void reset(pele::Array<double> &x0);
 
 private:
 
