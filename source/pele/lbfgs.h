@@ -54,22 +54,22 @@ public:
     void one_iteration();
 
     // functions for setting the parameters
-    void set_H0(double H0)
+    inline void set_H0(double H0)
     {
         if (iter_number_ > 0){
-            cout << "warning: setting H0 after the first iteration.\n";
+            std::cout << "warning: setting H0 after the first iteration.\n";
         }
         H0_ = H0;
     }
-    void set_max_f_rise(double max_f_rise) { max_f_rise_ = max_f_rise; }
+    inline void set_max_f_rise(double max_f_rise) { max_f_rise_ = max_f_rise; }
 
-    void set_use_relative_f(int use_relative_f) 
+    inline void set_use_relative_f(int use_relative_f)
     { 
         use_relative_f_ = (bool) use_relative_f;
     }
 
     // functions for accessing the results
-    double get_H0() const { return H0_; }
+    inline double get_H0() const { return H0_; }
 
 private:
 

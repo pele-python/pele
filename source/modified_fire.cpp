@@ -1,6 +1,7 @@
 #include "pele/modified_fire.h"
 
 using std::vector;
+using std::cout;
 
 namespace pele{
 /**
