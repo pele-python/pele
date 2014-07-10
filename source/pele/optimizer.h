@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
+#include <memory>
 
 using std::vector;
 using std::runtime_error;
@@ -62,7 +63,7 @@ protected :
     /**
      * A pointer to the object that computes the function and gradient
      */
-    pele::BasePotential * potential_;
+    std::shared_ptr<pele::BasePotential> potential_;
 
     double tol_; /**< The tolerance for the rms gradient */
     double maxstep_; /**< The maximum step size */
@@ -91,7 +92,7 @@ protected :
     bool func_initialized_;
 
 public :
-    GradientOptimizer(pele::BasePotential * potential,
+    GradientOptimizer(std::shared_ptr<pele::BasePotential> potential,
           const pele::Array<double> x0, double tol=1e-4)
         : potential_(potential),
           tol_(tol),

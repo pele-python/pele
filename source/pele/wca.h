@@ -115,7 +115,7 @@ public:
  */
 class WCAPeriodic : public SimplePairwisePotential< WCA_interaction, periodic_distance<3> > {
 public:
-    WCAPeriodic(double sig, double eps, double const *boxvec)
+    WCAPeriodic(double sig, double eps, Array<double> const boxvec)
         : SimplePairwisePotential< WCA_interaction, periodic_distance<3>> (
                 std::make_shared<WCA_interaction>(sig, eps),
                 std::make_shared<periodic_distance<3>>(boxvec)
@@ -128,7 +128,7 @@ public:
  */
 class WCAPeriodic2D : public SimplePairwisePotential< WCA_interaction, periodic_distance<2> > {
 public:
-    WCAPeriodic2D(double sig, double eps, double const *boxvec)
+    WCAPeriodic2D(double sig, double eps, Array<double> const boxvec)
         : SimplePairwisePotential< WCA_interaction, periodic_distance<2>> (
                 std::make_shared<WCA_interaction>(sig, eps),
                 std::make_shared<periodic_distance<2>>(boxvec)
@@ -142,7 +142,8 @@ public:
 class WCANeighborList : public SimplePairwiseNeighborList< WCA_interaction > {
 public:
     WCANeighborList(Array<long int> & ilist, double sig, double eps)
-        :  SimplePairwiseNeighborList< WCA_interaction > ( new WCA_interaction(sig, eps), ilist) 
+        :  SimplePairwiseNeighborList< WCA_interaction > (
+                std::make_shared<WCA_interaction>(sig, eps), ilist)
     {}
 };
 }

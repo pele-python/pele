@@ -1,3 +1,4 @@
+#include <memory>
 #include "test_utils.hpp"
 #include "pele/lj.h"
 #include "pele/lj_cut.h"
@@ -16,9 +17,9 @@ public:
 
     virtual void setup_potential(){
         auto compot = new pele::CombinedPotential();
-        compot->add_potential(new pele::LJCutAtomList(c6, c12, rcut, atomsA));
-        compot->add_potential(new pele::LJCutAtomList(c6, c12, rcut, atomsA, atomsB));
-        compot->add_potential(new pele::LJCutAtomList(c6, c12, rcut, atomsB));
+        compot->add_potential(std::make_shared<pele::LJCutAtomList>(c6, c12, rcut, atomsA));
+        compot->add_potential(std::make_shared<pele::LJCutAtomList>(c6, c12, rcut, atomsA, atomsB));
+        compot->add_potential(std::make_shared<pele::LJCutAtomList>(c6, c12, rcut, atomsB));
 
         pot = std::shared_ptr<pele::BasePotential> (compot);
 

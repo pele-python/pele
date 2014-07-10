@@ -1,17 +1,6 @@
-#cython: boundscheck=False
-#cython: wraparound=False
-##aaacython: noncheck=True
-
-#THIS IS WORK IN PROGRESS FOR A PARTIAL REWRITE OF THE OPTIMIZERS, THEY SHOULD ALL DERIVE FROM THE SAME CLASS, JUST LIKE THE POTENTIALS
-
-import numpy as np
-cimport numpy as np 
-from pele.potentials import _pele
 from pele.potentials cimport _pele
+from pele.potentials._pele cimport shared_ptr
 from libcpp cimport bool as cbool
-cimport cython
-from pele.optimize import Result
-import sys
 
 cdef extern from "pele/optimizer.h" namespace "pele":
     cdef cppclass  cGradientOptimizer "pele::GradientOptimizer":
@@ -38,6 +27,5 @@ cdef extern from "pele/optimizer.h" namespace "pele":
         void initialize_func_gradient() except+
     
 cdef class GradientOptimizer:
-    cdef cGradientOptimizer *thisptr      # hold a C++ instance which we're wrapping
-    #cdef _pele.BasePotential pot # this is stored so that the memory is not freed
+    cdef shared_ptr[cGradientOptimizer] thisptr      # hold a C++ instance which we're wrapping
     cpdef events

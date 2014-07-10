@@ -6,14 +6,15 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <cmath>
+#include <memory>
 
 using pele::Array;
 
 TEST(LbfgsLJ, TwoAtom_Works){
-    pele::LJ lj(1., 1.);
+    auto lj = std::make_shared<pele::LJ> (1., 1.);
     Array<double> x0(6, 0);
     x0[0] = 2.;
-    pele::LBFGS lbfgs(&lj, x0);
+    pele::LBFGS lbfgs(lj, x0);
     lbfgs.run();
     ASSERT_GT(lbfgs.get_nfev(), 1);
     ASSERT_GT(lbfgs.get_niter(), 1);

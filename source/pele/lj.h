@@ -90,7 +90,7 @@ class LJ : public SimplePairwisePotential< lj_interaction > {
  */
 class LJPeriodic : public SimplePairwisePotential< lj_interaction, periodic_distance<3> > {
 public:
-    LJPeriodic(double C6, double C12, double const *boxvec)
+    LJPeriodic(double C6, double C12, Array<double> const boxvec)
         : SimplePairwisePotential< lj_interaction, periodic_distance<3>> (
                 std::make_shared<lj_interaction>(C6, C12),
                 std::make_shared<periodic_distance<3>>(boxvec)
@@ -99,18 +99,8 @@ public:
 };
 
 /**
- * Pairwise Lennard-Jones potential
+ * Pairwise Lennard-Jones potential with frozen atoms
  */
-//    class LJAtomList : public AtomListPotential<lj_interaction, cartesian_distance> {
-//        public:
-//            LJAtomList(double C6, double C12, Array<size_t> atoms1, Array<size_t> atoms2) :
-//                AtomListPotential<lj_interaction, cartesian_distance>(
-//                        new lj_interaction(C6, C12),
-//                        new cartesian_distance(),
-//                        atoms1, atoms2)
-//            {}
-//    };
-
 class LJFrozen : public FrozenPotentialWrapper<LJ> {
 public:
     LJFrozen(double C6, double C12, Array<double> & reference_coords, Array<size_t> & frozen_dof)
@@ -125,7 +115,8 @@ public:
 class LJNeighborList : public SimplePairwiseNeighborList< lj_interaction > {
 public:
     LJNeighborList(Array<long int> & ilist, double C6, double C12)
-        :  SimplePairwiseNeighborList< lj_interaction > ( new lj_interaction(C6, C12), ilist) 
+        :  SimplePairwiseNeighborList<lj_interaction>(
+                std::make_shared<lj_interaction>(C6, C12), ilist)
     {}
 };
 }

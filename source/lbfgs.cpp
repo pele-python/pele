@@ -1,8 +1,9 @@
 #include "pele/lbfgs.h"
+#include <memory>
 
 namespace pele {
 
-LBFGS::LBFGS( pele::BasePotential * potential, const pele::Array<double> x0,
+LBFGS::LBFGS( std::shared_ptr<pele::BasePotential> potential, const pele::Array<double> x0,
         double tol, int M)
     : GradientOptimizer(potential, x0, tol),
       M_(M),

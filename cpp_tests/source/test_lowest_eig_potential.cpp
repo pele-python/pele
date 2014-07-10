@@ -61,7 +61,7 @@ class LowestEigPotentialTest :  public ::testing::Test
         //setup LBFGS
         _tol = 1e-5;
         _M = 4;
-        _lbfgs = std::shared_ptr<pele::LBFGS> (new pele::LBFGS(_potential.get(), _x, _tol, _M));
+        _lbfgs = std::make_shared<pele::LBFGS>(_potential, _x, _tol, _M);
         //setup lowesteigtest
         _g = Array<double>(_ndim);
         _ranvec = Array<double>(_ndim);
@@ -84,8 +84,8 @@ TEST_F(LowestEigPotentialTest, lowesteigtest_works){
     ASSERT_TRUE(success);
     _x = _lbfgs->get_x();
     _g = _lbfgs->get_g();
-    _lowesteigpot = std::shared_ptr<pele::BasePotential> (new pele::LowestEigPotential(_potential.get(), _x, _bdim));
-    std::shared_ptr<pele::LBFGS> lbfgs = std::shared_ptr<pele::LBFGS> (new pele::LBFGS(_lowesteigpot.get(), _ranvec, _tol, _M));
+    _lowesteigpot = std::shared_ptr<pele::BasePotential> (new pele::LowestEigPotential(_potential, _x, _bdim));
+    std::shared_ptr<pele::LBFGS> lbfgs = std::shared_ptr<pele::LBFGS> (new pele::LBFGS(_lowesteigpot, _ranvec, _tol, _M));
     lbfgs->run(100);
     ASSERT_TRUE(success);
 }
@@ -96,8 +96,8 @@ TEST_F(LowestEigPotentialTest, lowesteigtest_works2){
     ASSERT_TRUE(success);
     _x = _lbfgs->get_x();
     _g = _lbfgs->get_g();
-    _lowesteigpot = std::shared_ptr<pele::BasePotential> (new pele::LowestEigPotential(_potential.get(), _x, _bdim));
-    std::shared_ptr<pele::LBFGS> lbfgs = std::shared_ptr<pele::LBFGS> (new pele::LBFGS(_lowesteigpot.get(), _ranvec, _tol, _M));
+    _lowesteigpot = std::shared_ptr<pele::BasePotential> (new pele::LowestEigPotential(_potential, _x, _bdim));
+    std::shared_ptr<pele::LBFGS> lbfgs = std::shared_ptr<pele::LBFGS> (new pele::LBFGS(_lowesteigpot, _ranvec, _tol, _M));
     lbfgs->run(100);
     ASSERT_TRUE(success);
     double lowesteigenvalue = lbfgs->get_f();
@@ -110,8 +110,8 @@ TEST_F(LowestEigPotentialTest, LowestEig_ranvecorth){
     ASSERT_TRUE(success);
     _x = _lbfgs->get_x();
     _g = _lbfgs->get_g();
-    _lowesteigpot = std::shared_ptr<pele::BasePotential> (new pele::LowestEigPotential(_potential.get(), _x, _bdim));
-    std::shared_ptr<pele::LBFGS> lbfgs = std::shared_ptr<pele::LBFGS> (new pele::LBFGS(_lowesteigpot.get(), _ranvec, _tol, _M));
+    _lowesteigpot = std::shared_ptr<pele::BasePotential> (new pele::LowestEigPotential(_potential, _x, _bdim));
+    std::shared_ptr<pele::LBFGS> lbfgs = std::shared_ptr<pele::LBFGS> (new pele::LBFGS(_lowesteigpot, _ranvec, _tol, _M));
     lbfgs->run(100);
     ASSERT_TRUE(success);
     double lowesteigenvalue = lbfgs->get_f();

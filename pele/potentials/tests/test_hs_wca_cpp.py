@@ -55,22 +55,6 @@ class TestHS_WCA_CPP(_base_test._BaseTest):
 #        self.xrandom = np.random.uniform(-1,1,len(xyz)) *1e-2
 #        self.xmin = xyz
 
-class TestErrorPotential(unittest.TestCase):
-    def setUp(self):
-        self.pot = _hs_wca_cpp._ErrorPotential()
-        self.x = np.random.uniform(-1,1,[9])
-    def test(self):
-        with self.assertRaises(RuntimeError):
-            self.pot.getEnergy(self.x)
-        with self.assertRaises(RuntimeError):
-            self.pot.getEnergyGradient(self.x)
-        with self.assertRaises(RuntimeError):
-            self.pot.NumericalDerivative(self.x)
-        with self.assertRaises(RuntimeError):
-            self.pot.NumericalHessian(self.x)
-#        with self.assertRaises(NotImplementedError):
-#            pot.getEnergyGradient(_xrand)
-
 
 if __name__ == "__main__":
     logging.basicConfig(filename='hs_wca_cpp.log',level=logging.DEBUG)

@@ -1,15 +1,17 @@
 # distutils: language = c++
+import sys
+
 import numpy as np
-cimport numpy as np
+
 from pele.potentials import _pele
-from pele.potentials cimport _pele
+from pele.optimize import Result
+
+cimport numpy as np
 from libcpp cimport bool as cbool
 cimport cython
-from pele.optimize import Result
-import sys
-# basic gradient optimizer interface stuff
 
-# This is the base class for all gradient optimizers
+from pele.potentials cimport _pele
+
 cdef class GradientOptimizer(object):
     """this class defines the python interface for c++ gradient optimizers 
     
@@ -17,18 +19,8 @@ cdef class GradientOptimizer(object):
     -----
     for direct access to the underlying c++ optimizer use self.thisptr
     """
-    
-    def __cinit__(self, *args, **kwargs):
-        # store an instance to the current c++ class, will be used in every call
-        self.thisptr = NULL #<cBasePotential*>new cBasePotential()
-    
-    def __dealloc__(self):
-        if self.thisptr != NULL:
-            del self.thisptr
-            self.thisptr = NULL
-    
     def one_iteration(self):
-        self.thisptr.one_iteration()
+        self.thisptr.get().one_iteration()
         res = self.get_result()
         for event in self.events:
             event(coords=res.coords, energy=res.energy, rms=res.rms)
@@ -39,9 +31,9 @@ cdef class GradientOptimizer(object):
             # if we don't need to call python events then we can
             # go just let the c++ optimizer do it's thing
             if niter is None:
-                self.thisptr.run()
+                self.thisptr.get().run()
             else:
-                self.thisptr.run(niter)
+                self.thisptr.get().run(niter)
         else:
             # we need to call python events after each iteration.
             if niter is None:
@@ -56,24 +48,24 @@ cdef class GradientOptimizer(object):
             
     def reset(self, coords):
         cdef np.ndarray[double, ndim=1] ccoords = np.array(coords, dtype=float)
-        self.thisptr.reset(_pele.Array[double](<double*> ccoords.data, ccoords.size))
+        self.thisptr.get().reset(_pele.Array[double](<double*> ccoords.data, ccoords.size))
     
     def stop_criterion_satisfied(self):
-        return bool(self.thisptr.stop_criterion_satisfied())
+        return bool(self.thisptr.get().stop_criterion_satisfied())
 
     def get_maxiter(self):
-        return self.thisptr.get_maxiter()
+        return self.thisptr.get().get_maxiter()
 
     def get_niter(self):
-        return self.thisptr.get_niter()
+        return self.thisptr.get().get_niter()
     
     @cython.boundscheck(False)
     def get_result(self):
         """return a results object"""
         res = Result()
         
-        cdef _pele.Array[double] xi = self.thisptr.get_x()
-        cdef _pele.Array[double] gi = self.thisptr.get_g()
+        cdef _pele.Array[double] xi = self.thisptr.get().get_x()
+        cdef _pele.Array[double] gi = self.thisptr.get().get_g()
         cdef double *xdata = xi.data()
         cdef double *gdata = gi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] x = np.zeros(xi.size())
@@ -90,12 +82,12 @@ cdef class GradientOptimizer(object):
         #cdef np.ndarray[double, ndim=1, mode="c"] g2
         #g2 = np.frombuffer(xi.data(), dtype=np.float64, count=xi.size())
         
-        res.energy = self.thisptr.get_f()
+        res.energy = self.thisptr.get().get_f()
         res.coords = x
         res.grad = g
         
-        res.rms = self.thisptr.get_rms()        
-        res.nsteps = self.thisptr.get_niter()
-        res.nfev = self.thisptr.get_nfev()
-        res.success = bool(self.thisptr.success())
+        res.rms = self.thisptr.get().get_rms()        
+        res.nsteps = self.thisptr.get().get_niter()
+        res.nfev = self.thisptr.get().get_nfev()
+        res.success = bool(self.thisptr.get().success())
         return res
