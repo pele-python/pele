@@ -11,26 +11,26 @@ using pele::Array;
 
 TEST(ArrayTest, DefaultConstructor_IsOK){
     pele::Array<double> v;
-    EXPECT_EQ(0, v.size());
+    EXPECT_EQ(0u, v.size());
     EXPECT_FALSE(v.data());
     EXPECT_TRUE(v.empty());
 }
 
 TEST(ArrayTest, Constructor_HandlesPositiveInput){
     pele::Array<double> v(6);
-    EXPECT_EQ (6, v.size());
+    EXPECT_EQ (6u, v.size());
     EXPECT_TRUE(v.data());
 }
 
 TEST(ArrayTest, Constructor_HandlesZero){
     pele::Array<double> v(0);
-    EXPECT_EQ (0, v.size());
+    EXPECT_EQ (0u, v.size());
     EXPECT_TRUE(v.empty());
 }
 
 TEST(ArrayTest, Constructor_SetsValue){
-    pele::Array<double> v(6, 10.);
-    EXPECT_EQ (6, v.size());
+    pele::Array<double> v(6u, 10.);
+    EXPECT_EQ (6u, v.size());
     for (int i = 0; i < 6; ++i){
         EXPECT_NEAR(v[i], 10., 1e-10);
     }
@@ -102,15 +102,15 @@ TEST(ArrayTest, Wrap_Works){
 
 TEST(ArrayTest, WrapSelf_DoesNothing){
     pele::Array<double> v(6);
-    EXPECT_EQ(v.reference_count(), 1);
+    EXPECT_EQ(v.reference_count(), 1u);
     v.wrap(v);
-    EXPECT_EQ(v.reference_count(), 1);
+    EXPECT_EQ(v.reference_count(), 1u);
 }
 
 TEST(ArrayTest, Free_Works){
     pele::Array<double> v(6);
     v.free();
-    EXPECT_EQ (0, v.size());
+    EXPECT_EQ (0u, v.size());
 //    EXPECT_FALSE(v.data());
     EXPECT_TRUE(v.empty());
     v.free();
@@ -119,14 +119,14 @@ TEST(ArrayTest, Free_Works){
 TEST(ArrayTest, Free_Unwraps){
     pele::Array<double> v1(6);
     pele::Array<double> v2(v1);
-    EXPECT_EQ(size_t(2), v1.reference_count());
+    EXPECT_EQ(2, v1.reference_count());
     EXPECT_TRUE(v1 == v2);
     v2.free();
-    EXPECT_EQ(size_t(1), v1.reference_count());
-    EXPECT_EQ(size_t(1), v2.reference_count());
+    EXPECT_EQ(1u, v1.reference_count());
+    EXPECT_EQ(1u, v2.reference_count());
     EXPECT_TRUE(v1 != v2);
-    EXPECT_EQ(size_t(0), v2.size());
-    EXPECT_EQ(size_t(6), v1.size());
+    EXPECT_EQ(0u, v2.size());
+    EXPECT_EQ(6u, v1.size());
 }
 
 TEST(ArrayTest, Copy_WorksNotWrap){
@@ -402,18 +402,18 @@ TEST(ArrayTest, View_Works){
         v[i] = i;
     }
     pele::Array<size_t> v2 = v.view(1,3);
-    EXPECT_EQ(v[0], 0);
-    EXPECT_EQ(v2[0], 1);
-    EXPECT_EQ(v2[1], 2);
-    EXPECT_EQ(v2.size(), 2);
+    EXPECT_EQ(v[0], 0u);
+    EXPECT_EQ(v2[0], 1u);
+    EXPECT_EQ(v2[1], 2u);
+    EXPECT_EQ(v2.size(), 2u);
     EXPECT_FALSE(v == v2);
 
     pele::Array<size_t> v3 = v2.view(1,2);
-    EXPECT_EQ(v3[0], 2);
-    EXPECT_EQ(v3.size(), 1);
+    EXPECT_EQ(v3[0], 2u);
+    EXPECT_EQ(v3.size(), 1u);
 
-    EXPECT_EQ(v.size(), 6);
-    EXPECT_EQ(v[0], 0);
+    EXPECT_EQ(v.size(), 6u);
+    EXPECT_EQ(v[0], 0u);
 }
 
 TEST(ArrayTest, FullView_IsSame){
