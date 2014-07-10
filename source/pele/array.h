@@ -155,7 +155,7 @@ public:
      * access an element in the array
      */
     inline dtype &operator[](const size_t i) { return data()[i]; }
-    inline dtype const & operator[](const size_t i) const { return data()[i]; }
+    inline dtype operator[](const size_t i) const { return data()[i]; }
 
     /**
      * return iterators over data
