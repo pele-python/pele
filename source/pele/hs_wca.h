@@ -10,6 +10,7 @@
 
 using std::exp;
 using std::sqrt;
+using std::pow;
 
 namespace pele {
 
@@ -25,7 +26,7 @@ struct HS_WCA_interaction {
 
     HS_WCA_interaction(double eps, double sca, Array<double> radii) 
         : _eps(eps), _sca(sca),
-          _infty(pow(10.0,50)), _prfac(sca*sca*sca/sqrt(2)),
+          _infty(pow(10.0,50)), _prfac(pow((2*_sca+_sca*_sca),3)/sqrt(2)),
           _radii(radii.copy())
     {}
 
@@ -33,23 +34,26 @@ struct HS_WCA_interaction {
     double inline energy(double r2, size_t atomi, size_t atomj) const 
     {
         double E;
-        double r = sqrt(r2);
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double dr = r - r0;
+        double r02 = r0*r0;
+        double dr = r2 - r02; // note that dr is the difference of the squares
         double ir2 = 1.0/(dr*dr);
         double ir6 = ir2*ir2*ir2;
         double ir12 = ir6*ir6;
-        double C3 = _prfac*r0*r0*r0;
+        double C3 = _prfac*r02*r02*r02;
         double C6 = C3*C3;
         double C12 = C6*C6;
         double coff = r0*(1.0 +_sca); //distance at which the soft cores are at contact
-        if (r <= r0) {
+
+        if (r2 <= r02){
             E = _infty;
-            //std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<", less than their hard core separation"<<std::endl;
-        } else if (r < coff )
+        }
+        else if (r2 > coff*coff){
+            E = 0;
+        }
+        else{
             E = 4.*_eps*(-C6*ir6 + C12*ir12) + _eps;
-        else
-            E = 0.;
+        }
 
         return E;
     }
@@ -58,60 +62,61 @@ struct HS_WCA_interaction {
     double inline energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const 
     {
         double E;
-        double r = sqrt(r2);
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double dr = r - r0;
+        double r02 = r0*r0;
+        double dr = r2 - r02; // note that dr is the difference of the squares
         double ir2 = 1.0/(dr*dr);
         double ir6 = ir2*ir2*ir2;
         double ir12 = ir6*ir6;
-        double C3 = _prfac*r0*r0*r0;
+        double C3 = _prfac*r02*r02*r02;
         double C6 = C3*C3;
         double C12 = C6*C6;
-        double coff = r0*(1+_sca); //distance at which the soft cores are at contact
+        double coff = r0*(1.0 +_sca); //distance at which the soft cores are at contact
 
-        if (r <= r0) {
+        if (r2 <= r02){
             E = _infty;
             *gij = _infty;
-            //std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<"less than their hard core separation"<<std::endl;
-        } else if (r < coff) {
-            E = 4.*_eps*(- C6 * ir6 + C12 * ir12) + _eps;
-            *gij = 4.*_eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / (dr*r); //1/dr because powers must be 7 and 13, this is -g|gij| (for consistency with the loop in pairwise potential)
-        } else {
+        }
+        else if (r2 > coff*coff){
             E = 0.;
             *gij = 0.;
         }
+        else{
+            E = 4.*_eps * (-C6*ir6 + C12*ir12) + _eps;
+            *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
+        }
 
         return E;
-
     }
 
-    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const 
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
     {
         double E;
-        double r = sqrt(r2);
-        double r0 = _radii[atom_i] + _radii[atom_j]; //sum of the hard core radii
-        double dr = r - r0;
+        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        double r02 = r0*r0;
+        double dr = r2 - r02; // note that dr is the difference of the squares
         double ir2 = 1.0/(dr*dr);
         double ir6 = ir2*ir2*ir2;
         double ir12 = ir6*ir6;
-        double C3 = _prfac*r0*r0*r0;
+        double C3 = _prfac*r02*r02*r02;
         double C6 = C3*C3;
         double C12 = C6*C6;
-        double coff = r0*(1+_sca); //distance at which the soft cores are at contact
+        double coff = r0*(1.0 +_sca); //distance at which the soft cores are at contact
 
-        if (r <= r0) {
+        if (r2 <= r02){
             E = _infty;
             *gij = _infty;
             *hij = _infty;
-            //std::cout<<"WARNING: distance between atoms "<<atomi<<" and "<<atomj<<" is "<<r0-r<<"less than their hard core separation"<<std::endl;
-        } else if (r < coff) {
-            E = 4.*_eps*(- C6 * ir6 + C12 * ir12) + _eps;
-            *gij = 4.*_eps*(- 6 * C6 * ir6 + 12 * C12 * ir12) / (dr*r); //1/dr because powers must be 7 and 13, this is -g|gij| (for consistency with the loop in pairwise potential)
-            *hij = 4.*_eps*(- 42 * C6 * ir6 + 156 * C12 * ir12) * ir2;
-        } else {
+        }
+        else if (r2 > coff*coff){
             E = 0.;
             *gij = 0.;
             *hij = 0.;
+        }
+        else{
+            E = 4.*_eps * (-C6*ir6 + C12*ir12) + _eps;
+            *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
+            *hij = -*gij + _eps * ( -672. * dr * C6 * ir6 + 2496. * dr * C12 * ir12) * r02 * ir2;
         }
 
         return E;
