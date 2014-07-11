@@ -47,7 +47,7 @@ class TestOTP(unittest.TestCase):
                             1.697360211099, 2.317229950712, 4.823998989452, 
                             2.283487958310, 1.840698306602, 4.168734267290, 
                             1.393303387573, 2.635037001113, 3.925918744272, ]
-
+        self.nrigid = nrigid
     
     def test_energy(self):
         e = self.pot.getEnergy(self.x0)
@@ -75,6 +75,20 @@ class TestOTP(unittest.TestCase):
         com = np.array([4., 5, 6])
         print "otp to atomistic"
         print rf.to_atomistic(com, p)
+    
+    def test_to_atomistic2(self):
+        x0 = np.array(range(self.nrigid * 6), dtype=float);
+        x2 = x0.reshape([-1,3])
+        for p in x2[self.nrigid:,:]:
+            p /= np.linalg.norm(p);
+        print x0
+        print "range to atomistic"
+        print x0
+        atomistic = self.topology.to_atomistic(x0).flatten()
+        print atomistic
+        print atomistic.size
+        print atomistic[14]
+        print atomistic[23]
 
 
 

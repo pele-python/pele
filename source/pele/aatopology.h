@@ -16,7 +16,7 @@ namespace pele{
 template<class dtype>
 class HackyMatrix : public pele::Array<dtype> {
 public:
-    size_t const _dim1;
+    size_t _dim1;
     HackyMatrix(size_t dim1, size_t dim2, dtype val)
         : pele::Array<dtype>(dim1 * dim2, val),
           _dim1(dim1)
@@ -226,6 +226,8 @@ public:
         }
     }
 
+    size_t natoms() const { return _natoms; }
+
     pele::Array<double> to_atomistic(pele::Array<double> const com, pele::Array<double> const p)
     {
         assert(com.size() == _ndim);
@@ -250,7 +252,76 @@ public:
 //        std::cout << mpos << "\n";
         return pos;
     }
+};
 
+class RBTopology {
+    std::vector<RigidFragment> _sites;
+    size_t _natoms;
+//    bool _finalized;
+//    std::vector<std::vector<double> > _atom_indices;
+
+public:
+    RBTopology()
+        : _natoms(0)//, _finalized(false)
+    {}
+
+    void add_site(Array<double> atom_positions)
+    {
+        _sites.push_back(RigidFragment(atom_positions));
+    }
+
+    void finalize()
+    {
+        _natoms = 0;
+        for (auto & rf : _sites) {
+//            _atom_indices.push_back(std::vector<double>(rf.natoms()));
+//            for (size_t i = 0; i<rf.natoms(); ++i) {
+//                _atom_indices.back()[i] = _natoms + i;
+//            }
+            _natoms += rf.natoms();
+        }
+    }
+
+    size_t nrigid() const { return _sites.size(); }
+
+    Array<double> to_atomistic(Array<double> rbcoords)
+    {
+        if (_natoms == 0) {
+            finalize();
+        }
+        if ( rbcoords.size() != nrigid() * 6 ) {
+            throw std::invalid_argument("rbcoords has the wrong size");
+        }
+
+        size_t const nrigid = _sites.size();
+        CoordsAdaptor ca(nrigid, 0, rbcoords);
+        auto rb_pos = ca.get_rb_positions();
+        auto rb_rot = ca.get_rb_rotations();
+        Array<double> atomistic(3*_natoms);
+        HackyMatrix<double> atomistic_mat(atomistic, 3);
+        size_t istart = 0;
+        for (size_t isite=0; isite<nrigid; ++isite) {
+            auto site_atom_positions = _sites[isite].to_atomistic(
+                    rb_pos.view(isite*3, isite*3+3),
+                    rb_rot.view(isite*3, isite*3+3)
+                    );
+//            std::cout << "com " << rb_pos.view(isite, isite+3) << "\n";
+            Array<double> atomistic_view(atomistic.view(istart, istart + site_atom_positions.size()));
+//            std::cout << "site atom " << site_atom_positions << "\n";
+            atomistic_view.assign(site_atom_positions);
+//            HackyMatrix<double> site_atom_positions_mat(site_atom_positions, 3);
+//            for (size_t iatom = 0; iatom<_sites[isite].natoms(); ++iatom) {
+//                for (size_t k = 0; k<3; ++k) {
+//                    size_t const atom = _atom_indices[isite][iatom];
+//                    atomistic_mat(atom, k) = site_atom_positions_mat(iatom, k)
+//                }
+//            }
+
+            istart += site_atom_positions.size();
+        }
+        assert(istart == _natoms * 3);
+        return atomistic;
+    }
 };
 
 

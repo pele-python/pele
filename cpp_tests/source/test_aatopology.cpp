@@ -28,8 +28,9 @@ class AATopologyTest :  public ::testing::Test {
 public:
     Array<double> x0;
     size_t nrigid;
+    pele::RBTopology rbtopology;
 
-    pele::RigidFragment make_otp()
+    Array<double> make_otp_x()
     {
         Array<double> x(3*3);
         x[0] = 0;
@@ -41,7 +42,7 @@ public:
         x[6] = -0.60876143;
         x[7] = 0.26445111;
         x[8] = 0;
-        return pele::RigidFragment(x);
+        return x;
     }
 
     virtual void SetUp(){
@@ -50,6 +51,14 @@ public:
         for (size_t i = 0; i < x0.size(); ++i) {
             x0[i] = i;
         }
+        for (size_t i = 0; i < nrigid; ++i) {
+            auto p = x0.view(3*nrigid + 3*i, 3*nrigid + 3*i + 3);
+            p /= norm(p);
+        }
+        for (size_t i = 0; i < nrigid; ++i) {
+            rbtopology.add_site(make_otp_x());
+        }
+
     }
 };
 
@@ -84,12 +93,12 @@ TEST_F(AATopologyTest, CoordsAdaptorGetAtomPositions_Works)
 {
     auto ca = CoordsAdaptor(nrigid, 0, x0);
     Array<double> pos = ca.get_atom_positions();
-    ASSERT_EQ(pos.size(), 0);
+    ASSERT_EQ(pos.size(), 0u);
 }
 
-TEST_F(AATopologyTest, ToAtomistic_Works)
+TEST_F(AATopologyTest, SiteToAtomistic_Works)
 {
-    auto rf = make_otp();
+    auto rf = pele::RigidFragment(make_otp_x());
     Array<double> com(3);
     Array<double> p(3);
     for (size_t i=0; i<3; ++i){
@@ -108,4 +117,43 @@ TEST_F(AATopologyTest, ToAtomistic_Works)
     ASSERT_NEAR(pos[6], 3.4900433, 1e-5);
     ASSERT_NEAR(pos[7], 4.72692132, 1e-5);
     ASSERT_NEAR(pos[8], 6.32541829, 1e-5);
+}
+
+TEST_F(AATopologyTest, ToAtomisticOneMolecule_Works)
+{
+    pele::RBTopology rbtop;
+    rbtop.add_site(make_otp_x());
+    pele::RigidFragment rf(make_otp_x());
+    Array<double> com(3);
+    Array<double> p(3);
+    Array<double> x(6);
+    for (size_t i=0; i<3; ++i){
+        com[i] = i+4;
+        p[i] = i+1;
+    }
+    p /= norm(p);
+    for (size_t i=0; i<3; ++i){
+        x[i] = com[i];
+        x[i+3] = p[i];
+    }
+    auto pos1 = rbtop.to_atomistic(x);
+    auto pos2 = rf.to_atomistic(com, p);
+
+    for (size_t i = 0; i < pos1.size(); ++i){
+        ASSERT_DOUBLE_EQ(pos1[i], pos2[i]);
+    }
+}
+
+TEST_F(AATopologyTest, ToAtomistic_Works)
+{
+//    std::cout << "x0 " << x0 << "\n";
+    auto x = rbtopology.to_atomistic(x0);
+//    std::cout << x << "\n";
+    ASSERT_EQ(x.size(), 27u);
+    ASSERT_NEAR(x[0], 0.20925348, 1e-5);
+    ASSERT_NEAR(x[2], 1.68095005, 1e-5);
+    ASSERT_NEAR(x[4], 1.59078223, 1e-5);
+    ASSERT_NEAR(x[14], 4.95902545181, 1e-5);
+    ASSERT_NEAR(x[23], 7.9605436832, 1e-5);
+    ASSERT_NEAR(x[26], 8.36592352, 1e-5);
 }
