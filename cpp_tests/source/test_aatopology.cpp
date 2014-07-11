@@ -3,6 +3,7 @@
 #include "pele/aatopology.h"
 
 using pele::Array;
+using pele::CoordsAdaptor;
 
 class AATopologyTest :  public ::testing::Test {
 public:
