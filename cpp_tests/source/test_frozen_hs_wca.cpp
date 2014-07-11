@@ -365,7 +365,7 @@ TEST_F(FrozenHS_WCATest, TestMinimizationFreezing_Correct_2D){
     opt_t minimizer(pot_nofreeze, x2d, 1e-4, 1.0, 0.5);
     minimizer.run();
     const auto x_after = minimizer.get_x();
-    const auto e_notfreeze_after = pot_nofreeze->get_energy(x_after);
+    const auto e_notfreeze_after = minimizer.get_f();
     EXPECT_TRUE( e_notfreeze_after <= e_notfreeze_before );
     EXPECT_NEAR( e_notfreeze_after, 0, 1e-10 );
     auto pot = std::make_shared<HS_WCA2DFrozen>(eps, sca, radii2d, x2d, frozen_dof_2d);
@@ -374,9 +374,9 @@ TEST_F(FrozenHS_WCATest, TestMinimizationFreezing_Correct_2D){
     opt_t minimizer_red(pot, xred, 1e-4, 1.0, 0.5);
     minimizer_red.run();
     const auto xred_after = minimizer_red.get_x();
-    const auto e_after = pot->get_energy(xred_after);
+    const auto e_after = minimizer_red.get_f();
     EXPECT_TRUE( e_after <= e_before );
-    EXPECT_TRUE( e_notfreeze_after <= e_after );
+    EXPECT_TRUE( (e_notfreeze_after-e_after > 1e-6) ? e_notfreeze_after <= e_after : true );
     // verify that frozen dof are in fact frozen
     const auto xred_after_inflated = pot->coords_converter.get_full_coords(xred_after);
     for (size_t i(0); i < frozen_dof_2d.size(); ++i){

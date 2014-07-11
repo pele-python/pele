@@ -112,7 +112,7 @@ struct HS_WCA_interaction {
         else{
             E = 4.*_eps * (-C6*ir6 + C12*ir12) + _eps;
             *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
-            *hij = -*gij + _eps * ( -672. * dr * C6 * ir6 + 2496. * dr * C12 * ir12) * r02 * ir2;
+            *hij = -*gij + _eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
         }
 
         return E;
