@@ -90,7 +90,11 @@ class TestSiteDistGrad(unittest.TestCase):
         dist2 = _sitedist(drij, p1, p2, S, W, cog)
         self.assertAlmostEqual(dist, dist2, places=4)
 
-        
+    def test_rot_mat1(self):
+        p = np.array([1., 2, 3]);
+        p /= np.linalg.norm(p);
+        print p;
+        print _rot_mat_derivative(p, with_grad=False)
 
 if __name__ == "__main__":
     unittest.main()

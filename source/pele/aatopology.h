@@ -58,30 +58,30 @@ HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype
         for (size_t j = 0; j<m; ++j){
             dtype val = 0;
             for (size_t k = 0; k<L; ++k){
-                val += A[i,k] * B[k,j];
+                val += A(i,k) * B(k,j);
             }
-            C[i,j] = val;
+            C(i,j) = val;
         }
     }
     return C;
 }
 
-
 /**
  * make a rotation matrix from an angle axis
  */
-pele::Array<double> aa_to_rot_mat(pele::Array<double> const p)
+pele::HackyMatrix<double> aa_to_rot_mat(pele::Array<double> const p)
 {
 
-    double theta2 = pele::norm(p);
-//    if theta2 < 1e-12:
+    double theta2 = pele::dot(p,p);
+    if (theta2 < 1e-12) {
+        std::cerr << "warning, we should use _rot_mat_derivative_small_theta, but it's not implemented yet\n";
 //        return _rot_mat_derivative_small_theta(p, with_grad)
+    }
     // Execute for the general case, where THETA dos not equal zero
     // Find values of THETA, CT, ST and THETA3
     double theta   = std::sqrt(theta2);
     double ct      = std::cos(theta);
     double st      = std::sin(theta);
-    double theta3  = 1. / (theta2 * theta);
 
     // Set THETA to 1/THETA purely for convenience
     theta   = 1./theta;
@@ -109,7 +109,9 @@ pele::Array<double> aa_to_rot_mat(pele::Array<double> const p)
             rm(i,j) += (1.-ct) * esq(i,j) + st * e(i,j);
         }
     }
+    return rm;
 }
+
 
 //class RBSite {
 

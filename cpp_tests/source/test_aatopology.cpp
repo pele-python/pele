@@ -5,6 +5,25 @@
 using pele::Array;
 using pele::CoordsAdaptor;
 
+
+TEST(AA2RotMat, Works)
+{
+    Array<double> p(3);
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm(p);
+    auto mx = pele::aa_to_rot_mat(p);
+    ASSERT_NEAR(mx(0,0), 0.57313786, 1e-5);
+    ASSERT_NEAR(mx(1,0), 0.74034884, 1e-5);
+    ASSERT_NEAR(mx(2,0), -0.35127851, 1e-4);
+    ASSERT_NEAR(mx(0,1), -0.60900664, 1e-5);
+    ASSERT_NEAR(mx(1,1), 0.6716445, 1e-5);
+    ASSERT_NEAR(mx(2,1), 0.42190588, 1e-5);
+    ASSERT_NEAR(mx(0,2), 0.54829181, 1e-5);
+    ASSERT_NEAR(mx(1,2), -0.02787928, 1e-5);
+    ASSERT_NEAR(mx(2,2), 0.83582225, 1e-5);
+}
+
+
 class AATopologyTest :  public ::testing::Test {
 public:
     Array<double> x0;
