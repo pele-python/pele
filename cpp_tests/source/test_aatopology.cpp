@@ -29,6 +29,21 @@ public:
     Array<double> x0;
     size_t nrigid;
 
+    pele::RigidFragment make_otp()
+    {
+        Array<double> x(3*3);
+        x[0] = 0;
+        x[1] = -0.52890223;
+        x[2] = 0;
+        x[3] = 0.60876143;
+        x[4] = 0.26445111;
+        x[5] = 0;
+        x[6] = -0.60876143;
+        x[7] = 0.26445111;
+        x[8] = 0;
+        return pele::RigidFragment(x);
+    }
+
     virtual void SetUp(){
         nrigid = 3;
         x0 = Array<double>(nrigid*6);
@@ -70,4 +85,27 @@ TEST_F(AATopologyTest, CoordsAdaptorGetAtomPositions_Works)
     auto ca = CoordsAdaptor(nrigid, 0, x0);
     Array<double> pos = ca.get_atom_positions();
     ASSERT_EQ(pos.size(), 0);
+}
+
+TEST_F(AATopologyTest, ToAtomistic_Works)
+{
+    auto rf = make_otp();
+    Array<double> com(3);
+    Array<double> p(3);
+    for (size_t i=0; i<3; ++i){
+        com[i] = i+4;
+        p[i] = i+1;
+    }
+    p /= norm(p);
+    auto pos = rf.to_atomistic(com, p);
+
+    ASSERT_NEAR(pos[0], 4.32210497, 1e-5);
+    ASSERT_NEAR(pos[1], 4.64476573, 1e-5);
+    ASSERT_NEAR(pos[2], 5.77685304, 1e-5);
+    ASSERT_NEAR(pos[3], 4.18785174, 1e-5);
+    ASSERT_NEAR(pos[4], 5.62831296, 1e-5);
+    ASSERT_NEAR(pos[5], 5.89772867, 1e-5);
+    ASSERT_NEAR(pos[6], 3.4900433, 1e-5);
+    ASSERT_NEAR(pos[7], 4.72692132, 1e-5);
+    ASSERT_NEAR(pos[8], 6.32541829, 1e-5);
 }

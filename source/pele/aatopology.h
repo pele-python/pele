@@ -21,6 +21,18 @@ public:
         : pele::Array<dtype>(dim1 * dim2, val),
           _dim1(dim1)
     {}
+
+    /**
+     * wrap an array
+     */
+    HackyMatrix(pele::Array<double> v, size_t dim1)
+        : pele::Array<dtype>(v),
+          _dim1(dim1)
+    {
+        if (v.size() % dim1 != 0) {
+            throw std::invalid_argument("v.size() is not divisible by dim1");
+        }
+    }
 //    void set_dim1(size_t dim1)
 //    {
 //        if (this->size() % dim1 != 0) {
@@ -65,6 +77,25 @@ HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype
     }
     return C;
 }
+
+template<class dtype>
+pele::Array<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, pele::Array<dtype> const & v)
+{
+    assert(A.shape().second == v.size());
+    size_t const L = A.shape().second;
+    size_t const n = A.shape().first;
+
+    pele::Array<dtype> C(n, 0);
+    for (size_t i = 0; i<n; ++i){
+        dtype val = 0;
+        for (size_t k = 0; k<L; ++k){
+            val += A(i,k) * v[k];
+        }
+        C(i) = val;
+    }
+    return C;
+}
+
 
 /**
  * make a rotation matrix from an angle axis
@@ -173,6 +204,55 @@ public:
     }
 
 };
+
+class RigidFragment {
+    static const size_t _ndim = 3;
+    pele::Array<double> _atom_positions;
+    pele::HackyMatrix<double> _atom_positions_matrix;
+    size_t _natoms;
+
+public:
+    RigidFragment(pele::Array<double> atom_positions)
+    : _atom_positions(atom_positions.copy()),
+      _atom_positions_matrix(_atom_positions, _ndim),
+      _natoms(_atom_positions.size() / _ndim)
+    {
+//        std::cout << "atoms positions " << _atom_positions << "\n";
+        if (_atom_positions.size() == 0 ) {
+            throw std::invalid_argument("the atoms positions must not have zero size");
+        }
+        if (_atom_positions.size() != _natoms * _ndim ) {
+            throw std::invalid_argument("the length of atom_positions must be divisible by 3");
+        }
+    }
+
+    pele::Array<double> to_atomistic(pele::Array<double> const com, pele::Array<double> const p)
+    {
+        assert(com.size() == _ndim);
+        assert(p.size() == 3);
+        auto rmat = pele::aa_to_rot_mat(p);
+        Array<double> pos(_atom_positions.size());
+        HackyMatrix<double> mpos(pos, _ndim);
+
+        // return com + np.dot(R, np.transpose(self.atom_positions)).transpose()
+        for (size_t atom = 0; atom<_natoms; ++atom) {
+            for (size_t j = 0; j<_ndim; ++j) {
+                double val = com[j];
+                for (size_t k = 0; k<_ndim; ++k) {
+                    val += rmat(j,k) * _atom_positions_matrix(atom,k);
+                }
+                mpos(atom, j) = val;
+            }
+        }
+//        std::cout << _atom_positions << "\n";
+//        std::cout << pos << "\n";
+//        std::cout << rmat << "\n";
+//        std::cout << mpos << "\n";
+        return pos;
+    }
+
+};
+
 
 }
 

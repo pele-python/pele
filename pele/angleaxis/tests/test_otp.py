@@ -15,6 +15,8 @@ class TestOTP(unittest.TestCase):
         otp.add_atom("O", np.array([cos( 7.*pi/24.),  1./3. * sin( 7.* pi/24.), 0.0]), 1.)
         otp.add_atom("O", np.array([-cos( 7.* pi/24.),  1./3. * sin( 7.*pi/24), 0.0]), 1.)
         otp.finalize_setup()
+        print "otp"
+        print otp.atom_positions
         return otp
 
     
@@ -65,6 +67,14 @@ class TestOTP(unittest.TestCase):
         xatom = self.topology.to_atomistic(self.x0).flatten()
         for i in xrange(xatom.size):
             self.assertAlmostEqual(xatom[i], self.x0atomistic[i], 2)
+    
+    def test_site_to_atomistic(self):
+        rf = self.make_otp()
+        p = np.array([1., 2, 3])
+        p /= np.linalg.norm(p)
+        com = np.array([4., 5, 6])
+        print "otp to atomistic"
+        print rf.to_atomistic(com, p)
 
 
 
