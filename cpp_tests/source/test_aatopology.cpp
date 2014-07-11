@@ -201,3 +201,27 @@ TEST_F(AATopologyTest, ToAtomistic_Works)
     ASSERT_NEAR(x[23], 7.9605436832, 1e-5);
     ASSERT_NEAR(x[26], 8.36592352, 1e-5);
 }
+
+TEST_F(AATopologyTest, SiteTransformGrad_Works)
+{
+    auto rf = pele::RigidFragment(make_otp_x());
+    Array<double> p(3);
+    for (size_t i=0; i<3; ++i){
+        p[i] = i+1;
+    }
+    p /= norm(p);
+    Array<double> g = x0.view(0,9).copy();
+    Array<double> g_com(3);
+    Array<double> g_rot(3);
+//    std::cout << g << "\n";
+    rf.transform_grad(p, g, g_com, g_rot);
+
+    ASSERT_NEAR(g_com[0], 9., 1e-5);
+    ASSERT_NEAR(g_com[1], 12., 1e-5);
+    ASSERT_NEAR(g_com[2], 15., 1e-5);
+
+    ASSERT_NEAR(g_rot[0], 1.00790482, 1e-5);
+    ASSERT_NEAR(g_rot[1], 3.63361269, 1e-5);
+    ASSERT_NEAR(g_rot[2], -3.20618434, 1e-5);
+}
+

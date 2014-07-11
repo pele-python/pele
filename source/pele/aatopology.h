@@ -18,7 +18,7 @@ template<class dtype>
 class HackyMatrix : public pele::Array<dtype> {
 public:
     size_t _dim1;
-    HackyMatrix(size_t dim1, size_t dim2, dtype val)
+    HackyMatrix(size_t dim1, size_t dim2, dtype val=0)
         : pele::Array<dtype>(dim1 * dim2, val),
           _dim1(dim1)
     {}
@@ -156,16 +156,16 @@ void rot_mat_derivatives(
 {
     assert(p.size() == 3);
     if (rmat.shape() != std::pair<size_t, size_t>(3,3)) {
-        throw std::invalid_argument("matrix has the wrong size");
+        throw std::invalid_argument("rmat matrix has the wrong size");
     }
     if (drm1.shape() != std::pair<size_t, size_t>(3,3)) {
-        throw std::invalid_argument("matrix has the wrong size");
+        throw std::invalid_argument("drm1 matrix has the wrong size");
     }
     if (drm2.shape() != std::pair<size_t, size_t>(3,3)) {
-        throw std::invalid_argument("matrix has the wrong size");
+        throw std::invalid_argument("drm2 matrix has the wrong size");
     }
     if (drm3.shape() != std::pair<size_t, size_t>(3,3)) {
-        throw std::invalid_argument("matrix has the wrong size");
+        throw std::invalid_argument("drm2 matrix has the wrong size");
     }
 
     double theta2 = pele::dot(p,p);
@@ -384,6 +384,60 @@ public:
 //        std::cout << mpos << "\n";
         return pos;
     }
+
+    /**
+     * transform atomistic gradient into a gradient on the
+     * rigid body coordinates
+     */
+    void transform_grad(
+            pele::Array<double> const p,
+            pele::Array<double> const g,
+            pele::Array<double> g_com,
+            pele::Array<double> g_rot
+            )
+    {
+        assert(p.size() == 3);
+        assert(g.size() == natoms() * 3);
+        assert(g_com.size() == 3);
+        assert(g_rot.size() == 3);
+        HackyMatrix<double> gmat(g, 3);
+
+        // compute the rotation matrix derivatives
+        HackyMatrix<double> rmat(3,3);
+        HackyMatrix<double> drm1(3,3);
+        HackyMatrix<double> drm2(3,3);
+        HackyMatrix<double> drm3(3,3);
+//        std::cout << rmat.shape().first << " " << rmat.shape().second << "\n";
+        rot_mat_derivatives(p, rmat, drm1, drm2, drm3);
+
+        // do the center of mass coordinates
+        for (size_t k=0; k<3; ++k) {
+            double val = 0;
+            for (size_t atom=0; atom<natoms(); ++atom) {
+                val += gmat(atom,k);
+            }
+            g_com[k] = val;
+        }
+
+        // now do the rotations
+        g_rot.assign(0);
+        for (size_t atom=0; atom<natoms(); ++atom) {
+            double val1 = 0;
+            double val2 = 0;
+            double val3 = 0;
+            for (size_t i=0; i<3; ++i) {
+                for (size_t j=0; j<3; ++j) {
+                    val1 += gmat(atom,i) * drm1(i,j) * _atom_positions_matrix(atom,j);
+                    val2 += gmat(atom,i) * drm2(i,j) * _atom_positions_matrix(atom,j);
+                    val3 += gmat(atom,i) * drm3(i,j) * _atom_positions_matrix(atom,j);
+                }
+            }
+            g_rot[0] += val1;
+            g_rot[1] += val2;
+            g_rot[2] += val3;
+        }
+
+    }
 };
 
 class RBTopology {
@@ -453,6 +507,21 @@ public:
         assert(istart == _natoms * 3);
         return atomistic;
     }
+
+//    pele::Array<double> transform_gradient(pele::Array<double> rbcoords, pele::Array<double> grad)
+//    {
+//        if (_natoms == 0) {
+//            finalize();
+//        }
+//        if ( rbcoords.size() != nrigid() * 6 ) {
+//            throw std::invalid_argument("rbcoords has the wrong size");
+//        }
+//        if (grad.size() != _natoms * 3) {
+//            throw std::invalid_argument("grad has the wrong size");
+//        }
+//
+//
+//    }
 };
 
 

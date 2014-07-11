@@ -75,6 +75,13 @@ class TestOTP(unittest.TestCase):
         com = np.array([4., 5, 6])
         print "otp to atomistic"
         print rf.to_atomistic(com, p)
+        
+
+        print "otp transform grad"
+        g = np.array(range(9), dtype=float).reshape([-1,3])
+        print g.reshape(-1)
+        
+        print rf.transform_grad(p, g)
     
     def test_to_atomistic2(self):
         x0 = np.array(range(self.nrigid * 6), dtype=float);
