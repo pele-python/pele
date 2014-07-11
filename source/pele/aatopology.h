@@ -307,6 +307,8 @@ public:
         }
     }
 
+    pele::Array<double> get_coords() { return _coords; }
+
     pele::Array<double> get_rb_positions()
     {
         if (_nrigid == 0) {
@@ -469,6 +471,7 @@ public:
     }
 
     size_t nrigid() const { return _sites.size(); }
+    size_t natoms() const { return _natoms; }
 
     Array<double> to_atomistic(Array<double> rbcoords)
     {
@@ -508,20 +511,41 @@ public:
         return atomistic;
     }
 
-//    pele::Array<double> transform_gradient(pele::Array<double> rbcoords, pele::Array<double> grad)
-//    {
-//        if (_natoms == 0) {
-//            finalize();
-//        }
-//        if ( rbcoords.size() != nrigid() * 6 ) {
-//            throw std::invalid_argument("rbcoords has the wrong size");
-//        }
-//        if (grad.size() != _natoms * 3) {
-//            throw std::invalid_argument("grad has the wrong size");
-//        }
-//
-//
-//    }
+    /**
+     * convert atomistic gradient into gradient in rigid body coordinates
+     */
+    pele::Array<double> transform_gradient(pele::Array<double> rbcoords, pele::Array<double> grad)
+    {
+        if (_natoms == 0) {
+            finalize();
+        }
+        if ( rbcoords.size() != nrigid() * 6 ) {
+            throw std::invalid_argument("rbcoords has the wrong size");
+        }
+        if (grad.size() != _natoms * 3) {
+            throw std::invalid_argument("grad has the wrong size");
+        }
+
+        CoordsAdaptor ca(nrigid(), 0, rbcoords);
+        pele::Array<double> coords_rot(ca.get_rb_rotations());
+        pele::Array<double> rbgrad(rbcoords.size());
+        CoordsAdaptor rbgrad_ca(nrigid(), 0, rbgrad);
+        HackyMatrix<double> g_com(rbgrad_ca.get_rb_positions(), 3);
+        HackyMatrix<double> g_rot(rbgrad_ca.get_rb_rotations(), 3);
+
+        size_t istart = 0;
+        for (size_t isite=0; isite<nrigid(); ++isite) {
+            size_t const site_ndof = _sites[isite].natoms() * 3;
+//            std::cout << grad.size() << " " << istart << " " << site_ndof << " " << istart + site_ndof << "\n";
+            Array<double> g_site     = grad.view      (istart, istart + site_ndof);
+            Array<double> p          = coords_rot.view(isite*3, isite*3 + 3);
+            Array<double> g_com_site = g_com.view     (isite*3, isite*3 + 3);
+            Array<double> g_rot_site = g_rot.view     (isite*3, isite*3 + 3);
+            _sites[isite].transform_grad(p, g_site, g_com_site, g_rot_site);
+            istart += site_ndof;
+        }
+        return rbgrad;
+    }
 };
 
 

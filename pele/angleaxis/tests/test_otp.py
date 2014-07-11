@@ -96,7 +96,13 @@ class TestOTP(unittest.TestCase):
         print atomistic.size
         print atomistic[14]
         print atomistic[23]
-
+        
+        from pele.potentials import LJ
+        lj = LJ()
+        e, g = lj.getEnergyGradient(atomistic.reshape(-1))
+        grb = self.topology.transform_gradient(x0, g);
+        print "transformed gradient"
+        print grb
 
 
 if __name__ == "__main__":

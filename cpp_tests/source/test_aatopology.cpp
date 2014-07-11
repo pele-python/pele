@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "pele/aatopology.h"
+#include "pele/lj.h"
 
 using pele::Array;
 using pele::CoordsAdaptor;
@@ -223,5 +224,23 @@ TEST_F(AATopologyTest, SiteTransformGrad_Works)
     ASSERT_NEAR(g_rot[0], 1.00790482, 1e-5);
     ASSERT_NEAR(g_rot[1], 3.63361269, 1e-5);
     ASSERT_NEAR(g_rot[2], -3.20618434, 1e-5);
+}
+
+TEST_F(AATopologyTest, TransformGradient_Works)
+{
+    auto x = rbtopology.to_atomistic(x0);
+    auto lj = pele::LJ(4., 4.);
+    Array<double> g_atom(rbtopology.natoms() * 3);
+    lj.get_energy_gradient(x, g_atom);
+    auto grb = rbtopology.transform_gradient(x0, g_atom);
+
+    ASSERT_EQ(grb.size(), 18u);
+    ASSERT_NEAR(grb[0], -1.45358337e-03, 1e-8);
+    ASSERT_NEAR(grb[2], -1.54473759e-03, 1e-8);
+    ASSERT_NEAR(grb[4], -6.72613718e-06, 1e-8);
+    ASSERT_NEAR(grb[8], 1.55119284e-03, 1e-8);
+    ASSERT_NEAR(grb[15], -2.32088836e-04, 1e-8);
+    ASSERT_NEAR(grb[17], 6.21604179e-05, 1e-8);
+
 }
 
