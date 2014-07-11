@@ -8,16 +8,12 @@
 #include "frozen_atoms.h"
 #include <memory>
 
-using std::exp;
-using std::sqrt;
-using std::pow;
-
 namespace pele {
 
 /**
- * Pairwise interaction for Hard Sphere + Weeks-Chandler-Andersen (HS_WCA) potential, refer to D. Asenjo PhD thesis pp 66
- * _prfac is the cubic power of _sca/(2**(1/6))
- * well depth _eps and scaling factor (shell thickness = sca * R, where R is the hard core radius), sca determined the thickness of the shell
+ * Fast pairwise interaction for Hard Sphere + Weeks-Chandler-Andersen (fHS_WCA) potential, refer to S. Martiniani CPGS pp 20
+ * well depth _eps and scaling factor (shell thickness = sca * R, where R is the hard core radius),
+ * sca determines the thickness of the shell
  */
 struct HS_WCA_interaction {
     double const _eps, _sca;
@@ -26,7 +22,7 @@ struct HS_WCA_interaction {
 
     HS_WCA_interaction(double eps, double sca, Array<double> radii) 
         : _eps(eps), _sca(sca),
-          _infty(pow(10.0,50)), _prfac(pow((2*_sca+_sca*_sca),3)/sqrt(2)),
+          _infty(std::pow(10.0,50)), _prfac(std::pow((2*_sca+_sca*_sca),3)/std::sqrt(2)),
           _radii(radii.copy())
     {}
 
