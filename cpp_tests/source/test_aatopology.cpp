@@ -23,6 +23,50 @@ TEST(AA2RotMat, Works)
     ASSERT_NEAR(mx(2,2), 0.83582225, 1e-5);
 }
 
+TEST(RotMatDerivs, Works)
+{
+    Array<double> p(3);
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm(p);
+    pele::HackyMatrix<double> mx(3,3,1.);
+    pele::HackyMatrix<double> drm1(3,3,0.);
+    pele::HackyMatrix<double> drm2(3,3,0.);
+    pele::HackyMatrix<double> drm3(3,3,0.);
+    pele::rot_mat_derivatives(p, mx, drm1, drm2, drm3);
+
+    // mx
+    ASSERT_NEAR(mx(0,0), 0.57313786, 1e-5);
+    ASSERT_NEAR(mx(1,0), 0.74034884, 1e-5);
+    ASSERT_NEAR(mx(2,0), -0.35127851, 1e-4);
+    ASSERT_NEAR(mx(0,1), -0.60900664, 1e-5);
+    ASSERT_NEAR(mx(1,1), 0.6716445, 1e-5);
+    ASSERT_NEAR(mx(2,1), 0.42190588, 1e-5);
+    ASSERT_NEAR(mx(0,2), 0.54829181, 1e-5);
+    ASSERT_NEAR(mx(1,2), -0.02787928, 1e-5);
+    ASSERT_NEAR(mx(2,2), 0.83582225, 1e-5);
+
+    // drm1
+    ASSERT_NEAR(drm1(0,0), 0.01933859, 1e-5);
+    ASSERT_NEAR(drm1(0,2), 0.32109128, 1e-5);
+    ASSERT_NEAR(drm1(1,1), -0.23084292, 1e-5);
+    ASSERT_NEAR(drm1(2,0), 0.40713948, 1e-5);
+    ASSERT_NEAR(drm1(2,2), -0.23828083, 1e-5);
+
+    // drm2
+    ASSERT_NEAR(drm2(0,0), -0.45276033, 1e-5);
+    ASSERT_NEAR(drm2(0,2), 0.74649729, 1e-5);
+    ASSERT_NEAR(drm2(1,1), 0.02975168, 1e-5);
+    ASSERT_NEAR(drm2(2,0), -0.76434829, 1e-5);
+    ASSERT_NEAR(drm2(2,2), -0.47656167, 1e-5);
+
+    // drm3
+    ASSERT_NEAR(drm3(0,0), -0.67914049, 1e-5);
+    ASSERT_NEAR(drm3(0,2), -0.01960117, 1e-5);
+    ASSERT_NEAR(drm3(1,1), -0.69252875, 1e-5);
+    ASSERT_NEAR(drm3(2,0), 0.23854341, 1e-5);
+    ASSERT_NEAR(drm3(2,2), 0.02231376, 1e-5);
+}
+
 
 class AATopologyTest :  public ::testing::Test {
 public:

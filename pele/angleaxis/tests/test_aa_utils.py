@@ -93,8 +93,13 @@ class TestSiteDistGrad(unittest.TestCase):
     def test_rot_mat1(self):
         p = np.array([1., 2, 3]);
         p /= np.linalg.norm(p);
+        print "test_rot_mat1"
         print p;
-        print _rot_mat_derivative(p, with_grad=False)
+        mx, r1, r2, r3 = _rot_mat_derivative(p, with_grad=True)
+        print mx
+        print r1
+        print r2
+        print r3
 
 if __name__ == "__main__":
     unittest.main()

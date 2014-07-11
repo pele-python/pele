@@ -4,6 +4,7 @@
 #include <string>
 //#include <pair>
 #include <cmath>
+#include <stdexcept>
 
 #include "pele/array.h"
 
@@ -141,6 +142,137 @@ pele::HackyMatrix<double> aa_to_rot_mat(pele::Array<double> const p)
         }
     }
     return rm;
+}
+
+/**
+ * make a rotation matrix and it's derivatives from an angle axis
+ */
+void rot_mat_derivatives(
+        pele::Array<double> const p,
+        HackyMatrix<double> rmat,
+        HackyMatrix<double> drm1,
+        HackyMatrix<double> drm2,
+        HackyMatrix<double> drm3)
+{
+    assert(p.size() == 3);
+    if (rmat.shape() != std::pair<size_t, size_t>(3,3)) {
+        throw std::invalid_argument("matrix has the wrong size");
+    }
+    if (drm1.shape() != std::pair<size_t, size_t>(3,3)) {
+        throw std::invalid_argument("matrix has the wrong size");
+    }
+    if (drm2.shape() != std::pair<size_t, size_t>(3,3)) {
+        throw std::invalid_argument("matrix has the wrong size");
+    }
+    if (drm3.shape() != std::pair<size_t, size_t>(3,3)) {
+        throw std::invalid_argument("matrix has the wrong size");
+    }
+
+    double theta2 = pele::dot(p,p);
+    if (theta2 < 1e-12) {
+        std::cerr << "warning, we should use _rot_mat_derivative_small_theta, but it's not implemented yet\n";
+//        return _rot_mat_derivative_small_theta(p, with_grad)
+    }
+    // Execute for the general case, where THETA dos not equal zero
+    // Find values of THETA, CT, ST and THETA3
+    double theta   = std::sqrt(theta2);
+    double ct      = std::cos(theta);
+    double st      = std::sin(theta);
+    double theta3  = 1./(theta2*theta);
+
+
+    // Set THETA to 1/THETA purely for convenience
+    theta   = 1./theta;
+
+    // Normalise p and construct the skew-symmetric matrix E
+    // ESQ is calculated as the square of E
+    auto pn = p.copy();
+    pn*= theta;
+    HackyMatrix<double> e(3, 3, 0);
+    e(0,1)  = -pn[2];
+    e(0,2)  =  pn[1];
+    e(1,2)  = -pn[0];
+    e(1,0)  = -e(0,1);
+    e(2,0)  = -e(0,2);
+    e(2,1)  = -e(1,2);
+    auto esq     = hacky_mat_mul(e, e);
+
+    // RM is calculated from Rodrigues' rotation formula [equation [1]
+    // in the paper]
+    // rm  = np.eye(3) + [1. - ct] * esq + st * e
+//    HackyMatrix<double> rmat(3, 3, 0);
+    rmat.assign(0.);
+    for (size_t i = 0; i < 3; ++i) rmat(i,i) = 1; // identiy matrix
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            rmat(i,j) += (1.-ct) * esq(i,j) + st * e(i,j);
+        }
+    }
+
+    HackyMatrix<double> de1(3,3,0.);
+    de1(0,1) = p[2]*p[0]*theta3;
+    de1(0,2) = -p[1]*p[0]*theta3;
+    de1(1,2) = -(theta - p[0]*p[0]*theta3);
+    de1(1,0) = -de1(0,1);
+    de1(2,0) = -de1(0,2);
+    de1(2,1) = -de1(1,2);
+
+    HackyMatrix<double> de2(3,3,0.);
+    de2(0,1) = p[2]*p[1]*theta3;
+    de2(0,2) = theta - p[1]*p[1]*theta3;
+    de2(1,2) = p[0]*p[1]*theta3;
+    de2(1,0) = -de2(0,1);
+    de2(2,0) = -de2(0,2);
+    de2(2,1) = -de2(1,2);
+
+    HackyMatrix<double> de3(3,3,0.);
+    de3(0,1) = -(theta - p[2]*p[2]*theta3);
+    de3(0,2) = -p[1]*p[2]*theta3;
+    de3(1,2) = p[0]*p[2]*theta3;
+    de3(1,0) = -de3(0,1);
+    de3(2,0) = -de3(0,2);
+    de3(2,1) = -de3(1,2);
+
+//    HackyMatrix<double> drm1(3,3,0.);
+    // drm1 = (st*pn[0]*esq + (1.-ct)*(de1.dot(e) + e.dot(de1))
+    //         + ct*pn[0]*e + st*de1)
+    auto de_e = hacky_mat_mul(de1, e);
+    auto ede_ = hacky_mat_mul(e, de1);
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            drm1(i,j) = (st * pn[0] * esq(i,j)
+                         + (1.-ct) * (de_e(i,j) + ede_(i,j))
+                         + ct * pn[0] * e(i,j)
+                         + st * de1(i,j)
+                         );
+        }
+    }
+
+//    HackyMatrix<double> drm2(3,3,0.);
+    de_e = hacky_mat_mul(de2, e);
+    ede_ = hacky_mat_mul(e, de2);
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            drm2(i,j) = (st * pn[1] * esq(i,j)
+                         + (1.-ct) * (de_e(i,j) + ede_(i,j))
+                         + ct * pn[1] * e(i,j)
+                         + st * de2(i,j)
+                         );
+        }
+    }
+
+//    HackyMatrix<double> drm3(3,3,0.);
+    de_e = hacky_mat_mul(de3, e);
+    ede_ = hacky_mat_mul(e, de3);
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            drm3(i,j) = (st * pn[2] * esq(i,j)
+                         + (1.-ct) * (de_e(i,j) + ede_(i,j))
+                         + ct * pn[2] * e(i,j)
+                         + st * de3(i,j)
+                         );
+        }
+    }
 }
 
 
@@ -305,10 +437,9 @@ public:
                     rb_pos.view(isite*3, isite*3+3),
                     rb_rot.view(isite*3, isite*3+3)
                     );
-//            std::cout << "com " << rb_pos.view(isite, isite+3) << "\n";
             Array<double> atomistic_view(atomistic.view(istart, istart + site_atom_positions.size()));
-//            std::cout << "site atom " << site_atom_positions << "\n";
             atomistic_view.assign(site_atom_positions);
+
 //            HackyMatrix<double> site_atom_positions_mat(site_atom_positions, 3);
 //            for (size_t iatom = 0; iatom<_sites[isite].natoms(); ++iatom) {
 //                for (size_t k = 0; k<3; ++k) {
