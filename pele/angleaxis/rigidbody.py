@@ -222,8 +222,8 @@ class RBPotentialWrapper(potential):
         E, g = self.pot.getEnergyGradient(coords.reshape(-1))
         return E, self.rbsystem.transform_gradient(rbcoords, g)
     
-    
-if __name__ == "__main__":
+
+def test():
     from math import sin, cos, pi
     from copy import deepcopy
     water = RigidFragment()
@@ -264,7 +264,7 @@ if __name__ == "__main__":
     gp = rbgrad[3:]
     gx = rbgrad[:3]
     
-    from pele.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
+    from pele.angleaxis._aadist import rmdrvt as rotMatDeriv
     R, R1, R2, R3 = rotMatDeriv(p, True)        
     
     print "test1", np.linalg.norm(R1*gp[0])     
@@ -285,3 +285,5 @@ if __name__ == "__main__":
     print system.transform_grad(rbcoords, gnew)
     
     
+if __name__ == "__main__":
+    test()

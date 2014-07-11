@@ -1,3 +1,9 @@
+!
+!js850> WARNING: f2py by default copies every multidimentional array passed to
+!fortran.  This is becuase array indexing is different in fortran and python.
+!This is a huge waste of resources
+!
+
 !     --------------------------------------------------------------------------
 
 !     RMDVDT = rotation matrix derivative
@@ -22,11 +28,13 @@ SUBROUTINE RMDRVT(P, RM, DRM1, DRM2, DRM3, GTEST)
     !     E(3,3) = the skew-symmetric matrix obtained from a unit vector
     !              parallel to P (equation (2) in the paper)
     !     ESQ(3,3) = the square of E
-    DOUBLE PRECISION :: P(3), PN(3), THETA, THETA2, THETA3, CT, ST, I3(3,3), E(3,3), ESQ(3,3)
+    DOUBLE PRECISION, INTENT(IN) :: P(3)
+    DOUBLE PRECISION, INTENT(OUT) :: RM(3,3), DRM1(3,3), DRM2(3,3), DRM3(3,3)
+    DOUBLE PRECISION :: PN(3), THETA, THETA2, THETA3, CT, ST, I3(3,3), E(3,3), ESQ(3,3)
 
     !     DEk = derivate of E with respect to the kth component of P
-    DOUBLE PRECISION :: DE1(3,3), DE2(3,3), DE3(3,3), RM(3,3), DRM1(3,3), DRM2(3,3), DRM3(3,3)
-    LOGICAL          :: GTEST
+    DOUBLE PRECISION :: DE1(3,3), DE2(3,3), DE3(3,3)
+    LOGICAL, INTENT(IN)   :: GTEST
 
     !     Set the values of the idenity matrix I3
     I3(:,:) = 0.D0

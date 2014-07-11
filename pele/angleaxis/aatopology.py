@@ -1,12 +1,14 @@
 import numpy as np
 from pele.utils import rotations
 from pele.angleaxis import CoordsAdapter
-from pele.potentials.fortran.rmdrvt import rmdrvt as rotMatDeriv
 from pele.transition_states import interpolate_linear
 from math import pi
 from pele import takestep
 from pele.transition_states import _zeroev as zeroev
 from pele.angleaxis.aamindist import TransformAngleAxisCluster
+
+from _aadist import rmdrvt as rotMatDeriv
+from _aadist import sitedist_grad, sitedist
 import _aadist
 
 __all__ = ["AASiteType", "AATopology", "interpolate_angleaxis", "TakestepAA"]
@@ -93,7 +95,7 @@ class AASiteType(object):
         returns:
             distance squared
         '''
-        return _aadist.sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
+        return sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
         R1 = rotations.aa2mx(p1)
         R2 = rotations.aa2mx(p2)
@@ -127,7 +129,7 @@ class AASiteType(object):
             spring cart, spring rot
         '''
         
-        return _aadist.sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
+        return sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
         R1, R11, R12, R13 = rotMatDeriv(p1, True)
         R2 = rotations.aa2mx(p2)
         dR = R2 - R1
@@ -437,7 +439,7 @@ class TakestepAA(takestep.TakestepInterface):
         self.rotate *= factor
         
         
-if __name__ == "__main__":
+def test():
     natoms = 3
     x = np.random.random([natoms,3])*5
     masses = [1., 1., 16.] #np.random.random(natoms)
@@ -479,7 +481,7 @@ if __name__ == "__main__":
     t1 = time.time()
     print "time python", t1-t0
     for i in xrange(1000):
-        _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
+        sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
     
  #_aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
@@ -508,3 +510,6 @@ if __name__ == "__main__":
     print _aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog)
 #    print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
 
+
+if __name__ == "__main__":
+    test()
