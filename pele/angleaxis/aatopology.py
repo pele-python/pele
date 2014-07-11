@@ -221,7 +221,9 @@ class AATopology(object):
         
         
     '''
-    def __init__(self, sites=[]):
+    def __init__(self, sites=None):
+        if sites is None:
+            sites = []
         self.sites = sites
         
     def add_sites(self, sites):

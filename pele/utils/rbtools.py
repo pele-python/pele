@@ -8,7 +8,7 @@
 """
 
 __all__ = ["CoordsAdapter"]
-class CoordsAdapter():
+class CoordsAdapter(object):
     '''Wrapper to access coordinate array for rigid body systems
     
     The CoordsAdapter is a wrapper for a coords array. It creates views to directly
@@ -76,7 +76,7 @@ class CoordsAdapter():
             self.updateCoords(coords)
 
     def copy(self):
-        return CoordsAdapter(nrigid = self.nrigid, natoms=self.natoms, nlattice=self.nlattice, coords=self.coords)
+        return CoordsAdapter(nrigid=self.nrigid, natoms=self.natoms, nlattice=self.nlattice, coords=self.coords)
     
     def updateCoords(self, coords):
         ''' update the coordinate array

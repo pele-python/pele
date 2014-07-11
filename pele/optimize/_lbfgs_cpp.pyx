@@ -75,7 +75,11 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
         self.events = events
         if self.events is None: 
             self.events = []
-        
+    
+    def set_H0(self, H0):
+        cdef cppLBFGS* lbfgs_ptr = <cppLBFGS*> self.thisptr.get()
+        lbfgs_ptr.set_H0(float(H0))
+    
     def get_result(self):
         cdef cppLBFGS* lbfgs_ptr = <cppLBFGS*> self.thisptr.get()
         res = super(_Cdef_LBFGS_CPP, self).get_result()

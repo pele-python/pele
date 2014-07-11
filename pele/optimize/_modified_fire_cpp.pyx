@@ -48,7 +48,7 @@ class ModifiedFireCPP(_Cdef_MODIFIED_FIRE_CPP):
     """This class is the python interface for the c++ MODIFED_FIRE implementation.
     """
     
-    def reset(self, coords):
-        """do one iteration"""
-        _Cdef_MODIFIED_FIRE_CPP.reset(self, coords)
+#     def reset(self, coords):
+#         """do one iteration"""
+#         _Cdef_MODIFIED_FIRE_CPP.reset(self, coords)
        

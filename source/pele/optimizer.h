@@ -10,10 +10,6 @@
 #include <iomanip>
 #include <memory>
 
-using std::vector;
-using std::runtime_error;
-using std::cout;
-
 namespace pele{
 
 /**
@@ -44,13 +40,13 @@ public:
     /**
      * accessors
      */
-    virtual Array<double> get_x() const = 0;
-    virtual Array<double> get_g() const = 0;
-    virtual double get_f() const = 0;
-    virtual double get_rms() const = 0;
-    virtual int get_nfev() const = 0;
-    virtual int get_niter() const = 0;
-    virtual bool success() = 0;
+    inline virtual Array<double> get_x() const = 0;
+    inline virtual Array<double> get_g() const = 0;
+    inline virtual double get_f() const = 0;
+    inline virtual double get_rms() const = 0;
+    inline virtual int get_nfev() const = 0;
+    inline virtual int get_niter() const = 0;
+    inline virtual bool success() = 0;
 };
 
 /**
@@ -123,17 +119,17 @@ public :
     void run(int const niter)
     {
         if (! func_initialized_){
-          // note: this needs to be both here and in one_iteration
-          initialize_func_gradient();
+            // note: this needs to be both here and in one_iteration
+            initialize_func_gradient();
         }
 
         // iterate until the stop criterion is satisfied or maximum number of
         // iterations is reached
         for (int i = 0; i < niter; ++i) {
-          if (stop_criterion_satisfied()) {
-            break;
-          }
-          one_iteration();
+            if (stop_criterion_satisfied()) {
+                break;
+            }
+            one_iteration();
         }
     }
 
@@ -156,47 +152,43 @@ public :
             throw std::invalid_argument("the gradient has the wrong size");
         }
         if (iter_number_ > 0){
-            cout << "warning: setting f and grad after the first iteration.  this is dangerous.\n";
+            std::cout << "warning: setting f and grad after the first iteration.  this is dangerous.\n";
         }
         // copy the function and gradient
         f_ = f;
         g_.assign(grad);
-        /*size_t N = x_.size();
-        for (size_t j2 = 0; j2 < N; ++j2){
-            g_[j2] = grad[j2];
-        }*/
         rms_ = norm(g_) / sqrt(g_.size());
         func_initialized_ = true;
     }
 
-    virtual void reset(pele::Array<double> &x0)
+    inline virtual void reset(pele::Array<double> &x0)
     {
         throw std::runtime_error("GradientOptimizer::reset must be overloaded");
     }
 
     // functions for setting the parameters
-    void set_tol(double tol) { tol_ = tol; }
-    void set_maxstep(double maxstep) { maxstep_ = maxstep; }
-    void set_max_iter(int max_iter) { maxiter_ = max_iter; }
-    void set_iprint(int iprint) { iprint_ = iprint; }
-    void set_verbosity(int verbosity) { verbosity_ = verbosity; }
+    inline void set_tol(double tol) { tol_ = tol; }
+    inline void set_maxstep(double maxstep) { maxstep_ = maxstep; }
+    inline void set_max_iter(int max_iter) { maxiter_ = max_iter; }
+    inline void set_iprint(int iprint) { iprint_ = iprint; }
+    inline void set_verbosity(int verbosity) { verbosity_ = verbosity; }
 
 
     // functions for accessing the status of the optimizer
-    Array<double> get_x() const { return x_.copy(); } //debug
-    Array<double> get_g() const { return g_.copy(); }
-    double get_f() const { return f_; }
-    double get_rms() const { return rms_; }
-    int get_nfev() const { return nfev_; }
-    int get_niter() const { return iter_number_; }
-    int get_maxiter() const { return maxiter_; }
-    double get_tol() const {return tol_;}
-    bool success() { return stop_criterion_satisfied(); }
+    inline Array<double> get_x() const { return x_.copy(); } //debug
+    inline Array<double> get_g() const { return g_.copy(); }
+    inline double get_f() const { return f_; }
+    inline double get_rms() const { return rms_; }
+    inline int get_nfev() const { return nfev_; }
+    inline int get_niter() const { return iter_number_; }
+    inline int get_maxiter() const { return maxiter_; }
+    inline double get_tol() const {return tol_;}
+    inline bool success() { return stop_criterion_satisfied(); }
 
     /**
      * Return true if the termination condition is satisfied, false otherwise
      */
-    bool stop_criterion_satisfied()
+    virtual bool stop_criterion_satisfied()
     {
         if (! func_initialized_) initialize_func_gradient();
         return rms_ <= tol_;
@@ -223,9 +215,8 @@ protected :
     {
         // compute the func and gradient at the current locations
         // and store them
-        size_t N = x_.size();
         compute_func_gradient(x_, f_, g_);
-        rms_ = norm(g_) / sqrt(N);
+        rms_ = norm(g_) / sqrt(x_.size());
         func_initialized_ = true;
     }
 

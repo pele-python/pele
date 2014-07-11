@@ -111,8 +111,6 @@ class TestLBFGS_CPP(unittest.TestCase):
     def test_rel_energy(self):
         self.do_check(_EG(), rel_energy=True)
 
-        
-
 
 class TestLBFGS_CPP_PassGrad(unittest.TestCase):
     def do_check(self, pot):
@@ -137,6 +135,34 @@ class TestLBFGS_CPP_Raises(unittest.TestCase):
             lbfgs = LBFGS_CPP(_xrand, pot)
             lbfgs.run()
 
+
+class TestLBFGS_CPP_LJ(unittest.TestCase):
+    def setUp(self):
+        from pele.potentials import LJ
+        self.x0 = np.zeros(6)
+        self.x0[0] = 2.
+        self.pot = LJ()
+    
+    def test_reset(self):
+        lbfgs1 = LBFGS_CPP(self.x0, self.pot)
+        lbfgs1.run()
+        res1 = lbfgs1.get_result()
+        
+        x2 = self.x0.copy()
+        x2[1] = 2.
+        lbfgs2 = LBFGS_CPP(x2, self.pot)
+        H0 = lbfgs2.get_result()["H0"]
+        lbfgs2.run()
+        lbfgs2.reset(self.x0)
+        lbfgs2.set_H0(H0)
+        lbfgs2.run()
+        res2 = lbfgs2.get_result()
+        
+        self.assertEqual(res1.rms, res2.rms)
+        self.assertEqual(res1.H0, res2.H0)
+        self.assertEqual(res1.nfev, res2.nfev)
+        self.assertEqual(res1.nsteps, res2.nsteps)
+        self.assertTrue(np.all(res1.coords == res2.coords))
 
 if __name__ == "__main__":
     unittest.main()

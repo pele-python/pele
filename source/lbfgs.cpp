@@ -1,6 +1,8 @@
 #include "pele/lbfgs.h"
 #include <memory>
 
+using std::cout;
+
 namespace pele {
 
 LBFGS::LBFGS( std::shared_ptr<pele::BasePotential> potential, const pele::Array<double> x0,
@@ -106,9 +108,7 @@ void LBFGS::compute_lbfgs_step(Array<double> step)
     }
 
     // copy the gradient into step
-    for (size_t j2 = 0; j2 < step.size(); ++j2){
-        step[j2] = g_[j2];
-    }
+    step.assign(g_);
 
     int jmin = std::max(0, k_ - M_);
     int jmax = k_;
@@ -127,9 +127,7 @@ void LBFGS::compute_lbfgs_step(Array<double> step)
     }
 
     // scale the step size by H0
-    for (size_t j2 = 0; j2 < step.size(); ++j2){
-        step[j2] *= H0_;
-    }
+    step *= H0_;
 
     // loop forwards through the memory
     for (int j = jmin; j < jmax; ++j){
@@ -142,10 +140,7 @@ void LBFGS::compute_lbfgs_step(Array<double> step)
     }
 
     // invert the step to point downhill
-    for (size_t j2 = 0; j2 < x_.size(); ++j2){
-        step[j2] *= -1;
-    }
-
+    step *= -1;
 }
 
 double LBFGS::backtracking_linesearch(Array<double> step)
@@ -211,12 +206,24 @@ double LBFGS::backtracking_linesearch(Array<double> step)
         }
     }
 
-    for (size_t i = 0; i < x_.size(); ++i){
-        x_[i] = xnew[i];
-        g_[i] = gnew[i];
-    }
+    x_.assign(xnew);
+    g_.assign(gnew);
     f_ = fnew;
     rms_ = norm(gnew) / sqrt(gnew.size());
     return stepsize * factor;
 }
+
+void LBFGS::reset(pele::Array<double> &x0)
+{
+    if (x0.size() != x_.size()){
+        throw std::invalid_argument("The number of degrees of freedom (x0.size()) cannot change when calling reset()");
+    }
+    k_ = 0;
+    iter_number_ = 0;
+    nfev_ = 0;
+    x_.assign(x0);
+    initialize_func_gradient();
+}
+
+
 }
