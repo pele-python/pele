@@ -215,11 +215,11 @@ class RBPotentialWrapper(potential):
         
     def getEnergy(self, rbcoords):
         coords = self.rbsystem.to_atomistic(rbcoords)
-        return self.pot.getEnergy(coords.flatten())
+        return self.pot.getEnergy(coords.reshape(-1))
     
     def getEnergyGradient(self, rbcoords):
         coords = self.rbsystem.to_atomistic(rbcoords)
-        E, g = self.pot.getEnergyGradient(coords.flatten())
+        E, g = self.pot.getEnergyGradient(coords.reshape(-1))
         return E, self.rbsystem.transform_gradient(rbcoords, g)
     
     

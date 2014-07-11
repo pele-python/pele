@@ -28,7 +28,6 @@ class OTPCluster(RBSystem):
         otp.add_atom("O", np.array([-cos( 7.* pi/24.),  1./3. * sin( 7.*pi/24), 0.0]), 1.)
         otp.finalize_setup()
         return otp
-    
         
     def setup_aatopology(self):
         """this sets up the topology for the whole rigid body system"""
@@ -77,6 +76,20 @@ class OTPCluster(RBSystem):
             self.pot = RBPotentialWrapper(self.aasystem, cartesian_potential)
             return self.pot
 
+def test_bh():
+    nmol = 3
+    system = OTPCluster(nmol)
+    db = system.create_database()
+    bh = system.get_basinhopping(db)
+    bh.run(10)
+    m1 = db.minima()[0]
+    print m1.coords
+    for x in m1.coords:
+        print "%.12f," % x,
+    print ""
+    print m1.energy
+    
+
 def test_gui():
     from pele.gui import run_gui
     nmol = 7
@@ -85,4 +98,5 @@ def test_gui():
     run_gui(system)
     
 if __name__ == "__main__":
-    test_gui()
+#     test_gui()
+    test_bh()
