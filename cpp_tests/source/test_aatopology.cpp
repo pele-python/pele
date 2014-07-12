@@ -232,7 +232,8 @@ TEST_F(AATopologyTest, TransformGradient_Works)
     auto lj = pele::LJ(4., 4.);
     Array<double> g_atom(rbtopology.natoms() * 3);
     lj.get_energy_gradient(x, g_atom);
-    auto grb = rbtopology.transform_gradient(x0, g_atom);
+    Array<double> grb(x0.size());
+    rbtopology.transform_gradient(x0, g_atom, grb);
 
     ASSERT_EQ(grb.size(), 18u);
     ASSERT_NEAR(grb[0], -1.45358337e-03, 1e-8);
@@ -242,5 +243,26 @@ TEST_F(AATopologyTest, TransformGradient_Works)
     ASSERT_NEAR(grb[15], -2.32088836e-04, 1e-8);
     ASSERT_NEAR(grb[17], 6.21604179e-05, 1e-8);
 
+}
+
+TEST_F(AATopologyTest, RBPotential_Works)
+{
+    pele::RBPotentialWrapper rbpot(std::make_shared<pele::LJ>(4,4));
+    for (size_t i=0; i<nrigid; ++i){
+        rbpot.add_site(make_otp_x());
+    }
+    double e = rbpot.get_energy(x0);
+    ASSERT_NEAR(e, -2.55718209697, 1e-5);
+
+    Array<double> grad(x0.size());
+    double eg = rbpot.get_energy_gradient(x0, grad);
+    ASSERT_DOUBLE_EQ(e, eg);
+
+    Array<double> ngrad(x0.size());
+    rbpot.numerical_gradient(x0, ngrad);
+
+    for (size_t i=0; i<grad.size(); ++i) {
+        ASSERT_NEAR(grad[i], ngrad[i], 1e-5);
+    }
 }
 

@@ -103,6 +103,10 @@ class TestOTP(unittest.TestCase):
         grb = self.topology.transform_gradient(x0, g);
         print "transformed gradient"
         print grb
+        
+        print "rbpotential"
+        rbpot = RBPotentialWrapper(self.topology, lj);
+        print rbpot.getEnergy(x0);
 
 
 if __name__ == "__main__":

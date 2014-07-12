@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include "pele/array.h"
+#include "pele/base_potential.h"
 
 namespace pele{
 
@@ -514,7 +515,7 @@ public:
     /**
      * convert atomistic gradient into gradient in rigid body coordinates
      */
-    pele::Array<double> transform_gradient(pele::Array<double> rbcoords, pele::Array<double> grad)
+    void transform_gradient(pele::Array<double> rbcoords, pele::Array<double> grad, pele::Array<double> rbgrad)
     {
         if (_natoms == 0) {
             finalize();
@@ -525,10 +526,13 @@ public:
         if (grad.size() != _natoms * 3) {
             throw std::invalid_argument("grad has the wrong size");
         }
+        if (rbgrad.size() != rbcoords.size()) {
+            throw std::invalid_argument("rbgrad has the wrong size");
+        }
 
         CoordsAdaptor ca(nrigid(), 0, rbcoords);
         pele::Array<double> coords_rot(ca.get_rb_rotations());
-        pele::Array<double> rbgrad(rbcoords.size());
+//        pele::Array<double> rbgrad(rbcoords.size());
         CoordsAdaptor rbgrad_ca(nrigid(), 0, rbgrad);
         HackyMatrix<double> g_com(rbgrad_ca.get_rb_positions(), 3);
         HackyMatrix<double> g_rot(rbgrad_ca.get_rb_rotations(), 3);
@@ -544,10 +548,40 @@ public:
             _sites[isite].transform_grad(p, g_site, g_com_site, g_rot_site);
             istart += site_ndof;
         }
-        return rbgrad;
     }
 };
 
+class RBPotentialWrapper : public BasePotential {
+    std::shared_ptr<BasePotential> potential_;
+    RBTopology topology_;
+public:
+
+    RBPotentialWrapper(std::shared_ptr<BasePotential> potential)
+        : potential_(potential)
+    {}
+
+    inline void add_site(pele::Array<double> atom_positions)
+    {
+        topology_.add_site(atom_positions);
+    }
+
+    inline double get_energy(pele::Array<double> rbcoords)
+    {
+        auto x = topology_.to_atomistic(rbcoords);
+        return potential_->get_energy(x);
+    }
+
+    inline double get_energy_gradient(pele::Array<double> rbcoords, pele::Array<double> rbgrad)
+    {
+        auto x = topology_.to_atomistic(rbcoords);
+        pele::Array<double> grad_atomistic(topology_.natoms() * 3);
+        double e = potential_->get_energy_gradient(x, grad_atomistic);
+        topology_.transform_gradient(rbcoords, grad_atomistic, rbgrad);
+        return e;
+    }
+
+
+};
 
 }
 
