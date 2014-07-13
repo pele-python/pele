@@ -1,10 +1,14 @@
 #include <gtest/gtest.h>
+#include <limits>
 
 #include "pele/aatopology.h"
 #include "pele/lj.h"
 
 using pele::Array;
 using pele::CoordsAdaptor;
+
+static double const EPS = std::numeric_limits<double>::min();
+#define EXPECT_NEAR_RELATIVE(A, B, T)  ASSERT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
 
 
 TEST(AA2RotMat, Works)
@@ -67,6 +71,96 @@ TEST(RotMatDerivs, Works)
     ASSERT_NEAR(drm3(2,0), 0.23854341, 1e-5);
     ASSERT_NEAR(drm3(2,2), 0.02231376, 1e-5);
 }
+
+TEST(RotMatDerivsSmallTheta, Works)
+{
+    Array<double> p(3);
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm(p) * 1e7;
+    pele::HackyMatrix<double> mx(3,3,1.);
+    pele::HackyMatrix<double> drm1(3,3,0.);
+    pele::HackyMatrix<double> drm2(3,3,0.);
+    pele::HackyMatrix<double> drm3(3,3,0.);
+    pele::rot_mat_derivatives_small_theta(p, mx, drm1, drm2, drm3, true);
+
+    // mx
+    EXPECT_NEAR_RELATIVE(mx(0,0), 1., 1e-5);
+    EXPECT_NEAR_RELATIVE(mx(1,0), 8.01783726e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(mx(2,0), -5.34522484e-08, 1e-4);
+    EXPECT_NEAR_RELATIVE(mx(0,1), -8.01783726e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(mx(1,1), 1, 1e-5);
+    EXPECT_NEAR_RELATIVE(mx(2,1), 2.67261242e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(mx(0,2), 5.34522484e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(mx(1,2), -2.67261242e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(mx(2,2), 1, 1e-5);
+
+    // drm1
+    EXPECT_NEAR_RELATIVE(drm1(0,0), 0, 1e-5);
+    EXPECT_NEAR_RELATIVE(drm1(0,2), 4.00891863e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(drm1(1,1), -2.67261242e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(drm1(2,0), 4.00891863e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(drm1(2,2), -2.67261242e-08, 1e-5);
+
+    // drm2
+    EXPECT_NEAR_RELATIVE(drm2(0,0), -5.34522484e-08, 1e-5);
+    ASSERT_NEAR(drm2(0,2), 1, 1e-5);
+    ASSERT_NEAR(drm2(1,1), 0., 1e-5);
+    ASSERT_NEAR(drm2(2,0), -1, 1e-5);
+    EXPECT_NEAR_RELATIVE(drm2(2,2), -5.34522484e-08, 1e-5);
+
+    // drm3
+    EXPECT_NEAR_RELATIVE(drm3(0,0), -8.01783726e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(drm3(0,2), 1.33630621e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(drm3(1,1), -8.01783726e-08, 1e-5);
+    EXPECT_NEAR_RELATIVE(drm3(2,0), 1.33630621e-08, 1e-5);
+    ASSERT_NEAR(drm3(2,2), 0., 1e-5);
+}
+
+TEST(RotMatDerivs, SmallTheta_Works)
+{
+    Array<double> p(3);
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm(p) * 1e7;
+    pele::HackyMatrix<double> mx(3,3,1.);
+    pele::HackyMatrix<double> drm1(3,3,0.);
+    pele::HackyMatrix<double> drm2(3,3,0.);
+    pele::HackyMatrix<double> drm3(3,3,0.);
+
+    pele::HackyMatrix<double> mx_2(3,3,1.);
+    pele::HackyMatrix<double> drm1_2(3,3,0.);
+    pele::HackyMatrix<double> drm2_2(3,3,0.);
+    pele::HackyMatrix<double> drm3_2(3,3,0.);
+
+    pele::rot_mat_derivatives(p, mx, drm1, drm2, drm3);
+    pele::rot_mat_derivatives_small_theta(p, mx_2, drm1_2, drm2_2, drm3_2, true);
+
+    for (size_t i=0; i<9; ++i) {
+        ASSERT_DOUBLE_EQ(mx[i], mx_2[i]);
+        ASSERT_DOUBLE_EQ(drm1[i], drm1_2[i]);
+        ASSERT_DOUBLE_EQ(drm2[i], drm2_2[i]);
+        ASSERT_DOUBLE_EQ(drm3[i], drm3_2[i]);
+    }
+}
+
+TEST(RotMat, SmallTheta_Works)
+{
+    Array<double> p(3);
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm(p) * 1e7;
+
+    auto mx = pele::aa_to_rot_mat(p);
+
+    pele::HackyMatrix<double> mx_2(3,3,1.);
+    pele::HackyMatrix<double> drm1_2(3,3,0.);
+    pele::HackyMatrix<double> drm2_2(3,3,0.);
+    pele::HackyMatrix<double> drm3_2(3,3,0.);
+    pele::rot_mat_derivatives_small_theta(p, mx_2, drm1_2, drm2_2, drm3_2, false);
+
+    for (size_t i=0; i<9; ++i) {
+        ASSERT_DOUBLE_EQ(mx[i], mx_2[i]);
+    }
+}
+
 
 
 class AATopologyTest :  public ::testing::Test {

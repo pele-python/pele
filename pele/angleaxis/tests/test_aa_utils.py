@@ -50,6 +50,29 @@ class TestRmDrvt(unittest.TestCase):
         self.assert_array_almost_equal(drm2, drm2p, places=4)
         self.assert_array_almost_equal(drm3, drm3p, places=4)
 
+
+    def test_rot_mat1(self):
+        p = np.array([1., 2, 3]);
+        p /= np.linalg.norm(p);
+        print "test_rot_mat1"
+        print p;
+        mx, r1, r2, r3 = _rot_mat_derivative(p, with_grad=True)
+        print mx
+        print r1
+        print r2
+        print r3
+
+    def test_rot_mat_small_theta(self):
+        p = np.array([1., 2, 3]);
+        p /= np.linalg.norm(p) * 1e7;
+        print "test_rot_mat1 small_theta"
+        print p;
+        mx, r1, r2, r3 = _rot_mat_derivative(p, with_grad=True)
+        print mx
+        print r1
+        print r2
+        print r3
+
 class TestSiteDistGrad(unittest.TestCase):
     def assert_array_almost_equal(self, v1, v2, **kwargs):
         for x1, x2 in izip(v1.reshape(-1), v2.reshape(-1)):
@@ -90,16 +113,6 @@ class TestSiteDistGrad(unittest.TestCase):
         dist2 = _sitedist(drij, p1, p2, S, W, cog)
         self.assertAlmostEqual(dist, dist2, places=4)
 
-    def test_rot_mat1(self):
-        p = np.array([1., 2, 3]);
-        p /= np.linalg.norm(p);
-        print "test_rot_mat1"
-        print p;
-        mx, r1, r2, r3 = _rot_mat_derivative(p, with_grad=True)
-        print mx
-        print r1
-        print r2
-        print r3
 
 if __name__ == "__main__":
     unittest.main()

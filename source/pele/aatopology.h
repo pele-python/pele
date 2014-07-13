@@ -103,6 +103,78 @@ pele::Array<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, pele::Array<dtype
     return C;
 }
 
+/**
+ * compute the rotation matrix and it's derivatives from an angle axis vector if the rotation angle is very small
+ */
+void rot_mat_derivatives_small_theta(
+        pele::Array<double> const p,
+        HackyMatrix<double> rmat,
+        HackyMatrix<double> drm1,
+        HackyMatrix<double> drm2,
+        HackyMatrix<double> drm3,
+        bool with_grad)
+{
+    double theta2 = dot(p, p);
+    if (theta2 > 1e-2) {
+        throw std::invalid_argument("theta must be small");
+    }
+    // Execute if the angle of rotation is zero
+    // In this case the rotation matrix is the identity matrix
+    rmat.assign(0);
+    for (size_t i = 0; i<3; ++i) rmat(i,i) = 1; // identity matrix
+
+
+    // vr274> first order corrections to rotation matrix
+    rmat(0,1) = -p[2];
+    rmat(1,0) = p[2];
+    rmat(0,2) = p[1];
+    rmat(2,0) = -p[1];
+    rmat(1,2) = -p[0];
+    rmat(2,1) = p[0];
+
+    // If derivatives do not need to found, we're finished
+    if (not with_grad) {
+        return;
+    }
+
+    // hk286 - now up to the linear order in theta
+    drm1.assign(0);
+    drm1(0,0)    = 0.0;
+    drm1(0,1)    = p[1];
+    drm1(0,2)    = p[2];
+    drm1(1,0)    = p[1];
+    drm1(1,1)    = -2.0*p[0];
+    drm1(1,2)    = -2.0;
+    drm1(2,0)    = p[2];
+    drm1(2,1)    = 2.0;
+    drm1(2,2)    = -2.0*p[0];
+    drm1 *= 0.5;
+
+    drm2.assign(0);
+    drm2(0,0)    = -2.0*p[1];
+    drm2(0,1)    = p[0];
+    drm2(0,2)    = 2.0;
+    drm2(1,0)    = p[0];
+    drm2(1,1)    = 0.0;
+    drm2(1,2)    = p[2];
+    drm2(2,0)    = -2.0;
+    drm2(2,1)    = p[2];
+    drm2(2,2)    = -2.0*p[1];
+    drm2 *= 0.5;
+
+    drm3.assign(0);
+    drm3(0,0)    = -2.0*p[2];
+    drm3(0,1)    = -2.0;
+    drm3(0,2)    = p[0];
+    drm3(1,0)    = 2.0;
+    drm3(1,1)    = -2.0*p[2];
+    drm3(1,2)    = p[1];
+    drm3(2,0)    = p[0];
+    drm3(2,1)    = p[1];
+    drm3(2,2)    = 0.0;
+    drm3 *= 0.5;
+}
+
 
 /**
  * make a rotation matrix from an angle axis
@@ -112,8 +184,10 @@ pele::HackyMatrix<double> aa_to_rot_mat(pele::Array<double> const p)
 
     double theta2 = pele::dot(p,p);
     if (theta2 < 1e-12) {
-        std::cerr << "warning, we should use _rot_mat_derivative_small_theta, but it's not implemented yet\n";
-//        return _rot_mat_derivative_small_theta(p, with_grad)
+        pele::HackyMatrix<double> rmat(3,3);
+        pele::HackyMatrix<double> temp(3,3);
+        rot_mat_derivatives_small_theta(p, rmat, temp, temp, temp, false);
+        return rmat;
     }
     // Execute for the general case, where THETA dos not equal zero
     // Find values of THETA, CT, ST and THETA3
@@ -176,8 +250,7 @@ void rot_mat_derivatives(
 
     double theta2 = pele::dot(p,p);
     if (theta2 < 1e-12) {
-        std::cerr << "warning, we should use _rot_mat_derivative_small_theta, but it's not implemented yet\n";
-//        return _rot_mat_derivative_small_theta(p, with_grad)
+        return rot_mat_derivatives_small_theta(p, rmat, drm1, drm2, drm3, true);
     }
     // Execute for the general case, where THETA dos not equal zero
     // Find values of THETA, CT, ST and THETA3
