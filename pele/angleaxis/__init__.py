@@ -21,7 +21,9 @@ The basis of each Angle Axis system is a topology
 
 # dirty workaround. To not break the scripts import CoordsAdapter without moving it
 from pele.utils.rbtools import CoordsAdapter
-from aatopology import *
-from rigidbody import *
-from aamindist import *
-from aasystem import *
+from aatopology import AASiteType, AATopology, interpolate_angleaxis, TakestepAA
+from rigidbody import RigidFragment, RBTopology
+from aamindist import TransformAngleAxisCluster, MeasureAngleAxisCluster, MeasureRigidBodyCluster, ExactMatchAACluster, MinPermDistAACluster
+from aasystem import AASystem, RBSystem
+from _cpp_aa import RBPotentialWrapper
+

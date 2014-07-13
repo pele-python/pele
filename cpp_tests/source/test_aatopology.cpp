@@ -230,7 +230,7 @@ TEST_F(AATopologyTest, TransformGradient_Works)
 {
     auto x = rbtopology.to_atomistic(x0);
     auto lj = pele::LJ(4., 4.);
-    Array<double> g_atom(rbtopology.natoms() * 3);
+    Array<double> g_atom(rbtopology.natoms_total() * 3);
     lj.get_energy_gradient(x, g_atom);
     Array<double> grb(x0.size());
     rbtopology.transform_gradient(x0, g_atom, grb);

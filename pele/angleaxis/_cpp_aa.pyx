@@ -35,4 +35,13 @@ cdef class _cdef_RBPotentialWrapper(BasePotential):
             rbpot.add_site(_pele.Array[double] (<double *> apos.data, apos.size) )
         
 class RBPotentialWrapper(_cdef_RBPotentialWrapper):
-    pass
+    """c++ potential wrapper for Rigid Body potentials
+    
+    Parameters
+    -----------
+    topology : class derived from RBTopology
+        this defines all the information about the topology of the rigid body system,
+        in particular how to convert from rigid body coords to atomistic coords and back.
+    atomistic_potential : pele potential
+        this class will compute the energy and gradient in atomistic coordinates
+    """

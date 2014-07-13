@@ -1,3 +1,11 @@
+/**
+ * This is a partial c++ implementation of the rigid body potential and coordinate system.
+ * This primarily just implements the functions necessary for potential calls.
+ *
+ *   - convert from rigid body coords to atomistic coords
+ *   - convert an atomistic gradient into a gradient in the rb coordinate system.
+ *
+ */
 #ifndef _PELE_AATOPOLOGY_H_
 #define _PELE_AATOPOLOGY_H_
 
@@ -14,6 +22,10 @@ namespace pele{
 /**
  * this is a truly hacky implementation of a matrix.  please don't use it unless
  * you're being very careful
+ *
+ * it is a simply wrapper for pele::Array, so a pele array can be wrapped to
+ * act as a matrix temporarily.  The idea is to redo somthing like the reshape() function
+ * in numpy.
  */
 template<class dtype>
 class HackyMatrix : public pele::Array<dtype> {
@@ -25,7 +37,7 @@ public:
     {}
 
     /**
-     * wrap an array
+     * wrap a pele::Array
      */
     HackyMatrix(pele::Array<double> v, size_t dim1)
         : pele::Array<dtype>(v),
@@ -35,13 +47,6 @@ public:
             throw std::invalid_argument("v.size() is not divisible by dim1");
         }
     }
-//    void set_dim1(size_t dim1)
-//    {
-//        if (this->size() % dim1 != 0) {
-//            throw std::invalid_argument("size() is not divisible by dim1");
-//        }
-//        _dim1 = dim1;
-//    }
 
     inline dtype const operator()(size_t i, size_t j) const
     {
@@ -198,10 +203,10 @@ void rot_mat_derivatives(
     e(2,1)  = -e(1,2);
     auto esq     = hacky_mat_mul(e, e);
 
+    // compute the rotation matrix
     // RM is calculated from Rodrigues' rotation formula [equation [1]
     // in the paper]
     // rm  = np.eye(3) + [1. - ct] * esq + st * e
-//    HackyMatrix<double> rmat(3, 3, 0);
     rmat.assign(0.);
     for (size_t i = 0; i < 3; ++i) rmat(i,i) = 1; // identiy matrix
     for (size_t i = 0; i < 3; ++i) {
@@ -234,7 +239,7 @@ void rot_mat_derivatives(
     de3(2,0) = -de3(0,2);
     de3(2,1) = -de3(1,2);
 
-//    HackyMatrix<double> drm1(3,3,0.);
+    // compute the x derivative of the rotation matrix
     // drm1 = (st*pn[0]*esq + (1.-ct)*(de1.dot(e) + e.dot(de1))
     //         + ct*pn[0]*e + st*de1)
     auto de_e = hacky_mat_mul(de1, e);
@@ -249,7 +254,7 @@ void rot_mat_derivatives(
         }
     }
 
-//    HackyMatrix<double> drm2(3,3,0.);
+    // compute the y derivative of the rotation matrix
     de_e = hacky_mat_mul(de2, e);
     ede_ = hacky_mat_mul(e, de2);
     for (size_t i = 0; i < 3; ++i) {
@@ -262,7 +267,7 @@ void rot_mat_derivatives(
         }
     }
 
-//    HackyMatrix<double> drm3(3,3,0.);
+    // compute the z derivative of the rotation matrix
     de_e = hacky_mat_mul(de3, e);
     ede_ = hacky_mat_mul(e, de3);
     for (size_t i = 0; i < 3; ++i) {
@@ -292,8 +297,8 @@ void rot_mat_derivatives(
  * ...      -- end                 : the last nlattice spaces are for the lattice degrees of freedom
  */
 class CoordsAdaptor {
-    size_t _nrigid;
-    size_t _natoms;
+    size_t _nrigid;  /** the number of rigid bodies */
+    size_t _natoms;  /** the number of non-rigid point particles */
     pele::Array<double> _coords;
     static const size_t _ndim = 3;
 
@@ -340,6 +345,9 @@ public:
 
 };
 
+/**
+ * represent a single rigid body
+ */
 class RigidFragment {
     static const size_t _ndim = 3;
     pele::Array<double> _atom_positions;
@@ -363,6 +371,9 @@ public:
 
     size_t natoms() const { return _natoms; }
 
+    /**
+     * convert a center of mass and a angle axis rotation to a set of atomistic coordinates
+     */
     pele::Array<double> to_atomistic(pele::Array<double> const com, pele::Array<double> const p)
     {
         assert(com.size() == _ndim);
@@ -389,7 +400,7 @@ public:
     }
 
     /**
-     * transform atomistic gradient into a gradient on the
+     * transform an atomistic gradient into a gradient in the
      * rigid body coordinates
      */
     void transform_grad(
@@ -443,15 +454,18 @@ public:
     }
 };
 
+/**
+ * represent a collection of rigid bodies
+ */
 class RBTopology {
     std::vector<RigidFragment> _sites;
-    size_t _natoms;
+    size_t _natoms_total;
 //    bool _finalized;
 //    std::vector<std::vector<double> > _atom_indices;
 
 public:
     RBTopology()
-        : _natoms(0)//, _finalized(false)
+        : _natoms_total(0)//, _finalized(false)
     {}
 
     void add_site(Array<double> atom_positions)
@@ -461,22 +475,28 @@ public:
 
     void finalize()
     {
-        _natoms = 0;
+        _natoms_total = 0;
         for (auto & rf : _sites) {
 //            _atom_indices.push_back(std::vector<double>(rf.natoms()));
 //            for (size_t i = 0; i<rf.natoms(); ++i) {
 //                _atom_indices.back()[i] = _natoms + i;
 //            }
-            _natoms += rf.natoms();
+            _natoms_total += rf.natoms();
         }
     }
 
+    /**
+     * number of rigid bodies
+     */
     size_t nrigid() const { return _sites.size(); }
-    size_t natoms() const { return _natoms; }
+    /**
+     * return the total number of atoms in the atomistic representation
+     */
+    size_t natoms_total() const { return _natoms_total; }
 
     Array<double> to_atomistic(Array<double> rbcoords)
     {
-        if (_natoms == 0) {
+        if (natoms_total() == 0) {
             finalize();
         }
         if ( rbcoords.size() != nrigid() * 6 ) {
@@ -487,7 +507,7 @@ public:
         CoordsAdaptor ca(nrigid, 0, rbcoords);
         auto rb_pos = ca.get_rb_positions();
         auto rb_rot = ca.get_rb_rotations();
-        Array<double> atomistic(3*_natoms);
+        Array<double> atomistic(3 * natoms_total());
         HackyMatrix<double> atomistic_mat(atomistic, 3);
         size_t istart = 0;
         for (size_t isite=0; isite<nrigid; ++isite) {
@@ -508,7 +528,7 @@ public:
 
             istart += site_atom_positions.size();
         }
-        assert(istart == _natoms * 3);
+        assert(istart == natoms_total() * 3);
         return atomistic;
     }
 
@@ -517,13 +537,13 @@ public:
      */
     void transform_gradient(pele::Array<double> rbcoords, pele::Array<double> grad, pele::Array<double> rbgrad)
     {
-        if (_natoms == 0) {
+        if (natoms_total() == 0) {
             finalize();
         }
         if ( rbcoords.size() != nrigid() * 6 ) {
             throw std::invalid_argument("rbcoords has the wrong size");
         }
-        if (grad.size() != _natoms * 3) {
+        if (grad.size() != natoms_total() * 3) {
             throw std::invalid_argument("grad has the wrong size");
         }
         if (rbgrad.size() != rbcoords.size()) {
@@ -574,7 +594,7 @@ public:
     inline double get_energy_gradient(pele::Array<double> rbcoords, pele::Array<double> rbgrad)
     {
         auto x = topology_.to_atomistic(rbcoords);
-        pele::Array<double> grad_atomistic(topology_.natoms() * 3);
+        pele::Array<double> grad_atomistic(topology_.natoms_total() * 3);
         double e = potential_->get_energy_gradient(x, grad_atomistic);
         topology_.transform_gradient(rbcoords, grad_atomistic, rbgrad);
         return e;
