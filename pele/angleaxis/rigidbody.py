@@ -170,7 +170,9 @@ class RBTopology(aatopology.AATopology):
         aatopology.AATopology.add_sites(self, sites)
         for site in sites:
             nsite_atoms = len(site.atom_positions)
-            if not hasattr(site, "atom_indices"):
+            if hasattr(site, "atom_indices"):
+                print "warning: the c++ RBPotentialWrapper does not support user defined atom_indices.  The potential may be wrong"
+            else:
                 site.atom_indices = range(self.natoms, self.natoms+nsite_atoms)
             self.natoms += nsite_atoms
             

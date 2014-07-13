@@ -46,6 +46,8 @@ try:
     WindowsError
 except NameError:
     WindowsError = None
+    
+_extra_flags = []
 
 #
 # Rules
@@ -63,9 +65,14 @@ def process_pyx(fromfile, tofile):
     flags = ['--fast-fail']
     if tofile.endswith('.cxx'):
         flags += ['--cplus']
+        
+    if _extra_flags:
+        flags += _extra_flags
 
     try:
         try:
+            print("in dir " + os.getcwd())
+            print(" ".join(['cython'] + flags + ["-o", tofile, fromfile]))
             r = subprocess.call(['cython'] + flags + ["-o", tofile, fromfile])
             if r != 0:
                 raise Exception('Cython failed')
@@ -182,8 +189,12 @@ def main():
         root_dir = sys.argv[1]
     except IndexError:
         root_dir = DEFAULT_ROOT
-    find_process_files(root_dir)
 
+    if len(sys.argv) > 2:
+        global _extra_flags
+        for f in sys.argv[2:]:
+            _extra_flags.append(f)
+    find_process_files(root_dir)
 
 if __name__ == '__main__':
     main()

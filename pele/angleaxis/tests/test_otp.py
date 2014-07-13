@@ -108,6 +108,28 @@ class TestOTP(unittest.TestCase):
         rbpot = RBPotentialWrapper(self.topology, lj);
         print rbpot.getEnergy(x0);
 
+class TestCppRBPotentialWrapper(TestOTP):
+    def test_pot_wrapper(self):
+        from pele.angleaxis import _cpp_aa
+        from pele.potentials import LJ
+        rbpot_cpp = _cpp_aa.RBPotentialWrapper(self.topology, LJ())
+        rbpot = RBPotentialWrapper(self.topology, LJ())
+        
+        self.assertAlmostEqual(rbpot_cpp.getEnergy(self.x0), 
+                               rbpot.getEnergy(self.x0), 4)
+        
+        e1, grad1 = rbpot_cpp.getEnergyGradient(self.x0);
+        e2, grad2 = rbpot.getEnergyGradient(self.x0);
+        self.assertAlmostEqual(e1, e2, 4)
+        for g1, g2 in zip(grad1, grad2):
+            self.assertAlmostEqual(g1, g2, 3) 
+#         print "energy cpp"
+#         print e1, e2
+#         print grad1
+#         print grad2
+        
+        
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -12,13 +12,14 @@ import numpy as np
 numpy_lib = os.path.split(np.__file__)[0] 
 numpy_include = os.path.join(numpy_lib, 'core/include') 
 
-
+# need to pass cython the include directory so it can find the .pyx files
+cython_flags=["-I"] + [os.path.abspath("pele/potentials")] + ["-v"]
 def generate_cython():
     cwd = os.path.abspath(os.path.dirname(__file__))
     print("Cythonizing sources")
     p = subprocess.call([sys.executable,
                           os.path.join(cwd, 'cythonize.py'),
-                          'pele'],
+                          'pele'] + cython_flags,
                          cwd=cwd)
     if p != 0:
         raise RuntimeError("Running cythonize failed!")
@@ -224,7 +225,14 @@ cxx_modules = [
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
+    Extension("pele.angleaxis._cpp_aa", 
+              ["pele/angleaxis/_cpp_aa.cxx"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
                ]
+
 
 cxx_modules.append(
     Extension("pele.rates._ngt_cpp", 
