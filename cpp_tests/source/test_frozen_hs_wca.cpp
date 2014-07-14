@@ -18,7 +18,11 @@ using pele::HS_WCA2DFrozen;
 using pele::HS_WCAPeriodic2D;
 using pele::HS_WCAPeriodic2DFrozen;
 
-#define EXPECT_NEAR_RELATIVE(A, B, T)  EXPECT_NEAR(fabs(A)/(fabs(A)+fabs(B)+1), fabs(B)/(fabs(A)+fabs(B)+1), T)
+static double const EPS = std::numeric_limits<double>::min();
+#define EXPECT_NEAR_RELATIVE(A, B, T)  EXPECT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
+
+//#define EXPECT_NEAR_RELATIVE(A, B, T)  EXPECT_NEAR(fabs(A)/(fabs(A)+fabs(B)+1), fabs(B)/(fabs(A)+fabs(B)+1), T)
+
 
 class FrozenHS_WCATest: public ::testing::Test{
 public:
