@@ -68,9 +68,9 @@ namespace pele {
      * We now combine the components (interaction, looping method, distance
      * function) into defined classes which is the c++ potential class
      */
-    class MyPot : public SimplePairwisePotential< mypot_interaction, cartesian_distance > {
+    class MyPot : public pele::SimplePairwisePotential<mypot_interaction, cartesian_distance<3> > {
         public:
             MyPot(double sig, double eps)
-                : SimplePairwisePotential< mypot_interaction, cartesian_distance > ( std::make_shared<mypot_interaction>(sig, eps)) {}
+                : SimplePairwisePotential<mypot_interaction, cartesian_distance<3> > (std::make_shared<mypot_interaction>(sig, eps)) {}
     };
 }
