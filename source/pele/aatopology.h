@@ -54,7 +54,7 @@ public:
         }
     }
 
-    inline dtype const operator()(size_t i, size_t j) const
+    inline dtype const & operator()(size_t i, size_t j) const
     {
         return this->operator[](i * _dim1 + j);
     }

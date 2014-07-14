@@ -71,7 +71,7 @@ def process_pyx(fromfile, tofile):
 
     try:
         try:
-            print("in dir " + os.getcwd())
+#            print("in dir " + os.getcwd())
             print(" ".join(['cython'] + flags + ["-o", tofile, fromfile]))
             r = subprocess.call(['cython'] + flags + ["-o", tofile, fromfile])
             if r != 0:
