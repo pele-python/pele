@@ -5,6 +5,11 @@
  *   - convert from rigid body coords to atomistic coords
  *   - convert an atomistic gradient into a gradient in the rb coordinate system.
  *
+ * profiling indicates that somewhere north of %20 of the time is spend dealing
+ * with dynamically allocated memory (HackyMatrix and Array).  It seems like it
+ * would be worth it to implement fixed size arrays and matrices, a la
+ * https://code.google.com/p/votca/source/browse/include/votca/tools/vec.h?repo=tools
+ * https://code.google.com/p/votca/source/browse/include/votca/tools/matrix.h?repo=tools
  */
 #ifndef _PELE_AATOPOLOGY_H_
 #define _PELE_AATOPOLOGY_H_
