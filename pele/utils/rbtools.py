@@ -51,7 +51,7 @@ class CoordsAdapter(object):
     def __init__(self, nrigid=None, natoms=None, nlattice=0, coords=None):
         ''' initialize the coorinate wrapper
         
-        Initializes the coordinate wrapper. The coorinates array can be
+        Initializes the coordinate wrapper. The coordinates array can be
         either specified directly in the constructor or later changed
         via updateCoords.
         

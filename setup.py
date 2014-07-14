@@ -12,13 +12,14 @@ import numpy as np
 numpy_lib = os.path.split(np.__file__)[0] 
 numpy_include = os.path.join(numpy_lib, 'core/include') 
 
-
+# need to pass cython the include directory so it can find the .pyx files
+cython_flags=["-I"] + [os.path.abspath("pele/potentials")] + ["-v"]
 def generate_cython():
     cwd = os.path.abspath(os.path.dirname(__file__))
     print("Cythonizing sources")
     p = subprocess.call([sys.executable,
                           os.path.join(cwd, 'cythonize.py'),
-                          'pele'],
+                          'pele'] + cython_flags,
                          cwd=cwd)
     if p != 0:
         raise RuntimeError("Running cythonize failed!")
@@ -55,7 +56,6 @@ fmodules.add_module("pele/potentials/fortran/AT.f90")
 fmodules.add_module("pele/potentials/fortran/ljpshiftfort.f90")
 fmodules.add_module("pele/potentials/fortran/lj.f90")
 fmodules.add_module("pele/potentials/fortran/ljcut.f90")
-fmodules.add_module("pele/potentials/fortran/rmdrvt.f90")
 fmodules.add_module("pele/potentials/fortran/soft_sphere_pot.f90")
 #fmodules.add_module("pele/potentials/fortran/maxneib_lj.f90")
 #fmodules.add_module("pele/potentials/fortran/maxneib_blj.f90")
@@ -225,7 +225,14 @@ cxx_modules = [
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
+    Extension("pele.angleaxis._cpp_aa", 
+              ["pele/angleaxis/_cpp_aa.cxx", "source/aatopology.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
                ]
+
 
 cxx_modules.append(
     Extension("pele.rates._ngt_cpp", 
