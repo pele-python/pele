@@ -13,8 +13,8 @@ cimport numpy as np
 from pele.potentials import BasePotential
 
 
-#cdef extern from "_mypotential.c":
-cdef extern double mypotential(double *x, int N, double *grad, double eps, double sig)
+cdef extern from "_mypotential.h":
+    double mypotential(double *x, int N, double *grad, double eps, double sig)
 
 
 class MyPotC(BasePotential):

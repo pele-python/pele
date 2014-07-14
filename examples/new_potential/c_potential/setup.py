@@ -9,7 +9,7 @@ numpy_include = os.path.join(numpy_lib, 'core/include')
 
 setup(ext_modules=[
     Extension("mypotential", 
-              ["_mypotential.c", "mypotential.c"],
+              ["_mypotential.h", "mypotential.c"],
               ),
     ]
     )

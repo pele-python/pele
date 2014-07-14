@@ -1,3 +1,5 @@
+#ifndef _MYPOTENTIAL_H_
+#define _MYPOTENTIAL_H_
 #include <math.h>
 #include <stdio.h>
 
@@ -42,3 +44,4 @@ double mypotential(double *x, int N, double *grad, double eps, double sig)
   //printf("exiting c mypotential %g\n", energy);
   return energy;
 }
+#endif
