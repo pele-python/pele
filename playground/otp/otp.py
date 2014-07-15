@@ -77,11 +77,12 @@ class OTPCluster(RBSystem):
             return self.pot
 
 def test_bh():
-    nmol = 3
+    np.random.seed(0)
+    nmol = 30
     system = OTPCluster(nmol)
     db = system.create_database()
     bh = system.get_basinhopping(db)
-    bh.run(10)
+    bh.run(100)
     m1 = db.minima()[0]
     print m1.coords
     for x in m1.coords:
@@ -98,5 +99,5 @@ def test_gui():
     run_gui(system)
     
 if __name__ == "__main__":
-#     test_gui()
+#    test_gui()
     test_bh()

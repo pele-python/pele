@@ -30,4 +30,4 @@ cdef class MyPotCpp(BasePotential):
     """define the python interface to the c++ MyPot implementation
     """
     def __cinit__(self, natoms, sig=1.0, eps=1.0):
-        self.thisptr = <_pele.cBasePotential*> new cMyPot(sig, eps)
+        self.thisptr = _pele.shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cMyPot(sig, eps))

@@ -1,5 +1,5 @@
 from pele.utils.rbtools import CoordsAdapter
-from pele.potentials.fortran.rmdrvt import rmdrvt
+from pele.angleaxis.aatopology import rotMatDeriv
 import oxdnagmin_ as GMIN
 from pele.potentials import GMINPotential
 import numpy as np
@@ -22,7 +22,7 @@ class OXDNAAnglePotential(GMINPotential):
     def getEnergy(self, coords):
         E = GMINPotential.getEnergy(self, coords)
         ca = CoordsAdapter(nrigid=coords.size/6, coords=coords)
-        RMX = [rmdrvt(p, True) for p in ca.rotRigid]
+        RMX = [rotMatDeriv(p, True) for p in ca.rotRigid]
         
         xback = np.array([x - 0.4*np.dot(r[0], np.array([1., 0., 0.])) for x, r in zip(ca.posRigid, RMX)])
         xbase = np.array([x + 0.4*np.dot(r[0], np.array([1., 0., 0.])) for x, r in zip(ca.posRigid, RMX)])
@@ -51,7 +51,7 @@ class OXDNAAnglePotential(GMINPotential):
         E, grad = GMINPotential.getEnergyGradient(self, coords)
         
         ca = CoordsAdapter(nrigid=coords.size/6, coords=coords)
-        RMX = [rmdrvt(p, True) for p in ca.rotRigid]
+        RMX = [rotMatDeriv(p, True) for p in ca.rotRigid]
 
         xback = [x - 0.4*np.dot(r[0], np.array([1., 0., 0.])) for x, r in zip(ca.posRigid, RMX)]
         xbase = [x - 0.4*np.dot(r[0], np.array([1., 0., 0.])) for x, r in zip(ca.posRigid, RMX)]
