@@ -113,6 +113,7 @@ class FindTransitionState(object):
                  verbosity=1,
                  check_negative=False,
                  invert_gradient=False,
+                 hessian_diagonalization=False,
                  ):
         self.pot = pot
         self.coords = np.copy(coords)
@@ -134,6 +135,7 @@ class FindTransitionState(object):
         self.npositive_max = max(10, self.nsteps / 5)
         self.check_negative = check_negative
         self.invert_gradient = invert_gradient
+        self.hessian_diagonalization = hessian_diagonalization
 
         
         self.rmsnorm = 1./np.sqrt(float(len(coords)))
@@ -365,15 +367,8 @@ class FindTransitionState(object):
         res.nfev = self.nfev
         return res
 
-    def _getLowestEigenVector(self, coords, i, gradient=None):
-        """compute the lowest eigenvector at position coords
-        
-        Parameters
-        ----------
-        coords : the current position
-        i : the iteration number
-        gradient : the gradient at coords
-        """
+    def _get_lowest_eigenvector_RR(self, coords, gradient=None):
+        """get the lowest eigenvector with Reighleigh Ritz minimization"""
         if "nsteps" in self.lowestEigenvectorQuenchParams:
             niter = self.lowestEigenvectorQuenchParams["nsteps"]
         else:
@@ -392,6 +387,37 @@ class FindTransitionState(object):
                 print "eigenvector converged, but doing one iteration anyway"
             optimizer.one_iteration()
             res = optimizer.get_result()
+        return res
+
+    def _get_lowest_eigenvector_diagonalization(self, coords, **kwargs):
+        if self.verbosity > 0:
+            print "computing the lowest eigenvector by diagonalizing the Hessian"
+        from pele.utils.hessian import get_smallest_eig
+        from pele.optimize import Result
+        hess = self.pot.getHessian(coords)
+        eval, evec = get_smallest_eig(hess)
+        res = Result()
+        res.eigenval = eval
+        res.eigenvec = evec
+        res.nfev = 1
+        res.success = True
+        res.rms = 0.
+        return res
+        
+
+    def _getLowestEigenVector(self, coords, i, gradient=None):
+        """compute the lowest eigenvector at position coords
+        
+        Parameters
+        ----------
+        coords : the current position
+        i : the iteration number
+        gradient : the gradient at coords
+        """
+        if self.hessian_diagonalization:
+            res = self._get_lowest_eigenvector_diagonalization(coords)
+        else:
+            res = self._get_lowest_eigenvector_RR(coords, gradient=gradient)
 
         self.leig_result = res
         self.nfev += res.nfev
