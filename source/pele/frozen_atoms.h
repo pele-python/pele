@@ -149,8 +149,8 @@ protected:
     std::shared_ptr<PotentialType> _underlying_potential;
 
     FrozenPotentialWrapper(std::shared_ptr<PotentialType> potential,
-            Array<double> &reference_coords, 
-            Array<size_t> & frozen_dof) :
+            Array<double> const &reference_coords,
+            Array<size_t> const & frozen_dof) :
         coords_converter(reference_coords, frozen_dof),
         _underlying_potential(potential)
     {}
