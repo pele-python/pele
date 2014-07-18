@@ -607,7 +607,7 @@ class DisconnectivityGraph(object):
                  subgraph_size=None, order_by_energy=False,
                  order_by_basin_size=True, node_offset=1.,
                  center_gmin=True, include_gmin=True, energy_attribute="energy",
-                 order_by_value=None, center_minimum=None):
+                 order_by_value=None):
         self.graph = graph
         self.nlevels = nlevels
         self.Emax = Emax
@@ -619,27 +619,19 @@ class DisconnectivityGraph(object):
         self.energy_attribute = energy_attribute
         self.node_offset = node_offset
         self.get_value = order_by_value
-        if center_minimum:
-            center_gmin=True
-            include_gmin = True
-        elif self.center_gmin:
+        if self.center_gmin:
             include_gmin = True
 
         if minima is None:
             minima = []
         self.min0list = minima
-        
-        if center_minimum:
-            self.gmin0 = center_minimum
-            self.min0list.append(self.gmin0)
-        elif include_gmin:
+        if include_gmin:
             #find the minimum energy node
             elist = [ (self._getEnergy(m), m) for m in self.graph.nodes() ]
             elist = sorted(elist)
             self.gmin0 = elist[0][1]
             self.min0list.append(self.gmin0)
 #            print "min0", self.min0.energy, self.min0._id
-#        print self.gmin0
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
         self.tree_list = [[] for x in range(self.nlevels)]
 
