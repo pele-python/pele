@@ -272,7 +272,7 @@ class FindTransitionState(object):
                 negative_before_check -= 1
             
             # check to make sure the eigenvector is ok
-            if (i == 0 or self.eigenval <= 0 or not self.check_negative or 
+            if (i == 0 or self.eigenval < 0 or not self.check_negative or 
                 (negative_before_check > 0 and not self.demand_initial_negative_vec)):
                 self._saveState(coords)
                 self.reduce_step = 0
