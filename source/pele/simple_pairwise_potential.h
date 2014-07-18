@@ -47,22 +47,29 @@ inline double
 SimplePairwisePotential<pairwise_interaction,distance_policy>::get_energy_gradient(
         Array<double> x, Array<double> grad)
 {
-    double e=0.;
+    const size_t natoms = x.size() / _ndim;
+    if (_ndim * natoms != x.size()) {
+        throw std::runtime_error("x is not divisible by the number of dimensions");
+    }
+    if (grad.size() != x.size()) {
+        throw std::runtime_error("grad must have the same size as x");
+    }
+
+    double e = 0.;
     double gij;
     double dr[_ndim];
-    const size_t natoms = x.size() / _ndim;
 
     grad.assign(0.);
 
     for (size_t atomi=0; atomi<natoms; ++atomi) {
-        int i1 = _ndim*atomi;
+        size_t const i1 = _ndim * atomi;
         for (size_t atomj=0; atomj<atomi; ++atomj) {
-            int j1 = _ndim*atomj;
+            size_t const j1 = _ndim * atomj;
 
             _dist->get_rij(dr, &x[i1], &x[j1]);
 
             double r2 = 0;
-            for (size_t k=0;k<_ndim;++k) {
+            for (size_t k=0; k<_ndim; ++k) {
                 r2 += dr[k]*dr[k];
             }
             e += _interaction->energy_gradient(r2, &gij, atomi, atomj);
@@ -85,6 +92,9 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
     double dr[_ndim];
     const size_t N = x.size();
     const size_t natoms = x.size()/_ndim;
+    if (_ndim * natoms != x.size()) {
+        throw std::runtime_error("x is not divisible by the number of dimensions");
+    }
     if (x.size() != grad.size()) {
         throw std::invalid_argument("the gradient has the wrong size");
     }
@@ -142,8 +152,11 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
 template<typename pairwise_interaction, typename distance_policy>
 inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy(Array<double> x)
 {
-    double e=0.;
     size_t const natoms = x.size()/_ndim;
+    if (_ndim * natoms != x.size()) {
+        throw std::runtime_error("x is not divisible by the number of dimensions");
+    }
+    double e=0.;
     double dr[_ndim];
 
     for (size_t atomi=0; atomi<natoms; ++atomi) {
