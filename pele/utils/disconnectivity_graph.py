@@ -620,7 +620,8 @@ class DisconnectivityGraph(object):
         self.node_offset = node_offset
         self.get_value = order_by_value
         if center_minimum:
-            self.center_gmin=True
+            center_gmin=True
+            include_gmin = True
         elif self.center_gmin:
             include_gmin = True
 
