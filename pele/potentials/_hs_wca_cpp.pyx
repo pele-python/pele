@@ -2,7 +2,6 @@
 # distutils: language = C++
 """
 import numpy as np
-
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
 cimport numpy as np

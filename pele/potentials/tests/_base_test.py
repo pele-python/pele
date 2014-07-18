@@ -48,7 +48,7 @@ class _BaseTest(unittest.TestCase):
         h_num = self.pot.NumericalHessian(self.xmin)
         h = h.reshape(-1).copy()
         h_num = h_num.reshape(-1).copy()
-        np.allclose(h,h_num,rtol=1e-7)
+        np.allclose(h,h_num,rtol=1e-8)
     
     def test_random(self):
         self.grad_t(self.xmin+self.xrandom)

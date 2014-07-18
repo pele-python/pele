@@ -10,9 +10,10 @@ class TestFindTransitionState(unittest.TestCase):
         self.system = LJCluster(18)
         self.pot = self.system.get_potential()
     
-    def make_dimer(self, x):
+    def make_dimer(self, x, **kwargs):
         return FindTransitionState(x, self.pot,
                                 orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
+                                **kwargs
 #                                verbosity=10
                                 )
     
@@ -36,8 +37,19 @@ class TestFindTransitionState(unittest.TestCase):
         self.assertLess(res.nsteps, 5)
 #        print res
 
+    def test_exact_diagonalization(self):
+        # get the path of the file directory
+        path = os.path.dirname(os.path.abspath(__file__))
+        xyz = read_xyz(open(path+"/lj18_ts.xyz", "r"))
+        x = xyz.coords.flatten()
+        dimer = self.make_dimer(x, hessian_diagonalization=True)
+        res = dimer.run()
+        self.assertTrue(res.success)
+        self.assertLess(res.nsteps, 5)
+
+
 class TestHEF_InvertedGradient(TestFindTransitionState):
-    def make_dimer(self, x):
+    def make_dimer(self, x, **kwargs):
         return FindTransitionState(x, self.pot,
                                 orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
                                 invert_gradient=True,

@@ -4,9 +4,8 @@ import numpy as np
 import os
 import logging
 
-from pele.optimize import ModifiedFireCPP
 from pele.potentials import _hs_wca_cpp
-from pele.optimize._quench import lbfgs_cpp
+from pele.optimize._quench import lbfgs_cpp, modifiedfire_cpp
 import _base_test
 
 def read_xyzdr(fname, bdim=3):
@@ -26,18 +25,20 @@ def read_xyzdr(fname, bdim=3):
 
 def minimize(coords, pot):
     result = lbfgs_cpp(coords, pot)
+    #result = modifiedfire_cpp(coords, pot)
     return result.coords, result.energy, result.grad, result.rms
 
 class TestHS_WCA_CPP(_base_test._BaseTest):
     def setUp(self):
         current_dir = os.path.dirname(__file__)
-        xyz, hs_radii, rattlers = read_xyzdr(current_dir + "/_hswca20_min.xyzdr")
-        sca = 0.259921049895
-        boxv= [6.85206773233, 6.85206773233, 6.85206773233]
-        self.Emin = 182.943079825
+        xyz, hs_radii, rattlers = read_xyzdr(current_dir + "/_hswca20_min2.xyzdr")
+        sca = 0.205071132088
+        boxv = [6.26533756282, 6.26533756282, 6.26533756282]
         self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii, boxvec = boxv)
         self.natoms = 20
-        self.xmin = xyz
+        result = minimize(xyz,self.pot)
+        self.xmin = result[0] #xyz
+        self.Emin = result[1] #self.pot.getEnergy(self.xmin)
         self.xrandom = np.random.uniform(-1,1,len(xyz))*1e-2
 
 #class TestHS_WCA_CPP_NeighborList(_base_test._BaseTest):

@@ -97,7 +97,7 @@ public:
         radii[0] = .91 * f;
         radii[1] = 1.1 * f;
         radii[2] = 1.13 * f;
-        etrue = 42.956308546349518;
+        etrue = 189.41835811474974;
         g = Array<double>(x.size());
         gnum = Array<double>(x.size());
     }
