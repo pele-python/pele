@@ -2,12 +2,13 @@ import numpy as np
 import copy
 import logging
 
-from pele.optimize import Result, MYLBFGS, LBFGS
+from pele.optimize import Result
 from pele.optimize import mylbfgs
-from pele.potentials.potential import BasePotential
-from pele.transition_states import findLowestEigenVector, FindLowestEigenVector
+from pele.transition_states import FindLowestEigenVector
 from pele.transition_states._dimer_translator import _DimerTranslator
 from pele.transition_states._transverse_walker import _TransverseWalker
+from pele.utils.hessian import get_smallest_eig
+
 
 
 __all__ = ["findTransitionState", "FindTransitionState"]
@@ -257,7 +258,9 @@ class FindTransitionState(object):
         res.message = []
         
         # if starting with positive curvature, disable negative eigenvalue check
-        # this will be reenabled as soon as the eigenvector becomes negative
+        # this will be reenabled as soon as the eigenvector becomes negative.
+        # Allow a certain number of iterations with positive eigenvalue before
+        # demanding that the eigenvalue is negative.
         negative_before_check =  10
 
         self._compute_gradients(coords)
@@ -368,7 +371,7 @@ class FindTransitionState(object):
         return res
 
     def _get_lowest_eigenvector_RR(self, coords, gradient=None):
-        """get the lowest eigenvector with Reighleigh Ritz minimization"""
+        """get the lowest eigenvector using Reyleigh Ritz minimization"""
         if "nsteps" in self.lowestEigenvectorQuenchParams:
             niter = self.lowestEigenvectorQuenchParams["nsteps"]
         else:
@@ -377,10 +380,10 @@ class FindTransitionState(object):
                 print "Using default of", niter, "steps for finding lowest eigenvalue"
         optimizer = FindLowestEigenVector(coords, self.pot,
 #                                    H0=self.H0_leig, 
-                            eigenvec0=self.eigenvec, 
-                            orthogZeroEigs=self.orthogZeroEigs, 
-                            gradient=gradient,
-                            **self.lowestEigenvectorQuenchParams)
+                                    eigenvec0=self.eigenvec, 
+                                    orthogZeroEigs=self.orthogZeroEigs, 
+                                    gradient=gradient,
+                                    **self.lowestEigenvectorQuenchParams)
         res = optimizer.run(niter)
         if res.nsteps == 0:
             if self.verbosity > 2:
@@ -390,14 +393,16 @@ class FindTransitionState(object):
         return res
 
     def _get_lowest_eigenvector_diagonalization(self, coords, **kwargs):
+        """compute the lowest eigenvector by diagonalizing the Hessian
+        
+        This scales as N**3, so can be very slow for large systems.
+        """
         if self.verbosity > 0:
             print "computing the lowest eigenvector by diagonalizing the Hessian"
-        from pele.utils.hessian import get_smallest_eig
-        from pele.optimize import Result
         hess = self.pot.getHessian(coords)
-        eval, evec = get_smallest_eig(hess)
+        eigenval, evec = get_smallest_eig(hess)
         res = Result()
-        res.eigenval = eval
+        res.eigenval = eigenval
         res.eigenvec = evec
         res.nfev = 1
         res.success = True
@@ -464,12 +469,13 @@ class FindTransitionState(object):
             self._transverse_walker.update_eigenvec(self.eigenvec, self.eigenval)
             self._transverse_walker.update_coords(coords, energy, gradient)
         
-        #determine the number of steps
-        #i.e. if the eigenvector is deemed to have converged
+        # determine the number of steps
+        # i.e. if the eigenvector is deemed to have converged or is changing slowly
         eigenvec_converged = self.overlap > .999 
-        nstepsperp = self.nsteps_tangent1
         if eigenvec_converged:
             nstepsperp = self.nsteps_tangent2
+        else:
+            nstepsperp = self.nsteps_tangent1
 
         # reduce the maximum step size if necessary
         maxstep = self.maxstep_tangent
@@ -487,8 +493,7 @@ class FindTransitionState(object):
             try:
                 self.energy, self.gradient = self._transverse_walker.get_true_energy_gradient(coords)
             except AttributeError:
-                print "was tspot was never called? use the same gradient"
-                raise
+                raise Exception("was tspot was never called? use the same gradient")
         return ret
 
     def _update_max_uphill_step(self, Fold, stepsize):
@@ -522,9 +527,8 @@ class FindTransitionState(object):
         self.eigenval is used to determine the best stepsize
         """
         # the energy and gradient are already known
-        e = self.get_energy()
         grad = self.get_gradient()
-        F = np.dot(grad, self.eigenvec) 
+        F = np.dot(grad, self.eigenvec)
         h = 2. * F / np.abs(self.eigenval) / (1. + np.sqrt(1. + 4. * (F / self.eigenval)**2))
 
         # get the maxstep and scale it if necessary
@@ -542,7 +546,7 @@ class FindTransitionState(object):
 
         # recompute the energy and gradient
         self._compute_gradients(coords)
-        
+
         # update the maximum step using a trust ratio
         if self.eigenval < 0:
             self._update_max_uphill_step(F, h)
