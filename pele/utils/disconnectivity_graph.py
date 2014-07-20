@@ -1108,6 +1108,15 @@ class DisconnectivityGraph(object):
         colorer.run()
 
     def draw_minima(self, minima, axes=None, **kwargs):
+        """draw a specified list of minima as points
+        
+        minima : list of minima
+        axes : matlplotlib axes
+            Draw them on these axes.  If None, use self.axes.
+        kwargs : kwargs
+            additional keyword arguments will be passed to matplolib.Axes.scatter().
+            Use this to specify how to draw the points.
+        """
         if axes is None:
             axes = self.axes
         
