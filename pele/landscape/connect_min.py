@@ -129,11 +129,11 @@ class DoubleEndedConnect(object):
         
     """    
     def __init__(self, min1, min2, pot, mindist, database, 
-                 use_all_min=False, verbosity=1,
+                 verbosity=1,
                  merge_minima=False, 
                  max_dist_merge=0.1, local_connect_params=dict(),
                  fresh_connect=False, longest_first=True,
-                 niter=200, conf_checks=None, load_no_distances=False
+                 niter=200, conf_checks=None
                  ):
         self.minstart = min1
         assert min1._id == min1, "minima must compare equal with their id %d %s %s" % (min1._id, str(min1), str(min1.__hash__()))
@@ -159,7 +159,6 @@ class DoubleEndedConnect(object):
 
         self.merge_minima = merge_minima
         self.max_dist_merge = float(max_dist_merge)
-        self.load_no_distances = load_no_distances
 
         self.dist_graph = _DistanceGraph(self.database, self.graph, self.mindist, self.verbosity)
 
@@ -168,8 +167,6 @@ class DoubleEndedConnect(object):
             logger.info("minima are already connected.  not initializing distance graph")
             return
 
-        if use_all_min or load_no_distances:
-            print "warning: distances were removed from the database but you requested distances to be loaded"
         self.dist_graph.initialize(self.minstart, self.minend)
         
         if self.verbosity > 0:

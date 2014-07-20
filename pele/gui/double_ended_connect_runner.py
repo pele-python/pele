@@ -142,7 +142,7 @@ class DECProcess(mp.Process):
         
         self.started = True
         self.connect = self.system.get_double_ended_connect(self.m1local, self.m2local, db,
-                                                       fresh_connect=True, load_no_distances=True)
+                                                       fresh_connect=True)
         self.connect.connect()
     
     def run(self):

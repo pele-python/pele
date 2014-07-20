@@ -332,7 +332,7 @@ def mytest(nmin=40, natoms=13):
     
     
     graph = TSGraph(db)
-    connect = DoubleEndedConnect(min1, min2, pot, mindist, db, use_all_min=True, 
+    connect = DoubleEndedConnect(min1, min2, pot, mindist, db,
                                  merge_minima=True, max_dist_merge=.1)
 
 if __name__ == "__main__":
