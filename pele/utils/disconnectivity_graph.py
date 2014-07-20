@@ -1107,6 +1107,31 @@ class DisconnectivityGraph(object):
                                      normalize_values=normalize_values)
         colorer.run()
 
+    def draw_minima(self, minima, axes=None, **kwargs):
+        """draw a specified list of minima as points
+        
+        minima : list of minima
+        axes : matlplotlib axes
+            Draw them on these axes.  If None, use self.axes.
+        kwargs : kwargs
+            additional keyword arguments will be passed to matplolib.Axes.scatter().
+            Use this to specify how to draw the points.
+        """
+        if axes is None:
+            axes = self.axes
+        
+        if "marker" not in kwargs:
+            kwargs["marker"] = "o"
+
+        xpos, minlist = self.get_minima_layout()
+        m2dist = dict((izip(minlist, xpos)))
+                
+        minima = list(minima)
+        xpos = [m2dist[m] for m in minima]
+        energies = [m.energy for m in minima]
+
+        axes.scatter(xpos, energies, **kwargs)
+
     def plot(self, show_minima=False, show_trees=False, linewidth=0.5, axes=None,
              title=None):
         """draw the disconnectivity graph using matplotlib
