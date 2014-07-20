@@ -124,7 +124,6 @@ class DoubleEndedConnect(object):
     
     See Also
     --------
-    DoubleEndedConnectPar : parallel version of this class
     LocalConnect : the core algorithm of this routine
         
     """    

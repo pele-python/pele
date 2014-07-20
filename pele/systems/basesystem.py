@@ -1,6 +1,6 @@
 import tempfile
 
-from pele.landscape import DoubleEndedConnect, DoubleEndedConnectPar
+from pele.landscape import DoubleEndedConnect
 from pele import basinhopping
 from pele.storage import Database
 from pele.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
@@ -290,7 +290,7 @@ class BaseSystem(object):
         """
         raise NotImplementedError
     
-    def get_double_ended_connect(self, min1, min2, database, parallel=False, **kwargs):
+    def get_double_ended_connect(self, min1, min2, database, **kwargs):
         """return a DoubleEndedConnect object
     
         See Also
@@ -327,10 +327,7 @@ class BaseSystem(object):
                 kwargs["local_connect_params"]["pushoff_params"] = BaseParameters()
             kwargs["local_connect_params"]["pushoff_params"]["quench"] = self.get_minimizer()                
         
-        if parallel:
-            return DoubleEndedConnectPar(min1, min2, pot, mindist, database, **kwargs)
-        else:
-            return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
+        return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
     
     #
     # the following functions used for getting thermodynamic information about the minima 

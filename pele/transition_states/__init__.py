@@ -41,7 +41,6 @@ In the backend, the work is done by the following functions.
     :toctree: generated/
     
     NEB
-    NEBPar
     InterpolatedPath
     InterpolatedPathDensity
 
@@ -78,7 +77,6 @@ from _zeroev import *
 from _orthogopt import *
 from _interpolate import *
 from _NEB import *
-from _NEB_parallel import *
 from dimer import *
 from _find_lowest_eig import *
 from _transition_state_refinement import *
