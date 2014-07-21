@@ -168,10 +168,10 @@ class FindTransitionState(object):
 
         #set some parameters used in finding lowest eigenvector
         #initial guess for Hermitian
-#        try:
-#            self.H0_leig = self.lowestEigenvectorQuenchParams.pop("H0")
-#        except KeyError:
-#            self.H0_leig = None
+        try:
+            self.H0_leig = self.lowestEigenvectorQuenchParams.pop("H0")
+        except KeyError:
+            self.H0_leig = None
         
         self.reduce_step = 0
         self.step_factor = .1
@@ -217,10 +217,10 @@ class FindTransitionState(object):
         self.saved_eigenvec = np.copy(self.eigenvec)
         self.saved_eigenval = self.eigenval
         self.saved_overlap = self.overlap
-#        self.saved_H0_leig = self.H0_leig
+        self.saved_H0_leig = self.H0_leig
         self.saved_energy = self.energy
         self.saved_gradient = self.gradient.copy()
-        #self.saved_oldeigenvec = np.copy(self.oldeigenvec)
+#        self.saved_oldeigenvec = np.copy(self.oldeigenvec)
 
     def _resetState(self):
         """restore from a state"""
@@ -229,7 +229,7 @@ class FindTransitionState(object):
         self.eigenval = self.saved_eigenval
         self.oldeigenvec = np.copy(self.eigenvec)
         self.overlap = self.saved_overlap
-#        self.H0_leig = self.saved_H0_leig
+        self.H0_leig = self.saved_H0_leig
         self.energy = self.saved_energy
         self.gradient = self.saved_gradient.copy()
         return coords
@@ -390,6 +390,7 @@ class FindTransitionState(object):
                 print "eigenvector converged, but doing one iteration anyway"
             optimizer.one_iteration()
             res = optimizer.get_result()
+        self.H0_leig = res.H0
         return res
 
     def _get_lowest_eigenvector_diagonalization(self, coords, **kwargs):
@@ -427,7 +428,6 @@ class FindTransitionState(object):
         self.leig_result = res
         self.nfev += res.nfev
         
-#        self.H0_leig = res.H0
         self.eigenvec = res.eigenvec
         self.eigenval = res.eigenval
         

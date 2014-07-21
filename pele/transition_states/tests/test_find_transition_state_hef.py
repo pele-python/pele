@@ -4,11 +4,23 @@ import os
 from pele.systems import LJCluster
 from pele.transition_states import FindTransitionState
 from pele.utils.xyz import read_xyz
+from pele.potentials import BasePotential
+
+class PotWrapper(BasePotential):
+    def __init__(self, pot):
+        self.nfev = 0
+        self.pot = pot
+    def getEnergy(self, coords):
+        self.nfev += 1
+        return self.pot.getEnergy(coords)
+    def getEnergyGradient(self, coords):
+        self.nfev += 1
+        return self.pot.getEnergyGradient(coords)
 
 class TestFindTransitionState(unittest.TestCase):
     def setUp(self):
         self.system = LJCluster(18)
-        self.pot = self.system.get_potential()
+        self.pot = PotWrapper(self.system.get_potential())
     
     def make_dimer(self, x, **kwargs):
         return FindTransitionState(x, self.pot,
@@ -25,6 +37,8 @@ class TestFindTransitionState(unittest.TestCase):
         dimer = self.make_dimer(x)
         res = dimer.run()
         self.assertTrue(res.success)
+        self.assertEqual(res.nfev, self.pot.nfev)
+        self.assertGreater(res.nfev, 1)
 
     def test2(self):
         # get the path of the file directory
