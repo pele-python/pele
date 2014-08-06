@@ -102,6 +102,17 @@ public:
             r_ij[i] -= round(r_ij[i] * _ibox[i]) * _box[i];
         }
     }
+
+    inline void put_in_box(Array<double>& coords)
+    {
+        size_t natoms = coords.size()/ndim;
+        for (size_t i=0;i<natoms;++i){
+            size_t i1 = i*ndim;
+            for (size_t j=0;j<ndim;++j) {
+                coords[i1+j] -= round(coords[i1+j] * _ibox[j]) * _box[j];
+            }
+        }
+    }
 };
 
 //periodic distance template specializations
