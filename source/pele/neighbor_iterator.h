@@ -64,27 +64,23 @@ class CellIter : public NeighborIter<distance_policy>
 protected:
     const pele::Array<double> _boxv;
     const size_t _natoms, _ncellx, _ncells, _atomi, _atomj, _neigh, _neigh_max;
-    const size_t _neigh; // the count of the neighboring cells
     const double _rcell;
     pele::Array<long int> _hoc, _ll;
-    std::vector<std::vector<double>> _neighbors;
-    //std::list<std::pair<size_t, size_t> > _atom_neghbor_list;
+    std::vector<std::vector<double>> _cell_neighbors;
+    std::vector<std::pair<size_t, size_t>> _atom_neighbor_list;
 
     CellIter(pele::Array<double> coords, pele::Array<double> boxv, double rcut, std::shared_ptr<distance_policy> dist=NULL)
         : NeighborIter(coords, rcut, dist),
           _boxv(boxv),
           _ncellx(floor(boxv[0]/rcut)),            //no of cells in one dimension
           _ncells(std::pow(_ncellx, _ndim)),    //total no of cells
-          _atomi(-1),
-          _atomj(-1),
-          _neigh(0),
-          _neigh_max(0),
           _rcell(boxv[0]/_ncellx),                 //size of cell
           _hoc(_ncells),                        //head of chain
           _ll(_natoms),                         //linked list
-          _neighbors()                          //empty vector
+          _cell_neighbors()                          //empty vector
     {
-        try{
+        try{_atomi=-1;
+        _atomj=-1;
             pele::Array<double> dp_boxv(distance_policy::_box);
             if(dp_boxv != _boxv){
                 throw std::runtime_error("distance policy boxv and cell list boxv differ in size");
@@ -165,7 +161,18 @@ protected:
                     ineighbors.push_back(j);
                 }
             }
-            _neighbors.push_back(ineighbors);
+            _cell_neighbors.push_back(ineighbors);
+        }
+    }
+
+    void _build_atom_neighbors_list()
+    {
+        for(size_t i=0;i<_natoms;++i){
+             size_t icell = this->_atom2cell(_atomi);
+             //loop through all the neighbouring cells of icell
+             for(auto& jcell : _cell_neighbors[icell]){
+                 _atom_neighbor_list
+             }
         }
     }
 
@@ -209,14 +216,13 @@ public:
      * and the linked list at position i will point to the index of the previous atom.
      * This is done iteratively for all atoms.
      */
+
     virtual void reset(pele::Array<double> coords)
     {
-        _atomi=-1;
-        _atomj=-1;
         _coords.assign(coords);
 
         try{
-            _dist.put_in_box(_coords);
+            _dist->put_in_box(_coords);
         }
         catch (exception& e){
             cout << "put in box not implemented for this type of distance. Exception: " << e.what() << '\n';
@@ -232,10 +238,21 @@ public:
         }
     }
 
-    /*return next pair of atoms over which to compute energy interaction*/
+    virtual bool done() const
+    {
+        return _iter == _natoms*_natoms;
+    }
+
+
+
+    /*return next pair of atoms over which to compute energy interaction
+     /*const size_t _neigh, _neigh_max; // the count of the neighboring cells
+      * _atomi(-1),
+       _atomj(-1),*/
+    /*
     size_t* next()
     {
-        size_t icell; // the cell that atomi is in
+        // _icell; the cell that atomi is in [this needs to be a member]
         size_t jcell; // the cell thta atomj is in
 
         if (_iter >= _natoms*_natoms){
@@ -252,12 +269,12 @@ public:
             if (_neigh >= _neigh_max){
                 // we're done with atomi, we need to move to the next atom.
                 ++_atomi;
-                icell = this->_atom2cell(_atomi);
-                _neigh_max = _neighbors[icell].size();
+                _icell = this->_atom2cell(_atomi);
+                _neigh_max = _cell_neighbors[_icell].size();
                 _neigh = 0;
             } else{
                 // we're done with jcell
-                jcell = _neighbors[icell][_neigh];
+                jcell = _cell_neighbors[_icell][_neigh];
                 ++_neigh;
             }
             _atomj = _hoc(jcell);
@@ -268,12 +285,7 @@ public:
         ++_iter;
 
         return _atom_pair;
-    }
-
-    virtual bool done() const
-    {
-        return _iter == _natoms*_natoms;
-    }
+    }*/
 };
 
 
