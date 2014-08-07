@@ -23,21 +23,24 @@ class NeighborIter
 protected:
     std::shared_ptr<distance_policy> _dist;
     static const size_t _ndim = distance_policy::_ndim;
-    size_t _atom_pair[2];
+    size_t _atoms_pair[2];
     pele::Array<double> _coords;
     const size_t _natoms, _iter;
     const double _rcut;
+    bool _initialised;
 
     NeighborIter(pele::Array<double> coords, double rcut, std::shared_ptr<distance_policy> dist=NULL)
         : _dist(dist),
           _coords(coords.copy()),
           _natoms(coords.size()/_ndim),
           _iter(0),
-          _rcut(rcut)
+          _rcut(rcut),
+          _initialised(false)
     {
         if(_dist == NULL) _dist = std::make_shared<distance_policy>();
     }
 
+    virtual void _setup();
 public:
     virtual ~NeighborIter() {}
     /*return next pair of atoms over which to compute energy interaction*/
@@ -47,47 +50,51 @@ public:
 };
 
 
-/*cell list currently only work with box of equal side lengths*/
+/*cell list currently only work with box of equal side lengths
+ * cell lists are currently not implemented for non cubic boxes:
+ * in that case _ncellx should be an array rather than a scalar and the definition
+ * of ncells and rcell would change to array. This implies that in all the function these
+ * would need to be replace with the correct array element. This adds room for errors
+ * so in this first implementation we do not account for that scenario
+ * */
 
 template<typename distance_policy=periodic_distance<3> >
 class CellIter : public NeighborIter<distance_policy>
 {
 protected:
-    const size_t _natoms, _ncellx, _ncells;
-    const double _rcell, _boxl, _iboxl;
+    const pele::Array<double> _boxv;
+    const size_t _natoms, _ncellx, _ncells, _atomi, _atomj, _neigh, _neigh_max;
+    const double _rcell;
     pele::Array<long int> _hoc, _ll;
     std::vector<std::vector<double>> _neighbors;
 
-    CellIter(pele::Array<double> coords, double boxl, double rcut, std::shared_ptr<distance_policy> dist=NULL)
+    CellIter(pele::Array<double> coords, pele::Array<double> boxv, double rcut, std::shared_ptr<distance_policy> dist=NULL)
         : NeighborIter(coords, rcut, dist),
-          _ncellx(floor(boxl/rcut)),            //no of cells in one dimension
+          _boxv(boxv),
+          _ncellx(floor(boxv[0]/rcut)),            //no of cells in one dimension
           _ncells(std::pow(_ncellx, _ndim)),    //total no of cells
-          _boxl(boxl),
-          _iboxl(1/boxl),
-          _rcell(boxl/_ncellx),                 //size of cell
+          _atomi(-1),
+          _atomj(-1),
+          _neigh(0),
+          _neigh_max(0),
+          _rcell(boxv[0]/_ncellx),                 //size of cell
           _hoc(_ncells),                        //head of chain
           _ll(_natoms),                         //linked list
           _neighbors()                          //empty vector
-    {}
-
-    //return cell index from coordinates
-    //this function assumes that particles have been already put in box
-    size_t _atom2cell(size_t i)
     {
-        size_t icell = 0;
-
-        for(size_t j =0;j<_ndim;++j)
-        {
-            size_t j1 = _natoms*i + j;
-            double x = _coords[j1];
-
-            if (x < 0){
-                x += _boxl;
+        try{
+            pele::Array<double> dp_boxv(distance_policy::_box);
+            if(dp_boxv != _boxv){
+                throw std::runtime_error("distance policy boxv and cell list boxv differ in size");
             }
-            icell += floor(x / _rcell) * std::pow(_ncellx,j);
         }
-
-        return icell;
+        catch (exception& e){
+            cout << "this type of distance does not have a box array. Exception: " << e.what() << '\n';
+        }
+        if(_boxv[0] != _boxv[_ndim-1] || _boxv[0] != _boxv[_ndim]){
+            throw std::runtime_error("cell lists not implemented for non cubic box");
+        }
+        this->_setup();
     }
 
     //returns the coordinates to the corner of one of the cells
@@ -130,7 +137,7 @@ protected:
 
             for(int j=0;j<=1;++j){ //DEBUG should include j=-1 like in jake's implementation?
                 double d = icell_coords[i] + j*_rcell;
-                d -= _boxl * round(d/_boxl); // DEBUG: adjust distance for pbc, should be using distance
+                d -= _boxv[0] * round(d/_boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
                 if (std::abs(d) < dxmin || !dxmin_trial){
                     dxmin = d;
                     dxmin_trial = true;
@@ -150,16 +157,42 @@ protected:
     void _build_cell_neighbors_list()
     {
         for(size_t i=0; i<_ncells;++i){
-            ineighbors = std::vector<double>();
+            std::vector<double> ineighbors;
             for(size_t j=0; j<_ncells;++j){
                 if (this->_areneighbors(i,j)){
                     ineighbors.push_back(j);
                 }
             }
-            _neighbors.push_back(neighbor_list);
+            _neighbors.push_back(ineighbors);
         }
     }
 
+    void _setup()
+    {
+        this->_build_cell_neighbors_list();
+        this->reset(_coords);
+        _initialised = true;
+    }
+
+    //return cell index from coordinates
+    //this function assumes that particles have been already put in box
+    size_t _atom2cell(size_t i)
+    {
+        size_t icell = 0;
+
+        for(size_t j =0;j<_ndim;++j)
+        {
+            size_t j1 = _natoms*i + j;
+            double x = _coords[j1];
+
+            if (x < 0){
+                x += _boxv[j];
+            }
+            icell += floor(x / _rcell) * std::pow(_ncellx,j);
+        }
+
+        return icell;
+    }
 
 
 public:
@@ -176,6 +209,8 @@ public:
      */
     virtual void reset(pele::Array<double> coords)
     {
+        _atomi=-1;
+        _atomj=-1;
         _coords.assign(coords);
 
         try{
@@ -198,15 +233,40 @@ public:
     /*return next pair of atoms over which to compute energy interaction*/
     size_t* next()
     {
-        double E=0;
-        size_t icell = _atom2icell(_iter);
+        size_t icell, jcell;
+
+        if (_iter >= _natoms*_natoms){
+            throw std::runtime_error("_iter exceeds 2*_natoms");
+        }
+
+        if (_atomi > 0){
+            _atomj = _ll[_atomj];
+        }
+
+        while (_atomj < 0){
+            if (_neigh >= _neigh_max){
+                ++_atomi;
+                icell = this->_atom2cell(_atomi);
+                _neigh_max = _neighbors[icell].size();
+                _neigh = 0;
+            }
+            else{
+                jcell = _neighbors[icell][_neigh];
+                ++_neigh;
+            }
+            _atomj = _hoc(jcell);
+        }
+
+        _atoms_pair[0] = _atomi;
+        _atoms_pair[1] = _atomj;
+        ++_iter;
 
         return _atom_pair;
     }
 
     virtual bool done()
     {
-        return _iter == _natoms;
+        return _iter == _natoms*_natoms;
     }
 };
 
