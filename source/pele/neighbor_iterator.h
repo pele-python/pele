@@ -55,7 +55,8 @@ class CellIter : public NeighborIter<distance_policy>
 protected:
     const size_t _natoms, _ncellx, _ncells;
     const double _rcell, _boxl, _iboxl;
-    pele::Array<long int> _hoc, _ll, _neighbours;
+    pele::Array<long int> _hoc, _ll;
+    std::vector<std::vector<double>> _neighbors;
 
     CellIter(pele::Array<double> coords, double boxl, double rcut, std::shared_ptr<distance_policy> dist=NULL)
         : NeighborIter(coords, rcut, dist),
@@ -64,8 +65,9 @@ protected:
           _boxl(boxl),
           _iboxl(1/boxl),
           _rcell(boxl/_ncellx),                 //size of cell
-          _hoc(_ncells),                         //head of chain
-          _ll(_natoms)                           //linked list
+          _hoc(_ncells),                        //head of chain
+          _ll(_natoms),                         //linked list
+          _neighbors()                          //empty vector
     {}
 
     //return cell index from coordinates
@@ -116,20 +118,22 @@ protected:
     {
         double icell_coords[_ndim];
         double jcell_coords[_ndim];
-        double maxd2 = _rcell * _rcell * _ndim; //maxd is longest diagonal DEBUG: jake does not add * _ndim, why?
 
         icell_coords = this->_cell2coords(icell);
         jcell_coords = this->_cell2coords(jcell);
         //compute difference
 
         for (int i=0;i<_ndim;++i){
+            double dxmin;
+            bool dxmin_trial = false;
             icell_coords[i] -= jcell_coords[i];
-            double dxmin = 1e20; //just a very large number
-            for(int j=-1;j<=1;++j){ //DEBUG why j=0?
+
+            for(int j=0;j<=1;++j){ //DEBUG should include j=-1 like in jake's implementation?
                 double d = icell_coords[i] + j*_rcell;
-                d -= _boxl * round(dx/_boxl); // adjust distance for pbc
-                if (std::abs(d) < dxmin){
+                d -= _boxl * round(d/_boxl); // DEBUG: adjust distance for pbc, should be using distance
+                if (std::abs(d) < dxmin || !dxmin_trial){
                     dxmin = d;
+                    dxmin_trial = true;
                 }
             }
             icell_coords[i] =  dxmin;
@@ -140,7 +144,20 @@ protected:
             r2 +=  icell_coords[i]*icell_coords[i];
         }
 
-        return r2 <= maxd2;
+        return r2 <= _rcut*_rcut;
+    }
+
+    void _build_cell_neighbors_list()
+    {
+        for(size_t i=0; i<_ncells;++i){
+            ineighbors = std::vector<double>();
+            for(size_t j=0; j<_ncells;++j){
+                if (this->_areneighbors(i,j)){
+                    ineighbors.push_back(j);
+                }
+            }
+            _neighbors.push_back(neighbor_list);
+        }
     }
 
 
