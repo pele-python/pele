@@ -121,11 +121,46 @@ def find_best_permutation_molecular(X1, X2, permlist=None, user_algorithm=None,
     dist=np.sqrt(disttot)
     return dist, newperm
 
+# here follow testing routines
+
 def permlist_water(nmol):
     '''
     in this particular example, the coordinate array is expected to be ordered as follows:
-        [ O1, O2, ..., ON, 1H1, 2H1, 1H2, 2H2, ..., 1HN, 2HN ] 
+        [ O1, 1H1, 2H1, O2, 1H2, 2H2, ..., ON, 1HN, 2HN ] 
     '''
-    permlist=[[range(nmol), range(nmol, 3*nmol, 2), range(nmol+1, 3*nmol, 2)]]
-    permlist += [list(x) for x in zip(range(nmol, 3*nmol, 2), range(nmol+1, 3*nmol, 2))]
+    permlist=[[range(0,nmol*3,3),range(1,nmol*3,3),range(2,nmol*3,3)]]
+    permlist+=[list(x) for x in zip(range(1,nmol*3,3),range(2,nmol*3,3))]
+    #permlist=[[range(nmol), range(nmol, 3*nmol, 2), range(nmol+1, 3*nmol, 2)]]
+    #permlist += [list(x) for x in zip(range(nmol, 3*nmol, 2), range(nmol+1, 3*nmol, 2))]
     return permlist
+
+def permute_water(nmol,coords):
+    from random import shuffle
+    water=range(nmol)
+    shuffle(water)
+    # permute molecules
+    coords[:]=coords.reshape([-1,9])[water].flatten()
+    # permute hydrogens on each molecule
+    coordsv=coords.reshape([-1,3,3])
+    for mol in coordsv:
+        if np.random.random()<0.5:
+            mol[1:3,:]=mol[2:0:-1,:]
+
+def main():
+    '''
+    generate a random array of water molecules, and a random permutation
+    of those molecules, and recover the first from the second
+    '''
+    nmol=50
+    X1=np.random.random(nmol*9)
+    X2=X1.copy()
+    permlist=permlist_water(nmol)
+    permute_water(nmol,X2)
+    mindist=MinPermDistMolecularCluster(permlist)
+    compare=ExactMatchMolecularCluster(permlist)
+    print "distance before alignment: {}".format(mindist.measure.get_dist(X1,X2))
+    print "distance after alignment: {}".format(mindist(X1,X2)[0])
+    print "exact match? {}".format(compare(X1,X2))
+
+if __name__=="__main__":
+    main()
