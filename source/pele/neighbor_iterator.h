@@ -64,9 +64,11 @@ class CellIter : public NeighborIter<distance_policy>
 protected:
     const pele::Array<double> _boxv;
     const size_t _natoms, _ncellx, _ncells, _atomi, _atomj, _neigh, _neigh_max;
+    const size_t _neigh; // the count of the neighboring cells
     const double _rcell;
     pele::Array<long int> _hoc, _ll;
     std::vector<std::vector<double>> _neighbors;
+    //std::list<std::pair<size_t, size_t> > _atom_neghbor_list;
 
     CellIter(pele::Array<double> coords, pele::Array<double> boxv, double rcut, std::shared_ptr<distance_policy> dist=NULL)
         : NeighborIter(coords, rcut, dist),
@@ -233,7 +235,8 @@ public:
     /*return next pair of atoms over which to compute energy interaction*/
     size_t* next()
     {
-        size_t icell, jcell;
+        size_t icell; // the cell that atomi is in
+        size_t jcell; // the cell thta atomj is in
 
         if (_iter >= _natoms*_natoms){
             throw std::runtime_error("_iter exceeds 2*_natoms");
@@ -242,15 +245,18 @@ public:
         if (_atomi > 0){
             _atomj = _ll[_atomj];
         }
+        // if atomi < 0 then atomj will also be less than zero (it's the first iteration)
 
         while (_atomj < 0){
+            // we're at the end of a linked list (or in the first iteration)
             if (_neigh >= _neigh_max){
+                // we're done with atomi, we need to move to the next atom.
                 ++_atomi;
                 icell = this->_atom2cell(_atomi);
                 _neigh_max = _neighbors[icell].size();
                 _neigh = 0;
-            }
-            else{
+            } else{
+                // we're done with jcell
                 jcell = _neighbors[icell][_neigh];
                 ++_neigh;
             }
@@ -264,7 +270,7 @@ public:
         return _atom_pair;
     }
 
-    virtual bool done()
+    virtual bool done() const
     {
         return _iter == _natoms*_natoms;
     }
