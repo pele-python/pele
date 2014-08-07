@@ -7,7 +7,7 @@
             permute all atoms within the first list, then apply the best permutation
             to the atoms in subsequent lists
     e.g. three water molecules,
-        permlist = [ [ [ O1 O2 O3 ], [ 1H1, 1H2, 1H3 ], [ 2H1, 2H2, 2H3 ] ],
+        permlist=[ [ [ O1 O2 O3 ], [ 1H1, 1H2, 1H3 ], [ 2H1, 2H2, 2H3 ] ],
                        [ 1H1, 2H1 ],
                        [ 1H2, 2H2 ],
                        [ 1H3, 2H3 ], ]
@@ -121,11 +121,11 @@ def find_best_permutation_molecular(X1, X2, permlist=None, user_algorithm=None,
     dist=np.sqrt(disttot)
     return dist, newperm
 
-def permlist_water( nmol ):
+def permlist_water(nmol):
     '''
     in this particular example, the coordinate array is expected to be ordered as follows:
         [ O1, O2, ..., ON, 1H1, 2H1, 1H2, 2H2, ..., 1HN, 2HN ] 
     '''
-    permlist = [[range( nmol ), range( nmol, 3 * nmol, 2 ), range( nmol + 1, 3 * nmol, 2 )]]
-    permlist += [list( x ) for x in zip( range( nmol, 3 * nmol, 2 ), range( nmol + 1, 3 * nmol, 2 ) )]
+    permlist=[[range(nmol), range(nmol, 3*nmol, 2), range(nmol+1, 3*nmol, 2)]]
+    permlist += [list(x) for x in zip(range(nmol, 3*nmol, 2), range(nmol+1, 3*nmol, 2))]
     return permlist
