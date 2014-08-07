@@ -60,14 +60,15 @@ class AASiteType(object):
         excluding an inversion
         
     '''
-    def __init__(self, M=1., S=np.identity(3, dtype="float64"), cog=np.zeros(3), W = 1.0):
+    def __init__(self, M=1., S=np.identity(3, dtype="float64"), cog=np.zeros(3), W = 1.0, Inv=None, Sym=None):
         self.M = M
         self.S = S
         self.cog = cog
         self.W = W
         
         self.inversion = None
-        self.symmetries = []
+        if Sym is None:
+            self.symmetries = [np.eye( 3 ), ]
     
     def get_smallest_rij(self, com1, com2):
         """return the shortest vector from com1 to com2
