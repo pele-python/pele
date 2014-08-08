@@ -93,16 +93,16 @@ protected:
     }
 
     //returns the coordinates to the corner of one of the cells
-    double * _cell2coords(size_t icell)
+    pele::Array<double> & _cell2coords(size_t icell)
     {
-        double cellcorner[_ndim]; //coordinate of cell bottom left corner
+        pele::Array<double> cellcorner(_ndim); //coordinate of cell bottom left corner
         std::vector<double> indexes(_ndim,0); //this array will store indexes, set to 0
         double index = 0;
 
         for(size_t i = _ndim - 1; i >= 0; --i)
         {
             index = icell;
-            for (int j = _ndim - 1; j >= i; --j)
+            for (size_t j = _ndim - 1; j >= i; --j)
             {
                 index -= indexes[j] * std::pow(_ncellx,j);
             }
@@ -118,19 +118,16 @@ protected:
     //test whether 2 cells are neighbours
     bool _areneighbors(size_t icell, size_t jcell)
     {
-        double icell_coords[_ndim];
-        double jcell_coords[_ndim];
-
-        icell_coords = this->_cell2coords(icell);
-        jcell_coords = this->_cell2coords(jcell);
+        pele::Array<double> icell_coords(this->_cell2coords(icell));
+        pele::Array<double> jcell_coords(this->_cell2coords(jcell));
         //compute difference
 
-        for (int i=0;i<_ndim;++i){
+        for (size_t i=0;i<_ndim;++i){
             double dxmin;
             bool dxmin_trial = false;
             icell_coords[i] -= jcell_coords[i];
 
-            for(int j=0;j<=1;++j){ //DEBUG should include j=-1 like in jake's implementation?
+            for(size_t j=0;j<=1;++j){ //DEBUG should include j=-1 like in jake's implementation?
                 double d = icell_coords[i] + j*_rcell;
                 d -= _boxv[0] * round(d/_boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
                 if (std::abs(d) < dxmin || !dxmin_trial){
@@ -142,7 +139,7 @@ protected:
         }
 
         double r2 = 0;
-        for (int i=0;i<_ndim;++i){
+        for (size_t i=0;i<_ndim;++i){
             r2 +=  icell_coords[i]*icell_coords[i];
         }
 
