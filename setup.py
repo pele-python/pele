@@ -8,10 +8,56 @@ from numpy.distutils.core import Extension
 from numpy.distutils.misc_util import has_cxx_sources
 import numpy as np
 
-## Numpy header files 
+# Numpy header files 
 numpy_lib = os.path.split(np.__file__)[0] 
 numpy_include = os.path.join(numpy_lib, 'core/include') 
 
+#
+# Make the git revision visible.  Most of this is copied from scipy
+# 
+# Return the git revision as a string
+def git_version():
+    def _minimal_ext_cmd(cmd):
+        # construct minimal environment
+        env = {}
+        for k in ['SYSTEMROOT', 'PATH']:
+            v = os.environ.get(k)
+            if v is not None:
+                env[k] = v
+        # LANGUAGE is used on win32
+        env['LANGUAGE'] = 'C'
+        env['LANG'] = 'C'
+        env['LC_ALL'] = 'C'
+        out = subprocess.Popen(cmd, stdout = subprocess.PIPE, env=env).communicate()[0]
+        return out
+
+    try:
+        out = _minimal_ext_cmd(['git', 'rev-parse', 'HEAD'])
+        GIT_REVISION = out.strip().decode('ascii')
+    except OSError:
+        GIT_REVISION = "Unknown"
+
+    return GIT_REVISION
+
+def write_version_py(filename='pele/version.py'):
+    cnt = """
+# THIS FILE IS GENERATED FROM SCIPY SETUP.PY
+git_revision = '%(git_revision)s'
+"""
+    GIT_REVISION = git_version()
+
+    a = open(filename, 'w')
+    try:
+        a.write(cnt % dict(git_revision=GIT_REVISION))
+    finally:
+        a.close()
+write_version_py()
+
+
+
+#
+# run cython on the pyx files
+#
 # need to pass cython the include directory so it can find the .pyx files
 cython_flags=["-I"] + [os.path.abspath("pele/potentials")] + ["-v"]
 def generate_cython():
@@ -72,7 +118,7 @@ fmodules.add_module("pele/accept_tests/_spherical_container.f90")
 
 
 #
-# pure cython modules
+# compile the pure cython modules
 #
 extra_compile_args=['-Wall', '-Wextra','-pedantic','-funroll-loops','-O2',]
 
@@ -252,60 +298,3 @@ cxx_modules.append(
 setup(ext_modules=cxx_modules,
       )
 
-
-#
-# we are currently using method 2 below
-#
-#have_cython = False
-#if have_cython:
-#
-#    ###########################################################
-#    """
-#    programming note:  f2py and cython are not mutually compatible with distutils.
-#    To use f2py, we must use numpy.distutils, but numpy.distutils doesn't support
-#    cython.  There are several ways around this, but all of them are hacky.
-#
-#    1   Use numpy.distutils to compile the fortran extension modules and use
-#        distutils to compile the .pyx files.  This seems like an optimal solution,
-#        but it fails when you pass a flag to numpy.distutils that distutils doesn't
-#        understand, e.g. --fcompiler.  A possible solution is to check for the
-#        known incompatible flags and remove them when passing to distutils.  
-#
-#    2.  Compile cython .pyx files into .c files by hand and use numpy.distils
-#        to include the .c as source files.  This is the way scipy does it.
-#        We could also have setup.py accept a flag --cython which does this for
-#        all .pyx files.
-#
-#    Currently we are using method 2.
-#    """
-#    ###########################################################
-#
-#    import sys
-#    #remove any flag incompatible with non-numpy distutils.
-#    flag = "--fcompiler"
-#    rmlist = []
-#    for arg in sys.argv:
-#        if flag in arg:
-#            rmlist.append(arg)
-#    for arg in rmlist:
-#        sys.argv.remove(arg)
-#
-#
-#    #now build the cython modules
-#    #we have to do this separately because cython isn't supported by numpy.distutils
-#    from distutils.core import setup
-#    from distutils.extension import Extension
-#    from Cython.Distutils import build_ext
-#    import numpy as np
-#
-#    cython_modules = [
-#                      Extension("pele.potentials.rigid_bodies._rbutils_cython",
-#                                ["pele/potentials/rigid_bodies/_rbutils_cython.pyx"])
-#                      ]
-#
-#    setup(
-#      ext_modules = cython_modules,
-#      cmdclass = {'build_ext': build_ext},
-#      include_dirs = [np.get_include()],
-#    #  script_args = ['build_ext', '--inplace'],
-#    )
