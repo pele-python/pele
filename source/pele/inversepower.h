@@ -119,7 +119,7 @@ public:
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<cartesian_distance<ndim>>()
           )
-          {}
+    {}
 };
 
 template <size_t ndim>
@@ -130,7 +130,7 @@ public:
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<periodic_distance<ndim>>(boxvec)
           )
-          {}
+    {}
 };
 
 }
