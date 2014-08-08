@@ -54,8 +54,9 @@ cdef class InversePower(_pele.BasePotential):
             if ndim == 2:
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                  cInversePowerPeriodic[INT2](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
-                                                                     _pele.Array[double](<double*> bv.data, bv.size)) )
+                                                                                             _pele.Array[double](<double*> bv.data, bv.size)) )
             else:
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                  cInversePowerPeriodic[INT3](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
-                                                                     _pele.Array[double](<double*> bv.data, bv.size)) )
+                                                                                             _pele.Array[double](<double*> bv.data, bv.size)) )
+                
