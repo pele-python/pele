@@ -13,7 +13,10 @@
                        [ 1H3, 2H3 ], ]
         where O1, etc. are integer indices, will permute all atoms associated with a
         pair of water molecules, then each pair of hydrogen atoms
-    the routines here would work perfectly well for atomic clusters.
+        
+    the routines here would work perfectly well for atomic clusters, but this file
+    can serve as a base for further necessary modifications of the AtomicCluster
+    class and related classes.
  '''
 
 from pele.mindist._minpermdist_policies import MeasureAtomicCluster, TransformAtomicCluster
@@ -125,7 +128,8 @@ def find_best_permutation_molecular(X1, X2, permlist=None, user_algorithm=None,
 
 def permlist_water(nmol):
     '''
-    in this particular example, the coordinate array is expected to be ordered as follows:
+    in this particular example, the coordinate array is
+    expected to be ordered as follows:
         [ O1, 1H1, 2H1, O2, 1H2, 2H2, ..., ON, 1HN, 2HN ] 
     '''
     permlist=[[range(0,nmol*3,3),range(1,nmol*3,3),range(2,nmol*3,3)]]
@@ -148,19 +152,24 @@ def permute_water(nmol,coords):
 
 def main():
     '''
-    generate a random array of water molecules, and a random permutation
-    of those molecules, and recover the first from the second
+    generate some random arrays of water molecules, and some
+    random permutations of those molecules, and recover the
+    first from the second
     '''
     nmol=50
-    X1=np.random.random(nmol*9)
-    X2=X1.copy()
     permlist=permlist_water(nmol)
-    permute_water(nmol,X2)
-    mindist=MinPermDistMolecularCluster(permlist)
     compare=ExactMatchMolecularCluster(permlist)
-    print "distance before alignment: {}".format(mindist.measure.get_dist(X1,X2))
-    print "distance after alignment: {}".format(mindist(X1,X2)[0])
-    print "exact match? {}".format(compare(X1,X2))
+    iterations=100
+    for i in xrange(iterations):
+        X1=np.random.random(nmol*9)
+        X2=X1.copy()
+        permute_water(nmol,X2)
+        if not compare(X1,X2):
+            break
+    if i < iterations-1:
+        print "failure at iteration {}".format(i)
+    else:
+        print "excellent success!" 
 
 if __name__=="__main__":
     main()
