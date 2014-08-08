@@ -24,6 +24,11 @@ namespace pele
 template<typename distance_policy=periodic_distance<3> >
 class CellIter
 {
+public:
+    typedef std::vector<std::pair<size_t, size_t>> container_type;
+    typedef typename container_type::const_iterator const_iterator;
+    const_iterator begin() { return _atom_neighbor_list.begin(); }
+    const_iterator end() { return _atom_neighbor_list.end(); }
 protected:
     std::shared_ptr<distance_policy> _dist;
     static const size_t _ndim = distance_policy::_ndim;
@@ -38,9 +43,6 @@ protected:
     pele::Array<long int> _hoc, _ll;
     std::vector<std::vector<double>> _cell_neighbors;
     std::vector<std::pair<size_t, size_t>> _atom_neighbor_list;
-
-    typedef std::vector<std::pair<size_t, size_t>> container_type;
-    typedef typename container_type::const_iterator const_iterator;
     const_iterator _container_iterator;
 
     CellIter(pele::Array<double> coords, pele::Array<double> boxv, double rcut, std::shared_ptr<distance_policy> dist=NULL)
@@ -60,8 +62,7 @@ protected:
     {
         if(_dist == NULL) _dist = std::make_shared<distance_policy>();
 
-        pele::Array<double> dp_boxv(distance_policy::_box);
-        if(dp_boxv != _boxv){
+        if(_boxv.size() != _ndim){
             throw std::runtime_error("distance policy boxv and cell list boxv differ in size");
         }
         if(_boxv[0] != _boxv[_ndim-1] || _boxv[0] != _boxv[_ndim]){
@@ -70,9 +71,6 @@ protected:
 
         this->_setup();
     }
-
-    const_iterator & begin() { return _atom_neighbor_list.begin(); }
-    const_iterator & end() { return _atom_neighbor_list.end(); }
 
     //return cell index from coordinates
     //this function assumes that particles have been already put in box
@@ -156,7 +154,7 @@ protected:
         for(size_t i=0; i<_ncells;++i){
             std::vector<double> ineighbors;
             for(size_t j=0; j<_ncells;++j){
-                if (this->_areneighbors(i,j)){
+                if (this->_areneighbors(i,j)){ //includes istself as a neighbor
                     ineighbors.push_back(j);
                 }
             }
