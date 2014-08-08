@@ -65,6 +65,9 @@ protected:
     pele::Array<long int> _hoc, _ll;
     std::vector<std::vector<double>> _cell_neighbors;
     std::vector<std::pair<size_t, size_t>> _atom_neighbor_list;
+    typedef std::vector<std::pair<size_t, size_t>> container_type;
+    typedef typename container_type::const_iterator const_iterator;
+    const_iterator _container_iterator;
 
     CellIter(pele::Array<double> coords, pele::Array<double> boxv, double rcut, std::shared_ptr<distance_policy> dist=NULL)
         : NeighborIter<distance_policy>(coords, rcut, dist),
@@ -91,6 +94,9 @@ protected:
         }
         this->_setup();
     }
+
+    const_iterator & begin() { return _atom_neighbor_list.begin(); }
+    const_iterator & end() { return _atom_neighbor_list.end(); }
 
     //return cell index from coordinates
     //this function assumes that particles have been already put in box
@@ -220,6 +226,7 @@ protected:
     }
 
     void _reset_iterator(){
+        _container_iterator = _atom_neighbor_list.begin();
         this->_iter = 0;
         _atom_neighbor_list.clear();
     }
@@ -239,7 +246,7 @@ public:
 
     virtual void reset(pele::Array<double> coords)
     {
-       this->_coords.assign(coords);
+        this->_coords.assign(coords);
 
         try{
             this->_dist->put_in_box(this->_coords);
@@ -257,14 +264,16 @@ public:
 
     virtual std::pair<size_t, size_t> next()
     {
-        std::pair<size_t, size_t> atom_pair = _atom_neighbor_list[this->_iter];
-        ++this->_iter;
-        return atom_pair;
+        return *(_container_iterator++);
+        //std::pair<size_t, size_t> atom_pair = _atom_neighbor_list[this->_iter];
+        //++this->_iter;
+        //return atom_pair;
     }
 
     virtual bool done() const
     {
-        return this->_iter == _atom_neighbor_list.size();
+        return _container_iterator == _atom_neighbor_list.end();
+        //return this->_iter == _atom_neighbor_list.size();
     }
 
 
