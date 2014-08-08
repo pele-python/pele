@@ -25,8 +25,43 @@ from pele.mindist import MinPermDistCluster, ExactMatchCluster
 from pele.systems import AtomicCluster
 from copy import deepcopy
 import numpy as np
+from pele.utils.elements import elements
+
+class Molecule(object):
+    def __init__(self,types,permlist,bonds):
+        self.types=types
+        self.natoms=len(types)
+        self.permlist=permlist
+        self.masses=[elements[e]["mass"] for e in self.types]
+        self.bonds=bonds
 
 class MolecularCluster(AtomicCluster):
+    def __init__(self,nmolecules):
+        self.nmolecules=nmolecules
+        self.molecule=self.define_molecule()
+        self.masses=self.get_masses()
+        self.natoms=self.nmolecules*self.molecule.natoms
+        
+        super(MolecularCluster,self).__init__()
+        
+    def define_molecule(self):
+        raise NotImplementedError
+
+    def get_masses(self):
+        return self.nmolecules*self.molecule.masses
+
+    def get_metric_tensor(self, coords):
+        return np.eye(self.natoms)/self.masses
+
+    def get_permlist(self):
+        m=self.molecule.natoms
+        n=self.nmolecules
+        l=range(self.natoms)
+        permlist=[[l[i::m] for i in range(m)]]
+        for mp in self.molecule.permlist:
+            permlist+=[[x+m*i for x in mp] for i in range(n)] 
+        return permlist
+    
     def get_compare_exact(self, **kwargs):
         """this function quickly determines whether two clusters are identical
         given translational, rotational and permutational symmetries
