@@ -59,7 +59,6 @@ template<typename distance_policy=periodic_distance<3> >
 class CellIter : public NeighborIter<distance_policy>
 {
 protected:
-    static const size_t _ndim = distance_policy::_ndim;
     const pele::Array<double> _boxv;
     const size_t _natoms, _ncellx, _ncells, _atomi, _atomj, _neigh, _neigh_max;
     const double _rcell;
@@ -71,7 +70,7 @@ protected:
         : NeighborIter<distance_policy>(coords, rcut, dist),
           _boxv(boxv),
           _ncellx(floor(boxv[0]/rcut)),            //no of cells in one dimension
-          _ncells(std::pow(_ncellx, _ndim)),      //total no of cells
+          _ncells(std::pow(_ncellx, this->_ndim)),      //total no of cells
           _rcell(boxv[0]/_ncellx),                //size of cell
           _hoc(_ncells),                          //head of chain
           _ll(_natoms),                          //linked list
@@ -87,7 +86,7 @@ protected:
         catch (std::exception& e){
             cout << "this type of distance does not have a box array. Exception: " << e.what() << '\n';
         }
-        if(_boxv[0] != _boxv[_ndim-1] || _boxv[0] != _boxv[_ndim]){
+        if(_boxv[0] != _boxv[this->_ndim-1] || _boxv[0] != _boxv[this->_ndim]){
             throw std::runtime_error("cell lists not implemented for non cubic box");
         }
         this->_setup();
@@ -99,7 +98,7 @@ protected:
     {
         size_t icell = 0;
 
-        for(size_t j =0;j<_ndim;++j)
+        for(size_t j =0;j<this->_ndim;++j)
         {
             size_t j1 = _natoms*i + j;
             double x = this->_coords[j1];
@@ -116,14 +115,14 @@ protected:
     //returns the coordinates to the corner of one of the cells
     double * _cell2coords(size_t icell)
     {
-        double cellcorner[_ndim]; //coordinate of cell bottom left corner
-        std::vector<double> indexes(_ndim,0); //this array will store indexes, set to 0
+        double cellcorner[this->_ndim]; //coordinate of cell bottom left corner
+        std::vector<double> indexes(this->_ndim,0); //this array will store indexes, set to 0
         double index = 0;
 
-        for(size_t i = _ndim - 1; i >= 0; --i)
+        for(size_t i = this->_ndim - 1; i >= 0; --i)
         {
             index = icell;
-            for (int j = _ndim - 1; j >= i; --j)
+            for (int j = this->_ndim - 1; j >= i; --j)
             {
                 index -= indexes[j] * std::pow(_ncellx,j);
             }
@@ -139,14 +138,14 @@ protected:
     //test whether 2 cells are neighbours
     bool _areneighbors(size_t icell, size_t jcell)
     {
-        double icell_coords[_ndim];
-        double jcell_coords[_ndim];
+        double icell_coords[this->_ndim];
+        double jcell_coords[this->_ndim];
 
         icell_coords = this->_cell2coords(icell);
         jcell_coords = this->_cell2coords(jcell);
         //compute difference
 
-        for (int i=0;i<_ndim;++i){
+        for (int i=0;i<this->_ndim;++i){
             double dxmin;
             bool dxmin_trial = false;
             icell_coords[i] -= jcell_coords[i];
@@ -163,7 +162,7 @@ protected:
         }
 
         double r2 = 0;
-        for (int i=0;i<_ndim;++i){
+        for (int i=0;i<this->_ndim;++i){
             r2 +=  icell_coords[i]*icell_coords[i];
         }
 
