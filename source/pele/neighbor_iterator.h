@@ -205,7 +205,7 @@ protected:
 
 
 public:
-    virtual ~NeighborIter() {}
+    virtual ~CellIter() {}
 
     /*re-build linked lists
      * Algorithm 37 page 552 Understanding Molecular Simulation 2nd ed.
