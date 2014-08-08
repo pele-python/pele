@@ -27,7 +27,7 @@ cdef extern from "pele/inversepower.h" namespace "pele":
         cInversePowerPeriodic(double pow, double eps, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
 
 cdef class InversePower(_pele.BasePotential):
-    """define the python interface to the c++ WCA implementation
+    """define the python interface to the c++ InversePower implementation
     """
     cpdef bool periodic 
     def __cinit__(self, pow, eps, radii, ndim=3, boxvec=None, boxl=None):
