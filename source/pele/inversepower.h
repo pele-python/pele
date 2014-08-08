@@ -40,9 +40,9 @@ struct InversePower_interaction {
     Array<double> const _radii;
 
     InversePower_interaction(double pow, double eps, Array<double> const radii)
-    : _eps(eps),
-      _pow(pow),
-      _radii(radii.copy())
+        : _eps(eps),
+          _pow(pow),
+          _radii(radii.copy())
     {}
 
     /* calculate energy from distance squared */
@@ -53,8 +53,7 @@ struct InversePower_interaction {
         double r = std::sqrt(r2);
         if (r >= r0){
             E = 0.;
-        }
-        else{
+        } else {
             E = std::pow((1 -r/r0), _pow) * _eps/_pow;
         }
         return E;
@@ -70,8 +69,7 @@ struct InversePower_interaction {
         if (r >= r0){
             E = 0.;
             *gij = 0;
-        }
-        else {
+        } else {
             double factor = std::pow((1 -r/r0), _pow) * _eps;
             E =  factor / _pow;
             *gij =  - factor / ((r-r0)*r);
@@ -89,8 +87,7 @@ struct InversePower_interaction {
             E = 0.;
             *gij = 0;
             *hij=0;
-        }
-        else {
+        } else {
             double factor = std::pow((1 -r/r0), _pow) * _eps;
             double denom = 1.0 / (r-r0);
             E =  factor / _pow;
