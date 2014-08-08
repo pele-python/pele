@@ -53,7 +53,7 @@ struct InversePower_interaction {
 		else {
 			double factor = std::pow((1 -r/r0), _pow) * _eps;
 			E =  factor / _pow;
-			*gij =  - factor / (r-r0);
+			*gij =  - factor / ((r-r0)*r);
         }
 
         return E;
@@ -73,7 +73,7 @@ struct InversePower_interaction {
 			double factor = std::pow((1 -r/r0), _pow) * _eps;
 			double denom = 1.0 / (r-r0);
 			E =  factor / _pow;
-			*gij =  - factor * denom ;
+			*gij =  - factor * denom / r ;
 			*hij = (_pow-1) * factor * denom * denom;
         }
 

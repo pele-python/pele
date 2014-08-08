@@ -1,6 +1,6 @@
 #include "pele/array.h"
 #include "pele/wca.h"
-#include "pele/hs_wca.h"
+#include "pele/inversepower.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -19,8 +19,8 @@ public:
     double pow, eps, etrue;
     Array<double> x, g, gnum, radii;
     virtual void SetUp(){
-    	pow = 2;
-    	eps = 2.1;
+    	pow = 2.5;
+    	eps = 1;
         x = Array<double>(9);
         x[0] = 0.1;
         x[1] = 0.2;
@@ -32,24 +32,24 @@ public:
         x[7] = 1.1;
         x[8] = 3.32;
         radii = Array<double>(3);
-        double f = .35;
+        double f = 1.;
         radii[0] = .91 * f;
         radii[1] = 1.1 * f;
         radii[2] = 1.13 * f;
-        etrue = 189.41835811474974;
+        etrue = 0.023173380132354017;
         g = Array<double>(x.size());
         gnum = Array<double>(x.size());
     }
 };
 
-/*TEST_F(InversePowerTest, Energy_Works){
-    InversePowerTest pot(pow, eps, radii);
+TEST_F(InversePowerTest, Energy_Works){
+    InversePower<3> pot(pow, eps, radii);
     double e = pot.get_energy(x);
     ASSERT_NEAR(e, etrue, 1e-10);
-}*/
+}
 
 TEST_F(InversePowerTest, EnergyGradient_AgreesWithNumerical){
-	InversePower pot(pow, eps, radii);
+	InversePower<3> pot(pow, eps, radii);
 	double e = pot.get_energy_gradient(x, g);
 	std::cout<<"energy"<<e<<std::endl;
     double ecomp = pot.get_energy(x);
@@ -61,7 +61,7 @@ TEST_F(InversePowerTest, EnergyGradient_AgreesWithNumerical){
 }
 
 TEST_F(InversePowerTest, EnergyGradientHessian_AgreesWithNumerical){
-	InversePower pot(pow, eps, radii);
+	InversePower<3> pot(pow, eps, radii);
     Array<double> h(x.size()*x.size());
     Array<double> hnum(h.size());
     double e = pot.get_energy_gradient_hessian(x, g, h);
