@@ -10,10 +10,6 @@ using pele::Array;
 using pele::InversePowerPeriodic;
 using pele::InversePower_interaction;
 
-/*
- * HS_WCA tests
- */
-
 class CellIterTest :  public ::testing::Test
 {
 public:
@@ -74,18 +70,22 @@ TEST_F(CellIterTest, Number_of_neighbors){
     ASSERT_EQ(count, cell4.get_nr_unique_pairs());
 }
 
-/*
 TEST_F(CellIterTest, Energy_Works){
-    pele::InversePowerNeighborList<3> pot(pow, eps, radii, boxvec);
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, 1.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell2(pow, eps, radii, boxvec, x, rcut, 2.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell3(pow, eps, radii, boxvec, x, rcut, 3.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell4(pow, eps, radii, boxvec, x, rcut, 4.0);
+    pele::InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
+    const double ecell = pot_cell.get_energy(x);
+    const double ecell2 = pot_cell2.get_energy(x);
+    const double ecell3 = pot_cell3.get_energy(x);
+    const double ecell4 = pot_cell4.get_energy(x);
     const double etrue = pot.get_energy(x);
-    //std::cout << "etrue: " << etrue << "\n";
-    double ecell =0;
-    for(int i=0;i<3;++i){
-        ecell += 0.00000;
-    }
-    ASSERT_NEAR(e, etrue, 1e-10);
+    ASSERT_NEAR(ecell, etrue, 1e-10);
+    ASSERT_NEAR(ecell2, etrue, 1e-10);
+    ASSERT_NEAR(ecell3, etrue, 1e-10);
+    ASSERT_NEAR(ecell4, etrue, 1e-10);
 }
-*/
 
 /*
 TEST_F(CellIterTest, EnergyGradient_AgreesWithNumerical){
