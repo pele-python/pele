@@ -23,12 +23,10 @@ namespace pele
  * */
 
 template<typename distance_policy = periodic_distance<3> >
-class CellIter
-{
+class CellIter{
 public:
     typedef std::vector<std::pair<size_t, size_t> > container_type;
     typedef typename container_type::const_iterator const_iterator;
-
 protected:
     static const size_t _ndim = distance_policy::_ndim;
     std::shared_ptr<distance_policy> _dist;
@@ -36,7 +34,6 @@ protected:
     const size_t _natoms;
     const double _rcut;
     bool _initialised;
-
     const pele::Array<double> _boxv;
     const size_t _ncellx;
     const size_t _ncells;
@@ -45,9 +42,7 @@ protected:
     std::vector<std::vector<double> > _cell_neighbors;
     std::vector<std::pair<size_t, size_t> > _atom_neighbor_list;
     const_iterator _container_iterator;
-
 public:
-
     CellIter(pele::Array<double> coords, pele::Array<double> boxv, const double rcut, const double ncellx_scale = 1.0)
         : _dist(std::make_shared<distance_policy>(boxv.copy())), //DEBUG: this won't work in principle with all distance_policies
           _coords(coords.copy()),
@@ -74,9 +69,20 @@ public:
 
     ~CellIter() {}
 
-    const_iterator begin() { return _atom_neighbor_list.begin(); }
-    const_iterator end() { return _atom_neighbor_list.end(); }
-    size_t get_nr_unique_pairs() const { return _atom_neighbor_list.size(); }
+    const_iterator begin()
+    {
+        return _atom_neighbor_list.begin();
+    }
+
+    const_iterator end()
+    {
+        return _atom_neighbor_list.end();
+    }
+
+    size_t get_nr_unique_pairs() const
+    {
+        return _atom_neighbor_list.size();
+    }
 
     void _setup()
     {
@@ -152,7 +158,6 @@ public:
 
         return cellcorner;
     }
-
 
     //test whether 2 cells are neighbours
     bool _areneighbors(size_t icell, size_t jcell)
