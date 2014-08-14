@@ -87,11 +87,10 @@ TEST_F(CellIterTest, Energy_Works){
     ASSERT_NEAR(ecell4, etrue, 1e-10);
 }
 
-/*
+
 TEST_F(CellIterTest, EnergyGradient_AgreesWithNumerical){
-	InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
+    pele::InversePowerPeriodicCellLists<3> pot(pow, eps, radii, boxvec, x, rcut, 1.0);
 	double e = pot.get_energy_gradient(x, g);
-	std::cout<<"energy"<<e<<std::endl;
     double ecomp = pot.get_energy(x);
     ASSERT_NEAR(e, ecomp, 1e-10);
     pot.numerical_gradient(x, gnum, 1e-6);
@@ -100,6 +99,7 @@ TEST_F(CellIterTest, EnergyGradient_AgreesWithNumerical){
     }
 }
 
+/*
 TEST_F(CellIterTest, EnergyGradientHessian_AgreesWithNumerical){
 	InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
     Array<double> h(x.size()*x.size());

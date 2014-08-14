@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <stdexcept>
 
 #include "base_potential.h"
 #include "array.h"
@@ -51,6 +52,38 @@ public:
                 r2 += dr[k] * dr[k];
             }
             result += m_interaction->energy(r2, i, j);
+            delete[] dr;
+        }
+        return result;
+    }
+    virtual double get_energy_gradient(Array<double> xa, Array<double> grad)
+    {
+        refresh_cell_list(xa);
+        const double* x = xa.data();
+        double result = 0;
+        grad.assign(double(0));
+        if (xa.size() != grad.size()) {
+            throw std::runtime_error("CellListPotential::get_energy_gradient: illegal input");
+        }
+        for (auto ijpair = m_celliter->begin(); ijpair != m_celliter->end(); ++ijpair) {
+            const size_t i = ijpair->first;
+            const size_t j = ijpair->second;
+            const size_t xi_off = m_ndim * i;
+            const size_t xj_off = m_ndim * j;
+            double* dr = new double[m_ndim];
+            m_dist->get_rij(dr, x + xi_off, x + xj_off);
+            double r2 = 0;
+            for (size_t k = 0; k < m_ndim; ++k) {
+                r2 += dr[k] * dr[k];
+            }
+            double gij;
+            result += m_interaction->energy_gradient(r2, &gij, i, j);
+            for (size_t k = 0; k < m_ndim; ++k) {
+                grad[xi_off + k] -= gij * dr[k];
+            }
+            for (size_t k = 0; k < m_ndim; ++k) {
+                grad[xj_off + k] += gij * dr[k];
+            }
             delete[] dr;
         }
         return result;
