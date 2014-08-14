@@ -49,8 +49,8 @@ public:
 TEST_F(CellIterTest, Number_of_neighbors){
     pele::CellIter<> cell = pele::CellIter<>(x, boxvec, rcut);
     pele::CellIter<> cell2 = pele::CellIter<>(x, boxvec, rcut, 1);
-    pele::CellIter<> cell3 = pele::CellIter<>(x, boxvec, rcut, 3);
-    pele::CellIter<> cell4 = pele::CellIter<>(x, boxvec, rcut, 4.2);
+    pele::CellIter<> cell3 = pele::CellIter<>(x, boxvec, rcut, 4.2);
+    pele::CellIter<> cell4 = pele::CellIter<>(x, boxvec, rcut, 5);
     size_t count = 0;
     size_t count2 = 0;
     size_t count3 = 0;
@@ -74,17 +74,20 @@ TEST_F(CellIterTest, Number_of_neighbors){
     ASSERT_EQ(count, cell4.get_nr_unique_pairs());
 }
 
-/*TEST_F(CellIterTest, Energy_Works){
-    InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
-    double e = pot.get_energy(x);
-
+/*
+TEST_F(CellIterTest, Energy_Works){
+    pele::InversePowerNeighborList<3> pot(pow, eps, radii, boxvec);
+    const double etrue = pot.get_energy(x);
+    //std::cout << "etrue: " << etrue << "\n";
     double ecell =0;
     for(int i=0;i<3;++i){
-        ecell +=
+        ecell += 0.00000;
     }
     ASSERT_NEAR(e, etrue, 1e-10);
 }
+*/
 
+/*
 TEST_F(CellIterTest, EnergyGradient_AgreesWithNumerical){
 	InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
 	double e = pot.get_energy_gradient(x, g);

@@ -109,10 +109,10 @@ struct InversePower_interaction {
  * Pairwise Inverse Power potential
  */
 template <size_t ndim>
-class InversePower : public SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim>> {
+class InversePower : public SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim> > {
 public:
     InversePower(double pow, double eps, pele::Array<double> const radii)
-        : SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim>>(
+        : SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<cartesian_distance<ndim>>()
           )
@@ -120,17 +120,18 @@ public:
 };
 
 template <size_t ndim>
-class InversePowerPeriodic : public SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim>> {
+class InversePowerPeriodic : public SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim> > {
 public:
     InversePowerPeriodic(double pow, double eps, pele::Array<double> const radii, pele::Array<double> const boxvec)
-        : SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim>>(
+        : SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<periodic_distance<ndim>>(boxvec)
           )
     {}
 };
 
-}
-#endif
+} //namespace pele
+
+#endif //#ifndef _PELE_INVERSEPOWER_H
 
 
