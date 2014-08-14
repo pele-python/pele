@@ -54,6 +54,8 @@ TEST_F(CellIterTest, Number_of_neighbors){
         ++count;
     }
     ASSERT_EQ(3u, count);
+    ASSERT_EQ(3u, static_cast<unsigned int>(cell.end() - cell.begin()));
+    ASSERT_EQ(3u, cell.get_nr_unique_pairs());
 }
 
 /*TEST_F(CellIterTest, Energy_Works){

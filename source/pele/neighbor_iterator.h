@@ -40,8 +40,8 @@ protected:
     const size_t _ncellx, _ncells;
     const double _rcell;
     pele::Array<long int> _hoc, _ll;
-    std::vector<std::vector<double>> _cell_neighbors;
-    std::vector<std::pair<size_t, size_t>> _atom_neighbor_list;
+    std::vector<std::vector<double> > _cell_neighbors;
+    std::vector<std::pair<size_t, size_t> > _atom_neighbor_list;
     const_iterator _container_iterator;
 
 public:
@@ -49,22 +49,21 @@ public:
     CellIter(pele::Array<double> coords, pele::Array<double> boxv, double rcut)
         : _dist(std::make_shared<distance_policy>(boxv.copy())), //DEBUG: this won't work in principle with all distance_policies
           _coords(coords.copy()),
-          _natoms(coords.size()/_ndim),
+          _natoms(coords.size() / _ndim),
           _rcut(rcut),
           _initialised(false),
           _boxv(boxv.copy()),
-          _ncellx(floor(boxv[0]/rcut)),            //no of cells in one dimension
+          _ncellx(floor(boxv[0] / rcut)),            //no of cells in one dimension
           _ncells(std::pow(_ncellx, _ndim)),      //total no of cells
-          _rcell(boxv[0]/_ncellx),                //size of cell
+          _rcell(boxv[0] / _ncellx),                //size of cell
           _hoc(_ncells),                          //head of chain
           _ll(_natoms),                          //linked list
           _cell_neighbors(),                      //empty vector
           _atom_neighbor_list()
     {
-        if(_boxv.size() != _ndim){
+        if(_boxv.size() != _ndim) {
             throw std::runtime_error("distance policy boxv and cell list boxv differ in size");
         }
-
         this->_setup();
     }
 
@@ -72,6 +71,7 @@ public:
 
     const_iterator begin() { return _atom_neighbor_list.begin(); }
     const_iterator end() { return _atom_neighbor_list.end(); }
+    size_t get_nr_unique_pairs() const { return _atom_neighbor_list.size(); }
 
     void _setup()
     {
@@ -80,7 +80,8 @@ public:
         _initialised = true;
     }
 
-    void _reset_iterator(){
+    void _reset_iterator()
+    {
         _atom_neighbor_list.clear();
         _container_iterator = _atom_neighbor_list.begin();
     }
@@ -112,41 +113,35 @@ public:
 
     //return cell index from coordinates
     //this function assumes that particles have been already put in box
-    inline size_t _atom2cell(size_t i)
+    inline size_t _atom2cell(const size_t i)
     {
         size_t icell = 0;
-
-        for(size_t j =0;j<_ndim;++j)
-        {
-            size_t j1 = _natoms*i + j;
+        for(size_t j = 0; j < _ndim; ++j) {
+            size_t j1 = _natoms * i + j;
             double x = _coords[j1];
-
-            if (x < 0){
+            if (x < 0) {
                 x += _boxv[j];
             }
-            icell += floor(x / _rcell) * std::pow(_ncellx,j);
+            icell += floor(x / _rcell) * std::pow(_ncellx, j);
         }
-
         return icell;
     }
 
     //returns the coordinates to the corner of one of the cells
-    pele::Array<double> _cell2coords(size_t icell)
+    pele::Array<double> _cell2coords(const size_t icell)
     {
         pele::Array<double> cellcorner(_ndim); //coordinate of cell bottom left corner
-        std::vector<double> indexes(_ndim,0); //this array will store indexes, set to 0
+        std::vector<double> indexes(_ndim, 0); //this array will store indexes, set to 0
         double index = 0;
 
         //don't change these loops to size_t or the conditions will not hold
-        for(int i = _ndim - 1; i >= 0; --i)
-        {
+        for(int i = _ndim - 1; i >= 0; --i) {
             index = icell;
-            for (int j = _ndim - 1; j >= i; --j)
-            {
-                index -= indexes[j] * std::pow(_ncellx,j);
+            for (int j = _ndim - 1; j >= i; --j) {
+                index -= indexes[j] * std::pow(_ncellx, j);
             }
 
-            indexes[i] = floor(index / std::pow(_ncellx,i));
+            indexes[i] = floor(index / std::pow(_ncellx, i));
             cellcorner[i] = _rcell * indexes[i];
         }
 
@@ -161,15 +156,15 @@ public:
         pele::Array<double> jcell_coords(this->_cell2coords(jcell));
         //compute difference
 
-        for (size_t i=0;i<_ndim;++i){
+        for (size_t i = 0; i < _ndim; ++i) {
             double dxmin;
             bool dxmin_trial = false;
             icell_coords[i] -= jcell_coords[i];
 
-            for(size_t j=0;j<=1;++j){ //DEBUG should include j=-1 like in jake's implementation?
-                double d = icell_coords[i] + j*_rcell;
-                d -= _boxv[0] * round(d/_boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
-                if (std::abs(d) < dxmin || !dxmin_trial){
+            for(size_t j = 0; j <= 1; ++j) { //DEBUG should include j=-1 like in jake's implementation?
+                double d = icell_coords[i] + j * _rcell;
+                d -= _boxv[0] * round(d / _boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
+                if (std::abs(d) < dxmin || !dxmin_trial) {
                     dxmin = d;
                     dxmin_trial = true;
                 }
@@ -178,19 +173,19 @@ public:
         }
 
         double r2 = 0;
-        for (size_t i=0;i<_ndim;++i){
-            r2 +=  icell_coords[i]*icell_coords[i];
+        for (size_t i = 0; i < _ndim; ++i) {
+            r2 +=  icell_coords[i] * icell_coords[i];
         }
 
-        return r2 <= _rcut*_rcut;
+        return r2 <= _rcut * _rcut;
     }
 
     void _build_cell_neighbors_list()
     {
-        for(size_t i=0; i<_ncells;++i){
+        for(size_t i = 0; i < _ncells; ++i) {
             std::vector<double> ineighbors;
-            for(size_t j=0; j<_ncells;++j){
-                if (this->_areneighbors(i,j)){ //includes istself as a neighbor
+            for(size_t j = 0; j < _ncells; ++j) {
+                if (this->_areneighbors(i, j)) { //includes istself as a neighbor
                     ineighbors.push_back(j);
                 }
             }
@@ -200,17 +195,17 @@ public:
 
     inline void _build_atom_neighbors_list()
     {
-        for(size_t i=0;i<_natoms;++i){
-             size_t icell = this->_atom2cell(i);
+        for(size_t i = 0; i < _natoms; ++i) {
+             const size_t icell = this->_atom2cell(i);
              //loop through all the neighbouring cells of icell
-             for(auto& jcell : _cell_neighbors[icell]){
+             for(auto& jcell : _cell_neighbors[icell]) {
                  double j = _hoc[jcell];
-                 while (j > 0){
-                     if (j > i){ //this should avoid double counting (not sure though)
-                         std::pair<size_t, size_t> pair(i,j);
+                 while (j > 0) {
+                     if (j > i) { //this should avoid double counting (not sure though)
+                         std::pair<size_t, size_t> pair(i, j);
                          _atom_neighbor_list.push_back(pair);
                      }
-                     j=_ll[j];
+                     j = _ll[j];
                  }
              }
         }
@@ -220,8 +215,7 @@ public:
     {
         _hoc.assign(-1); //set head of chains to -1 (empty state)
 
-        for(size_t i=0;i<_natoms;++i)
-        {
+        for(size_t i = 0; i < _natoms; ++i) {
             size_t icell = this->_atom2cell(i);
             _ll[i] = _hoc[icell];
             _hoc[icell] = i;
@@ -273,6 +267,6 @@ public:
 };
 
 
-}
+} //namespace pele
 
-#endif
+#endif //#ifndef PELE_NEIGHBOR_ITERATOR_H
