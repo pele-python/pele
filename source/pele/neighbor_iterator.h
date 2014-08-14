@@ -1,14 +1,15 @@
 #ifndef PELE_NEIGHBOR_ITERATOR_H
 #define PELE_NEIGHBOR_ITERATOR_H
 
-#include <assert.h>
-#include <vector>
-#include "base_potential.h"
-#include "array.h"
-#include "distance.h"
 #include <iostream>
 #include <memory>
 #include <exception>
+#include <cassert>
+#include <vector>
+
+#include "base_potential.h"
+#include "array.h"
+#include "distance.h"
 
 namespace pele
 {
