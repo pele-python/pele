@@ -87,29 +87,46 @@ TEST_F(CellIterTest, Energy_Works){
 }
 
 TEST_F(CellIterTest, EnergyGradient_AgreesWithNumerical){
-    pele::InversePowerPeriodicCellLists<3> pot(pow, eps, radii, boxvec, x, rcut, 1.0);
-	const double e = pot.get_energy_gradient(x, g);
-    const double ecomp = pot.get_energy(x);
-    ASSERT_NEAR(e, ecomp, 1e-10);
-    pot.numerical_gradient(x, gnum, 1e-6);
-    for (size_t k=0; k<6; ++k) {
-        ASSERT_NEAR(g[k], gnum[k], 1e-6);
+    pele::InversePowerPeriodic<3> pot_no_cells(pow, eps, radii, boxvec);
+    const double etrue = pot_no_cells.get_energy(x);
+    const size_t N = 4;
+    std::vector<std::shared_ptr<pele::InversePowerPeriodicCellLists<3> > > pot;
+    for (size_t i = 0; i < N; ++i) {
+        pot.push_back(std::make_shared<pele::InversePowerPeriodicCellLists<3> >(
+                pow, eps, radii, boxvec, x, rcut, 1 + i));
+    }
+    pot.swap(pot);
+    std::vector<double> e(N, 0);
+    std::vector<double> ecomp(N, 0);
+    for (size_t i = 0; i < N; ++i) {
+        e.at(i) = pot.at(i)->get_energy_gradient(x, g);
+        ecomp.at(i) = pot.at(i)->get_energy(x);
+        pot.at(i)->numerical_gradient(x, gnum, 1e-6);
+        for (size_t k = 0; k < 6; ++k) {
+            ASSERT_NEAR(g[k], gnum[k], 1e-6);
+        }
+    }
+    for (size_t i = 0; i < N; ++i) {
+        ASSERT_NEAR(e.at(i), ecomp.at(i), 1e-10);
+        ASSERT_NEAR(e.at(i), etrue, 1e-10);
     }
 }
 
 TEST_F(CellIterTest, EnergyGradientHessian_AgreesWithNumerical){
-    pele::InversePowerPeriodicCellLists<3> pot(pow, eps, radii, boxvec, x, rcut, 1.0);
-    Array<double> h(x.size() * x.size());
-    Array<double> hnum(h.size());
-    const double e = pot.get_energy_gradient_hessian(x, g, h);
-    const double ecomp = pot.get_energy(x);
-    pot.numerical_gradient(x, gnum);
-    pot.numerical_hessian(x, hnum);
-    EXPECT_NEAR(e, ecomp, 1e-10);
-    for (size_t i=0; i<g.size(); ++i) {
-        ASSERT_NEAR(g[i], gnum[i], 1e-10);
-    }
-    for (size_t i=0; i<h.size(); ++i) {
-        ASSERT_NEAR(h[i], hnum[i], 1e-10);
+    for (size_t i = 0; i < 4; ++i) {
+        pele::InversePowerPeriodicCellLists<3> pot(pow, eps, radii, boxvec, x, rcut, 1.0 + i);
+        Array<double> h(x.size() * x.size());
+        Array<double> hnum(h.size());
+        const double e = pot.get_energy_gradient_hessian(x, g, h);
+        const double ecomp = pot.get_energy(x);
+        pot.numerical_gradient(x, gnum);
+        pot.numerical_hessian(x, hnum);
+        EXPECT_NEAR(e, ecomp, 1e-10);
+        for (size_t i=0; i<g.size(); ++i) {
+            ASSERT_NEAR(g[i], gnum[i], 1e-10);
+        }
+        for (size_t i=0; i<h.size(); ++i) {
+            ASSERT_NEAR(h[i], hnum[i], 1e-10);
+        }
     }
 }
