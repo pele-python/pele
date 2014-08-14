@@ -21,11 +21,11 @@ namespace pele
  * so in this first implementation we do not account for that scenario
  * */
 
-template<typename distance_policy=periodic_distance<3> >
+template<typename distance_policy = periodic_distance<3> >
 class CellIter
 {
 public:
-    typedef std::vector<std::pair<size_t, size_t>> container_type;
+    typedef std::vector<std::pair<size_t, size_t> > container_type;
     typedef typename container_type::const_iterator const_iterator;
 
 protected:
