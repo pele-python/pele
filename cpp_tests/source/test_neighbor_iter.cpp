@@ -53,7 +53,7 @@ TEST_F(CellIterTest, Number_of_neighbors){
     for(it = cell.begin(); it != cell.end(); ++it){
         ++count;
     }
-    ASSERT_EQ(3,count);
+    ASSERT_EQ(3u, count);
 }
 
 /*TEST_F(CellIterTest, Energy_Works){
