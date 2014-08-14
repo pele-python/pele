@@ -38,7 +38,8 @@ protected:
     bool _initialised;
 
     const pele::Array<double> _boxv;
-    const size_t _ncellx, _ncells;
+    const size_t _ncellx;
+    const size_t _ncells;
     const double _rcell;
     pele::Array<long int> _hoc, _ll;
     std::vector<std::vector<double> > _cell_neighbors;
@@ -47,14 +48,14 @@ protected:
 
 public:
 
-    CellIter(pele::Array<double> coords, pele::Array<double> boxv, double rcut)
+    CellIter(pele::Array<double> coords, pele::Array<double> boxv, const double rcut, const double ncellx_scale = 1.0)
         : _dist(std::make_shared<distance_policy>(boxv.copy())), //DEBUG: this won't work in principle with all distance_policies
           _coords(coords.copy()),
           _natoms(coords.size() / _ndim),
           _rcut(rcut),
           _initialised(false),
           _boxv(boxv.copy()),
-          _ncellx(floor(boxv[0] / rcut)),            //no of cells in one dimension
+          _ncellx(ncellx_scale * floor(boxv[0] / rcut)),            //no of cells in one dimension
           _ncells(std::pow(_ncellx, _ndim)),      //total no of cells
           _rcell(boxv[0] / _ncellx),                //size of cell
           _hoc(_ncells),                          //head of chain
@@ -62,8 +63,11 @@ public:
           _cell_neighbors(),                      //empty vector
           _atom_neighbor_list()
     {
-        if(_boxv.size() != _ndim) {
-            throw std::runtime_error("distance policy boxv and cell list boxv differ in size");
+        if (_boxv.size() != _ndim) {
+            throw std::runtime_error("CellIter::CellIter: distance policy boxv and cell list boxv differ in size");
+        }
+        if (*std::min_element(_boxv.data(), _boxv.data() + _ndim) < rcut) {
+            throw std::runtime_error("CellIter::CellIter: illegal rcut");
         }
         this->_setup();
     }
