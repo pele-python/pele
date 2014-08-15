@@ -138,3 +138,8 @@ TEST_F(CellIterTest, EnergyGradientHessian_AgreesWithNumerical){
         }
     }
 }
+
+//TEST_F(CellIterTest, LJWithMoreParticles_Works)
+//TEST_F(CellIterTest, LJWithMoreParticles_Minimizes)
+//TEST_F(CellIterTest, LJWithMoreParticles_CanImprovePerformance)
+//TEST_F(CellIterTest, LJWithMoreParticles_CanWorsenPerformance)
