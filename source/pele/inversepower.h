@@ -287,10 +287,10 @@ public:
 template <size_t ndim, int POW>
 class InverseIntPowerPeriodic : public SimplePairwisePotential< InverseIntPower_interaction<POW>, periodic_distance<ndim> > {
 public:
-    InverseIntPowerPeriodic(double eps, pele::Array<double> const radii)
+    InverseIntPowerPeriodic(double eps, pele::Array<double> const radii, pele::Array<double> const boxvec)
         : SimplePairwisePotential< InverseIntPower_interaction<POW>, periodic_distance<ndim> >(
                 std::make_shared<InverseIntPower_interaction<POW> >(eps, radii),
-                std::make_shared<periodic_distance<ndim> >()
+                std::make_shared<periodic_distance<ndim> >(boxvec)
           )
     {}
 };
@@ -313,10 +313,10 @@ public:
 template <size_t ndim, int POW2>
 class InverseHalfIntPowerPeriodic : public SimplePairwisePotential< InverseHalfIntPower_interaction<POW2>, periodic_distance<ndim> > {
 public:
-    InverseHalfIntPowerPeriodic(double eps, pele::Array<double> const radii)
+    InverseHalfIntPowerPeriodic(double eps, pele::Array<double> const radii, pele::Array<double> const boxvec)
         : SimplePairwisePotential< InverseHalfIntPower_interaction<POW2>, periodic_distance<ndim> >(
                 std::make_shared<InverseHalfIntPower_interaction<POW2> >(eps, radii),
-                std::make_shared<periodic_distance<ndim> >()
+                std::make_shared<periodic_distance<ndim> >(boxvec)
           )
     {}
 };

@@ -17,6 +17,7 @@ from pele.potentials._pele cimport shared_ptr
 cdef extern from *:
     ctypedef int INT2 "2"    # a fake type
     ctypedef int INT3 "3"    # a fake type
+    ctypedef int INT5 "5"   
 
 
 # use external c++ class
@@ -25,6 +26,14 @@ cdef extern from "pele/inversepower.h" namespace "pele":
         cInversePower(double pow, double eps, _pele.Array[double] radii) except +
     cdef cppclass  cInversePowerPeriodic "pele::InversePowerPeriodic"[ndim]:
         cInversePowerPeriodic(double pow, double eps, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
+    cdef cppclass cInverseIntPower "pele::InverseIntPower"[ndim, pow]:
+        cInverseIntPower(double eps, _pele.Array[double] radii) except +
+    cdef cppclass cInverseIntPowerPeriodic "pele::InverseIntPowerPeriodic"[ndim, pow]:
+        cInverseIntPowerPeriodic(double eps, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
+    cdef cppclass cInverseHalfIntPower "pele::InverseHalfIntPower"[ndim, pow2]:
+        cInverseHalfIntPower(double eps, _pele.Array[double] radii) except +
+    cdef cppclass cInverseHalfIntPowerPeriodic "pele::InverseHalfIntPowerPeriodic"[ndim, pow2]:
+        cInverseHalfIntPowerPeriodic(double eps, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
 
 cdef class InversePower(_pele.BasePotential):
     """define the python interface to the c++ InversePower implementation
@@ -59,4 +68,38 @@ cdef class InversePower(_pele.BasePotential):
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                  cInversePowerPeriodic[INT3](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                              _pele.Array[double](<double*> bv.data, bv.size)) )
-                
+cdef class InversePowerHook(_pele.BasePotential):
+    """define the python interface to the c++ InversePower implementation
+        pow == 2
+    """
+    cpdef bool periodic 
+    def __cinit__(self, eps, radii, ndim=3, boxvec=None, boxl=None):
+        assert(ndim == 2 or ndim == 3)
+        assert not (boxvec is not None and boxl is not None)
+        if boxl is not None:
+            boxvec = [boxl] * ndim
+        cdef np.ndarray[double, ndim=1] bv
+        cdef np.ndarray[double, ndim=1] radiic = np.array(radii, dtype=float) 
+        
+        if boxvec is None:
+            self.periodic = False
+            if ndim == 2:
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                                                                 cInverseIntPower[INT2, INT2](eps, _pele.Array[double](<double*> radiic.data, radiic.size)) )
+            else:
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                                                                 cInverseIntPower[INT3, INT2](eps, _pele.Array[double](<double*> radiic.data, radiic.size)) )
+
+        else:
+            self.periodic = True
+            assert(len(boxvec)==ndim)
+            bv = np.array(boxvec, dtype=float)
+            if ndim == 2:
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                                                                 cInverseIntPowerPeriodic[INT2, INT2](eps, _pele.Array[double](<double*> radiic.data, radiic.size),
+                                                                                             _pele.Array[double](<double*> bv.data, bv.size)) )
+            else:
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                                                                 cInverseIntPowerPeriodic[INT3, INT2](eps, _pele.Array[double](<double*> radiic.data, radiic.size),
+                                                                                             _pele.Array[double](<double*> bv.data, bv.size)) )
+                                
