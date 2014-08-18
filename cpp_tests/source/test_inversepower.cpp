@@ -57,7 +57,7 @@ TEST_F(InversePowerTest, EnergyGradient_AgreesWithNumerical){
     double ecomp = pot.get_energy(x);
     ASSERT_NEAR(e, ecomp, 1e-10);
     pot.numerical_gradient(x, gnum, 1e-6);
-    for (size_t k=0; k<6; ++k){
+    for (size_t k = 0; k < 6; ++k) {
         ASSERT_NEAR(g[k], gnum[k], 1e-6);
     }
 }
@@ -70,12 +70,11 @@ TEST_F(InversePowerTest, EnergyGradientHessian_AgreesWithNumerical){
     double ecomp = pot.get_energy(x);
     pot.numerical_gradient(x, gnum);
     pot.numerical_hessian(x, hnum);
-
     EXPECT_NEAR(e, ecomp, 1e-10);
-    for (size_t i=0; i<g.size(); ++i){
+    for (size_t i = 0; i < g.size(); ++i) {
         ASSERT_NEAR(g[i], gnum[i], 1e-6);
     }
-    for (size_t i=0; i<h.size(); ++i){
+    for (size_t i = 0; i < h.size(); ++i) {
         ASSERT_NEAR(h[i], hnum[i], 1e-3);
     }
 }
@@ -99,6 +98,70 @@ TEST_F(InversePowerTest, MetaPowFunctionsBasic_Work){
     true_result_std = std::pow(op, - 0.5 * POW);
     EXPECT_DOUBLE_EQ(true_result_direct, true_result_std);
     EXPECT_DOUBLE_EQ(true_result_direct, pele::neg_half_int_pow<- POW>(op));
+}
+
+TEST_F(InversePowerTest, InverseIntPower_AgreesWithInversePower){
+    const int pow = 4;
+    pele::InversePower<3> pot(pow, eps, radii);
+    pele::InverseIntPower<3, 4> pot_int(eps, radii);
+    const double e = pot.get_energy(x);
+    const double e_int = pot_int.get_energy(x);
+    ASSERT_NEAR(e, e_int, 1e-10);
+    pot.numerical_gradient(x, gnum, 1e-6);
+    pele::Array<double> gnum_int(gnum.size());
+    pot_int.numerical_gradient(x, gnum_int, 1e-6);
+    for (size_t k = 0; k < 6; ++k) {
+        ASSERT_NEAR(gnum[k], gnum_int[k], 1e-6);
+    }
+    pele::Array<double> h(x.size()*x.size());
+    pele::Array<double> hnum(h.size());
+    pot.get_energy_gradient_hessian(x, g, h);
+    pele::Array<double>g_int(g.size());
+    pele::Array<double>h_int(h.size());
+    pot_int.get_energy_gradient_hessian(x, g_int, h_int);
+    pot.numerical_gradient(x, gnum);
+    pot.numerical_hessian(x, hnum);
+    pele::Array<double> hnum_int(hnum.size());
+    pot_int.numerical_gradient(x, gnum_int);
+    pot_int.numerical_hessian(x, hnum_int);
+    for (size_t i = 0; i < gnum.size(); ++i) {
+        ASSERT_NEAR(gnum[i], gnum_int[i], 1e-10);
+    }
+    for (size_t i = 0; i < hnum.size(); ++i) {
+        ASSERT_NEAR(hnum[i], hnum_int[i], 1e-10);
+    }
+}
+
+TEST_F(InversePowerTest, InverseHalfIntPower_AgreesWithInversePower){
+    const double pow = 2.5;
+    pele::InversePower<3> pot(pow, eps, radii);
+    pele::InverseHalfIntPower<3, 5> pot_int(eps, radii);
+    const double e = pot.get_energy(x);
+    const double e_int = pot_int.get_energy(x);
+    ASSERT_NEAR(e, e_int, 1e-10);
+    pot.numerical_gradient(x, gnum, 1e-6);
+    pele::Array<double> gnum_int(gnum.size());
+    pot_int.numerical_gradient(x, gnum_int, 1e-6);
+    for (size_t k = 0; k < 6; ++k) {
+        ASSERT_NEAR(gnum[k], gnum_int[k], 1e-6);
+    }
+    pele::Array<double> h(x.size() * x.size());
+    pele::Array<double> hnum(h.size());
+    pot.get_energy_gradient_hessian(x, g, h);
+    pele::Array<double>g_int(g.size());
+    pele::Array<double>h_int(h.size());
+    pot_int.get_energy_gradient_hessian(x, g_int, h_int);
+    pot.numerical_gradient(x, gnum);
+    pot.numerical_hessian(x, hnum);
+    pele::Array<double> hnum_int(hnum.size());
+    pot_int.numerical_gradient(x, gnum_int);
+    pot_int.numerical_hessian(x, hnum_int);
+    for (size_t i = 0; i < gnum.size(); ++i) {
+        ASSERT_NEAR(gnum[i], gnum_int[i], 1e-10);
+    }
+    for (size_t i = 0; i < hnum.size(); ++i) {
+        ASSERT_NEAR(hnum[i], hnum_int[i], 1e-10);
+    }
 }
 
 //BEGIN: TEST_F(InversePowerTest, MetaPowFunctionsLoop_Work)
