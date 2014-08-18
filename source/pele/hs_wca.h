@@ -1,12 +1,14 @@
 #ifndef _PELE_HS_WCA_H
 #define _PELE_HS_WCA_H
 
+#include <memory>
+
 #include "simple_pairwise_potential.h"
 #include "simple_pairwise_ilist.h"
 #include "atomlist_potential.h"
 #include "distance.h"
 #include "frozen_atoms.h"
-#include <memory>
+#include "cell_list_potential.h"
 
 namespace pele {
 
@@ -153,6 +155,20 @@ public:
     {}
 };
 
+template<size_t ndim>
+class HS_WCAPeriodicCellLists : public CellListPotential< HS_WCA_interaction, periodic_distance<ndim> > {
+public:
+    HS_WCAPeriodicCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
+            pele::Array<double> const coords, const double rcut, const double ncellx_scale = 1.0)
+    : CellListPotential< HS_WCA_interaction, periodic_distance<ndim> >(
+            std::make_shared<HS_WCA_interaction>(eps, sca, radii),
+            std::make_shared<periodic_distance<ndim> >(boxvec),
+            std::make_shared<CellIter<periodic_distance<ndim> > >(coords,
+                                    boxvec, rcut, ncellx_scale)
+    )
+    {}
+};
+
 /**
  * Frozen particle HS_WCA potential
  */
@@ -180,6 +196,18 @@ public:
     {}
 };
 
+template<size_t ndim>
+class HS_WCAPeriodicCellListsFrozen : public FrozenPotentialWrapper<HS_WCAPeriodicCellLists<ndim> > {
+public:
+    HS_WCAPeriodicCellListsFrozen(double eps, double sca, Array<double> radii,
+            Array<double> const boxvec, Array<double>& reference_coords,
+            Array<size_t>& frozen_dof)
+        : FrozenPotentialWrapper< HS_WCAPeriodicCellLists<ndim> > (
+                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec),
+                reference_coords, frozen_dof)
+    {}
+};
+
 /**
  * Pairwise WCA potential with interaction lists
  */
@@ -190,5 +218,6 @@ public:
                 std::make_shared<HS_WCA_interaction>(eps, sca, radii), ilist)
     {}
 };
-}
-#endif
+
+} //namespace pele
+#endif //#ifndef _PELE_HS_WCA_H
