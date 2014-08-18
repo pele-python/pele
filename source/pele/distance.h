@@ -102,6 +102,17 @@ public:
             r_ij[i] -= round(r_ij[i] * _ibox[i]) * _box[i];
         }
     }
+
+    inline void put_in_box(Array<double>& coords)
+    {
+        size_t natoms = coords.size()/_ndim;
+        for (size_t i=0;i<natoms;++i){
+            size_t i1 = i*_ndim;
+            for (size_t j=0;j<_ndim;++j) {
+                coords[i1+j] -= round(coords[i1+j] * _ibox[j]) * _box[j];
+            }
+        }
+    }
 };
 
 //periodic distance template specializations
@@ -148,6 +159,17 @@ public:
         r_ij[1] -= round(r_ij[1] * _iboxy) * _boxy;
         r_ij[2] -= round(r_ij[2] * _iboxz) * _boxz;
     }
+
+    inline void put_in_box(Array<double>& coords)
+    {
+        size_t natoms = coords.size()/_ndim;
+        for (size_t i=0;i<natoms;++i){
+            size_t i1 = i*_ndim;
+            coords[i1] -= round(coords[i1] * _iboxx) * _boxx;
+            coords[i1+1] -= round(coords[i1+1] * _iboxy) * _boxy;
+            coords[i1+2] -= round(coords[i1+2] * _iboxz) * _boxz;
+        }
+    }
 };
 
 template <>
@@ -183,6 +205,16 @@ public:
         r_ij[1] = r1[1] - r2[1];
         r_ij[0] -= round(r_ij[0] * _iboxx) * _boxx;
         r_ij[1] -= round(r_ij[1] * _iboxy) * _boxy;
+    }
+
+    inline void put_in_box(Array<double>& coords)
+    {
+        size_t natoms = coords.size()/_ndim;
+        for (size_t i=0;i<natoms;++i){
+            size_t i1 = i*_ndim;
+            coords[i1] -= round(coords[i1] * _iboxx) * _boxx;
+            coords[i1+1] -= round(coords[i1+1] * _iboxy) * _boxy;
+        }
     }
 };
 
