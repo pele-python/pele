@@ -104,13 +104,13 @@ public:
 };
 
 TEST_F(HS_WCATest, Energy_Works){
-    HS_WCA pot(eps, sca, radii);
+    HS_WCA<3> pot(eps, sca, radii);
     double e = pot.get_energy(x);
     ASSERT_NEAR(e, etrue, 1e-10);
 }
 
 TEST_F(HS_WCATest, EnergyGradient_AgreesWithNumerical){
-    HS_WCA pot(eps, sca, radii);
+    HS_WCA<3> pot(eps, sca, radii);
     double e = pot.get_energy_gradient(x, g);
     double ecomp = pot.get_energy(x);
     ASSERT_NEAR(e, ecomp, 1e-10);
@@ -121,7 +121,7 @@ TEST_F(HS_WCATest, EnergyGradient_AgreesWithNumerical){
 }
 
 TEST_F(HS_WCATest, EnergyGradientHessian_AgreesWithNumerical){
-    HS_WCA pot(eps, sca, radii);
+    HS_WCA<3> pot(eps, sca, radii);
     Array<double> h(x.size()*x.size());
     Array<double> hnum(h.size());
     double e = pot.get_energy_gradient_hessian(x, g, h);
