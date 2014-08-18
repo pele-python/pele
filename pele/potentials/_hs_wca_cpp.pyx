@@ -8,26 +8,27 @@ cimport numpy as np
 from cpython cimport bool
 from ctypes import c_size_t as size_t
 
+# cython has no support for integer template argument.  This is a hack to get around it
+# https://groups.google.com/forum/#!topic/cython-users/xAZxdCFw6Xs
+# Basically you fool cython into thinking INT2 is the type integer,
+# but in the generated c++ code you use 2 instead.
+# The cython code MyClass[INT2] will create c++ code MyClass<2>.
+cdef extern from *:
+    ctypedef int INT2 "2"    # a fake type
+    ctypedef int INT3 "3"    # a fake type
+
 # use external c++ class
 cdef extern from "pele/hs_wca.h" namespace "pele":
-    cdef cppclass  cHS_WCA "pele::HS_WCA":
+    cdef cppclass  cHS_WCA "pele::HS_WCA"[ndim]:
         cHS_WCA(double eps, double sca, _pele.Array[double] radii) except +
-    cdef cppclass  cHS_WCAPeriodic "pele::HS_WCAPeriodic":
+    cdef cppclass  cHS_WCAPeriodic "pele::HS_WCAPeriodic"[ndim]:
         cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
-    cdef cppclass  cHS_WCA2D "pele::HS_WCA2D":
-        cHS_WCA2D(double eps, double sca, _pele.Array[double] radii) except +
-    cdef cppclass  cHS_WCAPeriodic2D "pele::HS_WCAPeriodic2D":
-        cHS_WCAPeriodic2D(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
     cdef cppclass  cHS_WCANeighborList "pele::HS_WCANeighborList":
         cHS_WCANeighborList(_pele.Array[long] & ilist, double eps, double sca, _pele.Array[double] radii) except +    
-    cdef cppclass  cHS_WCAFrozen "pele::HS_WCAFrozen":
+    cdef cppclass  cHS_WCAFrozen "pele::HS_WCAFrozen"[ndim]:
         cHS_WCAFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double]& reference_coords, _pele.Array[size_t]& frozen_dof) except +
-    cdef cppclass  cHS_WCA2DFrozen "pele::HS_WCA2DFrozen":
-        cHS_WCA2DFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double]& reference_coords, _pele.Array[size_t]& frozen_dof) except +
-    cdef cppclass  cHS_WCAPeriodicFrozen "pele::HS_WCAPeriodicFrozen":
+    cdef cppclass  cHS_WCAPeriodicFrozen "pele::HS_WCAPeriodicFrozen"[ndim]:
         cHS_WCAPeriodicFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double]& reference_coords, _pele.Array[size_t]& frozen_dof) except +
-    cdef cppclass  cHS_WCAPeriodic2DFrozen "pele::HS_WCAPeriodic2DFrozen":
-        cHS_WCAPeriodic2DFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double]& reference_coords, _pele.Array[size_t]& frozen_dof) except +
 
 cdef class HS_WCA(_pele.BasePotential):
     """define the python interface to the c++ HS_WCA implementation
@@ -44,19 +45,19 @@ cdef class HS_WCA(_pele.BasePotential):
         if boxvec is None:
             self.periodic = False
             if ndim == 2:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cHS_WCA2D(eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size)) )
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cHS_WCA[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size)) )
             else:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cHS_WCA(eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size)) )
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cHS_WCA[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size)) )
         else:
             self.periodic = True
             ndim = len(boxvec)
             bv = np.array(boxvec, dtype=float)
             if ndim == 2:
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
-                         cHS_WCAPeriodic2D(eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size), _pele.Array[double](<double*> bv.data, bv.size)) )
+                         cHS_WCAPeriodic[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size), _pele.Array[double](<double*> bv.data, bv.size)) )
             else:
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
-                         cHS_WCAPeriodic(eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size), _pele.Array[double](<double*> bv.data, bv.size)) )
+                         cHS_WCAPeriodic[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size), _pele.Array[double](<double*> bv.data, bv.size)) )
 
 cdef class HS_WCAFrozen(_pele.BasePotential):
     """define the python interface to the c++ HS_WCAFrozen implementation
@@ -75,12 +76,12 @@ cdef class HS_WCAFrozen(_pele.BasePotential):
             self.periodic = False
             if ndim==2:
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-                     cHS_WCA2DFrozen(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
+                     cHS_WCAFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
                                      _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
                                      _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size) ) )
             elif ndim==3:
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-                     cHS_WCAFrozen(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
+                     cHS_WCAFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
                                    _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
                                    _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size) ) )
             else:
@@ -91,13 +92,13 @@ cdef class HS_WCAFrozen(_pele.BasePotential):
             assert bv.size == ndim
             if ndim==2:
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-                     cHS_WCAPeriodic2DFrozen(eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
+                     cHS_WCAPeriodicFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
                                              _pele.Array[double](<double*> bv.data, bv.size), 
                                              _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
                                              _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size) ) )
             elif ndim==3:
                 self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-                     cHS_WCAPeriodicFrozen(eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
+                     cHS_WCAPeriodicFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
                                            _pele.Array[double](<double*> bv.data, bv.size), 
                                            _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
                                            _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size) ) )
