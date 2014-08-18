@@ -79,7 +79,7 @@ TEST_F(InversePowerTest, EnergyGradientHessian_AgreesWithNumerical){
 
 TEST_F(InversePowerTest, MetaPowFunctionsBasic_Work){
     const double op = 42.42;
-    const int POW= 5;
+    const int POW = 5;
     double true_result_direct = op * op * op * op * op;
     double true_result_std = std::pow(op, POW);
     EXPECT_DOUBLE_EQ(true_result_direct, true_result_std);
@@ -98,8 +98,45 @@ TEST_F(InversePowerTest, MetaPowFunctionsBasic_Work){
     EXPECT_DOUBLE_EQ(true_result_direct, pele::neg_half_int_pow<- POW>(op));
 }
 
-/*
-TEST_F(InversePowerTest, MetaPowFunctionsLoop_Work){
+//BEGIN: TEST_F(InversePowerTest, MetaPowFunctionsLoop_Work)
 
+template<int N>
+struct perform_tests{
+    static void f(const double op)
+    {
+        double true_result = std::pow(op, N);
+        EXPECT_DOUBLE_EQ(true_result, pele::pos_int_pow<N>(op));
+        true_result = std::pow(op, - N);
+        EXPECT_DOUBLE_EQ(true_result, pele::neg_int_pow<- N>(op));
+        true_result = std::pow(op, 0.5 * N);
+        EXPECT_DOUBLE_EQ(true_result, pele::pos_half_int_pow<N>(op));
+        true_result = std::pow(op, - 0.5 * N);
+        EXPECT_DOUBLE_EQ(true_result, pele::neg_half_int_pow<- N>(op));
+        return perform_tests<N - 1>::f(op);
+    }
+};
+
+template<>
+struct perform_tests<0>{
+  static void f(const double op)
+  {
+      const double true_result_direct = 1;
+      const double true_result_std = std::pow(op, 0);
+      EXPECT_DOUBLE_EQ(true_result_direct, true_result_std);
+      EXPECT_DOUBLE_EQ(true_result_direct, pele::pos_int_pow<0>(op));
+  }
+};
+
+template<int N>
+inline void perform_tests_zero_to(const double op)
+{
+    return perform_tests<N>::f(op);
 }
-*/
+
+TEST_F(InversePowerTest, MetaPowFunctionsLoop_Work){
+    const double op = M_PI;
+    const int POW_MAXIMUM = 42;
+    perform_tests_zero_to<POW_MAXIMUM>(op);
+}
+
+//END: TEST_F(InversePowerTest, MetaPowFunctionsLoop_Work)
