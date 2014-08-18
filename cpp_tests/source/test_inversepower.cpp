@@ -1,16 +1,15 @@
-#include "pele/array.h"
-#include "pele/wca.h"
-#include "pele/inversepower.h"
-
 #include <iostream>
 #include <stdexcept>
 #include <gtest/gtest.h>
+
+#include "pele/array.h"
+#include "pele/inversepower.h"
 
 using pele::Array;
 using pele::InversePower;
 
 /*
- * HS_WCA tests
+ * InversePower tests
  */
 
 class InversePowerTest :  public ::testing::Test
@@ -77,3 +76,30 @@ TEST_F(InversePowerTest, EnergyGradientHessian_AgreesWithNumerical){
         ASSERT_NEAR(h[i], hnum[i], 1e-3);
     }
 }
+
+TEST_F(InversePowerTest, MetaPowFunctionsBasic_Work){
+    const double op = 42.42;
+    const int POW= 5;
+    double true_result_direct = op * op * op * op * op;
+    double true_result_std = std::pow(op, POW);
+    EXPECT_DOUBLE_EQ(true_result_direct, true_result_std);
+    EXPECT_DOUBLE_EQ(true_result_direct, pele::pos_int_pow<POW>(op));
+    true_result_direct = double(1) / true_result_direct;
+    true_result_std = std::pow(op, - POW);
+    EXPECT_DOUBLE_EQ(true_result_direct, true_result_std);
+    EXPECT_DOUBLE_EQ(true_result_direct, pele::neg_int_pow<- POW>(op));
+    true_result_direct = std::sqrt(op * op * op * op * op);
+    true_result_std = std::pow(op, 0.5 * POW);
+    EXPECT_DOUBLE_EQ(true_result_direct, true_result_std);
+    EXPECT_DOUBLE_EQ(true_result_direct, pele::pos_half_int_pow<POW>(op));
+    true_result_direct = double(1) / std::sqrt(op * op * op * op * op);
+    true_result_std = std::pow(op, - 0.5 * POW);
+    EXPECT_DOUBLE_EQ(true_result_direct, true_result_std);
+    EXPECT_DOUBLE_EQ(true_result_direct, pele::neg_half_int_pow<- POW>(op));
+}
+
+/*
+TEST_F(InversePowerTest, MetaPowFunctionsLoop_Work){
+
+}
+*/

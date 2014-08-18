@@ -48,7 +48,7 @@ inline T neg_int_pow(const T x)
 template<int N, class T>
 inline T pos_half_int_pow(const T x)
 {
-    return meta_pow<T, N>::f(std::sqrt(x));
+    return std::sqrt(meta_pow<T, N>::f(x));
 }
 
 /**
@@ -58,7 +58,7 @@ inline T pos_half_int_pow(const T x)
 template<int N, class T>
 inline T neg_half_int_pow(const T x)
 {
-    return T(1) / meta_pow<T, -N>::f(std::sqrt(x));
+    return T(1) / std::sqrt(meta_pow<T, -N>::f(x));
 }
 
 }//namespace pele
