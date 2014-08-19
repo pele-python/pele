@@ -43,14 +43,15 @@ protected:
     std::vector<std::pair<size_t, size_t> > _atom_neighbor_list;
     const_iterator _container_iterator;
 public:
-    CellIter(pele::Array<double> coords, pele::Array<double> boxv, const double rcut, const double ncellx_scale = 1.0)
+    CellIter(pele::Array<double> const coords, pele::Array<double> const boxv, const double rcut, const double ncellx_scale = 1.0)
         : _dist(std::make_shared<distance_policy>(boxv.copy())), //DEBUG: this won't work in principle with all distance_policies
           _coords(coords.copy()),
           _natoms(coords.size() / _ndim),
           _rcut(rcut),
           _initialised(false),
           _boxv(boxv.copy()),
-          _ncellx(ncellx_scale * floor(boxv[0] / rcut)),            //no of cells in one dimension
+          //_ncellx(floor(ncellx_scale * boxv[0] / rcut)),            //no of cells in one dimension
+          _ncellx(floor(ncellx_scale * boxv[0] / rcut)),
           _ncells(std::pow(_ncellx, _ndim)),      //total no of cells
           _rcell(boxv[0] / _ncellx),                //size of cell
           _hoc(_ncells),                          //head of chain
@@ -58,13 +59,21 @@ public:
           _cell_neighbors(),                      //empty vector
           _atom_neighbor_list()
     {
+        std::cout << "ncellx_scale: " << ncellx_scale << std::endl;
+        std::cout << "_rcut: " << _rcut << std::endl;
+        std::cout << "_ncellx: " << _ncellx << std::endl;
+        std::cout << "_ncells: " << _ncells << std::endl;
+        std::cout << "CellIter::CellIter: 0" << std::endl;
         if (_boxv.size() != _ndim) {
             throw std::runtime_error("CellIter::CellIter: distance policy boxv and cell list boxv differ in size");
         }
+        std::cout << "CellIter::CellIter: 1" << std::endl;
         if (*std::min_element(_boxv.data(), _boxv.data() + _ndim) < rcut) {
             throw std::runtime_error("CellIter::CellIter: illegal rcut");
         }
+        std::cout << "CellIter::CellIter: 2" << std::endl;
         this->_setup();
+        std::cout << "CellIter::CellIter: 3" << std::endl;
     }
 
     ~CellIter() {}
@@ -86,9 +95,13 @@ public:
 
     void _setup()
     {
+        std::cout << "_setup(): 0" << std::endl;
         this->_build_cell_neighbors_list();
+        std::cout << "_setup(): 1" << std::endl;
         this->reset(_coords);
+        std::cout << "_setup(): 2" << std::endl;
         _initialised = true;
+        std::cout << "_setup(): 3" << std::endl;
     }
 
     void _reset_iterator()
@@ -109,12 +122,18 @@ public:
 
     void reset(pele::Array<double> coords)
     {
+        std::cout << "reset: 0" << std::endl;
         _coords.assign(coords);
+        std::cout << "reset: 1" << std::endl;
         _dist->put_in_box(_coords);
+        std::cout << "reset: 2" << std::endl;
 
         this->_reset_iterator();
+        std::cout << "reset: 3" << std::endl;
         this->_build_linked_lists();
+        std::cout << "reset: 4" << std::endl;
         this->_build_atom_neighbors_list();
+        std::cout << "reset: 5" << std::endl;
     }
 
     bool done() const
@@ -205,19 +224,24 @@ public:
 
     inline void _build_atom_neighbors_list()
     {
+        std::cout << "this is: _build_atom_neighbors_list()" << std::endl;
         for(size_t i = 0; i < _natoms; ++i) {
-             const size_t icell = this->_atom2cell(i);
-             //loop through all the neighbouring cells of icell
-             for(auto& jcell : _cell_neighbors[icell]) {
-                 double j = _hoc[jcell];
-                 while (j > 0) {
-                     if (j > i) { //this should avoid double counting (not sure though)
-                         std::pair<size_t, size_t> pair(i, j);
-                         _atom_neighbor_list.push_back(pair);
-                     }
-                     j = _ll[j];
-                 }
-             }
+            std::cout << "i: " << i << std::endl;
+            std::cout << "step 0" << std::endl;
+            const size_t icell = this->_atom2cell(i);
+            std::cout << "step 1" << std::endl;
+            //loop through all the neighbouring cells of icell
+            for(auto& jcell : _cell_neighbors[icell]) {
+                double j = _hoc[jcell];
+                while (j > 0) {
+                    if (j > i) { //this should avoid double counting (not sure though)
+                        std::pair<size_t, size_t> pair(i, j);
+                        _atom_neighbor_list.push_back(pair);
+                    }
+                    j = _ll[j];
+                }
+            }
+            std::cout << "step 2" << std::endl;
         }
     }
 

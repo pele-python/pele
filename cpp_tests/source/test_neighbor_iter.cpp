@@ -1,10 +1,12 @@
 #include "pele/array.h"
 #include "pele/inversepower.h"
+#include "pele/hs_wca.h"
 #include "pele/neighbor_iterator.h"
 
 #include <iostream>
 #include <stdexcept>
 #include <gtest/gtest.h>
+#include <random>
 
 using pele::Array;
 using pele::InversePowerPeriodic;
@@ -12,7 +14,7 @@ using pele::InversePower_interaction;
 
 class CellIterTest : public ::testing::Test {
 public:
-    double pow, eps, etrue, rcut;
+    double pow, eps, etrue, rcut, sca;
     Array<double> x, g, gnum, radii, boxvec;
     virtual void SetUp(){
     	pow = 2.5;
@@ -37,6 +39,7 @@ public:
         etrue = 0.03493116137645523;
         g = Array<double>(x.size());
         gnum = Array<double>(x.size());
+        sca = 1.2;
     }
 };
 
@@ -139,7 +142,121 @@ TEST_F(CellIterTest, EnergyGradientHessian_AgreesWithNumerical){
     }
 }
 
-//TEST_F(CellIterTest, LJWithMoreParticles_Works)
+TEST_F(CellIterTest, HS_WCAEnergy_Works){
+    pele::HS_WCAPeriodicCellLists<3> pot_cell(eps, sca, radii, boxvec, x, rcut, 1);
+    pele::HS_WCAPeriodicCellLists<3> pot_cell2(eps, sca, radii, boxvec, x, rcut, 2);
+    pele::HS_WCAPeriodicCellLists<3> pot_cell3(eps, sca, radii, boxvec, x, rcut, 3);
+    pele::HS_WCAPeriodicCellLists<3> pot_cell4(eps, sca, radii, boxvec, x, rcut, 4);
+    pele::HS_WCAPeriodic<3> pot_no_cells(eps, sca, radii, boxvec);
+    const double ecell = pot_cell.get_energy(x);
+    const double ecell2 = pot_cell2.get_energy(x);
+    const double ecell3 = pot_cell3.get_energy(x);
+    const double ecell4 = pot_cell4.get_energy(x);
+    const double etrue = pot_no_cells.get_energy(x);
+    ASSERT_NEAR(ecell, etrue, 1e-10);
+    ASSERT_NEAR(ecell2, etrue, 1e-10);
+    ASSERT_NEAR(ecell3, etrue, 1e-10);
+    ASSERT_NEAR(ecell4, etrue, 1e-10);
+}
+
+class CellIterTestMoreHS_WCA : public ::testing::Test {
+public:
+    double pow;
+    size_t seed;
+    std::mt19937_64 generator;
+    std::uniform_real_distribution<double> distribution;
+    size_t nparticles;
+    size_t ndim;
+    size_t ndof;
+    double eps;
+    double rcut;
+    double sca;
+    Array<double> x;
+    Array<double> g;
+    Array<double> gnum;
+    Array<double> radii;
+    Array<double> boxvec;
+    virtual void SetUp(){
+        pow = 2.5;
+        seed = 42;
+        generator = std::mt19937_64(seed);
+        distribution = std::uniform_real_distribution<double>(0, 0.05);
+        nparticles = 10;
+        ndim = 3;
+        ndof = nparticles * ndim;
+        eps = 1;
+        rcut = 4;
+        x = Array<double>(ndof);
+        for (size_t k = 0; k < ndof; ++k) {
+            x[k] = double(k + 1) / double(10) + (k / nparticles) * (1 + distribution(generator));
+        }
+        radii = Array<double>(nparticles);
+        boxvec = Array<double>(ndim, 9);
+        for (size_t i = 0; i < nparticles; ++i) {
+            radii[i] = (1 + distribution(generator));
+        }
+        g = Array<double>(x.size());
+        gnum = Array<double>(x.size());
+        sca = 1.2;
+    }
+};
+
+TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors){
+    std::cout << 0 << std::endl;
+    pele::CellIter<> cell = pele::CellIter<>(x, boxvec, rcut);
+    std::cout << 1 << std::endl;
+    pele::CellIter<> cell2 = pele::CellIter<>(x, boxvec, rcut, 1);
+    std::cout << 2 << std::endl;
+    pele::CellIter<> cell3 = pele::CellIter<>(x, boxvec, rcut, 4.7);
+    std::cout << 3 << std::endl;
+    pele::CellIter<> cell4 = pele::CellIter<>(x, boxvec, rcut, 5);
+    std::cout << 4 << std::endl;
+    size_t count = 0;
+    size_t count2 = 0;
+    size_t count3 = 0;
+    size_t count4 = 0;
+    std::cout << 5 << std::endl;
+    pele::CellIter<>::const_iterator it;
+    std::cout << 6 << std::endl;
+    for (it = cell.begin(); it != cell.end(); ++it, ++count);
+    for (it = cell2.begin(); it != cell2.end(); ++it, ++count2);
+    for (it = cell3.begin(); it != cell3.end(); ++it, ++count3);
+    for (it = cell4.begin(); it != cell4.end(); ++it, ++count4);
+    std::cout << 7 << std::endl;
+    ASSERT_EQ(3u, count);
+    std::cout << 8 << std::endl;
+    ASSERT_EQ(count, static_cast<unsigned int>(cell.end() - cell.begin()));
+    ASSERT_EQ(count, cell.get_nr_unique_pairs());
+    ASSERT_EQ(count, count2);
+    ASSERT_EQ(count, static_cast<unsigned int>(cell2.end() - cell2.begin()));
+    ASSERT_EQ(count, cell2.get_nr_unique_pairs());
+    ASSERT_EQ(count, count3);
+    ASSERT_EQ(count, static_cast<unsigned int>(cell3.end() - cell3.begin()));
+    ASSERT_EQ(count, cell3.get_nr_unique_pairs());
+    ASSERT_EQ(count, count4);
+    ASSERT_EQ(count, static_cast<unsigned int>(cell4.end() - cell4.begin()));
+    ASSERT_EQ(count, cell4.get_nr_unique_pairs());
+    std::cout << 9 << std::endl;
+}
+
+TEST_F(CellIterTestMoreHS_WCA, EnergyMoreParticles_Works){
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, 1.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell2(pow, eps, radii, boxvec, x, rcut, 2.0);
+    pele::InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
+    const double ecell = pot_cell.get_energy(x);
+    const double ecell2 = pot_cell2.get_energy(x);
+    const double etrue = pot.get_energy(x);
+    ASSERT_NEAR(ecell, etrue, 1e-10);
+    ASSERT_NEAR(ecell2, etrue, 1e-10);
+}
+
+/*
+TEST_F(CellIterTestMoreHS_WCA, HSWCAManyParticles_Works) {
+    pele::HS_WCAPeriodic<3> pot_no_cells(eps, sca, radii, boxvec);
+    pele::HS_WCAPeriodicCellLists<3> pot_cell1(eps, sca, radii, boxvec, x, rcut, 1);
+}
+*/
+
 //TEST_F(CellIterTest, LJWithMoreParticles_Minimizes)
 //TEST_F(CellIterTest, LJWithMoreParticles_CanImprovePerformance)
 //TEST_F(CellIterTest, LJWithMoreParticles_CanWorsenPerformance)

@@ -201,9 +201,9 @@ class HS_WCAPeriodicCellListsFrozen : public FrozenPotentialWrapper<HS_WCAPeriod
 public:
     HS_WCAPeriodicCellListsFrozen(double eps, double sca, Array<double> radii,
             Array<double> const boxvec, Array<double>& reference_coords,
-            Array<size_t>& frozen_dof)
+            Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper< HS_WCAPeriodicCellLists<ndim> > (
-                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec),
+                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, reference_coords, rcut, ncellx_scale),
                 reference_coords, frozen_dof)
     {}
 };
