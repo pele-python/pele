@@ -56,22 +56,23 @@ public:
           _hoc(_ncells),                          //head of chain
           _ll(_natoms)                          //linked list
     {
-        std::cout << "ncellx_scale: " << ncellx_scale << std::endl;
-        std::cout << "_rcut: " << _rcut << std::endl;
-        std::cout << "_ncellx: " << _ncellx << std::endl;
-        std::cout << "_ncells: " << _ncells << std::endl;
-        std::cout << "CellIter::CellIter: 0" << std::endl;
+        /*
+        std::cout << "ncellx_scale: " << ncellx_scale << "\n";
+        std::cout << "_rcut: " << _rcut << "\n";
+        std::cout << "_ncellx: " << _ncellx << "\n";
+        std::cout << "_ncells: " << _ncells << "\n";
+        std::cout << "CellIter::CellIter: 0" << "\n";
+        */
         if (_boxv.size() != _ndim) {
             throw std::runtime_error("CellIter::CellIter: distance policy boxv and cell list boxv differ in size");
         }
-        std::cout << "CellIter::CellIter: 1" << std::endl;
         if (*std::min_element(_boxv.data(), _boxv.data() + _ndim) < rcut) {
             throw std::runtime_error("CellIter::CellIter: illegal rcut");
         }
-        std::cout << "CellIter::CellIter: 2" << std::endl;
         this->_setup();
-        std::cout << "CellIter::CellIter: 3" << std::endl;
-        assert(_coords.size() == _ndim * _natoms);
+        if (_coords.size() != _ndim * _natoms) {
+            throw std::runtime_error("CellIter::CellIter: illeal coords size");
+        }
     }
 
     ~CellIter() {}
@@ -93,13 +94,9 @@ public:
 
     void _setup()
     {
-        std::cout << "_setup(): 0" << std::endl;
         this->_build_cell_neighbors_list();
-        std::cout << "_setup(): 1" << std::endl;
         this->reset(_coords);
-        std::cout << "_setup(): 2" << std::endl;
         _initialised = true;
-        std::cout << "_setup(): 3" << std::endl;
     }
 
     void _reset_iterator()
@@ -120,17 +117,11 @@ public:
 
     void reset(pele::Array<double> coords)
     {
-        std::cout << "reset: 0" << std::endl;
         _coords.assign(coords);
-        std::cout << "reset: 1" << std::endl;
         _dist->put_in_box(_coords);
-        std::cout << "reset: 2" << std::endl;
         _reset_iterator();
-        std::cout << "reset: 3" << std::endl;
         _build_linked_lists();
-        std::cout << "reset: 4" << std::endl;
         _build_atom_neighbors_list();
-        std::cout << "reset: 5" << std::endl;
     }
 
     bool done() const
@@ -233,15 +224,10 @@ public:
 
     inline void _build_atom_neighbors_list()
     {
-        std::cout << "this is: _build_atom_neighbors_list()" << std::endl;
         for(size_t i = 0; i < _natoms; ++i) {
-            std::cout << "i: " << i << std::endl;
-            std::cout << "step 0" << std::endl;
             const size_t icell = this->_atom2cell(i);
-            std::cout << "step 1" << std::endl;
             assert(icell < _cell_neighbors.size());
             //loop through all the neighbouring cells of icell
-            //for (const auto& jcell : _cell_neighbors[icell]) {
             for (std::vector<size_t>::const_iterator jit = _cell_neighbors.at(icell).begin(); jit != _cell_neighbors.at(icell).end(); ++jit) {
                 const size_t jcell = *jit;
                 long int j = _hoc[jcell];
@@ -253,14 +239,12 @@ public:
                     j = _ll[j];
                 }
             }
-            std::cout << "step 2" << std::endl;
         }
     }
 
     inline void _build_linked_lists()
     {
         _hoc.assign(-1); //set head of chains to -1 (empty state)
-
         for(size_t i = 0; i < _natoms; ++i) {
             size_t icell = this->_atom2cell(i);
             _ll[i] = _hoc[icell];
