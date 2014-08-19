@@ -69,10 +69,13 @@ public:
         if (*std::min_element(_boxv.data(), _boxv.data() + _ndim) < rcut) {
             throw std::runtime_error("CellIter::CellIter: illegal rcut");
         }
-        this->_setup();
         if (_coords.size() != _ndim * _natoms) {
             throw std::runtime_error("CellIter::CellIter: illeal coords size");
         }
+        if (_ncellx == 0) {
+            throw std::runtime_error("CellIter::CellIter: illegal lattice spacing");
+        }
+        this->_setup();
     }
 
     ~CellIter() {}
@@ -173,14 +176,14 @@ public:
             cellcorner[i] = _rcell * indexes[i];
         }
 
-        return cellcorner;
+        return cellcorner.copy();
     }
 
     //test whether 2 cells are neighbours
     bool _areneighbors(const size_t icell, const size_t jcell)
     {
-        pele::Array<double> icell_coords = _cell2coords(icell).copy();
-        pele::Array<double> jcell_coords = _cell2coords(jcell).copy();
+        pele::Array<double> icell_coords = _cell2coords(icell);
+        pele::Array<double> jcell_coords = _cell2coords(jcell);
         assert(icell_coords.size() == _ndim);
         assert(jcell_coords.size() == _ndim);
         //compute difference
@@ -191,20 +194,17 @@ public:
             for(size_t j = 0; j <= 1; ++j) { //DEBUG should include j=-1 like in jake's implementation?
                 double d = icell_coords[i] + j * _rcell;
                 d -= _boxv[0] * round(d / _boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
-                //if (std::abs(d) < dxmin || !dxmin_trial) {
-                if (std::fabs(d) < dxmin || !dxmin_trial) {
+                if (std::fabs(d) < dxmin || !dxmin_trial) { //changed this from abs to fabs, assuming that fabs was intended
                     dxmin = d;
                     dxmin_trial = true;
                 }
             }
             icell_coords[i] =  dxmin;
         }
-
         double r2 = 0;
         for (size_t i = 0; i < _ndim; ++i) {
             r2 +=  icell_coords[i] * icell_coords[i];
         }
-
         return r2 <= _rcut * _rcut;
     }
 
