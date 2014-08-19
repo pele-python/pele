@@ -150,7 +150,17 @@ public:
             if (x < 0) {
                 x += _boxv[j];
             }
-            const size_t icell_jpart = floor(x / _rcell);
+            //const size_t icell_jpart = floor(x / _rcell);
+            // min is needed in case x == _rcell * _ncellx
+            const size_t icell_jpart = std::min<size_t>(_ncellx - 1, static_cast<size_t>(x / _rcell));
+            assert(icell_jpart == icell_jpart);
+            if (icell_jpart >= _ncellx) {
+                std::cout << "x: " << x << std::endl;
+                std::cout << "_rcell: " << _rcell << std::endl;
+                std::cout << "_ndim: " << _ndim << std::endl;
+                std::cout << "_ncellx: " << _ncellx << std::endl;
+                std::cout << "icell_jpart: " << icell_jpart << std::endl;
+            }
             assert(icell_jpart < _ncellx);
             icell += icell_jpart * std::pow(_ncellx, j);
         }
