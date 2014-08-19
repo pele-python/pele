@@ -237,15 +237,38 @@ class BaseSystem(object):
         return tsAdaptive
 
     def get_basinhopping(self, database=None, takestep=None, coords=None, add_minimum=None,
+                         max_n_minima=None,
                          **kwargs):
-        """return the basinhopping object with takestep
-        and accept step already implemented
+        """construct a basinhopping object with takestep and accept step already implemented
+        
+        Parameters
+        ----------
+        database : object
+            Use this object to store the minima.  If None, use self.create_database()
+        takestep : object
+            Use this takestep routine.  If None, use self.get_takestep()
+        coords : 1-d numpy array
+            The starting point for the basinhopping run.  If None, use self.get_random_configuration()
+        add_minimium : callable
+            Call this function each time a minimum is found.  This is used instead of the database.
+        max_n_minima : int
+            Only keep this number of minima in the database.  The minima with the lowest energy are kept.
+            This is ignored if add_minimum is passed
+        kwargs : key word arguments
+            Extra key word arguments are passed to BasinHopping.
         
         See Also
         --------
         pele.basinhopping
         """
         kwargs = dict_copy_update(self.params["basinhopping"], kwargs)
+        # extract max_n_minima from kwargs
+        try:
+            val = kwargs.pop("max_n_minima")
+            if max_n_minima is None:
+                max_n_minima = val
+        except KeyError:
+            pass
         pot = self.get_potential()
         if coords is None:
             coords = self.get_random_configuration()
@@ -254,7 +277,7 @@ class BaseSystem(object):
         if add_minimum is None:
             if database is None:
                 database = self.create_database()
-            add_minimum = database.minimum_adder()
+            add_minimum = database.minimum_adder(max_n_minima=max_n_minima)
         bh = basinhopping.BasinHopping(coords, pot, takestep, quench=self.get_minimizer(),
                                        storage=add_minimum,
                                        **kwargs)
