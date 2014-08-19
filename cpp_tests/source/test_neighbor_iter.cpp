@@ -202,29 +202,20 @@ public:
 };
 
 TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors){
-    std::cout << 0 << std::endl;
-    pele::CellIter<> cell = pele::CellIter<>(x, boxvec, rcut);
-    std::cout << 1 << std::endl;
-    pele::CellIter<> cell2 = pele::CellIter<>(x, boxvec, rcut, 1);
-    std::cout << 2 << std::endl;
-    pele::CellIter<> cell3 = pele::CellIter<>(x, boxvec, rcut, 4.7);
-    std::cout << 3 << std::endl;
-    pele::CellIter<> cell4 = pele::CellIter<>(x, boxvec, rcut, 5);
-    std::cout << 4 << std::endl;
+    pele::CellIter<> cell = pele::CellIter<>(x, boxvec, boxvec[0]);
+    pele::CellIter<> cell2 = pele::CellIter<>(x, boxvec, boxvec[0], 1);
+    pele::CellIter<> cell3 = pele::CellIter<>(x, boxvec, boxvec[0], 3);
+    pele::CellIter<> cell4 = pele::CellIter<>(x, boxvec, boxvec[0], 5);
     size_t count = 0;
     size_t count2 = 0;
     size_t count3 = 0;
     size_t count4 = 0;
-    std::cout << 5 << std::endl;
     pele::CellIter<>::const_iterator it;
-    std::cout << 6 << std::endl;
     for (it = cell.begin(); it != cell.end(); ++it, ++count);
     for (it = cell2.begin(); it != cell2.end(); ++it, ++count2);
     for (it = cell3.begin(); it != cell3.end(); ++it, ++count3);
     for (it = cell4.begin(); it != cell4.end(); ++it, ++count4);
-    std::cout << 7 << std::endl;
-    ASSERT_EQ(3u, count);
-    std::cout << 8 << std::endl;
+    ASSERT_EQ(nparticles * (nparticles - 1) / 2, count);
     ASSERT_EQ(count, static_cast<unsigned int>(cell.end() - cell.begin()));
     ASSERT_EQ(count, cell.get_nr_unique_pairs());
     ASSERT_EQ(count, count2);
@@ -236,12 +227,11 @@ TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors){
     ASSERT_EQ(count, count4);
     ASSERT_EQ(count, static_cast<unsigned int>(cell4.end() - cell4.begin()));
     ASSERT_EQ(count, cell4.get_nr_unique_pairs());
-    std::cout << 9 << std::endl;
 }
 
 TEST_F(CellIterTestMoreHS_WCA, EnergyMoreParticles_Works){
     pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, 1.0);
-    pele::InversePowerPeriodicCellLists<3> pot_cell2(pow, eps, radii, boxvec, x, rcut, 2.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell2(pow, eps, radii, boxvec, x, rcut, 1.0);
     pele::InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
     const double ecell = pot_cell.get_energy(x);
     const double ecell2 = pot_cell2.get_energy(x);
@@ -250,12 +240,10 @@ TEST_F(CellIterTestMoreHS_WCA, EnergyMoreParticles_Works){
     ASSERT_NEAR(ecell2, etrue, 1e-10);
 }
 
-/*
 TEST_F(CellIterTestMoreHS_WCA, HSWCAManyParticles_Works) {
     pele::HS_WCAPeriodic<3> pot_no_cells(eps, sca, radii, boxvec);
     pele::HS_WCAPeriodicCellLists<3> pot_cell1(eps, sca, radii, boxvec, x, rcut, 1);
 }
-*/
 
 //TEST_F(CellIterTest, LJWithMoreParticles_Minimizes)
 //TEST_F(CellIterTest, LJWithMoreParticles_CanImprovePerformance)

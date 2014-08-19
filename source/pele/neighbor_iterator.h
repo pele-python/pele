@@ -39,7 +39,7 @@ protected:
     const size_t _ncells;
     const double _rcell;
     pele::Array<long int> _hoc, _ll;
-    std::vector<std::vector<double> > _cell_neighbors;
+    std::vector<std::vector<size_t> > _cell_neighbors;
     std::vector<std::pair<size_t, size_t> > _atom_neighbor_list;
     const_iterator _container_iterator;
 public:
@@ -50,14 +50,11 @@ public:
           _rcut(rcut),
           _initialised(false),
           _boxv(boxv.copy()),
-          //_ncellx(floor(ncellx_scale * boxv[0] / rcut)),            //no of cells in one dimension
-          _ncellx(floor(ncellx_scale * boxv[0] / rcut)),
+          _ncellx(floor(ncellx_scale * boxv[0] / rcut)),            //no of cells in one dimension
           _ncells(std::pow(_ncellx, _ndim)),      //total no of cells
           _rcell(boxv[0] / _ncellx),                //size of cell
           _hoc(_ncells),                          //head of chain
-          _ll(_natoms),                          //linked list
-          _cell_neighbors(),                      //empty vector
-          _atom_neighbor_list()
+          _ll(_natoms)                          //linked list
     {
         std::cout << "ncellx_scale: " << ncellx_scale << std::endl;
         std::cout << "_rcut: " << _rcut << std::endl;
@@ -74,6 +71,7 @@ public:
         std::cout << "CellIter::CellIter: 2" << std::endl;
         this->_setup();
         std::cout << "CellIter::CellIter: 3" << std::endl;
+        assert(_coords.size() == _ndim * _natoms);
     }
 
     ~CellIter() {}
@@ -127,12 +125,11 @@ public:
         std::cout << "reset: 1" << std::endl;
         _dist->put_in_box(_coords);
         std::cout << "reset: 2" << std::endl;
-
-        this->_reset_iterator();
+        _reset_iterator();
         std::cout << "reset: 3" << std::endl;
-        this->_build_linked_lists();
+        _build_linked_lists();
         std::cout << "reset: 4" << std::endl;
-        this->_build_atom_neighbors_list();
+        _build_atom_neighbors_list();
         std::cout << "reset: 5" << std::endl;
     }
 
@@ -141,19 +138,29 @@ public:
         return _container_iterator == _atom_neighbor_list.end();
     }
 
+    size_t _atom2xbegin(const size_t atom_index) const
+    {
+        return _ndim * atom_index;
+    }
+
     //return cell index from coordinates
     //this function assumes that particles have been already put in box
     inline size_t _atom2cell(const size_t i)
     {
+        assert(i < _natoms);
         size_t icell = 0;
         for(size_t j = 0; j < _ndim; ++j) {
-            size_t j1 = _natoms * i + j;
+            const size_t j1 = _atom2xbegin(i) + j;
+            assert(j1 < _coords.size());
             double x = _coords[j1];
             if (x < 0) {
                 x += _boxv[j];
             }
-            icell += floor(x / _rcell) * std::pow(_ncellx, j);
+            const size_t icell_jpart = floor(x / _rcell);
+            assert(icell_jpart < _ncellx);
+            icell += icell_jpart * std::pow(_ncellx, j);
         }
+        assert(icell < _ncells);
         return icell;
     }
 
@@ -179,21 +186,22 @@ public:
     }
 
     //test whether 2 cells are neighbours
-    bool _areneighbors(size_t icell, size_t jcell)
+    bool _areneighbors(const size_t icell, const size_t jcell)
     {
-        pele::Array<double> icell_coords(this->_cell2coords(icell));
-        pele::Array<double> jcell_coords(this->_cell2coords(jcell));
+        pele::Array<double> icell_coords = _cell2coords(icell).copy();
+        pele::Array<double> jcell_coords = _cell2coords(jcell).copy();
+        assert(icell_coords.size() == _ndim);
+        assert(jcell_coords.size() == _ndim);
         //compute difference
-
         for (size_t i = 0; i < _ndim; ++i) {
             double dxmin;
             bool dxmin_trial = false;
             icell_coords[i] -= jcell_coords[i];
-
             for(size_t j = 0; j <= 1; ++j) { //DEBUG should include j=-1 like in jake's implementation?
                 double d = icell_coords[i] + j * _rcell;
                 d -= _boxv[0] * round(d / _boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
-                if (std::abs(d) < dxmin || !dxmin_trial) {
+                //if (std::abs(d) < dxmin || !dxmin_trial) {
+                if (std::fabs(d) < dxmin || !dxmin_trial) {
                     dxmin = d;
                     dxmin_trial = true;
                 }
@@ -212,7 +220,7 @@ public:
     void _build_cell_neighbors_list()
     {
         for(size_t i = 0; i < _ncells; ++i) {
-            std::vector<double> ineighbors;
+            std::vector<size_t> ineighbors;
             for(size_t j = 0; j < _ncells; ++j) {
                 if (this->_areneighbors(i, j)) { //includes istself as a neighbor
                     ineighbors.push_back(j);
@@ -220,6 +228,7 @@ public:
             }
             _cell_neighbors.push_back(ineighbors);
         }
+        _cell_neighbors.swap(_cell_neighbors);
     }
 
     inline void _build_atom_neighbors_list()
@@ -230,11 +239,14 @@ public:
             std::cout << "step 0" << std::endl;
             const size_t icell = this->_atom2cell(i);
             std::cout << "step 1" << std::endl;
+            assert(icell < _cell_neighbors.size());
             //loop through all the neighbouring cells of icell
-            for(auto& jcell : _cell_neighbors[icell]) {
-                double j = _hoc[jcell];
+            //for (const auto& jcell : _cell_neighbors[icell]) {
+            for (std::vector<size_t>::const_iterator jit = _cell_neighbors.at(icell).begin(); jit != _cell_neighbors.at(icell).end(); ++jit) {
+                const size_t jcell = *jit;
+                long int j = _hoc[jcell];
                 while (j > 0) {
-                    if (j > i) { //this should avoid double counting (not sure though)
+                    if (j > static_cast<long int>(i)) { //this should avoid double counting (not sure though)
                         std::pair<size_t, size_t> pair(i, j);
                         _atom_neighbor_list.push_back(pair);
                     }
