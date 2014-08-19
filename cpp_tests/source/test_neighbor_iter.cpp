@@ -332,7 +332,7 @@ TEST_F(CellIterTestMoreHS_WCA, HSWCAMinimzationPerformance_Changes) {
     auto pot_cells = std::make_shared<pele::HS_WCAPeriodicCellLists<3> >(eps, sca, radii, boxvec, x, 0.4, 0.3);
     pele::MODIFIED_FIRE opt_no_cells(pot_no_cells, x, .1, 1, 1);
     pele::MODIFIED_FIRE opt_cells(pot_cells, x, .1, 1, 1);
-    const size_t repetitions = 100;
+    const size_t repetitions = 50;
     const auto start_time = clock();
     for (size_t i = 0; i < repetitions; ++i) {
         opt_no_cells.reset(x);
@@ -512,7 +512,7 @@ TEST_F(CellIterTestMoreHS_WCA2D, HSWCAMinimzationPerformance_Changes) {
     auto pot_cells = std::make_shared<pele::HS_WCAPeriodicCellLists<2> >(eps, sca, radii, boxvec, x, 1, 0.3);
     pele::MODIFIED_FIRE opt_no_cells(pot_no_cells, x, .1, 1, 1);
     pele::MODIFIED_FIRE opt_cells(pot_cells, x, .1, 1, 1);
-    const size_t repetitions = 100;
+    const size_t repetitions = 50;
     const auto start_time = clock();
     for (size_t i = 0; i < repetitions; ++i) {
         opt_no_cells.reset(x);
