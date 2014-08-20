@@ -90,9 +90,45 @@ public:
         return _atom_neighbor_list.end();
     }
 
+    size_t get_nr_cells() const
+    {
+        return _ncells;
+    }
+
+    size_t get_nr_cellsx() const
+    {
+        return _ncellx;
+    }
+
     size_t get_nr_unique_pairs() const
     {
         return _atom_neighbor_list.size();
+    }
+
+    size_t get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const
+    {
+        size_t nr_unique_pairs = 0;
+        const size_t natoms = x.size() / _ndim;
+        for (size_t i = 0; i < natoms; ++i) {
+            for (size_t j = i + 1; j < natoms; ++j) {
+                double rij[_ndim];
+                const double* xi = x.data() + _atom2xbegin(i);
+                const double* xj = x.data() + _atom2xbegin(j);
+                _dist->get_rij(rij, xi, xj);
+                double r2 = 0;
+                for (size_t k = 0; k < _ndim; ++k) {
+                    r2 += rij[k] * rij[k];
+                }
+                nr_unique_pairs += (r2 <= (max_distance * max_distance));
+            }
+        }
+        return nr_unique_pairs;
+    }
+
+    size_t get_maximum_nr_unique_pairs(pele::Array<double> x) const
+    {
+        const size_t natoms = x.size() / _ndim;
+        return (natoms * (natoms - 1)) / 2;
     }
 
     void _setup()
@@ -100,6 +136,26 @@ public:
         this->_build_cell_neighbors_list();
         this->reset(_coords);
         _initialised = true;
+        //_sanity_check();
+    }
+
+    void _sanity_check()
+    {
+        const size_t nr_unique_pairs_lists = get_nr_unique_pairs();
+        const size_t nr_unique_pairs_direct = get_direct_nr_unique_pairs(_rcut, _coords);
+        const size_t maximum_nr_unique_pairs = get_maximum_nr_unique_pairs(_coords);
+        //std::cout << "nr_unique_pairs_lists: " << nr_unique_pairs_lists << "\n";
+        //std::cout << "nr_unique_pairs_direct: " << nr_unique_pairs_direct << "\n";
+        //std::cout << "maximum_nr_unique_pairs: " << maximum_nr_unique_pairs << "\n";
+        if (nr_unique_pairs_lists < nr_unique_pairs_direct) {
+            std::cout << "nr_unique_pairs_lists: " << nr_unique_pairs_lists << "\n";
+            std::cout << "nr_unique_pairs_direct: " << nr_unique_pairs_direct << "\n";
+            std::cout << "maximum_nr_unique_pairs: " << maximum_nr_unique_pairs << "\n";
+            throw std::runtime_error("CellIter::setup: sanity check failed: too few pairs");
+        }
+        if (nr_unique_pairs_lists > maximum_nr_unique_pairs) {
+            throw std::runtime_error("CellIter::setup: sanity check failed: too many pairs");
+        }
     }
 
     void _reset_iterator()
@@ -201,10 +257,10 @@ public:
             double dxmin;
             bool dxmin_trial = false;
             icell_coords[i] -= jcell_coords[i];
-            for(size_t j = 0; j <= 1; ++j) { //DEBUG should include j=-1 like in jake's implementation?
-                double d = icell_coords[i] + j * _rcell;
+            for(int j = -1; j <= 1; ++j) { //DEBUG should include j=-1 like in jake's implementation?
+                double d = icell_coords[i] + (j * _rcell);
                 d -= _boxv[0] * round(d / _boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
-                if (std::fabs(d) < dxmin || !dxmin_trial) { //changed this from abs to fabs, assuming that fabs was intended
+                if (std::fabs(d) < std::fabs(dxmin) || !dxmin_trial) { //changed this from abs to fabs, assuming that fabs was intended, added fabs also to dxmin
                     dxmin = d;
                     dxmin_trial = true;
                 }
