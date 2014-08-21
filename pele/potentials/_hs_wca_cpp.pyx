@@ -24,7 +24,7 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
     cdef cppclass  cHS_WCAPeriodic "pele::HS_WCAPeriodic"[ndim]:
         cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
     cdef cppclass  cHS_WCAPeriodicCellLists "pele::HS_WCAPeriodicCellLists"[ndim]:
-        cHS_WCAPeriodicCellLists(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double] coords, double rcut, double ncellx_scale = 1) except +
+        cHS_WCAPeriodicCellLists(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double] coords, double rcut, double ncellx_scale) except +
     cdef cppclass  cHS_WCANeighborList "pele::HS_WCANeighborList":
         cHS_WCANeighborList(_pele.Array[long] & ilist, double eps, double sca, _pele.Array[double] radii) except +    
     cdef cppclass  cHS_WCAFrozen "pele::HS_WCAFrozen"[ndim]:
@@ -32,7 +32,7 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
     cdef cppclass  cHS_WCAPeriodicFrozen "pele::HS_WCAPeriodicFrozen"[ndim]:
         cHS_WCAPeriodicFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double]& reference_coords, _pele.Array[size_t]& frozen_dof) except +
     cdef cppclass  cHS_WCAPeriodicCellListsFrozen "pele::HS_WCAPeriodicCellListsFrozen"[ndim]:
-        cHS_WCAPeriodicCellListsFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double] reference_coords, _pele.Array[size_t] frozen_dof, double rcut, double ncellx_scale = 1)
+        cHS_WCAPeriodicCellListsFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double] reference_coords, _pele.Array[size_t]& frozen_dof, double rcut, double ncellx_scale)
 
 cdef class HS_WCA(_pele.BasePotential):
     """define the python interface to the c++ HS_WCA implementation
@@ -122,25 +122,30 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
             if frozen_atoms is None:
                 self.frozen = False
                 if self.ndim == 2:
+                    #"""
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellLists[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                   _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
                                                                   _pele.Array[double](<double*> coordsc.data, coordsc.size),
                                                                   rcut, ncellx_scale)                                  
                                                                      ) 
+                    #"""
                 elif self.ndim == 3:
+                    #"""
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellLists[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                   _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
                                                                   _pele.Array[double](<double*> coordsc.data, coordsc.size),
                                                                   rcut, ncellx_scale)                                  
                                                                      ) 
+                    #"""
                 else:
                     raise Exception("HS_WCAPeriodicCellLists: illegal boxdimension")
             else:
                 self.frozen = True
                 frozen_dof = np.array([range(self.ndim * i, self.ndim * i + self.ndim) for i in frozen_atoms], dtype = int).reshape(-1) 
                 if self.ndim == 2:
+                    #"""
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellListsFrozen[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                         _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
@@ -148,7 +153,9 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
                                                                         _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size),
                                                                         rcut, ncellx_scale)                                 
                                                                      ) 
+                    #"""
                 elif self.ndim == 3:
+                    #"""
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellListsFrozen[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                         _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
@@ -156,6 +163,7 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
                                                                         _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size),
                                                                         rcut, ncellx_scale)                                 
                                                                      )
+                    #"""
                 else:
                     raise Exception("HS_WCAPeriodicCellLists: illegal boxdimension")
 
