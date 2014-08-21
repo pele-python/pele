@@ -113,22 +113,22 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
     """define the python interface to the c++ HS_WCAPeriodicCellLists implementation
     """
     cpdef bool frozen
-    def __cinit__(self, eps, sca, radii, boxvec, coords, rcut, ncellx_scale=1.0, frozen_atoms=None):
-            self.ndim = len(boxvec)
+    def __cinit__(self, eps, sca, radii, boxvec, coords, rcut, ndim = 3, ncellx_scale = 1.0, frozen_atoms = None):
+            ndim = len(boxvec)
             cdef np.ndarray[double, ndim=1] radiic = np.array(radii, dtype=float)
             cdef np.ndarray[double, ndim=1] boxvecc = np.array(boxvec, dtype=float)
             cdef np.ndarray[double, ndim=1] coordsc = np.array(coords, dtype=float)
             cdef np.ndarray[size_t, ndim=1] frozen_dof
             if frozen_atoms is None:
                 self.frozen = False
-                if self.ndim == 2:
+                if ndim == 2:
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellLists[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                   _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
                                                                   _pele.Array[double](<double*> coordsc.data, coordsc.size),
                                                                   rcut, ncellx_scale)                                  
                                                                      ) 
-                elif self.ndim == 3:
+                elif ndim == 3:
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellLists[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                   _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
@@ -140,7 +140,7 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
             else:
                 self.frozen = True
                 frozen_dof = np.array([range(self.ndim * i, self.ndim * i + self.ndim) for i in frozen_atoms], dtype = int).reshape(-1) 
-                if self.ndim == 2:
+                if ndim == 2:
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellListsFrozen[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                         _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
@@ -148,7 +148,7 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
                                                                         _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size),
                                                                         rcut, ncellx_scale)                                 
                                                                      ) 
-                elif self.ndim == 3:
+                elif ndim == 3:
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellListsFrozen[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                         _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
