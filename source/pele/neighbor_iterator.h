@@ -50,19 +50,12 @@ public:
           _rcut(rcut),
           _initialised(false),
           _boxv(boxv.copy()),
-          _ncellx(floor(ncellx_scale * boxv[0] / rcut)),            //no of cells in one dimension
-          _ncells(std::pow(_ncellx, _ndim)),      //total no of cells
-          _rcell(boxv[0] / _ncellx),                //size of cell
-          _hoc(_ncells),                          //head of chain
-          _ll(_natoms)                          //linked list
+          _ncellx(floor(ncellx_scale * boxv[0] / rcut)),     //no of cells in one dimension
+          _ncells(std::pow(_ncellx, _ndim)),                  //total no of cells
+          _rcell(boxv[0] / _ncellx),                          //size of cell
+          _hoc(_ncells),                                      //head of chain
+          _ll(_natoms)                                        //linked list
     {
-        /*
-        std::cout << "ncellx_scale: " << ncellx_scale << "\n";
-        std::cout << "_rcut: " << _rcut << "\n";
-        std::cout << "_ncellx: " << _ncellx << "\n";
-        std::cout << "_ncells: " << _ncells << "\n";
-        std::cout << "CellIter::CellIter: 0" << "\n";
-        */
         if (_boxv.size() != _ndim) {
             throw std::runtime_error("CellIter::CellIter: distance policy boxv and cell list boxv differ in size");
         }
