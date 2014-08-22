@@ -118,7 +118,7 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
             cdef np.ndarray[double, ndim=1] radiic = np.array(radii, dtype=float)
             cdef np.ndarray[double, ndim=1] boxvecc = np.array(boxvec, dtype=float)
             cdef np.ndarray[double, ndim=1] coordsc = np.array(coords, dtype=float)
-            cdef np.ndarray[size_t, ndim=1] frozen_dof
+            cdef np.ndarray[long, ndim=1] frozen_dof
             if frozen_atoms is None:
                 self.frozen = False
                 if ndim == 2:
@@ -139,7 +139,7 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
                     raise Exception("HS_WCAPeriodicCellLists: illegal boxdimension")
             else:
                 self.frozen = True
-                frozen_dof = np.array([range(self.ndim * i, self.ndim * i + self.ndim) for i in frozen_atoms], dtype = int).reshape(-1) 
+                frozen_dof = np.array([range(ndim * i, ndim * i + ndim) for i in frozen_atoms], dtype = int).reshape(-1) 
                 if ndim == 2:
                     self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                    cHS_WCAPeriodicCellListsFrozen[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
