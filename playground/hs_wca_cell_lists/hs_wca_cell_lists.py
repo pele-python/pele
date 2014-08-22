@@ -70,7 +70,11 @@ class Config2D(object):
         assert(res_x_final.success)
         assert(res_x_final_cells.success)
         for (xci, xi) in zip(self.x_final_cells, self.x_final):
-            assert(np.abs(xci - xi) < 1e-10 * self.N)
+            passed = (np.abs(xci - xi) < 1e-10 * self.N)
+            if (passed is False):
+                print "xci", xci
+                print "xi", xi
+                assert(passed)
         print "energy no cell lists:", res_x_final.energy
         print "energy cell lists:", res_x_final_cells.energy
         self.t_ratio = (t1 - t0) / (t2 - t1)
@@ -112,10 +116,6 @@ class Config2DFrozenBoundary(object):
         self.maxstep = 1
         self.nstepsmax = 1e5
     def optimize(self, nr_samples = 1):
-        """
-        self.x_initial_red = self.potential.get_reduced_coords(self.x_initial)
-        """
-        
         self.x_initial_red = []
         for a in xrange(self.N):
             if a not in self.frozen_atoms:
@@ -218,5 +218,5 @@ def measurement_frozen(nr_samples, LXmax, amplitude):
     save_pdf(plt, "hs_wca_cell_lists_frozen.pdf")
 
 if __name__ == "__main__":
-    measurement(10, 32, 0.01)
-    measurement_frozen(10, 32, 0.01)
+    measurement(10, 18, 0.01)
+    measurement_frozen(10, 18, 0.01)
