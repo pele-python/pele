@@ -45,14 +45,13 @@ public:
             const size_t j = ijpair->second;
             const size_t xi_off = m_ndim * i;
             const size_t xj_off = m_ndim * j;
-            double* dr = new double[m_ndim];
+            double dr[m_ndim];
             m_dist->get_rij(dr, x + xi_off, x + xj_off);
             double r2 = 0;
             for (size_t k = 0; k < m_ndim; ++k) {
                 r2 += dr[k] * dr[k];
             }
             result += m_interaction->energy(r2, i, j);
-            delete[] dr;
         }
         return result;
     }
@@ -70,7 +69,7 @@ public:
             const size_t j = ijpair->second;
             const size_t xi_off = m_ndim * i;
             const size_t xj_off = m_ndim * j;
-            double* dr = new double[m_ndim];
+            double dr[m_ndim];
             m_dist->get_rij(dr, x + xi_off, x + xj_off);
             double r2 = 0;
             for (size_t k = 0; k < m_ndim; ++k) {
@@ -84,7 +83,6 @@ public:
             for (size_t k = 0; k < m_ndim; ++k) {
                 grad[xj_off + k] += gij * dr[k];
             }
-            delete[] dr;
         }
         return result;
     }
@@ -107,14 +105,13 @@ public:
             const size_t j = ijpair->second;
             const size_t xi_off = m_ndim * i;
             const size_t xj_off = m_ndim * j;
-            double* dr = new double[m_ndim];
+            double dr[m_ndim];
             m_dist->get_rij(dr, x + xi_off, x + xj_off);
             double r2 = 0;
             for (size_t k = 0; k < m_ndim; ++k) {
                 r2 += dr[k] * dr[k];
             }
-            double gij;
-            double hij;
+            double gij, hij;
             result += m_interaction->energy_gradient_hessian(r2, &gij, &hij, i, j);
             for (size_t k = 0; k < m_ndim; ++k) {
                 grad[xi_off + k] -= gij * dr[k];
@@ -151,7 +148,6 @@ public:
                     hess[N * (j1 + l) + i1 + k] = Hij_off;
                 }
             }
-            delete[] dr;
         }
         return result;
     }

@@ -287,7 +287,7 @@ public:
             const size_t icell = this->_atom2cell(i);
             assert(icell < _cell_neighbors.size());
             //loop through all the neighbouring cells of icell
-            for (std::vector<size_t>::const_iterator jit = _cell_neighbors.at(icell).begin(); jit != _cell_neighbors.at(icell).end(); ++jit) {
+            for (std::vector<size_t>::const_iterator jit = _cell_neighbors[icell].begin(); jit != _cell_neighbors[icell].end(); ++jit) {
                 const size_t jcell = *jit;
                 long int j = _hoc[jcell];
                 while (j > 0) {
