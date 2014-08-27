@@ -241,6 +241,8 @@ class SystemProperty(Base):
             
 
 Index('idx_transition_states', TransitionState.__table__.c._minimum1_id, TransitionState.__table__.c._minimum2_id)
+Index('idx_minimum_energy', Minimum.__table__.c.energy)
+Index('idx_transition_state_energy', Minimum.__table__.c.energy)
 
 
 class Database(object):
