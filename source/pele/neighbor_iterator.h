@@ -186,6 +186,16 @@ public:
         return _ndim * atom_index;
     }
 
+    template<class T>
+    T loop_pow(const T x, int ex)
+    {
+        T result(1);
+        while (--ex > -1) {
+            result *= x;
+        }
+        return result;
+    }
+
     //return cell index from coordinates
     //this function assumes that particles have been already put in box
     inline size_t _atom2cell(const size_t i)
@@ -211,7 +221,8 @@ public:
                 std::cout << "icell_jpart: " << icell_jpart << std::endl;
             }
             assert(icell_jpart < _ncellx);
-            icell += icell_jpart * std::pow(_ncellx, j);
+            //icell += icell_jpart * std::pow(_ncellx, j);
+            icell += icell_jpart * loop_pow(_ncellx, j);
         }
         assert(icell < _ncells);
         return icell;
@@ -228,10 +239,11 @@ public:
         for(int i = _ndim - 1; i >= 0; --i) {
             index = icell;
             for (int j = _ndim - 1; j >= i; --j) {
-                index -= indexes[j] * std::pow(_ncellx, j);
+                //index -= indexes[j] * std::pow(_ncellx, j);
+                index -= indexes[j] * loop_pow(_ncellx, j);
             }
-
-            indexes[i] = floor(index / std::pow(_ncellx, i));
+            //indexes[i] = floor(index / std::pow(_ncellx, i));
+            indexes[i] = floor(index / loop_pow(_ncellx, i));
             cellcorner[i] = _rcell * indexes[i];
         }
 
