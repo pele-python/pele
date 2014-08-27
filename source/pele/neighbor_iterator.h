@@ -126,6 +126,7 @@ public:
 
     void _setup()
     {
+        _atom_neighbor_list.reserve(_natoms * (_natoms - 1) / 2);
         this->_build_cell_neighbors_list();
         this->reset(_coords);
         _initialised = true;
