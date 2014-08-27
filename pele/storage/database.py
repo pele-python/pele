@@ -1,10 +1,13 @@
 """Database for simulation data in a relational database
 """
+import threading
+import os
+
+import numpy as np
+
 import sqlalchemy
 from sqlalchemy import create_engine, and_, or_
-from sqlalchemy.orm import sessionmaker
-import threading
-import numpy as np
+from sqlalchemy.orm import sessionmaker, undefer
 from sqlalchemy import Column, Integer, Float, PickleType, String
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref, deferred
@@ -12,8 +15,8 @@ import sqlalchemy.orm
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, bindparam, case, insert
 from sqlalchemy.schema import Index
+
 from pele.utils.events import Signal
-import os
 
 __all__ = ["Minimum", "TransitionState", "Database"]
 
@@ -410,11 +413,13 @@ class Database(object):
         
     def _highest_energy_minimum(self):
         """return the minimum with the highest energy"""
-        candidates = self.session.query(Minimum).order_by(Minimum.energy.desc()).limit(1).all()
+        candidates = self.session.query(Minimum).order_by(Minimum.energy.desc()).\
+            limit(1).all()
         return candidates[0]
     
     def findMinimum(self, E, coords):
         candidates = self.session.query(Minimum).\
+            options(undefer("coords")).\
             filter(Minimum.energy > E-self.accuracy).\
             filter(Minimum.energy < E+self.accuracy)
         
@@ -450,7 +455,10 @@ class Database(object):
             
         """
         self.lock.acquire()
+        # undefer coords because it is likely to be used by compareMinima and
+        # it is slow to load them individually by accessing the database repetitively.
         candidates = self.session.query(Minimum).\
+            options(undefer("coords")).\
             filter(Minimum.energy > E-self.accuracy).\
             filter(Minimum.energy < E+self.accuracy)
         
@@ -519,6 +527,7 @@ class Database(object):
         if m1._id > m2._id:
             m1, m2 = m2, m1
         candidates = self.session.query(TransitionState).\
+            options(undefer("coords")).\
             filter(or_(
                        and_(TransitionState.minimum1==m1, 
                             TransitionState.minimum2==m2),
@@ -598,6 +607,13 @@ class Database(object):
         ----------
         order_energy : bool
             order the minima by energy
+        
+        Notes
+        -----
+        Minimum.coords is deferred in database queries.  If you need to access
+        coords for multiple minima it is *much* faster to `undefer` before 
+        executing the query by, e.g. 
+        `session.query(Minimum).options(undefer("coords"))`
         '''
         if order_energy:
             return self.session.query(Minimum).order_by(Minimum.energy).all()
