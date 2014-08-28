@@ -461,7 +461,7 @@ class Database(object):
             self.lock.release() 
             return m
 
-        if max_n_minima > 0:
+        if max_n_minima is not None and max_n_minima > 0:
             if self.number_of_minima() >= max_n_minima:
                 mmax = self._highest_energy_minimum()
                 if E >= mmax.energy:
