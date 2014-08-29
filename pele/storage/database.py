@@ -243,6 +243,46 @@ class SystemProperty(Base):
 Index('idx_transition_states', TransitionState.__table__.c._minimum1_id, TransitionState.__table__.c._minimum2_id)
 
 
+class MinimumAdder(object):
+    """This class manages adding minima to the database
+    
+    Parameters
+    ----------
+    db : database object
+    Ecut: float, optional
+        energy cutoff, don't add minima which are higher in energy
+    max_n_minima : int, optional
+        keep only the max_n_minima with the lowest energies. If E is greater
+        than the minimum with the highest energy in the database, then don't add
+        this minimum and return None.  Else add this minimum and delete the minimum
+        with the highest energy.  if max_n_minima < 0 then it is ignored.
+    commit_interval : int, optional
+        Commit the database changes to the hard drive every `commit_interval` steps.
+        Committing too frequently can be slow, this is used to speed things up.
+    """
+    def __init__(self, db, Ecut=None, max_n_minima=None, commit_interval=1):
+        self.db = db
+        self.Ecut = Ecut
+        self.max_n_minima = max_n_minima
+        self.commit_interval = commit_interval
+        self.count = 0
+
+    def __call__(self, E, coords):
+        """this is called to add a minimum to the database"""
+        if self.Ecut is not None:
+            if E > self.Ecut:
+                return None
+        commit = self.count % self.commit_interval == 0
+        self.count += 1
+        return self.db.addMinimum(E, coords, max_n_minima=self.max_n_minima, 
+                                  commit=commit)
+    
+    def __del__(self):
+        """ensure that all the changes to the database are committed to the hard drive
+        """
+        if self.commit_interval != 1:
+            self.db.session.commit()
+
 class Database(object):
     '''Database storage class
     
@@ -304,7 +344,6 @@ class Database(object):
     
     '''
     engine = None
-    Session = None # js850> This seems to be unused. Can we remove it?
     session = None
     connection = None
     accuracy = 1e-3
@@ -314,7 +353,6 @@ class Database(object):
                  compareMinima=None, createdb=True):
         self.accuracy=accuracy
         self.compareMinima = compareMinima
-
 
         if not os.path.isfile(db) or db == ":memory:":
             newfile = True
@@ -610,7 +648,7 @@ class Database(object):
         else:
             return self.session.query(TransitionState).all()
     
-    def minimum_adder(self, Ecut=None, max_n_minima=-1):
+    def minimum_adder(self, Ecut=None, max_n_minima=None, commit_interval=1):
         '''wrapper class to add minima
         
         Since pickle cannot handle pointer to member functions, this class wraps the call to
@@ -633,17 +671,8 @@ class Database(object):
 
             
         '''
-        class minimum_adder:
-            def __init__(self, db, Ecut, max_n_minima):
-                self.db = db
-                self.Ecut = Ecut
-                self.max_n_minima = max_n_minima
-            def __call__(self, E, coords):
-                if self.Ecut is not None:
-                    if E > self.Ecut:
-                        return None
-                return self.db.addMinimum(E, coords, max_n_minima=self.max_n_minima)
-        return minimum_adder(self, Ecut, max_n_minima)
+        return MinimumAdder(self, Ecut=Ecut, max_n_minima=max_n_minima,
+                            commit_interval=commit_interval)
     
     def removeMinimum(self, m, commit=True):
         """remove a minimum from the database

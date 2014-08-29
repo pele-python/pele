@@ -73,6 +73,43 @@ class TestDB(unittest.TestCase):
         ma(101., [101.])
         self.assertEqual(len(self.db.minima()), self.nminima+1)
     
+    def test_minimum_adder_Ecut(self):
+        ma = self.db.minimum_adder(Ecut=0)
+        n0 = self.db.number_of_minima()
+        ma(101., [101.])
+        self.assertEqual(n0, self.db.number_of_minima())
+        ma(-101., [-101.])
+        self.assertEqual(n0+1, self.db.number_of_minima())
+
+    def test_minimum_adder_commit_interval(self):
+        ma = self.db.minimum_adder(commit_interval=2)
+        # replace db.session.commit with a wrapper that keeps track of how
+        # many times it's been called
+        self.real_commit = self.db.session.commit
+        self.count = 0
+        def commit_wrapper():
+            self.count += 1
+            self.real_commit()
+        self.db.session.commit = commit_wrapper
+        # commit should be called for the first minimum
+        ma(101., [101.])
+        self.assertEqual(self.count, 1)
+        self.assertEqual(self.nminima+1, self.db.number_of_minima())
+        # commit should not be called for the second minimum
+        ma(102., [102.])
+        self.assertEqual(self.count, 1)
+        self.assertEqual(self.nminima+2, self.db.number_of_minima())
+        # yes for the third, no for the 4th
+        ma(103., [103.])
+        self.assertEqual(self.count, 2)
+        ma(104., [104.])
+        self.assertEqual(self.count, 2)
+        # commit should be called when minimum adder is deleted
+        del ma
+        self.assertEqual(self.count, 3)
+        self.assertEqual(self.nminima+4, self.db.number_of_minima())
+        
+    
     def test_merge_minima(self):
         m1 = self.db.minima()[0]
         m2 = self.db.minima()[1]
