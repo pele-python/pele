@@ -9,9 +9,10 @@
  *http://stackoverflow.com/questions/16443682/c-power-of-integer-template-meta-programming
  **/
 
-namespace pele{
-
 #include <cmath> //for sqrt in half powers
+#include <type_traits> //for static asserts
+
+namespace pele{
 
 template<class T, int N>
 struct meta_pow{
@@ -36,6 +37,7 @@ struct meta_pow<T, 0>{
 template<int N, class T>
 inline T pos_int_pow(const T x)
 {
+    static_assert(N >= 0, "illegal exponent input");
     return meta_pow<T, N>::f(x);
 }
 
@@ -46,6 +48,7 @@ inline T pos_int_pow(const T x)
 template<int N, class T>
 inline T neg_int_pow(const T x)
 {
+    static_assert(N <= 0, "illegal exponent input");
     return T(1) / meta_pow<T, -N>::f(x);
 }
 
@@ -56,6 +59,7 @@ inline T neg_int_pow(const T x)
 template<int N, class T>
 inline T pos_half_int_pow(const T x)
 {
+    static_assert(N >= 0, "illegal exponent input");
     return std::sqrt(meta_pow<T, N>::f(x));
 }
 
@@ -66,6 +70,7 @@ inline T pos_half_int_pow(const T x)
 template<int N, class T>
 inline T neg_half_int_pow(const T x)
 {
+    static_assert(N <= 0, "illegal exponent input");
     return T(1) / std::sqrt(meta_pow<T, -N>::f(x));
 }
 
