@@ -258,9 +258,10 @@ public:
         pele::Array<double> jcell_coords = _cell2coords(jcell);
         assert(icell_coords.size() == _ndim);
         assert(jcell_coords.size() == _ndim);
+        const double dxmax = std::numeric_limits<double>::max();
         //compute difference
         for (size_t i = 0; i < _ndim; ++i) {
-            double dxmin;
+            double dxmin = dxmax;
             bool dxmin_trial = false;
             icell_coords[i] -= jcell_coords[i];
             for(int j = -1; j <= 1; ++j) { //DEBUG should include j=-1 like in jake's implementation?
