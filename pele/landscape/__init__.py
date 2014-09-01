@@ -48,7 +48,6 @@ dictionaries to DoubleEndedConnect
     :toctree: generated/
     
     LocalConnect
-    LocalConnectPar
 
 More core routines can be found in the documentation for the 
 :ref:`transition_states <transition_states_module>` module
@@ -59,7 +58,6 @@ More core routines can be found in the documentation for the
 from _graph import *
 from local_connect import *
 from connect_min import *
-from connect_min_parallel import *
 #from singleended import *
 from _smooth_path import *
 from connect_manager import *

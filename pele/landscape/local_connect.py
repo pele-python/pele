@@ -91,7 +91,6 @@ class LocalConnect(object):
     pele.transition_states.NEB : one of the core routines
     pele.transition_states.create_NEB : the wrapper which sets up NEB
     pele.transition_states.findTransitionState : one of the core routine
-    LocalConnectPar : parallel version of this class
     
     """
     def __init__(self, pot, mindist, tsSearchParams=dict(), 

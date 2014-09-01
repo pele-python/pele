@@ -81,7 +81,6 @@ class NEB(object):
     
     See Also
     --------
-    NEBPar : parallel version of this class
     InterpolatedPath : used to construct required parameter `path`
     InterpolatedPathDensity : alternate interpolater
     """
