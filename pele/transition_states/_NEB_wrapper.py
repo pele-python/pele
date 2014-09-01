@@ -1,6 +1,6 @@
 import numpy as np
 
-from pele.transition_states import NEB, NEBPar, InterpolatedPath
+from pele.transition_states import NEB, InterpolatedPath
 
 __all__ = ["create_NEB"]
 
@@ -8,7 +8,7 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
                 iter_density=15, 
                 NEBquenchParams=dict(),
                 interpolator=None,
-                verbose=False, factor=1, parallel=False, ncores=4, **NEBparams):
+                verbose=False, factor=1, **NEBparams):
     """
     a wrapper function to do the interpolation and set up the nudged elastic band object
     
@@ -31,10 +31,6 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
         The number of images is multiplied by this factor.  If the number of 
         images is already at it's maximum, then the number of iterations is 
         multiplied by this factor instead
-    parallel : bool
-        if True, then use class NEBPar to evaluate the image potentials in parallel
-    ncores : int
-        the number of cores to use.  Ignored if parallel is False
     interpolator : callable, optional
         the function used to do the path interpolation for the NEB
     
@@ -72,10 +68,6 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
         print "    NEB: nimages", nimages
         print "    NEB: nsteps ", niter
 
-    if parallel:
-        return NEBPar(InterpolatedPath(coords1, coords2, nimages, interpolator=interpolator), 
-                   pot, quenchParams=NEBquenchParams, ncores=ncores, **NEBparams)
-    else:
-        return NEB(InterpolatedPath(coords1, coords2, nimages, interpolator=interpolator), 
-                   pot, quenchParams=NEBquenchParams, **NEBparams)
+    return NEB(InterpolatedPath(coords1, coords2, nimages, interpolator=interpolator), 
+               pot, quenchParams=NEBquenchParams, **NEBparams)
 

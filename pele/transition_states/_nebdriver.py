@@ -1,7 +1,7 @@
 import logging
 import numpy as np
 
-from pele.transition_states import NEB, NEBPar
+from pele.transition_states import NEB
 from pele.transition_states._NEB import distance_cart
 from _interpolate import InterpolatedPath, interpolate_linear
 from pele.utils.events import Signal
@@ -9,18 +9,6 @@ from pele.utils.events import Signal
 all = ["NEBDriver"]
 
 logger = logging.getLogger("pele.connect.neb")
-
-#def calc_neb_dist(coords, nimages, dist=True, grad=False):
-#    d_left = np.zeros(coords.shape)
-#    coords = coords.reshape([-1,nimages])
-#    for i in xrange(nimages):
-        
-
-#def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
-#                iter_density=15, 
-#                NEBquenchParams=dict(),
-#                interpolator=None,
-#                verbose=False, factor=1, parallel=False, ncores=4, **NEBparams):
 
 class NEBDriver(object):
     ''' driver class for NEB
@@ -64,10 +52,6 @@ class NEBDriver(object):
         images is already at it's maximum, then the number of iterations is 
         multiplied by this factor instead
     verbose : integer
-    parallel : bool
-        if True, then use class NEBPar to evaluate the image potentials in parallel
-    ncores : int
-        the number of cores to use.  Ignored if parallel is False
     interpolator : callable, optional
         the function used to do the path interpolation for the NEB
     NEBquenchParams : dict
@@ -88,7 +72,7 @@ class NEBDriver(object):
                  adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
                  reinterpolate_tol=0.1,
                  reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
-                 interpolator=interpolate_linear, distance=distance_cart, parallel=False, ncores=4, **kwargs):
+                 interpolator=interpolate_linear, distance=distance_cart, **kwargs):
         
         self.potential = potential
         self.interpolator = interpolator
@@ -122,11 +106,6 @@ class NEBDriver(object):
         
         self.quenchParams=NEBquenchParams
         
-        
-        if parallel:
-            self._kwargs["ncores"]=ncores
-            self._nebclass = NEBPar
-
         self.prepared = False
         
     @classmethod
@@ -150,9 +129,6 @@ class NEBDriver(object):
         params["interpolator"] = obj.interpolator
         params["distance"] = obj.distance
         
-        if params.has_key("ncores"):
-            params["parallel"] = True
-         
         return params
     
     def prepare(self, path=None):

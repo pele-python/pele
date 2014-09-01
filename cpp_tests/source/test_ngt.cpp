@@ -5,6 +5,17 @@
 using pele::NGT;
 using pele::node_id;
 
+TEST(Graph, AddDuplicateEdges_NoEffect){
+    pele::Graph g;
+    g.add_node(0);
+    g.add_node(1);
+    ASSERT_EQ(g.number_of_edges(), 0u);
+    g.add_edge(0, 1);
+    ASSERT_EQ(g.number_of_edges(), 1u);
+    g.add_edge(0, 1);
+    ASSERT_EQ(g.number_of_edges(), 1u);
+}
+
 class NGT3 :  public ::testing::Test
 {
 public:
@@ -43,6 +54,8 @@ TEST_F(NGT3, RatesCommittors_Correct){
 	auto committors = ngt.get_committors();
 	ASSERT_NEAR(committors[2], 0.5, 1e-9);
 }
+
+
 
 class NGT10 :  public ::testing::Test
 {

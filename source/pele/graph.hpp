@@ -26,6 +26,7 @@
 #include <set>
 #include <assert.h>
 #include <stdexcept>
+#include <memory>
 
 
 namespace pele
@@ -158,8 +159,8 @@ public:
         }
     }
 
-    node_id number_of_nodes() { return node_map_.size(); }
-    node_id number_of_edges() { return edge_list_.size(); }
+    size_t number_of_nodes() const { return node_map_.size(); }
+    size_t number_of_edges() const { return edge_list_.size(); }
 
     /**
      * create a new node
@@ -222,7 +223,12 @@ public:
     {
         assert(node_tail != NULL);
         assert(node_head != NULL);
-        edge_ptr edge = new Edge(node_tail, node_head);
+        // check whether they're already connected
+        edge_ptr edge = node_tail->get_successor_edge(node_head);
+        if (edge != NULL){
+            return edge;
+        }
+        edge = new Edge(node_tail, node_head);
         edge_list_.insert(edge);
         node_tail->add_out_edge(edge);
         node_head->add_in_edge(edge);
@@ -294,6 +300,19 @@ public:
 
 };
 
+inline std::ostream &operator<<(std::ostream &out, std::shared_ptr<Graph> g) {
+    out << "nodes\n";
+    out << "-----\n";
+    for (auto const & nn : g->node_map_) {
+        out << nn.first << " tau " << nn.second->tau << "\n";
+    }
+    out << "edges\n";
+    out << "-----\n";
+    for (auto const & e : g->edge_list_) {
+        out << e->tail_->id() << " -> " << e->head_->id() << " P " << e->P << "\n";
+    }
+    return out;
+}
 
 }
 

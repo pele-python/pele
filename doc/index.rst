@@ -64,6 +64,11 @@ Reference
 
    gui
 
+.. toctree::
+   :maxdepth: 1
+
+   database_performance
+
 Modules
 +++++++
 .. toctree::
