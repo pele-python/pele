@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/pele-python/pele.svg?branch=master
+    :target: https://travis-ci.org/pele-python/pele
+
 pele : Python Energy Landscape Explorer
 +++++++++++++++++++++++++++++++++++++++
 
