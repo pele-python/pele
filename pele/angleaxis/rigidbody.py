@@ -2,6 +2,7 @@ import numpy as np
 import aatopology
 from pele.potentials.potential import potential
 from pele.mindist import StandardClusterAlignment, optimize_permutations, ExactMatchAtomicCluster
+from pele.utils.rotations import mx2aa
 
 class RigidFragment(aatopology.AASiteType):
     ''' defines a single rigid fragment 
@@ -57,6 +58,11 @@ class RigidFragment(aatopology.AASiteType):
         for x, m in zip(self.atom_positions, self.atom_masses):
             self.Sm[:] += m*np.outer(x, x)
         self._determine_symmetries()
+        
+        #calculate aa rotations for later
+        self.symmetriesaa = []
+        for rot in self.symmetries:
+            self.symmetriesaa.append(mx2aa(rot)) 
             
     def to_atomistic(self, com, p):
         R, R1, R2, R3 = aatopology.rotMatDeriv(p, False)
