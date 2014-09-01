@@ -1,11 +1,13 @@
 #ifndef _PELE_INVERSEPOWER_H
 #define _PELE_INVERSEPOWER_H
 
+#include <memory>
+
 #include "simple_pairwise_potential.h"
 #include "simple_pairwise_ilist.h"
 #include "atomlist_potential.h"
 #include "distance.h"
-#include <memory>
+#include "cell_list_potential.h"
 
 namespace pele {
 
@@ -109,10 +111,10 @@ struct InversePower_interaction {
  * Pairwise Inverse Power potential
  */
 template <size_t ndim>
-class InversePower : public SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim>> {
+class InversePower : public SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim> > {
 public:
     InversePower(double pow, double eps, pele::Array<double> const radii)
-        : SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim>>(
+        : SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<cartesian_distance<ndim>>()
           )
@@ -120,17 +122,34 @@ public:
 };
 
 template <size_t ndim>
-class InversePowerPeriodic : public SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim>> {
+class InversePowerPeriodic : public SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim> > {
 public:
     InversePowerPeriodic(double pow, double eps, pele::Array<double> const radii, pele::Array<double> const boxvec)
-        : SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim>>(
+        : SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<periodic_distance<ndim>>(boxvec)
           )
     {}
 };
 
-}
-#endif
+template <size_t ndim>
+class InversePowerPeriodicCellLists : public CellListPotential< InversePower_interaction, periodic_distance<ndim> > {
+public:
+    InversePowerPeriodicCellLists(double pow, double eps,
+            pele::Array<double> const radii, pele::Array<double> const boxvec,
+            pele::Array<double> const coords, const double rcut,
+            const double ncellx_scale = 1.0)
+        : CellListPotential< InversePower_interaction, periodic_distance<ndim> >(
+                std::make_shared<InversePower_interaction>(pow, eps, radii),
+                std::make_shared<periodic_distance<ndim> >(boxvec),
+                std::make_shared<CellIter<periodic_distance<ndim> > >(coords,
+                        boxvec, rcut, ncellx_scale)
+        )
+    {}
+};
+
+} //namespace pele
+
+#endif //#ifndef _PELE_INVERSEPOWER_H
 
 

@@ -35,14 +35,24 @@ public:
     typedef std::map<std::pair<node_id, node_id>, double> rate_map_t;
 
     std::shared_ptr<Graph> _graph;
-    std::set<node_ptr> _A, _B;
-    std::list<node_ptr> intermediates; //this will an up to date list of nodes keyed by the node degree
+    std::set<node_ptr> _A; // the source nodes
+    std::set<node_ptr> _B; // the sink nodes
+    std::list<node_ptr> intermediates; //this will an up to date list of nodes sorted by the node degree
     bool debug;
-    bool own_graph; // if this is true then delete graph in the destructor
 
-    std::map<node_id, double> initial_tau; // for computing steady state rates
-    std::map<node_id, double> final_omPxx; // for computing kmc rates
-    std::map<node_id, double> final_tau; // for computing kmc rates
+    /**
+     * the initial waiting time before any graph transformation.  Used to
+     * compute steady state rates.
+     */
+    std::map<node_id, double> initial_tau;
+    /**
+     * Final values of 1-Pxx for node x after the graph transformation.
+     */
+    std::map<node_id, double> final_omPxx;
+    /**
+     * Final values of tau for node x after the graph transformation.
+     */
+    std::map<node_id, double> final_tau;
     std::map<node_id, double> final_committors;
     std::map<node_id, double> weights; // normally these are equilibrium occupation probabilities
 
@@ -61,8 +71,7 @@ public:
     template<class Acontainer, class Bcontainer>
     NGT(std::shared_ptr<Graph> graph, Acontainer const &A, Bcontainer const &B) :
         _graph(graph),
-        debug(false),
-        own_graph(false)
+        debug(false)
     {
         for (auto u : A){
             _A.insert(_graph->get_node(u));
@@ -96,8 +105,7 @@ public:
     template<class Acontainer, class Bcontainer>
     NGT(rate_map_t &rate_constants, Acontainer const &A, Bcontainer const &B) :
         _graph(new Graph()),
-        debug(false),
-        own_graph(true)
+        debug(false)
     {
         std::set<node_ptr> nodes;
 
@@ -533,9 +541,18 @@ public:
     /*
      * compute the committors for all intermediates
      *
+     * \param to_remove a list of nodes that will be removed.  Committor values will
+     *     be computed for these nodes
+     * \param to_keep a list of nodes that should not be deleted.
+     * \param committor_targets a list of nodes that should not be deleted.  These
+     *     nodes will be the targets in the committor calucation.
+     *
+     * All nodes should be in one of the three passed groups of nodes.  Duplicates
+     * between to_keep and committor_targets are OK.
      */
-    void _remove_nodes_and_compute_committors(
-            std::list<node_ptr> &to_remove, std::set<node_ptr> &to_keep, std::set<node_ptr> const &committor_targets){
+    void _remove_nodes_and_compute_committors(std::list<node_ptr> &to_remove,
+            std::set<node_ptr> &to_keep, std::set<node_ptr> const &committor_targets)
+    {
         // make a copy of to_remove.  Store the id's
         std::list<node_id> to_remove_cp;
         for (auto u : to_remove){
@@ -554,6 +571,9 @@ public:
             Bids.insert(u->id());
             targets.insert(u->id());
         }
+
+        // ensure there are no unaccounted for nodes
+        assert(to_remove_cp.size() + Bids.size() == _graph->number_of_nodes());
 
         // note: should we sort the nodes in to_remove?
 
