@@ -22,10 +22,14 @@ before_install:
   - sudo apt-get install -qq $MPIPACKAGES
   - wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=$HOME/anaconda/bin:$PATH
+  - ./miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
   # Update conda itself
-  - conda update --yes conda
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update conda
+  # Useful for debugging any issues with conda
+  - conda info -a
   # Additional channel for pyqt4
   - conda config --add channels asmeurer
   # matplotlib needs a DISPLAY
@@ -36,7 +40,7 @@ before_install:
 install:
   - conda create --yes -n pelenv python=$TRAVIS_PYTHON_VERSION nose pip cython numpy scipy matplotlib qt pyqt
   - source activate pelenv
-  - pip install --use-mirrors networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl mpi4py
+  - pip install networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl mpi4py
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
   # build the c++ tests
