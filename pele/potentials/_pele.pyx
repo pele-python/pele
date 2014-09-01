@@ -3,20 +3,8 @@
 
 basic potential interface stuff    
 """
-
 import numpy as np
 cimport numpy as np
-
-cdef Array[double] array_wrap_np(np.ndarray[double] v):
-    """return a pele Array which wraps the data in a numpy array
-    
-    Notes
-    -----
-    we must be careful that we only wrap the existing data
-    """
-    if not v.flags["FORC"]:
-        raise ValueError("the numpy array is not c-contiguous.  copy it into a contiguous format before wrapping with pele::Array")
-    return Array[double](<double *> v.data, v.size)
 
 
 cdef class BasePotential(object):
