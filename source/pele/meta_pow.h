@@ -1,6 +1,14 @@
 #ifndef _PELE_META_POW_H
 #define _PELE_META_POW_H
 
+/*
+ *References:
+ *Used here: general reference on template meta-programming and recursive template functions:
+ *http://www.itp.phys.ethz.ch/education/hs12/programming_techniques
+ *Also used here: reference on template meta-programming power function:
+ *http://stackoverflow.com/questions/16443682/c-power-of-integer-template-meta-programming
+ **/
+
 namespace pele{
 
 #include <cmath> //for sqrt in half powers
