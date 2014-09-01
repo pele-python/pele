@@ -159,8 +159,8 @@ public:
         }
     }
 
-    node_id number_of_nodes() { return node_map_.size(); }
-    node_id number_of_edges() { return edge_list_.size(); }
+    size_t number_of_nodes() const { return node_map_.size(); }
+    size_t number_of_edges() const { return edge_list_.size(); }
 
     /**
      * create a new node
