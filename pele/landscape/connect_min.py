@@ -544,89 +544,88 @@ class DoubleEndedConnect(object):
 #only testing stuff below here
 ###########################################################
 
-def getSetOfMinLJ(system): #for testing purposes
-    from pele.systems import LJCluster
-    db = system.create_database()
-    bh = system.get_basinhopping(db, outstream=None)
-    bh.run(100)
-    return system.get_potential(), db
-#    from pele.potentials.lj import LJ
-#    pot = LJ()
-#    coords = np.random.uniform(-1,1,natoms*3)
-#    from pele.basinhopping import BasinHopping
-#    from pele.takestep.displace import RandomDisplacement
-#    from pele.takestep.adaptive import AdaptiveStepsize
-#    from pele.storage.database import Database
-#    import os
-#    #dbfile = "test.db"
-#    #os.remove(dbfile)
-#    #saveit = Database(db=dbfile)
-#    saveit = Database()
-#    takestep1 = RandomDisplacement()
-#    takestep = AdaptiveStepsize(takestep1, frequency=15)
-#    bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)
+#def getSetOfMinLJ(system): #for testing purposes
+#    from pele.systems import LJCluster
+#    db = system.create_database()
+#    bh = system.get_basinhopping(db, outstream=None)
 #    bh.run(100)
-#    return pot, saveit
-
-
-def test(Connect=DoubleEndedConnect, natoms=16):
-#    from pele.landscape import TSGraph
-#    from pele.storage.database import Database
-    from pele.systems import LJCluster
-    #get min1
-    system = LJCluster(natoms)
-    pot, database = getSetOfMinLJ(system)
-#    from pele.potentials.lj import LJ
-#    pot = LJ()
-#    saveit = Database(db="test.db")
-    minima = database.minima()
-    min1 = minima[0]
-    min2 = minima[1]
-    print min1.energy, min2.energy
-    
-    
-    mindist = system.get_mindist()
-    
-    if False:
-        #test to see if min1 and min2 are already connected
-        connected = graph.areConnected(min1, min2)
-        print "at start are minima connected?", connected
-        return
- 
-    connect = Connect(min1, min2, pot, mindist, database)
-    connect.connect()
-    
-    graph = connect.graph
-    if False:
-        print graph
-        for node in graph.graph.nodes():
-            print node._id, node.energy
-    for ts in graph.storage.transition_states():
-        print ts.minimum1._id,ts.minimum2._id, "E", ts.minimum1.energy, ts.minimum2.energy, ts.energy
-        
-    ret = graph.getPath(min1, min2)
-    if ret is None:
-        print "no path found"
-        return
-    distances, path = ret
-    with open("path.out", "w") as fout:
-        for i in range(len(path)-1):
-            m1 = path[i]
-            m2 = path[i+1]
-            n1 = m1._id
-            m2 = m2._id
-#            ts = graph._getTS(n1, n2)
-#            print "path", n1, "->", n2, m1.E, "/->", ts.E, "\->", m2.E
-            fout.write("%f\n" % m1.energy)
-            fout.write("%f\n" % ts.energy)
-        m2 = path[-1]
-        n2 = m2._id
-        fout.write("%f\n" % m2.energy)
-
-
-if __name__ == "__main__":
-#    logger.basicConfig(level=logger.DEBUG)
-    test(natoms=38)
-
+#    return system.get_potential(), db
+##    from pele.potentials.lj import LJ
+##    pot = LJ()
+##    coords = np.random.uniform(-1,1,natoms*3)
+##    from pele.basinhopping import BasinHopping
+##    from pele.takestep.displace import RandomDisplacement
+##    from pele.takestep.adaptive import AdaptiveStepsize
+##    from pele.storage.database import Database
+##    import os
+##    #dbfile = "test.db"
+##    #os.remove(dbfile)
+##    #saveit = Database(db=dbfile)
+##    saveit = Database()
+##    takestep1 = RandomDisplacement()
+##    takestep = AdaptiveStepsize(takestep1, frequency=15)
+##    bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)
+##    bh.run(100)
+##    return pot, saveit
+#
+#
+#def test(Connect=DoubleEndedConnect, natoms=16):
+##    from pele.landscape import TSGraph
+##    from pele.storage.database import Database
+#    from pele.systems import LJCluster
+#    #get min1
+#    system = LJCluster(natoms)
+#    pot, database = getSetOfMinLJ(system)
+##    from pele.potentials.lj import LJ
+##    pot = LJ()
+##    saveit = Database(db="test.db")
+#    minima = database.minima()
+#    min1 = minima[0]
+#    min2 = minima[1]
+#    print min1.energy, min2.energy
+#    
+#    
+#    mindist = system.get_mindist()
+#    
+#    if False:
+#        #test to see if min1 and min2 are already connected
+#        connected = graph.areConnected(min1, min2)
+#        print "at start are minima connected?", connected
+#        return
+# 
+#    connect = Connect(min1, min2, pot, mindist, database)
+#    connect.connect()
+#    
+#    graph = connect.graph
+#    if False:
+#        print graph
+#        for node in graph.graph.nodes():
+#            print node._id, node.energy
+#    for ts in graph.storage.transition_states():
+#        print ts.minimum1._id,ts.minimum2._id, "E", ts.minimum1.energy, ts.minimum2.energy, ts.energy
+#        
+#    ret = graph.getPath(min1, min2)
+#    if ret is None:
+#        print "no path found"
+#        return
+#    distances, path = ret
+#    with open("path.out", "w") as fout:
+#        for i in range(len(path)-1):
+#            m1 = path[i]
+#            m2 = path[i+1]
+#            n1 = m1._id
+#            m2 = m2._id
+##            ts = graph._getTS(n1, n2)
+##            print "path", n1, "->", n2, m1.E, "/->", ts.E, "\->", m2.E
+#            fout.write("%f\n" % m1.energy)
+#            fout.write("%f\n" % ts.energy)
+#        m2 = path[-1]
+#        n2 = m2._id
+#        fout.write("%f\n" % m2.energy)
+#
+#
+#if __name__ == "__main__":
+##    logger.basicConfig(level=logger.DEBUG)
+#    test(natoms=38)
 
     

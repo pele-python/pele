@@ -55,3 +55,35 @@ class _BaseTest(unittest.TestCase):
     
 
     
+class _TestConfiguration(unittest.TestCase):
+    """test a potential at a single configuration single configuration
+    
+    In setUp() you should define attributes self.pot, self.x0 and the energy of that position x0
+    """
+    pot = None
+    x0 = None
+    e0 = None
+    ae_kwargs = dict(places=3) # kwargs passed to assertAlmostEqual
+    
+    def compare_arrays(self, v1, v2):
+        self.assertEqual(v1.size, v2.size)
+        for x, y in izip(v1, v2):
+            self.assertAlmostEqual(x, y, **self.ae_kwargs)
+    
+    def test_energy(self):
+        self.assertAlmostEqual(self.pot.getEnergy(self.x0), self.e0, **self.ae_kwargs)
+
+    def test_energy_gradient(self):
+        e, g = self.pot.getEnergyGradient(self.x0)
+        self.assertAlmostEqual(e, self.e0, **self.ae_kwargs)
+        gnum = self.pot.NumericalDerivative(self.x0)
+        self.compare_arrays(g, gnum)
+
+    def test_energy_gradient_hessian(self):
+        e, g, hess = self.pot.getEnergyGradientHessian(self.x0)
+        self.assertAlmostEqual(e, self.e0, **self.ae_kwargs)
+        gnum = self.pot.NumericalDerivative(self.x0)
+        self.compare_arrays(g, gnum)
+        hnum = self.pot.NumericalHessian(self.x0)
+        self.compare_arrays(hess.reshape(-1), hnum.reshape(-1))
+

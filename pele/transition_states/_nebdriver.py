@@ -47,7 +47,7 @@ class NEBDriver(object):
         adjust number of images on reinterpolate to match image density
     adaptive_niter : bool
         adjust number of iterations if nimages is adjusted
-    factor : int
+    factor : float
         The number of images is multiplied by this factor.  If the number of 
         images is already at it's maximum, then the number of iterations is 
         multiplied by this factor instead
@@ -68,7 +68,7 @@ class NEBDriver(object):
     
     def __init__(self, potential, coords1, coords2,
                  k = 100., max_images = 50, image_density=10., iter_density = 10.,
-                 verbose=0, factor=1., NEBquenchParams=None, adjustk_freq=0, 
+                 verbose=0, factor=1.05, NEBquenchParams=None, adjustk_freq=0, 
                  adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
                  reinterpolate_tol=0.1,
                  reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
@@ -166,6 +166,7 @@ class NEBDriver(object):
         niter = int(self.iter_density * self.nimages)
         if self.factor > 1. and self.nimages == self.max_images and self.max_images > 0:
             niter *= self.factor
+            niter = int(niter)
         
         quenchParams["nsteps"] = niter    
         
@@ -220,7 +221,8 @@ class NEBDriver(object):
             if self.adaptive_niter:
                 self.niter = int(self.iter_density * len(path))
                 if self.factor > 1. and len(path) == self.max_images and self.max_images > 0:
-                    self.niter *= self.factor 
+                    self.niter = int(self.niter * self.factor)
+                    
    
             if self.verbose >= 1:
                 logger.info("NEB reinterpolating path, %d images, niter is %d" % (len(path), self.niter))

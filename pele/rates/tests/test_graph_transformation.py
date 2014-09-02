@@ -41,7 +41,7 @@ class _MakeRandomGraph(object):
 #         print len(self.rates) / 2, "edges"
         return u, v
 
-    def run(self):
+    def make_rates(self):
         nnodes = len(self.nodes)
         if self.node_set is not None:
             # add edges until u and v are connected    
@@ -50,7 +50,11 @@ class _MakeRandomGraph(object):
         nedges = min(self.nedges, nnodes*(nnodes-1))
         while(len(self.rates) < nedges):
             self.add_random_edge()
-        print "made random graph with", len(self.nodes), "nodes and", len(self.rates) / 2, "edges"
+#        print "made random graph with", len(self.nodes), "nodes and", len(self.rates) / 2, "edges"
+        return self.rates
+    
+    def run(self):
+        self.make_rates()
         return kmcgraph_from_rates(self.rates)
     
     
@@ -75,7 +79,7 @@ class TestGraphReduction3(unittest.TestCase):
         self.final_rate = 1.0
 
     def _test_rate(self, i, j):
-        reducer = GraphReduction(self.rates, [i], [j], debug=False)
+        reducer = GraphReduction(self.rates, [i], [j], debug=True)
         reducer.check_graph()
         reducer.compute_rates()
         rAB = reducer.get_rate_AB()

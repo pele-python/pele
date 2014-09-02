@@ -3,6 +3,8 @@ import numpy as np
 
 from pele.rates._kmc import KineticMonteCarlo
 from pele.rates._rate_calculations import GraphReduction
+from pele.rates._rates_linalg import TwoStateRates
+
 from test_graph_transformation import _MakeRandomGraph, _three_state_graph
 
 np.random.seed(0)
@@ -36,14 +38,30 @@ class TestKMC_GraphReduction(unittest.TestCase):
         reducer.compute_rates()
         rAB = reducer.get_rate_AB()
         rBA = reducer.get_rate_BA()
+        rAB_SS = reducer.get_rate_AB_SS()
+        
+        # compute rate via linalg
+        lin = TwoStateRates(maker.rates, A, B, weights=weights)
+        lin.compute_rates()
+        rAB_LA = lin.get_rate_AB()
+        lin.compute_committors()
+        rAB_SS_LA = lin.get_rate_AB_SS()
+        self.assertAlmostEqual(rAB_SS, rAB_SS_LA, 5)
+        PxB_LA = lin.get_committor(x)
+        if x not in A and x not in B:
+            self.assertAlmostEqual(PxB, PxB_LA, 5)
+        
          
         rAB_KMC = kmc.mean_rate(A, B, niter=1000, weights=weights)
         
         print "NGT rate A->B", rAB
         print "KMC rate A->B", rAB_KMC
         print "normalized difference", (rAB - rAB_KMC)/rAB 
+        print "normalized difference to linalg", (rAB - rAB_LA)/rAB 
         self.assertLess(abs(rAB - rAB_KMC)/rAB, .1)
-         
+        self.assertLess(abs(rAB - rAB_LA)/rAB, .00001)
+
+
         rBA_KMC = kmc.mean_rate(B, A, niter=1000, weights=weights)
          
         print "NGT rate B->A", rBA
@@ -86,7 +104,8 @@ class TestKMC_GraphReduction(unittest.TestCase):
         xx = 5
         maker = _MakeRandomGraph(nnodes=nnodes, nedges=nedges, node_set=A+B)
         graph = maker.run()
-        kmc = KineticMonteCarlo(graph, debug=False)
+        graph_backup = graph.copy()
+        kmc = KineticMonteCarlo(graph_backup, debug=False)
         reducer = GraphReduction(maker.rates, A, B)
         
         nodes = set(A + B + [xx])

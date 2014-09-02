@@ -347,139 +347,139 @@ def analyticalLowestEigenvalue(coords, pot):
 #
 
 
-
-  
-def testpot2():
-    from pele.potentials.lj import LJ
-    import itertools
-    pot = LJ()
-    a = 1.12 #2.**(1./6.)
-    theta = 20./360*np.pi
-    coords = [ 0., 0., 0., \
-              -a, 0., 0., \
-              a*np.cos(theta), a*np.sin(theta), 0. ]
-    c = np.reshape(coords, [3,3])
-    for i, j in itertools.combinations(range(3), 2):
-        r = np.linalg.norm(c[i,:] - c[j,:])
-        print i, j, r 
-
-def testpot1():
-    from pele.potentials.lj import LJ
-    import itertools
-    pot = LJ()
-    a = 1.12 #2.**(1./6.)
-    theta = 60./360*np.pi
-    coords = [ 0., 0., 0., \
-              -a, 0., 0., \
-              -a/2, a*np.cos(theta), 0., \
-              -a/2, -a*np.cos(theta), 0.1 \
-              ]
-    natoms = len(coords)/3
-    c = np.reshape(coords, [-1,3])
-    for i, j in itertools.combinations(range(natoms), 2):
-        r = np.linalg.norm(c[i,:] - c[j,:])
-        print i, j, r 
-    
-    e, g = pot.getEnergyGradient(coords)
-    print "initial E", e
-    print "initial G", g, np.linalg.norm(g)
-
-    eigpot = LowestEigPot(coords, pot)
-    vec = np.random.rand(len(coords))
-    e, g = eigpot.getEnergyGradient(vec)
-    print "eigenvalue", e 
-    print "eigenvector", g
-    
-    if True:
-        e, g, hess = pot.getEnergyGradientHessian(coords)
-        print "shape hess", np.shape(hess)
-        print "hessian", hess
-        u, v = np.linalg.eig(hess)
-        print "max imag value", np.max(np.abs(u.imag))
-        print "max imag vector", np.max(np.abs(v.imag))
-        u = u.real
-        v = v.real
-        print "eigenvalues", u
-        for i in range(len(u)):
-            print "eigenvalue", u[i], "eigenvector", v[:,i]
-        #find minimum eigenvalue, vector
-        imin = 0
-        umin = 10.
-        for i in range(len(u)):
-            if np.abs(u[i]) < 1e-10: continue
-            if u[i] < umin:
-                umin = u[i]
-                imin = i
-        print "lowest eigenvalue ", umin, imin
-        print "lowest eigenvector", v[:,imin]
-
-    
-    from pele.optimize import lbfgs_py as quench
-    ret = quench(vec, eigpot.getEnergyGradient, iprint=10, tol = 1e-5, maxstep = 1e-3, \
-                 rel_energy = True)
-    print ret
-    
-    print "lowest eigenvalue "
-    print umin, imin
-    print "lowest eigenvector"
-    print v[:,imin]
-    print "now the estimate"
-    print ret[1]
-    print ret[0]
-
-def testpot3():
-    from transition_state_refinement import guesstsLJ
-    pot, coords, coords1, coords2 = guesstsLJ()
-    coordsinit = np.copy(coords)
-
-    eigpot = LowestEigPot(coords, pot)
-    
-    vec = np.random.rand(len(coords))
-    
-    from pele.optimize import lbfgs_py as quench
-    ret = quench(vec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, \
-                 rel_energy = True)
-
-    eigval = ret[1]
-    eigvec = ret[0]
-    print "eigenvalue ", eigval
-    print "eigenvector", eigvec
-
-    if True:
-        e, g, hess = pot.getEnergyGradientHessian(coords)
-        u, v = np.linalg.eig(hess)
-        u = u.real
-        v = v.real
-        print "eigenvalues", sorted(u)
-        #for i in range(len(u)):
-        #    print "eigenvalue", u[i], "eigenvector", v[:,i]
-        #find minimum eigenvalue, vector
-        imin = 0
-        umin = 10.
-        for i in range(len(u)):
-            if np.abs(u[i]) < 1e-10: continue
-            if u[i] < umin:
-                umin = u[i]
-                imin = i
-        #print "lowest eigenvalue ", umin, imin
-        #print "lowest eigenvector", v[:,imin]
-        
-        
-        
-        trueval, truevec = u[imin], v[:,imin]
-        print "analytical lowest eigenvalue", trueval
-        maxdiff = np.max(np.abs(truevec - eigvec))
-        print "maximum difference between estimated and analytical eigenvectors", maxdiff, \
-            np.linalg.norm(eigvec), np.linalg.norm(truevec), np.dot(truevec, eigvec)
-        if True:
-            print eigvec
-            print truevec
-
-
-
-if __name__ == "__main__":
-    #testpot1()
-    testpot3()
-    
+#
+#  
+#def testpot2():
+#    from pele.potentials.lj import LJ
+#    import itertools
+#    pot = LJ()
+#    a = 1.12 #2.**(1./6.)
+#    theta = 20./360*np.pi
+#    coords = [ 0., 0., 0., \
+#              -a, 0., 0., \
+#              a*np.cos(theta), a*np.sin(theta), 0. ]
+#    c = np.reshape(coords, [3,3])
+#    for i, j in itertools.combinations(range(3), 2):
+#        r = np.linalg.norm(c[i,:] - c[j,:])
+#        print i, j, r 
+#
+#def testpot1():
+#    from pele.potentials.lj import LJ
+#    import itertools
+#    pot = LJ()
+#    a = 1.12 #2.**(1./6.)
+#    theta = 60./360*np.pi
+#    coords = [ 0., 0., 0., \
+#              -a, 0., 0., \
+#              -a/2, a*np.cos(theta), 0., \
+#              -a/2, -a*np.cos(theta), 0.1 \
+#              ]
+#    natoms = len(coords)/3
+#    c = np.reshape(coords, [-1,3])
+#    for i, j in itertools.combinations(range(natoms), 2):
+#        r = np.linalg.norm(c[i,:] - c[j,:])
+#        print i, j, r 
+#    
+#    e, g = pot.getEnergyGradient(coords)
+#    print "initial E", e
+#    print "initial G", g, np.linalg.norm(g)
+#
+#    eigpot = LowestEigPot(coords, pot)
+#    vec = np.random.rand(len(coords))
+#    e, g = eigpot.getEnergyGradient(vec)
+#    print "eigenvalue", e 
+#    print "eigenvector", g
+#    
+#    if True:
+#        e, g, hess = pot.getEnergyGradientHessian(coords)
+#        print "shape hess", np.shape(hess)
+#        print "hessian", hess
+#        u, v = np.linalg.eig(hess)
+#        print "max imag value", np.max(np.abs(u.imag))
+#        print "max imag vector", np.max(np.abs(v.imag))
+#        u = u.real
+#        v = v.real
+#        print "eigenvalues", u
+#        for i in range(len(u)):
+#            print "eigenvalue", u[i], "eigenvector", v[:,i]
+#        #find minimum eigenvalue, vector
+#        imin = 0
+#        umin = 10.
+#        for i in range(len(u)):
+#            if np.abs(u[i]) < 1e-10: continue
+#            if u[i] < umin:
+#                umin = u[i]
+#                imin = i
+#        print "lowest eigenvalue ", umin, imin
+#        print "lowest eigenvector", v[:,imin]
+#
+#    
+#    from pele.optimize import lbfgs_py as quench
+#    ret = quench(vec, eigpot.getEnergyGradient, iprint=10, tol = 1e-5, maxstep = 1e-3, \
+#                 rel_energy = True)
+#    print ret
+#    
+#    print "lowest eigenvalue "
+#    print umin, imin
+#    print "lowest eigenvector"
+#    print v[:,imin]
+#    print "now the estimate"
+#    print ret[1]
+#    print ret[0]
+#
+#def testpot3():
+#    from transition_state_refinement import guesstsLJ
+#    pot, coords, coords1, coords2 = guesstsLJ()
+#    coordsinit = np.copy(coords)
+#
+#    eigpot = LowestEigPot(coords, pot)
+#    
+#    vec = np.random.rand(len(coords))
+#    
+#    from pele.optimize import lbfgs_py as quench
+#    ret = quench(vec, eigpot.getEnergyGradient, iprint=400, tol = 1e-5, maxstep = 1e-3, \
+#                 rel_energy = True)
+#
+#    eigval = ret[1]
+#    eigvec = ret[0]
+#    print "eigenvalue ", eigval
+#    print "eigenvector", eigvec
+#
+#    if True:
+#        e, g, hess = pot.getEnergyGradientHessian(coords)
+#        u, v = np.linalg.eig(hess)
+#        u = u.real
+#        v = v.real
+#        print "eigenvalues", sorted(u)
+#        #for i in range(len(u)):
+#        #    print "eigenvalue", u[i], "eigenvector", v[:,i]
+#        #find minimum eigenvalue, vector
+#        imin = 0
+#        umin = 10.
+#        for i in range(len(u)):
+#            if np.abs(u[i]) < 1e-10: continue
+#            if u[i] < umin:
+#                umin = u[i]
+#                imin = i
+#        #print "lowest eigenvalue ", umin, imin
+#        #print "lowest eigenvector", v[:,imin]
+#        
+#        
+#        
+#        trueval, truevec = u[imin], v[:,imin]
+#        print "analytical lowest eigenvalue", trueval
+#        maxdiff = np.max(np.abs(truevec - eigvec))
+#        print "maximum difference between estimated and analytical eigenvectors", maxdiff, \
+#            np.linalg.norm(eigvec), np.linalg.norm(truevec), np.dot(truevec, eigvec)
+#        if True:
+#            print eigvec
+#            print truevec
+#
+#
+#
+#if __name__ == "__main__":
+#    #testpot1()
+#    testpot3()
+#    
     
     
