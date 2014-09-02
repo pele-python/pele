@@ -497,8 +497,7 @@ class Database(object):
         # it is slow to load them individually by accessing the database repetitively.
         candidates = self.session.query(Minimum).\
             options(undefer("coords")).\
-            filter(Minimum.energy > E-self.accuracy).\
-            filter(Minimum.energy < E+self.accuracy)
+            filter(Minimum.energy.between(E-self.accuracy, E+self.accuracy))
         
         new = Minimum(E, coords)
         
@@ -572,8 +571,7 @@ class Database(object):
                        and_(TransitionState.minimum1==m2, 
                             TransitionState.minimum2==m1),
                        )).\
-            filter(TransitionState.energy > energy-self.accuracy).\
-            filter(TransitionState.energy < energy+self.accuracy)
+            filter(TransitionState.energy.between(energy-self.accuracy,  energy+self.accuracy))
         
         for m in candidates:
             #if(self.compareMinima):

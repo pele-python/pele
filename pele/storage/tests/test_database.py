@@ -17,6 +17,12 @@ class TestDB(unittest.TestCase):
         self.db.addTransitionState(0., [0.], self.db.minima()[1], self.db.minima()[2], eigenval=0., eigenvec=[0.])
         self.db.addTransitionState(0., [0.], self.db.minima()[0], self.db.minima()[2], eigenval=0., eigenvec=[0.])
 
+    def test_add_minimum(self):
+        # add a duplicate minimum and ensure the db doesn't change
+        self.db.addMinimum(0, [0])
+        self.assertEqual(self.db.number_of_minima(), self.nminima)
+        
+
     def test_size(self):
         self.assertEqual(len(self.db.minima()), self.nminima)
         
@@ -30,6 +36,7 @@ class TestDB(unittest.TestCase):
 
     def test_sizets(self):
         self.assertEqual(len(self.db.transition_states()), self.nts)
+    
     def test_energyts(self):
         ts = self.db.transition_states()[0]
         self.assertEqual(ts.energy, 0.)
@@ -55,7 +62,6 @@ class TestDB(unittest.TestCase):
         
         # m should have 2 minima.  both of those should be gone
         self.assertEqual(self.db.number_of_minima(), self.nminima)
-
 
     def test_getTransitionState(self):
         m1 = self.db.minima()[0]
