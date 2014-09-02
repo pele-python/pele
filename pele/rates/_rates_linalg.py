@@ -59,82 +59,75 @@ def compute_sum_out_rates(rates):
     return sum_out_rates
 
 
-class EstimateRates(object):
-    """make a rough estimate of the rates
-    
-    This is aimed to be used as an initial guess for the rate solver.
-    Equivalently it can be used to precondition the matrix in the system of
-    linear equations
-    """
-    def __init__(self, rate_constants, Peq, B):
-        self.union_find = nx.utils.UnionFind()
-        self.rate_constants = rate_constants
-        self.Peq = Peq
-        self.B = set(iter(B))
-        
-        self.run()
-    
-    def minimum_spaning_edges(self, edges):
-        # assume the edges are already sorted appropriately
-        subtrees = self.union_find
-        for u,v in edges:
-            uroot, vroot = subtrees[u], subtrees[v]
-            if uroot != vroot:
-                yield u, v, uroot, vroot
-                subtrees.union(u,v)
-
-    
-    def run(self):
-        # add B to the union find and make sure they're all connected
-        b = iter(self.B).next()
-        for x in self.B:
-            if x != b:
-                self.union_find.union(x, b)
-        
-        #sort edges by rate with biggest rate to the left
-        edges = [((u,v), k*self.Peq[u]) for (u,v), k in 
-                 self.rate_constants.iteritems() if u<v]
-        edges.sort(key=lambda uvk: -uvk[1])
-        assert edges[0][1] > edges[1][1]
-        edges = [uv for uv, k in edges]
-        
-        rate_estimates = dict()
-        graph = nx.Graph()
-        for u, v, uroot, vroot in self.minimum_spaning_edges(edges):
-            broot = self.union_find[b]
-            
-            if uroot == broot or vroot == broot:
-                if uroot == broot:
-                    new_node = v
-                if vroot == broot:
-                    new_node = u
+#class EstimateRates(object):
+#    """make a rough estimate of the rates
+#    
+#    This is aimed to be used as an initial guess for the rate solver.
+#    Equivalently it can be used to precondition the matrix in the system of
+#    linear equations
+#    """
+#    def __init__(self, rate_constants, Peq, B):
+#        self.union_find = nx.utils.UnionFind()
+#        self.rate_constants = rate_constants
+#        self.Peq = Peq
+#        self.B = set(iter(B))
+#        
+#        self.run()
+#    
+#    def minimum_spaning_edges(self, edges):
+#        # assume the edges are already sorted appropriately
+#        subtrees = self.union_find
+#        for u,v in edges:
+#            uroot, vroot = subtrees[u], subtrees[v]
+#            if uroot != vroot:
+#                yield u, v, uroot, vroot
+#                subtrees.union(u,v)
+#
+#    
+#    def run(self):
+#        # add B to the union find and make sure they're all connected
+#        b = iter(self.B).next()
+#        for x in self.B:
+#            if x != b:
+#                self.union_find.union(x, b)
+#        
+#        #sort edges by rate with biggest rate to the left
+#        edges = [((u,v), k*self.Peq[u]) for (u,v), k in 
+#                 self.rate_constants.iteritems() if u<v]
+#        edges.sort(key=lambda uvk: -uvk[1])
+#        assert edges[0][1] > edges[1][1]
+#        edges = [uv for uv, k in edges]
+#        
+#        rate_estimates = dict()
+#        graph = nx.Graph()
+#        for u, v, uroot, vroot in self.minimum_spaning_edges(edges):
+#            broot = self.union_find[b]
+#            
+#            if uroot == broot or vroot == broot:
+#                if uroot == broot:
+#                    new_node = v
+#                if vroot == broot:
+#                    new_node = u
+#                
+#                # all nodes connected to new_node are newly connected to the B nodes
+#                tsrate = self.rate_constants[(u,v)] * self.Peq[u]
+#                if new_node not in graph:
+#                    graph.add_node(new_node)
+#                nodes = nx.node_connected_component(graph, new_node)
+##                print len(nodes), "nodes connecting to B"
+#                P = max([self.Peq[x] for x in nodes])
+#                for x in nodes:
+#                    assert x not in rate_estimates
+#                    rate_estimates[x] = tsrate / P
+##                    rate_estimates[x] = tsrate / self.Peq[x]
+#                
+#                graph.remove_nodes_from(nodes)
+#            else:
+#                graph.add_edge(u,v)
+#                    
+#
+#        self.rate_estimates = rate_estimates
                 
-                # all nodes connected to new_node are newly connected to the B nodes
-                tsrate = self.rate_constants[(u,v)] * self.Peq[u]
-                if new_node not in graph:
-                    graph.add_node(new_node)
-                nodes = nx.node_connected_component(graph, new_node)
-#                print len(nodes), "nodes connecting to B"
-                P = max([self.Peq[x] for x in nodes])
-                for x in nodes:
-                    assert x not in rate_estimates
-                    rate_estimates[x] = tsrate / P
-#                    rate_estimates[x] = tsrate / self.Peq[x]
-                
-                graph.remove_nodes_from(nodes)
-            else:
-                graph.add_edge(u,v)
-                    
-
-        self.rate_estimates = rate_estimates
-                
-                
-            
-        
-        
-    
-
-
 class CommittorLinalg(object):
     """compute committor probabilites using sparse linear algebra"""
     def __init__(self, rates, A, B, debug=False, weights=None):
@@ -274,106 +267,106 @@ class MfptLinalgSparse(object):
             raise LinalgError("error the mean first passage times are not all greater than zero")
         return self.mfpt_dict
     
-    def compute_mfpt_symmetric(self, Peq):
-        """make the matrix symmetric by multiplying both sides of the equation by Peq
-        
-            sum_v Peq_u k_uv = -Peq_u
-        """
-        intermediates = self.nodes - self.B
-        
-        node_list = list(intermediates)
-        n = len(node_list)
-        matrix = scipy.sparse.dok_matrix((n,n))
-        node2i = dict([(node,i) for i, node in enumerate(node_list)])
-        
-        right_side = -np.array([Peq[u] for u in node_list])
-        
-        for iu, u in enumerate(node_list):
-            matrix[iu,iu] = -self.sum_out_rates[u] * Peq[u]
-        
-        for uv, rate in self.rates.iteritems():
-            u, v = uv
-            if u in intermediates and v in intermediates: 
-                ui = node2i[u]
-                vi = node2i[v]
-                assert ui != vi
-                matrix[ui,vi] = rate * Peq[u]
-        
-        node_list = node_list
-        node2i = node2i
-        matrix =  matrix.tocsc()
-        
-        t0 = time.clock()
-        from scikits.sparse.cholmod import cholesky
-        factor = cholesky(matrix)
-        times = factor(right_side)
-#        times = scikits.sparse.spsolve(matrix, right_side,
-#                                            use_umfpack=True)
-        print "time solving symmetric linalg", time.clock() - t0
-        self.time_solve += time.clock() - t0
-        self.mfpt_dict = dict(((node, time) for node, time in izip(node_list, times)))
-        if np.any(times < 0):
-            raise LinalgError("error the mean first passage times are not all greater than zero")
-        return self.mfpt_dict
+#    def compute_mfpt_symmetric(self, Peq):
+#        """make the matrix symmetric by multiplying both sides of the equation by Peq
+#        
+#            sum_v Peq_u k_uv = -Peq_u
+#        """
+#        intermediates = self.nodes - self.B
+#        
+#        node_list = list(intermediates)
+#        n = len(node_list)
+#        matrix = scipy.sparse.dok_matrix((n,n))
+#        node2i = dict([(node,i) for i, node in enumerate(node_list)])
+#        
+#        right_side = -np.array([Peq[u] for u in node_list])
+#        
+#        for iu, u in enumerate(node_list):
+#            matrix[iu,iu] = -self.sum_out_rates[u] * Peq[u]
+#        
+#        for uv, rate in self.rates.iteritems():
+#            u, v = uv
+#            if u in intermediates and v in intermediates: 
+#                ui = node2i[u]
+#                vi = node2i[v]
+#                assert ui != vi
+#                matrix[ui,vi] = rate * Peq[u]
+#        
+#        node_list = node_list
+#        node2i = node2i
+#        matrix =  matrix.tocsc()
+#        
+#        t0 = time.clock()
+#        from scikits.sparse.cholmod import cholesky
+#        factor = cholesky(matrix)
+#        times = factor(right_side)
+##        times = scikits.sparse.spsolve(matrix, right_side,
+##                                            use_umfpack=True)
+#        print "time solving symmetric linalg", time.clock() - t0
+#        self.time_solve += time.clock() - t0
+#        self.mfpt_dict = dict(((node, time) for node, time in izip(node_list, times)))
+#        if np.any(times < 0):
+#            raise LinalgError("error the mean first passage times are not all greater than zero")
+#        return self.mfpt_dict
 
-    def compute_mfpt_from_estimate(self, mfpt_estimates):
-        intermediates = self.nodes - self.B
-        
-        node_list = list(intermediates)
-        n = len(node_list)
-        matrix = scipy.sparse.dok_matrix((n,n))
-        node2i = dict([(node,i) for i, node in enumerate(node_list)])
-        
-        right_side = -np.ones(len(node_list))
-        
-        for iu, u in enumerate(node_list):
-            matrix[iu,iu] = -self.sum_out_rates[u] * mfpt_estimates[u]
-        
-        for uv, rate in self.rates.iteritems():
-            u, v = uv
-            if u in intermediates and v in intermediates: 
-                ui = node2i[u]
-                vi = node2i[v]
-                assert ui != vi
-                matrix[ui,vi] = rate * mfpt_estimates[v]
-        
-        matrix_max = np.max(matrix.values())
-        print "matrix max value", np.max(matrix.values())
-        print "matrix min value", np.min(matrix.values())
-        print "matrix min abs value", np.min([np.abs(v) for v in matrix.values()])
-#        for ij, v in matrix.iteritems():
-#            matrix[ij] = v / matrix_max
-#        print "new matrix max value", np.max(matrix.values())
-#        print "new matrix min value", np.min(matrix.values())
+#    def compute_mfpt_from_estimate(self, mfpt_estimates):
+#        intermediates = self.nodes - self.B
+#        
+#        node_list = list(intermediates)
+#        n = len(node_list)
+#        matrix = scipy.sparse.dok_matrix((n,n))
+#        node2i = dict([(node,i) for i, node in enumerate(node_list)])
+#        
+#        right_side = -np.ones(len(node_list))
+#        
+#        for iu, u in enumerate(node_list):
+#            matrix[iu,iu] = -self.sum_out_rates[u] * mfpt_estimates[u]
+#        
+#        for uv, rate in self.rates.iteritems():
+#            u, v = uv
+#            if u in intermediates and v in intermediates: 
+#                ui = node2i[u]
+#                vi = node2i[v]
+#                assert ui != vi
+#                matrix[ui,vi] = rate * mfpt_estimates[v]
+#        
+#        matrix_max = np.max(matrix.values())
+#        print "matrix max value", np.max(matrix.values())
+#        print "matrix min value", np.min(matrix.values())
+#        print "matrix min abs value", np.min([np.abs(v) for v in matrix.values()])
+##        for ij, v in matrix.iteritems():
+##            matrix[ij] = v / matrix_max
+##        print "new matrix max value", np.max(matrix.values())
+##        print "new matrix min value", np.min(matrix.values())
+#
+#            
+#        
+#        matrix =  matrix.tocsc()
+#        
+#        t0 = time.clock()
+#        cg = True
+#        if cg:
+#            times, info = scipy.sparse.linalg.cgs(matrix, right_side)
+#            print "time to solve using conjugate gradient", time.clock() - t0
+#        else:
+#            times = scipy.sparse.linalg.spsolve(matrix, right_side,
+#                                                use_umfpack=True)
+#            print "time solving symmetric linalg", time.clock() - t0
+#        self.time_solve += time.clock() - t0
+#        self.mfpt_dict = dict(((u, time * mfpt_estimates[u]) for u, time in izip(node_list, times)))
+#        if np.any(times < 0):
+#            raise LinalgError("error the mean first passage times are not all greater than zero")
+#        return self.mfpt_dict
 
-            
-        
-        matrix =  matrix.tocsc()
-        
-        t0 = time.clock()
-        cg = True
-        if cg:
-            times, info = scipy.sparse.linalg.cgs(matrix, right_side)
-            print "time to solve using conjugate gradient", time.clock() - t0
-        else:
-            times = scipy.sparse.linalg.spsolve(matrix, right_side,
-                                                use_umfpack=True)
-            print "time solving symmetric linalg", time.clock() - t0
-        self.time_solve += time.clock() - t0
-        self.mfpt_dict = dict(((u, time * mfpt_estimates[u]) for u, time in izip(node_list, times)))
-        if np.any(times < 0):
-            raise LinalgError("error the mean first passage times are not all greater than zero")
-        return self.mfpt_dict
-
-    def compute_mfpt_subgroups(self, use_umfpack=True):
-        for group in self.subgroups:
-            self.make_matrix(group)
-            t0 = time.clock()
-            times = scipy.sparse.linalg.spsolve(self.matrix, -np.ones(self.matrix.shape[0]),
-                                                use_umfpack=use_umfpack)
-            self.time_solve += time.clock() - t0
-            for node, time in izip(self.node_list, times):
-                self.mfpt_dict[node] = time
+#    def compute_mfpt_subgroups(self, use_umfpack=True):
+#        for group in self.subgroups:
+#            self.make_matrix(group)
+#            t0 = time.clock()
+#            times = scipy.sparse.linalg.spsolve(self.matrix, -np.ones(self.matrix.shape[0]),
+#                                                use_umfpack=use_umfpack)
+#            self.time_solve += time.clock() - t0
+#            for node, time in izip(self.node_list, times):
+#                self.mfpt_dict[node] = time
 
 
 class TwoStateRates(object):

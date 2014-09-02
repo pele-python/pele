@@ -46,7 +46,6 @@ class TestNgtCpp10(unittest.TestCase):
         self.true_kBA_SS = 6.970856553435547
 
     def _test_rate(self, A, B):
-#        from kmc_rates import GraphReduction
         reducer = NGT(self.rates, A, B, debug=False)
         reducer.compute_rates()
         kAB = reducer.get_rate_AB()
