@@ -45,7 +45,7 @@ class TestConnectManager(unittest.TestCase):
 
         # at this point the minima should be in two disconnected groups
         g = database2graph(self.db)
-        self.assertEqual(len(nx.connected_components(g)), 2)
+        self.assertEqual(len(list(nx.connected_components(g))), 2)
             
         manager = ConnectManager(self.db, strategy="combine")
         m1, m2 = manager.get_connect_job()
@@ -53,7 +53,7 @@ class TestConnectManager(unittest.TestCase):
         
         # they should all be connected now
         g = database2graph(self.db)
-        self.assertEqual(len(nx.connected_components(g)), 1)
+        self.assertEqual(len(list(nx.connected_components(g))), 1)
         
     def test_untrap(self):
         # first connect them all randomly
