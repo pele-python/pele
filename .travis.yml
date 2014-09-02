@@ -39,6 +39,8 @@ install:
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
   - cp .coveragerc $HOME
+  - pwd
+  - sourcedir=$PWD
   # build the c++ tests
   - cd cpp_tests
   - cpp_test_dir=$PWD
@@ -55,7 +57,8 @@ script:
   - $cpp_test_dir/build/test_main
 
 after_success:
-  - cd $HOME # not sure if this is necessary
-  - ls
+  - cd $sourcedir # not sure if this is necessary
+  - ls -la
+  - cp $HOME/.coverage .
   - coveralls debug
   - coveralls
