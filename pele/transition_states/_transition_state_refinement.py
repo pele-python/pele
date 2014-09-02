@@ -577,167 +577,167 @@ def findTransitionState(*args, **kwargs):
 #below here only stuff for testing
 ###################################################################
 
-
-def testgetcoordsLJ():
-    a = 1.12 #2.**(1./6.)
-    theta = 60./360*np.pi
-    coords = [ 0., 0., 0., \
-              -a, 0., 0., \
-              -a/2, a*np.cos(theta), 0., \
-              -a/2, -a*np.cos(theta), 0.3 \
-              ]
-    coords = np.array(coords)
-    return coords
-
-
-def guesstsATLJ():
-    from pele.potentials.ATLJ import ATLJ
-    pot = ATLJ(Z = 2.)
-    a = 1.12 #2.**(1./6.)
-    theta = 60./360*np.pi
-    coords1 = np.array([ 0., 0., 0., \
-              -a, 0., 0., \
-              -a/2, -a*np.cos(theta), 0. ])
-    coords2 = np.array([ 0., 0., 0., \
-              -a, 0., 0., \
-              a, 0., 0. ])
-    from pele.optimize import lbfgs_py as quench
-    from pele.transition_states import InterpolatedPath
-    ret1 = quench(coords1, pot.getEnergyGradient)
-    ret2 = quench(coords2, pot.getEnergyGradient)
-    coords1 = ret1[0]
-    coords2 = ret2[0]
-    from pele.transition_states import NEB
-    neb = NEB(InterpolatedPath(coords1, coords2, 30), pot)
-    neb.optimize()
-    neb.MakeAllMaximaClimbing()
-    #neb.optimize()
-    for i in xrange(len(neb.energies)):
-        if(neb.isclimbing[i]):
-            coords = neb.coords[i,:]
-    return pot, coords
-
-def guessts(coords1, coords2, pot):
-    from pele.optimize import lbfgs_py as quench
-#    from pele.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
-    from pele.transition_states import NEB
-    from pele.systems import LJCluster
-    ret1 = quench(coords1, pot.getEnergyGradient)
-    ret2 = quench(coords2, pot.getEnergyGradient)
-    coords1 = ret1[0]
-    coords2 = ret2[0]
-    natoms = len(coords1)/3
-    system = LJCluster(natoms)
-    mindist = system.get_mindist()
-    dist, coords1, coords2 = mindist(coords1, coords2) 
-    print "dist", dist
-    print "energy coords1", pot.getEnergy(coords1)
-    print "energy coords2", pot.getEnergy(coords2)
-    from pele.transition_states import InterpolatedPath
-    neb = NEB(InterpolatedPath(coords1, coords2, 20), pot)
-    #neb.optimize(quenchParams={"iprint" : 1})
-    neb.optimize(iprint=-30, nsteps=100)
-    neb.MakeAllMaximaClimbing()
-    #neb.optimize(quenchParams={"iprint": 30, "nsteps":100})
-    for i in xrange(len(neb.energies)):
-        if(neb.isclimbing[i]):
-            coords = neb.coords[i,:]
-    return pot, coords, neb.coords[0,:], neb.coords[-1,:]
-
-
-def guesstsLJ():
-    from pele.potentials.lj import LJ
-    pot = LJ()
-    natoms = 9
-    coords = np.random.uniform(-1,1,natoms*3)
-    from pele.basinhopping import BasinHopping
-    from pele.takestep.displace import RandomDisplacement
-    from pele.takestep.adaptive import AdaptiveStepsize
-    from pele.storage.savenlowest import SaveN
-    saveit = SaveN(10)
-    takestep1 = RandomDisplacement()
-    takestep = AdaptiveStepsize(takestep1, frequency=15)
-    bh = BasinHopping(coords, pot, takestep, storage=saveit, outstream=None)
-    bh.run(100)
-    coords1 = saveit.data[0].coords
-    coords2 = saveit.data[1].coords
-    
-    return guessts(coords1, coords2, pot)
-
-def testgetcoordsATLJ():
-    a = 1.12 #2.**(1./6.)
-    theta = 40./360*np.pi
-    coords = [ 0., 0., 0., \
-              -a, 0., 0., \
-              a*np.cos(theta), a*np.sin(theta), 0. ]
-    return np.array(coords)
-
-def testpot1():
-    import itertools
-    pot, coords, coords1, coords2 = guesstsLJ()
-    coordsinit = np.copy(coords)
-    natoms = len(coords)/3
-    c = np.reshape(coords, [-1,3])
-    for i, j in itertools.combinations(range(natoms), 2):
-        r = np.linalg.norm(c[i,:] - c[j,:])
-        print i, j, r 
-    
-    e, g = pot.getEnergyGradient(coords)
-    print "initial E", e
-    print "initial G", g, np.linalg.norm(g)
-    print ""
-    
-
-    
-    
-    from pele.utils.xyz import write_xyz
-
-    #print ret
-    
-    with open("out.xyz", "w") as fout:
-        e = pot.getEnergy(coords1)
-        print "energy of minima 1", e
-        write_xyz(fout, coords1, title=str(e))
-        e, grad = pot.getEnergyGradient(coordsinit)
-        print "energy of NEB guess for the transition state", e, "rms grad", \
-            np.linalg.norm(grad) / np.sqrt(float(len(coords))/3.)
-        write_xyz(fout, coordsinit, title=str(e))
-        e = pot.getEnergy(coords2)
-        print "energy of minima 2", e
-        write_xyz(fout, coords2, title=str(e))
-        
-        #mess up coords a bit
-        coords += np.random.uniform(-1,1,len(coords))*0.05
-        e = pot.getEnergy(coords)
-        write_xyz(fout, coords, title=str(e))
-
-        
-        printevent = PrintEvent(fout)
-        print ""
-        print "starting the transition state search"
-        ret = findTransitionState(coords, pot, iprint=-1)
-        print ret
-        #coords, eval, evec, e, grad, rms = ret
-        e = pot.getEnergy(ret.coords)
-        write_xyz(fout, coords2, title=str(e))
-
-    print "finished searching for transition state"
-    print "energy", e
-    print "rms grad", ret.rms
-    print "eigenvalue", ret.eigenval
-    
-    if False:
-        print "now try the same search with the dimer method"
-        from pele.NEB.dimer import findTransitionState as dimerfindTS
-        coords = coordsinit.copy()
-        tau = np.random.uniform(-1,1,len(coords))
-        tau /= np.linalg.norm(tau)
-        ret = dimerfindTS(coords, pot, tau )
-        enew, grad = pot.getEnergyGradient(ret.coords)
-        print "energy", enew
-        print "rms grad", np.linalg.norm(grad) / np.sqrt(float(len(ret.coords))/3.)
-
-
-
-if __name__ == "__main__":
-    testpot1()
+#
+#def testgetcoordsLJ():
+#    a = 1.12 #2.**(1./6.)
+#    theta = 60./360*np.pi
+#    coords = [ 0., 0., 0., \
+#              -a, 0., 0., \
+#              -a/2, a*np.cos(theta), 0., \
+#              -a/2, -a*np.cos(theta), 0.3 \
+#              ]
+#    coords = np.array(coords)
+#    return coords
+#
+#
+#def guesstsATLJ():
+#    from pele.potentials.ATLJ import ATLJ
+#    pot = ATLJ(Z = 2.)
+#    a = 1.12 #2.**(1./6.)
+#    theta = 60./360*np.pi
+#    coords1 = np.array([ 0., 0., 0., \
+#              -a, 0., 0., \
+#              -a/2, -a*np.cos(theta), 0. ])
+#    coords2 = np.array([ 0., 0., 0., \
+#              -a, 0., 0., \
+#              a, 0., 0. ])
+#    from pele.optimize import lbfgs_py as quench
+#    from pele.transition_states import InterpolatedPath
+#    ret1 = quench(coords1, pot.getEnergyGradient)
+#    ret2 = quench(coords2, pot.getEnergyGradient)
+#    coords1 = ret1[0]
+#    coords2 = ret2[0]
+#    from pele.transition_states import NEB
+#    neb = NEB(InterpolatedPath(coords1, coords2, 30), pot)
+#    neb.optimize()
+#    neb.MakeAllMaximaClimbing()
+#    #neb.optimize()
+#    for i in xrange(len(neb.energies)):
+#        if(neb.isclimbing[i]):
+#            coords = neb.coords[i,:]
+#    return pot, coords
+#
+#def guessts(coords1, coords2, pot):
+#    from pele.optimize import lbfgs_py as quench
+##    from pele.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
+#    from pele.transition_states import NEB
+#    from pele.systems import LJCluster
+#    ret1 = quench(coords1, pot.getEnergyGradient)
+#    ret2 = quench(coords2, pot.getEnergyGradient)
+#    coords1 = ret1[0]
+#    coords2 = ret2[0]
+#    natoms = len(coords1)/3
+#    system = LJCluster(natoms)
+#    mindist = system.get_mindist()
+#    dist, coords1, coords2 = mindist(coords1, coords2) 
+#    print "dist", dist
+#    print "energy coords1", pot.getEnergy(coords1)
+#    print "energy coords2", pot.getEnergy(coords2)
+#    from pele.transition_states import InterpolatedPath
+#    neb = NEB(InterpolatedPath(coords1, coords2, 20), pot)
+#    #neb.optimize(quenchParams={"iprint" : 1})
+#    neb.optimize(iprint=-30, nsteps=100)
+#    neb.MakeAllMaximaClimbing()
+#    #neb.optimize(quenchParams={"iprint": 30, "nsteps":100})
+#    for i in xrange(len(neb.energies)):
+#        if(neb.isclimbing[i]):
+#            coords = neb.coords[i,:]
+#    return pot, coords, neb.coords[0,:], neb.coords[-1,:]
+#
+#
+#def guesstsLJ():
+#    from pele.potentials.lj import LJ
+#    pot = LJ()
+#    natoms = 9
+#    coords = np.random.uniform(-1,1,natoms*3)
+#    from pele.basinhopping import BasinHopping
+#    from pele.takestep.displace import RandomDisplacement
+#    from pele.takestep.adaptive import AdaptiveStepsize
+#    from pele.storage.savenlowest import SaveN
+#    saveit = SaveN(10)
+#    takestep1 = RandomDisplacement()
+#    takestep = AdaptiveStepsize(takestep1, frequency=15)
+#    bh = BasinHopping(coords, pot, takestep, storage=saveit, outstream=None)
+#    bh.run(100)
+#    coords1 = saveit.data[0].coords
+#    coords2 = saveit.data[1].coords
+#    
+#    return guessts(coords1, coords2, pot)
+#
+#def testgetcoordsATLJ():
+#    a = 1.12 #2.**(1./6.)
+#    theta = 40./360*np.pi
+#    coords = [ 0., 0., 0., \
+#              -a, 0., 0., \
+#              a*np.cos(theta), a*np.sin(theta), 0. ]
+#    return np.array(coords)
+#
+#def testpot1():
+#    import itertools
+#    pot, coords, coords1, coords2 = guesstsLJ()
+#    coordsinit = np.copy(coords)
+#    natoms = len(coords)/3
+#    c = np.reshape(coords, [-1,3])
+#    for i, j in itertools.combinations(range(natoms), 2):
+#        r = np.linalg.norm(c[i,:] - c[j,:])
+#        print i, j, r 
+#    
+#    e, g = pot.getEnergyGradient(coords)
+#    print "initial E", e
+#    print "initial G", g, np.linalg.norm(g)
+#    print ""
+#    
+#
+#    
+#    
+#    from pele.utils.xyz import write_xyz
+#
+#    #print ret
+#    
+#    with open("out.xyz", "w") as fout:
+#        e = pot.getEnergy(coords1)
+#        print "energy of minima 1", e
+#        write_xyz(fout, coords1, title=str(e))
+#        e, grad = pot.getEnergyGradient(coordsinit)
+#        print "energy of NEB guess for the transition state", e, "rms grad", \
+#            np.linalg.norm(grad) / np.sqrt(float(len(coords))/3.)
+#        write_xyz(fout, coordsinit, title=str(e))
+#        e = pot.getEnergy(coords2)
+#        print "energy of minima 2", e
+#        write_xyz(fout, coords2, title=str(e))
+#        
+#        #mess up coords a bit
+#        coords += np.random.uniform(-1,1,len(coords))*0.05
+#        e = pot.getEnergy(coords)
+#        write_xyz(fout, coords, title=str(e))
+#
+#        
+#        printevent = PrintEvent(fout)
+#        print ""
+#        print "starting the transition state search"
+#        ret = findTransitionState(coords, pot, iprint=-1)
+#        print ret
+#        #coords, eval, evec, e, grad, rms = ret
+#        e = pot.getEnergy(ret.coords)
+#        write_xyz(fout, coords2, title=str(e))
+#
+#    print "finished searching for transition state"
+#    print "energy", e
+#    print "rms grad", ret.rms
+#    print "eigenvalue", ret.eigenval
+#    
+#    if False:
+#        print "now try the same search with the dimer method"
+#        from pele.NEB.dimer import findTransitionState as dimerfindTS
+#        coords = coordsinit.copy()
+#        tau = np.random.uniform(-1,1,len(coords))
+#        tau /= np.linalg.norm(tau)
+#        ret = dimerfindTS(coords, pot, tau )
+#        enew, grad = pot.getEnergyGradient(ret.coords)
+#        print "energy", enew
+#        print "rms grad", np.linalg.norm(grad) / np.sqrt(float(len(ret.coords))/3.)
+#
+#
+#
+#if __name__ == "__main__":
+#    testpot1()
