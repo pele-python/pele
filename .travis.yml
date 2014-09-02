@@ -56,4 +56,6 @@ script:
 
 after_success:
   - cd $HOME # not sure if this is necessary
+  - ls
+  - coveralls debug
   - coveralls
