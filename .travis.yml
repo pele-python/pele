@@ -57,8 +57,7 @@ script:
   - $cpp_test_dir/build/test_main
 
 after_success:
+  # need to be in source directory to call coverage
   - cd $sourcedir # not sure if this is necessary
-  - ls -la
   - cp $HOME/.coverage .
-  - coveralls debug
   - coveralls
