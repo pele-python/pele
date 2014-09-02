@@ -107,51 +107,51 @@ class XYModel(BasePotential):
 
 
 
-def test_basin_hopping(pot, angles):
-    from pele.basinhopping import BasinHopping
-    from pele.takestep.displace import RandomDisplacement
-    from pele.takestep.adaptive import AdaptiveStepsize
-    
-    takestep = RandomDisplacement(stepsize = np.pi/4)
-    takestepa = AdaptiveStepsize(takestep, frequency = 20)
-    
-    bh = BasinHopping( angles, pot, takestepa, temperature = 1.01)
-    bh.run(20)
-
-def test():
-    pi = np.pi
-    L = 3
-    nspins = L**2
-    
-    #phases = np.zeros(nspins)
-    pot = XYModel( dim = [L,L], phi = np.pi) #, phases=phases)
-    
-    
-    angles = np.random.uniform(-pi, pi, nspins)
-    print angles
-
-    e = pot.getEnergy(angles)
-    print "energy ", e
-
-    print "numerical gradient"
-    ret = pot.getEnergyGradientNumerical(angles)
-    print ret[1]
-    print "analytical gradient"
-    ret2 = pot.getEnergyGradient(angles)
-    print ret2[1]
-    print ret[0]
-    print ret2[0]
-    
-
-    
-    #try a quench
-    from pele.optimize import mylbfgs
-    ret = mylbfgs(angles, pot)
-    
-    print "quenched e = ", ret.energy
-    print ret.coords
-    
-    test_basin_hopping(pot, angles)
-
-if __name__ == "__main__":
-    test()
+#def test_basin_hopping(pot, angles):
+#    from pele.basinhopping import BasinHopping
+#    from pele.takestep.displace import RandomDisplacement
+#    from pele.takestep.adaptive import AdaptiveStepsize
+#    
+#    takestep = RandomDisplacement(stepsize = np.pi/4)
+#    takestepa = AdaptiveStepsize(takestep, frequency = 20)
+#    
+#    bh = BasinHopping( angles, pot, takestepa, temperature = 1.01)
+#    bh.run(20)
+#
+#def test():
+#    pi = np.pi
+#    L = 3
+#    nspins = L**2
+#    
+#    #phases = np.zeros(nspins)
+#    pot = XYModel( dim = [L,L], phi = np.pi) #, phases=phases)
+#    
+#    
+#    angles = np.random.uniform(-pi, pi, nspins)
+#    print angles
+#
+#    e = pot.getEnergy(angles)
+#    print "energy ", e
+#
+#    print "numerical gradient"
+#    ret = pot.getEnergyGradientNumerical(angles)
+#    print ret[1]
+#    print "analytical gradient"
+#    ret2 = pot.getEnergyGradient(angles)
+#    print ret2[1]
+#    print ret[0]
+#    print ret2[0]
+#    
+#
+#    
+#    #try a quench
+#    from pele.optimize import mylbfgs
+#    ret = mylbfgs(angles, pot)
+#    
+#    print "quenched e = ", ret.energy
+#    print ret.coords
+#    
+#    test_basin_hopping(pot, angles)
+#
+#if __name__ == "__main__":
+#    test()
