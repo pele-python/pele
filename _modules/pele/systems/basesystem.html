@@ -54,7 +54,7 @@
   <h1>Source code for pele.systems.basesystem</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 
-<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">DoubleEndedConnect</span><span class="p">,</span> <span class="n">DoubleEndedConnectPar</span>
+<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">DoubleEndedConnect</span>
 <span class="kn">from</span> <span class="nn">pele</span> <span class="kn">import</span> <span class="n">basinhopping</span>
 <span class="kn">from</span> <span class="nn">pele.storage</span> <span class="kn">import</span> <span class="n">Database</span>
 <span class="kn">from</span> <span class="nn">pele.takestep</span> <span class="kn">import</span> <span class="n">RandomDisplacement</span><span class="p">,</span> <span class="n">AdaptiveStepsizeTemperature</span>
@@ -291,15 +291,38 @@
         <span class="k">return</span> <span class="n">tsAdaptive</span>
 </div>
 <div class="viewcode-block" id="BaseSystem.get_basinhopping"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_basinhopping.html#pele.systems.BaseSystem.get_basinhopping">[docs]</a>    <span class="k">def</span> <span class="nf">get_basinhopping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">takestep</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">add_minimum</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                         <span class="n">max_n_minima</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                          <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;return the basinhopping object with takestep</span>
-<span class="sd">        and accept step already implemented</span>
+        <span class="sd">&quot;&quot;&quot;construct a basinhopping object with takestep and accept step already implemented</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        database : object</span>
+<span class="sd">            Use this object to store the minima.  If None, use self.create_database()</span>
+<span class="sd">        takestep : object</span>
+<span class="sd">            Use this takestep routine.  If None, use self.get_takestep()</span>
+<span class="sd">        coords : 1-d numpy array</span>
+<span class="sd">            The starting point for the basinhopping run.  If None, use self.get_random_configuration()</span>
+<span class="sd">        add_minimium : callable</span>
+<span class="sd">            Call this function each time a minimum is found.  This is used instead of the database.</span>
+<span class="sd">        max_n_minima : int</span>
+<span class="sd">            Only keep this number of minima in the database.  The minima with the lowest energy are kept.</span>
+<span class="sd">            This is ignored if add_minimum is passed</span>
+<span class="sd">        kwargs : key word arguments</span>
+<span class="sd">            Extra key word arguments are passed to BasinHopping.</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        pele.basinhopping</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">dict_copy_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&quot;basinhopping&quot;</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="c"># extract max_n_minima from kwargs</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;max_n_minima&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_n_minima</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">max_n_minima</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
         <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
@@ -308,7 +331,7 @@
         <span class="k">if</span> <span class="n">add_minimum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
-            <span class="n">add_minimum</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minimum_adder</span><span class="p">()</span>
+            <span class="n">add_minimum</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minimum_adder</span><span class="p">(</span><span class="n">max_n_minima</span><span class="o">=</span><span class="n">max_n_minima</span><span class="p">)</span>
         <span class="n">bh</span> <span class="o">=</span> <span class="n">basinhopping</span><span class="o">.</span><span class="n">BasinHopping</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">takestep</span><span class="p">,</span> <span class="n">quench</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_minimizer</span><span class="p">(),</span>
                                        <span class="n">storage</span><span class="o">=</span><span class="n">add_minimum</span><span class="p">,</span>
                                        <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -344,7 +367,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     </div>
-<div class="viewcode-block" id="BaseSystem.get_double_ended_connect"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_double_ended_connect.html#pele.systems.BaseSystem.get_double_ended_connect">[docs]</a>    <span class="k">def</span> <span class="nf">get_double_ended_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystem.get_double_ended_connect"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_double_ended_connect.html#pele.systems.BaseSystem.get_double_ended_connect">[docs]</a>    <span class="k">def</span> <span class="nf">get_double_ended_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return a DoubleEndedConnect object</span>
 <span class="sd">    </span>
 <span class="sd">        See Also</span>
@@ -381,10 +404,7 @@
                 <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;local_connect_params&quot;</span><span class="p">][</span><span class="s">&quot;pushoff_params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">BaseParameters</span><span class="p">()</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;local_connect_params&quot;</span><span class="p">][</span><span class="s">&quot;pushoff_params&quot;</span><span class="p">][</span><span class="s">&quot;quench&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_minimizer</span><span class="p">()</span>                
         
-        <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">DoubleEndedConnectPar</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">DoubleEndedConnect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DoubleEndedConnect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     
     <span class="c">#</span>
     <span class="c"># the following functions used for getting thermodynamic information about the minima </span>

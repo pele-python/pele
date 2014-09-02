@@ -78,6 +78,11 @@
 </tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
+<p>Minimum.coords is deferred in database queries.  If you need to access
+coords for multiple minima it is <em>much</em> faster to <cite>undefer</cite> before 
+executing the query by, e.g. 
+<cite>session.query(Minimum).options(undefer(&#8220;coords&#8221;))</cite></p>
 </dd></dl>
 
 </div>

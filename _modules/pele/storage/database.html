@@ -54,11 +54,14 @@
   <h1>Source code for pele.storage.database</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;Database for simulation data in a relational database</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
 <span class="kn">import</span> <span class="nn">sqlalchemy</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">and_</span><span class="p">,</span> <span class="n">or_</span>
-<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">sessionmaker</span>
-<span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">sessionmaker</span><span class="p">,</span> <span class="n">undefer</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">PickleType</span><span class="p">,</span> <span class="n">String</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">ForeignKey</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">backref</span><span class="p">,</span> <span class="n">deferred</span>
@@ -66,8 +69,8 @@
 <span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.sql</span> <span class="kn">import</span> <span class="n">select</span><span class="p">,</span> <span class="n">bindparam</span><span class="p">,</span> <span class="n">case</span><span class="p">,</span> <span class="n">insert</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.schema</span> <span class="kn">import</span> <span class="n">Index</span>
+
 <span class="kn">from</span> <span class="nn">pele.utils.events</span> <span class="kn">import</span> <span class="n">Signal</span>
-<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Minimum&quot;</span><span class="p">,</span> <span class="s">&quot;TransitionState&quot;</span><span class="p">,</span> <span class="s">&quot;Database&quot;</span><span class="p">]</span>
 
@@ -295,7 +298,49 @@
             
 
 <span class="n">Index</span><span class="p">(</span><span class="s">&#39;idx_transition_states&#39;</span><span class="p">,</span> <span class="n">TransitionState</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">_minimum1_id</span><span class="p">,</span> <span class="n">TransitionState</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">_minimum2_id</span><span class="p">)</span>
+<span class="n">Index</span><span class="p">(</span><span class="s">&#39;idx_minimum_energy&#39;</span><span class="p">,</span> <span class="n">Minimum</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+<span class="n">Index</span><span class="p">(</span><span class="s">&#39;idx_transition_state_energy&#39;</span><span class="p">,</span> <span class="n">Minimum</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
 
+
+<span class="k">class</span> <span class="nc">MinimumAdder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This class manages adding minima to the database</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    db : database object</span>
+<span class="sd">    Ecut: float, optional</span>
+<span class="sd">        energy cutoff, don&#39;t add minima which are higher in energy</span>
+<span class="sd">    max_n_minima : int, optional</span>
+<span class="sd">        keep only the max_n_minima with the lowest energies. If E is greater</span>
+<span class="sd">        than the minimum with the highest energy in the database, then don&#39;t add</span>
+<span class="sd">        this minimum and return None.  Else add this minimum and delete the minimum</span>
+<span class="sd">        with the highest energy.  if max_n_minima &lt; 0 then it is ignored.</span>
+<span class="sd">    commit_interval : int, optional</span>
+<span class="sd">        Commit the database changes to the hard drive every `commit_interval` steps.</span>
+<span class="sd">        Committing too frequently can be slow, this is used to speed things up.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">Ecut</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">commit_interval</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ecut</span> <span class="o">=</span> <span class="n">Ecut</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_n_minima</span> <span class="o">=</span> <span class="n">max_n_minima</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commit_interval</span> <span class="o">=</span> <span class="n">commit_interval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;this is called to add a minimum to the database&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ecut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">E</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ecut</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">commit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">commit_interval</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_n_minima</span><span class="p">,</span> 
+                                  <span class="n">commit</span><span class="o">=</span><span class="n">commit</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;ensure that all the changes to the database are committed to the hard drive</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">commit_interval</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Database"><a class="viewcode-back" href="../../../generated/pele.storage.Database.html#pele.storage.Database">[docs]</a><span class="k">class</span> <span class="nc">Database</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Database storage class</span>
@@ -358,7 +403,6 @@
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">engine</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="n">Session</span> <span class="o">=</span> <span class="bp">None</span> <span class="c"># js850&gt; This seems to be unused. Can we remove it?</span>
     <span class="n">session</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="n">connection</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">1e-3</span>
@@ -369,11 +413,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="o">=</span><span class="n">accuracy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compareMinima</span> <span class="o">=</span> <span class="n">compareMinima</span>
 
-
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">db</span><span class="p">)</span> <span class="ow">or</span> <span class="n">db</span> <span class="o">==</span> <span class="s">&quot;:memory:&quot;</span><span class="p">:</span>
             <span class="n">newfile</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">createdb</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;createdb is False, but database does not exist&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;createdb is False, but database does not exist (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="n">db</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">newfile</span> <span class="o">=</span> <span class="bp">False</span>
 
@@ -462,11 +505,13 @@
         
     <span class="k">def</span> <span class="nf">_highest_energy_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the minimum with the highest energy&quot;&quot;&quot;</span>
-        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">desc</span><span class="p">())</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">desc</span><span class="p">())</span><span class="o">.</span>\
+            <span class="n">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     
 <div class="viewcode-block" id="Database.findMinimum"><a class="viewcode-back" href="../../../generated/pele.storage.Database.findMinimum.html#pele.storage.Database.findMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">findMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span>\
+            <span class="n">options</span><span class="p">(</span><span class="n">undefer</span><span class="p">(</span><span class="s">&quot;coords&quot;</span><span class="p">))</span><span class="o">.</span>\
             <span class="nb">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span> <span class="o">&gt;</span> <span class="n">E</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">)</span><span class="o">.</span>\
             <span class="nb">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span> <span class="o">&lt;</span> <span class="n">E</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">)</span>
         
@@ -476,8 +521,8 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">compareMinima</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compareMinima</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
                     <span class="k">continue</span>
-            <span class="k">return</span> <span class="bp">True</span>
-        <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="n">m</span>
+        <span class="k">return</span> <span class="bp">None</span>
         </div>
 <div class="viewcode-block" id="Database.addMinimum"><a class="viewcode-back" href="../../../generated/pele.storage.Database.addMinimum.html#pele.storage.Database.addMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">addMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">pgorder</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fvib</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;add a new minimum to database</span>
@@ -502,7 +547,10 @@
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="c"># undefer coords because it is likely to be used by compareMinima and</span>
+        <span class="c"># it is slow to load them individually by accessing the database repetitively.</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span>\
+            <span class="n">options</span><span class="p">(</span><span class="n">undefer</span><span class="p">(</span><span class="s">&quot;coords&quot;</span><span class="p">))</span><span class="o">.</span>\
             <span class="nb">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span> <span class="o">&gt;</span> <span class="n">E</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">)</span><span class="o">.</span>\
             <span class="nb">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span> <span class="o">&lt;</span> <span class="n">E</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">)</span>
         
@@ -515,7 +563,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span> 
             <span class="k">return</span> <span class="n">m</span>
 
-        <span class="k">if</span> <span class="n">max_n_minima</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">max_n_minima</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">max_n_minima</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_minima</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">max_n_minima</span><span class="p">:</span>
                 <span class="n">mmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_highest_energy_minimum</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">E</span> <span class="o">&gt;=</span> <span class="n">mmax</span><span class="o">.</span><span class="n">energy</span><span class="p">:</span>
@@ -571,6 +619,7 @@
         <span class="k">if</span> <span class="n">m1</span><span class="o">.</span><span class="n">_id</span> <span class="o">&gt;</span> <span class="n">m2</span><span class="o">.</span><span class="n">_id</span><span class="p">:</span>
             <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">m2</span><span class="p">,</span> <span class="n">m1</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span>\
+            <span class="n">options</span><span class="p">(</span><span class="n">undefer</span><span class="p">(</span><span class="s">&quot;coords&quot;</span><span class="p">))</span><span class="o">.</span>\
             <span class="nb">filter</span><span class="p">(</span><span class="n">or_</span><span class="p">(</span>
                        <span class="n">and_</span><span class="p">(</span><span class="n">TransitionState</span><span class="o">.</span><span class="n">minimum1</span><span class="o">==</span><span class="n">m1</span><span class="p">,</span> 
                             <span class="n">TransitionState</span><span class="o">.</span><span class="n">minimum2</span><span class="o">==</span><span class="n">m2</span><span class="p">),</span>
@@ -650,6 +699,13 @@
 <span class="sd">        ----------</span>
 <span class="sd">        order_energy : bool</span>
 <span class="sd">            order the minima by energy</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Minimum.coords is deferred in database queries.  If you need to access</span>
+<span class="sd">        coords for multiple minima it is *much* faster to `undefer` before </span>
+<span class="sd">        executing the query by, e.g. </span>
+<span class="sd">        `session.query(Minimum).options(undefer(&quot;coords&quot;))`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">order_energy</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -664,7 +720,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
     </div>
-<div class="viewcode-block" id="Database.minimum_adder"><a class="viewcode-back" href="../../../generated/pele.storage.Database.minimum_adder.html#pele.storage.Database.minimum_adder">[docs]</a>    <span class="k">def</span> <span class="nf">minimum_adder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ecut</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="Database.minimum_adder"><a class="viewcode-back" href="../../../generated/pele.storage.Database.minimum_adder.html#pele.storage.Database.minimum_adder">[docs]</a>    <span class="k">def</span> <span class="nf">minimum_adder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ecut</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">commit_interval</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;wrapper class to add minima</span>
 <span class="sd">        </span>
 <span class="sd">        Since pickle cannot handle pointer to member functions, this class wraps the call to</span>
@@ -687,17 +743,8 @@
 
 <span class="sd">            </span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">class</span> <span class="nc">minimum_adder</span><span class="p">:</span>
-            <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">Ecut</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Ecut</span> <span class="o">=</span> <span class="n">Ecut</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">max_n_minima</span> <span class="o">=</span> <span class="n">max_n_minima</span>
-            <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ecut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">E</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ecut</span><span class="p">:</span>
-                        <span class="k">return</span> <span class="bp">None</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_n_minima</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">minimum_adder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ecut</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MinimumAdder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ecut</span><span class="o">=</span><span class="n">Ecut</span><span class="p">,</span> <span class="n">max_n_minima</span><span class="o">=</span><span class="n">max_n_minima</span><span class="p">,</span>
+                            <span class="n">commit_interval</span><span class="o">=</span><span class="n">commit_interval</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="Database.removeMinimum"><a class="viewcode-back" href="../../../generated/pele.storage.Database.removeMinimum.html#pele.storage.Database.removeMinimum">[docs]</a>    <span class="k">def</span> <span class="nf">removeMinimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;remove a minimum from the database</span>

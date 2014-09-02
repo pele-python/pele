@@ -1,6 +1,0 @@
-pele.landscape.LocalConnectPar.connect
-======================================
-
-.. currentmodule:: pele.landscape
-
-.. automethod:: LocalConnectPar.connect

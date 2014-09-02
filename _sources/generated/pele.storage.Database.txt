@@ -39,7 +39,6 @@ pele.storage.Database
       .. autosummary::
          :toctree:
       
-         ~Database.Session
          ~Database.accuracy
          ~Database.compareMinima
          ~Database.connection

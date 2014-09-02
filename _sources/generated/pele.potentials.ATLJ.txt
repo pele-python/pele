@@ -20,7 +20,6 @@ pele.potentials.ATLJ
          ~ATLJ.getEnergyGradientHessian
          ~ATLJ.getEnergyGradientNumerical
          ~ATLJ.getEnergySlow
-         ~ATLJ.getEnergyWeave
          ~ATLJ.getGradient
          ~ATLJ.getHessian
          ~ATLJ.test_potential

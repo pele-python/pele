@@ -56,12 +56,13 @@
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">Result</span><span class="p">,</span> <span class="n">MYLBFGS</span><span class="p">,</span> <span class="n">LBFGS</span>
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">Result</span>
 <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
-<span class="kn">from</span> <span class="nn">pele.potentials.potential</span> <span class="kn">import</span> <span class="n">BasePotential</span>
-<span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">findLowestEigenVector</span><span class="p">,</span> <span class="n">FindLowestEigenVector</span>
+<span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">FindLowestEigenVector</span>
 <span class="kn">from</span> <span class="nn">pele.transition_states._dimer_translator</span> <span class="kn">import</span> <span class="n">_DimerTranslator</span>
 <span class="kn">from</span> <span class="nn">pele.transition_states._transverse_walker</span> <span class="kn">import</span> <span class="n">_TransverseWalker</span>
+<span class="kn">from</span> <span class="nn">pele.utils.hessian</span> <span class="kn">import</span> <span class="n">get_smallest_eig</span>
+
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;findTransitionState&quot;</span><span class="p">,</span> <span class="s">&quot;FindTransitionState&quot;</span><span class="p">]</span>
@@ -167,6 +168,7 @@
                  <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">check_negative</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">invert_gradient</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">hessian_diagonalization</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
@@ -188,6 +190,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">npositive_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_negative</span> <span class="o">=</span> <span class="n">check_negative</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">invert_gradient</span> <span class="o">=</span> <span class="n">invert_gradient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hessian_diagonalization</span> <span class="o">=</span> <span class="n">hessian_diagonalization</span>
 
         
         <span class="bp">self</span><span class="o">.</span><span class="n">rmsnorm</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)))</span>
@@ -219,10 +222,10 @@
 
         <span class="c">#set some parameters used in finding lowest eigenvector</span>
         <span class="c">#initial guess for Hermitian</span>
-<span class="c">#        try:</span>
-<span class="c">#            self.H0_leig = self.lowestEigenvectorQuenchParams.pop(&quot;H0&quot;)</span>
-<span class="c">#        except KeyError:</span>
-<span class="c">#            self.H0_leig = None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;H0&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span> <span class="o">=</span> <span class="bp">None</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step_factor</span> <span class="o">=</span> <span class="o">.</span><span class="mi">1</span>
@@ -268,10 +271,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_eigenvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_eigenval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span>
-<span class="c">#        self.saved_H0_leig = self.H0_leig</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_H0_leig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="c">#self.saved_oldeigenvec = np.copy(self.oldeigenvec)</span>
+<span class="c">#        self.saved_oldeigenvec = np.copy(self.oldeigenvec)</span>
 
     <span class="k">def</span> <span class="nf">_resetState</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;restore from a state&quot;&quot;&quot;</span>
@@ -280,7 +283,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_eigenval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">oldeigenvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_overlap</span>
-<span class="c">#        self.H0_leig = self.saved_H0_leig</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_H0_leig</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_energy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_gradient</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">coords</span>
@@ -309,7 +312,9 @@
         <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="p">[]</span>
         
         <span class="c"># if starting with positive curvature, disable negative eigenvalue check</span>
-        <span class="c"># this will be reenabled as soon as the eigenvector becomes negative</span>
+        <span class="c"># this will be reenabled as soon as the eigenvector becomes negative.</span>
+        <span class="c"># Allow a certain number of iterations with positive eigenvalue before</span>
+        <span class="c"># demanding that the eigenvalue is negative.</span>
         <span class="n">negative_before_check</span> <span class="o">=</span>  <span class="mi">10</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_gradients</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
@@ -324,7 +329,7 @@
                 <span class="n">negative_before_check</span> <span class="o">-=</span> <span class="mi">1</span>
             
             <span class="c"># check to make sure the eigenvector is ok</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_negative</span> <span class="ow">or</span> 
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_negative</span> <span class="ow">or</span> 
                 <span class="p">(</span><span class="n">negative_before_check</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span><span class="p">)):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_saveState</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">=</span> <span class="mi">0</span>
@@ -419,6 +424,47 @@
         <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span>
         <span class="k">return</span> <span class="n">res</span>
 </div>
+    <span class="k">def</span> <span class="nf">_get_lowest_eigenvector_RR</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;get the lowest eigenvector using Reyleigh Ritz minimization&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&quot;nsteps&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">:</span>
+            <span class="n">niter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">[</span><span class="s">&quot;nsteps&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">niter</span> <span class="o">=</span> <span class="mi">100</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;Using default of&quot;</span><span class="p">,</span> <span class="n">niter</span><span class="p">,</span> <span class="s">&quot;steps for finding lowest eigenvalue&quot;</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">FindLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span>
+<span class="c">#                                    H0=self.H0_leig, </span>
+                                    <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> 
+                                    <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span><span class="p">,</span> 
+                                    <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
+                                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">niter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;eigenvector converged, but doing one iteration anyway&quot;</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">one_iteration</span><span class="p">()</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">H0</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">_get_lowest_eigenvector_diagonalization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;compute the lowest eigenvector by diagonalizing the Hessian</span>
+<span class="sd">        </span>
+<span class="sd">        This scales as N**3, so can be very slow for large systems.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;computing the lowest eigenvector by diagonalizing the Hessian&quot;</span>
+        <span class="n">hess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getHessian</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">eigenval</span><span class="p">,</span> <span class="n">evec</span> <span class="o">=</span> <span class="n">get_smallest_eig</span><span class="p">(</span><span class="n">hess</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="n">eigenval</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">evec</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">rms</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">return</span> <span class="n">res</span>
+        
+
     <span class="k">def</span> <span class="nf">_getLowestEigenVector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;compute the lowest eigenvector at position coords</span>
 <span class="sd">        </span>
@@ -428,29 +474,14 @@
 <span class="sd">        i : the iteration number</span>
 <span class="sd">        gradient : the gradient at coords</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s">&quot;nsteps&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">:</span>
-            <span class="n">niter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">[</span><span class="s">&quot;nsteps&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hessian_diagonalization</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_lowest_eigenvector_diagonalization</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">niter</span> <span class="o">=</span> <span class="mi">100</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;Using default of&quot;</span><span class="p">,</span> <span class="n">niter</span><span class="p">,</span> <span class="s">&quot;steps for finding lowest eigenvalue&quot;</span>
-        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">FindLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span>
-<span class="c">#                                    H0=self.H0_leig, </span>
-                            <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> 
-                            <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span><span class="p">,</span> 
-                            <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
-                            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">)</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">niter</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;eigenvector converged, but doing one iteration anyway&quot;</span>
-            <span class="n">optimizer</span><span class="o">.</span><span class="n">one_iteration</span><span class="p">()</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_lowest_eigenvector_RR</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">leig_result</span> <span class="o">=</span> <span class="n">res</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="n">res</span><span class="o">.</span><span class="n">nfev</span>
         
-<span class="c">#        self.H0_leig = res.H0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">eigenvec</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">eigenval</span>
         
@@ -492,12 +523,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_transverse_walker</span><span class="o">.</span><span class="n">update_eigenvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_transverse_walker</span><span class="o">.</span><span class="n">update_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">gradient</span><span class="p">)</span>
         
-        <span class="c">#determine the number of steps</span>
-        <span class="c">#i.e. if the eigenvector is deemed to have converged</span>
+        <span class="c"># determine the number of steps</span>
+        <span class="c"># i.e. if the eigenvector is deemed to have converged or is changing slowly</span>
         <span class="n">eigenvec_converged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="o">.</span><span class="mi">999</span> 
-        <span class="n">nstepsperp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_tangent1</span>
         <span class="k">if</span> <span class="n">eigenvec_converged</span><span class="p">:</span>
             <span class="n">nstepsperp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_tangent2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nstepsperp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_tangent1</span>
 
         <span class="c"># reduce the maximum step size if necessary</span>
         <span class="n">maxstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxstep_tangent</span>
@@ -515,8 +547,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transverse_walker</span><span class="o">.</span><span class="n">get_true_energy_gradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&quot;was tspot was never called? use the same gradient&quot;</span>
-                <span class="k">raise</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;was tspot was never called? use the same gradient&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ret</span>
 
     <span class="k">def</span> <span class="nf">_update_max_uphill_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Fold</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">):</span>
@@ -550,9 +581,8 @@
 <span class="sd">        self.eigenval is used to determine the best stepsize</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># the energy and gradient are already known</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_energy</span><span class="p">()</span>
         <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_gradient</span><span class="p">()</span>
-        <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span> 
+        <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
         <span class="n">h</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">F</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="mf">4.</span> <span class="o">*</span> <span class="p">(</span><span class="n">F</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 
         <span class="c"># get the maxstep and scale it if necessary</span>
@@ -570,7 +600,7 @@
 
         <span class="c"># recompute the energy and gradient</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_gradients</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        
+
         <span class="c"># update the maximum step using a trust ratio</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_max_uphill_step</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>

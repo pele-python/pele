@@ -63,7 +63,7 @@
 <h1>pele.utils.disconnectivity_graph.DisconnectivityGraph<a class="headerlink" href="#pele-utils-disconnectivity-graph-disconnectivitygraph" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.utils.disconnectivity_graph.DisconnectivityGraph">
-<em class="property">class </em><tt class="descclassname">pele.utils.disconnectivity_graph.</tt><tt class="descname">DisconnectivityGraph</tt><big>(</big><em>graph</em>, <em>minima=None</em>, <em>nlevels=20</em>, <em>Emax=None</em>, <em>subgraph_size=None</em>, <em>order_by_energy=False</em>, <em>order_by_basin_size=True</em>, <em>node_offset=1.0</em>, <em>center_gmin=True</em>, <em>include_gmin=True</em>, <em>energy_attribute='energy'</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/disconnectivity_graph.html#DisconnectivityGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.disconnectivity_graph.DisconnectivityGraph" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.utils.disconnectivity_graph.</tt><tt class="descname">DisconnectivityGraph</tt><big>(</big><em>graph</em>, <em>minima=None</em>, <em>nlevels=20</em>, <em>Emax=None</em>, <em>subgraph_size=None</em>, <em>order_by_energy=False</em>, <em>order_by_basin_size=True</em>, <em>node_offset=1.0</em>, <em>center_gmin=True</em>, <em>include_gmin=True</em>, <em>energy_attribute='energy'</em>, <em>order_by_value=None</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/disconnectivity_graph.html#DisconnectivityGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.disconnectivity_graph.DisconnectivityGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>make a disconnectivity graph</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -130,9 +130,15 @@ main connected region</p>
 angled lines all the way to the next energy level</p>
 </div></blockquote>
 <p><strong>energy_attribute</strong> : string, optional</p>
-<blockquote class="last">
+<blockquote>
 <div><p>attribute which contains energy. default is energy. This attribute can
 be used to generate free energy disconnectivity graphs</p>
+</div></blockquote>
+<p><strong>order_by_value</strong> : callable, optional, <cite>v = order_by_value(m)</cite></p>
+<blockquote class="last">
+<div><p>If this function is passed the minima at each level will be sorted by this value
+with small values to the left.  A group of minima will be sorted according to the 
+smallest value in the group.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -145,8 +151,6 @@ be used to generate free energy disconnectivity graphs</p>
 <dd>a script (in pele/scripts) to make the disconnectivity graph from the command line</dd>
 <dt><a class="reference internal" href="pele.storage.Database.html#pele.storage.Database" title="pele.storage.Database"><tt class="xref py py-obj docutils literal"><span class="pre">pele.storage.Database</span></tt></a></dt>
 <dd>The database format in which minima and transition states are stored in pele</dd>
-<dt><a class="reference internal" href="pele.landscape.TSGraph.html#pele.landscape.TSGraph" title="pele.landscape.TSGraph"><tt class="xref py py-obj docutils literal"><span class="pre">pele.landscape.TSGraph</span></tt></a></dt>
-<dd>a wrapper to create a networkx Graph from a database</dd>
 </dl>
 </div>
 <p class="rubric">Examples</p>
@@ -169,31 +173,34 @@ be used to generate free energy disconnectivity graphs</p>
 <tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate"><tt class="xref py py-obj docutils literal"><span class="pre">calculate</span></tt></a>()</td>
 <td>do the calculations necessary to draw the diconnectivity graph</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group"><tt class="xref py py-obj docutils literal"><span class="pre">color_by_group</span></tt></a>(groups)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group"><tt class="xref py py-obj docutils literal"><span class="pre">color_by_group</span></tt></a>(groups[,&nbsp;colors])</td>
 <td>color the graph based on specified grouping of minima</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value"><tt class="xref py py-obj docutils literal"><span class="pre">color_by_value</span></tt></a>(minimum_to_value[,&nbsp;colormap,&nbsp;...])</td>
 <td>color the graph by values associated with minima (e.g. order parameter)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout"><tt class="xref py py-obj docutils literal"><span class="pre">get_minima_layout</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.draw_minima.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.draw_minima" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.draw_minima"><tt class="xref py py-obj docutils literal"><span class="pre">draw_minima</span></tt></a>(minima[,&nbsp;axes])</td>
+<td>draw a specified list of minima as points</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout"><tt class="xref py py-obj docutils literal"><span class="pre">get_minima_layout</span></tt></a>()</td>
 <td>return the x position of the minima</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout"><tt class="xref py py-obj docutils literal"><span class="pre">get_tree_layout</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_tree_layout"><tt class="xref py py-obj docutils literal"><span class="pre">get_tree_layout</span></tt></a>()</td>
 <td>Returns the x position of the trees</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.label_minima.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.label_minima" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.label_minima"><tt class="xref py py-obj docutils literal"><span class="pre">label_minima</span></tt></a>(minima_labels[,&nbsp;axes,&nbsp;rotation])</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.label_minima.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.label_minima" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.label_minima"><tt class="xref py py-obj docutils literal"><span class="pre">label_minima</span></tt></a>(minima_labels[,&nbsp;axes,&nbsp;rotation])</td>
 <td>label the specified minima</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.plot.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.plot" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.plot"><tt class="xref py py-obj docutils literal"><span class="pre">plot</span></tt></a>([show_minima,&nbsp;show_trees,&nbsp;linewidth,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.plot.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.plot" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.plot"><tt class="xref py py-obj docutils literal"><span class="pre">plot</span></tt></a>([show_minima,&nbsp;show_trees,&nbsp;linewidth,&nbsp;...])</td>
 <td>draw the disconnectivity graph using matplotlib</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.savefig.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.savefig" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.savefig"><tt class="xref py py-obj docutils literal"><span class="pre">savefig</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.savefig.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.savefig" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.savefig"><tt class="xref py py-obj docutils literal"><span class="pre">savefig</span></tt></a>(*args,&nbsp;**kwargs)</td>
 <td>simple wrapper for matplotlib.pyplot.savefig()</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels"><tt class="xref py py-obj docutils literal"><span class="pre">set_energy_levels</span></tt></a>(elevels)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels"><tt class="xref py py-obj docutils literal"><span class="pre">set_energy_levels</span></tt></a>(elevels)</td>
 <td>manually set the energy levels</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.show.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.show" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.show"><tt class="xref py py-obj docutils literal"><span class="pre">show</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.show.html#pele.utils.disconnectivity_graph.DisconnectivityGraph.show" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.show"><tt class="xref py py-obj docutils literal"><span class="pre">show</span></tt></a>()</td>
 <td>simple wrapper for matplotlib.pyplot.show()</td>
 </tr>
 </tbody>

@@ -55,43 +55,51 @@
 <span class="sd">&#39;&#39;&#39;Wrapper to represent a storage class as a graph&#39;&#39;&#39;</span>
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;TSGraph&quot;</span><span class="p">,</span> <span class="s">&quot;Graph&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;TSGraph&quot;</span><span class="p">,</span> <span class="s">&quot;Graph&quot;</span><span class="p">,</span> <span class="s">&quot;database2graph&quot;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">database2graph</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Emax</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    make a networkx graph from a database </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    db : pele Database</span>
+<span class="sd">    Emax : float optional</span>
+<span class="sd">        including only transition states with energy &lt; Emax</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">from</span> <span class="nn">pele.storage.database</span> <span class="kn">import</span> <span class="n">Minimum</span><span class="p">,</span> <span class="n">TransitionState</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+    <span class="c"># js850&gt; It&#39;s not strictly necessary to add the minima explicitly here,</span>
+    <span class="c"># but for some reason it is much faster if you do (factor of 2).  Even </span>
+    <span class="c"># if this means there are many more minima in the graph.  I&#39;m not sure </span>
+    <span class="c"># why this is.  This step is already often the bottleneck of the d-graph </span>
+    <span class="c"># calculation.</span>
+    <span class="k">if</span> <span class="n">Emax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">minima</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span> <span class="o">&lt;=</span> <span class="n">Emax</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">minima</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">minima</span><span class="p">)</span>
+    <span class="c"># if we order by energy first and add the transition states with the largest energy first</span>
+    <span class="c"># then we will take the smallest energy transition state in the case of duplicates</span>
+    <span class="k">if</span> <span class="n">Emax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">TransitionState</span><span class="o">.</span><span class="n">energy</span> <span class="o">&lt;=</span> <span class="n">Emax</span><span class="p">)</span>\
+                                              <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="o">-</span><span class="n">TransitionState</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">TransitionState</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="o">-</span><span class="n">TransitionState</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">:</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">minimum2</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">g</span>
 
 
-<span class="k">class</span> <span class="nc">_ConnectedComponents</span><span class="p">():</span>
+<span class="k">class</span> <span class="nc">_ConnectedComponents</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">UnionFind</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    a class to build and maintain a dict of connected components</span>
+<span class="sd">    a class to build and maintain the connected components</span>
 <span class="sd">    </span>
 <span class="sd">    This allows connections to be determined much more rapidly because</span>
-<span class="sd">    the breadth first search algorithm (connected_components, bidirectional_dijkstra) </span>
-<span class="sd">    need be run only infrequently.</span>
-<span class="sd">    </span>
-<span class="sd">    TODO: I think this could be significantly improved by using a disjoint set</span>
-<span class="sd">    data structure (nx.utils.UnionFind)</span>
+<span class="sd">    the breadth first search algorithm is slow</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">need_rebuild</span> <span class="o">=</span> <span class="bp">True</span>
-    
-    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">cc</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
-        <span class="n">component</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="c">#cc is a list of lists</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cc</span><span class="p">)):</span>
-            <span class="n">nodes</span> <span class="o">=</span> <span class="n">cc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-                <span class="n">component</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="n">component</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">need_rebuild</span> <span class="o">=</span> <span class="bp">False</span>
-    
-    <span class="k">def</span> <span class="nf">setRebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">need_rebuild</span> <span class="o">=</span> <span class="bp">True</span>
-
-    <span class="k">def</span> <span class="nf">areConnected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_rebuild</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">[</span><span class="n">min1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">[</span><span class="n">min2</span><span class="p">]</span>
-            
+    <span class="k">def</span> <span class="nf">are_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">m1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="p">[</span><span class="n">m2</span><span class="p">]</span>
 
 <div class="viewcode-block" id="TSGraph"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.html#pele.landscape.TSGraph">[docs]</a><span class="k">class</span> <span class="nc">TSGraph</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
@@ -131,7 +139,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">minima</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">no_edges</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">database</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span> <span class="o">=</span> <span class="n">_ConnectedComponents</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span> <span class="o">=</span> <span class="n">_ConnectedComponents</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minima</span> <span class="o">=</span> <span class="n">minima</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">no_edges</span> <span class="o">=</span> <span class="n">no_edges</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
@@ -145,6 +153,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_edges</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">transition_states</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_build_from_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minima</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -160,9 +169,9 @@
                 <span class="k">if</span> <span class="n">m1</span> <span class="ow">in</span> <span class="n">minima</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">m2</span> <span class="ow">in</span> <span class="n">minima</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TSGraph.refresh"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.refresh.html#pele.landscape.TSGraph.refresh">[docs]</a>    <span class="k">def</span> <span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">setRebuild</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minima</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_build_all</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -172,26 +181,16 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add a minimum to the database and graph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">has_node</span><span class="p">(</span><span class="n">minimum</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">setRebuild</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">minimum</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">minimum</span>
     </div>
 <div class="viewcode-block" id="TSGraph.addTransitionState"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.addTransitionState.html#pele.landscape.TSGraph.addTransitionState">[docs]</a>    <span class="k">def</span> <span class="nf">addTransitionState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">setRebuild</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">minimum1</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">minimum2</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ts</span>
             </div>
 <div class="viewcode-block" id="TSGraph.areConnected"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.areConnected.html#pele.landscape.TSGraph.areConnected">[docs]</a>    <span class="k">def</span> <span class="nf">areConnected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">areConnected</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">ret</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">bidirectional_dijkstra</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">ret</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">True</span>
-            <span class="k">else</span><span class="p">:</span> 
-                <span class="k">return</span> <span class="bp">False</span>
-        <span class="k">except</span> <span class="n">nx</span><span class="o">.</span><span class="n">NetworkXNoPath</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">are_connected</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
         </div>
 <div class="viewcode-block" id="TSGraph.getPath"><a class="viewcode-back" href="../../../generated/pele.landscape.TSGraph.getPath.html#pele.landscape.TSGraph.getPath">[docs]</a>    <span class="k">def</span> <span class="nf">getPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -204,7 +203,7 @@
 <span class="sd">        delete minima2.  all transition states pointing to min2 should</span>
 <span class="sd">        now point to min1</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">setRebuild</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected_components</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
         <span class="c">#make the edges of min2 now point to min1</span>
         <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">min2</span><span class="p">]</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">min1</span><span class="p">:</span> <span class="k">continue</span>
@@ -217,120 +216,14 @@
 <span class="c">#                    data = self.graph.get_edge_data(min2, v)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">min2</span><span class="p">)</span>
-
-
-<span class="c">#</span>
-<span class="c"># below here only for testing</span>
-<span class="c">#</span>
 </div></div>
-<span class="k">def</span> <span class="nf">create_random_database</span><span class="p">(</span><span class="n">nmin</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">nts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    create a database for test purposes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">pele.storage</span> <span class="kn">import</span> <span class="n">Database</span>
-    <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-    
-    <span class="k">if</span> <span class="n">nts</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">nts</span> <span class="o">=</span> <span class="n">nmin</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
-    <span class="c">#generate random structures</span>
-    <span class="n">minlist</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmin</span><span class="p">):</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="c">#make up a fake energy</span>
-        <span class="n">minlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">db</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span> <span class="p">)</span>
-    <span class="c">#add random transition states</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nts</span><span class="p">):</span>
-        <span class="n">j1</span><span class="p">,</span> <span class="n">j2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
-        <span class="k">while</span> <span class="n">j1</span> <span class="o">==</span> <span class="n">j2</span><span class="p">:</span>
-            <span class="n">j1</span><span class="p">,</span> <span class="n">j2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nmin</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">minlist</span><span class="p">[</span><span class="n">j1</span><span class="p">],</span> <span class="n">minlist</span><span class="p">[</span><span class="n">j2</span><span class="p">]</span> 
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">j1</span> <span class="o">+</span> <span class="n">j2</span><span class="p">)</span>
-        <span class="n">db</span><span class="o">.</span><span class="n">addTransitionState</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">db</span>
-
 <span class="k">class</span> <span class="nc">Graph</span><span class="p">(</span><span class="n">TSGraph</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;this is included for backwards compatibility&quot;&quot;&quot;</span>
     <span class="k">pass</span>
 
-
-
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="k">class</span> <span class="nc">TestGraph</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">create_random_database</span><span class="p">()</span>
-    
-    <span class="k">def</span> <span class="nf">test_hi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
-        <span class="n">ng</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span>
-        <span class="n">nd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">())</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span> <span class="n">nd</span><span class="p">,</span> <span class="s">&quot;all nodes not imported&quot;</span><span class="p">)</span>
-        
-        <span class="n">ntsg</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">()</span>
-        <span class="n">ntsd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">transition_states</span><span class="p">())</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ntsg</span><span class="p">,</span> <span class="n">ntsd</span><span class="p">,</span> <span class="s">&quot;all transition states not imported&quot;</span><span class="p">)</span>
-    
-    <span class="k">def</span> <span class="nf">test_minima_keyword</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">nmin</span> <span class="o">=</span> <span class="mi">3</span>
-        <span class="n">minima</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">())</span>
-        <span class="n">minima</span> <span class="o">=</span> <span class="n">minima</span><span class="p">[:</span><span class="n">nmin</span><span class="p">]</span>
-        <span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="n">minima</span><span class="o">=</span><span class="n">minima</span><span class="p">,</span> <span class="n">no_edges</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">ng</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span> <span class="n">nmin</span><span class="p">)</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
-    
-    <span class="k">def</span> <span class="nf">test_merge_minima</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
-        <span class="c">#select two minima with at least one edge</span>
-        <span class="n">minima</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">degree</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">minima</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">minima</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">break</span>
-        <span class="n">nedges</span> <span class="o">=</span> <span class="p">[</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">degree</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">minima</span><span class="p">]</span>
-        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">minima</span>
-        <span class="n">neighbors</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">min2</span><span class="p">)</span>
-        <span class="n">graph</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="n">min2</span><span class="p">,</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
-        
-        <span class="c">#make sure the edges were copied</span>
-        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="n">min1</span><span class="p">:</span> <span class="k">continue</span>
-            <span class="n">edge_exists</span> <span class="o">=</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-                           <span class="ow">or</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">min1</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">assert_</span><span class="p">(</span><span class="n">edge_exists</span><span class="p">)</span>
-            
-
-        <span class="c">#make sure the new edges have transition state data attached</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">min1</span><span class="p">):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">min1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s">&quot;ts&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-
-        <span class="c">#make sure min2 is not in database</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="n">min2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">())</span>
-        
-    <span class="k">def</span> <span class="nf">test_networkx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;check how networkx works&quot;&quot;&quot;</span>
-        <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
-        <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
-        
-        <span class="n">data</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertDictEqual</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
-                             <span class="n">graph</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+<span class="c">#</span>
+<span class="c"># below here only for testing</span>
+<span class="c">#</span>
 </pre></div>
 
           </div>

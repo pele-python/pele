@@ -55,12 +55,14 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pele.utils</span> <span class="kn">import</span> <span class="n">rotations</span>
 <span class="kn">from</span> <span class="nn">pele.angleaxis</span> <span class="kn">import</span> <span class="n">CoordsAdapter</span>
-<span class="kn">from</span> <span class="nn">pele.potentials.fortran.rmdrvt</span> <span class="kn">import</span> <span class="n">rmdrvt</span> <span class="k">as</span> <span class="n">rotMatDeriv</span>
 <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">interpolate_linear</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span>
 <span class="kn">from</span> <span class="nn">pele</span> <span class="kn">import</span> <span class="n">takestep</span>
 <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">_zeroev</span> <span class="k">as</span> <span class="n">zeroev</span>
 <span class="kn">from</span> <span class="nn">pele.angleaxis.aamindist</span> <span class="kn">import</span> <span class="n">TransformAngleAxisCluster</span>
+
+<span class="kn">from</span> <span class="nn">_aadist</span> <span class="kn">import</span> <span class="n">rmdrvt</span> <span class="k">as</span> <span class="n">rotMatDeriv</span>
+<span class="kn">from</span> <span class="nn">_aadist</span> <span class="kn">import</span> <span class="n">sitedist_grad</span><span class="p">,</span> <span class="n">sitedist</span>
 <span class="kn">import</span> <span class="nn">_aadist</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;AASiteType&quot;</span><span class="p">,</span> <span class="s">&quot;AATopology&quot;</span><span class="p">,</span> <span class="s">&quot;interpolate_angleaxis&quot;</span><span class="p">,</span> <span class="s">&quot;TakestepAA&quot;</span><span class="p">]</span>
@@ -112,14 +114,15 @@
 <span class="sd">        excluding an inversion</span>
 <span class="sd">        </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">S</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&quot;float64&quot;</span><span class="p">),</span> <span class="n">cog</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">W</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">S</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&quot;float64&quot;</span><span class="p">),</span> <span class="n">cog</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">W</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Inv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">Sym</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">M</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="n">S</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cog</span> <span class="o">=</span> <span class="n">cog</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">inversion</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">symmetries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">Sym</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">symmetries</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span> <span class="mi">3</span> <span class="p">),</span> <span class="p">]</span>
     
     <span class="k">def</span> <span class="nf">get_smallest_rij</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">com1</span><span class="p">,</span> <span class="n">com2</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the shortest vector from com1 to com2</span>
@@ -147,7 +150,7 @@
 <span class="sd">        returns:</span>
 <span class="sd">            distance squared</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="n">_aadist</span><span class="o">.</span><span class="n">sitedist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_smallest_rij</span><span class="p">(</span><span class="n">com1</span><span class="p">,</span> <span class="n">com2</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sitedist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_smallest_rij</span><span class="p">(</span><span class="n">com1</span><span class="p">,</span> <span class="n">com2</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">)</span>
 
         <span class="n">R1</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">aa2mx</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span>
         <span class="n">R2</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">aa2mx</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
@@ -181,7 +184,7 @@
 <span class="sd">            spring cart, spring rot</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
-        <span class="k">return</span> <span class="n">_aadist</span><span class="o">.</span><span class="n">sitedist_grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_smallest_rij</span><span class="p">(</span><span class="n">com1</span><span class="p">,</span> <span class="n">com2</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sitedist_grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_smallest_rij</span><span class="p">(</span><span class="n">com1</span><span class="p">,</span> <span class="n">com2</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">)</span>
         <span class="n">R1</span><span class="p">,</span> <span class="n">R11</span><span class="p">,</span> <span class="n">R12</span><span class="p">,</span> <span class="n">R13</span> <span class="o">=</span> <span class="n">rotMatDeriv</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
         <span class="n">R2</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">aa2mx</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
         <span class="n">dR</span> <span class="o">=</span> <span class="n">R2</span> <span class="o">-</span> <span class="n">R1</span>
@@ -275,7 +278,9 @@
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">sites</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">sites</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sites</span> <span class="o">=</span> <span class="n">sites</span>
         
 <div class="viewcode-block" id="AATopology.add_sites"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.add_sites.html#pele.angleaxis.AATopology.add_sites">[docs]</a>    <span class="k">def</span> <span class="nf">add_sites</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
@@ -489,7 +494,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rotate</span> <span class="o">*=</span> <span class="n">factor</span>
         
         
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">([</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span><span class="o">*</span><span class="mi">5</span>
     <span class="n">masses</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">16.</span><span class="p">]</span> <span class="c">#np.random.random(natoms)</span>
@@ -531,7 +536,7 @@
     <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="k">print</span> <span class="s">&quot;time python&quot;</span><span class="p">,</span> <span class="n">t1</span><span class="o">-</span><span class="n">t0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
-        <span class="n">_aadist</span><span class="o">.</span><span class="n">sitedist</span><span class="p">(</span><span class="n">X2</span> <span class="o">-</span> <span class="n">X1</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">site</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">site</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">cog</span><span class="p">)</span>
+        <span class="n">sitedist</span><span class="p">(</span><span class="n">X2</span> <span class="o">-</span> <span class="n">X1</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">site</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">site</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">cog</span><span class="p">)</span>
     
  <span class="c">#_aadist.aadist(coords1, coords2, site.S, site.W, cog)</span>
     <span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -559,6 +564,10 @@
     <span class="k">print</span> <span class="n">g_M</span><span class="o">/</span><span class="n">xx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">g_P</span><span class="o">/</span><span class="n">xx</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">print</span> <span class="n">_aadist</span><span class="o">.</span><span class="n">sitedist_grad</span><span class="p">(</span><span class="n">X2</span> <span class="o">-</span> <span class="n">X1</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">site</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">site</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">cog</span><span class="p">)</span>
 <span class="c">#    print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test</span><span class="p">()</span>
 </pre></div>
 
           </div>

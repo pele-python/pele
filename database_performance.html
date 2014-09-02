@@ -1,0 +1,268 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Database Performance &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="System Class (pele.systems)" href="system_class.html" />
+    <link rel="prev" title="pele.gui.run_gui" href="generated/pele.gui.run_gui.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="system_class.html" title="System Class (pele.systems)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.gui.run_gui.html" title="pele.gui.run_gui"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="database-performance">
+<span id="id1"></span><h1>Database Performance<a class="headerlink" href="#database-performance" title="Permalink to this headline">¶</a></h1>
+<p>Pele uses the python package <cite>sqlalchemy</cite> to manage the database of minima and transition states.
+By default this uses sqlite to store the database in a file on the hard drive.
+This is very convenient for persistent storage of data and for easy access.
+The downside is that without careful use it can be very slow.
+For most purposes it shouldn&#8217;t cause a problem; this information about optimizing database performance should only be
+useful if you&#8217;re dealing with very large databases or are accessing the
+database hundreds of times a second.  This should be considered an expert level tutorial.
+Some of the possible things to watch out for are listed below.</p>
+<div class="section" id="filter-and-sort-on-the-database-level">
+<h2>Filter and sort on the database level<a class="headerlink" href="#filter-and-sort-on-the-database-level" title="Permalink to this headline">¶</a></h2>
+<p>Try to minimize how many objects are retrieved from the database.
+Do any filtering on the SQL level using <cite>sqlalchemy</cite> query commands.
+For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">minima</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">energy</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>is much faster than:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">minima</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span> <span class="c"># load all the minima</span>
+<span class="n">minima</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">energy</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">minima</span><span class="p">)</span> <span class="c"># filter in python</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="bulk-inserts">
+<h2>Bulk inserts<a class="headerlink" href="#bulk-inserts" title="Permalink to this headline">¶</a></h2>
+<p>If you have lots of minima you want to add to the database all at once
+it is much faster to do it all at once than one at a time.
+For example, if you have a long list of energy and coordinates you can do
+it the slow way:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># loop through the minima adding them one at a time</span>
+<span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">e_coords_list</span><span class="p">:</span>
+    <span class="n">mnew</span> <span class="o">=</span> <span class="n">Minimum</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mnew</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>or the fast way using bulk inserts:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># make a list of dictionaries for the minima data</span>
+<span class="n">minima_dicts</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">e_coords_list</span><span class="p">:</span>
+    <span class="n">min_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
+    <span class="c"># you can add other data (e.g. fvib) to min_dict as well</span>
+    <span class="n">minima_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">min_dict</span><span class="p">)</span>
+<span class="c"># add them to the database all at once</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span> <span class="n">minima_dicts</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="loading-of-deferred-data">
+<h2>Loading of deferred data<a class="headerlink" href="#loading-of-deferred-data" title="Permalink to this headline">¶</a></h2>
+<p>We have it set up so that some of the columns in the database (e.g.
+<cite>Minimum.coords</cite> and other large objects) are deferred, which means that they
+are only loaded from the database when they are actually accessed.
+The upside is that the, possibly substantial, coordinate array need not be transferred from hard disk
+to memory each time a minimum is accesses.  Code such as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">energy</span>
+</pre></div>
+</div>
+<p>runs slightly faster than it otherwise would.</p>
+<p>Deferring the <cite>coords</cite> has a significant downside, in that the database must be
+queried for every minimum for which you want to access the <cite>coords</cite>.  The result
+is that the following code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">coords</span>
+</pre></div>
+</div>
+<p>can be extremely slow if you are looping through a lot of minima.  If there are
+10000 minima it will send 10001 queries to the database.  The more minima there
+are the slower it will be.</p>
+<p>Luckily the solution is easy.  You simply need to undefer the columns you want
+to access in the original query.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">undefer</span>
+<span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span><span class="n">options</span><span class="p">(</span><span class="n">undefer</span><span class="p">(</span><span class="s">&quot;coords&quot;</span><span class="p">)):</span>
+    <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">coords</span>
+</pre></div>
+</div>
+<p>This results in only one query to the database.</p>
+</div>
+<div class="section" id="frequent-committing">
+<h2>Frequent committing<a class="headerlink" href="#frequent-committing" title="Permalink to this headline">¶</a></h2>
+<p>Normally when you change the database using <cite>sqlalchemy</cite> the changes are made
+in memory only.  The command <cite>db.session.commit()</cite> must be called to make
+changes to the database on the hard drive.  If this is called extremely
+frequently (hundreds of times a second) it can add up to significant overhead.
+Again, the solution is easy: call <cite>commit()</cite> only after a sufficient number of
+changes have accrued.</p>
+</div>
+<div class="section" id="searching-via-an-attribute-that-is-not-indexed">
+<h2>Searching via an attribute that is not indexed<a class="headerlink" href="#searching-via-an-attribute-that-is-not-indexed" title="Permalink to this headline">¶</a></h2>
+<p>SQL indices mean that an SQL search happens in logarithmic time rather than
+linear time.  If you search via an attribute that is not indexed it can be slow
+for large databases.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Minimum</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Minimum</span><span class="o">.</span><span class="n">fvib</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you find yourself doing this often, you can manually add a filter
+to your database.  In SQL this is:</p>
+<div class="highlight-python"><pre>CREATE INDEX idx_minimum_fvib ON tbl_minima (fvib);</pre>
+</div>
+<p>With <cite>sqlalchemy</cite> this would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sqlalchemy</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="s">&#39;idx_minimum_fvib&#39;</span><span class="p">,</span> <span class="n">Minimum</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">fvib</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>As an example, the image below shows the mean time per step that is spent in the
+<cite>Database.addMinimum()</cite> routine during a basinhopping run.  By the end of the run
+the database has about 20000 minima in it.</p>
+<img alt="_images/db_benchmarks.png" src="_images/db_benchmarks.png" style="height: 500px;" />
+<p>The figure shows the effect of three variables.</p>
+<p>1. Frequent commits (every step) vs rare commits (every 100th step).
+This effect can be significant, but it does not grow with the size of the
+database.</p>
+<p>2. Having an SQL index on the energies of the minima.  To ensure we
+don&#8217;t have duplicate minima in the database we search for minima within
+an energy window.  The index really helps with scaling and keeps things fast
+for large databases. Pele already has an energy index, so this is just for
+example purposes.</p>
+<p>3. Loading <cite>coords</cite> immediately via the <cite>undefer</cite> option.  If the energies are
+similar the coordinates are checked to test whether two minima are the same.
+If there are many minima with similar energy this is done multiple times.
+Loading the deferred coordinate arrays takes more time for larger databases
+where the number of minima with similar energy is greater.  Pele already uses
+<cite>undefer</cite> in <cite>Database.addMinimum()</cite>, so this is just for example purposes.</p>
+<p>These three effects can be important, but the actual time per call is still
+very small.  You would need to do tens or hundreds of basinhopping steps a
+second for any of this to become an important factor.  This will only be a problem for
+for simple, or small systems.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Database Performance</a><ul>
+<li><a class="reference internal" href="#filter-and-sort-on-the-database-level">Filter and sort on the database level</a></li>
+<li><a class="reference internal" href="#bulk-inserts">Bulk inserts</a></li>
+<li><a class="reference internal" href="#loading-of-deferred-data">Loading of deferred data</a></li>
+<li><a class="reference internal" href="#frequent-committing">Frequent committing</a></li>
+<li><a class="reference internal" href="#searching-via-an-attribute-that-is-not-indexed">Searching via an attribute that is not indexed</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.gui.run_gui.html"
+                        title="previous chapter">pele.gui.run_gui</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="system_class.html"
+                        title="next chapter">System Class (<cite>pele.systems</cite>)</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/database_performance.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="system_class.html" title="System Class (pele.systems)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.gui.run_gui.html" title="pele.gui.run_gui"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

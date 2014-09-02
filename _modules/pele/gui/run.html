@@ -56,16 +56,18 @@
 <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s">&quot;QT4Agg&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">traceback</span>    
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">Qt</span>
 
+<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
+<span class="kn">from</span> <span class="nn">pele.storage</span> <span class="kn">import</span> <span class="n">Database</span>
+<span class="kn">from</span> <span class="nn">pele.utils.events</span> <span class="kn">import</span> <span class="n">Signal</span>
+<span class="kn">from</span> <span class="nn">pele.config</span> <span class="kn">import</span> <span class="n">config</span>
+
 <span class="kn">from</span> <span class="nn">pele.gui.MainWindow</span> <span class="kn">import</span> <span class="n">Ui_MainWindow</span> 
 <span class="kn">from</span> <span class="nn">pele.gui.bhrunner</span> <span class="kn">import</span> <span class="n">BHManager</span>
-<span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
 <span class="kn">from</span> <span class="nn">pele.gui.dlg_params</span> <span class="kn">import</span> <span class="n">DlgParams</span>
-<span class="kn">from</span> <span class="nn">pele.config</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">pele.gui.ui.dgraph_dlg</span> <span class="kn">import</span> <span class="n">DGraphDialog</span>
 <span class="c">#from pele.gui.connect_explorer_dlg import ConnectExplorerDialog</span>
 <span class="kn">from</span> <span class="nn">pele.gui.connect_run_dlg</span> <span class="kn">import</span> <span class="n">ConnectViewer</span>
@@ -73,9 +75,9 @@
 <span class="kn">from</span> <span class="nn">pele.gui.normalmode_browser</span> <span class="kn">import</span> <span class="n">NormalmodeBrowser</span>
 <span class="kn">from</span> <span class="nn">pele.gui._list_views</span> <span class="kn">import</span> <span class="n">ListViewManager</span>
 <span class="kn">from</span> <span class="nn">pele.gui._cv_viewer</span> <span class="kn">import</span> <span class="n">HeatCapacityViewer</span>
-<span class="kn">from</span> <span class="nn">pele.rates</span> <span class="kn">import</span> <span class="n">RateCalculation</span>
 <span class="kn">from</span> <span class="nn">pele.gui._rate_gui</span> <span class="kn">import</span> <span class="n">RateViewer</span>
-<span class="kn">from</span> <span class="nn">pele.utils.events</span> <span class="kn">import</span> <span class="n">Signal</span>
+<span class="kn">from</span> <span class="nn">pele.gui.graph_viewer</span> <span class="kn">import</span> <span class="n">GraphViewDialog</span>
+
 
 
 <span class="k">def</span> <span class="nf">excepthook</span><span class="p">(</span><span class="n">ex_type</span><span class="p">,</span> <span class="n">ex_value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">):</span>
@@ -187,11 +189,12 @@
 <span class="sd">        connect to an existing database at location filename</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-        
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
+
+        <span class="c"># note: database can be either Database, or string, or QString        </span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">Database</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
         <span class="c">#add minima to listWidged.  do sorting after all minima are added</span>
         <span class="k">for</span> <span class="n">minimum</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">NewMinimum</span><span class="p">(</span><span class="n">minimum</span><span class="p">,</span> <span class="n">sort_items</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
@@ -362,15 +365,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pick_count</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="kn">from</span> <span class="nn">pele.gui.graph_viewer</span> <span class="kn">import</span> <span class="n">GraphViewDialog</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;graphview&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span> <span class="o">=</span> <span class="n">GraphViewDialog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">on_minima_picked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_minimum_picked</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">on_minima_picked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SelectMinimum</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">make_graph</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">show_graph</span><span class="p">()</span>
-        <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_minima</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">_show_minimum_energy_path</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphview</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">show_graph</span><span class="p">()</span>
         
     <span class="k">def</span> <span class="nf">on_pushNormalmodesMin_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
@@ -556,7 +561,11 @@
         <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_selected_minima</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_merge_minima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
 
-
+    <span class="k">def</span> <span class="nf">on_action_compute_thermodynamic_info_triggered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">checked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">def</span> <span class="nf">on_done</span><span class="p">():</span> <span class="k">print</span> <span class="s">&quot;done computing thermodynamic info&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_done</span> <span class="o">=</span> <span class="n">on_done</span> <span class="c"># because on_finish stores a weak reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_thermodynamic_information</span><span class="p">(</span><span class="n">on_finish</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_done</span> <span class="p">)</span>
 
 <span class="c">#    def launch_connect_explorer(self):</span>
 <span class="c">#        coords1, coords2 = self.get_selected_coords()</span>
@@ -617,7 +626,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">takestep_explorer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     
     <span class="k">def</span> <span class="nf">on_btn_heat_capacity_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clicked</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span> 
+        <span class="k">if</span> <span class="n">clicked</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cv_viewer</span> <span class="o">=</span> <span class="n">HeatCapacityViewer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cv_viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cv_viewer</span><span class="o">.</span><span class="n">rebuild_cv_plot</span><span class="p">()</span>

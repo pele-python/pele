@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group &mdash; pele 0.1 documentation</title>
+    <title>pele.utils.disconnectivity_graph.DisconnectivityGraph.draw_minima &mdash; pele 0.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="pele.utils.disconnectivity_graph.DisconnectivityGraph" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.html" />
-    <link rel="next" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value.html" />
-    <link rel="prev" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html" /> 
+    <link rel="next" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout.html" />
+    <link rel="prev" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value" href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value.html" /> 
   </head>
   <body>
     <div class="related">
@@ -44,10 +44,10 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value"
+          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate"
+          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../disconnectivity_graph.html" >Disconnectivity Graphs</a> &raquo;</li>
@@ -60,32 +60,21 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="pele-utils-disconnectivity-graph-disconnectivitygraph-color-by-group">
-<h1>pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group<a class="headerlink" href="#pele-utils-disconnectivity-graph-disconnectivitygraph-color-by-group" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="pele-utils-disconnectivity-graph-disconnectivitygraph-draw-minima">
+<h1>pele.utils.disconnectivity_graph.DisconnectivityGraph.draw_minima<a class="headerlink" href="#pele-utils-disconnectivity-graph-disconnectivitygraph-draw-minima" title="Permalink to this headline">¶</a></h1>
 <dl class="method">
-<dt id="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group">
-<tt class="descclassname">DisconnectivityGraph.</tt><tt class="descname">color_by_group</tt><big>(</big><em>groups</em>, <em>colors=None</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/disconnectivity_graph.html#DisconnectivityGraph.color_by_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group" title="Permalink to this definition">¶</a></dt>
-<dd><p>color the graph based on specified grouping of minima</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>groups</strong> : list</p>
-<blockquote class="last">
-<div><p>list of groups of minima that should have the same color</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Notes</p>
-<p>For each node, check all minima for which the node is a parent.
-If all minima are contained on one of the groups, the node 
-will be coloured to represent that group.  
-If any minimum is not contained on one of the groups, the node
-is not coloured. 
-If all minima are contained in groups but more than one group 
-is represented, the node will be the colour of the last group listed</p>
+<dt id="pele.utils.disconnectivity_graph.DisconnectivityGraph.draw_minima">
+<tt class="descclassname">DisconnectivityGraph.</tt><tt class="descname">draw_minima</tt><big>(</big><em>minima</em>, <em>axes=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/disconnectivity_graph.html#DisconnectivityGraph.draw_minima"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.disconnectivity_graph.DisconnectivityGraph.draw_minima" title="Permalink to this definition">¶</a></dt>
+<dd><p>draw a specified list of minima as points</p>
+<p>minima : list of minima
+axes : matlplotlib axes</p>
+<blockquote>
+<div>Draw them on these axes.  If None, use self.axes.</div></blockquote>
+<dl class="docutils">
+<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">kwargs</span></dt>
+<dd>additional keyword arguments will be passed to matplolib.Axes.scatter().
+Use this to specify how to draw the points.</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -97,14 +86,14 @@ is represented, the node will be the colour of the last group listed</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html"
-                        title="previous chapter">pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value.html"
-                        title="next chapter">pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value</a></p>
+                        title="previous chapter">pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout.html"
+                        title="next chapter">pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/generated/pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_group.txt"
+    <li><a href="../_sources/generated/pele.utils.disconnectivity_graph.DisconnectivityGraph.draw_minima.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -137,10 +126,10 @@ is represented, the node will be the colour of the last group listed</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value"
+          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.get_minima_layout"
              >next</a> |</li>
         <li class="right" >
-          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.calculate"
+          <a href="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value.html" title="pele.utils.disconnectivity_graph.DisconnectivityGraph.color_by_value"
              >previous</a> |</li>
         <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../disconnectivity_graph.html" >Disconnectivity Graphs</a> &raquo;</li>

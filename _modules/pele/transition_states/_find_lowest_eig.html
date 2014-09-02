@@ -103,7 +103,7 @@
 <span class="sd">        is not None then one potential call will be saved. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-                  <span class="n">first_order</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                  <span class="n">first_order</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">first_order</span> <span class="o">=</span> <span class="n">first_order</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="mi">0</span>
@@ -242,7 +242,7 @@
 <span class="sd">        of least curvature</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-                  <span class="n">first_order</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">minimizer_kwargs</span><span class="p">):</span>
+                  <span class="n">first_order</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">minimizer_kwargs</span><span class="p">):</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">minimizer_kwargs</span> <span class="o">=</span> <span class="n">minimizer_kwargs</span>
         
@@ -306,7 +306,7 @@
 
 <div class="viewcode-block" id="findLowestEigenVector"><a class="viewcode-back" href="../../../generated/pele.transition_states.findLowestEigenVector.html#pele.transition_states.findLowestEigenVector">[docs]</a><span class="k">def</span> <span class="nf">findLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">H0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
 <span class="c">#                          minimizer_state=None, </span>
-                          <span class="n">first_order</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                          <span class="n">first_order</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
                           <span class="o">**</span><span class="n">minimizer_kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization</span>
 

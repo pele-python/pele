@@ -62,7 +62,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;CoordsAdapter&quot;</span><span class="p">]</span>
-<div class="viewcode-block" id="CoordsAdapter"><a class="viewcode-back" href="../../../generated/pele.utils.rbtools.CoordsAdapter.html#pele.utils.rbtools.CoordsAdapter">[docs]</a><span class="k">class</span> <span class="nc">CoordsAdapter</span><span class="p">():</span>
+<div class="viewcode-block" id="CoordsAdapter"><a class="viewcode-back" href="../../../generated/pele.utils.rbtools.CoordsAdapter.html#pele.utils.rbtools.CoordsAdapter">[docs]</a><span class="k">class</span> <span class="nc">CoordsAdapter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Wrapper to access coordinate array for rigid body systems</span>
 <span class="sd">    </span>
 <span class="sd">    The CoordsAdapter is a wrapper for a coords array. It creates views to directly</span>
@@ -105,7 +105,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nrigid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nlattice</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; initialize the coorinate wrapper</span>
 <span class="sd">        </span>
-<span class="sd">        Initializes the coordinate wrapper. The coorinates array can be</span>
+<span class="sd">        Initializes the coordinate wrapper. The coordinates array can be</span>
 <span class="sd">        either specified directly in the constructor or later changed</span>
 <span class="sd">        via updateCoords.</span>
 <span class="sd">        </span>
@@ -130,7 +130,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">updateCoords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
 
 <div class="viewcode-block" id="CoordsAdapter.copy"><a class="viewcode-back" href="../../../generated/pele.utils.rbtools.CoordsAdapter.copy.html#pele.utils.rbtools.CoordsAdapter.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">CoordsAdapter</span><span class="p">(</span><span class="n">nrigid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrigid</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">,</span> <span class="n">nlattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nlattice</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">CoordsAdapter</span><span class="p">(</span><span class="n">nrigid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrigid</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">,</span> <span class="n">nlattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nlattice</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="CoordsAdapter.updateCoords"><a class="viewcode-back" href="../../../generated/pele.utils.rbtools.CoordsAdapter.updateCoords.html#pele.utils.rbtools.CoordsAdapter.updateCoords">[docs]</a>    <span class="k">def</span> <span class="nf">updateCoords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; update the coordinate array</span>

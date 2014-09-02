@@ -178,16 +178,15 @@
 <span class="sd">    </span>
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    DoubleEndedConnectPar : parallel version of this class</span>
 <span class="sd">    LocalConnect : the core algorithm of this routine</span>
 <span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> 
-                 <span class="n">use_all_min</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">merge_minima</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> 
                  <span class="n">max_dist_merge</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">local_connect_params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
                  <span class="n">fresh_connect</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">longest_first</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">niter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">conf_checks</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">load_no_distances</span><span class="o">=</span><span class="bp">False</span>
+                 <span class="n">niter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">conf_checks</span><span class="o">=</span><span class="bp">None</span>
                  <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span> <span class="o">=</span> <span class="n">min1</span>
         <span class="k">assert</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span> <span class="o">==</span> <span class="n">min1</span><span class="p">,</span> <span class="s">&quot;minima must compare equal with their id </span><span class="si">%d</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">min1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">__hash__</span><span class="p">()))</span>
@@ -213,7 +212,6 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">merge_minima</span> <span class="o">=</span> <span class="n">merge_minima</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_dist_merge</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_dist_merge</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">load_no_distances</span> <span class="o">=</span> <span class="n">load_no_distances</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span> <span class="o">=</span> <span class="n">_DistanceGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mindist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span><span class="p">)</span>
 
@@ -222,8 +220,6 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;minima are already connected.  not initializing distance graph&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
-        <span class="k">if</span> <span class="n">use_all_min</span> <span class="ow">or</span> <span class="n">load_no_distances</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&quot;warning: distances were removed from the database but you requested distances to be loaded&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minstart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>

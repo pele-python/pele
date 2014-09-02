@@ -64,9 +64,41 @@
 <h1>pele.systems.AtomicCluster.get_basinhopping<a class="headerlink" href="#pele-systems-atomiccluster-get-basinhopping" title="Permalink to this headline">¶</a></h1>
 <dl class="method">
 <dt id="pele.systems.AtomicCluster.get_basinhopping">
-<tt class="descclassname">AtomicCluster.</tt><tt class="descname">get_basinhopping</tt><big>(</big><em>database=None</em>, <em>takestep=None</em>, <em>coords=None</em>, <em>add_minimum=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pele.systems.AtomicCluster.get_basinhopping" title="Permalink to this definition">¶</a></dt>
-<dd><p>return the basinhopping object with takestep
-and accept step already implemented</p>
+<tt class="descclassname">AtomicCluster.</tt><tt class="descname">get_basinhopping</tt><big>(</big><em>database=None</em>, <em>takestep=None</em>, <em>coords=None</em>, <em>add_minimum=None</em>, <em>max_n_minima=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pele.systems.AtomicCluster.get_basinhopping" title="Permalink to this definition">¶</a></dt>
+<dd><p>construct a basinhopping object with takestep and accept step already implemented</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>database</strong> : object</p>
+<blockquote>
+<div><p>Use this object to store the minima.  If None, use self.create_database()</p>
+</div></blockquote>
+<p><strong>takestep</strong> : object</p>
+<blockquote>
+<div><p>Use this takestep routine.  If None, use self.get_takestep()</p>
+</div></blockquote>
+<p><strong>coords</strong> : 1-d numpy array</p>
+<blockquote>
+<div><p>The starting point for the basinhopping run.  If None, use self.get_random_configuration()</p>
+</div></blockquote>
+<p><strong>add_minimium</strong> : callable</p>
+<blockquote>
+<div><p>Call this function each time a minimum is found.  This is used instead of the database.</p>
+</div></blockquote>
+<p><strong>max_n_minima</strong> : int</p>
+<blockquote>
+<div><p>Only keep this number of minima in the database.  The minima with the lowest energy are kept.
+This is ignored if add_minimum is passed</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : key word arguments</p>
+<blockquote class="last">
+<div><p>Extra key word arguments are passed to BasinHopping.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">pele.basinhopping</span></tt></p>

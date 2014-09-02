@@ -63,7 +63,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">LBFGS</span><span class="p">,</span> <span class="n">MYLBFGS</span><span class="p">,</span> <span class="n">Fire</span><span class="p">,</span> <span class="n">Result</span><span class="p">,</span> <span class="n">LBFGS_CPP</span>
+<span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">LBFGS</span><span class="p">,</span> <span class="n">MYLBFGS</span><span class="p">,</span> <span class="n">Fire</span><span class="p">,</span> <span class="n">Result</span><span class="p">,</span> <span class="n">LBFGS_CPP</span><span class="p">,</span> <span class="n">ModifiedFireCPP</span>
 <span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;lbfgs_scipy&quot;</span><span class="p">,</span> <span class="s">&quot;fire&quot;</span><span class="p">,</span> <span class="s">&quot;lbfgs_py&quot;</span><span class="p">,</span> <span class="s">&quot;mylbfgs&quot;</span><span class="p">,</span> <span class="s">&quot;cg&quot;</span><span class="p">,</span> 
@@ -263,7 +263,15 @@
         <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="n">lbfgs</span> <span class="o">=</span> <span class="n">MYLBFGS</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">lbfgs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-</pre></div></div>
+</div>
+<span class="k">def</span> <span class="nf">modifiedfire_cpp</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
+        <span class="c"># for compatibility with old quenchers.</span>
+        <span class="c"># assume pot is a getEnergyGradient function</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="n">modifiedfire</span> <span class="o">=</span> <span class="n">ModifiedFireCPP</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>    
+    <span class="k">return</span> <span class="n">modifiedfire</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
 
           </div>
         </div>

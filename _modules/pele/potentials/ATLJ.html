@@ -53,8 +53,8 @@
             
   <h1>Source code for pele.potentials.ATLJ</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span> <span class="c">#to access np.exp() not built int exp</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">weave</span>
-<span class="kn">from</span> <span class="nn">scipy.weave</span> <span class="kn">import</span> <span class="n">converters</span>
+<span class="c">#from scipy import weave</span>
+<span class="c">#from scipy.weave import converters</span>
 
 <span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">LJ</span>
 <span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
@@ -81,62 +81,62 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lj</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
 
     
-    <span class="k">def</span> <span class="nf">getEnergyWeave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        use weave inline</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">Elj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        
-        <span class="n">natoms</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="o">/</span><span class="mi">3</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
-        <span class="n">energy</span><span class="o">=</span><span class="mf">0.</span>
-        <span class="n">Z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span>
-        <span class="c">#support_code</span>
-        <span class="n">code</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">        double drij[3];</span>
-<span class="s">        double drik[3];</span>
-<span class="s">        double drjk[3];</span>
-<span class="s">        energy = 0.;</span>
-<span class="s">        for (int i=0; i &lt; natoms; ++i){</span>
-<span class="s">            for (int j=0; j&lt;i; ++j){</span>
-<span class="s">                for (int k=0; k&lt;j; ++k){</span>
-<span class="s">                </span>
-<span class="s">                    double rij = 0.;</span>
-<span class="s">                    double rik = 0.;</span>
-<span class="s">                    double rjk = 0.;</span>
-<span class="s">        </span>
-<span class="s">                    for (int d=0; d&lt;3; ++d){</span>
-<span class="s">                        drij[d] = coords(i,d) - coords(j,d);</span>
-<span class="s">                        rij += drij[d]*drij[d];</span>
-<span class="s">                    }</span>
-<span class="s">                    for (int d=0; d&lt;3; ++d){</span>
-<span class="s">                        drjk[d] = coords(j,d) - coords(k,d);</span>
-<span class="s">                        rjk += drjk[d]*drjk[d];</span>
-<span class="s">                    }</span>
-<span class="s">                    for (int d=0; d&lt;3; ++d){</span>
-<span class="s">                        drik[d] = coords(i,d) - coords(k,d);</span>
-<span class="s">                        rik += drik[d]*drik[d];</span>
-<span class="s">                    }</span>
-<span class="s">                    </span>
-<span class="s">                    rij = sqrt(rij);</span>
-<span class="s">                    rjk = sqrt(rjk);</span>
-<span class="s">                    rik = sqrt(rik);</span>
-<span class="s">                    </span>
-<span class="s">                    double ctijk = ( -(drij[0]*drjk[0] + drij[1]*drjk[1] + drij[2]*drjk[2]) / (rij * rjk) );</span>
-<span class="s">                    double ctjki = (  (drjk[0]*drik[0] + drjk[1]*drik[1] + drjk[2]*drik[2]) / (rjk * rik) );</span>
-<span class="s">                    double ctkij = (  (drik[0]*drij[0] + drik[1]*drij[1] + drik[2]*drij[2]) / (rik * rij) );</span>
-
-<span class="s">                    double r3 = rij*rjk*rik;</span>
-<span class="s">                    energy += Z*(1. + 3. * ctijk * ctjki * ctkij) / (r3*r3*r3);</span>
-<span class="s">                }</span>
-<span class="s">            }</span>
-<span class="s">        }</span>
-<span class="s">        return_val= energy;</span>
-<span class="s">        &quot;&quot;&quot;</span>
-        <span class="n">energy</span> <span class="o">=</span> <span class="n">weave</span><span class="o">.</span><span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="p">[</span><span class="s">&quot;coords&quot;</span><span class="p">,</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="s">&quot;Z&quot;</span><span class="p">,</span> <span class="s">&quot;natoms&quot;</span><span class="p">],</span> <span class="n">type_converters</span><span class="o">=</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="c">#print &quot;fast energy&quot;, Elj, energy</span>
-        <span class="n">energy</span> <span class="o">+=</span> <span class="n">Elj</span>
-        <span class="k">return</span> <span class="n">energy</span>
+<span class="c">#    def getEnergyWeave(self, coords):</span>
+<span class="c">#        &quot;&quot;&quot;</span>
+<span class="c">#        use weave inline</span>
+<span class="c">#        &quot;&quot;&quot;</span>
+<span class="c">#        Elj = self.lj.getEnergy(coords)</span>
+<span class="c">#        </span>
+<span class="c">#        natoms = coords.size/3</span>
+<span class="c">#        coords = np.reshape(coords, [natoms,3])</span>
+<span class="c">#        energy=0.</span>
+<span class="c">#        Z = self.Z</span>
+<span class="c">#        #support_code</span>
+<span class="c">#        code = &quot;&quot;&quot;</span>
+<span class="c">#        double drij[3];</span>
+<span class="c">#        double drik[3];</span>
+<span class="c">#        double drjk[3];</span>
+<span class="c">#        energy = 0.;</span>
+<span class="c">#        for (int i=0; i &lt; natoms; ++i){</span>
+<span class="c">#            for (int j=0; j&lt;i; ++j){</span>
+<span class="c">#                for (int k=0; k&lt;j; ++k){</span>
+<span class="c">#                </span>
+<span class="c">#                    double rij = 0.;</span>
+<span class="c">#                    double rik = 0.;</span>
+<span class="c">#                    double rjk = 0.;</span>
+<span class="c">#        </span>
+<span class="c">#                    for (int d=0; d&lt;3; ++d){</span>
+<span class="c">#                        drij[d] = coords(i,d) - coords(j,d);</span>
+<span class="c">#                        rij += drij[d]*drij[d];</span>
+<span class="c">#                    }</span>
+<span class="c">#                    for (int d=0; d&lt;3; ++d){</span>
+<span class="c">#                        drjk[d] = coords(j,d) - coords(k,d);</span>
+<span class="c">#                        rjk += drjk[d]*drjk[d];</span>
+<span class="c">#                    }</span>
+<span class="c">#                    for (int d=0; d&lt;3; ++d){</span>
+<span class="c">#                        drik[d] = coords(i,d) - coords(k,d);</span>
+<span class="c">#                        rik += drik[d]*drik[d];</span>
+<span class="c">#                    }</span>
+<span class="c">#                    </span>
+<span class="c">#                    rij = sqrt(rij);</span>
+<span class="c">#                    rjk = sqrt(rjk);</span>
+<span class="c">#                    rik = sqrt(rik);</span>
+<span class="c">#                    </span>
+<span class="c">#                    double ctijk = ( -(drij[0]*drjk[0] + drij[1]*drjk[1] + drij[2]*drjk[2]) / (rij * rjk) );</span>
+<span class="c">#                    double ctjki = (  (drjk[0]*drik[0] + drjk[1]*drik[1] + drjk[2]*drik[2]) / (rjk * rik) );</span>
+<span class="c">#                    double ctkij = (  (drik[0]*drij[0] + drik[1]*drij[1] + drik[2]*drij[2]) / (rik * rij) );</span>
+<span class="c">#</span>
+<span class="c">#                    double r3 = rij*rjk*rik;</span>
+<span class="c">#                    energy += Z*(1. + 3. * ctijk * ctjki * ctkij) / (r3*r3*r3);</span>
+<span class="c">#                }</span>
+<span class="c">#            }</span>
+<span class="c">#        }</span>
+<span class="c">#        return_val= energy;</span>
+<span class="c">#        &quot;&quot;&quot;</span>
+<span class="c">#        energy = weave.inline(code, [&quot;coords&quot;, &quot;energy&quot;, &quot;Z&quot;, &quot;natoms&quot;], type_converters=converters.blitz, verbose=2)</span>
+<span class="c">#        #print &quot;fast energy&quot;, Elj, energy</span>
+<span class="c">#        energy += Elj</span>
+<span class="c">#        return energy</span>
 
 
 
@@ -188,53 +188,11 @@
     <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="c">#return self.getEnergyGradientNumerical(coords)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyGradientFortran</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+        
+
+
 </div>
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="k">class</span> <span class="nc">TestATLJ</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">testenergy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">natoms</span> <span class="o">=</span> <span class="mi">10</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span>
-        
-        <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span> <span class="k">as</span> <span class="n">quench</span>
-        <span class="n">lj</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">()</span>
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">lj</span><span class="p">)</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span>
-        
-        
-        <span class="n">atlj</span> <span class="o">=</span> <span class="n">ATLJ</span><span class="p">(</span><span class="n">Z</span><span class="o">=</span><span class="mf">3.</span><span class="p">)</span>
-        <span class="n">e2</span> <span class="o">=</span> <span class="n">atlj</span><span class="o">.</span><span class="n">getEnergySlow</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-<span class="c">#        e1 = atlj.getEnergyWeave(coords)</span>
-<span class="c">#        #print &quot;%g - %g = %g&quot; % (e1, e2, e1-e2)</span>
-<span class="c">#        self.assertTrue( abs(e1 - e2) &lt; 1e-12, &quot;ATLJ: two energy methods give different results: %g - %g = %g&quot; % (e1, e2, e1-e2) )</span>
-
-        
-        <span class="n">e1</span> <span class="o">=</span> <span class="n">atlj</span><span class="o">.</span><span class="n">getEnergyFortran</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="c">#print &quot;%g - %g = %g&quot; % (e1, e2, e1-e2)</span>
-        <span class="c">#print e1/e2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="n">e1</span> <span class="o">-</span> <span class="n">e2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="s">&quot;ATLJ: fortran energy gives different results: </span><span class="si">%g</span><span class="s"> - </span><span class="si">%g</span><span class="s"> = </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">e1</span><span class="o">-</span><span class="n">e2</span><span class="p">)</span> <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">testGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">natoms</span> <span class="o">=</span> <span class="mi">10</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span>
-        
-        <span class="n">lj</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">()</span>
-        
-        
-        <span class="n">atlj</span> <span class="o">=</span> <span class="n">ATLJ</span><span class="p">(</span><span class="n">Z</span><span class="o">=</span><span class="mf">3.</span><span class="p">)</span>
-        
-        <span class="n">e</span><span class="p">,</span> <span class="n">Gf</span> <span class="o">=</span> <span class="n">atlj</span><span class="o">.</span><span class="n">getEnergyGradientFortran</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="n">Gn</span> <span class="o">=</span> <span class="n">atlj</span><span class="o">.</span><span class="n">NumericalDerivative</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">Gf</span>
-        <span class="k">print</span> <span class="n">Gn</span>
-        <span class="n">maxdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Gf</span><span class="o">-</span><span class="n">Gn</span><span class="p">))</span>
-        <span class="n">maxnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Gf</span><span class="o">+</span><span class="n">Gn</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
-        <span class="n">maxrel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="p">(</span><span class="n">Gf</span><span class="o">-</span><span class="n">Gn</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">Gf</span><span class="o">+</span><span class="n">Gn</span><span class="p">)</span><span class="o">*</span><span class="mf">2.</span> <span class="p">))</span>
-        <span class="k">print</span> <span class="s">&quot;maximum relative difference in gradients&quot;</span><span class="p">,</span>  <span class="n">maxdiff</span><span class="p">,</span> <span class="n">maxdiff</span><span class="o">/</span><span class="n">maxnorm</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span> <span class="n">maxdiff</span><span class="o">/</span><span class="n">maxnorm</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="s">&quot;ATLJ: gradient differs from numerical gradient by </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">maxdiff</span><span class="p">)</span> <span class="p">)</span>
-        
-
-
-
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c">#test class</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">3</span>
@@ -284,8 +242,7 @@
     <span class="c">#print lj.getEnergyGradientWeave(coords)</span>
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="c">#main()</span>
-    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
           </div>

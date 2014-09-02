@@ -192,58 +192,6 @@
 <span class="c"># testing only beyond this point</span>
 <span class="c">#</span>
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="k">class</span> <span class="nc">TestExactMatchPeriodicLJ</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">=</span> <span class="mi">100</span>
-        <span class="n">rho</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span>
-        <span class="n">boxl</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)</span> <span class="o">/</span> <span class="n">rho</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
-        <span class="n">boxlengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">boxl</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*.</span><span class="mi">1</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">permlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_permlist</span><span class="p">()</span>        
-        <span class="bp">self</span><span class="o">.</span><span class="n">measure</span> <span class="o">=</span> <span class="n">MeasurePeriodic</span><span class="p">(</span><span class="n">boxlengths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">permlist</span><span class="p">)</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">x2diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">x2same</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">randomly_permute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span> <span class="o">=</span> <span class="n">ExactMatchPeriodic</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
-    
-    <span class="k">def</span> <span class="nf">get_permlist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)]</span>
-    
-    <span class="k">def</span> <span class="nf">randomly_permute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="kn">import</span> <span class="nn">random</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
-        <span class="n">xnew</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">atomlist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">permlist</span><span class="p">:</span>
-            <span class="n">permutation</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">atomlist</span><span class="p">)</span>
-            <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">permutation</span><span class="p">)</span>
-            <span class="n">xnew</span><span class="p">[</span><span class="n">atomlist</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">permutation</span><span class="p">,:]</span>
-        <span class="k">return</span> <span class="n">xnew</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-
-    
-    <span class="k">def</span> <span class="nf">get_random_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.5</span>
-    
-    <span class="k">def</span> <span class="nf">test_exact_match</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x2same</span><span class="p">))</span>
-        
-    <span class="k">def</span> <span class="nf">test_no_exact_match</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x2diff</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">test_exact_match_periodic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">x2same</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">boxlengths</span>  
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x2same</span><span class="p">))</span>
-
-
-<span class="k">class</span> <span class="nc">TestExactMatchPeriodicBLJ</span><span class="p">(</span><span class="n">TestExactMatchPeriodicLJ</span><span class="p">):</span>        
-    <span class="k">def</span> <span class="nf">get_permlist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">*.</span><span class="mi">8</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)]</span>
-    
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
         
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
@@ -264,8 +212,6 @@
     <span class="n">exact_match</span> <span class="o">=</span> <span class="n">ExactMatchPeriodic</span><span class="p">(</span><span class="n">measure</span><span class="p">)</span>
     <span class="n">em</span> <span class="o">=</span> <span class="n">exact_match</span><span class="o">.</span><span class="n">are_exact</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">em</span>
-    
-    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
     
     
     

@@ -65,7 +65,6 @@
 
 <span class="kn">from</span> <span class="nn">pele.storage</span> <span class="kn">import</span> <span class="n">Minimum</span>
 <span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
-<span class="kn">from</span> <span class="nn">pele.utils.disconnectivity_graph</span> <span class="kn">import</span> <span class="n">DisconnectivityGraph</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;ConnectManager&quot;</span><span class="p">]</span>
@@ -160,6 +159,8 @@
                 
     <span class="k">def</span> <span class="nf">_compute_barriers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">min1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;for each minimum graph compute the (approximate) energy barrier to min1&quot;&quot;&quot;</span>
+        <span class="c"># this is a local import to avoid cyclical imports</span>
+        <span class="kn">from</span> <span class="nn">pele.utils.disconnectivity_graph</span> <span class="kn">import</span> <span class="n">DisconnectivityGraph</span>
         <span class="n">dgraph</span> <span class="o">=</span> <span class="n">DisconnectivityGraph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nlevels</span><span class="p">)</span>
         <span class="n">dgraph</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
         <span class="n">tree</span> <span class="o">=</span> <span class="n">dgraph</span><span class="o">.</span><span class="n">tree_graph</span>
@@ -175,7 +176,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">minpairs</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
         
         <span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">)</span><span class="o">.</span><span class="n">graph</span>
-        <span class="n">cclist</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="n">cclist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">graph</span><span class="p">))</span>
         
         <span class="c"># get the largest cluster</span>
         <span class="n">group1</span> <span class="o">=</span> <span class="n">cclist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -245,7 +246,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">minpairs</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
         
         <span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">)</span><span class="o">.</span><span class="n">graph</span>
-        <span class="n">cclist</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="n">cclist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">graph</span><span class="p">))</span>
 
         <span class="c"># remove clusters with fewer than clust_min</span>
         <span class="n">cclist</span> <span class="o">=</span> <span class="p">[</span><span class="n">cc</span> <span class="k">for</span> <span class="n">cc</span> <span class="ow">in</span> <span class="n">cclist</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clust_min</span><span class="p">]</span>
