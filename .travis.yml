@@ -43,6 +43,7 @@ install:
   - pip install networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl mpi4py coverage coveralls
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
+  - cp .coveragerc $HOME
   # build the c++ tests
   - cd cpp_tests
   - cpp_test_dir=$PWD
