@@ -3,7 +3,7 @@ import numpy as np
 
 from pele.storage import Database
 from pele.landscape import ConnectManager
-from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph, TreeLeastCommonAncestor, Tree
 
 _show = False
 
@@ -93,6 +93,24 @@ class TestDisconnectivityGraph(unittest.TestCase):
             from matplotlib import pyplot as plt
             plt.title("color by value")
             dgraph.show()
+
+
+class TestTreeLeastCommonAncestor(unittest.TestCase):
+    def test(self):
+        t1 = Tree()
+        t2_1 = Tree(t1)
+        t2_2 = Tree(t1)
+        lca = TreeLeastCommonAncestor([t2_1, t2_2])
+        self.assertEqual(lca.least_common_ancestor, t1)
+        
+        t3_1 = Tree(t2_1)
+        t3_2 = Tree(t2_1)
+        t3_3 = Tree(t2_2)
+        
+        self.assertEqual(TreeLeastCommonAncestor([t3_1, t3_2]).least_common_ancestor, t2_1)
+        self.assertEqual(TreeLeastCommonAncestor([t3_1, t3_2, t3_3]).least_common_ancestor, t1)
+        self.assertEqual(TreeLeastCommonAncestor([t2_1, t3_1]).least_common_ancestor, t2_1)
+        self.assertEqual(TreeLeastCommonAncestor([t2_2, t3_1]).least_common_ancestor, t1)
 
 
 if __name__ == "__main__":
