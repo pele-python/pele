@@ -527,93 +527,92 @@ class LBFGS(object):
 #
 # only testing stuff below here
 #   
-
-class PrintEvent:
-    def __init__(self, fname):
-        self.fout = open(fname, "w")
-        self.coordslist = []
-
-    def __call__(self, coords, **kwargs):
-        from pele.utils.xyz import write_xyz
-        write_xyz(self.fout, coords)
-        self.coordslist.append( coords.copy() )
-        
-    
-
-def test(pot, natoms = 100, iprint=-1):    
-    #X = bfgs.getInitialCoords(natoms, pot)
-    #X += np.random.uniform(-1,1,[3*natoms]) * 0.3
-    X = np.random.uniform(-1,1,[natoms*3])*(1.*natoms)**(1./3)*.5
-    
-    runtest(X, pot, natoms, iprint)
-
-def runtest(X, pot, natoms = 100, iprint=-1):
-    tol = 1e-5
-
-    Xinit = np.copy(X)
-    e, g = pot.getEnergyGradient(X)
-    print "energy", e
-    
-    lbfgs = LBFGS(X, pot, maxstep = 0.1, tol=tol, iprint=iprint, nsteps=10000)
-    printevent = PrintEvent( "debugout.xyz")
-    lbfgs.attachEvent(printevent)
-    
-    ret = lbfgs.run()
-    print "done", ret
-    
-    print "now do the same with scipy lbfgs"
-    from pele.optimize import lbfgs_scipy as quench
-    ret = quench(Xinit, pot, tol = tol)
-    print ret 
-    
-    if False:
-        print "now do the same with scipy bfgs"
-        from pele.optimize import bfgs as oldbfgs
-        ret = oldbfgs(Xinit, pot, tol = tol)
-        print ret    
-    
-    if False:
-        print "now do the same with gradient + linesearch"
-        import _bfgs
-        gpl = _bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
-        ret = gpl.run(1000, tol = 1e-6)
-        print ret 
-            
-    if False:
-        print "calling from wrapper function"
-        from pele.optimize import lbfgs_py
-        ret = lbfgs_py(Xinit, pot, tol = tol)
-        print ret
-
-
-    try:
-        import pele.utils.pymolwrapper as pym
-        pym.start()
-        for n, coords in enumerate(printevent.coordslist):
-            coords = coords.reshape([-1, 3])
-            pym.draw_spheres(coords, "A", n)
-    except ImportError:
-        print "error loading pymol"
-
-        
-if __name__ == "__main__":
-    from pele.potentials.lj import LJ
-    from pele.potentials.ATLJ import ATLJ
-    pot = ATLJ()
-
-    #test(pot, natoms=3, iprint=1)
-    
-#    coords = np.loadtxt("coords")
-    natoms = 10
-    coords = np.random.uniform(-1,1,natoms*3)
-    print coords.size
-    coords = np.reshape(coords, coords.size)
-    print coords
-    runtest(coords, pot, natoms=3, iprint=1)
-    
-
-
-
+#
+#class PrintEvent:
+#    def __init__(self, fname):
+#        self.fout = open(fname, "w")
+#        self.coordslist = []
+#
+#    def __call__(self, coords, **kwargs):
+#        from pele.utils.xyz import write_xyz
+#        write_xyz(self.fout, coords)
+#        self.coordslist.append( coords.copy() )
+#        
+#    
+#
+#def test(pot, natoms = 100, iprint=-1):    
+#    #X = bfgs.getInitialCoords(natoms, pot)
+#    #X += np.random.uniform(-1,1,[3*natoms]) * 0.3
+#    X = np.random.uniform(-1,1,[natoms*3])*(1.*natoms)**(1./3)*.5
+#    
+#    runtest(X, pot, natoms, iprint)
+#
+#def runtest(X, pot, natoms = 100, iprint=-1):
+#    tol = 1e-5
+#
+#    Xinit = np.copy(X)
+#    e, g = pot.getEnergyGradient(X)
+#    print "energy", e
+#    
+#    lbfgs = LBFGS(X, pot, maxstep = 0.1, tol=tol, iprint=iprint, nsteps=10000)
+#    printevent = PrintEvent( "debugout.xyz")
+#    lbfgs.attachEvent(printevent)
+#    
+#    ret = lbfgs.run()
+#    print "done", ret
+#    
+#    print "now do the same with scipy lbfgs"
+#    from pele.optimize import lbfgs_scipy as quench
+#    ret = quench(Xinit, pot, tol = tol)
+#    print ret 
+#    
+#    if False:
+#        print "now do the same with scipy bfgs"
+#        from pele.optimize import bfgs as oldbfgs
+#        ret = oldbfgs(Xinit, pot, tol = tol)
+#        print ret    
+#    
+#    if False:
+#        print "now do the same with gradient + linesearch"
+#        import _bfgs
+#        gpl = _bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  
+#        ret = gpl.run(1000, tol = 1e-6)
+#        print ret 
+#            
+#    if False:
+#        print "calling from wrapper function"
+#        from pele.optimize import lbfgs_py
+#        ret = lbfgs_py(Xinit, pot, tol = tol)
+#        print ret
+#
+#
+#    try:
+#        import pele.utils.pymolwrapper as pym
+#        pym.start()
+#        for n, coords in enumerate(printevent.coordslist):
+#            coords = coords.reshape([-1, 3])
+#            pym.draw_spheres(coords, "A", n)
+#    except ImportError:
+#        print "error loading pymol"
+#
+#        
+#if __name__ == "__main__":
+#    from pele.potentials.lj import LJ
+#    from pele.potentials.ATLJ import ATLJ
+#    pot = ATLJ()
+#
+#    #test(pot, natoms=3, iprint=1)
+#    
+##    coords = np.loadtxt("coords")
+#    natoms = 10
+#    coords = np.random.uniform(-1,1,natoms*3)
+#    print coords.size
+#    coords = np.reshape(coords, coords.size)
+#    print coords
+#    runtest(coords, pot, natoms=3, iprint=1)
+#    
+#
+#
 
 
 
