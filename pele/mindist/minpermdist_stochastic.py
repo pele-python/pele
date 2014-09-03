@@ -173,7 +173,7 @@ class MinPermDistCluster(object):
         return dist, coords1, x2
         
 def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
-         minPermDist=MinPermDistCluster()):
+         minPermDist=MinPermDistCluster()): # pragma: no cover
     import copy
     natoms = len(X1) / 3
         
@@ -204,7 +204,7 @@ def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
         for xyz, line2 in printlist:
             printxyz.printAtomsXYZ(fout, xyz, line2=line2 +" "+ str(lj.getEnergy(xyz)))
             
-def test_LJ(natoms = 12, **kwargs):
+def test_LJ(natoms = 12, **kwargs): # pragma: no cover
     from pele.potentials.lj import LJ
     from pele.optimize import mylbfgs
     import pele.utils.rotations as rot

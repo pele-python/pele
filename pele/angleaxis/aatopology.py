@@ -98,17 +98,17 @@ class AASiteType(object):
         '''
         return sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
-        R1 = rotations.aa2mx(p1)
-        R2 = rotations.aa2mx(p2)
-        dR = R2 - R1
-        
-        dR = dR
-        
-        d_M = self.W*np.sum((com2-com1)**2)
-        # dR_kl S_lm dR_km 
-        d_P = np.trace(np.dot(dR, np.dot(self.S, dR.transpose()))) 
-        d_mix = 2.*self.W * np.dot((com2-com1), np.dot(dR, self.cog))
-        return d_M + d_P + d_mix
+#        R1 = rotations.aa2mx(p1)
+#        R2 = rotations.aa2mx(p2)
+#        dR = R2 - R1
+#        
+#        dR = dR
+#        
+#        d_M = self.W*np.sum((com2-com1)**2)
+#        # dR_kl S_lm dR_km 
+#        d_P = np.trace(np.dot(dR, np.dot(self.S, dR.transpose()))) 
+#        d_mix = 2.*self.W * np.dot((com2-com1), np.dot(dR, self.cog))
+#        return d_M + d_P + d_mix
 
     def distance_squared_grad(self, com1, p1, com2, p2):
         '''
@@ -131,25 +131,26 @@ class AASiteType(object):
         '''
         
         return sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
-        R1, R11, R12, R13 = rotMatDeriv(p1, True)
-        R2 = rotations.aa2mx(p2)
-        dR = R2 - R1
-        
-        dR = dR
-        
-        g_M = -2.*self.W*(com2-com1)
-        # dR_kl S_lm dR_km
-        g_P = np.zeros(3) 
-        g_P[0] = -2.*np.trace(np.dot(R11, np.dot(self.S, dR.transpose())))
-        g_P[1] = -2.*np.trace(np.dot(R12, np.dot(self.S, dR.transpose())))
-        g_P[2] = -2.*np.trace(np.dot(R13, np.dot(self.S, dR.transpose())))
     
-        g_M -= 2.*self.W *  np.dot(dR, self.cog)
-        g_P[0] -= 2.*self.W * np.dot((com2-com1), np.dot(R11, self.cog))
-        g_P[1] -= 2.*self.W * np.dot((com2-com1), np.dot(R12, self.cog))
-        g_P[2] -= 2.*self.W * np.dot((com2-com1), np.dot(R13, self.cog))
-
-        return g_M, g_P
+#        R1, R11, R12, R13 = rotMatDeriv(p1, True)
+#        R2 = rotations.aa2mx(p2)
+#        dR = R2 - R1
+#        
+#        dR = dR
+#        
+#        g_M = -2.*self.W*(com2-com1)
+#        # dR_kl S_lm dR_km
+#        g_P = np.zeros(3) 
+#        g_P[0] = -2.*np.trace(np.dot(R11, np.dot(self.S, dR.transpose())))
+#        g_P[1] = -2.*np.trace(np.dot(R12, np.dot(self.S, dR.transpose())))
+#        g_P[2] = -2.*np.trace(np.dot(R13, np.dot(self.S, dR.transpose())))
+#    
+#        g_M -= 2.*self.W *  np.dot(dR, self.cog)
+#        g_P[0] -= 2.*self.W * np.dot((com2-com1), np.dot(R11, self.cog))
+#        g_P[1] -= 2.*self.W * np.dot((com2-com1), np.dot(R12, self.cog))
+#        g_P[2] -= 2.*self.W * np.dot((com2-com1), np.dot(R13, self.cog))
+#
+#        return g_M, g_P
     
     def metric_tensor(self, p):
         ''' calculate the mass weighted metric tensor '''
@@ -440,7 +441,7 @@ class TakestepAA(takestep.TakestepInterface):
         self.rotate *= factor
         
         
-def test():
+def test(): # pragma: no cover
     natoms = 3
     x = np.random.random([natoms,3])*5
     masses = [1., 1., 16.] #np.random.random(natoms)

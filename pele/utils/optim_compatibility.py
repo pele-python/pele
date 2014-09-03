@@ -173,7 +173,7 @@ class OptimDBConverter(object):
         print "--->finished loading %s minima" % indx
     
     
-    def ReadMindata(self):
+    def ReadMindata(self): # pragma: no cover
         print "reading from", self.mindata
         indx = 0
 #        f_len = file_len(self.mindata)
@@ -257,7 +257,7 @@ class OptimDBConverter(object):
         print "--->finished loading %s transition states" % indx
 
 
-    def ReadTSdata(self):
+    def ReadTSdata(self): # pragma: no cover
         print "reading from", self.tsdata
 
         indx = 0
