@@ -4,12 +4,12 @@
 Database Performance
 --------------------
 
-Pele uses the python package `sqlalchemy` to manage the database of minima.
+Pele uses the python package `sqlalchemy` to manage the database of minima and transition states.
 By default this uses sqlite to store the database in a file on the hard drive.
 This is very convenient for persistent storage of data and for easy access.
 The downside is that without careful use it can be very slow.  
-For most purposes it shouldn't cause a problem; this information should only be
-useful if you're dealing with very large databases, or are accessing the
+For most purposes it shouldn't cause a problem; this information about optimizing database performance should only be
+useful if you're dealing with very large databases or are accessing the
 database hundreds of times a second.  This should be considered an expert level tutorial.
 Some of the possible things to watch out for are listed below.
 
@@ -61,7 +61,7 @@ are only loaded from the database when they are actually accessed.
 The upside is that the, possibly substantial, coordinate array need not be transferred from hard disk
 to memory each time a minimum is accesses.  Code such as::
 
-  for m in from db.session.query(Minimum):
+  for m in db.session.query(Minimum):
       print m.energy
 
 runs slightly faster than it otherwise would.  
@@ -70,7 +70,7 @@ Deferring the `coords` has a significant downside, in that the database must be
 queried for every minimum for which you want to access the `coords`.  The result
 is that the following code::
 
-  for m in from db.session.query(Minimum):
+  for m in db.session.query(Minimum):
       print m.coords
 
 can be extremely slow if you are looping through a lot of minima.  If there are
@@ -81,7 +81,7 @@ Luckily the solution is easy.  You simply need to undefer the columns you want
 to access in the original query.::
 
   from sqlalchemy.orm import undefer
-  for m in from db.session.query(Minimum).options(undefer("coords")):
+  for m in db.session.query(Minimum).options(undefer("coords")):
       print m.coords
 
 This results in only one query to the database.
@@ -117,7 +117,7 @@ With `sqlalchemy` this would be::
 
 
 Example
--------
++++++++
 As an example, the image below shows the mean time per step that is spent in the
 `Database.addMinimum()` routine during a basinhopping run.  By the end of the run
 the database has about 20000 minima in it.

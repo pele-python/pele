@@ -1,22 +1,15 @@
 import numpy as np
 import tempfile
 
-from pele.angleaxis import RBTopology
-from copy import deepcopy
-from pele.utils import rotations
-from pele.takestep import RotationalDisplacement
-from pele.systems import BaseSystem, dict_copy_update, BaseParameters
-from pele.transition_states import NEB, InterpolatedPathDensity
+from pele.systems import BaseSystem, dict_copy_update
 
-from pele.optimize import fire, mylbfgs
-
-from pele.angleaxis.aamindist import *
 from pele.angleaxis import MinPermDistAACluster, ExactMatchAACluster
 from pele.angleaxis import TakestepAA
 from pele.landscape import smoothPath
 from pele.utils.elements import elements
 from pele.utils.xyz import write_xyz
 from pele.mindist import PointGroupOrderCluster
+from pele.utils import rotations
 
 class AASystem(BaseSystem):
     def __init__(self):
@@ -118,7 +111,7 @@ class RBSystem(AASystem):
         GLU.gluCylinder(g, .1,0.1,r,10,10)  #I can't seem to draw a cylinder
         GL.glPopMatrix()
         
-    def draw(self, rbcoords, index, shift_com=True):
+    def draw(self, rbcoords, index, shift_com=True): # pragma: no cover
         from OpenGL import GL, GLUT    
         coords = self.aasystem.to_atomistic(rbcoords)
         if shift_com:
@@ -155,7 +148,7 @@ class RBSystem(AASystem):
             for i1, i2 in self.draw_bonds:
                 self.drawCylinder(coords[i1]-com, coords[i2]-com)
 
-    def load_coords_pymol(self, coordslist, oname, index=1):
+    def load_coords_pymol(self, coordslist, oname, index=1): # pragma: no cover
         """load the coords into pymol
         
         the new object must be named oname so we can manipulate it later

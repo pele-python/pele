@@ -5,8 +5,10 @@ from numpy import cos, sin, pi
 
 from pele.angleaxis import RBTopology, RigidFragment, RBPotentialWrapper
 from pele.potentials import LJ
+from pele.angleaxis._otp_cluster import OTPCluster
+from pele.thermodynamics import get_thermodynamic_information
 
-class TestOTP(unittest.TestCase):
+class TestOTPExplicit(unittest.TestCase):
     
     def make_otp(self):
         """this constructs a single OTP molecule"""
@@ -107,8 +109,8 @@ class TestOTP(unittest.TestCase):
         print "rbpotential"
         rbpot = RBPotentialWrapper(self.topology, lj);
         print rbpot.getEnergy(x0);
-
-class TestCppRBPotentialWrapper(TestOTP):
+    
+class TestCppRBPotentialWrapper(TestOTPExplicit):
     def test_pot_wrapper(self):
         from pele.angleaxis import _cpp_aa
         from pele.potentials import LJ
@@ -128,8 +130,55 @@ class TestCppRBPotentialWrapper(TestOTP):
 #         print grad1
 #         print grad2
         
-        
 
+_x1 = np.array([ 1.9025655 ,  0.39575842,  2.70994994,  1.12711741,  0.63413933,
+                1.99433564,  1.86553644,  1.71434811,  2.22927686,  0.80189315,
+                1.19513512,  3.02357997,  1.25845172, -0.06244027,  1.27217385,
+               -2.26564485,  0.25537024,  0.66231258, -1.49510664,  0.94428774,
+               -0.04120075, -0.87664883, -0.21441754,  2.05796547])
+_x2 = np.array([ 2.01932983,  0.32928065,  2.34949584,  1.12261277,  0.84195098,
+                2.08827517,  1.42644916,  1.83608794,  2.23147536,  1.12872074,
+                0.93206141,  3.28789605,  1.73243138, -0.1199651 ,  1.02925229,
+               -1.64603729,  0.30701482,  0.90204992, -1.96259809,  0.06557119,
+                0.11010908, -0.37462588, -0.42374544,  1.97728056])
+ 
+class TestOTPCluster(unittest.TestCase):
+    def setUp(self):
+        np.random.seed(0)
+        self.nmol = 4
+        self.system = OTPCluster(self.nmol)
+        pot = self.system.get_potential()
+        self.db = self.system.create_database()
+        self.m1 = self.db.addMinimum(pot.getEnergy(_x1), _x1)
+        self.m2 = self.db.addMinimum(pot.getEnergy(_x2), _x2)
+    
+    def test1(self):
+        pot = self.system.get_potential()
+        self.assertLess(np.linalg.norm(pot.getGradient(self.m1.coords)), .1)
+        self.assertLess(np.linalg.norm(pot.getGradient(self.m2.coords)), .1)
+    
+    def test_basinhopping(self):
+        db = self.system.create_database()
+        bh = self.system.get_basinhopping(db)
+        bh.setPrinting(ostream=None)
+        bh.run(5)
+        self.assertGreaterEqual(db.number_of_minima(), 1)
+
+    def test_double_ended_connect(self):
+        connect = self.system.get_double_ended_connect(self.m1, self.m2, self.db)
+        connect.connect()
+        self.assertTrue(connect.success())
+        
+        path = connect.returnPath()
+    
+    def test_thermodynamics(self):
+        get_thermodynamic_information(self.system, self.db, nproc=None, recalculate=True)
+        self.assertIsNotNone(self.m1.fvib)
+        
+        mt = self.system.get_metric_tensor(self.m1.coords)
+        print "metric tensor"
+        print mt
+        
 
 if __name__ == "__main__":
     unittest.main()

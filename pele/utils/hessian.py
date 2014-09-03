@@ -191,7 +191,7 @@ def make_sparse(hess, **kwargs):
 
         
 
-def size_scaling_smallest_eig(natoms):
+def size_scaling_smallest_eig(natoms): # pragma: no cover
     from pele.systems import LJCluster
     import time, sys
     system = LJCluster(natoms)
@@ -236,12 +236,12 @@ def size_scaling_smallest_eig(natoms):
     print "times", n, time1, time2, time3, time4
     sys.stdout.flush()
 
-def plot_hist(hess):
+def plot_hist(hess): # pragma: no cover
     import pylab as pl
     pl.hist(np.log10(np.abs(hess.reshape(-1))))
     pl.show()
 
-if __name__ == "__main__":
+def test(): # pragma: no cover
     from pele.systems import LJCluster
     natoms = 30
     system = LJCluster(natoms)
@@ -273,3 +273,5 @@ if __name__ == "__main__":
             size_scaling_smallest_eig(int(n))
             n *= 1.2
     
+if __name__ == "__main__":
+    test()

@@ -116,7 +116,7 @@ class MYLBFGS(LBFGS):
 # 
     
 
-def test(pot, natoms = 100, iprint=-1):
+def test(pot, natoms = 100, iprint=-1): # pragma: no cover
     #import bfgs
     
     
@@ -126,7 +126,7 @@ def test(pot, natoms = 100, iprint=-1):
     
     runtest(X, pot, natoms, iprint)
 
-def runtest(X, pot, natoms = 100, iprint=-1):
+def runtest(X, pot, natoms = 100, iprint=-1): # pragma: no cover
     from _lbfgs_py import PrintEvent
     tol = 1e-5
     maxstep = 0.005
@@ -187,8 +187,7 @@ def runtest(X, pot, natoms = 100, iprint=-1):
     except ImportError:
         print "error loading pymol"
 
-        
-if __name__ == "__main__":
+def test2(): # pragma: no cover
     #from pele.potentials.lj import LJ as Pot
     from pele.potentials.ATLJ import ATLJ as Pot
     pot = Pot()
@@ -202,15 +201,5 @@ if __name__ == "__main__":
     print coords
     runtest(coords, pot, natoms=3, iprint=1)
     
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    test2()

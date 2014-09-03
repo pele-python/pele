@@ -190,8 +190,8 @@ def find_permutations_OPTIM(X1, X2, box_lengths=None, make_cost_matrix=None):
 
 
 def find_best_permutation(X1, X2, permlist=None, user_algorithm=None, 
-                            reshape=True, user_cost_matrix=_make_cost_matrix,
-                            **kwargs):
+                             reshape=True, user_cost_matrix=_make_cost_matrix,
+                             **kwargs):
     """
     find the permutation of the atoms which minimizes the distance |X1-X2|
     
@@ -223,13 +223,14 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
     Returns
     -------
     dist : float
-        the minimum distance
+        the minimum distance WARNING: THIS IS NOT NECESSARILY CORRECT, IT SHOULD BE 
+        RECALCULATED.  THIS WILL BE REMOVED IN THE FUTURE.
     perm:
-        a list of all permutations
+        a permutation which will best align coords2 with coords1
     
     Notes
     -----
-    This for each list of interchangeable atoms in permlist the permutation
+    For each list of interchangeable atoms in permlist the permutation
     which minimizes the distance between the two structures is found.  This minimimization
     is done by mapping the problem onto the linear assignment problem which can then be solved
     using graph theoretic techniques.  

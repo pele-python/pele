@@ -11,7 +11,7 @@ class OTPCluster(RBSystem):
     """
     This will build a system class for an OTP (Ortho Ter Phenyl) cluster
     
-    OTP is a very simple rigid body molecule defined as 3 Lennard Jones particles
+    OTP is a very simple rigid body molecule defined as 3 Lennard-Jones particles
     connected in a rigid isocolese triangle
     """
     def __init__(self, nmol):

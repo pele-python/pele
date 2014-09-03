@@ -395,41 +395,41 @@ class ConnectManager(object):
 # only testing stuff below here
 #
 
-def test():
-    from pele.systems import LJCluster
-    natoms = 13
-    system = LJCluster(natoms)
-    
-    db = system.create_database()
-    
-    # get some minima
-    bh = system.get_basinhopping(database=db, outstream=None)
-    bh.run(100)
-    
-    manager = ConnectManager(db, clust_min=2)
-    
-    for i in range(4):
-        min1, min2 = manager.get_connect_job(strategy="random")
-        print "connecting", min1._id, min2._id
-        connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)
-        connect.connect()
-    
-    print "\n\ntesting untrap"
-    for i in range(10):
-        min1, min2 = manager.get_connect_job(strategy="untrap")
-        print min1._id, min2._id
-    
-    print "\n\ntesting combine"
-    for i in range(5):
-        min1, min2 = manager.get_connect_job(strategy="combine")
-        print min1._id, min2._id
-    
-    print "\n\ntesting gmin"
-    for i in range(5):
-        min1, min2 = manager.get_connect_job(strategy="gmin")
-        print min1._id, min2._id
-    
-    
-
-if __name__ == "__main__":
-    test()
+#def test():
+#    from pele.systems import LJCluster
+#    natoms = 13
+#    system = LJCluster(natoms)
+#    
+#    db = system.create_database()
+#    
+#    # get some minima
+#    bh = system.get_basinhopping(database=db, outstream=None)
+#    bh.run(100)
+#    
+#    manager = ConnectManager(db, clust_min=2)
+#    
+#    for i in range(4):
+#        min1, min2 = manager.get_connect_job(strategy="random")
+#        print "connecting", min1._id, min2._id
+#        connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)
+#        connect.connect()
+#    
+#    print "\n\ntesting untrap"
+#    for i in range(10):
+#        min1, min2 = manager.get_connect_job(strategy="untrap")
+#        print min1._id, min2._id
+#    
+#    print "\n\ntesting combine"
+#    for i in range(5):
+#        min1, min2 = manager.get_connect_job(strategy="combine")
+#        print min1._id, min2._id
+#    
+#    print "\n\ntesting gmin"
+#    for i in range(5):
+#        min1, min2 = manager.get_connect_job(strategy="gmin")
+#        print min1._id, min2._id
+#    
+#    
+#
+#if __name__ == "__main__":
+#    test()
