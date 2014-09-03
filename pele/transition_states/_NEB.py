@@ -81,7 +81,6 @@ class NEB(object):
     
     See Also
     --------
-    NEBPar : parallel version of this class
     InterpolatedPath : used to construct required parameter `path`
     InterpolatedPathDensity : alternate interpolater
     """
@@ -480,81 +479,81 @@ class NEB(object):
 #
 # only testing stuff below here
 #
-
-import nebtesting as test
-
-def nebtest(MyNEB=NEB, nimages=22):
-    import pylab as pl
-    from _interpolate import InterpolatedPath
-    from pele.optimize import lbfgs_py
-    NEBquenchParams = dict()
-    NEBquenchParams["iprint"]=20
-    NEBquenchParams["debug"]=True
-    NEBquenchParams["maxErise"]=0.1
-    
-    x = np.arange(.5, 5., .05)
-    y = np.arange(.5, 5., .05)
-    z = np.zeros([len(x), len(y)])
-    potential = test.leps()
-    for i in range(0, len(x)):
-        for j in range(0, len(y)):
-                z[j, i] = potential.getEnergy([x[i], y[j]])
-    print "done"
-    #z[z>0.] = 0.
-    #pl.imshow(z)
-    #pl.show()
-    initial = np.array([.75, 2.]) #np.random.random(3)
-    final = np.array([2., .75]) #np.random.random(3)
-#    from pele.optimize import quench
-#    print "quench initial"
-#    ret = quench.lbfgs_py(initial, potential.getEnergyGradient)
-#    initial = ret[0]
-#    print "quench final"
-#    ret = quench.quench(final, potential.getEnergyGradient)
-#    final = ret[0]
-#    print "done with quenching"
-#    print initial, final
-    #print "Initial: ", initial
-    #print "Final: ", final
-    #pl.imshow(z)
-
-    neb = MyNEB(InterpolatedPath(initial, final, nimages) ,potential, k=1000, dneb=False, quenchParams=NEBquenchParams)
-    tmp = neb.coords
-    energies_interpolate = neb.energies.copy()
-    pl.figure()
-    pl.subplot(2,2,1)
-    pl.subplots_adjust(wspace=0.3, left=0.05, right=0.95, bottom = 0.14)
-
-    pl.title("path")
-    #pl.contourf(x, y, z)
-    pl.pcolor(x, y, z, vmax=-0.5, cmap=pl.cm.PuBu)
-    pl.colorbar()
-    pl.plot(tmp[:, 0], tmp[:, 1], 'ko-')
-    print "optimizing NEB"
-    neb.optimize()#quenchRoutine=quench.fire)
-    print "done"
-    tmp = neb.coords
-    pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')
-    pl.xlabel("x")
-    pl.ylabel("y")
-    pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)
-
-    pl.subplot(1,2,2)
-    pl.title("energy")
-    pl.plot(energies_interpolate, 'ko-', label="interpolate")
-    pl.plot(neb.energies, 'ro-', label="neb")
-    pl.xlabel("image")
-    pl.ylabel("energy")
-    pl.legend(loc='best')
-    
-    pl.subplot(1,2,2)
-    pl.title("energy")
-    pl.plot(energies_interpolate, 'ko-', label="interpolate")
-    pl.plot(neb.energies, 'ro-', label="neb")
-    pl.xlabel("image")
-    pl.ylabel("energy")
-    pl.legend(loc='best')
-    pl.show()
-
-if __name__ == "__main__":
-    nebtest()
+#
+#import nebtesting as test
+#
+#def nebtest(MyNEB=NEB, nimages=22):
+#    import pylab as pl
+#    from _interpolate import InterpolatedPath
+#    from pele.optimize import lbfgs_py
+#    NEBquenchParams = dict()
+#    NEBquenchParams["iprint"]=20
+#    NEBquenchParams["debug"]=True
+#    NEBquenchParams["maxErise"]=0.1
+#    
+#    x = np.arange(.5, 5., .05)
+#    y = np.arange(.5, 5., .05)
+#    z = np.zeros([len(x), len(y)])
+#    potential = test.leps()
+#    for i in range(0, len(x)):
+#        for j in range(0, len(y)):
+#                z[j, i] = potential.getEnergy([x[i], y[j]])
+#    print "done"
+#    #z[z>0.] = 0.
+#    #pl.imshow(z)
+#    #pl.show()
+#    initial = np.array([.75, 2.]) #np.random.random(3)
+#    final = np.array([2., .75]) #np.random.random(3)
+##    from pele.optimize import quench
+##    print "quench initial"
+##    ret = quench.lbfgs_py(initial, potential.getEnergyGradient)
+##    initial = ret[0]
+##    print "quench final"
+##    ret = quench.quench(final, potential.getEnergyGradient)
+##    final = ret[0]
+##    print "done with quenching"
+##    print initial, final
+#    #print "Initial: ", initial
+#    #print "Final: ", final
+#    #pl.imshow(z)
+#
+#    neb = MyNEB(InterpolatedPath(initial, final, nimages) ,potential, k=1000, dneb=False, quenchParams=NEBquenchParams)
+#    tmp = neb.coords
+#    energies_interpolate = neb.energies.copy()
+#    pl.figure()
+#    pl.subplot(2,2,1)
+#    pl.subplots_adjust(wspace=0.3, left=0.05, right=0.95, bottom = 0.14)
+#
+#    pl.title("path")
+#    #pl.contourf(x, y, z)
+#    pl.pcolor(x, y, z, vmax=-0.5, cmap=pl.cm.PuBu)
+#    pl.colorbar()
+#    pl.plot(tmp[:, 0], tmp[:, 1], 'ko-')
+#    print "optimizing NEB"
+#    neb.optimize()#quenchRoutine=quench.fire)
+#    print "done"
+#    tmp = neb.coords
+#    pl.plot(tmp[:, 0], tmp[:, 1], 'ro-')
+#    pl.xlabel("x")
+#    pl.ylabel("y")
+#    pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)
+#
+#    pl.subplot(1,2,2)
+#    pl.title("energy")
+#    pl.plot(energies_interpolate, 'ko-', label="interpolate")
+#    pl.plot(neb.energies, 'ro-', label="neb")
+#    pl.xlabel("image")
+#    pl.ylabel("energy")
+#    pl.legend(loc='best')
+#    
+#    pl.subplot(1,2,2)
+#    pl.title("energy")
+#    pl.plot(energies_interpolate, 'ko-', label="interpolate")
+#    pl.plot(neb.energies, 'ro-', label="neb")
+#    pl.xlabel("image")
+#    pl.ylabel("energy")
+#    pl.legend(loc='best')
+#    pl.show()
+#
+#if __name__ == "__main__":
+#    nebtest()

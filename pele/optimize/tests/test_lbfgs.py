@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from pele.optimize import LBFGS, MYLBFGS
 from pele.systems import LJCluster
 
@@ -87,6 +89,7 @@ class TestLBFGS_armijo(unittest.TestCase):
 
 class TestLBFGSCython(unittest.TestCase):
     def setUp(self):
+        np.random.seed(0)
         self.system = LJCluster(13)
         self.x = self.system.get_random_configuration()
         self.pot = self.system.get_potential()

@@ -1,7 +1,7 @@
 import logging
 import numpy as np
 
-from pele.transition_states import NEB, NEBPar
+from pele.transition_states import NEB
 from pele.transition_states._NEB import distance_cart
 from _interpolate import InterpolatedPath, interpolate_linear
 from pele.utils.events import Signal
@@ -9,18 +9,6 @@ from pele.utils.events import Signal
 all = ["NEBDriver"]
 
 logger = logging.getLogger("pele.connect.neb")
-
-#def calc_neb_dist(coords, nimages, dist=True, grad=False):
-#    d_left = np.zeros(coords.shape)
-#    coords = coords.reshape([-1,nimages])
-#    for i in xrange(nimages):
-        
-
-#def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
-#                iter_density=15, 
-#                NEBquenchParams=dict(),
-#                interpolator=None,
-#                verbose=False, factor=1, parallel=False, ncores=4, **NEBparams):
 
 class NEBDriver(object):
     ''' driver class for NEB
@@ -59,15 +47,11 @@ class NEBDriver(object):
         adjust number of images on reinterpolate to match image density
     adaptive_niter : bool
         adjust number of iterations if nimages is adjusted
-    factor : int
+    factor : float
         The number of images is multiplied by this factor.  If the number of 
         images is already at it's maximum, then the number of iterations is 
         multiplied by this factor instead
     verbose : integer
-    parallel : bool
-        if True, then use class NEBPar to evaluate the image potentials in parallel
-    ncores : int
-        the number of cores to use.  Ignored if parallel is False
     interpolator : callable, optional
         the function used to do the path interpolation for the NEB
     NEBquenchParams : dict
@@ -84,11 +68,11 @@ class NEBDriver(object):
     
     def __init__(self, potential, coords1, coords2,
                  k = 100., max_images = 50, image_density=10., iter_density = 10.,
-                 verbose=0, factor=1., NEBquenchParams=None, adjustk_freq=0, 
+                 verbose=0, factor=1.05, NEBquenchParams=None, adjustk_freq=0, 
                  adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
                  reinterpolate_tol=0.1,
                  reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
-                 interpolator=interpolate_linear, distance=distance_cart, parallel=False, ncores=4, **kwargs):
+                 interpolator=interpolate_linear, distance=distance_cart, **kwargs):
         
         self.potential = potential
         self.interpolator = interpolator
@@ -122,11 +106,6 @@ class NEBDriver(object):
         
         self.quenchParams=NEBquenchParams
         
-        
-        if parallel:
-            self._kwargs["ncores"]=ncores
-            self._nebclass = NEBPar
-
         self.prepared = False
         
     @classmethod
@@ -150,9 +129,6 @@ class NEBDriver(object):
         params["interpolator"] = obj.interpolator
         params["distance"] = obj.distance
         
-        if params.has_key("ncores"):
-            params["parallel"] = True
-         
         return params
     
     def prepare(self, path=None):
@@ -190,6 +166,7 @@ class NEBDriver(object):
         niter = int(self.iter_density * self.nimages)
         if self.factor > 1. and self.nimages == self.max_images and self.max_images > 0:
             niter *= self.factor
+            niter = int(niter)
         
         quenchParams["nsteps"] = niter    
         
@@ -244,7 +221,8 @@ class NEBDriver(object):
             if self.adaptive_niter:
                 self.niter = int(self.iter_density * len(path))
                 if self.factor > 1. and len(path) == self.max_images and self.max_images > 0:
-                    self.niter *= self.factor 
+                    self.niter = int(self.niter * self.factor)
+                    
    
             if self.verbose >= 1:
                 logger.info("NEB reinterpolating path, %d images, niter is %d" % (len(path), self.niter))

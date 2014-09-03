@@ -1,22 +1,15 @@
 import numpy as np
 import tempfile
 
-from pele.angleaxis import RBTopology
-from copy import deepcopy
-from pele.utils import rotations
-from pele.takestep import RotationalDisplacement
-from pele.systems import BaseSystem, dict_copy_update, BaseParameters
-from pele.transition_states import NEB, InterpolatedPathDensity
+from pele.systems import BaseSystem, dict_copy_update
 
-from pele.optimize import fire, mylbfgs
-
-from pele.angleaxis.aamindist import *
 from pele.angleaxis import MinPermDistAACluster, ExactMatchAACluster
 from pele.angleaxis import TakestepAA
 from pele.landscape import smoothPath
 from pele.utils.elements import elements
 from pele.utils.xyz import write_xyz
 from pele.mindist import PointGroupOrderCluster
+from pele.utils import rotations
 
 class AASystem(BaseSystem):
     def __init__(self):

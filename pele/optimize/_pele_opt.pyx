@@ -12,6 +12,18 @@ cimport cython
 
 from pele.potentials cimport _pele
 
+@cython.boundscheck(False)
+cdef pele_array_to_np_array(_pele.Array[double] v):
+    """copy a pele Array into a new numpy array"""
+    cdef np.ndarray[double, ndim=1] vnew = np.zeros(v.size(), dtype=float)
+    cdef int i
+    cdef int N = vnew.size
+    for i in xrange(N):
+        vnew[i] = v[i]
+    
+    return vnew
+
+
 cdef class GradientOptimizer(object):
     """this class defines the python interface for c++ gradient optimizers 
     
@@ -59,28 +71,14 @@ cdef class GradientOptimizer(object):
     def get_niter(self):
         return self.thisptr.get().get_niter()
     
-    @cython.boundscheck(False)
     def get_result(self):
         """return a results object"""
         res = Result()
         
         cdef _pele.Array[double] xi = self.thisptr.get().get_x()
         cdef _pele.Array[double] gi = self.thisptr.get().get_g()
-        cdef double *xdata = xi.data()
-        cdef double *gdata = gi.data()
-        cdef np.ndarray[double, ndim=1, mode="c"] x = np.zeros(xi.size())
-        cdef np.ndarray[double, ndim=1, mode="c"] g = np.zeros(xi.size())
-        cdef size_t i
-        for i in xrange(xi.size()):
-            x[i] = xdata[i]
-            g[i] = gdata[i]
-
-        #jake> it's anoying having to copy the data manually like this.
-        # We can possibly use np.frombuffer(), thought I haven't gotten it to work.
-        # We can also maybe use the c function PyArray_SimpleNewFromData.
-        # In the meantime the loop won't be too slow if we use cython properly to speed it up.
-        #cdef np.ndarray[double, ndim=1, mode="c"] g2
-        #g2 = np.frombuffer(xi.data(), dtype=np.float64, count=xi.size())
+        x = pele_array_to_np_array(xi)
+        g = pele_array_to_np_array(gi)
         
         res.energy = self.thisptr.get().get_f()
         res.coords = x

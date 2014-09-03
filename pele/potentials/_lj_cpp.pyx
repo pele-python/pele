@@ -6,6 +6,7 @@ from ctypes import c_size_t as size_t
 
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
+from pele.potentials._pele cimport array_wrap_np
 cimport numpy as np
 from cpython cimport bool
 
@@ -50,7 +51,7 @@ cdef class LJ(_pele.BasePotential):
             self.periodic = True
             bv = np.array(boxvec, dtype=float)
             self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sig**6, 4.*eps*sig**12,
-                                                              _pele.Array[double](<double*> bv.data, bv.size)) )
+                                                              array_wrap_np(bv)) )
 
 cdef class LJCut(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
@@ -60,12 +61,14 @@ cdef class LJCut(_pele.BasePotential):
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
             self.periodic = False
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJCut(4.*eps*sigma**6, 4.*eps*sigma**12, rcut) )
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                     cLJCut(4.*eps*sigma**6, 4.*eps*sigma**12, rcut) )
         else:
             self.periodic = True
             bv = np.array(boxvec)
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
-                                                                 _pele.Array[double](<double*> bv.data, bv.size)) )
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                     cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
+                                    array_wrap_np(bv)) )
 
 
 cdef class LJFrozen(_pele.BasePotential):
@@ -81,10 +84,11 @@ cdef class LJFrozen(_pele.BasePotential):
 
         if boxvec is None:
             self.periodic = False
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJFrozen(4.*eps*sigma**6, 4.*eps*sigma**12,
-                        _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
-                        _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size)
-                        ) )
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                     cLJFrozen(4.*eps*sigma**6, 4.*eps*sigma**12,
+                               array_wrap_np(reference_coords),
+                               _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size)
+                               ) )
         else:
             self.periodic = True
             raise NotImplementedError("periodic LJ with frozen atoms is not implemented yet")

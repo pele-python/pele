@@ -2,9 +2,6 @@ language: python
 python:
     - 2.7
 
-env:
-  - MPI=openmpi
-
 virtualenv:
   system_site_packages: true
 
@@ -18,14 +15,16 @@ before_install:
   # and https://github.com/Jorge-C/ordination/blob/master/.travis.yml
   - sudo apt-get update -qq
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-qt4
-  - test $MPI == openmpi && MPIPACKAGES='openmpi-bin openmpi-dev'          || true
-  - sudo apt-get install -qq $MPIPACKAGES
-  - wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh
+  - wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=$HOME/anaconda/bin:$PATH
+  - ./miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
   # Update conda itself
-  - conda update --yes conda
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update conda
+  # Useful for debugging any issues with conda
+  - conda info -a
   # Additional channel for pyqt4
   - conda config --add channels asmeurer
   # matplotlib needs a DISPLAY
@@ -36,9 +35,12 @@ before_install:
 install:
   - conda create --yes -n pelenv python=$TRAVIS_PYTHON_VERSION nose pip cython numpy scipy matplotlib qt pyqt
   - source activate pelenv
-  - pip install --use-mirrors networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl mpi4py
+  - pip install networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl coverage coveralls
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
+  - cp .coveragerc $HOME
+  - pwd
+  - sourcedir=$PWD
   # build the c++ tests
   - cd cpp_tests
   - cpp_test_dir=$PWD
@@ -50,6 +52,12 @@ install:
 script:
   # avoid running in the checkout directory so nose finds built modules..
   - cd $HOME
-  - nosetests pele
+  - nosetests --with-coverage pele
   # do the c++ tests
   - $cpp_test_dir/build/test_main
+
+after_success:
+  # need to be in source directory to call coverage
+  - cd $sourcedir # not sure if this is necessary
+  - cp $HOME/.coverage .
+  - coveralls
