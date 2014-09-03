@@ -33,9 +33,9 @@ before_install:
 
 
 install:
-  - conda create --yes -n pelenv python=$TRAVIS_PYTHON_VERSION nose pip cython numpy scipy matplotlib qt pyqt
+  - conda create --yes -n pelenv python=$TRAVIS_PYTHON_VERSION nose pip cython numpy scipy matplotlib qt pyqt sqlalchemy networkx
   - source activate pelenv
-  - pip install networkx sqlalchemy hungarian pyro4 brewer2mpl pyopengl coverage coveralls
+  - pip install munkres hungarian pyro4 brewer2mpl pyopengl coverage coveralls
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
   - cp .coveragerc $HOME

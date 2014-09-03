@@ -83,10 +83,6 @@ class Tree(object):
         self.subtrees.append(newtree)
         return newtree
     
-    def get_subtrees(self):
-        print "get_subtrees() is deprecated. use get_branches() instead!"
-        return self.get_branches()
-    
     def get_branches(self):
         """return the list of branches of this tree"""
         return self.subtrees
@@ -136,6 +132,7 @@ class Tree(object):
                 yield subtree
 
     def number_of_subtrees(self):
+        """return the number total number of subtrees, including this one"""
         ntot = 1
         for branch in self.get_branches():
             ntot += branch.number_of_subtrees()
@@ -172,7 +169,7 @@ class DGTree(Tree):
             self.data[key] = m
             return m
     
-    def _test_tree(self):
+    def _test_tree(self): # pragma: no cover
         tset = set()
         for tree in self.get_all_trees():
             if tree in tset:
@@ -657,19 +654,19 @@ class DisconnectivityGraph(object):
     #############################################################
 
 
-    def _connected_component_subgraphs(self, G):
-        """
-        redefine the networkx version because they use deepcopy
-        on the nodes and edges
-        
-        this was copied and only slightly modified from the original
-        source
-        """
-        cc = nx.connected_components(G)
-        graph_list=[]
-        for c in cc:
-            graph_list.append(G.subgraph(c))
-        return graph_list
+#    def _connected_component_subgraphs(self, G):
+#        """
+#        redefine the networkx version because they use deepcopy
+#        on the nodes and edges
+#        
+#        this was copied and only slightly modified from the original
+#        source
+#        """
+#        cc = nx.connected_components(G)
+#        graph_list=[]
+#        for c in cc:
+#            graph_list.append(G.subgraph(c))
+#        return graph_list
     
 
     def _make_tree(self, graph, energy_levels):
@@ -1242,11 +1239,12 @@ class DisconnectivityGraph(object):
 #             plt.tight_layout()
  
     
-    def show(self):
+    def show(self): # pragma: no cover
         """simple wrapper for matplotlib.pyplot.show()"""
         from matplotlib import pyplot
         pyplot.show()
-    def savefig(self, *args, **kwargs):
+
+    def savefig(self, *args, **kwargs): # pragma: no cover
         """simple wrapper for matplotlib.pyplot.savefig()"""
         from matplotlib import pyplot
         pyplot.savefig(*args, **kwargs)

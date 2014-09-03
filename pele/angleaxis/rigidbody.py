@@ -231,7 +231,7 @@ class RBPotentialWrapper(potential):
         return E, self.rbsystem.transform_gradient(rbcoords, g)
     
 
-def test():
+def test(): # pragma: no cover
     from math import sin, cos, pi
     from copy import deepcopy
     water = RigidFragment()

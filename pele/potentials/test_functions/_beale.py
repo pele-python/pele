@@ -4,7 +4,7 @@ from numpy import exp, sqrt, cos, pi, sin
 from pele.potentials import BasePotential
 from pele.systems import BaseSystem
 
-def makeplot2d(f, nx=100, xmin=None, xmax=None, zlim=None, show=True):
+def makeplot2d(f, nx=100, xmin=None, xmax=None, zlim=None, show=True): # pragma: no cover
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib import cm
     import matplotlib.pyplot as plt
@@ -75,7 +75,7 @@ class BealeSystem(BaseSystem):
         y = np.random.uniform(xmin[1] + eps, xmax[1] - eps)
         return np.array([x,y])
 
-def add_minimizer(pot, ax, minimizer, x0, **kwargs):
+def add_minimizer(pot, ax, minimizer, x0, **kwargs): # pragma: no cover
     xcb = []
     def cb(coords=None, energy=None, rms=None, **kwargs):
         xcb.append(coords.copy())
@@ -84,7 +84,7 @@ def add_minimizer(pot, ax, minimizer, x0, **kwargs):
     xcb = np.array(xcb)
     ax.plot(xcb[:,0], xcb[:,1], '-o', label=minimizer.__name__)
 
-def test_minimize():
+def test_minimize(): # pragma: no cover
 #    from pele.potentials.test_functions import BealeSystem
 #    from pele.potentials.test_functions._beale import makeplot2d
     from pele.optimize import lbfgs_py, fire, steepest_descent
@@ -104,7 +104,7 @@ def test_minimize():
 #    lbfgs_py(system.get_random_configuration(), pot, events=[callback], nsteps=100, M=1)
     plt.show()
 
-def test1():
+def test1(): # pragma: no cover
     s = BealeSystem()
     f = s.get_potential()
     f.test_potential(f.target_coords)

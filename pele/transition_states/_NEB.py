@@ -365,7 +365,7 @@ class NEB(object):
                 return E, g_tot
             else:
                 return 0., g_tot
-        else:
+        else: # pragma: no cover
             
             # project out parallel part
             gperp = greal - np.dot(greal, t) * t
@@ -435,7 +435,7 @@ class NEB(object):
             if(self.energies[i] > self.energies[i-1] and self.energies[i] > self.energies[i+1]):
                 self.isclimbing[i] = True
 
-    def printState(self):
+    def printState(self): # pragma: no cover
         """
         print the current state of the NEB.  Useful for bug testing
         """

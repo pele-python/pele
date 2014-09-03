@@ -42,7 +42,7 @@ class LJCluster(AtomicCluster):
     #below here is stuff only for the gui
     #
 
-    def draw(self, coordslinear, index):
+    def draw(self, coordslinear, index): # pragma: no cover
         """
         tell the gui how to represent your system using openGL objects
         
@@ -66,7 +66,7 @@ class LJCluster(AtomicCluster):
 #            GLUT.glutSolidSphere(0.5,30,30)
 #            GL.glPopMatrix()
     
-    def load_coords_pymol(self, coordslist, oname, index=1):
+    def load_coords_pymol(self, coordslist, oname, index=1): # pragma: no cover
         """load the coords into pymol
         
         the new object must be named oname so we can manipulate it later
@@ -124,7 +124,7 @@ class LJCluster(AtomicCluster):
 #only for testing below here
 #
 
-def run():
+def run(): # pragma: no cover
     #create the system object
     sys = LJCluster(15)
     

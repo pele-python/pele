@@ -72,7 +72,7 @@ from ljpshiftfast import *
 from ljcut import *
 #from potential import *
 #from salt import *
-from soft_sphere import *
+#from soft_sphere import *
 #from stockmeyer import *
 from xyspin import *
 from morse import Morse
