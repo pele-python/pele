@@ -2,6 +2,9 @@
 #define _PELE_META_POW_H
 
 /*
+ *Usage: For integer (negative integer powers), one obtains x ^ N.
+ *For half-integer (negative half-integer powers), one obtains sqrt(x ^ N).
+ *Example: pos_int_pow<2>(x) is x ^ 2; neg_half_int_pow<5>(x) is x ^ (-2.5).
  *References:
  *Used here: general reference on template meta-programming and recursive template functions:
  *http://www.itp.phys.ethz.ch/education/hs12/programming_techniques
