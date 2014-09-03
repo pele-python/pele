@@ -6,10 +6,11 @@ omit =
  */pele/gui/*
  *_quench_obsolete*
  */nebtesting/*
+ */concurrent/*
 [report]
 exclude_lines = 
   pragma: no cover
   if __name__ == .__main__.:
   def draw.self
   def load_coords_pymol.self
-
+  if False
