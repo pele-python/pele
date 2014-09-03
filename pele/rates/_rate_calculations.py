@@ -346,7 +346,7 @@ class GraphReduction(object):
         
         self.graph.remove_node(x)
 
-    def _print_node_data(self, u):
+    def _print_node_data(self, u): # pragma: no cover
         print "data from node x =", u
         udata = self.graph.node[u]  
 #        print "checking node", u

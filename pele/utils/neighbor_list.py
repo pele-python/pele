@@ -18,7 +18,7 @@ import numpy as np
 from pele.potentials.potential import potential as basepot
 import _fortran_utils
 from pele.potentials.ljcut import LJCut as LJ
-import pele.potentials.ljpshift as ljpshift
+import pele.potentials.ljpshiftfast as ljpshift
 
 
 __all__ = ["MultiComponentSystem", "NeighborListSubsetBuild", "NeighborListPotentialBuild", 

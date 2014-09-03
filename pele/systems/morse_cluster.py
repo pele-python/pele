@@ -41,7 +41,7 @@ class MorseCluster(AtomicCluster):
     #below here is stuff only for the gui
     #
 
-    def draw(self, coordslinear, index, subtract_com=True):
+    def draw(self, coordslinear, index, subtract_com=True): # pragma: no cover
         """
         tell the gui how to represent your system using openGL objects
         
@@ -67,7 +67,7 @@ class MorseCluster(AtomicCluster):
             GLUT.glutSolidSphere(size, 30, 30)
             GL.glPopMatrix()
     
-    def load_coords_pymol(self, coordslist, oname, index=1):
+    def load_coords_pymol(self, coordslist, oname, index=1): # pragma: no cover
         """load the coords into pymol
         
         the new object must be named oname so we can manipulate it later
@@ -126,7 +126,7 @@ class MorseCluster(AtomicCluster):
 #only for testing below here
 #
 
-def run():
+def run(): # pragma: no cover
     #create the system object
     sys = MorseCluster(15)
     
@@ -143,7 +143,7 @@ def run():
     connect = sys.get_double_ended_connect(min1, min2, db)
     connect.connect()
 
-def rungui():
+def rungui(): # pragma: no cover
     from pele.gui import run_gui
     natoms = 17
 #    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102)

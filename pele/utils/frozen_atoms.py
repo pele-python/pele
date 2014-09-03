@@ -12,7 +12,7 @@ tools for dealing with frozen atoms.  Especially in relation to neighbor lists
 """
 import numpy as np
 
-import pele.potentials.ljpshift as ljpshift
+import pele.potentials.ljpshiftfast as ljpshift
 from pele.potentials.potential import potential as basepot
 from pele.potentials.ljcut import LJCut
 from pele.utils.neighbor_list import NeighborListSubsetBuild, NeighborListPotentialBuild
