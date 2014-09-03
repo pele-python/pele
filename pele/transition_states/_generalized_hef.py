@@ -60,8 +60,8 @@ class _HybridEigenvectorWalker(object):
         else:
             self._transverse_energy = transverse_energy
             self._transverse_gradient = transverse_gradient
-        self.energy = self.transverse_potential.true_energy
-        self.gradient = self.transverse_potential.true_gradient.copy()
+        self.energy = self.transverse_potential._true_energy
+        self.gradient = self.transverse_potential._true_gradient.copy()
 
     def update_eigenvec(self, eigenvec, eigenval):
         self.transverse_potential.update_vector(eigenvec)
@@ -164,12 +164,16 @@ class _HybridEigenvectorWalker(object):
         
         res.success = self.stop_criterion_satisfied()
         return res
+    
+    def get_true_energy_gradient(self, coords):
+        # js850> I added this function without carefully checking it
+        return self.transverse_potential.get_true_energy_gradient(coords)
 
 #
 # testing only
 #
 
-def test():
+def test(): # pragma: no cover
     from pele.systems import LJCluster
     from pele.transition_states import GeneralizedDimer
     from pele.transition_states import FindTransitionState

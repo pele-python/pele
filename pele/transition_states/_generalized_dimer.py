@@ -11,6 +11,10 @@ from pele.transition_states._dimer_translator import _DimerTranslator
 class GeneralizedDimer(object):
     """Use the generalized dimer method to find a saddle point
     
+    This should be considered experimental.  It works, but I haven't spent
+    enough time on it to make it very robust and efficient.  I would recommend
+    using FindTransitionState instead.
+    
     Parameters
     ----------
     coords : array
@@ -168,7 +172,7 @@ class GeneralizedDimer(object):
 # testing only below here
 #
         
-class PotWrapper(object):
+class PotWrapper(object): # pragma: no cover
     def __init__(self, pot):
         self.pot = pot
         self.nfev = 0
@@ -177,7 +181,7 @@ class PotWrapper(object):
         self.nfev += 1
         return self.pot.getEnergyGradient(x)
         
-def compare_HEF(x0, evec0, system, **kwargs):
+def compare_HEF(x0, evec0, system, **kwargs): # pragma: no cover
     from pele.transition_states import findTransitionState
     pot = PotWrapper(system.get_potential())
     ret = findTransitionState(x0, pot, eigenvec0=evec0, orthogZeroEigs=None, **kwargs)
@@ -186,7 +190,7 @@ def compare_HEF(x0, evec0, system, **kwargs):
     print ret.rms
 
 
-def get_x0():
+def get_x0(): # pragma: no cover
     from pele.systems import LJCluster
     natoms = 31
     system = LJCluster(natoms)
@@ -205,7 +209,7 @@ def get_x0():
     return system, x0, evec0
 
 
-def test():
+def test(): # pragma: no cover
     system, x0, evec0 = get_x0() 
     
     dimer = GeneralizedDimer(x0.copy(), system.get_potential(), 
