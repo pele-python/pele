@@ -179,13 +179,16 @@ def measurement(nr_samples, LXmax, amplitude):
         time_ratio_lbfgs.append(t_lbfgs)    
         print "---done:", LX, "max: ", LXmax  
     popt, pcov = curve_fit(ll, nr_particles, time_ratio)
-    plt.plot(nr_particles, time_ratio, "s", label = r"M-FIRE")
-    plt.plot(nr_particles, time_ratio_lbfgs, "o", label = r"LBFGS")
+    plt.plot(nr_particles, np.array(time_ratio) - 1, "s", label = r"M-FIRE")
+    plt.plot(nr_particles, np.array(time_ratio_lbfgs) - 1, "o", label = r"LBFGS")
     xr = np.linspace(nr_particles[0], nr_particles[-1])
-    plt.plot(xr, [ll(xi, popt[0], popt[1]) for xi in xr], "k", label=r"Exponent: " + to_string(popt[1], 2))
+    plt.plot(xr, np.array([ll(xi, popt[0], popt[1]) for xi in xr]) - 1, "k", label=r"Exponent: " + to_string(popt[1], 2))
+    plt.axhline(0, color='black')
+    ax = plt.axes()
+    ax.grid(True)
     plt.legend(loc = 2)
     plt.xlabel(r"Number of particles")
-    plt.ylabel(r"Time no cell lists / time cell lists")
+    plt.ylabel(r"Time no cell lists / time cell lists - 1")
     save_pdf(plt, "hs_wca_cell_lists.pdf")
 
 def measurement_frozen(nr_samples, LXmax, amplitude):
@@ -208,13 +211,16 @@ def measurement_frozen(nr_samples, LXmax, amplitude):
         time_ratio_lbfgs.append(t_lbfgs)    
         print "---done:", LX, "max: ", LXmax  
     popt, pcov = curve_fit(ll, nr_particles, time_ratio)
-    plt.plot(nr_particles, time_ratio, "s", label = r"M-FIRE")
-    plt.plot(nr_particles, time_ratio_lbfgs, "o", label = r"LBFGS")
+    plt.plot(nr_particles, np.array(time_ratio)-1, "s", label = r"M-FIRE")
+    plt.plot(nr_particles, np.array(time_ratio_lbfgs)-1, "o", label = r"LBFGS")
     xr = np.linspace(nr_particles[0], nr_particles[-1])
-    plt.plot(xr, [ll(xi, popt[0], popt[1]) for xi in xr], "k", label=r"Exponent: " + to_string(popt[1], 2))
+    plt.plot(xr, np.array([ll(xi, popt[0], popt[1]) for xi in xr])-1, "k", label=r"Exponent: " + to_string(popt[1], 2))
+    plt.axhline(0, color='black')
+    ax = plt.axes()
+    ax.grid(True)
     plt.legend(loc = 2)
     plt.xlabel(r"Number of particles")
-    plt.ylabel(r"Time no cell lists / time cell lists")
+    plt.ylabel(r"Time no cell lists / time cell lists - 1")
     save_pdf(plt, "hs_wca_cell_lists_frozen.pdf")
 
 if __name__ == "__main__":
