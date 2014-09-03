@@ -3,7 +3,6 @@ import numpy as np
 from pele.systems import BaseSystem
 from morse_cluster import MorseCluster
 from pele.potentials import Morse
-from pele.potentials.soft_sphere import putInBox
 from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 from pele.mindist import optimize_permutations
 
