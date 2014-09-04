@@ -124,6 +124,71 @@ MatrixNM<3,3> aa_to_rot_mat(pele::VecN<3> const & p)
     return rm;
 }
 
+pele::VecN<4> rot_mat_to_quaternion(pele::MatrixNM<3,3> const & mx)
+{
+    VecN<4> q(0);
+    auto m = pele::transpose<3,3>(mx);
+    double trace = pele::trace<3>(m);
+
+    double s;
+    if (trace > 0.){
+        s = std::sqrt(trace+1.0) * 2.0;
+        q[0] = 0.25 * s;
+        q[1] = (m(1,2) - m(2,1)) / s;
+        q[2] = (m(2,0) - m(0,2)) / s;
+        q[3] = (m(0,1) - m(1,0)) / s;
+    } else if ((m(0,0) > m(1,1)) and (m(0,0) > m(2,2))) {
+        s = std::sqrt(1.0 + m(0,0) - m(1,1) - m(2,2)) * 2.0;
+        q[0] = (m(1,2) - m(2,1)) / s;
+        q[1] = 0.25 * s;
+        q[2] = (m(1,0) + m(0,1)) / s;
+        q[3] = (m(2,0) + m(0,2)) / s;
+    } else if (m(1,1) > m(2,2)) {
+        s = std::sqrt(1.0 + m(1,1) - m(0,0) - m(2,2)) * 2.0;
+        q[0] = (m(2,0) - m(0,2)) / s;
+        q[1] = (m(1,0) + m(0,1)) / s;
+        q[2] = 0.25 * s;
+        q[3] = (m(2,1) + m(1,2)) / s;
+    } else {
+        s = std::sqrt(1.0 + m(2,2) - m(0,0) - m(1,1)) * 2.0;
+        q[0] = (m(0,1) - m(1,0)) / s;
+        q[1] = (m(2,0) + m(0,2)) / s;
+        q[2] = (m(2,1) + m(1,2)) / s;
+        q[3] = 0.25 * s;
+    }
+
+    if (q[0] < 0) {
+        q *= -1;
+    }
+    return q;
+}
+
+pele::VecN<3> quaternion_to_aa(pele::VecN<4> const & qin)
+{
+    double eps = 1e-6;
+    VecN<3> p;
+    VecN<4> q = qin;
+    if (q[0] < 0.) {
+        q *= -1;
+    }
+    if (q[0] > 1.0) {
+        q /= std::sqrt(pele::dot<4>(q,q));
+    }
+    double theta = 2. * std::acos(q[0]);
+    double s = std::sqrt(1. - q[0]*q[0]);
+    for (size_t i = 0; i < 3; ++i) {
+        p[i] = q[i+1];
+    }
+    if (s < eps) {
+        p *= 2.;
+    } else {
+        p *= theta / s;
+//        p = q[1:4] / s * theta
+    }
+    return p;
+}
+
+
 /**
  * make a rotation matrix and it's derivatives from an angle axis
  */

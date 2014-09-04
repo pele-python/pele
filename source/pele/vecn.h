@@ -305,6 +305,27 @@ pele::VecN<N> dot(MatrixNM<N,M> const & A, pele::VecN<M> const & v)
     return C;
 }
 
+template<size_t N, size_t M>
+pele::MatrixNM<M,N> transpose(MatrixNM<N,M> const & A)
+{
+    pele::MatrixNM<M,N> mat;
+    for (size_t i = 0; i<N; ++i){
+        for (size_t k = 0; k<M; ++k){
+            mat(k,i) = A(i,k);
+        }
+    }
+    return mat;
+}
+
+template<size_t N>
+double trace(MatrixNM<N,N> const & A)
+{
+    double t = 0;
+    for (size_t i = 0; i<N; ++i){
+        t += A(i,i);
+    }
+    return t;
+}
 
 // for matrix printing
 template<size_t N, size_t M>
@@ -316,6 +337,18 @@ inline std::ostream &operator<<(std::ostream &out, const MatrixNM<N,M> &a) {
             out << a(n,m);
         }
         if (n < N-1) out << ",\n  ";
+    }
+    out << " ]";
+    return out;
+}
+
+// for vector printing
+template<size_t N>
+inline std::ostream &operator<<(std::ostream &out, const VecN<N> &a) {
+    out << "[ ";
+    for(size_t i=0; i < a.size();++i) {
+        if(i>0) out << ", ";
+        out << a[i];
     }
     out << " ]";
     return out;

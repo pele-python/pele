@@ -76,6 +76,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         return com
 
     def align(self, coords1, coords2):
+        """given fixed rigid body centers of mass, align the atomistic coordinates"""
         c1 = self.topology.coords_adapter(coords1)
         c2 = self.topology.coords_adapter(coords2)
         
@@ -97,6 +98,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
                     
 
     def get_dist(self, X1, X2):
+        """compute the distance between two configurations"""
         x1 = X1.copy()
         x2 = X2.copy()
         self.align(x1, x2)
@@ -114,11 +116,12 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         if ca1.natoms > 0:
             raise NotImplementedError
         
-        
+        # align the center of mass coordinates
         dist, mx = findrotation(ca1.posRigid.flatten(), ca2.posRigid.flatten())
         X2trans = X2.copy()
         self.transform.rotate(X2trans, mx)
         
+        # compute and return the distance between the rotated coordinates
         return self.get_dist(X1, X2trans), mx
     
 class MeasureRigidBodyCluster(MeasureAngleAxisCluster):

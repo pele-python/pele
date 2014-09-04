@@ -32,6 +32,32 @@ TEST(AA2RotMat, Works)
     ASSERT_NEAR(mx(2,2), 0.83582225, 1e-5);
 }
 
+TEST(RotMat2q, Works){
+    MatrixNM<3,3> mx;
+    for (size_t i = 0; i < mx.size(); ++i) mx.data()[i] = i;
+    VecN<4> q = pele::rot_mat_to_quaternion(mx);
+    ASSERT_NEAR(q[0], 1.80277564, 1e-5);
+    ASSERT_NEAR(q[1], 0.2773501, 1e-5);
+    ASSERT_NEAR(q[2], -0.5547002, 1e-5);
+    ASSERT_NEAR(q[3], 0.2773501, 1e-5);
+}
+
+TEST(Quaternion2AA, Works){
+    VecN<3> v;
+    for (size_t i = 0; i < v.size(); ++i) v[i] = i+1;
+    v /= norm<3>(v);
+
+    VecN<4> q(4);
+    for (size_t i = 0; i < 3; ++i) q[i+1] = v[i];
+    std::cout << q << std::endl;
+
+    VecN<3> aa = pele::quaternion_to_aa(q);
+    ASSERT_NEAR(aa[0], 0.1309466, 1e-5);
+    ASSERT_NEAR(aa[1], 0.26189321, 1e-5);
+    ASSERT_NEAR(aa[2], 0.39283981, 1e-5);
+}
+
+
 TEST(RotMatDerivs, Works)
 {
     VecN<3> p;

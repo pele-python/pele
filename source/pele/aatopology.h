@@ -5,11 +5,13 @@
  *   - convert from rigid body coords to atomistic coords
  *   - convert an atomistic gradient into a gradient in the rb coordinate system.
  *
- * profiling indicates that somewhere north of %20 of the time is spend dealing
- * with dynamically allocated memory (HackyMatrix and Array).  It seems like it
- * would be worth it to implement fixed size arrays and matrices, a la
- * https://code.google.com/p/votca/source/browse/include/votca/tools/vec.h?repo=tools
- * https://code.google.com/p/votca/source/browse/include/votca/tools/matrix.h?repo=tools
+ * The next step is to compute distances between rigid body structures.  To do this we
+ * will need to define a function which aligns the atomistic coordinates for fixed
+ * rigid body centers of mass.  This will require
+ *  - rot_mat_to_aa
+ *  - each site must have a list of symmetries
+ *  - rotate_aa()
+ *
  */
 #ifndef _PELE_AATOPOLOGY_H_
 #define _PELE_AATOPOLOGY_H_
@@ -76,50 +78,50 @@ public:
 
 };
 
-/**
- * multiply two matrices
- */
-template<class dtype>
-HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype> const & B)
-{
-    assert(A.shape().second == B.shape().first);
-    size_t const L = A.shape().second;
-    size_t const n = A.shape().first;
-    size_t const m = B.shape().second;
-
-    HackyMatrix<dtype> C(n, m, 0);
-    for (size_t i = 0; i<n; ++i){
-        for (size_t j = 0; j<m; ++j){
-            dtype val = 0;
-            for (size_t k = 0; k<L; ++k){
-                val += A(i,k) * B(k,j);
-            }
-            C(i,j) = val;
-        }
-    }
-    return C;
-}
-
-/**
- * multiply a matrix times an vector
- */
-template<class dtype>
-pele::Array<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, pele::Array<dtype> const & v)
-{
-    assert(A.shape().second == v.size());
-    size_t const L = A.shape().second;
-    size_t const n = A.shape().first;
-
-    pele::Array<dtype> C(n, 0);
-    for (size_t i = 0; i<n; ++i){
-        dtype val = 0;
-        for (size_t k = 0; k<L; ++k){
-            val += A(i,k) * v[k];
-        }
-        C(i) = val;
-    }
-    return C;
-}
+///**
+// * multiply two matrices
+// */
+//template<class dtype>
+//HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype> const & B)
+//{
+//    assert(A.shape().second == B.shape().first);
+//    size_t const L = A.shape().second;
+//    size_t const n = A.shape().first;
+//    size_t const m = B.shape().second;
+//
+//    HackyMatrix<dtype> C(n, m, 0);
+//    for (size_t i = 0; i<n; ++i){
+//        for (size_t j = 0; j<m; ++j){
+//            dtype val = 0;
+//            for (size_t k = 0; k<L; ++k){
+//                val += A(i,k) * B(k,j);
+//            }
+//            C(i,j) = val;
+//        }
+//    }
+//    return C;
+//}
+//
+///**
+// * multiply a matrix times an vector
+// */
+//template<class dtype>
+//pele::Array<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, pele::Array<dtype> const & v)
+//{
+//    assert(A.shape().second == v.size());
+//    size_t const L = A.shape().second;
+//    size_t const n = A.shape().first;
+//
+//    pele::Array<dtype> C(n, 0);
+//    for (size_t i = 0; i<n; ++i){
+//        dtype val = 0;
+//        for (size_t k = 0; k<L; ++k){
+//            val += A(i,k) * v[k];
+//        }
+//        C(i) = val;
+//    }
+//    return C;
+//}
 
 /**
  * compute the rotation matrix and it's derivatives from an angle axis vector if the rotation angle is very small
@@ -137,6 +139,13 @@ void rot_mat_derivatives_small_theta(
  * make a rotation matrix from an angle axis
  */
 pele::MatrixNM<3,3> aa_to_rot_mat(pele::VecN<3> const & p);
+pele::VecN<4> rot_mat_to_quaternion(pele::MatrixNM<3,3> const & mx);
+pele::VecN<3> quaternion_to_aa(pele::VecN<4> const & q);
+
+//pele::VecN<3> rot_mat_to_aa(pele::MatrixNM<3,3> const & mx)
+//{
+//    return pele::quaternion_to_aa(rot_mat_to_quaternion(mx));
+//}
 
 /**
  * make a rotation matrix and it's derivatives from an angle axis
