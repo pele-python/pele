@@ -58,12 +58,18 @@ class TestConnectManager(unittest.TestCase):
     def test_untrap(self):
         # first connect them all randomly
         manager = ConnectManager(self.db, strategy="random")
-        for i in xrange(10):
-            m1, m2 = manager.get_connect_job()
+        while True:
+            try:
+                m1, m2 = manager.get_connect_job()
+            except manager.NoMoreConnectionsError:
+                break
             self.connect_min(m1, m2)
         
         for i in xrange(5):
-            m1, m2 = manager.get_connect_job(strategy="untrap")
+            try:
+                m1, m2 = manager.get_connect_job(strategy="untrap")
+            except manager.NoMoreConnectionsError:
+                break
             self.connect_min(m1, m2)
 
 
