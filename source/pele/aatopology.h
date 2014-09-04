@@ -42,36 +42,36 @@ public:
      * note: if we make this const we can only use the assignment operator on
      * matrices with the same first dimension
      */
-    size_t _dim1;
+    size_t _dim2;
     HackyMatrix(size_t dim1, size_t dim2, dtype val=0)
         : pele::Array<dtype>(dim1 * dim2, val),
-          _dim1(dim1)
+          _dim2(dim2)
     {}
 
     /**
      * wrap a pele::Array
      */
-    HackyMatrix(pele::Array<double> v, size_t dim1)
+    HackyMatrix(pele::Array<double> v, size_t dim2)
         : pele::Array<dtype>(v),
-          _dim1(dim1)
+          _dim2(dim2)
     {
-        if (v.size() % dim1 != 0) {
-            throw std::invalid_argument("v.size() is not divisible by dim1");
+        if (v.size() % dim2 != 0) {
+            throw std::invalid_argument("v.size() is not divisible by dim2");
         }
     }
 
     inline dtype const & operator()(size_t i, size_t j) const
     {
-        return this->operator[](i * _dim1 + j);
+        return this->operator[](i * _dim2 + j);
     }
     inline dtype & operator()(size_t i, size_t j)
     {
-        return this->operator[](i * _dim1 + j);
+        return this->operator[](i * _dim2 + j);
     }
 
     inline std::pair<size_t, size_t> shape() const
     {
-        return std::pair<size_t, size_t>(_dim1, this->size() / _dim1);
+        return std::pair<size_t, size_t>(_dim2, this->size() / _dim2);
     }
 
 };
