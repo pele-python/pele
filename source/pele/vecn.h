@@ -3,6 +3,8 @@
 
 #include <cmath>
 #include <stdlib.h>
+#include <vector>
+#include <iostream>
 
 namespace pele{
 template<size_t N>
@@ -140,7 +142,73 @@ public:
         return p;
     }
 
-};
+}; // close VecN
+
+template<size_t N, size_t M>
+class MatrixNM {
+    typedef double dtype;
+    static size_t const m_size = N * M;
+    dtype m_data[m_size];
+
+public:
+
+    /**
+     * default constructor
+     */
+    MatrixNM() {}
+
+    /**
+     * initialize with constant
+     */
+    MatrixNM(dtype const & d) { assign(d); }
+
+    size_t size() const { return m_size; }
+
+    /**
+     * return pointer to data
+     */
+    inline dtype * data() { return m_data; }
+    inline dtype const * data() const { return m_data; }
+
+    /**
+     * return iterators over data
+     */
+    typedef dtype * iterator;
+    typedef dtype const * const_iterator;
+    inline iterator begin() { return data(); }
+    inline iterator end() { return data() + size(); }
+    inline const_iterator begin() const { return data(); }
+    inline const_iterator end() const { return data() + size(); }
+
+    /**
+     * assign each element of the vector to be d
+     */
+    void assign(dtype const & d)
+    {
+        for (size_t i=0; i<N; ++i){
+            m_data[i] = d;
+        }
+    }
+
+    /**
+     * provide access to matrix element at row i and column j
+     */
+    inline dtype const & operator()(size_t i, size_t j) const
+    {
+        return m_data[i * M + j];
+    }
+    inline dtype & operator()(size_t i, size_t j)
+    {
+        return m_data[i * M + j];
+    }
+
+    inline std::pair<size_t, size_t> shape() const
+    {
+        return std::pair<size_t, size_t>(N, M);
+    }
+
+
+}; // close MatrixNM
 
 /**
  * compute the dot product of two Arrays
@@ -162,6 +230,62 @@ template<size_t N>
 inline double norm(VecN<N> const &v)
 {
   return sqrt(dot(v, v));
+}
+
+
+/**
+ * matrix_multiplication
+ *
+ * This is a really simple implementation of matrix multiplication.
+ * It is order N*M*L but can be done with much better scaling
+ */
+template<size_t N, size_t L, size_t M>
+MatrixNM<N,M> dot(MatrixNM<N,L> const & A, MatrixNM<L, M> const & B)
+{
+    MatrixNM<N,M> C(0);
+    for (size_t i = 0; i<N; ++i){
+        for (size_t j = 0; j<M; ++j){
+            double val = 0;
+            for (size_t k = 0; k<L; ++k){
+                val += A(i,k) * B(k,j);
+            }
+            C(i,j) = val;
+        }
+    }
+    return C;
+}
+
+/**
+ * multiply a matrix times an vector
+ */
+template<size_t N, size_t M>
+pele::VecN<N> dot(MatrixNM<N,M> const & A, pele::VecN<M> const & v)
+{
+    pele::VecN<N> C(0);
+    for (size_t i = 0; i<N; ++i){
+        double val = 0;
+        for (size_t k = 0; k<M; ++k){
+            val += A(i,k) * v[k];
+        }
+        C[i] = val;
+    }
+    return C;
+}
+
+
+// for matrix printing
+template<size_t N, size_t M>
+inline std::ostream &operator<<(std::ostream &out, const MatrixNM<N,M> &a) {
+    out << "[ ";
+    for(size_t n=0; n<N;++n) {
+        for(size_t m=0; m<M;++m) {
+            if(m>0) out << ", ";
+            out << a(n,m);
+        }
+        if (n < N-1) out << ",\n  ";
+    }
+    out << " ]";
+    return out;
 }
 
 

@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 using pele::VecN;
+using pele::MatrixNM;
 
 // to silence "unused variable" warnings from the compiler
 #define UNUSED(var) ((void) var)
@@ -229,6 +230,41 @@ TEST(VecNNormTest, Norm_Works){
 
     double d = pele::norm<3>(v1);
     EXPECT_NEAR(sqrt(5*5*3), d, 1e-10);
+}
+
+TEST(MatrixNMTest, MatrixMultiplication_Works){
+    MatrixNM<2,3> v1;
+    MatrixNM<3,2> v2;
+    for (size_t i = 0; i < 3*2; ++i){
+        v1.data()[i] = i;
+        v2.data()[i] = i+1;
+    }
+//    std::cout << v1 << std::endl;
+//    std::cout << v2 << std::endl;
+    MatrixNM<2,2> v3 = pele::dot(v1, v2);
+//    std::cout << v3 << std::endl;
+    EXPECT_EQ(v3(0,0), 13);
+    EXPECT_EQ(v3(1,0), 40);
+    EXPECT_EQ(v3(0,1), 16);
+    EXPECT_EQ(v3(1,1), 52);
+}
+
+
+TEST(MatrixNMTest, MatrixVectorMultiplication_Works){
+    MatrixNM<2,3> v1;
+    VecN<3> v2;
+    for (size_t i = 0; i < 3*2; ++i){
+        v1.data()[i] = i;
+    }
+    for (size_t i = 0; i < 3; ++i){
+        v2.data()[i] = i+1;
+    }
+//    std::cout << v1 << std::endl;
+//    std::cout << v2 << std::endl;
+    VecN<2> v3 = pele::dot(v1, v2);
+//    std::cout << v3 << std::endl;
+    EXPECT_EQ(v3[0], 8);
+    EXPECT_EQ(v3[1], 26);
 }
 
 
