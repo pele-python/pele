@@ -21,6 +21,7 @@
 
 #include "pele/array.h"
 #include "pele/base_potential.h"
+#include "pele/vecn.h"
 
 namespace pele{
 
@@ -124,28 +125,28 @@ pele::Array<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, pele::Array<dtype
  * compute the rotation matrix and it's derivatives from an angle axis vector if the rotation angle is very small
  */
 void rot_mat_derivatives_small_theta(
-        pele::Array<double> const p,
-        HackyMatrix<double> rmat,
-        HackyMatrix<double> drm1,
-        HackyMatrix<double> drm2,
-        HackyMatrix<double> drm3,
+        pele::VecN<3> const & p,
+        pele::MatrixNM<3,3> & rmat,
+        pele::MatrixNM<3,3> & drm1,
+        pele::MatrixNM<3,3> & drm2,
+        pele::MatrixNM<3,3> & drm3,
         bool with_grad);
 
 
 /**
  * make a rotation matrix from an angle axis
  */
-pele::HackyMatrix<double> aa_to_rot_mat(pele::Array<double> const p);
+pele::MatrixNM<3,3> aa_to_rot_mat(pele::VecN<3> const & p);
 
 /**
  * make a rotation matrix and it's derivatives from an angle axis
  */
 void rot_mat_derivatives(
-        pele::Array<double> const p,
-        HackyMatrix<double> rmat,
-        HackyMatrix<double> drm1,
-        HackyMatrix<double> drm2,
-        HackyMatrix<double> drm3);
+        pele::VecN<3> const & p,
+        pele::MatrixNM<3,3> & rmat,
+        pele::MatrixNM<3,3> & drm1,
+        pele::MatrixNM<3,3> & drm2,
+        pele::MatrixNM<3,3> & drm3);
 
 
 //class RBSite {
@@ -239,7 +240,8 @@ public:
     /**
      * convert a center of mass and a angle axis rotation to a set of atomistic coordinates
      */
-    pele::Array<double> to_atomistic(pele::Array<double> const com, pele::Array<double> const p)
+    pele::Array<double> to_atomistic(pele::Array<double> const com,
+            pele::VecN<3> const & p)
     {
         assert(com.size() == _ndim);
         assert(p.size() == 3);
@@ -266,23 +268,21 @@ public:
      * rigid body coordinates
      */
     void transform_grad(
-            pele::Array<double> const p,
+            pele::VecN<3> const & p,
             pele::Array<double> const g,
-            pele::Array<double> g_com,
-            pele::Array<double> g_rot
+            pele::VecN<3> & g_com,
+            pele::VecN<3> & g_rot
             )
     {
-        assert(p.size() == 3);
         assert(g.size() == natoms() * 3);
-        assert(g_com.size() == 3);
-        assert(g_rot.size() == 3);
+        // view the array as a matrix
         HackyMatrix<double> gmat(g, 3);
 
         // compute the rotation matrix and derivatives
-        HackyMatrix<double> rmat(3,3);
-        HackyMatrix<double> drm1(3,3);
-        HackyMatrix<double> drm2(3,3);
-        HackyMatrix<double> drm3(3,3);
+        pele::MatrixNM<3,3> rmat;
+        pele::MatrixNM<3,3> drm1;
+        pele::MatrixNM<3,3> drm2;
+        pele::MatrixNM<3,3> drm3;
         rot_mat_derivatives(p, rmat, drm1, drm2, drm3);
 
         // do the center of mass coordinates
@@ -310,6 +310,33 @@ public:
             g_rot[0] += val1;
             g_rot[1] += val2;
             g_rot[2] += val3;
+        }
+    }
+
+    /**
+     * transform an atomistic gradient into a gradient in the
+     * rigid body coordinates
+     *
+     * This is simply a wrapper.  This copies the data into VecN objects,
+     * calls transform_grad and copies it back.
+     */
+    void transform_grad(
+            pele::Array<double> const & p,
+            pele::Array<double> const g,
+            pele::Array<double> & g_com,
+            pele::Array<double> & g_rot
+            )
+    {
+        pele::VecN<3> p_vec = p;
+        pele::VecN<3> g_com_vec = g_com;
+        pele::VecN<3> g_rot_vec = g_rot;
+        transform_grad(p_vec, g, g_com_vec, g_rot_vec);
+        /**
+         * copy the data back into the arrays
+         */
+        for (size_t i = 0; i<3; ++i) {
+            g_com[i] = g_com_vec[i];
+            g_rot[i] = g_rot_vec[i];
         }
 
     }
@@ -369,12 +396,14 @@ public:
         auto rb_pos = ca.get_rb_positions();
         auto rb_rot = ca.get_rb_rotations();
         Array<double> atomistic(3 * natoms_total());
+        // view the atomistic coords as a matrix
         HackyMatrix<double> atomistic_mat(atomistic, 3);
         size_t istart = 0;
         for (size_t isite=0; isite<nrigid; ++isite) {
+            VecN<3> psite = rb_rot.view(isite*3, isite*3+3);
             auto site_atom_positions = _sites[isite].to_atomistic(
                     rb_pos.view(isite*3, isite*3+3),
-                    rb_rot.view(isite*3, isite*3+3)
+                    psite
                     );
             Array<double> atomistic_view(atomistic.view(istart, istart + site_atom_positions.size()));
             atomistic_view.assign(site_atom_positions);
@@ -388,7 +417,8 @@ public:
     /**
      * convert atomistic gradient into gradient in rigid body coordinates
      */
-    void transform_gradient(pele::Array<double> rbcoords, pele::Array<double> grad, pele::Array<double> rbgrad)
+    void transform_gradient(pele::Array<double> rbcoords,
+            pele::Array<double> grad, pele::Array<double> rbgrad)
     {
         if (natoms_total() == 0) {
             finalize();
@@ -451,7 +481,8 @@ public:
         return potential_->get_energy(x);
     }
 
-    inline double get_energy_gradient(pele::Array<double> rbcoords, pele::Array<double> rbgrad)
+    inline double get_energy_gradient(pele::Array<double> rbcoords,
+            pele::Array<double> rbgrad)
     {
         auto x = topology_.to_atomistic(rbcoords);
         pele::Array<double> grad_atomistic(topology_.natoms_total() * 3);

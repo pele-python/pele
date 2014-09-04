@@ -3,9 +3,13 @@
 
 #include "pele/aatopology.h"
 #include "pele/lj.h"
+#include "pele/vecn.h"
 
 using pele::Array;
+using pele::VecN;
+using pele::MatrixNM;
 using pele::CoordsAdaptor;
+using pele::norm;
 
 static double const EPS = std::numeric_limits<double>::min();
 #define EXPECT_NEAR_RELATIVE(A, B, T)  ASSERT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
@@ -13,9 +17,9 @@ static double const EPS = std::numeric_limits<double>::min();
 
 TEST(AA2RotMat, Works)
 {
-    Array<double> p(3);
+    VecN<3> p;
     for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p);
+    p /= norm<3>(p);
     auto mx = pele::aa_to_rot_mat(p);
     ASSERT_NEAR(mx(0,0), 0.57313786, 1e-5);
     ASSERT_NEAR(mx(1,0), 0.74034884, 1e-5);
@@ -30,13 +34,13 @@ TEST(AA2RotMat, Works)
 
 TEST(RotMatDerivs, Works)
 {
-    Array<double> p(3);
+    VecN<3> p;
     for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p);
-    pele::HackyMatrix<double> mx(3,3,1.);
-    pele::HackyMatrix<double> drm1(3,3,0.);
-    pele::HackyMatrix<double> drm2(3,3,0.);
-    pele::HackyMatrix<double> drm3(3,3,0.);
+    p /= norm<3>(p);
+    MatrixNM<3,3> mx(1.);
+    MatrixNM<3,3> drm1(0.);
+    MatrixNM<3,3> drm2(0.);
+    MatrixNM<3,3> drm3(0.);
     pele::rot_mat_derivatives(p, mx, drm1, drm2, drm3);
 
     // mx
@@ -74,13 +78,13 @@ TEST(RotMatDerivs, Works)
 
 TEST(RotMatDerivsSmallTheta, Works)
 {
-    Array<double> p(3);
+    VecN<3> p;
     for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p) * 1e7;
-    pele::HackyMatrix<double> mx(3,3,1.);
-    pele::HackyMatrix<double> drm1(3,3,0.);
-    pele::HackyMatrix<double> drm2(3,3,0.);
-    pele::HackyMatrix<double> drm3(3,3,0.);
+    p /= norm<3>(p) * 1e7;
+    MatrixNM<3,3> mx(1.);
+    MatrixNM<3,3> drm1(0.);
+    MatrixNM<3,3> drm2(0.);
+    MatrixNM<3,3> drm3(0.);
     pele::rot_mat_derivatives_small_theta(p, mx, drm1, drm2, drm3, true);
 
     // mx
@@ -118,46 +122,46 @@ TEST(RotMatDerivsSmallTheta, Works)
 
 TEST(RotMatDerivs, SmallTheta_Works)
 {
-    Array<double> p(3);
+    VecN<3> p;
     for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p) * 1e7;
-    pele::HackyMatrix<double> mx(3,3,1.);
-    pele::HackyMatrix<double> drm1(3,3,0.);
-    pele::HackyMatrix<double> drm2(3,3,0.);
-    pele::HackyMatrix<double> drm3(3,3,0.);
+    p /= norm<3>(p) * 1e7;
+    MatrixNM<3,3> mx(1.);
+    MatrixNM<3,3> drm1(0.);
+    MatrixNM<3,3> drm2(0.);
+    MatrixNM<3,3> drm3(0.);
 
-    pele::HackyMatrix<double> mx_2(3,3,1.);
-    pele::HackyMatrix<double> drm1_2(3,3,0.);
-    pele::HackyMatrix<double> drm2_2(3,3,0.);
-    pele::HackyMatrix<double> drm3_2(3,3,0.);
+    MatrixNM<3,3> mx_2(1.);
+    MatrixNM<3,3> drm1_2(0.);
+    MatrixNM<3,3> drm2_2(0.);
+    MatrixNM<3,3> drm3_2(0.);
 
     pele::rot_mat_derivatives(p, mx, drm1, drm2, drm3);
     pele::rot_mat_derivatives_small_theta(p, mx_2, drm1_2, drm2_2, drm3_2, true);
 
     for (size_t i=0; i<9; ++i) {
-        ASSERT_DOUBLE_EQ(mx[i], mx_2[i]);
-        ASSERT_DOUBLE_EQ(drm1[i], drm1_2[i]);
-        ASSERT_DOUBLE_EQ(drm2[i], drm2_2[i]);
-        ASSERT_DOUBLE_EQ(drm3[i], drm3_2[i]);
+        ASSERT_DOUBLE_EQ(mx.data()[i], mx_2.data()[i]);
+        ASSERT_DOUBLE_EQ(drm1.data()[i], drm1_2.data()[i]);
+        ASSERT_DOUBLE_EQ(drm2.data()[i], drm2_2.data()[i]);
+        ASSERT_DOUBLE_EQ(drm3.data()[i], drm3_2.data()[i]);
     }
 }
 
 TEST(RotMat, SmallTheta_Works)
 {
-    Array<double> p(3);
+    VecN<3> p;
     for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p) * 1e7;
+    p /= norm<3>(p) * 1e7;
 
     auto mx = pele::aa_to_rot_mat(p);
 
-    pele::HackyMatrix<double> mx_2(3,3,1.);
-    pele::HackyMatrix<double> drm1_2(3,3,0.);
-    pele::HackyMatrix<double> drm2_2(3,3,0.);
-    pele::HackyMatrix<double> drm3_2(3,3,0.);
+    MatrixNM<3,3> mx_2(1.);
+    MatrixNM<3,3> drm1_2(0.);
+    MatrixNM<3,3> drm2_2(0.);
+    MatrixNM<3,3> drm3_2(0.);
     pele::rot_mat_derivatives_small_theta(p, mx_2, drm1_2, drm2_2, drm3_2, false);
 
     for (size_t i=0; i<9; ++i) {
-        ASSERT_DOUBLE_EQ(mx[i], mx_2[i]);
+        ASSERT_DOUBLE_EQ(mx.data()[i], mx_2.data()[i]);
     }
 }
 
@@ -239,12 +243,12 @@ TEST_F(AATopologyTest, SiteToAtomistic_Works)
 {
     auto rf = pele::RigidFragment(make_otp_x());
     Array<double> com(3);
-    Array<double> p(3);
+    VecN<3> p;
     for (size_t i=0; i<3; ++i){
         com[i] = i+4;
         p[i] = i+1;
     }
-    p /= norm(p);
+    p /= norm<3>(p);
     auto pos = rf.to_atomistic(com, p);
 
     ASSERT_NEAR(pos[0], 4.32210497, 1e-5);
@@ -264,13 +268,13 @@ TEST_F(AATopologyTest, ToAtomisticOneMolecule_Works)
     rbtop.add_site(make_otp_x());
     pele::RigidFragment rf(make_otp_x());
     Array<double> com(3);
-    Array<double> p(3);
+    VecN<3> p;
     Array<double> x(6);
     for (size_t i=0; i<3; ++i){
         com[i] = i+4;
         p[i] = i+1;
     }
-    p /= norm(p);
+    p /= norm<3>(p);
     for (size_t i=0; i<3; ++i){
         x[i] = com[i];
         x[i+3] = p[i];
@@ -300,14 +304,14 @@ TEST_F(AATopologyTest, ToAtomistic_Works)
 TEST_F(AATopologyTest, SiteTransformGrad_Works)
 {
     auto rf = pele::RigidFragment(make_otp_x());
-    Array<double> p(3);
+    VecN<3> p;
     for (size_t i=0; i<3; ++i){
         p[i] = i+1;
     }
-    p /= norm(p);
+    p /= norm<3>(p);
     Array<double> g = x0.view(0,9).copy();
-    Array<double> g_com(3);
-    Array<double> g_rot(3);
+    VecN<3> g_com;
+    VecN<3> g_rot;
 //    std::cout << g << "\n";
     rf.transform_grad(p, g, g_com, g_rot);
 

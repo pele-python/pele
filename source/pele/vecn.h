@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <iostream>
+#include <pele/array.h>
 
 namespace pele{
 template<size_t N>
@@ -23,6 +24,19 @@ public:
      * initialize with constant
      */
     VecN(dtype const & d) { assign(d); }
+
+    /**
+     * initialize from pele array
+     */
+    VecN(pele::Array<dtype> const & x)
+    {
+        if (x.size() != N) {
+            throw std::runtime_error("VecN constructor: array must have the same size as vector");
+        }
+        for (size_t i = 0; i < N; ++i) {
+            m_data[i] = x[i];
+        }
+    }
 
     size_t size() const { return N; }
 
@@ -56,6 +70,19 @@ public:
         for (size_t i=0; i<N; ++i){
             m_data[i] = d;
         }
+    }
+
+    /**
+     * copy the data in a pele::Array into this vector
+     */
+    VecN<3> & operator=(pele::Array<double> const & rhs) {
+        if (rhs.size() != N) {
+            throw std::runtime_error("operator=: array must have the same size");
+        }
+        for (size_t i = 0; i < N; ++i) {
+            m_data[i] = rhs[i];
+        }
+        return *this;
     }
 
 
@@ -185,7 +212,7 @@ public:
      */
     void assign(dtype const & d)
     {
-        for (size_t i=0; i<N; ++i){
+        for (size_t i=0; i<m_size; ++i){
             m_data[i] = d;
         }
     }
@@ -207,6 +234,12 @@ public:
         return std::pair<size_t, size_t>(N, M);
     }
 
+    MatrixNM<N, M> &operator*=(dtype const & rhs) {
+        for (size_t i = 0; i < m_size; ++i) {
+            m_data[i] *= rhs;
+        }
+        return *this;
+    }
 
 }; // close MatrixNM
 
