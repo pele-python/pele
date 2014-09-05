@@ -1,79 +1,7 @@
-#include "pele/aatopology.h"
+#include "pele/rotations.h"
 #include "pele/vecn.h"
 
 namespace pele{
-
-/**
- * compute the rotation matrix and it's derivatives from an angle axis vector if the rotation angle is very small
- */
-void rot_mat_derivatives_small_theta(
-        pele::VecN<3> const & p,
-        MatrixNM<3,3> & rmat,
-        MatrixNM<3,3> & drm1,
-        MatrixNM<3,3> & drm2,
-        MatrixNM<3,3> & drm3,
-        bool with_grad)
-{
-    double theta2 = pele::dot<3>(p, p);
-    if (theta2 > 1e-2) {
-        throw std::invalid_argument("theta must be small");
-    }
-    // Execute if the angle of rotation is zero
-    // In this case the rotation matrix is the identity matrix
-    rmat.assign(0);
-    for (size_t i = 0; i<3; ++i) rmat(i,i) = 1; // identity matrix
-
-
-    // vr274> first order corrections to rotation matrix
-    rmat(0,1) = -p[2];
-    rmat(1,0) = p[2];
-    rmat(0,2) = p[1];
-    rmat(2,0) = -p[1];
-    rmat(1,2) = -p[0];
-    rmat(2,1) = p[0];
-
-    // If derivatives do not need to found, we're finished
-    if (not with_grad) {
-        return;
-    }
-
-    // hk286 - now up to the linear order in theta
-    drm1.assign(0);
-    drm1(0,0)    = 0.0;
-    drm1(0,1)    = p[1];
-    drm1(0,2)    = p[2];
-    drm1(1,0)    = p[1];
-    drm1(1,1)    = -2.0*p[0];
-    drm1(1,2)    = -2.0;
-    drm1(2,0)    = p[2];
-    drm1(2,1)    = 2.0;
-    drm1(2,2)    = -2.0*p[0];
-    drm1 *= 0.5;
-
-    drm2.assign(0);
-    drm2(0,0)    = -2.0*p[1];
-    drm2(0,1)    = p[0];
-    drm2(0,2)    = 2.0;
-    drm2(1,0)    = p[0];
-    drm2(1,1)    = 0.0;
-    drm2(1,2)    = p[2];
-    drm2(2,0)    = -2.0;
-    drm2(2,1)    = p[2];
-    drm2(2,2)    = -2.0*p[1];
-    drm2 *= 0.5;
-
-    drm3.assign(0);
-    drm3(0,0)    = -2.0*p[2];
-    drm3(0,1)    = -2.0;
-    drm3(0,2)    = p[0];
-    drm3(1,0)    = 2.0;
-    drm3(1,1)    = -2.0*p[2];
-    drm3(1,2)    = p[1];
-    drm3(2,0)    = p[0];
-    drm3(2,1)    = p[1];
-    drm3(2,2)    = 0.0;
-    drm3 *= 0.5;
-}
 
 
 /**
@@ -222,6 +150,79 @@ pele::VecN<4> quaternion_multiply(pele::VecN<4> const & q0, pele::VecN<4> const 
     q3[2] = q0[0]*q1[2]-q0[1]*q1[3]+q0[2]*q1[0]+q0[3]*q1[1];
     q3[3] = q0[0]*q1[3]+q0[1]*q1[2]-q0[2]*q1[1]+q0[3]*q1[0];
     return q3;
+}
+
+
+/**
+ * compute the rotation matrix and it's derivatives from an angle axis vector if the rotation angle is very small
+ */
+void rot_mat_derivatives_small_theta(
+        pele::VecN<3> const & p,
+        MatrixNM<3,3> & rmat,
+        MatrixNM<3,3> & drm1,
+        MatrixNM<3,3> & drm2,
+        MatrixNM<3,3> & drm3,
+        bool with_grad)
+{
+    double theta2 = pele::dot<3>(p, p);
+    if (theta2 > 1e-2) {
+        throw std::invalid_argument("theta must be small");
+    }
+    // Execute if the angle of rotation is zero
+    // In this case the rotation matrix is the identity matrix
+    rmat.assign(0);
+    for (size_t i = 0; i<3; ++i) rmat(i,i) = 1; // identity matrix
+
+
+    // vr274> first order corrections to rotation matrix
+    rmat(0,1) = -p[2];
+    rmat(1,0) = p[2];
+    rmat(0,2) = p[1];
+    rmat(2,0) = -p[1];
+    rmat(1,2) = -p[0];
+    rmat(2,1) = p[0];
+
+    // If derivatives do not need to found, we're finished
+    if (not with_grad) {
+        return;
+    }
+
+    // hk286 - now up to the linear order in theta
+    drm1.assign(0);
+    drm1(0,0)    = 0.0;
+    drm1(0,1)    = p[1];
+    drm1(0,2)    = p[2];
+    drm1(1,0)    = p[1];
+    drm1(1,1)    = -2.0*p[0];
+    drm1(1,2)    = -2.0;
+    drm1(2,0)    = p[2];
+    drm1(2,1)    = 2.0;
+    drm1(2,2)    = -2.0*p[0];
+    drm1 *= 0.5;
+
+    drm2.assign(0);
+    drm2(0,0)    = -2.0*p[1];
+    drm2(0,1)    = p[0];
+    drm2(0,2)    = 2.0;
+    drm2(1,0)    = p[0];
+    drm2(1,1)    = 0.0;
+    drm2(1,2)    = p[2];
+    drm2(2,0)    = -2.0;
+    drm2(2,1)    = p[2];
+    drm2(2,2)    = -2.0*p[1];
+    drm2 *= 0.5;
+
+    drm3.assign(0);
+    drm3(0,0)    = -2.0*p[2];
+    drm3(0,1)    = -2.0;
+    drm3(0,2)    = p[0];
+    drm3(1,0)    = 2.0;
+    drm3(1,1)    = -2.0*p[2];
+    drm3(1,2)    = p[1];
+    drm3(2,0)    = p[0];
+    drm3(2,1)    = p[1];
+    drm3(2,2)    = 0.0;
+    drm3 *= 0.5;
 }
 
 

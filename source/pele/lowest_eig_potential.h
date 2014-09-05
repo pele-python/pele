@@ -10,7 +10,7 @@
 
 namespace pele {
 
-void zero_modes_translational(std::vector<pele::Array<double> > & zev,
+inline void zero_modes_translational(std::vector<pele::Array<double> > & zev,
         size_t natoms, size_t bdim)
 {
     double v = 1 / sqrt(natoms);
