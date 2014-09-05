@@ -15,7 +15,7 @@ static double const EPS = std::numeric_limits<double>::min();
 #define EXPECT_NEAR_RELATIVE(A, B, T)  ASSERT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
 
 
-TEST(AA2RotMat, Works)
+TEST(Rotations_AA2RotMat, Works)
 {
     VecN<3> p;
     for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
@@ -32,7 +32,7 @@ TEST(AA2RotMat, Works)
     ASSERT_NEAR(mx(2,2), 0.83582225, 1e-5);
 }
 
-TEST(RotMat2q, Works){
+TEST(Rotations_RotMat2q, Works){
     MatrixNM<3,3> mx;
     for (size_t i = 0; i < mx.size(); ++i) mx.data()[i] = i;
     VecN<4> q = pele::rot_mat_to_quaternion(mx);
@@ -42,20 +42,30 @@ TEST(RotMat2q, Works){
     ASSERT_NEAR(q[3], 0.2773501, 1e-5);
 }
 
-TEST(Quaternion2AA, Works){
+TEST(Rotations_Quaternion2AA, Works){
     VecN<3> v;
     for (size_t i = 0; i < v.size(); ++i) v[i] = i+1;
     v /= norm<3>(v);
 
     VecN<4> q(4);
     for (size_t i = 0; i < 3; ++i) q[i+1] = v[i];
-    std::cout << q << std::endl;
+//    std::cout << q << std::endl;
 
     VecN<3> aa = pele::quaternion_to_aa(q);
     ASSERT_NEAR(aa[0], 0.1309466, 1e-5);
     ASSERT_NEAR(aa[1], 0.26189321, 1e-5);
     ASSERT_NEAR(aa[2], 0.39283981, 1e-5);
 }
+
+TEST(Rotations_RotMat2aa, Works){
+    MatrixNM<3,3> mx;
+    for (size_t i = 0; i < mx.size(); ++i) mx.data()[i] = i;
+    VecN<3> p = pele::rot_mat_to_aa(mx);
+    ASSERT_NEAR(p[0], 0.29425463, 1e-5);
+    ASSERT_NEAR(p[1], -0.58850926, 1e-5);
+    ASSERT_NEAR(p[2], 0.29425463, 1e-5);
+}
+
 
 
 TEST(RotMatDerivs, Works)

@@ -150,6 +150,15 @@ class TestRotations(unittest.TestCase):
         for v1, v2 in izip(aa, aatrue):
             self.assertAlmostEqual(v1, v2, 4)
         
+    def test_mx2aa(self):
+        print "test mx2aa"
+        mx = np.array(range(9)).reshape([3,3])
+        aa = rotations.mx2aa(mx)
+        print repr(aa)
+        aatrue = np.array([ 0.29425463, -0.58850926,  0.29425463])
+        for v1, v2 in izip(aa, aatrue):
+            self.assertAlmostEqual(v1, v2, 4)
+    
 
 if __name__ == "__main__":
     unittest.main()

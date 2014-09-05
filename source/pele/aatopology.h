@@ -142,10 +142,10 @@ pele::MatrixNM<3,3> aa_to_rot_mat(pele::VecN<3> const & p);
 pele::VecN<4> rot_mat_to_quaternion(pele::MatrixNM<3,3> const & mx);
 pele::VecN<3> quaternion_to_aa(pele::VecN<4> const & q);
 
-//pele::VecN<3> rot_mat_to_aa(pele::MatrixNM<3,3> const & mx)
-//{
-//    return pele::quaternion_to_aa(rot_mat_to_quaternion(mx));
-//}
+inline pele::VecN<3> rot_mat_to_aa(pele::MatrixNM<3,3> const & mx)
+{
+    return pele::quaternion_to_aa(rot_mat_to_quaternion(mx));
+}
 
 /**
  * make a rotation matrix and it's derivatives from an angle axis
