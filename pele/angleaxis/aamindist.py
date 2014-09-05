@@ -24,6 +24,8 @@ class TransformAngleAxisCluster(TransformPolicy):
             ca.posAtom += d
         
     def rotate(self, X, mx):
+        """rotate the com + angle-axis position X by the rotation matrix mx
+        """
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
             ca.posRigid[:] = np.dot(mx, ca.posRigid.transpose()).transpose()

@@ -12,6 +12,11 @@
  *  - each site must have a list of symmetries
  *  - rotate_aa()
  *
+ *  Also need to replace the python zeroEv, which is composed of rotate, and align_path
+ *  - align path is easy
+ *  - rotate simply applies a rotation to a set of angle axis coords.  This will need to have access
+ *    to the coords_adaptor
+ *
  */
 #ifndef _PELE_AATOPOLOGY_H_
 #define _PELE_AATOPOLOGY_H_
@@ -146,6 +151,8 @@ inline pele::VecN<3> rot_mat_to_aa(pele::MatrixNM<3,3> const & mx)
 {
     return pele::quaternion_to_aa(rot_mat_to_quaternion(mx));
 }
+pele::VecN<4> quaternion_multiply(pele::VecN<4> const & q1, pele::VecN<4> const & q2);
+//void rotate_aa(pele::VecN<3> & p);
 
 /**
  * make a rotation matrix and it's derivatives from an angle axis
@@ -157,10 +164,6 @@ void rot_mat_derivatives(
         pele::MatrixNM<3,3> & drm2,
         pele::MatrixNM<3,3> & drm3);
 
-
-//class RBSite {
-
-//};
 
 /**
  * provide easy access to the different parts of a coordinates array

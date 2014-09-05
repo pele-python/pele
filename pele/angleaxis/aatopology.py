@@ -339,7 +339,18 @@ class AATopology(object):
                     break
                 p2[:]=p2n 
     
-    def align_path(self, path): 
+    def align_path(self, path):
+        """ensure a series of images are aligned with each other
+        
+        Parameters
+        ----------
+        path : list of arrays
+            This is a list of numpy array in com + angle axis format
+        
+        Notes
+        -----
+        this simply aligns the angle axis vectors
+        """
         for i in xrange(1, len(path)):
             c2 = self.coords_adapter(path[i])
             c1 = self.coords_adapter(path[i-1])
@@ -364,16 +375,22 @@ class AATopology(object):
                     p2[:]=p2n
                     
     def zeroEV(self, x):
+        """return a list of zero eigenvectors
+        
+        This does both translational and rotational eigenvectors
+        """
         zev = []
         ca = self.coords_adapter(x)
         cv = self.coords_adapter(np.zeros(x.shape))
             
+        # get the zero eigenvectors corresponding to translation
         translate_rigid = zeroev.zeroEV_translation(ca.posRigid)
         
         for v in translate_rigid:
             cv.posRigid[:] = v
             zev.append(cv.coords.copy())
-            
+        
+        # get the zero eigenvectors corresponding to rotation
         #rotate_r = zeroev.zeroEV_rotation(ca.posRigid)
         #rotate_aa = 
         transform = TransformAngleAxisCluster(self)

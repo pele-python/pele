@@ -159,6 +159,15 @@ class TestRotations(unittest.TestCase):
         for v1, v2 in izip(aa, aatrue):
             self.assertAlmostEqual(v1, v2, 4)
     
+    def test_q_multiply(self):
+        print "\ntest q_multiply"
+        q1 = np.array(range(1,5), dtype=float)
+        q2 = np.array(range(2,6), dtype=float)
+        print q1
+        q3 = rotations.q_multiply(q1, q2)
+        print repr(q3)
+        
+
 
 if __name__ == "__main__":
     unittest.main()

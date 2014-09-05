@@ -66,6 +66,17 @@ TEST(Rotations_RotMat2aa, Works){
     ASSERT_NEAR(p[2], 0.29425463, 1e-5);
 }
 
+TEST(Rotations_QuaternionMultiply, Works){
+    VecN<4> q1, q2;
+    for (size_t i = 0; i < q1.size(); ++i) q1[i] = i+1;
+    for (size_t i = 0; i < q2.size(); ++i) q2[i] = i+2;
+
+    VecN<4> q3 = pele::quaternion_multiply(q1, q2);
+    ASSERT_NEAR(q3[0], -36., 1e-5);
+    ASSERT_NEAR(q3[1], 6., 1e-5);
+    ASSERT_NEAR(q3[2], 12., 1e-5);
+    ASSERT_NEAR(q3[3], 12., 1e-5);
+}
 
 
 TEST(RotMatDerivs, Works)

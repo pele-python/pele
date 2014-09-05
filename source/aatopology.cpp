@@ -188,6 +188,16 @@ pele::VecN<3> quaternion_to_aa(pele::VecN<4> const & qin)
     return p;
 }
 
+pele::VecN<4> quaternion_multiply(pele::VecN<4> const & q0, pele::VecN<4> const & q1)
+{
+    VecN<4> q3;
+    q3[0] = q0[0]*q1[0]-q0[1]*q1[1]-q0[2]*q1[2]-q0[3]*q1[3];
+    q3[1] = q0[0]*q1[1]+q0[1]*q1[0]+q0[2]*q1[3]-q0[3]*q1[2];
+    q3[2] = q0[0]*q1[2]-q0[1]*q1[3]+q0[2]*q1[0]+q0[3]*q1[1];
+    q3[3] = q0[0]*q1[3]+q0[1]*q1[2]-q0[2]*q1[1]+q0[3]*q1[0];
+    return q3;
+}
+
 
 /**
  * make a rotation matrix and it's derivatives from an angle axis
