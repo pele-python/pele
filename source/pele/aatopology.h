@@ -67,6 +67,14 @@ public:
         }
     }
 
+    /**
+     * wrap an existing block of memory
+     */
+    HackyMatrix(double * data, size_t dim1, size_t dim2)
+        : pele::Array<dtype>(data, dim1*dim2),
+          _dim2(dim2)
+    {}
+
     inline dtype const & operator()(size_t i, size_t j) const
     {
         return this->operator[](i * _dim2 + j);
@@ -78,35 +86,35 @@ public:
 
     inline std::pair<size_t, size_t> shape() const
     {
-        return std::pair<size_t, size_t>(_dim2, this->size() / _dim2);
+        return std::pair<size_t, size_t>(this->size() / _dim2, _dim2);
     }
 
 };
 
-///**
-// * multiply two matrices
-// */
-//template<class dtype>
-//HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype> const & B)
-//{
-//    assert(A.shape().second == B.shape().first);
-//    size_t const L = A.shape().second;
-//    size_t const n = A.shape().first;
-//    size_t const m = B.shape().second;
-//
-//    HackyMatrix<dtype> C(n, m, 0);
-//    for (size_t i = 0; i<n; ++i){
-//        for (size_t j = 0; j<m; ++j){
-//            dtype val = 0;
-//            for (size_t k = 0; k<L; ++k){
-//                val += A(i,k) * B(k,j);
-//            }
-//            C(i,j) = val;
-//        }
-//    }
-//    return C;
-//}
-//
+/**
+ * multiply two matrices
+ */
+template<class dtype>
+HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype> const & B)
+{
+    assert(A.shape().second == B.shape().first);
+    size_t const L = A.shape().second;
+    size_t const N = A.shape().first;
+    size_t const M = B.shape().second;
+
+    HackyMatrix<dtype> C(N, M, 0);
+    for (size_t i = 0; i<N; ++i){
+        for (size_t j = 0; j<M; ++j){
+            double val = 0;
+            for (size_t k = 0; k<L; ++k){
+                val += A(i,k) * B(k,j);
+            }
+            C(i,j) = val;
+        }
+    }
+    return C;
+}
+
 ///**
 // * multiply a matrix times an vector
 // */
@@ -202,6 +210,8 @@ public:
         if (coords.size() != (6*_nrigid + 3*_natoms)) {
             throw std::invalid_argument(std::string("coords has the wrong size ") + std::to_string(coords.size()));
         }
+        if (natoms != 0)
+            throw std::runtime_error("coords adaptor doesn't support free atoms yet");
     }
 
     pele::Array<double> get_coords() { return _coords; }
@@ -401,10 +411,18 @@ public:
      * number of rigid bodies
      */
     size_t nrigid() const { return _sites.size(); }
+
     /**
      * return the total number of atoms in the atomistic representation
      */
     size_t natoms_total() const { return _natoms_total; }
+
+    size_t number_of_non_rigid_atoms() { return 0; }
+
+    CoordsAdaptor get_coords_adaptor(pele::Array<double> x)
+    {
+        return CoordsAdaptor(nrigid(), number_of_non_rigid_atoms(), x);
+    }
 
     Array<double> to_atomistic(Array<double> rbcoords)
     {
@@ -477,6 +495,75 @@ public:
         }
     }
 };
+
+
+class TransformPolicy {
+//    void translate(self, X, d) {
+//        ''' translate the coordinates '''
+//    }
+
+    /**
+     *  apply rotation matrix mx for a rotation around the origin
+     */
+    virtual void rotate(pele::Array<double> x, pele::MatrixNM<3,3> const & mx) = 0;
+
+//    def can_invert(self):
+//        ''' returns True or False if an inversion can be performed'''
+//
+//    def invert(self, X):
+//        ''' perform an inversion at the origin '''
+//
+//    def permute(self, X, perm):
+//        ''' returns the permuted coordinates '''
+
+};
+
+class TransformAACluster : public TransformPolicy {
+public:
+    RBTopology & m_topology;
+    TransformAACluster(RBTopology & topology)
+        : m_topology(topology)
+    {
+    }
+    virtual ~TransformAACluster() {}
+
+    /**
+     * apply a rotation to a set of rigid body coordinates
+     */
+    void rotate(pele::Array<double> x, pele::MatrixNM<3,3> const & mx)
+    {
+        auto ca = m_topology.get_coords_adaptor(x);
+        if(m_topology.nrigid() > 0) {
+            // rotate the center of mass positions by mx
+            HackyMatrix<double> rb_pos(ca.get_rb_positions(), 3);
+            // make a HackyMatrix view of the transposed rotation matrix
+            auto mxT = pele::transpose(mx);
+            HackyMatrix<double> mxT_view(mxT.data(), 3, 3);
+            assert(mxT_view(0,1) == mx(1,0));
+            // do the multiplication
+            auto result = hacky_mat_mul(rb_pos, mxT_view);
+            // copy the results back into the coordinates array
+            std::cout << "result " << result << std::endl;
+            rb_pos.assign(result);
+
+            // rotate each aa rotation by mx
+            VecN<3> dp = pele::rot_mat_to_aa(mx);
+            auto rb_rot = ca.get_rb_rotations();
+            for (size_t isite = 0; isite < m_topology.nrigid(); ++isite) {
+                pele::Array<double> pview = rb_rot.view(isite*3, isite*3+3);
+                VecN<3> p = pele::rotate_aa(pview, dp);
+                // copy the vector back into pview
+                std::copy(p.begin(), p.end(), pview.begin());
+            }
+        }
+        if (m_topology.number_of_non_rigid_atoms() > 0) {
+            throw std::runtime_error("non-rigid atoms is not yet supported");
+//            ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
+        }
+
+    }
+};
+
 
 /**
  * potential wrapper for rigid body systems

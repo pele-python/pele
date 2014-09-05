@@ -449,3 +449,25 @@ TEST_F(AATopologyTest, RBPotential_Works)
     }
 }
 
+TEST_F(AATopologyTest, TransformRotate_Works)
+{
+    auto x = x0.copy();
+    pele::TransformAACluster transform(rbtopology);
+
+    VecN<3> p;
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm<3>(p);
+
+    transform.rotate(x, pele::aa_to_rot_mat(p));
+//    std::cout << p << std::endl;
+//    std::cout << pele::aa_to_rot_mat(p) << std::endl;
+//    std::cout << x0 << std::endl;
+//    std::cout << x << std::endl;
+
+    ASSERT_NEAR(x[0], 0.48757698, 1e-5);
+    ASSERT_NEAR(x[4], 4.76822812, 1e-5);
+    ASSERT_NEAR(x[8], 7.53224809, 1e-5);
+    ASSERT_NEAR(x[12], 0.72426504, 1e-5);
+    ASSERT_NEAR(x[16], 1.25159032, 1e-5);
+}
+

@@ -14,8 +14,10 @@ from pele.utils import rotations
 class AASystem(BaseSystem):
     def __init__(self):
         BaseSystem.__init__(self)
-                
+        
+        # js850> we should really change this name from self.aasystem to self.aatopology
         self.aasystem = self.setup_aatopology()
+        self.aatopology = self.aasystem
                 
         self.params.basinhopping["temperature"]=8.
         self.params.takestep["translate"]=0.0

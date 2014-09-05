@@ -28,7 +28,10 @@ class TransformAngleAxisCluster(TransformPolicy):
         """
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
-            ca.posRigid[:] = np.dot(mx, ca.posRigid.transpose()).transpose()
+            # rotate the center of mass positions
+            ca.posRigid[:] = np.dot(ca.posRigid, mx.transpose())
+            
+            # rotate the angle axis rotations
             dp = rotations.mx2aa(mx)
             for p in ca.rotRigid:
                 p[:] = rotations.rotate_aa(p, dp)

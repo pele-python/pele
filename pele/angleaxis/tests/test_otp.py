@@ -1,4 +1,5 @@
 import unittest
+from itertools import izip
 
 import numpy as np
 from numpy import cos, sin, pi
@@ -7,6 +8,24 @@ from pele.angleaxis import RBTopology, RigidFragment, RBPotentialWrapper
 from pele.potentials import LJ
 from pele.angleaxis._otp_cluster import OTPCluster
 from pele.thermodynamics import get_thermodynamic_information
+from pele.utils import rotations
+
+_x03 = np.array([2.550757898788, 2.591553038507, 3.696836364193, 
+                2.623281513163, 3.415794212648, 3.310786279789, 
+                1.791383852327, 2.264321752809, 4.306217333671, 
+                0.761945654023, -0.805817782109, 1.166981882601, 
+                0.442065301864, -2.747066418223, -1.784325262714, 
+                -1.520905562598, 0.403670860200, -0.729768985400])
+_x03_atomistic = np.array([3.064051819556, 2.474533745459, 3.646107658946,
+                            2.412011983074, 2.941152759499, 4.243695098053, 
+                            2.176209893734, 2.358972610563, 3.200706335581, 
+                            2.786627589565, 3.211876105193, 2.850924310983, 
+                            1.962626909252, 3.436918873216, 3.370903763850,
+                            3.120590040673, 3.598587659535, 3.710530764535, 
+                            1.697360211099, 2.317229950712, 4.823998989452, 
+                            2.283487958310, 1.840698306602, 4.168734267290, 
+                            1.393303387573, 2.635037001113, 3.925918744272
+                           ])
 
 class TestOTPExplicit(unittest.TestCase):
     
@@ -30,25 +49,12 @@ class TestOTPExplicit(unittest.TestCase):
         cartesian_potential = LJ()
         self.pot = RBPotentialWrapper(self.topology, cartesian_potential)
         
-        self.x0 = [2.550757898788, 2.591553038507, 3.696836364193, 
-                2.623281513163, 3.415794212648, 3.310786279789, 
-                1.791383852327, 2.264321752809, 4.306217333671, 
-                0.761945654023, -0.805817782109, 1.166981882601, 
-                0.442065301864, -2.747066418223, -1.784325262714, 
-                -1.520905562598, 0.403670860200, -0.729768985400, ]
+        self.x0 = _x03
         self.x0 = np.array(self.x0)
         self.e0 = -17.3387670023
         assert nrigid * 6 == self.x0.size
         
-        self.x0atomistic = [ 3.064051819556, 2.474533745459, 3.646107658946,
-                            2.412011983074, 2.941152759499, 4.243695098053, 
-                            2.176209893734, 2.358972610563, 3.200706335581, 
-                            2.786627589565, 3.211876105193, 2.850924310983, 
-                            1.962626909252, 3.436918873216, 3.370903763850,
-                            3.120590040673, 3.598587659535, 3.710530764535, 
-                            1.697360211099, 2.317229950712, 4.823998989452, 
-                            2.283487958310, 1.840698306602, 4.168734267290, 
-                            1.393303387573, 2.635037001113, 3.925918744272, ]
+        self.x0atomistic = _x03_atomistic
         self.nrigid = nrigid
     
     def test_energy(self):
@@ -109,7 +115,7 @@ class TestOTPExplicit(unittest.TestCase):
         print "rbpotential"
         rbpot = RBPotentialWrapper(self.topology, lj);
         print rbpot.getEnergy(x0);
-    
+        
 class TestCppRBPotentialWrapper(TestOTPExplicit):
     def test_pot_wrapper(self):
         from pele.angleaxis import _cpp_aa
@@ -178,6 +184,45 @@ class TestOTPCluster(unittest.TestCase):
         mt = self.system.get_metric_tensor(self.m1.coords)
         print "metric tensor"
         print mt
+    
+class TestTransformAACluster(unittest.TestCase):
+    def setUp(self):
+        np.random.seed(0)
+        self.nmol = 3
+        self.system = OTPCluster(self.nmol)
+#        pot = self.system.get_potential()
+#        self.db = self.system.create_database()
+#        self.m1 = self.db.addMinimum(pot.getEnergy(_x1), _x1)
+#        self.m2 = self.db.addMinimum(pot.getEnergy(_x2), _x2)
+
+        self.x0 = np.array([ 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+                             0.517892, 0.575435, 0.632979, 
+                             0.531891, 0.576215, 0.620539, 
+                             0.540562, 0.5766, 0.612637 ])
+        
+        from pele.angleaxis.aamindist import TransformAngleAxisCluster
+        topology = self.system.aatopology
+        self.transform = TransformAngleAxisCluster(topology)
+    
+    def test_rotate(self):
+        print "\ntest rotate"
+        x = self.x0.copy()
+        p = np.array(range(1,4), dtype=float)
+        p /= np.linalg.norm(p)
+        self.transform.rotate(x, rotations.aa2mx(p))
+        print x == self.x0.copy()
+        print repr(p)
+        print rotations.aa2mx(p)
+        print repr(self.x0)
+        print repr(x)
+        
+        xnewtrue = np.array([ 0.48757698,  0.61588594,  2.09355038,  2.02484605,  4.76822812,
+                            4.81289924,  3.56211511,  8.92057031,  7.53224809,  0.71469473,
+                            1.23875927,  1.36136748,  0.72426504,  1.24674367,  1.34426835,
+                            0.73015833,  1.25159032,  1.33345003])
+        for v1, v2 in izip(x, xnewtrue):
+            self.assertAlmostEqual(v1, v2, 5)
+        
         
 
 if __name__ == "__main__":
