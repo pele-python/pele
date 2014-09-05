@@ -29,6 +29,7 @@
 #include "pele/array.h"
 #include "pele/base_potential.h"
 #include "pele/vecn.h"
+#include "pele/lowest_eig_potential.h"
 
 namespace pele{
 
@@ -232,6 +233,19 @@ public:
             return pele::Array<double>();
         }
         return _coords.view(3*_nrigid, 6*_nrigid);
+    }
+
+    pele::Array<double> get_rb_rotation(size_t isite)
+    {
+        if (_nrigid == 0) {
+            // return empty array
+            return pele::Array<double>();
+        }
+        if (isite > _nrigid) {
+            throw std::invalid_argument("isite must be less than nrigid");
+        }
+        size_t const istart = 3*_nrigid + 3*isite;
+        return _coords.view(istart, istart+3);
     }
 
     pele::Array<double> get_atom_positions()
@@ -556,11 +570,9 @@ public:
         while (iter2 != path.end()) {
             auto c1 = get_coords_adaptor(*iter1);
             auto c2 = get_coords_adaptor(*iter2);
-            auto rb_rot1 = c1.get_rb_rotations();
-            auto rb_rot2 = c2.get_rb_rotations();
             for (size_t isite = 0; isite < nrigid(); ++isite) {
-                VecN<3> p1 = rb_rot1.view(isite*3, isite*3+3);
-                pele::Array<double> p2 = rb_rot2.view(isite*3, isite*3+3);
+                VecN<3> p1 = c1.get_rb_rotation(isite);
+                pele::Array<double> p2 = c2.get_rb_rotation(isite);
                 auto p2new = align_angle_axis_vectors(p1, p2);
                 std::copy(p2new.begin(), p2new.end(), p2.begin());
             }
@@ -569,6 +581,55 @@ public:
         }
 
     }
+
+    /**
+     * return a list of zero modes
+     *
+     * i.e. vectors corresponding to directions with zero curvature.
+     * (these are not necessarily orthogonal)
+     */
+//    void get_zero_modes(pele::Array<double> const x,
+//            std::vector<pele::Array<double> > & zev)
+//    {
+//        auto ca = get_coords_adaptor(x);
+//        pele::Array<double> v(x.size(), 0);
+//        auto cv = get_coords_adaptor(v);
+//
+//        // get the zero eigenvectors corresponding to translation
+//        std::vector<pele::Array<double> > zev_t;
+//        pele::zero_modes_translational(zev_t, nrigid(), 3);
+//
+//        for (auto const & v : zev_t) {
+//            cv.get_rb_positions().assign(v);
+//            zev.push_back(cv.get_coords().copy());
+//        }
+//
+//        // get the zero eigenvectors corresponding to rotation
+//        TransformAACluster transform(*this);
+//        d = 1e-5
+//        dx = x.copy()
+//        transform.rotate(dx, rotations.aa2mx(np.array([d, 0, 0])))
+//        self.align_path([x, dx])
+//        dx -= x
+//        dx /= np.linalg.norm(dx)
+//
+//        dy = x.copy()
+//        transform.rotate(dy, rotations.aa2mx(np.array([0, d, 0])))
+//        self.align_path([x, dy])
+//        dy -= x
+//        dy /= np.linalg.norm(dy)
+//
+//        dz = x.copy()
+//        transform.rotate(dz, rotations.aa2mx(np.array([0, 0, d])))
+//        self.align_path([x, dz])
+//        dz -= x
+//        dz /= np.linalg.norm(dz)
+//
+//        #print "Zero eigenvectors", zev
+//        return zev + [dx, dy, dz]
+//
+//    }
+
 };
 
 
@@ -637,8 +698,8 @@ public:
             throw std::runtime_error("non-rigid atoms is not yet supported");
 //            ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
         }
-
     }
+
 };
 
 
