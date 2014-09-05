@@ -493,3 +493,44 @@ TEST_F(AATopologyTest, AlignPath_Works)
     ASSERT_NEAR(x2[17], 1.96164668, 1e-5);
 }
 
+TEST_F(AATopologyTest, ZeroEV_Works)
+{
+    std::vector<pele::Array<double> > zev;
+    rbtopology.get_zero_modes(x0, zev);
+    ASSERT_EQ(zev.size(), 6u);
+    for (auto const & v : zev) {
+        ASSERT_EQ(v.size(), x0.size());
+    }
+
+    // check translational
+    for (size_t i = 0; i<3; ++i) {
+        auto v = zev[i];
+        for (size_t j = 0; j<v.size(); ++j) {
+            if ( j<3*nrigid && j % 3 == i ){
+                ASSERT_NEAR(v[j], 1./sqrt(nrigid), 1e-5);
+            } else {
+                ASSERT_EQ(v[j], 0);
+            }
+        }
+    }
+
+    pele::Array<double> v;
+
+    v = zev[3];
+    ASSERT_NEAR(v[0], 0., 1e-5);
+    ASSERT_NEAR(v[4], -0.39260962, 1e-5);
+    ASSERT_NEAR(v[13], -0.0223232, 1e-5);
+    ASSERT_NEAR(v[17], 0.02484174, 1e-5);
+
+    v = zev[4];
+    ASSERT_NEAR(v[0], 1.68325526e-01, 1e-5);
+    ASSERT_NEAR(v[4], 0., 1e-5);
+    ASSERT_NEAR(v[13], 7.93978746e-02, 1e-5);
+    ASSERT_NEAR(v[17], -2.02278328e-02, 1e-5);
+
+    v = zev[5];
+    ASSERT_NEAR(v[0], -9.35924237e-02, 1e-5);
+    ASSERT_NEAR(v[4],  2.80775399e-01, 1e-5);
+    ASSERT_NEAR(v[13], 2.77268394e-02, 1e-5);
+    ASSERT_NEAR(v[17], 8.86371673e-02, 1e-5);
+}

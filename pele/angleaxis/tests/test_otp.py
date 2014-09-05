@@ -243,7 +243,13 @@ class TestRBTopologyOTP(unittest.TestCase):
             self.assertAlmostEqual(v1, v2, 5)
         for v1, v2 in izip(x2, x2true):
             self.assertAlmostEqual(v1, v2, 5)
-        
+    
+    def test_zero_ev(self):
+        print "\ntest zeroEV"
+        x = self.x0.copy()
+        zev = self.topology.zeroEV(x)
+        for ev in zev:
+            print repr(ev)
         
 
 if __name__ == "__main__":

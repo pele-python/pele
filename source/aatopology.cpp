@@ -183,20 +183,27 @@ pele::RBTopology::align_angle_axis_vectors(pele::VecN<3> const & p1,
 }
 
 void
+pele::RBTopology::align_all_angle_axis_vectors(pele::Array<double> x1,
+        pele::Array<double> x2)
+{
+    auto c1 = get_coords_adaptor(x1);
+    auto c2 = get_coords_adaptor(x2);
+    for (size_t isite = 0; isite < nrigid(); ++isite) {
+        VecN<3> p1 = c1.get_rb_rotation(isite);
+        pele::Array<double> p2 = c2.get_rb_rotation(isite);
+        auto p2new = align_angle_axis_vectors(p1, p2);
+        std::copy(p2new.begin(), p2new.end(), p2.begin());
+    }
+}
+
+void
 pele::RBTopology::align_path(std::list<pele::Array<double> > path)
 {
     auto iter1 = path.begin();
     auto iter2 = path.begin();
     iter2++;
     while (iter2 != path.end()) {
-        auto c1 = get_coords_adaptor(*iter1);
-        auto c2 = get_coords_adaptor(*iter2);
-        for (size_t isite = 0; isite < nrigid(); ++isite) {
-            VecN<3> p1 = c1.get_rb_rotation(isite);
-            pele::Array<double> p2 = c2.get_rb_rotation(isite);
-            auto p2new = align_angle_axis_vectors(p1, p2);
-            std::copy(p2new.begin(), p2new.end(), p2.begin());
-        }
+        align_all_angle_axis_vectors(*iter1, *iter2);
         ++iter1;
         ++iter2;
     }
@@ -217,7 +224,7 @@ pele::TransformAACluster::rotate(pele::Array<double> x,
         // do the multiplication
         auto result = hacky_mat_mul(rb_pos, mxT_view);
         // copy the results back into the coordinates array
-        std::cout << "result " << result << std::endl;
+//        std::cout << "result " << result << std::endl;
         rb_pos.assign(result);
 
         // rotate each aa rotation by mx

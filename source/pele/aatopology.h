@@ -214,6 +214,50 @@ public:
 
 };
 
+// forward definition of RBTopology needed for TrasnformAACluster
+class RBTopology;
+
+class TransformPolicy {
+public:
+//    void translate(self, X, d) {
+//        ''' translate the coordinates '''
+//    }
+    virtual ~TransformPolicy() {}
+
+    /**
+     *  apply rotation matrix mx for a rotation around the origin
+     */
+    virtual void rotate(pele::Array<double> x, pele::MatrixNM<3,3> const & mx) = 0;
+
+//    def can_invert(self):
+//        ''' returns True or False if an inversion can be performed'''
+//
+//    def invert(self, X):
+//        ''' perform an inversion at the origin '''
+//
+//    def permute(self, X, perm):
+//        ''' returns the permuted coordinates '''
+
+};
+
+class TransformAACluster : public TransformPolicy {
+public:
+    pele::RBTopology & m_topology;
+    TransformAACluster(pele::RBTopology & topology)
+        : m_topology(topology)
+    { }
+    virtual ~TransformAACluster() {}
+
+    /**
+     * apply a rotation to a set of rigid body coordinates
+     */
+    void rotate(pele::Array<double> x, pele::MatrixNM<3,3> const & mx);
+
+};
+
+
+
+
 /**
  * represent a single rigid body
  */
@@ -356,6 +400,9 @@ public:
     pele::VecN<3> align_angle_axis_vectors(pele::VecN<3> const & p1,
             pele::VecN<3> const & p2in);
 
+    void align_all_angle_axis_vectors(pele::Array<double> x1,
+            pele::Array<double> x2);
+
     /**
      * ensure a series of images are aligned with each other
      *
@@ -369,86 +416,40 @@ public:
      * i.e. vectors corresponding to directions with zero curvature.
      * (these are not necessarily orthogonal)
      */
-//    void get_zero_modes(pele::Array<double> const x,
-//            std::vector<pele::Array<double> > & zev)
-//    {
-//        auto ca = get_coords_adaptor(x);
-//        pele::Array<double> v(x.size(), 0);
-//        auto cv = get_coords_adaptor(v);
-//
-//        // get the zero eigenvectors corresponding to translation
-//        std::vector<pele::Array<double> > zev_t;
-//        pele::zero_modes_translational(zev_t, nrigid(), 3);
-//
-//        for (auto const & v : zev_t) {
-//            cv.get_rb_positions().assign(v);
-//            zev.push_back(cv.get_coords().copy());
-//        }
-//
-//        // get the zero eigenvectors corresponding to rotation
-//        TransformAACluster transform(*this);
-//        d = 1e-5
-//        dx = x.copy()
-//        transform.rotate(dx, rotations.aa2mx(np.array([d, 0, 0])))
-//        self.align_path([x, dx])
-//        dx -= x
-//        dx /= np.linalg.norm(dx)
-//
-//        dy = x.copy()
-//        transform.rotate(dy, rotations.aa2mx(np.array([0, d, 0])))
-//        self.align_path([x, dy])
-//        dy -= x
-//        dy /= np.linalg.norm(dy)
-//
-//        dz = x.copy()
-//        transform.rotate(dz, rotations.aa2mx(np.array([0, 0, d])))
-//        self.align_path([x, dz])
-//        dz -= x
-//        dz /= np.linalg.norm(dz)
-//
-//        #print "Zero eigenvectors", zev
-//        return zev + [dx, dy, dz]
-//
-//    }
+    void get_zero_modes(pele::Array<double> const x,
+            std::vector<pele::Array<double> > & zev)
+    {
+        auto ca = get_coords_adaptor(x);
+        pele::Array<double> v(x.size(), 0);
+        auto cv = get_coords_adaptor(v);
 
-};
+        // get the zero eigenvectors corresponding to translation
+        std::vector<pele::Array<double> > zev_t;
+        pele::zero_modes_translational(zev_t, nrigid(), 3);
 
+        for (auto const & v : zev_t) {
+            cv.get_rb_positions().assign(v);
+            zev.push_back(cv.get_coords().copy());
+        }
 
-class TransformPolicy {
-public:
-//    void translate(self, X, d) {
-//        ''' translate the coordinates '''
-//    }
-    virtual ~TransformPolicy() {}
+        // get the zero eigenvectors corresponding to rotation
+        TransformAACluster transform(*this);
+        double d = 1e-5;
+        pele::VecN<3> v3;
+        pele::Array<double> delta(x.size());
 
-    /**
-     *  apply rotation matrix mx for a rotation around the origin
-     */
-    virtual void rotate(pele::Array<double> x, pele::MatrixNM<3,3> const & mx) = 0;
-
-//    def can_invert(self):
-//        ''' returns True or False if an inversion can be performed'''
-//
-//    def invert(self, X):
-//        ''' perform an inversion at the origin '''
-//
-//    def permute(self, X, perm):
-//        ''' returns the permuted coordinates '''
-
-};
-
-class TransformAACluster : public TransformPolicy {
-public:
-    pele::RBTopology & m_topology;
-    TransformAACluster(pele::RBTopology & topology)
-        : m_topology(topology)
-    { }
-    virtual ~TransformAACluster() {}
-
-    /**
-     * apply a rotation to a set of rigid body coordinates
-     */
-    void rotate(pele::Array<double> x, pele::MatrixNM<3,3> const & mx);
+        // do rotations around the x y and z axes
+        for (size_t i = 0; i < 3; ++i) {
+            delta.assign(x);
+            v3.assign(0);
+            v3[i] = d;
+            transform.rotate(delta, pele::aa_to_rot_mat(v3));
+            align_all_angle_axis_vectors(x, delta);
+            delta -= x;
+            delta /= norm(delta);
+            zev.push_back(delta.copy());
+        }
+    }
 
 };
 
