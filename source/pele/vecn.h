@@ -146,6 +146,14 @@ public:
         return *this;
     }
 
+    VecN<N> operator-(VecN<N> const & rhs) {
+        VecN<3> v;
+        for (size_t i = 0; i < N; ++i) {
+            v[i] = m_data[i] - rhs[i];
+        }
+        return v;
+    }
+
 
     /**
      * returns the sum of all elements (reduces the array)

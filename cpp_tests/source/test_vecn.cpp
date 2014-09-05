@@ -177,6 +177,18 @@ TEST(VecNTest, DivOperator_Const){
     EXPECT_EQ(c,2);
 }
 
+//////////////
+
+TEST(VecNTest, DifferenceOperator_Works){
+    pele::VecN<3> v1(1);
+    pele::VecN<3> v2(-1);
+    pele::VecN<3> v3 = v1 - v2;
+    for (int i = 0; i < 3; ++i){
+        EXPECT_EQ(v3[i], 2);
+    }
+}
+
+
 TEST(VecNTest, SumFunction){
     pele::VecN<3> v(2);
     EXPECT_EQ(v.sum(), 6);

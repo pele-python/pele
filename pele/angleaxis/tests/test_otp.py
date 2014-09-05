@@ -185,7 +185,7 @@ class TestOTPCluster(unittest.TestCase):
         print "metric tensor"
         print mt
     
-class TestTransformAACluster(unittest.TestCase):
+class TestRBTopologyOTP(unittest.TestCase):
     def setUp(self):
         np.random.seed(0)
         self.nmol = 3
@@ -201,10 +201,10 @@ class TestTransformAACluster(unittest.TestCase):
                              0.540562, 0.5766, 0.612637 ])
         
         from pele.angleaxis.aamindist import TransformAngleAxisCluster
-        topology = self.system.aatopology
-        self.transform = TransformAngleAxisCluster(topology)
+        self.topology = self.system.aatopology
+        self.transform = TransformAngleAxisCluster(self.topology)
     
-    def test_rotate(self):
+    def test_transform_rotate(self):
         print "\ntest rotate"
         x = self.x0.copy()
         p = np.array(range(1,4), dtype=float)
@@ -221,6 +221,27 @@ class TestTransformAACluster(unittest.TestCase):
                             1.23875927,  1.36136748,  0.72426504,  1.24674367,  1.34426835,
                             0.73015833,  1.25159032,  1.33345003])
         for v1, v2 in izip(x, xnewtrue):
+            self.assertAlmostEqual(v1, v2, 5)
+    
+    def test_align_path(self):
+        print "\ntest align_path"
+        x1 = self.x0.copy()
+        x2 = self.x0 + 5
+        print repr(x2)
+        
+        self.topology.align_path([x1, x2])
+        
+        print repr(x2)
+        
+        x2true = np.array([  5.        ,   6.        ,   7.        ,   8.        ,
+                             9.        ,  10.        ,  11.        ,  12.        ,
+                            13.        ,   1.92786071,   1.94796529,   1.96807021,
+                             1.93320298,   1.94869267,   1.96418236,   1.93645608,
+                             1.94905155,   1.96164668])
+        
+        for v1, v2 in izip(x1, self.x0):
+            self.assertAlmostEqual(v1, v2, 5)
+        for v1, v2 in izip(x2, x2true):
             self.assertAlmostEqual(v1, v2, 5)
         
         

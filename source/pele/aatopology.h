@@ -22,7 +22,7 @@
 #define _PELE_AATOPOLOGY_H_
 
 #include <string>
-//#include <pair>
+#include <list>
 #include <cmath>
 #include <stdexcept>
 
@@ -376,6 +376,18 @@ public:
     }
 };
 
+///**
+// * Angle axis topology
+// *
+// * An angle axis topology stores all topology information for an angle axis
+// * system. The AATopology is composed of several angle axis sites,
+// * which describe the shape of the angle axis site and each site carries a
+// * position and orientation. Therefore, the length of the coordinate array
+// * must be 6*number_of_sites.
+// */
+//class AATopology {
+//};
+
 /**
  * represent a collection of rigid bodies
  */
@@ -494,13 +506,78 @@ public:
             istart += site_ndof;
         }
     }
+
+    pele::VecN<3> align_angle_axis_vectors(pele::VecN<3> const & p1,
+            pele::VecN<3> const & p2in)
+    {
+        pele::VecN<3> p2 = p2in;
+        pele::VecN<3> n2, p2n;
+        if (norm<3>(p2) < 1e-6) {
+            if (norm<3>(p1) < 1e-6) {
+                return p2;
+            }
+            n2 = p1;
+            n2 *= 2. * M_PI / norm<3>(p1);
+        } else {
+            n2 = p2;
+            n2 *= 2. * M_PI / norm<3>(p2);
+        }
+
+        while (true) {
+            p2n = p2;
+            p2n += n2;
+            if (norm<3>(p2n - p1) > norm<3>(p2 - p1)) {
+                break;
+            }
+            p2 = p2n;
+        }
+
+        while (true) {
+            p2n = p2;
+            p2n -= n2;
+            if (norm<3>(p2n - p1) > norm<3>(p2 - p1)) {
+                break;
+            }
+            p2 = p2n;
+        }
+        return p2;
+    }
+
+    /**
+     * ensure a series of images are aligned with each other
+     *
+     * this simply aligns the angle axis vectors
+     */
+    void align_path(std::list<pele::Array<double> > path)
+    {
+        auto iter1 = path.begin();
+        auto iter2 = path.begin();
+        iter2++;
+        while (iter2 != path.end()) {
+            auto c1 = get_coords_adaptor(*iter1);
+            auto c2 = get_coords_adaptor(*iter2);
+            auto rb_rot1 = c1.get_rb_rotations();
+            auto rb_rot2 = c2.get_rb_rotations();
+            for (size_t isite = 0; isite < nrigid(); ++isite) {
+                VecN<3> p1 = rb_rot1.view(isite*3, isite*3+3);
+                pele::Array<double> p2 = rb_rot2.view(isite*3, isite*3+3);
+                auto p2new = align_angle_axis_vectors(p1, p2);
+                std::copy(p2new.begin(), p2new.end(), p2.begin());
+            }
+            ++iter1;
+            ++iter2;
+        }
+
+    }
 };
 
 
 class TransformPolicy {
+public:
 //    void translate(self, X, d) {
 //        ''' translate the coordinates '''
 //    }
+    virtual ~TransformPolicy() {}
 
     /**
      *  apply rotation matrix mx for a rotation around the origin

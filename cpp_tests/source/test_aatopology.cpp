@@ -471,3 +471,25 @@ TEST_F(AATopologyTest, TransformRotate_Works)
     ASSERT_NEAR(x[16], 1.25159032, 1e-5);
 }
 
+TEST_F(AATopologyTest, AlignPath_Works)
+{
+    auto x1 = x0.copy();
+    auto x2 = x1.copy();
+    x2 += 5;
+    auto x20 = x2.copy();
+
+    std::list<Array<double> > path;
+    path.push_back(x1);
+    path.push_back(x2);
+    rbtopology.align_path(path);
+//    std::cout << x2 << std::endl;
+
+    for (size_t i = 0; i < x1.size(); ++i) {
+        ASSERT_EQ(x1[i], x0[i]);
+    }
+
+    ASSERT_NEAR(x2[9], 1.92786071, 1e-5);
+    ASSERT_NEAR(x2[13], 1.94869267, 1e-5);
+    ASSERT_NEAR(x2[17], 1.96164668, 1e-5);
+}
+
