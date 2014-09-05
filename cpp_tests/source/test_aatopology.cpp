@@ -102,6 +102,19 @@ TEST(Rotations_AA2QAndBack, Works)
     ASSERT_NEAR(p[2], pnew[2], 1e-5);
 }
 
+TEST(Rotations_RotateAA, Works)
+{
+    VecN<3> p1, p2;
+    for (size_t i = 0; i < p1.size(); ++i) p1[i] = i+1;
+    p2 = p1;
+    p2 += 1;
+    VecN<3> p3 = pele::rotate_aa(p1, p2);
+
+    ASSERT_NEAR(p3[0], 0.74050324, 1e-5);
+    ASSERT_NEAR(p3[1], 1.64950785, 1e-5);
+    ASSERT_NEAR(p3[2], 2.20282887, 1e-5);
+}
+
 
 
 TEST(RotMatDerivs, Works)

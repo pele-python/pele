@@ -158,7 +158,7 @@ class TestRotations(unittest.TestCase):
         aatrue = np.array([ 0.29425463, -0.58850926,  0.29425463])
         for v1, v2 in izip(aa, aatrue):
             self.assertAlmostEqual(v1, v2, 4)
-    
+ 
     def test_q_multiply(self):
         print "\ntest q_multiply"
         q1 = np.array(range(1,5), dtype=float)
@@ -166,6 +166,20 @@ class TestRotations(unittest.TestCase):
         print q1
         q3 = rotations.q_multiply(q1, q2)
         print repr(q3)
+        qtrue = np.array([-36.,   6.,  12.,  12.])
+        for v1, v2 in izip(q3, qtrue):
+            self.assertAlmostEqual(v1, v2, 4)
+    
+    def test_rotate_aa(self):
+        print "\ntest rotate_aa"
+        p1 = np.array(range(1,4), dtype=float)
+        p2 = p1 + 1
+        p3 = rotations.rotate_aa(p1, p2)
+        print repr(p3)
+        ptrue = np.array([ 0.74050324,  1.64950785,  2.20282887])
+        for v1, v2 in izip(p3, ptrue):
+            self.assertAlmostEqual(v1, v2, 4)
+
         
 if __name__ == "__main__":
     unittest.main()
