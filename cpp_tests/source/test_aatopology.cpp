@@ -78,6 +78,31 @@ TEST(Rotations_QuaternionMultiply, Works){
     ASSERT_NEAR(q3[3], 12., 1e-5);
 }
 
+TEST(Rotations_AA2Q, Works)
+{
+    VecN<3> p;
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm<3>(p);
+    VecN<4> q = pele::aa_to_quaternion(p);
+    ASSERT_NEAR(q[0], 0.87758256, 1e-5);
+    ASSERT_NEAR(q[1], 0.12813186, 1e-5);
+    ASSERT_NEAR(q[2], 0.25626373, 1e-5);
+    ASSERT_NEAR(q[3], 0.38439559, 1e-5);
+}
+
+TEST(Rotations_AA2QAndBack, Works)
+{
+    VecN<3> p;
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm<3>(p);
+    VecN<3> pnew = pele::quaternion_to_aa(pele::aa_to_quaternion(p));
+
+    ASSERT_NEAR(p[0], pnew[0], 1e-5);
+    ASSERT_NEAR(p[1], pnew[1], 1e-5);
+    ASSERT_NEAR(p[2], pnew[2], 1e-5);
+}
+
+
 
 TEST(RotMatDerivs, Works)
 {

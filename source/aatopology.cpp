@@ -188,6 +188,32 @@ pele::VecN<3> quaternion_to_aa(pele::VecN<4> const & qin)
     return p;
 }
 
+pele::VecN<4> aa_to_quaternion(pele::VecN<3> const & aa)
+{
+    static const double rot_epsilon = 1e-6;
+    VecN<4> q;
+
+    double thetah = 0.5 * pele::norm<3>(aa);
+    q[0]  = std::cos(thetah);
+
+    // do linear expansion for small epsilon
+    VecN<3> v = aa;
+    if (thetah < rot_epsilon) {
+        v *= 0.5;
+    } else {
+        v *= 0.5 * std::sin(thetah) / thetah;
+    }
+    for (size_t i = 0; i < 3; ++i) {
+        q[i+1] = v[i];
+    }
+
+    // make sure to have normal form
+    if (q[0] < 0.0) q *= -1;
+    return q;
+
+}
+
+
 pele::VecN<4> quaternion_multiply(pele::VecN<4> const & q0, pele::VecN<4> const & q1)
 {
     VecN<4> q3;

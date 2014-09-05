@@ -167,7 +167,5 @@ class TestRotations(unittest.TestCase):
         q3 = rotations.q_multiply(q1, q2)
         print repr(q3)
         
-
-
 if __name__ == "__main__":
     unittest.main()
