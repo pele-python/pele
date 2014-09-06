@@ -242,8 +242,8 @@ public:
 
 class TransformAACluster : public TransformPolicy {
 public:
-    pele::RBTopology & m_topology;
-    TransformAACluster(pele::RBTopology & topology)
+    pele::RBTopology * m_topology;
+    TransformAACluster(pele::RBTopology * topology)
         : m_topology(topology)
     { }
     virtual ~TransformAACluster() {}
@@ -433,7 +433,7 @@ public:
         }
 
         // get the zero eigenvectors corresponding to rotation
-        TransformAACluster transform(*this);
+        TransformAACluster transform(this);
         double d = 1e-5;
         pele::VecN<3> v3;
         pele::Array<double> delta(x.size());

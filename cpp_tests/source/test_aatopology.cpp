@@ -18,7 +18,7 @@ class AATopologyTest :  public ::testing::Test {
 public:
     Array<double> x0;
     size_t nrigid;
-    pele::RBTopology rbtopology;
+    std::shared_ptr<pele::RBTopology> rbtopology;
 
     Array<double> make_otp_x()
     {
@@ -45,8 +45,9 @@ public:
             auto p = x0.view(3*nrigid + 3*i, 3*nrigid + 3*i + 3);
             p /= norm(p);
         }
+        rbtopology = std::make_shared<pele::RBTopology>();
         for (size_t i = 0; i < nrigid; ++i) {
-            rbtopology.add_site(make_otp_x());
+            rbtopology->add_site(make_otp_x());
         }
 
     }
@@ -137,7 +138,7 @@ TEST_F(AATopologyTest, ToAtomisticOneMolecule_Works)
 TEST_F(AATopologyTest, ToAtomistic_Works)
 {
 //    std::cout << "x0 " << x0 << "\n";
-    auto x = rbtopology.to_atomistic(x0);
+    auto x = rbtopology->to_atomistic(x0);
 //    std::cout << x << "\n";
     ASSERT_EQ(x.size(), 27u);
     ASSERT_NEAR(x[0], 0.20925348, 1e-5);
@@ -173,12 +174,12 @@ TEST_F(AATopologyTest, SiteTransformGrad_Works)
 
 TEST_F(AATopologyTest, TransformGradient_Works)
 {
-    auto x = rbtopology.to_atomistic(x0);
+    auto x = rbtopology->to_atomistic(x0);
     auto lj = pele::LJ(4., 4.);
-    Array<double> g_atom(rbtopology.natoms_total() * 3);
+    Array<double> g_atom(rbtopology->natoms_total() * 3);
     lj.get_energy_gradient(x, g_atom);
     Array<double> grb(x0.size());
-    rbtopology.transform_gradient(x0, g_atom, grb);
+    rbtopology->transform_gradient(x0, g_atom, grb);
 
     ASSERT_EQ(grb.size(), 18u);
     ASSERT_NEAR(grb[0], -1.45358337e-03, 1e-8);
@@ -214,7 +215,7 @@ TEST_F(AATopologyTest, RBPotential_Works)
 TEST_F(AATopologyTest, TransformRotate_Works)
 {
     auto x = x0.copy();
-    pele::TransformAACluster transform(rbtopology);
+    pele::TransformAACluster transform(rbtopology.get());
 
     VecN<3> p;
     for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
@@ -243,7 +244,7 @@ TEST_F(AATopologyTest, AlignPath_Works)
     std::list<Array<double> > path;
     path.push_back(x1);
     path.push_back(x2);
-    rbtopology.align_path(path);
+    rbtopology->align_path(path);
 //    std::cout << x2 << std::endl;
 
     for (size_t i = 0; i < x1.size(); ++i) {
@@ -258,7 +259,7 @@ TEST_F(AATopologyTest, AlignPath_Works)
 TEST_F(AATopologyTest, ZeroEV_Works)
 {
     std::vector<pele::Array<double> > zev;
-    rbtopology.get_zero_modes(x0, zev);
+    rbtopology->get_zero_modes(x0, zev);
     ASSERT_EQ(zev.size(), 6u);
     for (auto const & v : zev) {
         ASSERT_EQ(v.size(), x0.size());

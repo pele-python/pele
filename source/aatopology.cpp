@@ -213,8 +213,8 @@ void
 pele::TransformAACluster::rotate(pele::Array<double> x,
         pele::MatrixNM<3,3> const & mx)
 {
-    auto ca = m_topology.get_coords_adaptor(x);
-    if(m_topology.nrigid() > 0) {
+    auto ca = m_topology->get_coords_adaptor(x);
+    if(m_topology->nrigid() > 0) {
         // rotate the center of mass positions by mx
         pele::HackyMatrix<double> rb_pos(ca.get_rb_positions(), 3);
         // make a HackyMatrix view of the transposed rotation matrix
@@ -230,14 +230,14 @@ pele::TransformAACluster::rotate(pele::Array<double> x,
         // rotate each aa rotation by mx
         VecN<3> dp = pele::rot_mat_to_aa(mx);
         auto rb_rot = ca.get_rb_rotations();
-        for (size_t isite = 0; isite < m_topology.nrigid(); ++isite) {
+        for (size_t isite = 0; isite < m_topology->nrigid(); ++isite) {
             pele::Array<double> pview = rb_rot.view(isite*3, isite*3+3);
             VecN<3> p = pele::rotate_aa(pview, dp);
             // copy the vector back into pview
             std::copy(p.begin(), p.end(), pview.begin());
         }
     }
-    if (m_topology.number_of_non_rigid_atoms() > 0) {
+    if (m_topology->number_of_non_rigid_atoms() > 0) {
         throw std::runtime_error("non-rigid atoms is not yet supported");
 //            ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
     }
