@@ -463,35 +463,31 @@ public:
  */
 class RBPotentialWrapper : public BasePotential {
     std::shared_ptr<BasePotential> potential_;
-    RBTopology topology_;
+    std::shared_ptr<RBTopology> topology_;
 public:
 
-    RBPotentialWrapper(std::shared_ptr<BasePotential> potential)
-        : potential_(potential)
-    {}
+    RBPotentialWrapper(std::shared_ptr<BasePotential> potential,
+            std::shared_ptr<RBTopology> top)
+        : potential_(potential),
+          topology_(top)
 
-    inline void add_site(pele::Array<double> atom_positions)
-    {
-        topology_.add_site(atom_positions);
-    }
+    {}
 
     inline double get_energy(pele::Array<double> rbcoords)
     {
-        auto x = topology_.to_atomistic(rbcoords);
+        auto x = topology_->to_atomistic(rbcoords);
         return potential_->get_energy(x);
     }
 
     inline double get_energy_gradient(pele::Array<double> rbcoords,
             pele::Array<double> rbgrad)
     {
-        auto x = topology_.to_atomistic(rbcoords);
-        pele::Array<double> grad_atomistic(topology_.natoms_total() * 3);
+        auto x = topology_->to_atomistic(rbcoords);
+        pele::Array<double> grad_atomistic(topology_->natoms_total() * 3);
         double e = potential_->get_energy_gradient(x, grad_atomistic);
-        topology_.transform_gradient(rbcoords, grad_atomistic, rbgrad);
+        topology_->transform_gradient(rbcoords, grad_atomistic, rbgrad);
         return e;
     }
-
-
 };
 
 }

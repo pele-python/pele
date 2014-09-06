@@ -193,10 +193,7 @@ TEST_F(AATopologyTest, TransformGradient_Works)
 
 TEST_F(AATopologyTest, RBPotential_Works)
 {
-    pele::RBPotentialWrapper rbpot(std::make_shared<pele::LJ>(4,4));
-    for (size_t i=0; i<nrigid; ++i){
-        rbpot.add_site(make_otp_x());
-    }
+    pele::RBPotentialWrapper rbpot(std::make_shared<pele::LJ>(4,4), rbtopology);
     double e = rbpot.get_energy(x0);
     ASSERT_NEAR(e, -2.55718209697, 1e-5);
 
