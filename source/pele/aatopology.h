@@ -12,11 +12,8 @@
  *  - each site must have a list of symmetries
  *  - rotate_aa()
  *
- *  Also need to replace the python zeroEv, which is composed of rotate, and align_path
- *  - align path is easy
- *  - rotate simply applies a rotation to a set of angle axis coords.  This will need to have access
- *    to the coords_adaptor
- *
+ * Need to replace NEB distance functions.  The squared distance between two configurations is
+ * the sum of the squared distance between the individual rigid bodies
  */
 #ifndef _PELE_AATOPOLOGY_H_
 #define _PELE_AATOPOLOGY_H_
@@ -267,11 +264,24 @@ class RigidFragment {
     pele::HackyMatrix<double> _atom_positions_matrix;
     size_t _natoms;
 
+    double m_M; // total mass of the angle axis site
+    double m_W; // sum of all weights
+    pele::VecN<3> m_cog; // center of gravity
+    pele::MatrixNM<3,3> m_S; // weighted tensor of gyration S_ij = \sum m_i x_i x_j
+
 public:
-    RigidFragment(pele::Array<double> atom_positions)
+    RigidFragment(pele::Array<double> atom_positions,
+            Array<double> cog,
+            double M,
+            double W,
+            Array<double> S)
     : _atom_positions(atom_positions.copy()),
       _atom_positions_matrix(_atom_positions, _ndim),
-      _natoms(_atom_positions.size() / _ndim)
+      _natoms(_atom_positions.size() / _ndim),
+      m_M(M),
+      m_W(W),
+      m_cog(cog),
+      m_S(S)
     {
         if (_atom_positions.size() == 0 ) {
             throw std::invalid_argument("the atom positions must not have zero size");
@@ -327,6 +337,20 @@ public:
         }
 
     }
+
+    /**
+     * return the shortest vector from com1 to com2
+     *
+     * this could be replaced by periodic distances for instance
+     */
+    inline pele::VecN<3> get_smallest_rij(pele::VecN<3> const & com1, pele::VecN<3> const & com2)
+    {
+        return com2 - com1;
+    }
+
+    double distance_squared(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
+            pele::VecN<3> const & com2, pele::VecN<3> const & p2);
+
 };
 
 ///**
@@ -355,9 +379,16 @@ public:
         : _natoms_total(0)//, _finalized(false)
     {}
 
-    void add_site(Array<double> atom_positions)
+    void add_site(
+            Array<double> atom_positions,
+            Array<double> cog,
+            double M,
+            double W,
+            Array<double> S
+            )
     {
-        _sites.push_back(RigidFragment(atom_positions));
+        _sites.push_back(RigidFragment(atom_positions,
+            cog, M, W, S));
     }
 
     void finalize()

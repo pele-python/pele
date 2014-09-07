@@ -56,7 +56,7 @@ pele::VecN<4> rot_mat_to_quaternion(pele::MatrixNM<3,3> const & mx)
 {
     VecN<4> q(0);
     auto m = pele::transpose<3,3>(mx);
-    double trace = pele::trace<3>(m);
+    double trace = m.trace();
 
     double s;
     if (trace > 0.){

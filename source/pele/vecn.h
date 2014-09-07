@@ -26,7 +26,7 @@ public:
     VecN(dtype const & d) { assign(d); }
 
     /**
-     * initialize from pele array
+     * initialize as copy of pele array
      */
     VecN(pele::Array<dtype> const & x)
     {
@@ -146,7 +146,7 @@ public:
         return *this;
     }
 
-    VecN<N> operator-(VecN<N> const & rhs) {
+    VecN<N> operator-(VecN<N> const & rhs) const {
         VecN<3> v;
         for (size_t i = 0; i < N; ++i) {
             v[i] = m_data[i] - rhs[i];
@@ -196,6 +196,19 @@ public:
      * initialize with constant
      */
     MatrixNM(dtype const & d) { assign(d); }
+
+    /**
+     * initialize as copy of pele array
+     */
+    MatrixNM(pele::Array<dtype> const & x)
+    {
+        if (x.size() != m_size) {
+            throw std::runtime_error("MatrixNM constructor: array must have the same size as matrix");
+        }
+        for (size_t i = 0; i < m_size; ++i) {
+            m_data[i] = x[i];
+        }
+    }
 
     size_t size() const { return m_size; }
 
@@ -248,6 +261,24 @@ public:
         }
         return *this;
     }
+
+    double trace()
+    {
+        double t = 0;
+        for (size_t i = 0; i<N; ++i){
+            t += (*this)(i,i);
+        }
+        return t;
+    }
+
+    MatrixNM<N,M> operator-(MatrixNM<N,M> const & rhs) const {
+        MatrixNM<N,M> v;
+        for (size_t i = 0; i < m_size; ++i) {
+            v.m_data[i] = m_data[i] - rhs.m_data[i];
+        }
+        return v;
+    }
+
 
 }; // close MatrixNM
 
@@ -323,16 +354,6 @@ pele::MatrixNM<M,N> transpose(MatrixNM<N,M> const & A)
         }
     }
     return mat;
-}
-
-template<size_t N>
-double trace(MatrixNM<N,N> const & A)
-{
-    double t = 0;
-    for (size_t i = 0; i<N; ++i){
-        t += A(i,i);
-    }
-    return t;
 }
 
 // for matrix printing

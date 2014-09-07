@@ -193,8 +193,6 @@ setup(name='pele',
 
 include_sources = ["source/pele" + f for f in os.listdir("source/pele") 
                    if f.endswith(".cpp")]
-include_sources += ["source/" + f for f in os.listdir("source/") 
-                   if f.endswith(".cpp")]
 include_dirs = [numpy_include, "source"]
 
 depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/") 
@@ -264,13 +262,13 @@ cxx_modules = [
               ),
     
     Extension("pele.optimize._lbfgs_cpp", 
-              ["pele/optimize/_lbfgs_cpp.cxx"] + include_sources,
+              ["pele/optimize/_lbfgs_cpp.cxx", "source/lbfgs.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
     Extension("pele.optimize._modified_fire_cpp", 
-              ["pele/optimize/_modified_fire_cpp.cxx"] + include_sources,
+              ["pele/optimize/_modified_fire_cpp.cxx", "source/modified_fire.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
@@ -282,7 +280,7 @@ cxx_modules = [
               language="c++", depends=depends,
               ),
     Extension("pele.angleaxis._cpp_aa", 
-              ["pele/angleaxis/_cpp_aa.cxx"] + include_sources,
+              ["pele/angleaxis/_cpp_aa.cxx", "source/aatopology.cpp", "source/rotations.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,

@@ -9,6 +9,8 @@ from pele.potentials import LJ
 from pele.angleaxis._otp_cluster import OTPCluster
 from pele.thermodynamics import get_thermodynamic_information
 from pele.utils import rotations
+from pele.angleaxis._aa_utils import _rot_mat_derivative, _sitedist_grad, _sitedist
+
 
 _x03 = np.array([2.550757898788, 2.591553038507, 3.696836364193, 
                 2.623281513163, 3.415794212648, 3.310786279789, 
@@ -203,6 +205,10 @@ class TestRBTopologyOTP(unittest.TestCase):
         from pele.angleaxis.aamindist import TransformAngleAxisCluster
         self.topology = self.system.aatopology
         self.transform = TransformAngleAxisCluster(self.topology)
+        
+        self.p0 = np.array(range(1,4), dtype=float)
+        self.p0 /= np.linalg.norm(self.p0)
+
     
     def test_transform_rotate(self):
         print "\ntest rotate"
@@ -261,7 +267,20 @@ class TestRBTopologyOTP(unittest.TestCase):
         self.assertEqual(len(czev), 6)
         for ev, cev in izip(zev, czev):
             for v1, v2 in izip(ev, cev):
-                self.assertAlmostEqual(v1, v2, 5)        
+                self.assertAlmostEqual(v1, v2, 5)     
+    
+    def test_site_distance_squared(self):
+        print "\ntest site distance squared"
+        c0 = np.zeros(3);
+        c1 = np.ones(3);
+        p0 = self.p0.copy();
+        p1 = p0 + 1;
+        site = self.system.make_otp()
+        d2 = site.distance_squared(c0, p0, c1, p1)
+        d2p = _sitedist(c1-c0, p0, p1, site.S, site.W, site.cog)
+        print d2, d2p
+        print "M W", site.M, site.W
+        self.assertAlmostEqual(d2, 10.9548367929, 5)
 
 if __name__ == "__main__":
     unittest.main()

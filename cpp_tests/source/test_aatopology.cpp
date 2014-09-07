@@ -19,6 +19,8 @@ public:
     Array<double> x0;
     size_t nrigid;
     std::shared_ptr<pele::RBTopology> rbtopology;
+    VecN<3> p0;
+
 
     Array<double> make_otp_x()
     {
@@ -35,6 +37,31 @@ public:
         return x;
     }
 
+    void add_otp(pele::RBTopology * top)
+    {
+        auto x = make_otp_x();
+        Array<double> cog(3,0);
+        double M = 3.;
+        double W = 3.;
+        Array<double> S(9,0);
+        S[0] = 0.74118095;
+        S[4] = 0.41960635;
+        top->add_site(x, cog, M, W, S);
+        void add_otp(pele::RBTopology * top);
+    }
+
+    pele::RigidFragment make_otp()
+    {
+        auto x = make_otp_x();
+        Array<double> cog(3,0);
+        double M = 3.;
+        double W = 3.;
+        Array<double> S(9,0);
+        S[0] = 0.74118095;
+        S[4] = 0.41960635;
+        return pele::RigidFragment(x, cog, M, W, S);
+    }
+
     virtual void SetUp(){
         nrigid = 3;
         x0 = Array<double>(nrigid*6);
@@ -45,9 +72,11 @@ public:
             auto p = x0.view(3*nrigid + 3*i, 3*nrigid + 3*i + 3);
             p /= norm(p);
         }
+        for (size_t i = 0; i < 3; ++i) p0[i] = i+1;
+        p0 /= norm(p0);
         rbtopology = std::make_shared<pele::RBTopology>();
         for (size_t i = 0; i < nrigid; ++i) {
-            rbtopology->add_site(make_otp_x());
+            add_otp(rbtopology.get());
         }
 
     }
@@ -89,7 +118,7 @@ TEST_F(AATopologyTest, CoordsAdaptorGetAtomPositions_Works)
 
 TEST_F(AATopologyTest, SiteToAtomistic_Works)
 {
-    auto rf = pele::RigidFragment(make_otp_x());
+    pele::RigidFragment rf = make_otp();
     Array<double> com(3);
     VecN<3> p;
     for (size_t i=0; i<3; ++i){
@@ -113,8 +142,8 @@ TEST_F(AATopologyTest, SiteToAtomistic_Works)
 TEST_F(AATopologyTest, ToAtomisticOneMolecule_Works)
 {
     pele::RBTopology rbtop;
-    rbtop.add_site(make_otp_x());
-    pele::RigidFragment rf(make_otp_x());
+    add_otp(&rbtop);
+    pele::RigidFragment rf = make_otp();
     Array<double> com(3);
     VecN<3> p;
     Array<double> x(6);
@@ -151,7 +180,7 @@ TEST_F(AATopologyTest, ToAtomistic_Works)
 
 TEST_F(AATopologyTest, SiteTransformGrad_Works)
 {
-    auto rf = pele::RigidFragment(make_otp_x());
+    auto rf = make_otp();
     VecN<3> p;
     for (size_t i=0; i<3; ++i){
         p[i] = i+1;
@@ -293,4 +322,17 @@ TEST_F(AATopologyTest, ZeroEV_Works)
     ASSERT_NEAR(v[4],  2.80775399e-01, 1e-5);
     ASSERT_NEAR(v[13], 2.77268394e-02, 1e-5);
     ASSERT_NEAR(v[17], 8.86371673e-02, 1e-5);
+}
+
+TEST_F(AATopologyTest, SiteDistance_Works)
+{
+    pele::RigidFragment rf = make_otp();
+    VecN<3> com1(0);
+    VecN<3> com2(1);
+    auto p1 = p0;
+    auto p2 = p0;
+    p2 += 1;
+    double dist2 = rf.distance_squared(com1, p1, com2, p2);
+    ASSERT_NEAR(dist2, 10.9548367929, 1e-5);
+
 }

@@ -16,7 +16,11 @@ from libcpp.vector cimport vector as stdvector
 cdef extern from "pele/aatopology.h" namespace "pele":
     cdef cppclass cppRBTopology "pele::RBTopology":
         cppRBTopology() except +
-        void add_site(_pele.Array[double]) except +
+        void add_site(_pele.Array[double] x,
+                      _pele.Array[double] cog,
+                      double M, double W,
+                      _pele.Array[double] S,
+                      ) except +
         void get_zero_modes(_pele.Array[double]  x,
             stdvector[_pele.Array[double] ] & zev) except +
     cdef cppclass  cppRBPotentialWrapper "pele::RBPotentialWrapper":
@@ -27,10 +31,16 @@ cdef class _cdef_RBTopology(object):
     cdef shared_ptr[cppRBTopology] thisptr
     def __cinit__(self, python_topology):
         self.thisptr = shared_ptr[cppRBTopology](new cppRBTopology() )
+        
+        # add sites to the c++ topology
         cdef np.ndarray[double, ndim=1] apos
         for site in python_topology.sites:
             apos = np.asarray(site.atom_positions, dtype=float).reshape(-1)
-            self.thisptr.get().add_site(_pele.Array[double] (<double *> apos.data, apos.size) )
+            self.thisptr.get().add_site(array_wrap_np(apos),
+                                        array_wrap_np(site.cog),
+                                        float(site.M), float(site.W), 
+                                        array_wrap_np(site.S.reshape(-1))
+                                        )
         
     def get_zero_modes(self, x):
         cdef np.ndarray[double, ndim=1] xnp = np.asarray(x, dtype=float, order="C")

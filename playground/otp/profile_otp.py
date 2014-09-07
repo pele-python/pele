@@ -56,5 +56,5 @@ def do_ts_search(nmol=20):
 if __name__ == "__main__":
 #     getdb()
 #     do_mindist()    
-#     do_connect()
-    do_ts_search()
+    do_connect()
+#     do_ts_search()

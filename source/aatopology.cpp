@@ -75,6 +75,24 @@ pele::RigidFragment::transform_grad(
     }
 }
 
+double pele::RigidFragment::distance_squared(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
+        pele::VecN<3> const & com2, pele::VecN<3> const & p2)
+{
+    VecN<3> drij = get_smallest_rij(com1, com2);
+    pele::MatrixNM<3,3> R1 = pele::aa_to_rot_mat(p1);
+    pele::MatrixNM<3,3> R2 = pele::aa_to_rot_mat(p2);
+
+    MatrixNM<3,3> dR = R2 - R1;
+
+    double d_M = m_W * dot(drij, drij);
+    // we only need the trace, so this can be sped up
+    double d_P = dot<3,3,3>(dR, dot<3,3,3>(m_S, transpose<3>(dR))).trace();
+    double d_mix = 2. * m_W * dot<3>(drij, dot<3,3>(dR, m_cog));
+
+    double dist2 = d_M + d_P + d_mix;
+    return dist2;
+}
+
 Array<double>
 pele::RBTopology::to_atomistic(Array<double> rbcoords)
 {
