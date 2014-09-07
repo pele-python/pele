@@ -336,3 +336,31 @@ TEST_F(AATopologyTest, SiteDistance_Works)
     ASSERT_NEAR(dist2, 10.9548367929, 1e-5);
 
 }
+
+TEST_F(AATopologyTest, DistanceSquared_Works)
+{
+    auto x1 = x0.copy();
+    auto x2 = x0.copy();
+    x2 += 1.1;
+    double d2 = rbtopology->distance_squared(x1, x2);
+    ASSERT_NEAR(d2, 38.9401810973, 1e-5);
+}
+
+TEST_F(AATopologyTest, DistanceSquaredGrad_Works)
+{
+    auto x1 = x0.copy();
+    auto x2 = x0.copy();
+    x2 += 1.1;
+    auto grad = x1.copy();
+    rbtopology->distance_squared_grad(x1, x2, grad);
+    std::cout << grad << std::endl;
+
+    for (size_t i =0; i < nrigid*3; ++i) {
+        ASSERT_DOUBLE_EQ(grad[i], -6.6);
+    }
+
+    ASSERT_NEAR(grad[nrigid*3 + 0], -1.21579025, 1e-5);
+    ASSERT_NEAR(grad[nrigid*3 + 4], -0.06984532, 1e-5);
+    ASSERT_NEAR(grad[nrigid*3 + 8], -1.28362943, 1e-5);
+
+}

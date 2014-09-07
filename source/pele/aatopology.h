@@ -177,6 +177,19 @@ public:
         return _coords.view(0, 3*_nrigid);
     }
 
+    pele::Array<double> get_rb_position(size_t isite)
+    {
+        if (_nrigid == 0) {
+            // return empty array
+            return pele::Array<double>();
+        }
+        if (isite > _nrigid) {
+            throw std::invalid_argument("isite must be less than nrigid");
+        }
+        size_t const istart = 3*isite;
+        return _coords.view(istart, istart+3);
+    }
+
     pele::Array<double> get_rb_rotations()
     {
         if (_nrigid == 0) {
@@ -343,13 +356,18 @@ public:
      *
      * this could be replaced by periodic distances for instance
      */
-    inline pele::VecN<3> get_smallest_rij(pele::VecN<3> const & com1, pele::VecN<3> const & com2)
+    inline pele::VecN<3> get_smallest_rij(pele::VecN<3> const & com1, pele::VecN<3> const & com2) const
     {
         return com2 - com1;
     }
 
     double distance_squared(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
-            pele::VecN<3> const & com2, pele::VecN<3> const & p2);
+            pele::VecN<3> const & com2, pele::VecN<3> const & p2) const;
+
+    void distance_squared_grad(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
+            pele::VecN<3> const & com2, pele::VecN<3> const & p2,
+            VecN<3> & g_M, VecN<3> & g_P
+            ) const;
 
 };
 
@@ -413,9 +431,9 @@ public:
      */
     size_t natoms_total() const { return _natoms_total; }
 
-    size_t number_of_non_rigid_atoms() { return 0; }
+    size_t number_of_non_rigid_atoms() const { return 0; }
 
-    CoordsAdaptor get_coords_adaptor(pele::Array<double> x)
+    CoordsAdaptor get_coords_adaptor(pele::Array<double> x) const
     {
         return CoordsAdaptor(nrigid(), number_of_non_rigid_atoms(), x);
     }
@@ -479,6 +497,55 @@ public:
             delta -= x;
             delta /= norm(delta);
             zev.push_back(delta.copy());
+        }
+    }
+
+    double distance_squared(pele::Array<double> const x1, pele::Array<double> const x2) const
+    {
+        double d_sq = 0;
+        auto ca1 = get_coords_adaptor(x1);
+        auto ca2 = get_coords_adaptor(x2);
+        for (size_t isite = 0; isite < nrigid(); ++isite) {
+            d_sq += _sites[isite].distance_squared(
+                    ca1.get_rb_position(isite),
+                    ca1.get_rb_rotation(isite),
+                    ca2.get_rb_position(isite),
+                    ca2.get_rb_rotation(isite)
+                );
+        }
+        return d_sq;
+    }
+
+    /**
+     * Calculate gradient with respect to x1 for the squared distance
+     *
+     * calculate the spring force on x1 to x2
+     */
+    void distance_squared_grad(pele::Array<double> const x1, pele::Array<double> const x2,
+            pele::Array<double> grad
+            ) const
+    {
+        if (grad.size() != x1.size()) {
+            throw std::runtime_error("grad has the wrong size");
+        }
+        grad.assign(0);
+        auto ca1 = get_coords_adaptor(x1);
+        auto ca2 = get_coords_adaptor(x2);
+        auto ca_spring = get_coords_adaptor(grad);
+
+        // first distance for sites only
+        for (size_t isite=0; isite<nrigid(); ++isite) {
+            pele::VecN<3> g_M, g_P;
+            _sites[isite].distance_squared_grad(
+                    ca1.get_rb_position(isite),
+                    ca1.get_rb_rotation(isite),
+                    ca2.get_rb_position(isite),
+                    ca2.get_rb_rotation(isite),
+                    g_M, g_P);
+            auto spring_com = ca_spring.get_rb_position(isite);
+            std::copy(g_M.begin(), g_M.end(), spring_com.begin());
+            auto spring_rot = ca_spring.get_rb_rotation(isite);
+            std::copy(g_P.begin(), g_P.end(), spring_rot.begin());
         }
     }
 

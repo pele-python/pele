@@ -282,6 +282,32 @@ class TestRBTopologyOTP(unittest.TestCase):
         print "M W", site.M, site.W
         self.assertAlmostEqual(d2, 10.9548367929, 5)
 
+
+    def test_distance_squared(self):
+        print "\ntest distance squared"
+        x1 = self.x0.copy()
+        x2 = self.x0 + 1.1;
+        d2 = self.topology.distance_squared(x1, x2)
+        print d2
+        self.assertAlmostEqual(d2, 38.9401810973, 5)
+        
+
+
+    def test_distance_squared_grad(self):
+        print "\ntest distance squared grad"
+        x1 = self.x0.copy()
+        x2 = self.x0 + 1.1;
+        grad = self.topology.distance_squared_grad(x1, x2)
+        print repr(grad)
+        
+        gtrue = np.array([-6.6       , -6.6       , -6.6       , -6.6       , -6.6       ,
+                       -6.6       , -6.6       , -6.6       , -6.6       , -1.21579025,
+                       -0.07013805, -1.2988823 , -1.21331786, -0.06984532, -1.28945301,
+                       -1.2116105 , -0.06975828, -1.28362943])
+        for v1, v2 in izip(grad, gtrue):
+            self.assertAlmostEqual(v1, v2, 5)     
+        
+
 if __name__ == "__main__":
     unittest.main()
 
