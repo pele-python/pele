@@ -98,7 +98,8 @@ class AASystem(BaseSystem):
         return 6
     
 class RBSystem(AASystem):
-    def drawCylinder(self, X1, X2):
+    
+    def drawCylinder(self, X1, X2): # pragma: no cover
         from OpenGL import GL,GLUT, GLU
         z = np.array([0.,0.,1.]) #default cylinder orientation
         p = X2-X1 #desired cylinder orientation

@@ -74,6 +74,7 @@ class OTPCluster(RBSystem):
             cartesian_potential = LJ()
             # wrap it so it can be used with angle axis coordinates
             self.pot = RBPotentialWrapper(self.aasystem, cartesian_potential)
+            self.aasystem.set_cpp_topology(self.pot.topology)
             return self.pot
 
 def test_bh():

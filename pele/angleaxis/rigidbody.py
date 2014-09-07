@@ -216,6 +216,12 @@ class RBTopology(aatopology.AATopology):
                 grad[i]=x
         return grad
     
+        
+    def set_cpp_topology(self, cpp_topology):
+        """provide class to access the fast c++ topology routines"""
+        self.cpp_topology = cpp_topology
+
+    
 class RBPotentialWrapper(potential):
     def __init__(self, rbsystem, pot):
         self.pot = pot

@@ -379,6 +379,10 @@ class AATopology(object):
         
         This does both translational and rotational eigenvectors
         """
+        try:
+            return self.cpp_topology.get_zero_modes(x)
+        except AttributeError:
+            pass
         zev = []
         ca = self.coords_adapter(x)
         cv = self.coords_adapter(np.zeros(x.shape))

@@ -251,6 +251,17 @@ class TestRBTopologyOTP(unittest.TestCase):
         for ev in zev:
             print repr(ev)
         
+    def test_cpp_zero_ev(self):
+        print "\ntest zeroEV cpp"
+        x = self.x0.copy()
+        zev = self.topology.zeroEV(x)
+        pot = self.system.get_potential()
+        czev = pot.topology.get_zero_modes(x)
+        print "size", len(czev)
+        self.assertEqual(len(czev), 6)
+        for ev, cev in izip(zev, czev):
+            for v1, v2 in izip(ev, cev):
+                self.assertAlmostEqual(v1, v2, 5)        
 
 if __name__ == "__main__":
     unittest.main()
