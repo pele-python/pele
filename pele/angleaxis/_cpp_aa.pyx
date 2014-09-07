@@ -23,6 +23,12 @@ cdef extern from "pele/aatopology.h" namespace "pele":
                       ) except +
         void get_zero_modes(_pele.Array[double]  x,
             stdvector[_pele.Array[double] ] & zev) except +
+        double distance_squared(_pele.Array[double]  x1,
+                              _pele.Array[double]  x2) except +
+        void distance_squared_grad(_pele.Array[double]  x1,
+                              _pele.Array[double]  x2,
+                              _pele.Array[double]  grad) except +
+
     cdef cppclass  cppRBPotentialWrapper "pele::RBPotentialWrapper":
         cppRBPotentialWrapper(shared_ptr[_pele.cBasePotential], shared_ptr[cppRBTopology]) except +
 #         void add_site(_pele.Array[double]) except +
@@ -50,6 +56,19 @@ cdef class _cdef_RBTopology(object):
         for i in xrange(6):
             zevlist.append(pele_array_to_np(c_zevlist[i]))
         return zevlist
+    
+    def distance_squared(self, x1in, x2in):
+        cdef np.ndarray[double, ndim=1] x1 = np.asarray(x1in, dtype=float, order="C")
+        cdef np.ndarray[double, ndim=1] x2 = np.asarray(x2in, dtype=float, order="C")
+        cdef double d2 = self.thisptr.get().distance_squared(array_wrap_np(x1), array_wrap_np(x2))
+        return d2
+        
+    def distance_squared_grad(self, x1in, x2in):
+        cdef np.ndarray[double, ndim=1] x1 = np.asarray(x1in, dtype=float, order="C")
+        cdef np.ndarray[double, ndim=1] x2 = np.asarray(x2in, dtype=float, order="C")
+        cdef np.ndarray[double, ndim=1] grad = np.zeros(x1.size)
+        self.thisptr.get().distance_squared_grad(array_wrap_np(x1), array_wrap_np(x2), array_wrap_np(grad))
+        return grad
         
 
 

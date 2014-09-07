@@ -248,6 +248,10 @@ class AATopology(object):
 
     def distance_squared(self, coords1, coords2):
         ''' Calculate the squared distance between 2 configurations'''
+        try:
+            return self.cpp_topology.distance_squared(coords1, coords2)
+        except AttributeError:
+            pass
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         
@@ -263,6 +267,10 @@ class AATopology(object):
     # calculate the spring force on x1 to x2
     def distance_squared_grad(self, coords1, coords2):
         ''' Calculate gradient with respect to coords 1 for the squared distance'''
+        try:
+            return self.cpp_topology.distance_squared_grad(coords1, coords2)
+        except AttributeError:
+            pass
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         spring = self.coords_adapter(np.zeros(coords1.shape))
