@@ -19,6 +19,12 @@ class TransformAngleAxisCluster(TransformPolicy):
             if s.inversion is None:
                 self._can_invert = False
         
+        try:
+            self.cpp_transform = _cpp_aa.cdefTransformAACluster(self.topology)
+        except AttributeError:
+            pass
+
+        
     def translate(self, X, d):
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
@@ -30,6 +36,10 @@ class TransformAngleAxisCluster(TransformPolicy):
     def rotate(self, X, mx):
         """rotate the com + angle-axis position X by the rotation matrix mx
         """
+        try:
+            return self.cpp_transform.rotate(X, mx)
+        except AttributeError:
+            pass
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
             # rotate the center of mass positions

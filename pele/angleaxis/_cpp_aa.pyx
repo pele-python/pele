@@ -37,6 +37,11 @@ cdef extern from "pele/aatopology.h" namespace "pele":
                               _pele.Array[double]  x2,
                               _pele.Array[double]  grad) except +
 
+    cdef cppclass cppTransformAACluster "pele::TransformAACluster":
+        cppTransformAACluster(cppRBTopology * top) except +
+        void rotate(_pele.Array[double]  x,
+                    _pele.Array[double]  mx) except +
+
     cdef cppclass cppMeasureAngleAxisCluster "pele::MeasureAngleAxisCluster":
         cppMeasureAngleAxisCluster(cppRBTopology * top) except +
         void align(_pele.Array[double]  x1,
@@ -121,6 +126,28 @@ cdef class _cdef_MeasureAngleAxisCluster(object):
     def align(self, x1, x2):
         self.thisptr.get().align(array_wrap_np(x1), array_wrap_np(x1))
 
+cdef class _cdef_TransformAACluster(object):
+    cdef shared_ptr[cppTransformAACluster] thisptr
+    cdef _cdef_RBTopology topology
+    def __cinit__(self, topology):
+        # set up the cpp topology
+        try:
+            self.topology = topology
+        except TypeError, e1:
+            try:
+                self.topology = topology.cpp_topology
+            except (TypeError, AttributeError):
+                print "can't set up the c++ topology"
+                print "first tried", e1
+                raise
+
+        self.thisptr = shared_ptr[cppTransformAACluster](
+                  new cppTransformAACluster(self.topology.thisptr.get()))
+    
+    def rotate(self, x, mx):
+        assert mx.size == 9
+        self.thisptr.get().rotate(array_wrap_np(x), array_wrap_np(mx.reshape(-1)))
+
 
 cdef class _cdef_RBPotentialWrapper(BasePotential):
     """define the python interface to the c++ RBPotentialWrapper implementation
@@ -159,6 +186,9 @@ class RBPotentialWrapper(_cdef_RBPotentialWrapper):
     atomistic_potential : pele potential
         this class will compute the energy and gradient in atomistic coordinates
     """
+
+class cdefTransformAACluster(_cdef_TransformAACluster):
+    pass
 
 class cdefMeasureAngleAxisCluster(_cdef_MeasureAngleAxisCluster):
     pass

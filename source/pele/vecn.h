@@ -6,6 +6,8 @@
 #include <vector>
 #include <iostream>
 #include <pele/array.h>
+#include <string>
+#include <sstream>
 
 namespace pele{
 
@@ -204,7 +206,11 @@ public:
     MatrixNM(pele::Array<dtype> const & x)
     {
         if (x.size() != m_size) {
-            throw std::runtime_error("MatrixNM constructor: array must have the same size as matrix");
+            std::stringstream ss;
+            ss << "MatrixNM constructor: array (size " << x.size() << ") must have the same size as matrix " << m_size;
+            throw std::runtime_error(
+                    ss.str()
+                    );
         }
         for (size_t i = 0; i < m_size; ++i) {
             m_data[i] = x[i];

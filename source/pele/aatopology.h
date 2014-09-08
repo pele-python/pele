@@ -262,7 +262,10 @@ public:
      * apply a rotation to a set of rigid body coordinates
      */
     void rotate(pele::Array<double> x, pele::MatrixNM<3,3> const & mx);
-
+    inline void rotate(pele::Array<double> x, pele::Array<double> mx)
+    {
+        return rotate(x, pele::MatrixNM<3,3>(mx));
+    }
 };
 
 class MeasureAngleAxisCluster {
