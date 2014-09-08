@@ -1,10 +1,14 @@
+from math import sqrt
+from math import pi
+
 import numpy as np
+
 from pele.utils import rotations
 from pele.mindist import ExactMatchCluster, MinPermDistCluster, StandardClusterAlignment
 from pele.mindist import TransformPolicy, MeasurePolicy
 from pele.mindist import findrotation, find_best_permutation
-from math import sqrt
-from math import pi
+from pele.angleaxis import _cpp_aa
+from _abcoll import _hasattr
 
 class TransformAngleAxisCluster(TransformPolicy):
     ''' transformation rules for atomic clusters '''
@@ -14,7 +18,7 @@ class TransformAngleAxisCluster(TransformPolicy):
         for s in topology.sites:
             if s.inversion is None:
                 self._can_invert = False
-                
+        
     def translate(self, X, d):
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
@@ -67,6 +71,11 @@ class MeasureAngleAxisCluster(MeasurePolicy):
             transform= TransformAngleAxisCluster(topology)
         self.transform = transform
         
+        try:
+            self.cpp_measure = _cpp_aa.cdefMeasureAngleAxisCluster(self.topology)
+        except AttributeError:
+            pass
+        
     def get_com(self, X):
         ca = self.topology.coords_adapter(X)
         
@@ -81,7 +90,11 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         return com
 
     def align(self, coords1, coords2):
-        """given fixed rigid body centers of mass, align the atomistic coordinates"""
+        """align the rotations so that the atomistic coordinates will be in best alignment"""
+        try:
+            return self.cpp_measure.align(coords1, coords2)
+        except AttributeError:
+            pass
         c1 = self.topology.coords_adapter(coords1)
         c2 = self.topology.coords_adapter(coords2)
         

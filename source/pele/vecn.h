@@ -8,6 +8,7 @@
 #include <pele/array.h>
 
 namespace pele{
+
 template<size_t N>
 class VecN {
     typedef double dtype;
@@ -354,6 +355,16 @@ pele::MatrixNM<M,N> transpose(MatrixNM<N,M> const & A)
         }
     }
     return mat;
+}
+
+template<size_t N>
+pele::MatrixNM<N,N> identity()
+{
+    pele::MatrixNM<N,N> A(0.);
+    for (size_t i = 0; i<N; ++i) {
+        A(i,i) = 1.;
+    }
+    return A;
 }
 
 // for matrix printing

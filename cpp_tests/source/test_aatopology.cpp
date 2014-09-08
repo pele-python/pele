@@ -37,19 +37,6 @@ public:
         return x;
     }
 
-    void add_otp(pele::RBTopology * top)
-    {
-        auto x = make_otp_x();
-        Array<double> cog(3,0);
-        double M = 3.;
-        double W = 3.;
-        Array<double> S(9,0);
-        S[0] = 0.74118095;
-        S[4] = 0.41960635;
-        top->add_site(x, cog, M, W, S);
-        void add_otp(pele::RBTopology * top);
-    }
-
     pele::RigidFragment make_otp()
     {
         auto x = make_otp_x();
@@ -59,7 +46,29 @@ public:
         Array<double> S(9,0);
         S[0] = 0.74118095;
         S[4] = 0.41960635;
-        return pele::RigidFragment(x, cog, M, W, S);
+        bool invertible = true;
+        Array<double> eye(9,0);
+        eye[0] = 1;
+        eye[4] = 1;
+        eye[8] = 1;
+        Array<double> inversion = eye.copy();
+        inversion[4] = -1;
+        inversion[8] = -1;
+        pele::RigidFragment rf(x, cog, M, W, S, inversion, invertible);
+
+        auto rot = eye.copy();
+        rot[0] = -1;
+        rot[8] = -1;
+        rf.add_symmetry_rotation(rot);
+
+        rf.add_symmetry_rotation(eye.copy());
+
+        return rf;
+    }
+
+    void add_otp(pele::RBTopology * top)
+    {
+        top->add_site(make_otp());
     }
 
     virtual void SetUp(){
@@ -353,7 +362,7 @@ TEST_F(AATopologyTest, DistanceSquaredGrad_Works)
     x2 += 1.1;
     auto grad = x1.copy();
     rbtopology->distance_squared_grad(x1, x2, grad);
-    std::cout << grad << std::endl;
+//    std::cout << grad << std::endl;
 
     for (size_t i =0; i < nrigid*3; ++i) {
         ASSERT_DOUBLE_EQ(grad[i], -6.6);
@@ -364,3 +373,24 @@ TEST_F(AATopologyTest, DistanceSquaredGrad_Works)
     ASSERT_NEAR(grad[nrigid*3 + 8], -1.28362943, 1e-5);
 
 }
+
+TEST_F(AATopologyTest, MeasureAlign_Works)
+{
+    auto x1 = x0.copy();
+    auto x2 = x0.copy();
+    x2 += 5.1;
+    x2[x2.size()-1] = x1[x2.size()-1] + .1;
+    auto x20 = x2.copy();
+    pele::MeasureAngleAxisCluster measure(rbtopology.get());
+    measure.align(x1, x2);
+
+    for (size_t i =0; i < nrigid*3; ++i) {
+        ASSERT_DOUBLE_EQ(x2[i], x20[i]);
+    }
+
+    ASSERT_NEAR(x2[nrigid*3 + 0], 1.34332528, 1e-5);
+    ASSERT_NEAR(x2[nrigid*3 + 4], 0.47517882, 1e-5);
+    ASSERT_NEAR(x2[nrigid*3 + 8], 0.15531234, 1e-5);
+}
+
+

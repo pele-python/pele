@@ -4,6 +4,9 @@
 
 namespace pele{
 
+using pele::norm;
+using pele::dot;
+
 pele::Array<double>
 pele::RigidFragment::to_atomistic(pele::Array<double> const com,
         pele::VecN<3> const & p)
@@ -123,6 +126,37 @@ pele::RigidFragment::distance_squared_grad(pele::VecN<3> const & com1, pele::Vec
     g_P[0] -= 2. * m_W * dot<3>(drij, dot<3,3>(R11, m_cog));
     g_P[1] -= 2. * m_W * dot<3>(drij, dot<3,3>(R12, m_cog));
     g_P[2] -= 2. * m_W * dot<3>(drij, dot<3,3>(R13, m_cog));
+}
+
+
+void pele::MeasureAngleAxisCluster::
+align(pele::Array<double> const x1, pele::Array<double> x2)
+{
+    auto c1 = m_topology->get_coords_adaptor(x1);
+    auto c2 = m_topology->get_coords_adaptor(x2);
+
+    // now account for the symmetries
+    for (size_t isite = 0; isite < m_topology->nrigid(); ++isite) {
+        auto const & rotations = m_topology->get_sites()[isite].get_symmetry_rotations();
+        auto p1 = c1.get_rb_rotation(isite);
+        auto p2 = c2.get_rb_rotation(isite);
+        auto mx2 = pele::aa_to_rot_mat(p2);
+        auto mx1 = pele::transpose(pele::aa_to_rot_mat(p1));
+        auto mx =  pele::dot(mx1, mx2);
+        double theta_min = 10.;
+        MatrixNM<3,3> rot_best = pele::identity<3>();
+        for (auto const & rot : rotations){
+            auto mx_diff = dot(mx, rot);
+            double theta = norm<3>(rot_mat_to_aa(mx_diff));
+            theta -= int(theta / (2. * M_PI)) * 2. * M_PI;
+            if (theta < theta_min) {
+                theta_min = theta;
+                rot_best = rot;
+            }
+        }
+        auto newp2 = rotate_aa(rot_mat_to_aa(rot_best), p2);
+        std::copy(newp2.begin(), newp2.end(), p2.begin());
+    }
 }
 
 

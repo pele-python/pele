@@ -10,6 +10,7 @@ from pele.angleaxis._otp_cluster import OTPCluster
 from pele.thermodynamics import get_thermodynamic_information
 from pele.utils import rotations
 from pele.angleaxis._aa_utils import _rot_mat_derivative, _sitedist_grad, _sitedist
+from pele.angleaxis.aamindist import MeasureRigidBodyCluster
 
 
 _x03 = np.array([2.550757898788, 2.591553038507, 3.696836364193, 
@@ -47,6 +48,7 @@ class TestOTPExplicit(unittest.TestCase):
         nrigid = 3
         self.topology = RBTopology()
         self.topology.add_sites([self.make_otp() for i in xrange(nrigid)])
+        self.topology.finalize_setup()
         
         cartesian_potential = LJ()
         self.pot = RBPotentialWrapper(self.topology, cartesian_potential)
@@ -261,8 +263,7 @@ class TestRBTopologyOTP(unittest.TestCase):
         print "\ntest zeroEV cpp"
         x = self.x0.copy()
         zev = self.topology.zeroEV(x)
-        pot = self.system.get_potential()
-        czev = pot.topology.get_zero_modes(x)
+        czev = self.topology.cpp_topology.get_zero_modes(x)
         print "size", len(czev)
         self.assertEqual(len(czev), 6)
         for ev, cev in izip(zev, czev):
@@ -305,8 +306,20 @@ class TestRBTopologyOTP(unittest.TestCase):
                        -0.07013805, -1.2988823 , -1.21331786, -0.06984532, -1.28945301,
                        -1.2116105 , -0.06975828, -1.28362943])
         for v1, v2 in izip(grad, gtrue):
-            self.assertAlmostEqual(v1, v2, 5)     
-        
+            self.assertAlmostEqual(v1, v2, 5)
+    
+    def test_measure_align(self):
+        print "\ntest measure align"
+        for m in self.topology.sites[0].symmetries:
+            print m
+        x1 = self.x0.copy()
+        x2 = self.x0 + 5.1;
+        x2[-1] = x1[-1] + .1
+        x20 = x2.copy()
+        measure = MeasureRigidBodyCluster(self.topology)
+        measure.align(x1, x2)
+        print repr(x20)
+        print repr(x2)
 
 if __name__ == "__main__":
     unittest.main()

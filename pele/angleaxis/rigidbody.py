@@ -62,7 +62,7 @@ class RigidFragment(aatopology.AASiteType):
         #calculate aa rotations for later
         self.symmetriesaa = []
         for rot in self.symmetries:
-            self.symmetriesaa.append(mx2aa(rot)) 
+            self.symmetriesaa.append(mx2aa(rot))
             
     def to_atomistic(self, com, p):
         R, R1, R2, R3 = aatopology.rotMatDeriv(p, False)
@@ -181,6 +181,10 @@ class RBTopology(aatopology.AATopology):
             else:
                 site.atom_indices = range(self.natoms, self.natoms+nsite_atoms)
             self.natoms += nsite_atoms
+    
+    def finalize_setup(self):
+        from pele.angleaxis import _cpp_aa
+        self.set_cpp_topology(_cpp_aa.cdefRBTopology(self))
             
     def get_atom_labels(self):
         labels=[]

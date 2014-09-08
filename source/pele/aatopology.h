@@ -265,7 +265,20 @@ public:
 
 };
 
+class MeasureAngleAxisCluster {
+public:
+    pele::RBTopology * m_topology;
+    MeasureAngleAxisCluster(pele::RBTopology * topology)
+        : m_topology(topology)
+    { }
 
+    /**
+     * align the rotations so that the atomistic coordinates will be in best alignment
+     */
+    void align(pele::Array<double> const x1, pele::Array<double> x2);
+
+
+};
 
 
 /**
@@ -281,20 +294,28 @@ class RigidFragment {
     double m_W; // sum of all weights
     pele::VecN<3> m_cog; // center of gravity
     pele::MatrixNM<3,3> m_S; // weighted tensor of gyration S_ij = \sum m_i x_i x_j
+    pele::MatrixNM<3,3> m_inversion; // matrix that applies the appropriate inversion
+    bool m_can_invert;
+
+    std::vector<pele::MatrixNM<3,3> > m_symmetry_rotations; // list of symmetry rotations
+
 
 public:
     RigidFragment(pele::Array<double> atom_positions,
             Array<double> cog,
             double M,
             double W,
-            Array<double> S)
+            Array<double> S,
+            Array<double> inversion, bool can_invert)
     : _atom_positions(atom_positions.copy()),
       _atom_positions_matrix(_atom_positions, _ndim),
       _natoms(_atom_positions.size() / _ndim),
       m_M(M),
       m_W(W),
       m_cog(cog),
-      m_S(S)
+      m_S(S),
+      m_inversion(inversion),
+      m_can_invert(can_invert)
     {
         if (_atom_positions.size() == 0 ) {
             throw std::invalid_argument("the atom positions must not have zero size");
@@ -305,6 +326,16 @@ public:
     }
 
     inline size_t natoms() const { return _natoms; }
+
+    inline void add_symmetry_rotation(pele::Array<double> R)
+    {
+        m_symmetry_rotations.push_back(R);
+    }
+
+    inline std::vector<pele::MatrixNM<3,3> > const & get_symmetry_rotations() const
+    {
+        return m_symmetry_rotations;
+    }
 
     /**
      * convert a center of mass and a angle axis rotation to a set of atomistic coordinates
@@ -397,16 +428,9 @@ public:
         : _natoms_total(0)//, _finalized(false)
     {}
 
-    void add_site(
-            Array<double> atom_positions,
-            Array<double> cog,
-            double M,
-            double W,
-            Array<double> S
-            )
+    void add_site(RigidFragment const & site)
     {
-        _sites.push_back(RigidFragment(atom_positions,
-            cog, M, W, S));
+        _sites.push_back(site);
     }
 
     void finalize()
@@ -420,6 +444,8 @@ public:
             _natoms_total += rf.natoms();
         }
     }
+
+    std::vector<RigidFragment> const & get_sites() const { return _sites; };
 
     /**
      * number of rigid bodies
