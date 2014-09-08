@@ -1,12 +1,12 @@
 import numpy as np
 from collections import namedtuple
 
-def free_energy(energy, pgorder, fvib, kBT, kappa, h=1.0):  
-    beta = 1./kBT
-    Fpg = np.log(pgorder)/beta
-    Ffrq = kappa*np.log(beta) + 0.5*fvib /beta 
-    Ffrq = kappa*(np.log(beta) + np.log(h)) / beta + 0.5*fvib/beta 
-    return  energy + Ffrq + Fpg
+#def free_energy(energy, pgorder, fvib, kBT, kappa, h=1.0):  
+#    beta = 1./kBT
+#    Fpg = np.log(pgorder)/beta
+#    Ffrq = kappa*np.log(beta) + 0.5*fvib /beta 
+#    Ffrq = kappa*(np.log(beta) + np.log(h)) / beta + 0.5*fvib/beta 
+#    return  energy + Ffrq + Fpg
 
 
 def dos_to_cv(energies, ldos, T, K=1.):
@@ -46,7 +46,8 @@ def dos_to_cv(energies, ldos, T, K=1.):
     
     lZ = np.log(Z) + lZmax
 
-    return lZ, U, U2, Cv
+    Ret = namedtuple("CvReturn", "lZ U U2 Cv")
+    return Ret(lZ=lZ, U=U, U2=U2, Cv=Cv)
 
 def minima_to_cv(minima, kT, k):
     """compute the heat capacity and other thermodynamic quantities from a list of minima using the harmonic approximation

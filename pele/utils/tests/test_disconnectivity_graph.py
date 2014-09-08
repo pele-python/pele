@@ -33,7 +33,7 @@ def create_random_database(nmin=20, nts=20):
 
 class TestDisconnectivityGraph(unittest.TestCase):
     def setUp(self):
-#         np.random.seed(1)
+        np.random.seed(0)
         self.db = create_random_database(20, 60)
         self.tsgraph = database2graph(self.db)
 
@@ -41,6 +41,9 @@ class TestDisconnectivityGraph(unittest.TestCase):
         dgraph = DisconnectivityGraph(self.tsgraph)
         dgraph.calculate()
         dgraph.plot()
+        layout = dgraph.get_tree_layout()
+        
+        dgraph.draw_minima(self.db.minima()[:2])
 
     def test_show_minima(self):
         dgraph = DisconnectivityGraph(self.tsgraph)
@@ -94,6 +97,16 @@ class TestDisconnectivityGraph(unittest.TestCase):
             plt.title("color by value")
             dgraph.show()
 
+    def test_Emax(self):
+        emax = self.db._highest_energy_minimum().energy
+        m1 = self.db.addMinimum(emax-5.1, [0.])
+        m2 = self.db.addMinimum(emax-5.2, [0.])
+        self.db.addTransitionState(emax-5, [0.], m1, m2)
+        self.db.addMinimum(emax-5.3, [0.]) # so this will need to be removed
+        dgraph = DisconnectivityGraph(self.tsgraph, Emax=emax-2, subgraph_size=1, order_by_energy=True)
+        dgraph.calculate()
+        dgraph.plot()
+
 
 class TestTreeLeastCommonAncestor(unittest.TestCase):
     def test(self):
@@ -111,7 +124,15 @@ class TestTreeLeastCommonAncestor(unittest.TestCase):
         self.assertEqual(TreeLeastCommonAncestor([t3_1, t3_2, t3_3]).least_common_ancestor, t1)
         self.assertEqual(TreeLeastCommonAncestor([t2_1, t3_1]).least_common_ancestor, t2_1)
         self.assertEqual(TreeLeastCommonAncestor([t2_2, t3_1]).least_common_ancestor, t1)
+        
+        lca = TreeLeastCommonAncestor([t3_1, t3_2])
+        self.assertItemsEqual(lca.get_all_paths_to_common_ancestor(), [t2_1, t3_1, t3_2])
 
+    def test_make_branch(self):
+        t1 = Tree()
+        t2 = t1.make_branch()
+        self.assertEqual(t2.parent, t1)
+        self.assertEqual(t1.number_of_subtrees(), 2)
 
 if __name__ == "__main__":
     unittest.main()

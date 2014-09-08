@@ -7,6 +7,7 @@
 #include "simple_pairwise_ilist.h"
 #include "atomlist_potential.h"
 #include "distance.h"
+#include "meta_pow.h"
 #include "cell_list_potential.h"
 
 namespace pele {
@@ -101,6 +102,144 @@ struct InversePower_interaction {
     }
 };
 
+template<int POW>
+struct InverseIntPower_interaction {
+    double const _eps;
+    double const _pow;
+    Array<double> const _radii;
+
+    InverseIntPower_interaction(double eps, Array<double> const radii)
+        : _eps(eps),
+          _pow(POW),
+          _radii(radii.copy())
+    {}
+
+    /* calculate energy from distance squared */
+    double energy(double r2, size_t atomi, size_t atomj) const
+    {
+        double E;
+        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        double r = std::sqrt(r2);
+        if (r >= r0){
+            E = 0.;
+        } else {
+            //E = std::pow((1 -r/r0), _pow) * _eps/_pow;
+            E = pos_int_pow<POW>(1 -r/r0) * _eps/_pow;
+        }
+        return E;
+    }
+
+    /* calculate energy and gradient from distance squared, gradient is in -(dv/drij)/|rij| */
+    double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const
+    {
+        double E;
+        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        double r = std::sqrt(r2);
+
+        if (r >= r0){
+            E = 0.;
+            *gij = 0;
+        } else {
+            //double factor = std::pow((1 -r/r0), _pow) * _eps;
+            double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
+            E =  factor / _pow;
+            *gij =  - factor / ((r-r0)*r);
+        }
+
+        return E;
+    }
+
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
+    {
+        double E;
+        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        double r = std::sqrt(r2);
+        if (r >= r0){
+            E = 0.;
+            *gij = 0;
+            *hij=0;
+        } else {
+            //double factor = std::pow((1 -r/r0), _pow) * _eps;
+            double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
+            double denom = 1.0 / (r-r0);
+            E =  factor / _pow;
+            *gij =  - factor * denom / r ;
+            *hij = (_pow-1) * factor * denom * denom;
+        }
+
+        return E;
+    }
+};
+
+template<int POW2>
+struct InverseHalfIntPower_interaction {
+    double const _eps;
+    double const _pow;
+    Array<double> const _radii;
+
+    InverseHalfIntPower_interaction(double eps, Array<double> const radii)
+        : _eps(eps),
+          _pow(0.5 * POW2),
+          _radii(radii.copy())
+    {}
+
+    /* calculate energy from distance squared */
+    double energy(double r2, size_t atomi, size_t atomj) const
+    {
+        double E;
+        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        double r = std::sqrt(r2);
+        if (r >= r0){
+            E = 0.;
+        } else {
+            //E = std::pow((1 -r/r0), _pow) * _eps/_pow;
+            E = pos_half_int_pow<POW2>(1 -r/r0) * _eps/_pow;
+        }
+        return E;
+    }
+
+    /* calculate energy and gradient from distance squared, gradient is in -(dv/drij)/|rij| */
+    double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const
+    {
+        double E;
+        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        double r = std::sqrt(r2);
+
+        if (r >= r0){
+            E = 0.;
+            *gij = 0;
+        } else {
+            //double factor = std::pow((1 -r/r0), _pow) * _eps;
+            double factor = pos_half_int_pow<POW2>(1 -r/r0) * _eps;
+            E =  factor / _pow;
+            *gij =  - factor / ((r-r0)*r);
+        }
+
+        return E;
+    }
+
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
+    {
+        double E;
+        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        double r = std::sqrt(r2);
+        if (r >= r0){
+            E = 0.;
+            *gij = 0;
+            *hij=0;
+        } else {
+            //double factor = std::pow((1 -r/r0), _pow) * _eps;
+            double factor = pos_half_int_pow<POW2>(1 -r/r0) * _eps;
+            double denom = 1.0 / (r-r0);
+            E =  factor / _pow;
+            *gij =  - factor * denom / r ;
+            *hij = (_pow-1) * factor * denom * denom;
+        }
+
+        return E;
+    }
+};
+
 
 //
 // combine the components (interaction, looping method, distance function) into
@@ -116,7 +255,7 @@ public:
     InversePower(double pow, double eps, pele::Array<double> const radii)
         : SimplePairwisePotential< InversePower_interaction, cartesian_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
-                std::make_shared<cartesian_distance<ndim>>()
+                std::make_shared<cartesian_distance<ndim> >()
           )
     {}
 };
@@ -127,7 +266,59 @@ public:
     InversePowerPeriodic(double pow, double eps, pele::Array<double> const radii, pele::Array<double> const boxvec)
         : SimplePairwisePotential< InversePower_interaction, periodic_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
-                std::make_shared<periodic_distance<ndim>>(boxvec)
+                std::make_shared<periodic_distance<ndim> >(boxvec)
+          )
+    {}
+};
+
+/**
+ * Integer powers
+ */
+
+template <size_t ndim, int POW>
+class InverseIntPower : public SimplePairwisePotential< InverseIntPower_interaction<POW>, cartesian_distance<ndim> > {
+public:
+    InverseIntPower(double eps, pele::Array<double> const radii)
+        : SimplePairwisePotential< InverseIntPower_interaction<POW>, cartesian_distance<ndim> >(
+                std::make_shared<InverseIntPower_interaction<POW> >(eps, radii),
+                std::make_shared<cartesian_distance<ndim> >()
+          )
+    {}
+};
+
+template <size_t ndim, int POW>
+class InverseIntPowerPeriodic : public SimplePairwisePotential< InverseIntPower_interaction<POW>, periodic_distance<ndim> > {
+public:
+    InverseIntPowerPeriodic(double eps, pele::Array<double> const radii, pele::Array<double> const boxvec)
+        : SimplePairwisePotential< InverseIntPower_interaction<POW>, periodic_distance<ndim> >(
+                std::make_shared<InverseIntPower_interaction<POW> >(eps, radii),
+                std::make_shared<periodic_distance<ndim> >(boxvec)
+          )
+    {}
+};
+
+/**
+ * Half-integer powers
+ */
+
+template <size_t ndim, int POW2>
+class InverseHalfIntPower : public SimplePairwisePotential< InverseHalfIntPower_interaction<POW2>, cartesian_distance<ndim> > {
+public:
+    InverseHalfIntPower(double eps, pele::Array<double> const radii)
+        : SimplePairwisePotential< InverseHalfIntPower_interaction<POW2>, cartesian_distance<ndim> >(
+                std::make_shared<InverseHalfIntPower_interaction<POW2> >(eps, radii),
+                std::make_shared<cartesian_distance<ndim> >()
+          )
+    {}
+};
+
+template <size_t ndim, int POW2>
+class InverseHalfIntPowerPeriodic : public SimplePairwisePotential< InverseHalfIntPower_interaction<POW2>, periodic_distance<ndim> > {
+public:
+    InverseHalfIntPowerPeriodic(double eps, pele::Array<double> const radii, pele::Array<double> const boxvec)
+        : SimplePairwisePotential< InverseHalfIntPower_interaction<POW2>, periodic_distance<ndim> >(
+                std::make_shared<InverseHalfIntPower_interaction<POW2> >(eps, radii),
+                std::make_shared<periodic_distance<ndim> >(boxvec)
           )
     {}
 };

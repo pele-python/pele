@@ -15,6 +15,7 @@ from pele.landscape import TSGraph
 
 __all__ = ["ConnectManager"]
 
+
 class BaseConnectManager(object):
     _is_good_pair = lambda self, m1, m2: True
     
@@ -297,6 +298,9 @@ class ConnectManager(object):
         define the default strategy for the connect runs.  Can be one of 
         ["random", "combine", "untrap", "gmin"] 
     """
+    class NoMoreConnectionsError(Exception):
+        """raised when the connect manager can't find any more pairs to connect"""
+
     def __init__(self, database, strategy="random", list_len=20, clust_min=4, Emax=None,
                   untrap_nlevels=20, verbosity=1):
         self.database = database
@@ -382,7 +386,7 @@ class ConnectManager(object):
         if strategy == "random":
             min1, min2 = self.manager_random.get_connect_job()
             if min1 is None or min2 is None:
-                raise Exception("couldn't find any random minima pair to connect.  Have we tried all pairs?")
+                raise self.NoMoreConnectionsError("couldn't find any random minima pair to connect.  Have we tried all pairs?")
             if self.verbosity > 0:
                 print "sending a random connect job", min1._id, min2._id
         

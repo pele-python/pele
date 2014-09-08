@@ -111,7 +111,7 @@ class RBSystem(AASystem):
         GLU.gluCylinder(g, .1,0.1,r,10,10)  #I can't seem to draw a cylinder
         GL.glPopMatrix()
         
-    def draw(self, rbcoords, index, shift_com=True):
+    def draw(self, rbcoords, index, shift_com=True): # pragma: no cover
         from OpenGL import GL, GLUT    
         coords = self.aasystem.to_atomistic(rbcoords)
         if shift_com:
@@ -148,7 +148,7 @@ class RBSystem(AASystem):
             for i1, i2 in self.draw_bonds:
                 self.drawCylinder(coords[i1]-com, coords[i2]-com)
 
-    def load_coords_pymol(self, coordslist, oname, index=1):
+    def load_coords_pymol(self, coordslist, oname, index=1): # pragma: no cover
         """load the coords into pymol
         
         the new object must be named oname so we can manipulate it later

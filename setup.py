@@ -102,7 +102,7 @@ fmodules.add_module("pele/potentials/fortran/AT.f90")
 fmodules.add_module("pele/potentials/fortran/ljpshiftfort.f90")
 fmodules.add_module("pele/potentials/fortran/lj.f90")
 fmodules.add_module("pele/potentials/fortran/ljcut.f90")
-fmodules.add_module("pele/potentials/fortran/soft_sphere_pot.f90")
+#fmodules.add_module("pele/potentials/fortran/soft_sphere_pot.f90")
 #fmodules.add_module("pele/potentials/fortran/maxneib_lj.f90")
 #fmodules.add_module("pele/potentials/fortran/maxneib_blj.f90")
 fmodules.add_module("pele/potentials/fortran/lj_hess.f90")
@@ -166,10 +166,12 @@ setup(name='pele',
                 "pele.optimize.tests",
                 "pele.transition_states.tests",
                 "pele.landscape.tests",
+                "pele.takestep.tests",
                 "pele.utils.tests",
                 "pele.storage.tests",
                 "pele.accept_tests.tests",
                 "pele.systems.tests",
+                "pele.angleaxis.tests",
                 "pele.thermodynamics.tests",
                 "pele.rates.tests",
                 ],

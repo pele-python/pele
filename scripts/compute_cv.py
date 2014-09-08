@@ -6,7 +6,7 @@ import argparse
 import numpy as np
 from pele.thermodynamics import minima_to_cv
 from pele.storage import Database
-from pele.utils.optim_compatibility import read_min_data
+from pele.utils.optim_compatibility import OptimDBConverter
 
 import matplotlib as mpl
 mpl.use("Agg") # so we can use it without an X server
@@ -38,7 +38,10 @@ if __name__ == "__main__":
     # get the list of minima
     if args.OPTIM:
         # fname is a min.data file
-        minima = read_min_data(args.fname)
+        db = Database()
+        converter = OptimDBConverter(db, mindata=args.fname)
+        converter.convert_no_coords()
+        minima = db.minima()
     else:
         dbfname = args.fname
         db = Database(dbfname, createdb=False)

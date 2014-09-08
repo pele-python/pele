@@ -863,7 +863,7 @@ class Database(object):
             
 
 
-def test_fast_insert():
+def test_fast_insert(): # pragma: no cover
     """bulk inserts are *really* slow, we should add something along the lines of this
     answer to speed things up where needed
     

@@ -1,8 +1,9 @@
 """
 routines for computing thermodynamic information
 """
-
 import multiprocessing as mp
+import sys
+
 from pele.thermodynamics._normalmodes import NormalModeError
 
 class _ThermoWorker(mp.Process):
@@ -23,42 +24,60 @@ class _ThermoWorker(mp.Process):
         self.system = system
         self.verbose = verbose
 
-
-    def run(self):
-        while True:
-            # run until the input queue is empty
-            if self.input_queue.empty():
-                if self.verbose:
-                    print "woker ending"
-                return
-            
-            # get the next minima / ts to evaluate
-            mts, mid, coords = self.input_queue.get()
-            if mts == "ts":
-                nnegative=1
-#                print "computing thermodynamics for ts", mid
-            elif mts == "m":
-                nnegative=0
-            else:
-                raise Exception("mts must be 'm' or 'ts'")
-            
-            # do the computation
-            invalid = False
-            pgorder = self.system.get_pgorder(coords)
-            try:
-                fvib = self.system.get_log_product_normalmode_freq(coords, nnegative=nnegative)
-            except NormalModeError, e:
-                fvib = None
-                invalid = True
-                if mts == "m":
-                    print "problem computing normal modes for minimum with id", mid
-                else:  
-                    print "problem computing normal modes for transition state with id", mid
-                print str(e)
+    def process_input(self): # pragma: no cover (coverage can't see it because it's in a separate process)
+        """get input from queue and process it
+        
+        return True if the queue is empty, raise any exception that occurs
+        """
+        # run until the input queue is empty
+        if self.input_queue.empty():
             if self.verbose:
-                print "finished computing thermodynamic info for minimum", mid, pgorder, fvib
+                print "worker ending"
+            return True
+        
+        # get the next minima / ts to evaluate
+        mts, mid, coords = self.input_queue.get()
+        if mts == "ts":
+            nnegative=1
+#                print "computing thermodynamics for ts", mid
+        elif mts == "m":
+            nnegative=0
+        else:
+            raise Exception("mts must be 'm' or 'ts'")
+        
+        # do the computation
+        invalid = False
+        pgorder = self.system.get_pgorder(coords)
+        try:
+            fvib = self.system.get_log_product_normalmode_freq(coords, nnegative=nnegative)
+        except NormalModeError, e:
+            fvib = None
+            invalid = True
+            if mts == "m":
+                sys.stdout.write("Problem computing normal modes for minimum with id %s. Setting m.invalid=True\n" % (mid))
+            else:  
+                sys.stdout.write("Problem computing normal modes for transition state with id %s. Setting ts.invalid=True\n" % (mid))
+            sys.stdout.write(str(e) + "\n")
+        except Exception, e:
+            raise
+        if self.verbose:
+            print "finished computing thermodynamic info for minimum", mid, pgorder, fvib
+        
+        self.output_queue.put((mts, mid, fvib, pgorder, invalid))
+        
+
+    def run(self): # pragma: no cover (coverage can't see it because it's in a separate process)
+        while True:
+            try:
+                ret = self.process_input()
+                if ret:
+                    return
+            except NormalModeError:
+                # ignore these, they have already been dealt with
+                continue
+            except Exception, e:
+                self.output_queue.put(e)
             
-            self.output_queue.put((mts, mid, fvib, pgorder, invalid))
 
 
 class GetThermodynamicInfoParallel(object):
@@ -107,6 +126,10 @@ class GetThermodynamicInfoParallel(object):
                 self.send_queue.put(("ts", ts._id, ts.coords))
     
     def _process_return_value(self, ret):
+        # if the a worker throws an unexpected exception, kill the workers and raise it
+        if isinstance(ret, BaseException):
+            self._kill_workers()
+            raise ret
         mts, mid, fvib, pgorder, invalid = ret
         if mts == "m":
             m = self.database.getMinimum(mid)
@@ -122,24 +145,43 @@ class GetThermodynamicInfoParallel(object):
                 ts.invalid = True
         else:
             raise Exception("mts must be 'm' or 'ts'")
-        self.database.session.commit()
 
+#    def _all_dead(self):
+#        for worker in self.workers:
+#            if worker.is_alive():
+#                return False
+#        return True
       
     def _get_results(self):
         """receive the results from the return queue
         """
-        for i in xrange(self.njobs):
-            ret = self.done_queue.get()
+        i = 0
+        while i < self.njobs:
+            try:
+                ret = self.done_queue.get(timeout=.5)
+            except self.done_queue.Empty, e:
+                sys.stderr.write("the queue is empty when it shouldn't be\n")
+                self._kill_workers()
+                raise e
             self._process_return_value(ret)
+            i += 1
     
     def finish(self):
+        self.database.session.commit()
         if self.verbose:
-            print "closing workers"
+            print "closing workers normally"
         for worker in self.workers:
             worker.join()
             worker.terminate()
             worker.join()
 
+    def _kill_workers(self):
+        self.database.session.commit()
+        if self.verbose:
+            print "killing all workers"
+        for worker in self.workers:
+            worker.terminate()
+            worker.join()
 
 
     def start(self):
@@ -151,15 +193,7 @@ class GetThermodynamicInfoParallel(object):
             worker.start()
         
         # process the results as they come back
-        try:    
-            self._get_results()
-        except:
-            # kill all the child processes
-            self.database.session.commit()
-            for worker in self.workers:
-                worker.terminate()
-                worker.join()
-            raise
+        self._get_results()
         
         # kill the workers cleanly
         self.finish()
@@ -183,7 +217,7 @@ def get_thermodynamic_information_minimum(system, database, minimum, commit=True
     return changed
 
 
-def get_thermodynamic_information(system, database, nproc=4, recalculate=False):
+def get_thermodynamic_information(system, database, nproc=4, recalculate=False, verbose=False):
     """
     compute thermodynamic information for all minima and transition states in a database
     
@@ -200,9 +234,10 @@ def get_thermodynamic_information(system, database, nproc=4, recalculate=False):
     """
     if nproc is not None:
         worker = GetThermodynamicInfoParallel(system, database, npar=nproc, 
-                                              recalculate=recalculate)
+                                              recalculate=recalculate, verbose=verbose)
         worker.start()
         return
+
     changed = False
     try:
         for m in database.minima():

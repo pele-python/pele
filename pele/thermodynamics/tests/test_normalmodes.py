@@ -58,7 +58,53 @@ class TestNormalModes(unittest.TestCase):
             self.assertAlmostEqual(new.energy, old.energy, 4)
             self.assertAlmostEqual(new.fvib, old.fvib, 4)
             self.assertEqual(new.pgorder, old.pgorder)
+    
+    def test_too_few_zero_modes(self):
+        self.system.get_nzero_modes = lambda : 10
+        newdb = self.system.create_database()
+        for ts in self.db.transition_states()[:4]:
+            m1 = newdb.addMinimum(ts.minimum1.energy, ts.minimum1.coords)
+            m2 = newdb.addMinimum(ts.minimum2.energy, ts.minimum2.coords)
+            newts = newdb.addTransitionState(ts.energy, ts.coords, m1, m2)
+        
+        with self.assertRaises(ValueError):
+            get_thermodynamic_information(self.system, newdb, nproc=2, verbose=True)
+#        except Exception as e:
+#            print "caught error:", e
+        
+    def test_too_few_negative_modes(self):
+        newdb = self.system.create_database()
+        tslist = []
+        for ts in self.db.transition_states()[:2]:
+            m1 = newdb.addMinimum(ts.minimum1.energy, ts.minimum1.coords)
+            m2 = newdb.addMinimum(ts.minimum2.energy, ts.minimum2.coords)
+            # add a minima as a transition state
+            newts = newdb.addTransitionState(m1.energy, m1.coords, m1, m2)
+            tslist.append(newts)
+        
+#        with self.assertRaises(ValueError):
+        get_thermodynamic_information(self.system, newdb, nproc=2, verbose=False)
+        for ts in tslist:
+            self.assertTrue(ts.invalid)
+        
+    def test_too_many_negative_modes(self):
+        newdb = self.system.create_database()
+        mlist = []
+        for ts in self.db.transition_states()[:2]:
+            # add a transition state as a minimum
+            m1 = newdb.addMinimum(ts.energy, ts.coords)
+            m2 = newdb.addMinimum(ts.minimum2.energy, ts.minimum2.coords)
+            newts = newdb.addTransitionState(m1.energy, m1.coords, m1, m2)
+            mlist.append(m1)
+        
+#        with self.assertRaises(ValueError):
+        get_thermodynamic_information(self.system, newdb, nproc=2, verbose=False)
+        for m in mlist:
+            self.assertTrue(m.invalid)
 
 
 if __name__ == "__main__":
     unittest.main()
+#    t = TestNormalModes(methodName="test_too_few_negative_modes")
+#    t.setUp()
+#    t.test_too_few_negative_modes()
