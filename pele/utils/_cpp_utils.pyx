@@ -29,9 +29,18 @@ ctypedef VecN[INT4] Vec4
 
 # use external c++ class
 cdef extern from "pele/rotations.h" namespace "pele":
-    cdef Vec3 c_rotate_aa "pele::rotate_aa" (Vec3 &, Vec3 &) except +
-    cdef Vec3 rot_mat_to_aa(Matrix33 & mx) except +
-    cdef Vec4 aa_to_quaternion(Vec3 & mx) except +
+    Vec3 c_rotate_aa "pele::rotate_aa" (Vec3 &, Vec3 &) except +
+    Vec3 rot_mat_to_aa(Matrix33 & mx) except +
+    Vec4 aa_to_quaternion(Vec3 & mx) except +
+    Matrix33 aa_to_rot_mat(Vec3 & mx) except +
+    
+    void c_rot_mat_derivatives "pele::rot_mat_derivatives"(
+            Vec3 & p,
+            Matrix33 & rmat,
+            Matrix33 & drm1,
+            Matrix33 & drm2,
+            Matrix33 & drm3) except +
+
 
 cdef Vec3 to_vec(p):
     cdef Vec3 v
@@ -86,14 +95,12 @@ cdef np.ndarray[double] mat_to_np(Matrix33 & A):
     cdef double * data = A.data()
     for i in xrange(9):
         Anew[i] = data[i]
-    return Anew
-
+    return Anew.reshape([3,3])
 
 cpdef rotate_aa(p1, p2):
     """change a given angle axis rotation p1 by the rotation p2
     """
-    cdef Vec3 v3 = c_rotate_aa(to_vec(p1), to_vec(p2))
-    return vec_to_np(v3)
+    return vec_to_np(c_rotate_aa(to_vec(p1), to_vec(p2)))
 
 cpdef mx2aa(mx):
     cdef Vec3 p = rot_mat_to_aa(to_mat(mx))
@@ -111,4 +118,27 @@ cpdef aa2q(aa):
     Q: quaternion of length 4
     """
     return vec4_to_np(aa_to_quaternion(to_vec(aa)))
+
+cpdef aa2mx(aa):
+    """convert an angle axis rotation to a rotation matrix"""
+    return mat_to_np(aa_to_rot_mat(to_vec(aa)))
+
+cpdef rot_mat_derivatives(p, with_grad=True):
+    """compute the derivatives of a rotation matrix
+    
+    Parameters
+    ----------
+    p : ndarray
+        angle axis vector
+    
+    Returns
+    -------
+    R : the rotation matrix corresponding to p
+    dR1, dR2, dR3 : derivatives of R in the x, y, z directions.
+    """
+    if not with_grad:
+        return aa2mx(p)
+    cdef Matrix33 R, dR1, dR2, dR3
+    c_rot_mat_derivatives(to_vec(p), R, dR1, dR2, dR3)
+    return mat_to_np(R), mat_to_np(dR1), mat_to_np(dR2), mat_to_np(dR3)
     

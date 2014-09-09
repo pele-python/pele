@@ -3,6 +3,7 @@ import aatopology
 from pele.potentials.potential import potential
 from pele.mindist import StandardClusterAlignment, optimize_permutations, ExactMatchAtomicCluster
 from pele.utils.rotations import mx2aa
+from pele.utils import rotations
 
 class RigidFragment(aatopology.AASiteType):
     ''' defines a single rigid fragment 
@@ -65,12 +66,12 @@ class RigidFragment(aatopology.AASiteType):
             self.symmetriesaa.append(mx2aa(rot))
             
     def to_atomistic(self, com, p):
-        R, R1, R2, R3 = aatopology.rotMatDeriv(p, False)
+        R = rotations.aa2mx(p)
         return com + np.dot(R, np.transpose(self.atom_positions)).transpose()
             
     def transform_grad(self, p, g):
         g_com = np.sum(g, axis=0)
-        R, R1, R2, R3 = aatopology.rotMatDeriv(p, True)
+        R, R1, R2, R3 = rotations.rot_mat_derivatives(p)
         g_p = np.zeros_like(g_com)
         for ga, x in zip(g, self.atom_positions):
             g_p[0] += np.dot(ga, np.dot(R1, x))
@@ -90,7 +91,7 @@ class RigidFragment(aatopology.AASiteType):
         return g_com, g_p
 
     def redistribute_forces(self, p, grad_com, grad_p):
-        R, R1, R2, R3 = aatopology.rotMatDeriv(p, True)
+        R, R1, R2, R3 = rotations.rot_mat_derivatives(p)
         grad = np.dot(R1, np.transpose(self.atom_positions)).transpose()*grad_p[0]
         grad += np.dot(R2, np.transpose(self.atom_positions)).transpose()*grad_p[1]
         grad += np.dot(R3, np.transpose(self.atom_positions)).transpose()*grad_p[2]
@@ -282,8 +283,7 @@ def test(): # pragma: no cover
     gp = rbgrad[3:]
     gx = rbgrad[:3]
     
-    from pele.angleaxis._aadist import rmdrvt as rotMatDeriv
-    R, R1, R2, R3 = rotMatDeriv(p, True)        
+    R, R1, R2, R3 = rotations.rot_mat_derivatives(p)        
     
     print "test1", np.linalg.norm(R1*gp[0])     
     print "test2", np.linalg.norm(R2*gp[1])     

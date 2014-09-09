@@ -32,7 +32,8 @@ Warning, they have not all been tested in this format.
 """
 import numpy as np
 from pele.utils import _cpp_utils
-from pele.utils._cpp_utils import rotate_aa, mx2aa, aa2q
+from pele.utils._cpp_utils import rotate_aa, mx2aa, aa2q, aa2mx, \
+    rot_mat_derivatives
 
 rot_epsilon = 1e-6
 
@@ -146,8 +147,6 @@ def rot_q2mx(qin):
 
     return m
 
-def aa2mx( p ):
-    return q2mx( aa2q( p ) )
 
 def random_q():
     """

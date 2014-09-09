@@ -7,7 +7,7 @@ from pele import takestep
 from pele.transition_states import _zeroev as zeroev
 from pele.angleaxis.aamindist import TransformAngleAxisCluster
 
-from _aadist import rmdrvt as rotMatDeriv
+from pele.utils.rotations import rot_mat_derivatives
 from _aadist import sitedist_grad, sitedist
 import _aadist
 
@@ -132,7 +132,7 @@ class AASiteType(object):
         
         return sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
     
-#        R1, R11, R12, R13 = rotMatDeriv(p1, True)
+#        R1, R11, R12, R13 = rot_mat_derivatives(p1, True)
 #        R2 = rotations.aa2mx(p2)
 #        dR = R2 - R1
 #        
@@ -154,7 +154,7 @@ class AASiteType(object):
     
     def metric_tensor(self, p):
         ''' calculate the mass weighted metric tensor '''
-        R, R1, R2, R3 = rotMatDeriv(p, True)        
+        R, R1, R2, R3 = rot_mat_derivatives(p, True)        
         g = np.zeros([3,3])
                 
         g[0,0] = np.trace(np.dot(R1, np.dot(self.Sm, R1.transpose())))
@@ -173,7 +173,7 @@ class AASiteType(object):
         
     def metric_tensor_cog(self, x, p):
         ''' calculate the metric tensor when for w_i != m_i '''
-        R, R1, R2, R3 = rotMatDeriv(p, True)        
+        R, R1, R2, R3 = rot_mat_derivatives(p, True)        
         g = np.zeros([6,6])
 
         # the com part

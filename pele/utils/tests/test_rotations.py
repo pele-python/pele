@@ -4,7 +4,7 @@ from itertools import izip
 import numpy as np
 
 from pele.utils import rotations
-from pele.utils.rotations import q2aa, mx2q, q_multiply, random_aa, random_q
+from pele.utils.rotations import q2aa, mx2q, q_multiply, random_aa, random_q, q2mx
 
 rot_epsilon = 1e-6
 
@@ -31,6 +31,9 @@ def aa2q( AA ):
 
 def mx2aa(m):
     return q2aa(mx2q(m))
+
+def aa2mx( p ):
+    return q2mx( aa2q( p ) )
 
 def rotate_aa(p1, p2):
     """
@@ -65,6 +68,12 @@ class TestRotations(unittest.TestCase):
         p2 = rotations.mx2aa(mx)
         self.arrays_equal(p1, p2)
         
+    def test_aa2mx(self):
+        aa = random_aa()
+        mx1 = aa2mx(aa)
+        mx2 = rotations.aa2mx(aa)
+        self.arrays_equal(mx1, mx2)
+
 
 if __name__ == "__main__":
     unittest.main()
