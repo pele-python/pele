@@ -31,6 +31,8 @@ Warning, they have not all been tested in this format.
 
 """
 import numpy as np
+from pele.utils import _cpp_utils
+from pele.utils._cpp_utils import rotate_aa, mx2aa, aa2q
 
 rot_epsilon = 1e-6
 
@@ -42,27 +44,6 @@ def q_multiply(q0, q1):
     q3[2] = q0[0]*q1[2]-q0[1]*q1[3]+q0[2]*q1[0]+q0[3]*q1[1]
     q3[3] = q0[0]*q1[3]+q0[1]*q1[2]-q0[2]*q1[1]+q0[3]*q1[0]
     return q3
-
-def aa2q( AA ):
-    """
-    convert angle axis to quaternion
-    input V: angle axis vector of lenth 3
-    output Q: quaternion of length 4
-    """
-    q = np.zeros(4, np.float64)
-
-    thetah = 0.5 * np.linalg.norm( AA ) 
-    q[0]  = np.cos( thetah )
-
-    # do linear expansion for small epsilon
-    if thetah < rot_epsilon:
-        q[1:] = 0.5 * AA
-    else:
-        q[1:] = 0.5 * np.sin(thetah) * AA / thetah
-
-    # make sure to have normal form
-    if q[0] < 0.0: q = -q
-    return q
 
 def q2aa( qin ):
     """
@@ -138,9 +119,6 @@ def mx2q(mi):
         q = -q
     return q
 
-def mx2aa(m):
-    return q2aa(mx2q(m))
-
 def rot_q2mx(qin):
     m = np.zeros([3,3], np.float64)
 
@@ -196,13 +174,6 @@ def random_aa():
 def takestep_aa(p, maxtheta):
     """ change an angle axis vector by a small rotation"""
     p[:] = rotate_aa(p, small_random_aa(maxtheta))
-
-def rotate_aa(p1, p2):
-    """
-    change a given angle axis rotation p1 by the
-    rotation p2
-    """
-    return q2aa(q_multiply( aa2q(p2), aa2q(p1) ))
 
 
 def small_random_aa(maxtheta):

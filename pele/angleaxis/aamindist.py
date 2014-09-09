@@ -11,7 +11,7 @@ from pele.angleaxis import _cpp_aa
 from _abcoll import _hasattr
 
 class TransformAngleAxisCluster(TransformPolicy):
-    ''' transformation rules for atomic clusters '''
+    '''transformation rules for atomic clusters '''
     def __init__(self, topology):
         self.topology = topology
         self._can_invert = True

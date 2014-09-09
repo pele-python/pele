@@ -35,7 +35,7 @@ def do_connect(nmol=20):
     system = OTPCluster(nmol)
     db = system.create_database("test.sqlte")
     m1 = db.minima()[0]
-    for m2 in db.minima()[1:2]:
+    for m2 in db.minima()[1:5]:
         connect = system.get_double_ended_connect(m1, m2, db, fresh_connect=True)
         connect.connect()
 

@@ -285,6 +285,12 @@ cxx_modules = [
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
+    Extension("pele.utils._cpp_utils", 
+              ["pele/utils/_cpp_utils.cxx", "source/rotations.cpp"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
                ]
 
 
