@@ -9,7 +9,6 @@ from pele.angleaxis.aamindist import TransformAngleAxisCluster
 
 from pele.utils.rotations import rot_mat_derivatives
 from _aadist import sitedist_grad, sitedist
-import _aadist
 
 __all__ = ["AASiteType", "AATopology", "interpolate_angleaxis", "TakestepAA"]
 

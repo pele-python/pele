@@ -5,15 +5,6 @@
  *   - convert from rigid body coords to atomistic coords
  *   - convert an atomistic gradient into a gradient in the rb coordinate system.
  *
- * The next step is to compute distances between rigid body structures.  To do this we
- * will need to define a function which aligns the atomistic coordinates for fixed
- * rigid body centers of mass.  This will require
- *  - rot_mat_to_aa
- *  - each site must have a list of symmetries
- *  - rotate_aa()
- *
- * Need to replace NEB distance functions.  The squared distance between two configurations is
- * the sum of the squared distance between the individual rigid bodies
  */
 #ifndef _PELE_AATOPOLOGY_H_
 #define _PELE_AATOPOLOGY_H_
@@ -32,12 +23,10 @@
 namespace pele{
 
 /**
- * this is a truly hacky implementation of a matrix.  please don't use it unless
- * you're being very careful
- *
- * it is a simply wrapper for pele::Array, so a pele array can be wrapped to
- * act as a matrix temporarily.  The idea is to redo somthing like the reshape() function
- * in numpy.
+ * This is a very minimal implementation of a matrix.  It's primary function is
+ * to act as a wrapper for pele::Array, so a pele array can be act as a matrix
+ * temporarily.  The idea is to redo somthing like the reshape() function in
+ * numpy.
  */
 template<class dtype>
 class HackyMatrix : public pele::Array<dtype> {
@@ -365,10 +354,10 @@ public:
      * calls transform_grad and copies it back.
      */
     void transform_grad(
-            pele::Array<double> const & p,
+            pele::Array<double> const p,
             pele::Array<double> const g,
-            pele::Array<double> & g_com,
-            pele::Array<double> & g_rot
+            pele::Array<double> g_com,
+            pele::Array<double> g_rot
             )
     {
         pele::VecN<3> p_vec = p;

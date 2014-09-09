@@ -171,19 +171,15 @@ pele::RBTopology::to_atomistic(Array<double> rbcoords)
     }
 
     size_t const nrigid = _sites.size();
-    CoordsAdaptor ca(nrigid, 0, rbcoords);
-    auto rb_pos = ca.get_rb_positions();
-    auto rb_rot = ca.get_rb_rotations();
+    auto ca = get_coords_adaptor(rbcoords);
     Array<double> atomistic(3 * natoms_total());
     // view the atomistic coords as a matrix
-    HackyMatrix<double> atomistic_mat(atomistic, 3);
     size_t istart = 0;
     for (size_t isite=0; isite<nrigid; ++isite) {
-        VecN<3> psite = rb_rot.view(isite*3, isite*3+3);
+        VecN<3> psite = ca.get_rb_rotation(isite);
         auto site_atom_positions = _sites[isite].to_atomistic(
-                rb_pos.view(isite*3, isite*3+3),
-                psite
-                );
+                ca.get_rb_position(isite),
+                psite);
         Array<double> atomistic_view(atomistic.view(istart, istart + site_atom_positions.size()));
         atomistic_view.assign(site_atom_positions);
 
@@ -214,18 +210,21 @@ pele::RBTopology::transform_gradient(pele::Array<double> rbcoords,
     pele::Array<double> coords_rot(ca.get_rb_rotations());
 //        pele::Array<double> rbgrad(rbcoords.size());
     CoordsAdaptor rbgrad_ca(nrigid(), 0, rbgrad);
-    HackyMatrix<double> g_com(rbgrad_ca.get_rb_positions(), 3);
-    HackyMatrix<double> g_rot(rbgrad_ca.get_rb_rotations(), 3);
 
     size_t istart = 0;
     for (size_t isite=0; isite<nrigid(); ++isite) {
         size_t const site_ndof = _sites[isite].natoms() * 3;
 //            std::cout << grad.size() << " " << istart << " " << site_ndof << " " << istart + site_ndof << "\n";
-        Array<double> g_site     = grad.view      (istart, istart + site_ndof);
-        Array<double> p          = coords_rot.view(isite*3, isite*3 + 3);
-        Array<double> g_com_site = g_com.view     (isite*3, isite*3 + 3);
-        Array<double> g_rot_site = g_rot.view     (isite*3, isite*3 + 3);
-        _sites[isite].transform_grad(p, g_site, g_com_site, g_rot_site);
+        Array<double> g_site     = grad.view(istart, istart + site_ndof);
+        Array<double> p          = ca.get_rb_rotation(isite);
+        Array<double> g_com_site = rbgrad_ca.get_rb_position(isite);
+        Array<double> g_rot_site = rbgrad_ca.get_rb_rotation(isite);
+        _sites[isite].transform_grad(
+                ca.get_rb_rotation(isite),
+                grad.view(istart, istart + site_ndof),
+                rbgrad_ca.get_rb_position(isite),
+                rbgrad_ca.get_rb_rotation(isite));
+//                p, g_site, g_com_site, g_rot_site);
         istart += site_ndof;
     }
 }
@@ -314,9 +313,8 @@ pele::TransformAACluster::rotate(pele::Array<double> x,
 
         // rotate each aa rotation by mx
         VecN<3> dp = pele::rot_mat_to_aa(mx);
-        auto rb_rot = ca.get_rb_rotations();
         for (size_t isite = 0; isite < m_topology->nrigid(); ++isite) {
-            pele::Array<double> pview = rb_rot.view(isite*3, isite*3+3);
+            pele::Array<double> pview = ca.get_rb_rotation(isite);
             VecN<3> p = pele::rotate_aa(pview, dp);
             // copy the vector back into pview
             std::copy(p.begin(), p.end(), pview.begin());
