@@ -1,5 +1,7 @@
 """
 # distutils: language = C++
+
+This module provides access to the c++ routines that deal with rotations
 """
 import numpy as np
 

@@ -1,9 +1,7 @@
 /**
- * This is a partial c++ implementation of the rigid body potential and coordinate system.
- * This primarily just implements the functions necessary for potential calls.
- *
- *   - convert from rigid body coords to atomistic coords
- *   - convert an atomistic gradient into a gradient in the rb coordinate system.
+ * This is a partial c++ implementation of the tools needed to interact with
+ * systems of rigid bodies.  This is not a complete reimplementation, only the
+ * parts that were too slow in python were implemented here.
  *
  */
 #ifndef _PELE_AATOPOLOGY_H_
@@ -133,8 +131,8 @@ HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype
  *
  * 0        -- 3*nrigid            : the center of mass of the rigid bodies
  * 3*nrigid -- 6*nrigid            : the rotations of the rigid bodies in angle axis coords
- * 6*nrigid -- 6*nrigid + 3*natoms : the positions of the non-rigid atoms (point masses)
- * ...      -- end                 : the last nlattice spaces are for the lattice degrees of freedom
+ * 6*nrigid -- 6*nrigid + 3*natoms : the positions of the non-rigid atoms (point masses) (not yet supported)
+ * ...      -- end                 : the last nlattice spaces are for the lattice degrees of freedom (not yet supported)
  */
 class CoordsAdaptor {
     size_t _nrigid;  /** the number of rigid bodies */
@@ -155,8 +153,14 @@ public:
             throw std::runtime_error("coords adaptor doesn't support free atoms yet");
     }
 
+    /**
+     * return the full coords array
+     */
     pele::Array<double> get_coords() { return _coords; }
 
+    /**
+     * return a view of the rigid body centers of mass
+     */
     pele::Array<double> get_rb_positions()
     {
         if (_nrigid == 0) {
@@ -166,6 +170,9 @@ public:
         return _coords.view(0, 3*_nrigid);
     }
 
+    /**
+     * return a view of the center of mass coords of a specific rigid body
+     */
     pele::Array<double> get_rb_position(size_t isite)
     {
         if (_nrigid == 0) {
@@ -179,6 +186,9 @@ public:
         return _coords.view(istart, istart+3);
     }
 
+    /**
+     * return a view of the rigid angle axis rotations
+     */
     pele::Array<double> get_rb_rotations()
     {
         if (_nrigid == 0) {
@@ -188,7 +198,10 @@ public:
         return _coords.view(3*_nrigid, 6*_nrigid);
     }
 
-    pele::Array<double> get_rb_rotation(size_t isite)
+    /**
+     * return a view of the angle axis rotation of a specific rigid body
+     */
+   pele::Array<double> get_rb_rotation(size_t isite)
     {
         if (_nrigid == 0) {
             // return empty array
@@ -216,6 +229,9 @@ public:
 // forward definition of RBTopology needed for TrasnformAACluster
 class RBTopology;
 
+/**
+ * This is the base class from which all Transform Policies should be derived
+ */
 class TransformPolicy {
 public:
 //    void translate(self, X, d) {
@@ -239,6 +255,9 @@ public:
 
 };
 
+/**
+ * Routines to apply transformations to a rigid body cluster
+ */
 class TransformAACluster : public TransformPolicy {
 public:
     pele::RBTopology * m_topology;
@@ -251,10 +270,10 @@ public:
      * apply a rotation to a set of rigid body coordinates
      */
     void rotate(pele::Array<double> x, pele::MatrixNM<3,3> const & mx);
-    inline void rotate(pele::Array<double> x, pele::Array<double> mx)
-    {
-        return rotate(x, pele::MatrixNM<3,3>(mx));
-    }
+//    inline void rotate(pele::Array<double> x, pele::Array<double> mx)
+//    {
+//        return rotate(x, pele::MatrixNM<3,3>(mx));
+//    }
 };
 
 class MeasureAngleAxisCluster {
@@ -289,7 +308,8 @@ class RigidFragment {
     pele::MatrixNM<3,3> m_inversion; // matrix that applies the appropriate inversion
     bool m_can_invert;
 
-    std::vector<pele::MatrixNM<3,3> > m_symmetry_rotations; // list of symmetry rotations
+    // a list of rotations that leave the rigid body unchanged.
+    std::vector<pele::MatrixNM<3,3> > m_symmetry_rotations;
 
 
 public:
@@ -317,13 +337,22 @@ public:
         }
     }
 
+    /**
+     * return the number of atoms in the rigid body
+     */
     inline size_t natoms() const { return _natoms; }
 
+    /**
+     * add a symmetry rotation
+     */
     inline void add_symmetry_rotation(pele::Array<double> R)
     {
         m_symmetry_rotations.push_back(R);
     }
 
+    /**
+     * access the vector of symmetry rotations
+     */
     inline std::vector<pele::MatrixNM<3,3> > const & get_symmetry_rotations() const
     {
         return m_symmetry_rotations;
@@ -384,6 +413,9 @@ public:
         return com2 - com1;
     }
 
+    /**
+     * compute the squared distance between two configurations of the rigid fragment
+     */
     double distance_squared(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
             pele::VecN<3> const & com2, pele::VecN<3> const & p2) const;
 
@@ -412,35 +444,25 @@ public:
 class RBTopology {
     std::vector<RigidFragment> _sites;
     size_t _natoms_total;
-//    bool _finalized;
-//    std::vector<std::vector<double> > _atom_indices;
 
 public:
     RBTopology()
-        : _natoms_total(0)//, _finalized(false)
+        : _natoms_total(0)
     {}
 
     void add_site(RigidFragment const & site)
     {
         _sites.push_back(site);
+        _natoms_total += site.natoms();
     }
 
-    void finalize()
-    {
-        _natoms_total = 0;
-        for (auto & rf : _sites) {
-//            _atom_indices.push_back(std::vector<double>(rf.natoms()));
-//            for (size_t i = 0; i<rf.natoms(); ++i) {
-//                _atom_indices.back()[i] = _natoms + i;
-//            }
-            _natoms_total += rf.natoms();
-        }
-    }
-
+    /**
+     * provide access to the vector of rigid fragments
+     */
     std::vector<RigidFragment> const & get_sites() const { return _sites; };
 
     /**
-     * number of rigid bodies
+     * return the number of rigid bodies
      */
     size_t nrigid() const { return _sites.size(); }
 
@@ -451,11 +473,17 @@ public:
 
     size_t number_of_non_rigid_atoms() const { return 0; }
 
+    /**
+     * return an already constructed CoordsAdaptor object
+     */
     CoordsAdaptor get_coords_adaptor(pele::Array<double> x) const
     {
         return CoordsAdaptor(nrigid(), number_of_non_rigid_atoms(), x);
     }
 
+    /**
+     * convert rigid body coordinates to atomistic coordinates
+     */
     Array<double> to_atomistic(Array<double> rbcoords);
 
     /**
@@ -464,9 +492,19 @@ public:
     void transform_gradient(pele::Array<double> rbcoords,
             pele::Array<double> grad, pele::Array<double> rbgrad);
 
+    /**
+     * align two angle axis vectors
+     *
+     * perform symmetry operations on p2 to minimize the distance with p1
+     */
     pele::VecN<3> align_angle_axis_vectors(pele::VecN<3> const & p1,
             pele::VecN<3> const & p2in);
 
+    /**
+     * Ensure the angle axis rotations of two structures are aligned with each other.
+     *
+     * x1 will remain unchanged, only modify x2
+     */
     void align_all_angle_axis_vectors(pele::Array<double> x1,
             pele::Array<double> x2);
 
@@ -518,6 +556,9 @@ public:
         }
     }
 
+    /**
+     * return the squared distance between two configurations
+     */
     double distance_squared(pele::Array<double> const x1, pele::Array<double> const x2) const
     {
         double d_sq = 0;
@@ -537,7 +578,7 @@ public:
     /**
      * Calculate gradient with respect to x1 for the squared distance
      *
-     * calculate the spring force on x1 to x2
+     * used to compute the spring force on x1 to x2
      */
     void distance_squared_grad(pele::Array<double> const x1, pele::Array<double> const x2,
             pele::Array<double> grad

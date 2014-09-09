@@ -163,9 +163,6 @@ align(pele::Array<double> const x1, pele::Array<double> x2)
 Array<double>
 pele::RBTopology::to_atomistic(Array<double> rbcoords)
 {
-    if (natoms_total() == 0) {
-        finalize();
-    }
     if ( rbcoords.size() != nrigid() * 6 ) {
         throw std::invalid_argument("rbcoords has the wrong size");
     }
@@ -193,9 +190,6 @@ void
 pele::RBTopology::transform_gradient(pele::Array<double> rbcoords,
         pele::Array<double> grad, pele::Array<double> rbgrad)
 {
-    if (natoms_total() == 0) {
-        finalize();
-    }
     if ( rbcoords.size() != nrigid() * 6 ) {
         throw std::invalid_argument("rbcoords has the wrong size");
     }

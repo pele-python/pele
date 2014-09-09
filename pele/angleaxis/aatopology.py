@@ -1,3 +1,9 @@
+"""this module holds the classes applicable for working
+with general rigid body systems.  i.e. those that do not
+necessarily have a representation as a set of atomistic coords.
+see rigidbody.py for those classes which derive from these.
+"""
+
 import numpy as np
 from pele.utils import rotations
 from pele.angleaxis import CoordsAdapter
@@ -13,7 +19,7 @@ from _aadist import sitedist_grad, sitedist
 __all__ = ["AASiteType", "AATopology", "interpolate_angleaxis", "TakestepAA"]
 
 def interpolate_angleaxis(initial, final, t):
-    ''' interpolate between 2 arrays of angle axis coordinates
+    '''interpolate between 2 arrays of angle axis coordinates
     
     Parameters
     ----------    
@@ -33,8 +39,7 @@ def interpolate_angleaxis(initial, final, t):
 
 
 class AASiteType(object):
-    '''
-    Definition of a angle axis site
+    '''Definition of an angle axis site
     
     Each angle axis site is fully characterized by a tensor of gyration S for the shape,
     and the center of geometry, which can differ from the center of mass.

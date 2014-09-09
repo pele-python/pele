@@ -1,5 +1,9 @@
 """
 # distutils: language = C++
+
+This provides an interface to the c++ angle axis + rigid body classes.
+Not everything is implemented in c++, just the parts that were bottlenecks
+in python.
 """
 import numpy as np
 from pele.potentials import _pele
@@ -188,11 +192,28 @@ class RBPotentialWrapper(_cdef_RBPotentialWrapper):
     """
 
 class cdefTransformAACluster(_cdef_TransformAACluster):
-    pass
+    """Routines that apply transformations to a cluster of rigid bodies
+    
+    Parameters
+    ----------
+    topology : object
+    """
 
 class cdefMeasureAngleAxisCluster(_cdef_MeasureAngleAxisCluster):
-    pass
+    """Routines that perform measurements on a cluster of rigid bodies
+    
+    Parameters
+    ----------
+    topology : object
+    """
 
 class cdefRBTopology(_cdef_RBTopology):
-    pass
+    """Routines that perform measurements on a cluster of rigid bodies
+    
+    Parameters
+    ----------
+    python_topology : object
+        This is the pythonic topology class which contains all the information 
+        needed to construct the c++ topology class.
+    """
 

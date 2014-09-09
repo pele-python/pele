@@ -1,14 +1,20 @@
 import numpy as np
-import aatopology
+
+from pele.angleaxis import aatopology
 from pele.potentials.potential import potential
-from pele.mindist import StandardClusterAlignment, optimize_permutations, ExactMatchAtomicCluster
+from pele.mindist import ExactMatchAtomicCluster
 from pele.utils.rotations import mx2aa
 from pele.utils import rotations
 
 class RigidFragment(aatopology.AASiteType):
-    ''' defines a single rigid fragment 
+    '''Defines a single rigid fragment 
     
-    In the most simple case, this is just a whole molecule
+    Notes
+    -----
+    This defines a collection of atoms that compose a single rigid bodies.
+    This class collects all the information necessary to perform operations
+    on the rigid body such as converting from center of mass + angle axis rotataion
+    to atomistic coordinates. In the most simple case, this is just a whole molecule
     '''
     
     def __init__(self):
@@ -66,6 +72,8 @@ class RigidFragment(aatopology.AASiteType):
             self.symmetriesaa.append(mx2aa(rot))
             
     def to_atomistic(self, com, p):
+        """convert the center of mass position + angle axis vector to atomistic coords
+        """
         R = rotations.aa2mx(p)
         return com + np.dot(R, np.transpose(self.atom_positions)).transpose()
             
@@ -147,6 +155,8 @@ class RigidFragment(aatopology.AASiteType):
         self._determine_rotational_symmetry(permlist)
                     
 class RBTopology(aatopology.AATopology):
+    """This defines the topology of a collection of rigid bodies.
+    """
     def __init__(self):
         aatopology.AATopology.__init__(self)
         self.natoms=0
@@ -195,6 +205,10 @@ class RBTopology(aatopology.AATopology):
         return labels
     
     def to_atomistic(self, rbcoords):
+        """convert rigid body coords to atomistic coords
+
+        Note: there is a c++ implementation of which is much faster
+        """
         ca = self.coords_adapter(rbcoords)
         atomistic = np.zeros([self.natoms,3])
         for site, com, p in zip(self.sites, ca.posRigid, ca.rotRigid):
@@ -204,6 +218,11 @@ class RBTopology(aatopology.AATopology):
         return atomistic
 
     def transform_gradient(self, rbcoords, grad):
+        """convert atomistic gradient into a gradient in rigid body coords
+
+        Note: there is a c++ implementation of which is much faster
+        """
+
         ca = self.coords_adapter(rbcoords)
         rbgrad = self.coords_adapter(np.zeros_like(rbcoords))
         for site, p, g_com, g_p in zip(self.sites, ca.rotRigid,
@@ -228,6 +247,10 @@ class RBTopology(aatopology.AATopology):
 
     
 class RBPotentialWrapper(potential):
+    """Wrap a potential
+    
+    Note: there is a c++ implementation of which is much faster
+    """
     def __init__(self, rbsystem, pot):
         self.pot = pot
         self.rbsystem = rbsystem
