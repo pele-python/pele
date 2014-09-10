@@ -1,4 +1,3 @@
-from math import *
 import numpy as np #to access np.exp() not built int exp
 
 from pele.potentials import BasePotential

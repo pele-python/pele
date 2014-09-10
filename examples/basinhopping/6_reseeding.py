@@ -7,7 +7,7 @@ from pele.takestep import RandomDisplacement, Reseeding
 from pele.mc import MonteCarlo
  
 
-class TakeStepMonteCarlo:
+class TakeStepMonteCarlo(object):
     def __init__(self, pot, T = 10., nsteps = 100, stepsize=0.1):
         self.potential = pot
         self.T =  T

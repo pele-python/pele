@@ -1,5 +1,4 @@
 import numpy as np
-import copy
 import logging
 
 from pele.optimize import Result
@@ -8,8 +7,6 @@ from pele.transition_states import FindLowestEigenVector
 from pele.transition_states._dimer_translator import _DimerTranslator
 from pele.transition_states._transverse_walker import _TransverseWalker
 from pele.utils.hessian import get_smallest_eig
-
-
 
 __all__ = ["findTransitionState", "FindTransitionState"]
 
@@ -102,20 +99,20 @@ class FindTransitionState(object):
     pele.landscape.LocalConnect : the class which most often calls this routine
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
-                 nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
-                 nsteps_tangent1=10,
-                 nsteps_tangent2=100,
-                 lowestEigenvectorQuenchParams=dict(),
-                 tangentSpaceQuenchParams=dict(), 
-                 max_uphill_step=0.5,
-                 max_uphill_step_initial=0.2,
-                 demand_initial_negative_vec=False,
-                 negatives_before_check = 10,
-                 verbosity=1,
-                 check_negative=False,
-                 invert_gradient=False,
-                 hessian_diagonalization=False,
-                 ):
+                  nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
+                  nsteps_tangent1=10,
+                  nsteps_tangent2=100,
+                  lowestEigenvectorQuenchParams=None,
+                  tangentSpaceQuenchParams=None, 
+                  max_uphill_step=0.5,
+                  max_uphill_step_initial=0.2,
+                  demand_initial_negative_vec=False,
+                  negatives_before_check = 10,
+                  verbosity=1,
+                  check_negative=False,
+                  invert_gradient=False,
+                  hessian_diagonalization=False,
+                  ):
         self.pot = pot
         self.coords = np.copy(coords)
         self.nfev = 0
@@ -127,11 +124,17 @@ class FindTransitionState(object):
         self.eigenvec = eigenvec0
         self.orthogZeroEigs = orthogZeroEigs
         self.iprint = iprint
-        self.lowestEigenvectorQuenchParams = lowestEigenvectorQuenchParams
+        if lowestEigenvectorQuenchParams is None:
+            self.lowestEigenvectorQuenchParams = dict()
+        else:
+            self.lowestEigenvectorQuenchParams = lowestEigenvectorQuenchParams
         self.max_uphill_step = max_uphill_step
         self.verbosity = verbosity
         self.tangent_space_quencher = mylbfgs #  should make this passable
-        self.tangent_space_quench_params = dict(tangentSpaceQuenchParams.items())
+        if tangentSpaceQuenchParams is None:
+            self.tangent_space_quench_params = dict()
+        else:
+            self.tangent_space_quench_params = dict(tangentSpaceQuenchParams.items())
         self.demand_initial_negative_vec = demand_initial_negative_vec    
         self.npositive_max = max(10, self.nsteps / 5)
         self.check_negative = check_negative
@@ -142,10 +145,10 @@ class FindTransitionState(object):
         self.rmsnorm = 1./np.sqrt(float(len(coords)))
         self.oldeigenvec = None
 
-        #set tolerance for the tangent space minimization.  
-        #Be sure it is at least as tight as self.tol
+        # set tolerance for the tangent space minimization.  
+        # Be sure it is at least as tight as self.tol
         self.tol_tangent = self.tol# * 0.2
-        if self.tangent_space_quench_params.has_key("tol"):
+        if "tol" in self.tangent_space_quench_params:
             self.tol_tangent = min(self.tol_tangent, 
                                    self.tangent_space_quench_params["tol"])
             del self.tangent_space_quench_params["tol"]
@@ -156,18 +159,18 @@ class FindTransitionState(object):
         self.nsteps_tangent2 = nsteps_tangent2
         
         
-        if self.tangent_space_quench_params.has_key("maxstep"):
+        if "maxstep" in self.tangent_space_quench_params:
             self.maxstep_tangent = self.tangent_space_quench_params["maxstep"]
             del self.tangent_space_quench_params["maxstep"]
         else:
-            self.maxstep_tangent = 0.1 #this should be determined in a better way
+            self.maxstep_tangent = 0.1 # this should be determined in a better way
         
-        if not self.tangent_space_quench_params.has_key("logger"):
+        if not "logger" in self.tangent_space_quench_params:
             self.tangent_space_quench_params["logger"] = logging.getLogger("pele.connect.findTS.tangent_space_quench")
 
 
-        #set some parameters used in finding lowest eigenvector
-        #initial guess for Hermitian
+        # set some parameters used in finding lowest eigenvector
+        # initial guess for Hermitian
         try:
             self.H0_leig = self.lowestEigenvectorQuenchParams.pop("H0")
         except KeyError:
@@ -269,7 +272,6 @@ class FindTransitionState(object):
             # get the lowest eigenvalue and eigenvector
             self.overlap = self._getLowestEigenVector(coords, i)
             overlap = self.overlap
-            #print self.eigenval
             
             if self.eigenval < 0:
                 negative_before_check -= 1
@@ -358,7 +360,6 @@ class FindTransitionState(object):
             twres = self._transverse_walker.get_result()
             self.nfev += twres.nfev 
 
-        #return results
         res.coords = coords
         res.energy = E
         res.eigenval = self.eigenval

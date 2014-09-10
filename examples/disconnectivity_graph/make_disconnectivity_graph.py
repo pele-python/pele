@@ -28,15 +28,14 @@ def get_database(natoms=13, nconn=5):
 
 
 def make_graph(database):
-    #make a graph from the database
+    # make a graph from the database
     graph = dg.database2graph(db)
     
-    #turn the graph into a disconnectivity graph
+    # turn the graph into a disconnectivity graph
     mydg = dg.DisconnectivityGraph(graph, 
                                    nlevels=5,
                                    center_gmin=False,
                                    order_by_energy=True,
-#                                   Emax=-169.
                                    )
     mydg.calculate()
     
@@ -49,6 +48,5 @@ if __name__ == "__main__":
         db = get_database()
     else:
         db = Database("lj38.sqlite")
-        #db = Database("database.sqlite.large")
 
     make_graph(db)

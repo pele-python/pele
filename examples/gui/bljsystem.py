@@ -1,12 +1,3 @@
-import sys
-
-from PyQt4 import QtGui
-
-from pele.systems import BLJCluster
-from pele.gui import run_gui
-
-from _blj_dialog import Ui_DialogLJSetup as UI
-
 """
 start a gui for a binary lennard jones cluster.
 
@@ -16,6 +7,15 @@ All that is really needed to start a gui is define a system and call run_gui
     run_gui(system)
 
 """
+import sys
+
+from PyQt4 import QtGui
+
+from pele.systems import BLJCluster
+from pele.gui import run_gui
+
+from _blj_dialog import Ui_DialogLJSetup as UI
+
 
 class BLJDialog(QtGui.QDialog):
     def __init__(self):

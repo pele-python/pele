@@ -7,7 +7,6 @@ Created on Jun 6, 2012
 __all__ = ["AdaptiveStepsize"]
 
 from .generic import TakestepInterface
-import numpy as np
 
 class AdaptiveStepsize(TakestepInterface):
     '''Adaptive stepsize adjustment
