@@ -11,11 +11,11 @@ MatrixNM<3,3> aa_to_rot_mat(pele::VecN<3> const & p)
 {
 
     double theta2 = pele::dot<3>(p,p);
+    MatrixNM<3,3> rm;
     if (theta2 < 1e-12) {
-        MatrixNM<3,3> rmat;
         MatrixNM<3,3> temp;
-        rot_mat_derivatives_small_theta(p, rmat, temp, temp, temp, false);
-        return rmat;
+        rot_mat_derivatives_small_theta(p, rm, temp, temp, temp, false);
+        return rm;
     }
     // Execute for the general case, where THETA dos not equal zero
     // Find values of THETA, CT, ST and THETA3
@@ -42,7 +42,7 @@ MatrixNM<3,3> aa_to_rot_mat(pele::VecN<3> const & p)
     // RM is calculated from Rodrigues' rotation formula [equation [1]
     // in the paper]
     // rm  = np.eye(3) + [1. - ct] * esq + st * e
-    MatrixNM<3,3> rm(0);
+    rm.assign(0);
     for (size_t i = 0; i < 3; ++i) rm(i,i) = 1; // identiy matrix
     for (size_t i = 0; i < 3; ++i) {
         for (size_t j = 0; j < 3; ++j) {
