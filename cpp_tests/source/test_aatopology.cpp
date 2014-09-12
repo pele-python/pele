@@ -3,171 +3,24 @@
 
 #include "pele/aatopology.h"
 #include "pele/lj.h"
+#include "pele/vecn.h"
 
 using pele::Array;
+using pele::VecN;
+using pele::MatrixNM;
 using pele::CoordsAdaptor;
+using pele::norm;
 
 static double const EPS = std::numeric_limits<double>::min();
 #define EXPECT_NEAR_RELATIVE(A, B, T)  ASSERT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
-
-
-TEST(AA2RotMat, Works)
-{
-    Array<double> p(3);
-    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p);
-    auto mx = pele::aa_to_rot_mat(p);
-    ASSERT_NEAR(mx(0,0), 0.57313786, 1e-5);
-    ASSERT_NEAR(mx(1,0), 0.74034884, 1e-5);
-    ASSERT_NEAR(mx(2,0), -0.35127851, 1e-4);
-    ASSERT_NEAR(mx(0,1), -0.60900664, 1e-5);
-    ASSERT_NEAR(mx(1,1), 0.6716445, 1e-5);
-    ASSERT_NEAR(mx(2,1), 0.42190588, 1e-5);
-    ASSERT_NEAR(mx(0,2), 0.54829181, 1e-5);
-    ASSERT_NEAR(mx(1,2), -0.02787928, 1e-5);
-    ASSERT_NEAR(mx(2,2), 0.83582225, 1e-5);
-}
-
-TEST(RotMatDerivs, Works)
-{
-    Array<double> p(3);
-    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p);
-    pele::HackyMatrix<double> mx(3,3,1.);
-    pele::HackyMatrix<double> drm1(3,3,0.);
-    pele::HackyMatrix<double> drm2(3,3,0.);
-    pele::HackyMatrix<double> drm3(3,3,0.);
-    pele::rot_mat_derivatives(p, mx, drm1, drm2, drm3);
-
-    // mx
-    ASSERT_NEAR(mx(0,0), 0.57313786, 1e-5);
-    ASSERT_NEAR(mx(1,0), 0.74034884, 1e-5);
-    ASSERT_NEAR(mx(2,0), -0.35127851, 1e-4);
-    ASSERT_NEAR(mx(0,1), -0.60900664, 1e-5);
-    ASSERT_NEAR(mx(1,1), 0.6716445, 1e-5);
-    ASSERT_NEAR(mx(2,1), 0.42190588, 1e-5);
-    ASSERT_NEAR(mx(0,2), 0.54829181, 1e-5);
-    ASSERT_NEAR(mx(1,2), -0.02787928, 1e-5);
-    ASSERT_NEAR(mx(2,2), 0.83582225, 1e-5);
-
-    // drm1
-    ASSERT_NEAR(drm1(0,0), 0.01933859, 1e-5);
-    ASSERT_NEAR(drm1(0,2), 0.32109128, 1e-5);
-    ASSERT_NEAR(drm1(1,1), -0.23084292, 1e-5);
-    ASSERT_NEAR(drm1(2,0), 0.40713948, 1e-5);
-    ASSERT_NEAR(drm1(2,2), -0.23828083, 1e-5);
-
-    // drm2
-    ASSERT_NEAR(drm2(0,0), -0.45276033, 1e-5);
-    ASSERT_NEAR(drm2(0,2), 0.74649729, 1e-5);
-    ASSERT_NEAR(drm2(1,1), 0.02975168, 1e-5);
-    ASSERT_NEAR(drm2(2,0), -0.76434829, 1e-5);
-    ASSERT_NEAR(drm2(2,2), -0.47656167, 1e-5);
-
-    // drm3
-    ASSERT_NEAR(drm3(0,0), -0.67914049, 1e-5);
-    ASSERT_NEAR(drm3(0,2), -0.01960117, 1e-5);
-    ASSERT_NEAR(drm3(1,1), -0.69252875, 1e-5);
-    ASSERT_NEAR(drm3(2,0), 0.23854341, 1e-5);
-    ASSERT_NEAR(drm3(2,2), 0.02231376, 1e-5);
-}
-
-TEST(RotMatDerivsSmallTheta, Works)
-{
-    Array<double> p(3);
-    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p) * 1e7;
-    pele::HackyMatrix<double> mx(3,3,1.);
-    pele::HackyMatrix<double> drm1(3,3,0.);
-    pele::HackyMatrix<double> drm2(3,3,0.);
-    pele::HackyMatrix<double> drm3(3,3,0.);
-    pele::rot_mat_derivatives_small_theta(p, mx, drm1, drm2, drm3, true);
-
-    // mx
-    EXPECT_NEAR_RELATIVE(mx(0,0), 1., 1e-5);
-    EXPECT_NEAR_RELATIVE(mx(1,0), 8.01783726e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(mx(2,0), -5.34522484e-08, 1e-4);
-    EXPECT_NEAR_RELATIVE(mx(0,1), -8.01783726e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(mx(1,1), 1, 1e-5);
-    EXPECT_NEAR_RELATIVE(mx(2,1), 2.67261242e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(mx(0,2), 5.34522484e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(mx(1,2), -2.67261242e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(mx(2,2), 1, 1e-5);
-
-    // drm1
-    EXPECT_NEAR_RELATIVE(drm1(0,0), 0, 1e-5);
-    EXPECT_NEAR_RELATIVE(drm1(0,2), 4.00891863e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(drm1(1,1), -2.67261242e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(drm1(2,0), 4.00891863e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(drm1(2,2), -2.67261242e-08, 1e-5);
-
-    // drm2
-    EXPECT_NEAR_RELATIVE(drm2(0,0), -5.34522484e-08, 1e-5);
-    ASSERT_NEAR(drm2(0,2), 1, 1e-5);
-    ASSERT_NEAR(drm2(1,1), 0., 1e-5);
-    ASSERT_NEAR(drm2(2,0), -1, 1e-5);
-    EXPECT_NEAR_RELATIVE(drm2(2,2), -5.34522484e-08, 1e-5);
-
-    // drm3
-    EXPECT_NEAR_RELATIVE(drm3(0,0), -8.01783726e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(drm3(0,2), 1.33630621e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(drm3(1,1), -8.01783726e-08, 1e-5);
-    EXPECT_NEAR_RELATIVE(drm3(2,0), 1.33630621e-08, 1e-5);
-    ASSERT_NEAR(drm3(2,2), 0., 1e-5);
-}
-
-TEST(RotMatDerivs, SmallTheta_Works)
-{
-    Array<double> p(3);
-    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p) * 1e7;
-    pele::HackyMatrix<double> mx(3,3,1.);
-    pele::HackyMatrix<double> drm1(3,3,0.);
-    pele::HackyMatrix<double> drm2(3,3,0.);
-    pele::HackyMatrix<double> drm3(3,3,0.);
-
-    pele::HackyMatrix<double> mx_2(3,3,1.);
-    pele::HackyMatrix<double> drm1_2(3,3,0.);
-    pele::HackyMatrix<double> drm2_2(3,3,0.);
-    pele::HackyMatrix<double> drm3_2(3,3,0.);
-
-    pele::rot_mat_derivatives(p, mx, drm1, drm2, drm3);
-    pele::rot_mat_derivatives_small_theta(p, mx_2, drm1_2, drm2_2, drm3_2, true);
-
-    for (size_t i=0; i<9; ++i) {
-        ASSERT_DOUBLE_EQ(mx[i], mx_2[i]);
-        ASSERT_DOUBLE_EQ(drm1[i], drm1_2[i]);
-        ASSERT_DOUBLE_EQ(drm2[i], drm2_2[i]);
-        ASSERT_DOUBLE_EQ(drm3[i], drm3_2[i]);
-    }
-}
-
-TEST(RotMat, SmallTheta_Works)
-{
-    Array<double> p(3);
-    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
-    p /= norm(p) * 1e7;
-
-    auto mx = pele::aa_to_rot_mat(p);
-
-    pele::HackyMatrix<double> mx_2(3,3,1.);
-    pele::HackyMatrix<double> drm1_2(3,3,0.);
-    pele::HackyMatrix<double> drm2_2(3,3,0.);
-    pele::HackyMatrix<double> drm3_2(3,3,0.);
-    pele::rot_mat_derivatives_small_theta(p, mx_2, drm1_2, drm2_2, drm3_2, false);
-
-    for (size_t i=0; i<9; ++i) {
-        ASSERT_DOUBLE_EQ(mx[i], mx_2[i]);
-    }
-}
-
-
 
 class AATopologyTest :  public ::testing::Test {
 public:
     Array<double> x0;
     size_t nrigid;
-    pele::RBTopology rbtopology;
+    std::shared_ptr<pele::RBTopology> rbtopology;
+    VecN<3> p0;
+
 
     Array<double> make_otp_x()
     {
@@ -184,6 +37,40 @@ public:
         return x;
     }
 
+    pele::RigidFragment make_otp()
+    {
+        auto x = make_otp_x();
+        Array<double> cog(3,0);
+        double M = 3.;
+        double W = 3.;
+        Array<double> S(9,0);
+        S[0] = 0.74118095;
+        S[4] = 0.41960635;
+        bool invertible = true;
+        Array<double> eye(9,0);
+        eye[0] = 1;
+        eye[4] = 1;
+        eye[8] = 1;
+        Array<double> inversion = eye.copy();
+        inversion[4] = -1;
+        inversion[8] = -1;
+        pele::RigidFragment rf(x, cog, M, W, S, inversion, invertible);
+
+        auto rot = eye.copy();
+        rot[0] = -1;
+        rot[8] = -1;
+        rf.add_symmetry_rotation(rot);
+
+        rf.add_symmetry_rotation(eye.copy());
+
+        return rf;
+    }
+
+    void add_otp(pele::RBTopology * top)
+    {
+        top->add_site(make_otp());
+    }
+
     virtual void SetUp(){
         nrigid = 3;
         x0 = Array<double>(nrigid*6);
@@ -194,8 +81,11 @@ public:
             auto p = x0.view(3*nrigid + 3*i, 3*nrigid + 3*i + 3);
             p /= norm(p);
         }
+        for (size_t i = 0; i < 3; ++i) p0[i] = i+1;
+        p0 /= norm(p0);
+        rbtopology = std::make_shared<pele::RBTopology>();
         for (size_t i = 0; i < nrigid; ++i) {
-            rbtopology.add_site(make_otp_x());
+            add_otp(rbtopology.get());
         }
 
     }
@@ -237,14 +127,14 @@ TEST_F(AATopologyTest, CoordsAdaptorGetAtomPositions_Works)
 
 TEST_F(AATopologyTest, SiteToAtomistic_Works)
 {
-    auto rf = pele::RigidFragment(make_otp_x());
+    pele::RigidFragment rf = make_otp();
     Array<double> com(3);
-    Array<double> p(3);
+    VecN<3> p;
     for (size_t i=0; i<3; ++i){
         com[i] = i+4;
         p[i] = i+1;
     }
-    p /= norm(p);
+    p /= norm<3>(p);
     auto pos = rf.to_atomistic(com, p);
 
     ASSERT_NEAR(pos[0], 4.32210497, 1e-5);
@@ -261,16 +151,16 @@ TEST_F(AATopologyTest, SiteToAtomistic_Works)
 TEST_F(AATopologyTest, ToAtomisticOneMolecule_Works)
 {
     pele::RBTopology rbtop;
-    rbtop.add_site(make_otp_x());
-    pele::RigidFragment rf(make_otp_x());
+    add_otp(&rbtop);
+    pele::RigidFragment rf = make_otp();
     Array<double> com(3);
-    Array<double> p(3);
+    VecN<3> p;
     Array<double> x(6);
     for (size_t i=0; i<3; ++i){
         com[i] = i+4;
         p[i] = i+1;
     }
-    p /= norm(p);
+    p /= norm<3>(p);
     for (size_t i=0; i<3; ++i){
         x[i] = com[i];
         x[i+3] = p[i];
@@ -286,7 +176,7 @@ TEST_F(AATopologyTest, ToAtomisticOneMolecule_Works)
 TEST_F(AATopologyTest, ToAtomistic_Works)
 {
 //    std::cout << "x0 " << x0 << "\n";
-    auto x = rbtopology.to_atomistic(x0);
+    auto x = rbtopology->to_atomistic(x0);
 //    std::cout << x << "\n";
     ASSERT_EQ(x.size(), 27u);
     ASSERT_NEAR(x[0], 0.20925348, 1e-5);
@@ -299,15 +189,15 @@ TEST_F(AATopologyTest, ToAtomistic_Works)
 
 TEST_F(AATopologyTest, SiteTransformGrad_Works)
 {
-    auto rf = pele::RigidFragment(make_otp_x());
-    Array<double> p(3);
+    auto rf = make_otp();
+    VecN<3> p;
     for (size_t i=0; i<3; ++i){
         p[i] = i+1;
     }
-    p /= norm(p);
+    p /= norm<3>(p);
     Array<double> g = x0.view(0,9).copy();
-    Array<double> g_com(3);
-    Array<double> g_rot(3);
+    VecN<3> g_com;
+    VecN<3> g_rot;
 //    std::cout << g << "\n";
     rf.transform_grad(p, g, g_com, g_rot);
 
@@ -322,12 +212,12 @@ TEST_F(AATopologyTest, SiteTransformGrad_Works)
 
 TEST_F(AATopologyTest, TransformGradient_Works)
 {
-    auto x = rbtopology.to_atomistic(x0);
+    auto x = rbtopology->to_atomistic(x0);
     auto lj = pele::LJ(4., 4.);
-    Array<double> g_atom(rbtopology.natoms_total() * 3);
+    Array<double> g_atom(rbtopology->natoms_total() * 3);
     lj.get_energy_gradient(x, g_atom);
     Array<double> grb(x0.size());
-    rbtopology.transform_gradient(x0, g_atom, grb);
+    rbtopology->transform_gradient(x0, g_atom, grb);
 
     ASSERT_EQ(grb.size(), 18u);
     ASSERT_NEAR(grb[0], -1.45358337e-03, 1e-8);
@@ -341,10 +231,7 @@ TEST_F(AATopologyTest, TransformGradient_Works)
 
 TEST_F(AATopologyTest, RBPotential_Works)
 {
-    pele::RBPotentialWrapper rbpot(std::make_shared<pele::LJ>(4,4));
-    for (size_t i=0; i<nrigid; ++i){
-        rbpot.add_site(make_otp_x());
-    }
+    pele::RBPotentialWrapper rbpot(std::make_shared<pele::LJ>(4,4), rbtopology);
     double e = rbpot.get_energy(x0);
     ASSERT_NEAR(e, -2.55718209697, 1e-5);
 
@@ -359,4 +246,151 @@ TEST_F(AATopologyTest, RBPotential_Works)
         ASSERT_NEAR(grad[i], ngrad[i], 1e-5);
     }
 }
+
+TEST_F(AATopologyTest, TransformRotate_Works)
+{
+    auto x = x0.copy();
+    pele::TransformAACluster transform(rbtopology.get());
+
+    VecN<3> p;
+    for (size_t i = 0; i < p.size(); ++i) p[i] = i+1;
+    p /= norm<3>(p);
+
+    transform.rotate(x, pele::aa_to_rot_mat(p));
+//    std::cout << p << std::endl;
+//    std::cout << pele::aa_to_rot_mat(p) << std::endl;
+//    std::cout << x0 << std::endl;
+//    std::cout << x << std::endl;
+
+    ASSERT_NEAR(x[0], 0.48757698, 1e-5);
+    ASSERT_NEAR(x[4], 4.76822812, 1e-5);
+    ASSERT_NEAR(x[8], 7.53224809, 1e-5);
+    ASSERT_NEAR(x[12], 0.72426504, 1e-5);
+    ASSERT_NEAR(x[16], 1.25159032, 1e-5);
+}
+
+TEST_F(AATopologyTest, AlignPath_Works)
+{
+    auto x1 = x0.copy();
+    auto x2 = x1.copy();
+    x2 += 5;
+    auto x20 = x2.copy();
+
+    std::list<Array<double> > path;
+    path.push_back(x1);
+    path.push_back(x2);
+    rbtopology->align_path(path);
+//    std::cout << x2 << std::endl;
+
+    for (size_t i = 0; i < x1.size(); ++i) {
+        ASSERT_EQ(x1[i], x0[i]);
+    }
+
+    ASSERT_NEAR(x2[9], 1.92786071, 1e-5);
+    ASSERT_NEAR(x2[13], 1.94869267, 1e-5);
+    ASSERT_NEAR(x2[17], 1.96164668, 1e-5);
+}
+
+TEST_F(AATopologyTest, ZeroEV_Works)
+{
+    std::vector<pele::Array<double> > zev;
+    rbtopology->get_zero_modes(x0, zev);
+    ASSERT_EQ(zev.size(), 6u);
+    for (auto const & v : zev) {
+        ASSERT_EQ(v.size(), x0.size());
+    }
+
+    // check translational
+    for (size_t i = 0; i<3; ++i) {
+        auto v = zev[i];
+        for (size_t j = 0; j<v.size(); ++j) {
+            if ( j<3*nrigid && j % 3 == i ){
+                ASSERT_NEAR(v[j], 1./sqrt(nrigid), 1e-5);
+            } else {
+                ASSERT_EQ(v[j], 0);
+            }
+        }
+    }
+
+    pele::Array<double> v;
+
+    v = zev[3];
+    ASSERT_NEAR(v[0], 0., 1e-5);
+    ASSERT_NEAR(v[4], -0.39260962, 1e-5);
+    ASSERT_NEAR(v[13], -0.0223232, 1e-5);
+    ASSERT_NEAR(v[17], 0.02484174, 1e-5);
+
+    v = zev[4];
+    ASSERT_NEAR(v[0], 1.68325526e-01, 1e-5);
+    ASSERT_NEAR(v[4], 0., 1e-5);
+    ASSERT_NEAR(v[13], 7.93978746e-02, 1e-5);
+    ASSERT_NEAR(v[17], -2.02278328e-02, 1e-5);
+
+    v = zev[5];
+    ASSERT_NEAR(v[0], -9.35924237e-02, 1e-5);
+    ASSERT_NEAR(v[4],  2.80775399e-01, 1e-5);
+    ASSERT_NEAR(v[13], 2.77268394e-02, 1e-5);
+    ASSERT_NEAR(v[17], 8.86371673e-02, 1e-5);
+}
+
+TEST_F(AATopologyTest, SiteDistance_Works)
+{
+    pele::RigidFragment rf = make_otp();
+    VecN<3> com1(0);
+    VecN<3> com2(1);
+    auto p1 = p0;
+    auto p2 = p0;
+    p2 += 1;
+    double dist2 = rf.distance_squared(com1, p1, com2, p2);
+    ASSERT_NEAR(dist2, 10.9548367929, 1e-5);
+
+}
+
+TEST_F(AATopologyTest, DistanceSquared_Works)
+{
+    auto x1 = x0.copy();
+    auto x2 = x0.copy();
+    x2 += 1.1;
+    double d2 = rbtopology->distance_squared(x1, x2);
+    ASSERT_NEAR(d2, 38.9401810973, 1e-5);
+}
+
+TEST_F(AATopologyTest, DistanceSquaredGrad_Works)
+{
+    auto x1 = x0.copy();
+    auto x2 = x0.copy();
+    x2 += 1.1;
+    auto grad = x1.copy();
+    rbtopology->distance_squared_grad(x1, x2, grad);
+//    std::cout << grad << std::endl;
+
+    for (size_t i =0; i < nrigid*3; ++i) {
+        ASSERT_DOUBLE_EQ(grad[i], -6.6);
+    }
+
+    ASSERT_NEAR(grad[nrigid*3 + 0], -1.21579025, 1e-5);
+    ASSERT_NEAR(grad[nrigid*3 + 4], -0.06984532, 1e-5);
+    ASSERT_NEAR(grad[nrigid*3 + 8], -1.28362943, 1e-5);
+
+}
+
+TEST_F(AATopologyTest, MeasureAlign_Works)
+{
+    auto x1 = x0.copy();
+    auto x2 = x0.copy();
+    x2 += 5.1;
+    x2[x2.size()-1] = x1[x2.size()-1] + .1;
+    auto x20 = x2.copy();
+    pele::MeasureAngleAxisCluster measure(rbtopology.get());
+    measure.align(x1, x2);
+
+    for (size_t i =0; i < nrigid*3; ++i) {
+        ASSERT_DOUBLE_EQ(x2[i], x20[i]);
+    }
+
+    ASSERT_NEAR(x2[nrigid*3 + 0], 1.34332528, 1e-5);
+    ASSERT_NEAR(x2[nrigid*3 + 4], 0.47517882, 1e-5);
+    ASSERT_NEAR(x2[nrigid*3 + 8], 0.15531234, 1e-5);
+}
+
 

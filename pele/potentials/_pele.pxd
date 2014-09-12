@@ -69,3 +69,12 @@ cdef inline Array[double] array_wrap_np(np.ndarray[double] v):
         raise ValueError("the numpy array is not c-contiguous.  copy it into a contiguous format before wrapping with pele::Array")
     return Array[double](<double *> v.data, v.size)
 
+cdef inline np.ndarray[double, ndim=1] pele_array_to_np(Array[double] v):
+    """copy the data in a pele::Array into a new numpy array
+    """
+    cdef int i
+    cdef int N = v.size()
+    cdef np.ndarray[double, ndim=1] vnew = np.zeros(N)
+    for i in xrange(N):
+        vnew[i] = v[i]
+    return vnew
