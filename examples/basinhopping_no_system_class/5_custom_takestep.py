@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 ############################################################
-#Example 5: Adding a custom takestep routine.  This example
-#takes 100 monte carlo steps as one basin hopping step
+# Example 5: Adding a custom takestep routine.  This example
+# takes 100 monte carlo steps as one basin hopping step
 ############################################################
 import numpy as np
 import pele.potentials.lj as lj
@@ -18,7 +18,7 @@ class TakeStepMonteCarlo:
         self.mcstep = displace.RandomDisplacement(stepsize=stepsize)
     
     def takeStep(self, coords, **kwargs):
-        #make a new monte carlo class
+        # make a new monte carlo class
         mc = MonteCarlo(coords, self.potential, self.mcstep, 
                         temperature = self.T, outstream=None)
         mc.run( self.nsteps )

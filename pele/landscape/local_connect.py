@@ -16,11 +16,11 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
     This would naturally be a part of DoubleEndedConnect.  I separated it
     to make it more easily parallelizable.      
     """
-    #run ts search algorithm
+    # run ts search algorithm
     kwargs = dict(tsSearchParams.items())
     ret = findTransitionState(coords, pot, eigenvec0=eigenvec0, **kwargs)
     
-    #check to make sure it is a valid transition state 
+    # check to make sure it is a valid transition state 
     coords = ret.coords
     if not ret.success:
         logger.info("transition state search failed")
@@ -31,19 +31,12 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
         logger.info( "         not adding transition state")
         return False, ret, None, None
     
-    #find the minima which this transition state connects
+    # find the minima which this transition state connects
     logger.info("falling off either side of transition state to find new minima")
     ret1, ret2 = minima_from_ts(pot, coords, n = ret.eigenvec, \
         **pushoff_params)
-#    print "testing", ret1.energy
     
     return True, ret, ret1, ret2
-
-#class NEBResult(Result):
-#    def __init__(self):
-#        self.nts_candidates = 0
-#        self.new_transition_states = []
-        
 
 class LocalConnect(object):
     """
@@ -119,7 +112,7 @@ class LocalConnect(object):
         refine the transition state candidates.  If at least one is successful
         then return True
         """
-        #find the nearest transition state to the transition state candidates
+        # find the nearest transition state to the transition state candidates
         nrefine = min(self.nrefine_max, len(climbing_images))
         count = 0
         success = False
@@ -128,7 +121,7 @@ class LocalConnect(object):
             logger.info( "")
             logger.info( "refining transition state from NEB climbing image: %s %s %s", count, "out of", nrefine)
             coords = neb.coords[i,:]
-            #get guess for initial eigenvector from NEB tangent
+            # get guess for initial eigenvector from NEB tangent
             if True:
                 eigenvec0 = neb.tangent( neb.energies[i], neb.energies[i-1], neb.energies[i+1],
                                          neb.distance(neb.coords[i,:], neb.coords[i-1,:])[1],
@@ -139,7 +132,7 @@ class LocalConnect(object):
                                  eigenvec0=eigenvec0, pushoff_params=self.pushoff_params)
             ts_success = ret[0]
             if ts_success:
-                #the transition state is good, add it to the list
+                # the transition state is good, add it to the list
                 tsret, m1ret, m2ret = ret[1:4]
                 self.res.new_transition_states.append( (tsret, m1ret, m2ret) )
                 success = True
@@ -149,14 +142,14 @@ class LocalConnect(object):
         """
         do NEB between minNEB1 and minNEB2.
         """
-        #arrange the coordinates to minimize the distance between them        
+        # arrange the coordinates to minimize the distance between them        
         dist, newcoords1, newcoords2 = self.mindist(minNEB1.coords, minNEB2.coords)
         logger.info( "")
         
         if repetition == 0: 
             factor = 1.
         else: 
-            #change parameters for second repetition
+            # change parameters for second repetition
             logger.info("running NEB a second time")
             logger.info("    doubling the number of images")
             logger.info("    doubling the number of steps")
@@ -168,8 +161,6 @@ class LocalConnect(object):
                          factor=factor, **self.NEBparams)
         neb = neb.run()
 
-        #neb = nebdriver(newcoords1, newcoords2)
-        #neb.optimize()
         neb.MakeAllMaximaClimbing()
 
         if self.reoptimize_climbing > 0:
@@ -181,7 +172,7 @@ class LocalConnect(object):
 
 
     
-        #get the transition state candidates from the NEB result
+        # get the transition state candidates from the NEB result
         climbing_images = [ (neb.energies[i], i) for i in range(neb.nimages) 
                            if neb.isclimbing[i] ]
         return climbing_images, neb
@@ -212,7 +203,7 @@ class LocalConnect(object):
             
             # if the NEB path has maxima, refine those into transition states
             if nclimbing > 0:
-                climbing_images = sorted(climbing_images, reverse=True) #highest energies first
+                climbing_images = sorted(climbing_images, reverse=True) # highest energies first
                 # refine transition state candidates
                 self.res.success = self._refineTransitionStates(neb, climbing_images)
             else :
@@ -225,11 +216,11 @@ class LocalConnect(object):
 
 #####
 #####
-#below here only testing routines
+# below here only testing routines
 #####
 #####
 
-def getPairLJ(natoms=38):
+def getPairLJ(natoms=38): # pragma: no cover
     from pele.systems import LJCluster
     system = LJCluster(natoms)
     ret1 = system.get_random_minimized_configuration()
@@ -242,7 +233,7 @@ def getPairLJ(natoms=38):
     
     return coords1, coords2, system.get_potential(), mindist, E1, E2
 
-def test():
+def test(): # pragma: no cover
     from pele.storage import Database
     coords1, coords2, pot, mindist, E1, E2 = getPairLJ()
     db = Database()

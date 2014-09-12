@@ -16,7 +16,7 @@ class TakeStepMonteCarlo(object):
         self.mcstep = RandomDisplacement(stepsize=stepsize)
     
     def takeStep(self, coords, **kwargs):
-        #make a new monte carlo class
+        # ake a new monte carlo class
         mc = MonteCarlo(coords, self.potential, self.mcstep, 
                         temperature = self.T, outstream=None)
         mc.run( self.nsteps )

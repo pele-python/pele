@@ -49,10 +49,10 @@ class sanity_check():
             if i.name == 'H':
                 listofH.append(i.index)          
         
-        #print listofC     
-        #print listofO     
-        #print listofN     
-        #print listofH     
+        # print listofC     
+        # print listofO     
+        # print listofN     
+        # print listofH     
         
         # atom numbers of peptide bond 
         self.peptideBondAtoms = [] 
@@ -84,10 +84,10 @@ class sanity_check():
             if i.name == 'CB':
                 listofCB.append(i.index)  
                 
-        #print listofCA     
-        #print listofC     
-        #print listofN     
-        #print listofCB     
+        # print listofCA     
+        # print listofC     
+        # print listofN     
+        # print listofCB     
         
         # atom numbers of peptide bond 
         self.CAneighborList = [] 

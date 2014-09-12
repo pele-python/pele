@@ -214,11 +214,11 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
     quench = mylbfgs
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
-    #quench X1
+    # quench X1
     ret = quench( X1, lj)
     X1 = ret.coords
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
-    #make X2 a rotation of X1
+    # make X2 a rotation of X1
     print "testing with", natoms, "atoms, with X2 a rotated and permuted isomer of X1"
     aa = rot.random_aa()
     rot_mx = rot.aa2mx( aa )
@@ -230,8 +230,6 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
     print perm
     X2 = permuteArray( X2, perm)
 
-    #X1 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 0., 1.,] )
-    #X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )
     import copy
     X1i = copy.copy(X1)
     X2i = copy.copy(X2)

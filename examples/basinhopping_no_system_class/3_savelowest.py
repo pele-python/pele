@@ -1,5 +1,5 @@
 ############################################################
-#Example 3: Saving the coordinates as an xyz file
+# Example 3: Saving the coordinates as an xyz file
 ############################################################
 import numpy as np
 import pele.potentials.lj as lj

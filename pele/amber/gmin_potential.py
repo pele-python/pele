@@ -48,7 +48,7 @@ class GMINAmberPotential(GMINPotential):
 #        
 #        return enerGmin  
 #
-##'''  ------------------------------------------------------------------- '''
+## '''  ------------------------------------------------------------------- '''
 #    def getEnergyGradient(self, coords):        
 #        E,gminEGrad = self.potentialLocal.getEnergyGradient(coords)                                 
 #        return E, gminEGrad   
