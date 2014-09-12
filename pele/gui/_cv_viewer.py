@@ -12,7 +12,6 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
         self.on_finish = Signal()
 
     def poll(self):
-#        print "njobs",  self.njobs
         if self.njobs == 0:
             self.refresh_timer.stop()
             self.finish()
@@ -21,11 +20,6 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
             self.njobs -= 1
             ret = self.done_queue.get()
             self._process_return_value(ret)
-#            if mts == "m":
-#                m = self.database.getMinimum(mid)
-#                m.fvib = fvib
-#                m.pgorder = pgorder
-#                self.database.session.commit()
     
     def finish(self):
         super(GetThermodynamicInfoParallelQT, self).finish()
@@ -51,7 +45,6 @@ class HeatCapacityWidget(QtGui.QWidget):
         
         self.system = system
         self.database = database
-#        self.ndof = self._get_ndof()
         
         self.canvas = self.ui.mplwidget.canvas
         self.axes = self.canvas.axes
@@ -65,8 +58,6 @@ class HeatCapacityWidget(QtGui.QWidget):
     
     def _get_ndof(self):
         return self.system.get_ndof()
-#        m = self.database.minima()[0]
-#        return len(m.coords) - self.system.get_nzero_modes()
         
     def _get_nmin_max(self):
         txt = self.ui.lineEdit_nmin_max.text()
@@ -166,7 +157,6 @@ def test():
     obj.show()
 
     def test_start():
-#        obj.compute_thermodynamic_info()
         obj.rebuild_cv_plot()
     
     QtCore.QTimer.singleShot(10, test_start)

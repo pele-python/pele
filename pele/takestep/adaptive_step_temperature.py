@@ -1,4 +1,3 @@
-import numpy as np
 from pele.takestep import TakestepInterface
 
 __all__ = ["AdaptiveStepsizeTemperature"]
@@ -84,7 +83,6 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
         """
         self.ncalls_tot += 1
         trial_energy = driver.trial_energy
-        trial_coords = driver.trial_coords
         if self.energy is None:
             # first time called. Save energy and coords
             self.energy = driver.markovE

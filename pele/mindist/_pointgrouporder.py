@@ -1,4 +1,3 @@
-from pele.mindist import StandardClusterAlignment
 import numpy as np
 
 __all__= ["PointGroupOrderCluster"]
@@ -22,7 +21,6 @@ class PointGroupOrderCluster(object):
         
         exact_match : 
             class to perform exact match checks and get transform policies
-        
     '''
     def __init__(self, exact_match):
         self.exact_match = exact_match
@@ -55,7 +53,11 @@ class PointGroupOrderCluster(object):
         pgorder = len(rot_list)
         return inversion_multiplier * pgorder
 
-def testlj75():
+#
+# testing only below here
+#
+
+def testlj75(): # pragma: no cover
     import numpy as np
     coords = np.genfromtxt("tests/coords.lj75.gmin")
     from pele.mindist import ExactMatchAtomicCluster
@@ -66,7 +68,7 @@ def testlj75():
     pgorder = calculator(coords)
     print pgorder
 
-def testlj6():
+def testlj6(): # pragma: no cover
     from pele.systems import LJCluster
     from pele.thermodynamics import get_thermodynamic_information
     system = LJCluster(6)

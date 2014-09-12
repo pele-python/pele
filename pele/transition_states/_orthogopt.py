@@ -32,9 +32,6 @@ def orthogopt_translation_only(v, coords, norm=False, translation_only=True):
     """a convience wrapper for orthogopt with the translation_only flag set to True"""
     return orthogopt(v, coords, norm=norm, translation_only=translation_only)
 
-
-
-
 def _subcross(vec3, redcoords, n):
     """
     a utility function for orthogopt_slow
@@ -111,9 +108,6 @@ def orthogopt_slow(vec, coords, otest=False):
     
     vec = np.reshape(vec3, [-1])
     return vec
-
-
-
 
 if __name__ == "__main__":
     np.random.seed(0)

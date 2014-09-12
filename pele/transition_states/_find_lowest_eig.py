@@ -5,11 +5,9 @@ using Rayleigh-Ritz minimization
 import numpy as np
 import logging
 
-from pele.optimize import Result
-
 from pele.transition_states import orthogopt
 from pele.potentials.potential import BasePotential
-from pele.optimize import MYLBFGS, LBFGS
+from pele.optimize import MYLBFGS
 import pele.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector", "analyticalLowestEigenvalue", "FindLowestEigenVector"]
@@ -77,7 +75,6 @@ class LowestEigPot(BasePotential):
 
     def getEnergy(self, vec_in):
         """return the 'energy' a.k.a. the curvature at coords along the direction vec_in"""
-        vecl = 1.
         if self.orthogZeroEigs is not None:
             vec_in /= np.linalg.norm(vec_in)
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
@@ -236,7 +233,6 @@ class FindLowestEigenVector(object):
         return res
 
 def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, dx=1e-3,
-#                          minimizer_state=None, 
                           first_order=True, gradient=None, 
                           **minimizer_kwargs):
     """Compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization
@@ -286,34 +282,6 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
                           dx=dx, first_order=first_order, gradient=gradient, **minimizer_kwargs)
     result = optimizer.run()
     return result
-#
-#    
-#    if eigenvec0 is None:
-#        #this random vector should be distributed uniformly on a hypersphere.
-#        eigenvec0 = rotations.vec_random_ndim(coords.shape)
-#    
-#    #set up potential for minimization    
-#    eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx,
-#                          first_order=first_order, gradient=gradient)
-#    
-#    #and starting with H0 from last minimization
-#    quencher = LBFGS(eigenvec0, eigpot, rel_energy=True, H0=H0, 
-#                     **minimizer_kwargs)
-#    if minimizer_state is not None:
-#        quencher.set_state(minimizer_state)
-#        
-#    res = quencher.run()
-#
-#    #res = Result()
-#    res.eigenval = res.energy
-#    res.eigenvec = res.coords / np.linalg.norm(res.coords)
-#    delattr(res, "energy")
-#    delattr(res, "coords")
-#    res.H0 = quencher.H0
-#    res.minimizer_state = quencher.get_state()
-#    res.nfev = eigpot.nfev
-#    #res.success = res.rms <= tol
-#    return res
 
 def analyticalLowestEigenvalue(coords, pot):
     """return the lowest eigenvalue and eigenvector of the hessian computed directly"""

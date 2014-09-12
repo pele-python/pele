@@ -3,7 +3,7 @@ tools to invert the gradient along the a given direction and optimize in that sp
 """
 import numpy as np
 
-from pele.optimize import MYLBFGS, LBFGS
+from pele.optimize import LBFGS
 
 class _DimerTranslator(object):
     """object to manage the translation of the dimer using an optimization algorithm

@@ -45,12 +45,14 @@ class SuttonChen(BasePotential):
                                           self.n, self.m, self.boxvec, self.rcut)
         return e, g
         
+#
+# testing only below here
+#
 
-def test_silver():
+def test_silver(): # pragma: no cover
     rcut=2.5
     potnocut = SuttonChen(rcut=30000.2, boxvec=[10000]*3, c=144.41, n=12, m=6)
     pot = SuttonChen(rcut=rcut, boxvec=[10000]*3, c=144.41, n=12, m=6)
-#    pot = SuttonChen(rcut=3.2, boxvec=[10000]*3, c=1000., n=12, m=6)
     natoms = 2
     x = np.random.uniform(-2,2,[3*natoms])
     pot.getEnergy(x)
@@ -74,7 +76,7 @@ def test_silver():
     plt.legend()
     plt.show()
 
-def test_platinum():
+def test_platinum(): # pragma: no cover
     rcut=2.5
     pot = SuttonChen(rcut=rcut, boxvec=[10000]*3, c=34.408, n=10, m=8)
     natoms = 20
@@ -84,7 +86,7 @@ def test_platinum():
 
 
 
-def test_fcc():
+def test_fcc(): # pragma: no cover
     from pele.utils.xyz import read_xyz
     fname = "fcc100-coords.8x8x8.xyz"
     pot = SuttonChen(rcut=3.2, boxvec=[8.]*3, c=144.41, n=12, m=6)

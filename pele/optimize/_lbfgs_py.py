@@ -2,7 +2,6 @@ import numpy as np
 import logging
 from collections import namedtuple
 
-#from bfgs import lineSearch, BFGS
 from optimization_exceptions import LineSearchError
 from pele.optimize import Result
 
@@ -91,8 +90,7 @@ class LBFGS(object):
                  iprint=-1, nsteps=10000, tol=1e-5, logger=None,
                  energy=None, gradient=None, armijo=False, 
                  armijo_c=1e-4,
-                 fortran=False,
-                 ):
+                 fortran=False):
         X = X.copy()
         self.X = X
         self.N = len(X)
@@ -115,7 +113,7 @@ class LBFGS(object):
 
         self.maxstep = maxstep
         self.maxErise = maxErise
-        self.rel_energy = rel_energy #use relative energy comparison for maxErise 
+        self.rel_energy = rel_energy # use relative energy comparison for maxErise 
         self.events = events #a list of events to run during the optimization
         if self.events is None: self.events = []
         self.iprint = iprint
@@ -127,13 +125,11 @@ class LBFGS(object):
             self.logger = logger
     
         self.alternate_stop_criterion = alternate_stop_criterion
-        self.debug = debug #print debug messages
+        self.debug = debug # print debug messages
         
         
         self.s = np.zeros([self.M, self.N])  # position updates
         self.y = np.zeros([self.M, self.N])  # gradient updates
-#        self.a = np.zeros(self.M)  #approximation for the inverse hessian
-        #self.beta = np.zeros(M) #working space
         
         if H0 is None:
             self.H0 = 0.1
@@ -148,7 +144,7 @@ class LBFGS(object):
         
         self.s[0,:] = self.X
         self.y[0,:] = self.G
-        self.rho[0] = 0. #1. / np.dot(X,G)
+        self.rho[0] = 0. # 1. / np.dot(X,G)
         
         self.dXold = np.zeros(self.X.size)
         self.dGold = np.zeros(self.X.size)
@@ -207,7 +203,7 @@ class LBFGS(object):
         dG : ndarray 
             the change in gradient along the step: G - Gold
         """
-        klocal = (self.k + self.M) % self.M  #=k  cyclical
+        klocal = (self.k + self.M) % self.M  # =k  cyclical
         self.s[klocal,:] = dX
         self.y[klocal,:] = dG
         
@@ -249,7 +245,6 @@ class LBFGS(object):
                                                  self.k, self.H0)
         return ret 
 
-
     def _get_LBFGS_step(self, G):
         """use the LBFGS algorithm to compute a suggested step from the memory
         """
@@ -266,13 +261,12 @@ class LBFGS(object):
         a = np.zeros(self.M)
         myrange = [ i % self.M for i in range(max([0, k - self.M]), k, 1) ]
         assert len(myrange) == min(self.M, k)
-        #print "myrange", myrange, ki, k
         for i in reversed(myrange):
             a[i] = rho[i] * np.dot( s[i,:], q )
             q -= a[i] * y[i,:]
         
-        #z[:] = self.H0[ki] * q[:]
-        z = q #q is not used anymore after this, so we can use it as workspace
+        # z[:] = self.H0[ki] * q[:]
+        z = q # q is not used anymore after this, so we can use it as workspace
         z *= self.H0
         for i in myrange:
             beta = rho[i] * np.dot( y[i,:], z )
@@ -281,7 +275,7 @@ class LBFGS(object):
         stp = -z
         
         if k == 0:
-            #make first guess for the step length cautious
+            # make first guess for the step length cautious
             gnorm = np.linalg.norm(G)
             stp *= min(gnorm, 1. / gnorm)
         
@@ -295,9 +289,7 @@ class LBFGS(object):
         Liu and Nocedal 1989
         http://dx.doi.org/10.1007/BF01589116
         """
-#        self.G = G #saved for the line search
-        
-        #we have a new X and G, save in s and y
+        # we have a new X and G, save in s and y
         if self._have_dXold:
             self._add_step_to_memory(self.dXold, self.dGold)
 
@@ -344,22 +336,12 @@ class LBFGS(object):
         
         if f * stepsize > self.maxstep:
             f = self.maxstep / stepsize
-        #print "dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
 
-        #self.nfailed = 0
         nincrease = 0
         while True:
             X = X0 + f * stp
             E, G = self.pot.getEnergyGradient(X)
             self.funcalls += 1
-
-            # get the increase in energy            
-            if self.rel_energy: 
-                if E == 0: E = 1e-100
-                dE = (E - E0)/abs(E)
-                #print dE
-            else:
-                dE = E - E0
 
             # if the increase is greater than maxErise reduce the step size
             if self._accept_step(E, E0, G, G0, f * stp):
@@ -378,7 +360,6 @@ class LBFGS(object):
                 raise(LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
 
             # abort the linesearch, reset the memory and reset the coordinates            
-            #print "lbfgs: having trouble finding a good step size. dot(grad, step)", np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)
             self.logger.warning("lbfgs: having trouble finding a good step size. %s %s", f*stepsize, stepsize)
             self.reset()
             E = E0
@@ -401,7 +382,6 @@ class LBFGS(object):
                 if Enew == 0: 
                     Enew = 1e-100
                 dE = (Enew - Eold) / abs(Eold)
-                #print dE
             else:
                 dE = Enew - Eold
 
@@ -488,7 +468,6 @@ class LBFGS(object):
             return self.alternate_stop_criterion(energy=self.energy, gradient=self.G, 
                                                  tol=self.tol, coords=self.X)
 
-    
     def run(self):
         """run the LBFGS minimizer
         

@@ -3,7 +3,6 @@ Created on 30 Apr 2012
 
 @author: ruehle
 '''
-
 import numpy as np
 import math
 import logging
@@ -157,8 +156,8 @@ class Fire(object):
 
         This method will return when the forces on all individual
         atoms are less than *fmax* or when the number of steps exceeds
-        *steps*."""
-
+        *steps*.
+        """
         self.fmax = fmax
         step = 0
         res = Result()

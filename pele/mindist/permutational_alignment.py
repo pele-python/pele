@@ -42,9 +42,6 @@ else:
                         "Please compile minperm.f90 or install the hungarian or the munkres package")
 
 
-
-
-
 def permuteArray(Xold, perm):
     # don't modify Xold
     Xnew = np.copy(Xold)
@@ -53,7 +50,6 @@ def permuteArray(Xold, perm):
         Xnew[inew*3:inew*3+3] = Xold[iold*3:iold*3+3]
 
     return Xnew
-
 
 def _make_cost_matrix(X1, X2):
     """
@@ -102,7 +98,6 @@ def find_permutations_munkres( X1, X2, make_cost_matrix=_make_cost_matrix ):
     # apply the permutation
     #########################################
     costnew = 0.
-    X2new = np.copy(X2)
     new_indices = range(len(X1))
     for (iold, inew) in newind:
         costnew += cost[iold, inew]
@@ -275,13 +270,11 @@ def _cartesian_distance_periodic(x1, x2, box_lengths):
     dist = np.linalg.norm(dx)
     return dist
 
-
 def _cartesian_distance(x1, x2, box_lengths=None):
     if box_lengths is None:
         return np.linalg.norm(x2-x1)
     else:
         return _cartesian_distance_periodic(x1, x2, box_lengths)
-        
 
 def optimize_permutations(X1, X2, permlist=None, user_algorithm=None,
                            recalculate_distance=_cartesian_distance,

@@ -1,16 +1,13 @@
 import numpy as np
-from numpy import sin, cos
 from copy import copy
 import networkx as nx
 
 from pele.potentials import BasePotential
 import pele.utils.rotations as rotations
-from pele.potentials.heisenberg_spin import make3dVector,  make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
-
+from pele.potentials.heisenberg_spin import coords2ToCoords3, grad3ToGrad2
 
 
 __all__ = ["HeisenbergModelRA"]
-
 
 
 class HeisenbergModelRA(BasePotential):

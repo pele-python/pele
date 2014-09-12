@@ -2,7 +2,6 @@
 classes to organize strategies for selecting which minima in a database to
 choose for a double ended connect run. 
 """
-
 from collections import deque
 
 import numpy as np

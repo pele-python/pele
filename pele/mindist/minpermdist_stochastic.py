@@ -126,7 +126,6 @@ class MinPermDistCluster(object):
         and coords2 are brought in best alignment with coords2
         '''
         # we don't want to change the given coordinates
-        check_inversion = False
         coords1 = coords1.copy()
         coords2 = coords2.copy()
         
@@ -161,17 +160,15 @@ class MinPermDistCluster(object):
             if(self.transform.can_invert()):
                 self.check_match(x1, x2, rot, True)
 
-#        self.transform.rotate(X2, mxbest)
-#        dist, perm = self.measure.find_permutation(X1, X2)
-#        X2 = self.transform.permute(X2, perm)
-#        tmp, mx = self.measure.find_rotation(X1.copy(), X2.copy())
-#        self.transform.rotate(X2, mx)
-        
         # TODO: should we do an additional sanity check for permutation / rotation?        
         
         dist, x2 = self.finalize_best_match(coords1)                
         return dist, coords1, x2
-        
+
+#
+# testing only below here
+#
+
 def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
          minPermDist=MinPermDistCluster()): # pragma: no cover
     import copy

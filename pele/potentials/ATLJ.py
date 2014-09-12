@@ -49,14 +49,11 @@ class ATLJ(BasePotential):
         return energy
 
     def getEnergyFortran(self, coords):
-        natoms = len(coords)/3
         garbage, e = ATfort.axt(coords, False, self.Z)
-        
         Elj = self.lj.getEnergy(coords)
         return e + Elj
 
     def getEnergyGradientFortran(self, coords):
-        natoms = len(coords)/3
         grad, e = ATfort.axt(coords, True, self.Z)
         
         elj, gradlj = self.lj.getEnergyGradient(coords)

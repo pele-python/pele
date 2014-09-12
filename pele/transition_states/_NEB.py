@@ -82,10 +82,10 @@ class NEB(object):
     InterpolatedPathDensity : alternate interpolater
     """
     def __init__(self, path, potential, distance=distance_cart,
-                 k=100.0, adjustk_freq=0, adjustk_tol=0.1,adjustk_factor=1.05,
-                 with_springenergy=False, dneb=True,
-                 copy_potential=False, quenchParams=dict(), quenchRoutine=None,
-                 save_energies=False, verbose=-1, events=None, use_minimizer_callback=True):
+                  k=100.0, adjustk_freq=0, adjustk_tol=0.1,adjustk_factor=1.05,
+                  with_springenergy=False, dneb=True,
+                  copy_potential=False, quenchParams=dict(), quenchRoutine=None,
+                  save_energies=False, verbose=-1, events=None, use_minimizer_callback=True):
         self.distance = distance
         self.potential = potential
         self.k = k
@@ -451,7 +451,6 @@ class NEB(object):
 
     def copy(self):
         ''' create a copy of the current neb '''
-        import copy        
         neb = copy.copy(self)
         neb.coords = neb.coords.copy()
         neb.energies = neb.energies.copy()

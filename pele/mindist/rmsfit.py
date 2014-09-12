@@ -1,13 +1,12 @@
 import numpy as np
 from pele.utils import rotations
 
-all = ["findrotation", "findrotation_kabsch", "findrotation_kearsley"]
+__all__ = ["findrotation", "findrotation_kabsch", "findrotation_kearsley"]
 
 def findrotation_kabsch(coords1, coords2, align_com=True):
     '''
     Kabsch, Wolfgang, (1976) "A solution of the best rotation to relate two sets of vectors", Acta Crystallographica 32:922
     '''
-    
     # check if arrays are of same size
     if(coords1.size != coords2.size):
         raise BaseException("dimension of arrays does not match")
@@ -61,8 +60,7 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
     
     x1 = x1.reshape([-1,3])
     x2 = x2.reshape([-1,3])
-#    
-#    # determine number of atoms
+    # determine number of atoms
     natoms = x1.shape[0]
     
     # set both com to zero
@@ -134,7 +132,6 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
 findrotation = findrotation_kearsley
 
 if __name__ == "__main__":
-    from pele.utils import rotations
     x1 = np.random.random(24)
     mx = rotations.q2mx(rotations.random_q())
     

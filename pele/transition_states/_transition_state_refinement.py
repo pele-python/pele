@@ -111,8 +111,7 @@ class FindTransitionState(object):
                   verbosity=1,
                   check_negative=False,
                   invert_gradient=False,
-                  hessian_diagonalization=False,
-                  ):
+                  hessian_diagonalization=False):
         self.pot = pot
         self.coords = np.copy(coords)
         self.nfev = 0
