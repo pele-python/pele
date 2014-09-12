@@ -92,11 +92,11 @@ class ExactMatchPeriodic(object):
         x2 = x2.copy()
         permlist = self.permlist
         
-        #get the shortest atomlist from permlist
+        # get the shortest atomlist from permlist
         if permlist is None:
             atomlist = [range(len(x1.shape[0]))]
         elif len(permlist) == 0:
-            #no permutable atoms
+            # no permutable atoms
             atomlist = [0]
         else:
             atomlist = sorted(permlist, key=lambda a: len(a))[0]

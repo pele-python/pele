@@ -1,6 +1,5 @@
 import numpy as np
 import itertools
-#from munkres import make_cost_matrix
 
 __all__ = ["find_best_permutation", "optimize_permutations",
            "find_permutations_OPTIM", "find_permutations_munkres",
@@ -47,11 +46,10 @@ else:
 
 
 def permuteArray(Xold, perm):
-    #don't modify Xold
+    # don't modify Xold
     Xnew = np.copy(Xold)
     permsorted = sorted(perm)
     for (iold, inew) in itertools.izip(permsorted, perm):
-        #print iold, "->", inew
         Xnew[inew*3:inew*3+3] = Xold[iold*3:iold*3+3]
 
     return Xnew
@@ -92,7 +90,6 @@ def find_permutations_munkres( X1, X2, make_cost_matrix=_make_cost_matrix ):
     # cost[j,i] = (X1(i,:) - X2(j,:))**2
     #########################################
     cost = make_cost_matrix(X1, X2)
-    #cost = np.sqrt(cost)
 
     #########################################
     # run the munkres algorithm
@@ -140,7 +137,6 @@ def find_permutations_hungarian( X1, X2, make_cost_matrix=_make_cost_matrix ):
     # cost[j,i] = (X1(i,:) - X2(j,:))**2
     #########################################
     cost = make_cost_matrix(X1, X2)
-    #cost = np.sqrt(cost)
 
     #########################################
     # run the hungarian algorithm
@@ -148,12 +144,9 @@ def find_permutations_hungarian( X1, X2, make_cost_matrix=_make_cost_matrix ):
     newind1 = hungarian.lap(cost)
     perm = newind1[1]
 
-    #note: the hungarian algorithm changes
-    #the cost matrix.  I'm not sure why, and it may be a bug, 
-    #but the indices it returns are still correct
-#    if not np.all(cost >= 0):
-#        m = np.max(np.abs(cost-costsave))
-#        print "after hungarian cost greater than zero:, %g" % m
+    # note: the hungarian algorithm changes
+    # the cost matrix.  I'm not sure why, and it may be a bug, 
+    # but the indices it returns are still correct
     
     
     #########################################
@@ -171,19 +164,19 @@ def find_permutations_OPTIM(X1, X2, box_lengths=None, make_cost_matrix=None):
     if make_cost_matrix is not _make_cost_matrix and make_cost_matrix is not None:
         raise RuntimeError("cannot use a custom cost matrix with findBestPermutationListOPTIM")
 
-    #deal with periodic boundary conditions
+    # deal with periodic boundary conditions
     periodic = box_lengths is not None
     if not periodic:
-        #it must have a value for passing to fortran 
+        # it must have a value for passing to fortran 
         box_lengths = [1., 1., 1.]
     sx, sy, sz = box_lengths
         
-    #run the minperm algorithm
+    # run the minperm algorithm
     perm, dist, worstdist, worstradius = minperm.minperm(X1.flatten(), X2.flatten(), sx, sy, sz, periodic)
-    perm -= 1 #fortran indexing
+    perm -= 1 # fortran indexing
 
-    #note, dist returned by minperm comes will only be accurate to 6 decimal places at best.
-    #if we want a more accurate distance we should calculate it from the coordinates
+    # note, dist returned by minperm comes will only be accurate to 6 decimal places at best.
+    # if we want a more accurate distance we should calculate it from the coordinates
 
     dist = np.sqrt(dist)
     return dist, perm

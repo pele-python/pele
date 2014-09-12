@@ -77,7 +77,7 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
     
     # TODO: this is very dirty!
     #########################################
-    #Create matrix QMAT
+    # Create matrix QMAT
     #########################################
 
     QMAT = np.zeros([4,4], np.float64)
@@ -116,11 +116,10 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
     """
     ###########################################
     (eigs, vecs) = np.linalg.eig(QMAT)
-    #print "eigenvalues", eigs
 
     imin = np.argmin(eigs)
-    eigmin = eigs[imin] #the minimum eigenvector
-    Q2 = vecs[:,imin]  #the eigenvector corresponding to the minimum eigenvalue
+    eigmin = eigs[imin] # the minimum eigenvector
+    Q2 = vecs[:,imin]  # the eigenvector corresponding to the minimum eigenvalue
     if eigmin < 0.:
         if abs(eigmin) < 1e-6:
             eigmin = 0.
@@ -128,11 +127,7 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
             print 'minDist> WARNING minimum eigenvalue is ',eigmin,' change to absolute value'
             eigmin = -eigmin
 
-    dist = np.sqrt(eigmin) #this is the minimized distance between the two structures
-    #print "dist from eigenvalue", dist
-    #print "Q2", Q2, "norm", np.linalg.norm(Q2)
-    #aa = rot.q2aa( Q2)
-    #print "aa ", aa, "norm", np.linalg.norm(aa)
+    dist = np.sqrt(eigmin) # this is the minimized distance between the two structures
 
     return dist, rotations.q2mx(Q2)
 

@@ -58,7 +58,7 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     res.grad = dictionary["grad"]
     res.nfev = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
-    #res.nsteps = dictionary['nit'] #  new in scipy version 0.12
+    # res.nsteps = dictionary['nit'] #  new in scipy version 0.12
     res.nsteps = res.nfev
     res.message = dictionary['task']
     res.success = True
@@ -70,8 +70,8 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
         else:
             res.message = str(dictionary['task'])
         print res.message
-    #note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
-    #tolerance exactly
+    # note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
+    # tolerance exactly
     if False:
         if res.success:
             maxV = np.max( np.abs(res.grad) )
@@ -107,9 +107,8 @@ def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
                                  maxiter=nsteps, **kwargs)
     res = Result()
     res.coords = ret[0]
-    #e = ret[1]
     res.nfev = ret[2]
-    res.nfev += ret[3] #calls to gradient
+    res.nfev += ret[3] # calls to gradient
     res.success = True
     warnflag = ret[4]
     if warnflag > 0:

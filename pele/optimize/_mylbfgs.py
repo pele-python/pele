@@ -2,7 +2,6 @@ import numpy as np
 import logging
 from collections import namedtuple
 
-#from bfgs import lineSearch, BFGS
 from pele.optimize import LBFGS
 from mylbfgs_updatestep import mylbfgs_updatestep
 
@@ -34,7 +33,7 @@ class MYLBFGS(LBFGS):
         N = self.N
         M = self.M
         
-        #in fortran mylbfgs H0 is a vector of length N with all the elements the same
+        # in fortran mylbfgs H0 is a vector of length N with all the elements the same
         self.H0vec = np.ones(N) * self.H0 # initial guess for the hessian
 
         self.W = np.zeros(N * (2 * M + 1) + 2 * M) # mylbfgs working space
@@ -48,7 +47,7 @@ class MYLBFGS(LBFGS):
         """
         self.X = X
         self.G = G
-        #save the position and gradient change
+        # save the position and gradient change
         if self._iter > 0:
             N = self.N
             M = self.M
@@ -61,22 +60,14 @@ class MYLBFGS(LBFGS):
             IYPT= ISPT + N*M  # index for storage of gradient differences
 
             NPT = N*((self._point + M - 1) % M)  
-            #s = X - self.Xold
-            #y = G - self.Gold
-            #print "YS YY py", np.dot( y, s ), np.dot( y,y ), ISPT+NPT
+            # s = X - self.Xold
+            # y = G - self.Gold
             self.W[ISPT+NPT : ISPT+NPT +N] = self.dXold
             self.W[IYPT+NPT : IYPT+NPT +N] = self.dGold    
-#        self.Xold = X.copy()
-#        self.Gold = G.copy()
 
         
-        #print self._iter, self._point
         self.stp = mylbfgs_updatestep(self._iter, self.M, G, self.W, self.H0vec, self._point)
         
-        #print "stp", np.linalg.norm(self.stp), self.stp
-        #print "G", self.G
-        #print "overlap", np.dot(self.stp, self.G)
-        #print "H0", self.H0
         self.H0 = self.H0vec[0]
         self._iter += 1
         self._point = self._iter % self.M
@@ -112,16 +103,11 @@ class MYLBFGS(LBFGS):
 
 
 #
-#only testing stuff below here
+# only testing stuff below here
 # 
     
 
 def test(pot, natoms = 100, iprint=-1): # pragma: no cover
-    #import bfgs
-    
-    
-    #X = bfgs.getInitialCoords(natoms, pot)
-    #X += np.random.uniform(-1,1,[3*natoms]) * 0.3
     X = np.random.uniform(-1,1,[natoms*3])*(1.*natoms)**(1./3)*1.
     
     runtest(X, pot, natoms, iprint)
