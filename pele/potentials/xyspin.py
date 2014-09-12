@@ -36,7 +36,8 @@ class XYModel(BasePotential):
 
         self.indices = dict()
         self.index2node = dict()
-        for i, node in enumerate(self.G.nodes()):
+        nodes = sorted(self.G.nodes())
+        for i, node in enumerate(nodes):
             self.indices[node] = i
             self.index2node[i] = node
         

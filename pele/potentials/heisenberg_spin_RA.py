@@ -43,7 +43,8 @@ class HeisenbergModelRA(BasePotential):
         self.fields = np.zeros([self.nspins, 3])
                 
         self.indices = dict()
-        for i, node in enumerate(self.G.nodes()):
+        nodes = sorted(self.G.nodes())
+        for i, node in enumerate(nodes):
             self.indices[node] = i
             if fields is None:
                 self.fields[i,:] = rotations.vec_random() * np.sqrt(field_disorder)

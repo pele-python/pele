@@ -119,10 +119,11 @@ class HeisenbergModel(BasePotential):
         
         self.indices = dict()
         i = 0
-        for i, node in enumerate(self.G.nodes()):
+        nodes = sorted(self.G.nodes())
+        for i, node in enumerate(nodes):
             self.indices[node] = i
             if fields is None:
-                self.fields[i,:] = rotations.vec_random() *field_disorder
+                self.fields[i,:] = rotations.vec_random() * field_disorder
             else:
                 self.fields[i,:] = fields[i,:]
 
