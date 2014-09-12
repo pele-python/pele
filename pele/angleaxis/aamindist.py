@@ -1,21 +1,32 @@
+from math import sqrt
+from math import pi
+
 import numpy as np
+
 from pele.utils import rotations
 from pele.mindist import ExactMatchCluster, MinPermDistCluster, StandardClusterAlignment
 from pele.mindist import TransformPolicy, MeasurePolicy
 from pele.mindist import findrotation, find_best_permutation
-from math import sqrt
-from math import pi
+from pele.angleaxis import _cpp_aa
+from _abcoll import _hasattr
 
 class TransformAngleAxisCluster(TransformPolicy):
-    ''' transformation rules for atomic clusters '''
+    '''transformation rules for angle axis clusters '''
     def __init__(self, topology):
         self.topology = topology
         self._can_invert = True
         for s in topology.sites:
             if s.inversion is None:
                 self._can_invert = False
-                
+        
+        try:
+            self.cpp_transform = _cpp_aa.cdefTransformAACluster(self.topology)
+        except AttributeError:
+            pass
+
+        
     def translate(self, X, d):
+        """apply a translation"""
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
             ca.posRigid += d
@@ -24,9 +35,18 @@ class TransformAngleAxisCluster(TransformPolicy):
             ca.posAtom += d
         
     def rotate(self, X, mx):
+        """rotate the com + angle-axis position X by the rotation matrix mx
+        """
+        try:
+            return self.cpp_transform.rotate(X, mx)
+        except AttributeError:
+            pass
         ca = self.topology.coords_adapter(X)
         if(ca.nrigid > 0):
-            ca.posRigid[:] = np.dot(mx, ca.posRigid.transpose()).transpose()
+            # rotate the center of mass positions
+            ca.posRigid[:] = np.dot(ca.posRigid, mx.transpose())
+            
+            # rotate the angle axis rotations
             dp = rotations.mx2aa(mx)
             for p in ca.rotRigid:
                 p[:] = rotations.rotate_aa(p, dp)
@@ -38,12 +58,14 @@ class TransformAngleAxisCluster(TransformPolicy):
         return self._can_invert
     
     def invert(self, X):
+        """invert the structure"""
         ca = self.topology.coords_adapter(X)
         ca.posRigid[:] = - ca.posRigid 
         for p, site in zip(ca.rotRigid, self.topology.sites):
             p[:] = rotations.rotate_aa(rotations.mx2aa(site.inversion), p)
     
     def permute(self, X, perm):
+        """apply a permutation"""
         Xnew = X.copy()
         ca = self.topology.coords_adapter(X)
         ca_new = self.topology.coords_adapter(Xnew)
@@ -54,7 +76,7 @@ class TransformAngleAxisCluster(TransformPolicy):
         return Xnew
     
 class MeasureAngleAxisCluster(MeasurePolicy):
-    ''' measure rules for atomic clusters '''
+    '''measure rules for angle axis clusters '''
     
     def __init__(self, topology, transform=None):
         self.topology = topology
@@ -62,7 +84,13 @@ class MeasureAngleAxisCluster(MeasurePolicy):
             transform= TransformAngleAxisCluster(topology)
         self.transform = transform
         
+        try:
+            self.cpp_measure = _cpp_aa.cdefMeasureAngleAxisCluster(self.topology)
+        except AttributeError:
+            pass
+        
     def get_com(self, X):
+        """return the center of mass"""
         ca = self.topology.coords_adapter(X)
         
         com = np.zeros(3)
@@ -76,6 +104,11 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         return com
 
     def align(self, coords1, coords2):
+        """align the rotations so that the atomistic coordinates will be in best alignment"""
+        try:
+            return self.cpp_measure.align(coords1, coords2)
+        except AttributeError:
+            pass
         c1 = self.topology.coords_adapter(coords1)
         c2 = self.topology.coords_adapter(coords2)
         
@@ -97,32 +130,38 @@ class MeasureAngleAxisCluster(MeasurePolicy):
                     
 
     def get_dist(self, X1, X2):
+        """compute the distance between two configurations"""
         x1 = X1.copy()
         x2 = X2.copy()
         self.align(x1, x2)
         return sqrt(self.topology.distance_squared(x1, x2))
     
     def find_permutation(self, X1, X2):
+        """find the rotation which minimizes the distance between the structures"""
         ca1 = self.topology.coords_adapter(X1)
         ca2 = self.topology.coords_adapter(X2)
         
         return find_best_permutation(ca1.posRigid, ca2.posRigid)
     
     def find_rotation(self, X1, X2):
+        """find the rotation which minimizes the distance between the structures"""
         ca1 = self.topology.coords_adapter(X1)        
         ca2 = self.topology.coords_adapter(X2)        
         if ca1.natoms > 0:
             raise NotImplementedError
         
-        
+        # align the center of mass coordinates
         dist, mx = findrotation(ca1.posRigid.flatten(), ca2.posRigid.flatten())
         X2trans = X2.copy()
         self.transform.rotate(X2trans, mx)
         
+        # compute and return the distance between the rotated coordinates
         return self.get_dist(X1, X2trans), mx
     
 class MeasureRigidBodyCluster(MeasureAngleAxisCluster):
+    """perform measurements on clusters of rigid bodies"""
     def get_dist(self, X1, X2):
+        """return the distance between two configurations"""
         x1 = X1.copy()
         x2 = X2.copy()
         self.align(x1, x2)
@@ -131,6 +170,7 @@ class MeasureRigidBodyCluster(MeasureAngleAxisCluster):
         return np.linalg.norm(atom1-atom2)
     
 class ExactMatchAACluster(ExactMatchCluster):
+    """test whether two structure are exactly the same"""
     def __init__(self, topology, transform=None, measure=None, **kwargs):
         self.topology = topology
         
@@ -149,6 +189,7 @@ class ExactMatchAACluster(ExactMatchCluster):
                                    can_invert=self.transform.can_invert())
             
 class MinPermDistAACluster(MinPermDistCluster):
+    """minimize the distance between two structures"""
     def __init__(self, topology, transform=None, measure=None, **kwargs):
         self.topology = topology
         

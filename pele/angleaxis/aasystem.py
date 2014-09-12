@@ -14,8 +14,10 @@ from pele.utils import rotations
 class AASystem(BaseSystem):
     def __init__(self):
         BaseSystem.__init__(self)
-                
+        
+        # js850> we should really change this name from self.aasystem to self.aatopology
         self.aasystem = self.setup_aatopology()
+        self.aatopology = self.aasystem
                 
         self.params.basinhopping["temperature"]=8.
         self.params.takestep["translate"]=0.0
@@ -96,7 +98,8 @@ class AASystem(BaseSystem):
         return 6
     
 class RBSystem(AASystem):
-    def drawCylinder(self, X1, X2):
+    
+    def drawCylinder(self, X1, X2): # pragma: no cover
         from OpenGL import GL,GLUT, GLU
         z = np.array([0.,0.,1.]) #default cylinder orientation
         p = X2-X1 #desired cylinder orientation
