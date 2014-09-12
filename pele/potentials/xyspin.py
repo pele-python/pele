@@ -75,21 +75,20 @@ class XYModel(BasePotential):
     def getEnergy(self, angles):
         e, g = self.getEnergyGradient(angles)
         return e
-        #do internal energies first
+        # do internal energies first
         E = 0.
         for edge in self.G.edges():
             phase = self.phases[edge]
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
             E += np.cos( -angles[u] + angles[v] + phase )
-        #E = self.num_edges - E
         E = - E
         return E
         
     def getEnergyGradient(self, angles):
         import _cython_tools
         return _cython_tools.xymodel_energy_gradient(angles, self.phase_matrix, self.neighbors) 
-        #do internal energies first
+        # do internal energies first
         E = 0.
         grad = np.zeros(self.nspins)
         for edge in self.G.edges():
@@ -101,7 +100,6 @@ class XYModel(BasePotential):
             g = -np.sin( -angles[u] + angles[v] + phase )
             grad[u] += g
             grad[v] += -g
-        #E = self.num_edges - E
         E =  - E
         return E, grad
 

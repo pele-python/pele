@@ -1,4 +1,4 @@
-import numpy as np #to access np.exp() not built int exp
+import numpy as np
 
 from pele.potentials import BasePotential
 import fortran.lj as ljf
@@ -29,21 +29,15 @@ class LJ(BasePotential):
         return E, grad 
     
     def getEnergyList(self, coords, ilist):
-        #ilist = ilist_i.getNPilist()
-        #ilist += 1 #fortran indexing
         E = ljf.energy_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
                 self.boxl)
-        #ilist -= 1
         return E
     
     def getEnergyGradientList(self, coords, ilist):
-        #ilist = ilist_i.getNPilist()
-        #ilist += 1 #fortran indexing
         E, grad = ljf.energy_gradient_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
                 self.boxl)
-        #ilist -= 1
         return E, grad 
     
     def getEnergyGradientHessian(self, coords):
@@ -56,8 +50,11 @@ class LJ(BasePotential):
 
 
 
+#
+# only testing below here
+#
 
-def main():
+def main(): # pragma: no cover
     #test class
     natoms = 12
     coords = np.random.uniform(-1,1,natoms*3)*2

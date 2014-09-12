@@ -54,7 +54,6 @@ class QuenchBenchmark(object):
             print "Testing Minimizer " + minimizer[0]
             
             E,grad = self.potential.getEnergyGradient(coords)
-            #self.potential.energies.append(E)
             res = minimizer[1](coords, self.potential)
             minimizer[2] = res.energy
             minimizer[3] = np.array(self.potential.energies).copy()-Emin
@@ -66,7 +65,6 @@ class QuenchBenchmark(object):
             pl.loglog(np.array(m[3]), label=m[0])
         
         pl.legend()
-        #pl.semilogy()
         pl.xlabel("energy evaluations")
         pl.ylabel("energy")
         pl.show()
@@ -91,12 +89,9 @@ if __name__ == "__main__":
     bench.addMinimizer("lbfgs", quench.lbfgs_scipy)
     bench.addMinimizer("mylbfgs", quench.mylbfgs)
     bench.addMinimizer("lbfgs_py", quench.lbfgs_py)
-    #bench.addMinimizer("lbfgs_ase", quench.lbfgs_ase)
     bench.addMinimizer("cg", quench.cg)
     bench.addMinimizer("fire", quench.fire)
     bench.addMinimizer("bfgs_scipy", quench.bfgs_scipy)
-    #bench.addMinimizer("fmin", quench.fmin)
-    #bench.addMinimizer("steep", quench.steepest_descent)
     
     print "The reference energy is " + str(Emin)
     bench.run(Emin,coords)

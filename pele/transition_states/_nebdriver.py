@@ -194,8 +194,6 @@ class NEBDriver(object):
             res = neb.optimize()
             self.last_k=neb.k
             
-#            self.path = neb.coords.copy() #js850> is this copy necessary?
-            
             # check if we're finished
             self.steps_total += res.nsteps
             if res.success or self.steps_total >= self.niter:
@@ -229,7 +227,7 @@ class NEBDriver(object):
         
         
     def generate_path(self, coords1, coords2):
-        #determine the number of images to use
+        # determine the number of images to use
         dist, tmp = self.distance(coords1, coords2)
         dist=np.sqrt(dist)
         nimages = int(max(1., dist) * self.image_density * self.factor)
@@ -255,10 +253,9 @@ class NEBDriver(object):
         if nimages < self.min_images:
             nimages = int(self.min_images)
             
-        #print avdev, abs(float(nimages - len(path))/float(nimages))
         # only reinterpolate if above tolerance
-        if avdev < self.reinterpolate_tol and \
-            abs(float(nimages - len(path))/float(nimages)) < self.reinterpolate_tol:
+        if (avdev < self.reinterpolate_tol and 
+            abs(float(nimages - len(path))/float(nimages)) < self.reinterpolate_tol):
             print "no reinterpolation needed"
             return path
 

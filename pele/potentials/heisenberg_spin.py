@@ -60,10 +60,9 @@ def makeGrad2(vec2, grad3):
     c1 = cos(vec2[1])
     s0 = sin(vec2[0])
     s1 = sin(vec2[1])
-    #grad2[0] = -s0/s1 * grad3[0] + c0/s1 * grad3[1]
     grad2[0] = -s0 * grad3[0] + c0 * grad3[1]
     grad2[1] = c0*c1 * grad3[0] + s0*c1 * grad3[1] - s1 * grad3[2]
-    grad2[0] *= s1 #I need this to agree with the numerical gradient, but I think it shouldn't be there
+    grad2[0] *= s1 # I need this to agree with the numerical gradient, but I think it shouldn't be there
     return grad2
 
 
@@ -143,7 +142,6 @@ class HeisenbergModel(BasePotential):
         
         Efields = -np.sum( self.fields * coords3 )
         
-        #print "EJ EH", E, Efields
         return E + Efields
         
     def getEnergyGradient(self, coords):
@@ -167,13 +165,9 @@ class HeisenbergModel(BasePotential):
         Efields = -np.sum( self.fields * coords3 )
         grad3 -= self.fields
         
-        #for i in range(self.nspins):
-        #    grad3[i,:] /= np.linalg.norm( grad3[i,:] )
-        
         grad2 = grad3ToGrad2(coords2, grad3)
         grad2 = np.reshape(grad2, self.nspins*2)
         
-        #print "EJ EH", E, Efields
         return E + Efields, grad2
 
 
@@ -184,80 +178,7 @@ def normalize_spins(v3):
     v = v.reshape(-1)
     v3[:] = v[:]
 
-#class HeisenbergModelConstraint(BasePotential):
-#    """alternate implementation of the Heisenberg model where all the computations are done
-#    with 3d spins.  The constraint that the spins are unity is done in the gradient.  
-#    """
-#    def __init__(self, dim = [4, 4], field_disorder = 1.):
-#        """
-#        dim is an array giving the dimensions of the lattice
-#        
-#        phi is the magnitude of the randomness in the fields
-#        """
-#        self.dim = copy(dim)
-#        self.nspins = np.prod(dim)
-#        
-#        self.G = nx.grid_graph(dim, periodic=True)
-#        
-#        self.fields = np.zeros([self.nspins, 3])
-#                
-#        self.indices = dict()
-#        i = 0
-#        for node in self.G.nodes():
-#            self.indices[node] = i
-#            self.fields[i,:] = rotations.vec_random() * \
-#                field_disorder#np.random.uniform(0, field_disorder, [3])
-#            i += 1 
-#
-#
-#    
-#        
-#    def getEnergy(self, coords3):
-#        """
-#        coords3 is a list of unit vectors in 3d 
-#        """
-#        normalize_spins(coords3)
-#        coords3 = coords3.reshape([-1,3])
-#        E = 0.
-#        for edge in self.G.edges():
-#            u = self.indices[edge[0]]
-#            v = self.indices[edge[1]]
-#            E -= np.dot( coords3[u,:], coords3[v,:] )
-#        
-#        Efields = -np.sum( self.fields * coords3 )
-#        
-#        #print "EJ EH", E, Efields
-#        return E + Efields
-#        
-#    def getEnergyGradient(self, coords3):
-#        """
-#        coords3 is a list of unit vectors in 3d 
-#        """
-#        normalize_spins(coords3)
-#        coords3 = coords3.reshape([-1,3])
-#            
-#        E = 0.
-#        grad3 = np.zeros(coords3.shape)
-#        for edge in self.G.edges():
-#            u = self.indices[edge[0]]
-#            v = self.indices[edge[1]]
-#            E -= np.dot( coords3[u,:], coords3[v,:] )
-#            
-#            grad3[u,:] -= coords3[v,:]
-#            grad3[v,:] -= coords3[u,:]
-#        
-#        Efields = -np.sum( self.fields * coords3 )
-#        grad3 -= self.fields
-#        
-#        # make the gradient perpendicular to the spin direction
-#        for i in xrange(coords3.shape[0]):
-#            grad3[i,:] -= np.dot(grad3[i,:], coords3[i,:])
-#        
-#        return E + Efields, grad3.reshape(-1)
-
-
-
-def test_basin_hopping(pot, angles):
+def test_basin_hopping(pot, angles): # pragma: no cover
     from pele.basinhopping import BasinHopping
     from pele.takestep.displace import RandomDisplacement
     from pele.takestep.adaptive import AdaptiveStepsize

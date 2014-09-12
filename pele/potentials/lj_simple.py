@@ -1,4 +1,4 @@
-import numpy as np #to access np.exp() not built int exp
+import numpy as np
 
 from pele.potentials import BasePotential
 
@@ -46,8 +46,11 @@ class LJ(BasePotential):
         return energy,V
 
 
+#
+# testing only below here
+#
 
-def main():
+def main(): # pragma: no cover
     #test class
     natoms = 12
     coords = np.random.uniform(-1,1,natoms*3)*2

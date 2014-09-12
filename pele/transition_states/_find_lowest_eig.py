@@ -9,13 +9,10 @@ from pele.optimize import Result
 
 from pele.transition_states import orthogopt
 from pele.potentials.potential import BasePotential
-#from pele.optimize.lbfgs_py import LBFGS
 from pele.optimize import MYLBFGS, LBFGS
 import pele.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector", "analyticalLowestEigenvalue", "FindLowestEigenVector"]
-
-#logger = logging.getLogger("pele.connect.findTS")
 
 class LowestEigPot(BasePotential):
     """Potential wrapper for use in an optimizer for finding the eigenvector
@@ -55,18 +52,10 @@ class LowestEigPot(BasePotential):
         self.nfev = 0
         self.verbosity=verbosity
         self.update_coords(coords, gradient=gradient)
-#        self.coords = coords.copy()
-#        if self.first_order:
-#            if gradient is not None:
-##                self.true_energy = energy
-#                self.true_gradient = gradient.copy()
-#            else:
-#                true_energy, self.true_gradient = self.pot.getEnergyGradient(self.coords)
         if orthogZeroEigs == 0:
             self.orthogZeroEigs = orthogopt
         else:
             self.orthogZeroEigs = orthogZeroEigs
-        #print "orthogZeroEigs", self.orthogZeroEigs
         self.diff = dx
     
     def _get_true_energy_gradient(self, coords):
@@ -92,7 +81,6 @@ class LowestEigPot(BasePotential):
         if self.orthogZeroEigs is not None:
             vec_in /= np.linalg.norm(vec_in)
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
-            #vec_in /= np.linalg.norm(vec_in)
         vec = vec_in / np.linalg.norm(vec_in)
 
         
@@ -106,7 +94,6 @@ class LowestEigPot(BasePotential):
             coordsnew = self.coords - self.diff * vec
             Eminus, Gminus = self._get_true_energy_gradient(coordsnew)
         
-            #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
             
             curvature = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
         return curvature
@@ -122,7 +109,6 @@ class LowestEigPot(BasePotential):
         if self.orthogZeroEigs is not None:
             vec_in /= np.linalg.norm(vec_in)
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
-            #vec_in /= np.linalg.norm(vec_in)
         vec = vec_in / np.linalg.norm(vec_in)
 
         coordsnew = self.coords + self.diff * vec
@@ -132,7 +118,6 @@ class LowestEigPot(BasePotential):
         else:
             coordsnew = self.coords - self.diff * vec
             Eminus, Gminus = self._get_true_energy_gradient(coordsnew)
-            #diag = (Eplus + Eminus -2.0 * self.E) / (self.diff**2, vecl)
             # use second order central difference method.
             curvature = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
         
@@ -143,7 +128,7 @@ class LowestEigPot(BasePotential):
         # C  cannot be differentiated analytically.
 
         # compute the analytical derivative of the curvature with respect to vec        
-        #GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2
+        # GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2
         if self.first_order:
             grad = (Gplus - self.true_gradient) * 2.0 / self.diff - 2. * curvature * vec
         else:
@@ -193,7 +178,7 @@ class FindLowestEigenVector(object):
         self.minimizer_kwargs = minimizer_kwargs
         
         if eigenvec0 is None:
-            #this random vector should be distributed uniformly on a hypersphere.
+            # this random vector should be distributed uniformly on a hypersphere.
             eigenvec0 = rotations.vec_random_ndim(coords.shape)
         eigenvec0 = eigenvec0 / np.linalg.norm(eigenvec0)
 

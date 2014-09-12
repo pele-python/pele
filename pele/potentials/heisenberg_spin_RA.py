@@ -67,7 +67,6 @@ class HeisenbergModelRA(BasePotential):
         
         Efields = - np.sum( np.sum( self.fields * coords3, axis=1 )**2 )
         
-        #print "EJ EH", E, Efields
         return E + Efields
         
     def getEnergyGradient(self, coords):
@@ -93,13 +92,9 @@ class HeisenbergModelRA(BasePotential):
 
         grad3 -= 2.* self.fields * vdotf[:, np.newaxis]
         
-        #for i in range(self.nspins):
-        #    grad3[i,:] /= np.linalg.norm( grad3[i,:] )
-        
         grad2 = grad3ToGrad2(coords2, grad3)
         grad2 = np.reshape(grad2, self.nspins*2)
         
-        #print "EJ EH", E, Efields
         return E + Efields, grad2
 
 

@@ -63,7 +63,7 @@ class AtomicCluster(BaseSystem):
 
     
     #
-    #below here only stuff for the gui
+    # below here only stuff for the gui
     #
 
     def smooth_path(self, path, **kwargs):

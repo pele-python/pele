@@ -32,13 +32,13 @@ class AdaptiveStepsize(TakestepInterface):
 
     def __init__(self, stepclass, acc_ratio=0.5, factor=0.9, frequency=None, last_step=None, interval=100, verbose=False):
         self.stepclass = stepclass
-        self.accrat = acc_ratio #target accept ratio            
+        self.accrat = acc_ratio # target accept ratio            
         self.factor = factor
         self.nstepsaccrat = interval
         if frequency is not None:
             print "AdaptiveStepsize: keyword frequency is obsolete, use interval instead"
             self.nstepsaccrat = frequency
-        self.last_step = last_step #stop adjusting after this many steps
+        self.last_step = last_step # stop adjusting after this many steps
 
         self.naccepted = 0
         self.nsteps = 0

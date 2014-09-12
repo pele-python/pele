@@ -45,8 +45,7 @@ def compute_sum_out_rates(rates):
     for uv, rate in rates.iteritems():
         rates_list[uv[0]].append(rate)
     
-    #sum rates more precisely
-#    print "recomputing the sum of the rates more precisely"
+    # sum rates more precisely
     sum_out_rates = dict()
     for u, urates in rates_list.iteritems():
         urates.sort()
