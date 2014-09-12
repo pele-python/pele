@@ -1,18 +1,16 @@
-from PyQt4 import QtGui, QtCore, Qt
-#from PyQt4.QtGui import QDockWidget
-from pele.utils.events import Signal
-from copy import deepcopy
+import pickle
 from itertools import izip
+from copy import deepcopy
 
-from nebdlg import NEBWidget
-#from show3d import Show3D
+import numpy as np
+from PyQt4 import QtGui, QtCore
+
 from pele.storage import Database
 from pele.gui.ui.mplwidget import MPLWidget
-from  pele.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
-from dlg_params import DlgParams
-from show3d_with_slider import Show3DWithSlider
-import numpy as np
-import pickle
+from pele.gui.ui.ui_neb_explorer import Ui_MainWindow as UI
+from pele.gui.dlg_params import DlgParams
+from pele.gui.show3d_with_slider import Show3DWithSlider
+from pele.utils.events import Signal
 from pele.gui.connect_explorer_dlg import ConnectExplorerDialog
 
 class NEBRunner(object):
@@ -74,7 +72,7 @@ class NEBRunner(object):
         throwaway_db = Database()
         min1 = throwaway_db.addMinimum(0., coords1)
         min2 = throwaway_db.addMinimum(1., coords2)
-        #use the functions in DoubleEndedConnect to set up the NEB in the proper way
+        # use the functions in DoubleEndedConnect to set up the NEB in the proper way
         double_ended = system.get_double_ended_connect(min1, min2, 
                                                        throwaway_db, 
                                                        fresh_connect=True)
@@ -88,9 +86,7 @@ class NEBRunner(object):
 
 class NEBEnergyWidget(MPLWidget):
     def __init__(self, parent=None, nplots = 3):
-        #QtGui.QWidget
         MPLWidget.__init__(self, parent=parent)
-        #self.canvas = MPLWidget(self)
         self.nplots = nplots
         self.on_neb_pick = Signal()
         self.mpl_connect('pick_event', self.on_pick)
@@ -172,9 +168,7 @@ class NEBEnergyWidget(MPLWidget):
 
 class NEBDistanceWidget(MPLWidget):
     def __init__(self, parent=None):
-        #QtGui.QWidget
         MPLWidget.__init__(self, parent=parent)
-        #self.canvas = MPLWidget(self)
         
     def update_gui(self, nebrunner):
         self.axes.clear()
@@ -240,7 +234,7 @@ class NEBExplorer(QtGui.QMainWindow):
         self.view_3d.setWidget(self.show3d)
         self.addDockWidget(QtCore.Qt.TopDockWidgetArea, self.view_3d)
 
-        #self.view_3d.setFloating(True)
+#        self.view_3d.setFloating(True)
         self.view_3d.hide()
         self.show3d.setSystem(self.system)
         self.show3d.on_frame_updated.connect(self.set_current_frame)

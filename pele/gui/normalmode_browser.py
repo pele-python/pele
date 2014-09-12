@@ -1,9 +1,11 @@
-from PyQt4 import QtGui, QtCore, Qt
-from  ui.ui_normalmode_explorer import Ui_MainWindow as UI
-from pele.thermodynamics import normalmodes 
-import numpy as np
 import pickle
-from dlg_params import DlgParams
+
+import numpy as np
+from PyQt4 import QtGui
+
+from pele.gui.ui.ui_normalmode_explorer import Ui_MainWindow as UI
+from pele.thermodynamics import normalmodes 
+from pele.gui.dlg_params import DlgParams
 
 class NormalmodeItem(QtGui.QListWidgetItem):    
     def __init__(self, normalmode):

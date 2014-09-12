@@ -1,12 +1,9 @@
 import sys
 import numpy as np
 
-from PyQt4 import QtGui, QtCore, Qt
-from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
-
+from PyQt4 import QtGui, QtCore
 
 from pele.gui.ui.connect_run_ui import Ui_MainWindow as UI
-from pele.utils.events import Signal
 from pele.gui.double_ended_connect_runner import DECRunner
 from pele.gui.ui.mplwidget import MPLWidget
 from pele.gui.graph_viewer import GraphViewWidget
@@ -53,15 +50,12 @@ class OutLog(object):
 
 class ConnectEnergyWidget(MPLWidget):
     def __init__(self, parent=None):
-        #QtGui.QWidget
         MPLWidget.__init__(self, parent=parent)
-        #self.canvas = MPLWidget(self)
 
     def update_gui(self, S, E):
         self.axes.clear()
         self.axes.set_xlabel("distance along the path")
         self.axes.set_ylabel("energy")
-#        self.axes.set_title("")
         self.axes.plot(S, E, '-o')
         self.draw()
 
@@ -131,8 +125,6 @@ class ConnectViewer(QtGui.QMainWindow):
         self.ui.actionD_Graph.setVisible(False)
         self.ui.actionSummary.setVisible(False)
         self.ui.actionSummary.setChecked(False)
-#        self.ui.actionRandom_connect.setChecked(False)
-#        self.ui.actionRandom_connect.setVisible(False)
         
         self.smoothed_path = None
 
@@ -142,13 +134,11 @@ class ConnectViewer(QtGui.QMainWindow):
 
     def on_finished(self):
         print "success", self.decrunner.success
-#        print "success", self.decrunner.smoothed_path
         if self.decrunner.success:
             # get the path data
             self.smoothed_path = np.array(self.decrunner.smoothed_path)
             self.S = np.array(self.decrunner.S)
             self.energies = np.array(self.decrunner.energies)
-#            print self.smoothed_path.shape
 
             # show the smoothed path in the ogl viewer
             self.show_path()

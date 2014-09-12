@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtCore, Qt
+from PyQt4 import QtGui
 from ui.ui_takestep_explorer import Ui_MainWindow as UI
 import numpy as np
 
