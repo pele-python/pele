@@ -1,3 +1,9 @@
+"""this module holds the classes applicable for working
+with general rigid body systems.  i.e. those that do not
+necessarily have a representation as a set of atomistic coords.
+see rigidbody.py for those classes which derive from these.
+"""
+
 import numpy as np
 from pele.utils import rotations
 from pele.angleaxis import CoordsAdapter
@@ -7,14 +13,13 @@ from pele import takestep
 from pele.transition_states import _zeroev as zeroev
 from pele.angleaxis.aamindist import TransformAngleAxisCluster
 
-from _aadist import rmdrvt as rotMatDeriv
+from pele.utils.rotations import rot_mat_derivatives
 from _aadist import sitedist_grad, sitedist
-import _aadist
 
 __all__ = ["AASiteType", "AATopology", "interpolate_angleaxis", "TakestepAA"]
 
 def interpolate_angleaxis(initial, final, t):
-    ''' interpolate between 2 arrays of angle axis coordinates
+    '''interpolate between 2 arrays of angle axis coordinates
     
     Parameters
     ----------    
@@ -34,8 +39,7 @@ def interpolate_angleaxis(initial, final, t):
 
 
 class AASiteType(object):
-    '''
-    Definition of a angle axis site
+    '''Definition of an angle axis site
     
     Each angle axis site is fully characterized by a tensor of gyration S for the shape,
     and the center of geometry, which can differ from the center of mass.
@@ -132,7 +136,7 @@ class AASiteType(object):
         
         return sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
     
-#        R1, R11, R12, R13 = rotMatDeriv(p1, True)
+#        R1, R11, R12, R13 = rot_mat_derivatives(p1, True)
 #        R2 = rotations.aa2mx(p2)
 #        dR = R2 - R1
 #        
@@ -154,7 +158,7 @@ class AASiteType(object):
     
     def metric_tensor(self, p):
         ''' calculate the mass weighted metric tensor '''
-        R, R1, R2, R3 = rotMatDeriv(p, True)        
+        R, R1, R2, R3 = rot_mat_derivatives(p, True)        
         g = np.zeros([3,3])
                 
         g[0,0] = np.trace(np.dot(R1, np.dot(self.Sm, R1.transpose())))
@@ -173,7 +177,7 @@ class AASiteType(object):
         
     def metric_tensor_cog(self, x, p):
         ''' calculate the metric tensor when for w_i != m_i '''
-        R, R1, R2, R3 = rotMatDeriv(p, True)        
+        R, R1, R2, R3 = rot_mat_derivatives(p, True)        
         g = np.zeros([6,6])
 
         # the com part
@@ -248,6 +252,10 @@ class AATopology(object):
 
     def distance_squared(self, coords1, coords2):
         ''' Calculate the squared distance between 2 configurations'''
+        try:
+            return self.cpp_topology.distance_squared(coords1, coords2)
+        except AttributeError:
+            pass
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         
@@ -263,6 +271,10 @@ class AATopology(object):
     # calculate the spring force on x1 to x2
     def distance_squared_grad(self, coords1, coords2):
         ''' Calculate gradient with respect to coords 1 for the squared distance'''
+        try:
+            return self.cpp_topology.distance_squared_grad(coords1, coords2)
+        except AttributeError:
+            pass
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         spring = self.coords_adapter(np.zeros(coords1.shape))
@@ -339,7 +351,18 @@ class AATopology(object):
                     break
                 p2[:]=p2n 
     
-    def align_path(self, path): 
+    def align_path(self, path):
+        """ensure a series of images are aligned with each other
+        
+        Parameters
+        ----------
+        path : list of arrays
+            This is a list of numpy array in com + angle axis format
+        
+        Notes
+        -----
+        this simply aligns the angle axis vectors
+        """
         for i in xrange(1, len(path)):
             c2 = self.coords_adapter(path[i])
             c1 = self.coords_adapter(path[i-1])
@@ -364,16 +387,26 @@ class AATopology(object):
                     p2[:]=p2n
                     
     def zeroEV(self, x):
+        """return a list of zero eigenvectors
+        
+        This does both translational and rotational eigenvectors
+        """
+        try:
+            return self.cpp_topology.get_zero_modes(x)
+        except AttributeError:
+            pass
         zev = []
         ca = self.coords_adapter(x)
         cv = self.coords_adapter(np.zeros(x.shape))
             
+        # get the zero eigenvectors corresponding to translation
         translate_rigid = zeroev.zeroEV_translation(ca.posRigid)
         
         for v in translate_rigid:
             cv.posRigid[:] = v
             zev.append(cv.coords.copy())
-            
+        
+        # get the zero eigenvectors corresponding to rotation
         #rotate_r = zeroev.zeroEV_rotation(ca.posRigid)
         #rotate_aa = 
         transform = TransformAngleAxisCluster(self)

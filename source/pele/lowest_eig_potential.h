@@ -10,6 +10,20 @@
 
 namespace pele {
 
+inline void zero_modes_translational(std::vector<pele::Array<double> > & zev,
+        size_t natoms, size_t bdim)
+{
+    double v = 1 / sqrt(natoms);
+    size_t N = natoms * bdim;
+    for(size_t i=0; i<bdim; ++i) {
+        pele::Array<double> evec(N, 0); //initialize array of zeros
+        for(size_t j=i; j<N; j+=bdim) {
+            evec[j] = v;
+        }
+        zev.push_back(evec);
+    }
+}
+
 class Orthogonalize{
 public:
     virtual ~Orthogonalize(){};
@@ -28,14 +42,7 @@ public:
         : _natoms(natoms), _bdim(bdim), _ndim(bdim*natoms), _tol(tol)
     {
         /*initialize translational eigenvectors to canonical orthonormal basis*/
-        double v = 1/sqrt(_natoms);
-        for(size_t i=0;i<_bdim;++i) {
-            pele::Array<double> evec(_ndim,0); //initialize array of zeros
-            for(size_t j=i;j<_ndim;j+=_bdim) {
-                evec[j] = v;
-            }
-            _tr_evec.push_back(evec.copy());
-        }
+        zero_modes_translational(_tr_evec, _natoms, _bdim);
     }
 
     virtual ~OrthogonalizeTranslational() {}

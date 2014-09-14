@@ -7,6 +7,7 @@ import numpy as np
 from pele.angleaxis._aadist import rmdrvt, sitedist_grad, sitedist
 from pele.utils.rotations import vec_random
 from pele.angleaxis._aa_utils import _rot_mat_derivative, _sitedist_grad, _sitedist
+from pele.utils import rotations
 
 
 class TestRmDrvt(unittest.TestCase):
@@ -113,6 +114,72 @@ class TestSiteDistGrad(unittest.TestCase):
         dist2 = _sitedist(drij, p1, p2, S, W, cog)
         self.assertAlmostEqual(dist, dist2, places=4)
 
+class TestRotations(unittest.TestCase):
+    def test_mx2q(self):
+        mx = np.array(range(9)).reshape([3,3])
+        qnew = rotations.mx2q(mx)
+        print repr(qnew)
+        qtrue = np.array([ 1.80277564,  0.2773501 , -0.5547002 ,  0.2773501 ])
+        for v1, v2 in izip(qnew, qtrue):
+            self.assertAlmostEqual(v1, v2, 4)
+    
+    def test_aa2q(self):
+        print "\ntest_aa2q"
+        p = np.array(range(1,4), dtype=float)
+        print p
+        p /= np.linalg.norm(p)
 
+        q = rotations.aa2q(p);
+        print repr(q)
+        qtrue = np.array([ 0.87758256,  0.12813186,  0.25626373,  0.38439559])
+        for v1, v2 in izip(q, qtrue):
+            self.assertAlmostEqual(v1, v2, 4)
+
+        
+    def test_q2aa(self):
+        print "\ntest_q2aa"
+        v = np.array(range(1,4), dtype=float)
+        v /= np.linalg.norm(v)
+        q = np.zeros(4)
+        q[1:4] = v
+        q[0] = 4
+        print q
+        aa = rotations.q2aa(q);
+        print repr(aa)
+        aatrue = np.array([ 0.1309466 ,  0.26189321,  0.39283981])
+        for v1, v2 in izip(aa, aatrue):
+            self.assertAlmostEqual(v1, v2, 4)
+        
+    def test_mx2aa(self):
+        print "test mx2aa"
+        mx = np.array(range(9)).reshape([3,3])
+        aa = rotations.mx2aa(mx)
+        print repr(aa)
+        aatrue = np.array([ 0.29425463, -0.58850926,  0.29425463])
+        for v1, v2 in izip(aa, aatrue):
+            self.assertAlmostEqual(v1, v2, 4)
+ 
+    def test_q_multiply(self):
+        print "\ntest q_multiply"
+        q1 = np.array(range(1,5), dtype=float)
+        q2 = np.array(range(2,6), dtype=float)
+        print q1
+        q3 = rotations.q_multiply(q1, q2)
+        print repr(q3)
+        qtrue = np.array([-36.,   6.,  12.,  12.])
+        for v1, v2 in izip(q3, qtrue):
+            self.assertAlmostEqual(v1, v2, 4)
+    
+    def test_rotate_aa(self):
+        print "\ntest rotate_aa"
+        p1 = np.array(range(1,4), dtype=float)
+        p2 = p1 + 1
+        p3 = rotations.rotate_aa(p1, p2)
+        print repr(p3)
+        ptrue = np.array([ 0.74050324,  1.64950785,  2.20282887])
+        for v1, v2 in izip(p3, ptrue):
+            self.assertAlmostEqual(v1, v2, 4)
+
+        
 if __name__ == "__main__":
     unittest.main()

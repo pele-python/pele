@@ -41,6 +41,8 @@ class OTPCluster(RBSystem):
         for i in xrange(self.nrigid):
             self.draw_bonds.append((3*i, 3*i+1))
             self.draw_bonds.append((3*i, 3*i+2))
+        
+        topology.finalize_setup()
     
         return topology
 
@@ -73,7 +75,8 @@ class OTPCluster(RBSystem):
             # construct the potential which will compute the energy and gradient in atomistic (cartesian) coordinates
             cartesian_potential = LJ()
             # wrap it so it can be used with angle axis coordinates
-            self.pot = RBPotentialWrapper(self.aasystem, cartesian_potential)
+            self.pot = RBPotentialWrapper(self.aatopology.cpp_topology, cartesian_potential)
+#            self.aasystem.set_cpp_topology(self.pot.topology)
             return self.pot
 
 def test_bh():

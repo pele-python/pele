@@ -217,6 +217,17 @@ public:
         return *this;
     }
 
+//    /**
+//     * assign each element of the array to be
+//     */
+//    Array<dtype> &assign(dtype const * const d) {
+//        std::copy(rhs.begin(), rhs.end(), begin());
+//        for (size_t i = 0; i < size(); ++i) {
+//
+//        }
+//        return *this;
+//    }
+
     /**
      * return a copy of the array.
      */
