@@ -47,37 +47,37 @@ class TestHeisenbergModel(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = HeisenbergModel(dim=[L, L], field_disorder=0.)
         self.x0 = coords
-        self.e0 = 1.74084024512
+        self.e0 = 3.600645294790505
 
 class TestHeisenbergModelDisorder(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = HeisenbergModel(dim=[L, L], fields=fields)
         self.x0 = coords
-        self.e0 = 1.7757123154210279
+        self.e0 = 3.6355173650964892
 
 class TestXYModel(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = XYModel(dim=[L, L], phi=0, periodic=False, phases=None)
         self.x0 = coords
-        self.e0 = -4.284665254883342
+        self.e0 = -0.6195031129867052
 
 class TestXYModelPeriodic(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = XYModel(dim=[L, L], phi=0, periodic=True)
         self.x0 = coords
-        self.e0 = -6.5951281600115115
+        self.e0 = -0.08896226597510098
 
 class TestXYModelDisorder(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = XYModel(dim=[L, L], phi=1., periodic=False, phases=phases)
         self.x0 = coords
-        self.e0 = -3.3611543131815984
+        self.e0 = -1.3466543852399337
 
 class TestHeisenbergModelRADisorder(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = HeisenbergModelRA(dim=[L, L], fields=fields)
         self.x0 = coords
-        self.e0 = -2.8950083960043336
+        self.e0 = -1.0352033463288723
 
 
 

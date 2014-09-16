@@ -9,21 +9,20 @@ a connected set of minima and transition states betweeen them.
 """
 
 import numpy as np
-import os
 
 from pele.potentials.lj import LJ
 from pele.optimize import lbfgs_py
 from pele.landscape import DoubleEndedConnect, smoothPath
 from pele.mindist import MinPermDistAtomicCluster
 from pele.transition_states import orthogopt
-from pele.storage import Database, Minimum
+from pele.storage import Database
 from pele.utils.xyz import write_xyz
 np.random.seed(0)
 
-#set up the potential
+# set up the potential
 pot = LJ()
 
-#import the starting and ending points and quench them, 
+# import the starting and ending points and quench them, 
 coords1 = np.genfromtxt("coords.A")
 coords2 = np.genfromtxt("coords.B")
 res1 = lbfgs_py(coords1.reshape(-1), pot)
@@ -34,7 +33,7 @@ E1 = res1.energy
 E2 = res2.energy
 natoms = len(coords1)/3
 
-#add the minima to a database
+# add the minima to a database
 dbfile = "database.sqlite"
 database = Database(dbfile)
 database.addMinimum(E1, coords1)
@@ -45,18 +44,18 @@ min2 = database.minima()[1]
 
 
 
-#set up the structural alignment routine.
-#we have to deal with global translational, global rotational,
-#and permutational symmetry.
+# set up the structural alignment routine.
+# we have to deal with global translational, global rotational,
+# and permutational symmetry.
 permlist = [range(natoms)]
 mindist = MinPermDistAtomicCluster(permlist=permlist, niter=10)
 
-#The transition state search needs to know what the eigenvector corresponding
-#to the lowest nonzero eigenvector is.  For this we need to know what the
-#eivenvector corresponding to the zero eigenvalues are.  These are related
-#to global symmetries.  for this system we have 3 zero eigenvalues for translational
-#symmetry and 3 for rotational symmetry.  The function orthogopt
-#will take care of this for us.
+# The transition state search needs to know what the eigenvector corresponding
+# to the lowest nonzero eigenvector is.  For this we need to know what the
+# eivenvector corresponding to the zero eigenvalues are.  These are related
+# to global symmetries.  for this system we have 3 zero eigenvalues for translational
+# symmetry and 3 for rotational symmetry.  The function orthogopt
+# will take care of this for us.
 orthogZeroEigs = orthogopt
 tsSearchParams = dict()
 tsSearchParams["orthogZeroEigs"] = orthogZeroEigs
@@ -64,15 +63,14 @@ tsSearchParams["iprint"] = 10
 
 
 if True:
-    #set additional parameters to make it run faster
+    # set additional parameters to make it run faster
     tsSearchParams["nsteps_tangent1"] = 3
     tsSearchParams["nsteps_tangent2"] = 25
     tsSearchParams["lowestEigenvectorQuenchParams"] = {"nsteps":50}
     tsSearchParams["nfail_max"] = 200
 
     
-    NEBquenchParams=dict()
-    #NEBquenchParams["nsteps"] = 300 
+    NEBquenchParams = dict()
     NEBquenchParams["iprint"] = 100
     
     NEBparams = dict()
@@ -87,10 +85,9 @@ if True:
 
 
 
-myconnect = DoubleEndedConnect(
-        min1, min2, pot, mindist, database,
-        local_connect_params=local_connect_params,
-        )
+myconnect = DoubleEndedConnect(min1, min2, pot, mindist, database,
+                               local_connect_params=local_connect_params,
+                               )
 
 if (myconnect.graph.areConnected(min1, min2)):
     print "ALERT: The minima are already connected in the database file", dbfile
@@ -102,9 +99,9 @@ print "found a path!"
 
 
 
-#the path is now saved in the database.  Lets retrieve it and 
-#print it in a more visual format
-#now retrieve the path for printing
+# the path is now saved in the database.  Lets retrieve it and 
+# print it in a more visual format
+# now retrieve the path for printing
 print ""
 mints, S, energies = myconnect.returnPath()
 nmin = (len(mints)-1)/2 + 1
@@ -137,6 +134,5 @@ if False:
         import matplotlib.pyplot as plt
         plt.plot(S, energies)
         plt.show()
-    except:
+    except ImportError:
         print "problem plotting with pyplot, skipping"
-        pass

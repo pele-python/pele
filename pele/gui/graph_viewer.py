@@ -1,14 +1,13 @@
 import networkx as nx
 import numpy as np
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QDialog, QWidget
+from PyQt4.QtGui import QWidget
 
-#from pele.gui.ui.mplwidget import MPLWidgetWithToolbar
 from pele.gui.ui.graph_view_ui import Ui_Form
 from pele.utils.events import Signal
 from pele.utils.disconnectivity_graph import database2graph
 from pele.gui.ui.dgraph_dlg import minimum_energy_path, check_thermodynamic_info
-from pele.rates import RatesLinalg, compute_committors
+from pele.rates import compute_committors
 
 
 
@@ -40,7 +39,6 @@ class ColorByCommittorAction(QtGui.QAction):
 
     def __call__(self, val):
         dialog = QtGui.QInputDialog(parent=self.parent)
-#         dialog.setLabelText("")
         dialog.setLabelText("Temperature for committor calculation")
         dialog.setInputMode(2)
         dialog.setDoubleValue(1.)
@@ -56,7 +54,6 @@ class GraphViewWidget(QWidget):
         QWidget.__init__(self, parent=parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
-#        self.widget = GraphDisplayWidget(parent=parent)
         self.database = database
         self.minima = minima
         self.app = app
@@ -234,9 +231,9 @@ class GraphViewWidget(QWidget):
         ax.clear()
         graph = self.graph
         
-        #get the layout of the nodes from networkx
+        # get the layout of the nodes from networkx
         oldlayout = self.positions
-        layout = nx.spring_layout(graph, pos=oldlayout)#, fixed=fixed)
+        layout = nx.spring_layout(graph, pos=oldlayout)
         self.positions.update(layout)
         layout = self.positions
         
@@ -281,7 +278,6 @@ class GraphViewWidget(QWidget):
             boundary_layout_list = filter(lambda nxy: nxy[0] in self.boundary_nodes, layout.items())
             xypos = np.array([xy for n, xy in boundary_layout_list])
             #plot the nodes
-            import matplotlib as mpl
 #            marker = mpl.markers.MarkerStyle("o", fillstyle="none")
 #            marker.set_fillstyle("none")
             self._boundary_points = ax.scatter(xypos[:,0], xypos[:,1], picker=5, 
@@ -298,24 +294,6 @@ class GraphViewWidget(QWidget):
         dy = (ymax - ymin)*.1
         ax.set_xlim([xmin-dx, xmax+dx])
         ax.set_ylim([ymin-dy, ymax+dy])
-        import matplotlib.pyplot as plt
-#        self.fig.relim()
-#        self.fig.tight_layout()
-#        plt.tight_layout()
-#        self.fig.set_tight_layout(True)
-        
-        
-#        def on_pick(event):
-#            ind = event.ind[0]
-#            if event.artist == points:
-#                min1 = layoutlist[ind][0]
-#            elif event.artist == boundary_points:
-#                min1 = boundary_layout_list[ind][0]
-#            else:
-#                return True
-#            print "you clicked on minimum with id", min1._id, "and energy", min1.energy
-#            self._on_minima_picked(min1)
-
         
         if self._mpl_cid is not None:
             self.canvas.mpl_disconnect(self._mpl_cid)
@@ -340,11 +318,6 @@ class GraphViewDialog(QtGui.QMainWindow):
 
     def start(self):
         self.widget.show_all()
-#        self.widget.make_graph()
-#        gmin = self.widget.database.minima()[0:1]
-#        self.widget.make_graph_from(gmin)
-#        self.widget.show_graph()
-
 
 
 def test():

@@ -129,7 +129,6 @@ class Reseeding(TakestepInterface):
             if driver.markovE + self.accuracy >= self.lowest or accepted==False:
                 self._noimprove+=1
             else:
-                #print "resetting reseed counter"
                 self.lowest = driver.markovE
                 self._noimprove=1
             

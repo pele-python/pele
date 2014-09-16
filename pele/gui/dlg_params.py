@@ -1,13 +1,10 @@
-import sqlalchemy.orm
 from PyQt4 import QtGui, QtCore
-from PyQt4.Qt import QVariant
 
-from ui_params import Ui_Dialog as UI
+from pele.gui.ui_params import Ui_Dialog as UI
 
 class EditParamsWidget(QtGui.QWidget):
     def __init__(self, parent=None, params=dict()):
         QtGui.QWidget.__init__(self, parent)
-        #self.params = params
         self.params = params
         self.view = QtGui.QTreeView(self)
         
@@ -24,7 +21,6 @@ class EditParamsWidget(QtGui.QWidget):
         self.fill(params)
         self.model.itemChanged.connect(self.item_changed)
         self.view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        #self.view.customContextMenuRequested.connect(self.open_context_menu)
         
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, QtCore.Qt.AscendingOrder)
@@ -43,7 +39,6 @@ class EditParamsWidget(QtGui.QWidget):
                 editable.setEditable(False)
                 editable.setEnabled(False)
             else:
-                #item.setChild(0, 0, QtGui.QStandardItem(str(value)))
                 if type(value) == bool:
                     editable = QtGui.QStandardItem()
                     editable.setCheckable(True)
@@ -125,7 +120,6 @@ class DlgParams(QtGui.QDialog):
                 editable.setEditable(False)
                 editable.setEnabled(False)
             else:
-                #item.setChild(0, 0, QtGui.QStandardItem(str(value)))
                 if type(value) == bool:
                     editable = QtGui.QStandardItem()
                     editable.setCheckable(True)

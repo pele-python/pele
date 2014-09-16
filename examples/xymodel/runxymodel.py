@@ -23,8 +23,7 @@ pi = np.pi
 L = 24
 nspins = L**2
 
-#phases = np.zeros(nspins)
-pot = XYModel( dim = [L,L], phi = np.pi) #, phases=phases)
+pot = XYModel( dim = [L,L], phi = np.pi)
 
 
 angles = np.random.uniform(-pi, pi, nspins)
@@ -35,7 +34,7 @@ print "energy ", e
 
 
 
-#try a quench
+# try a quench
 if False:
     from pele.optimize import mylbfgs
     ret = mylbfgs(angles, pot)
@@ -43,15 +42,15 @@ if False:
     print ret
 
 
-#set up and run basin hopping
+# set up and run basin hopping
 
 from pele.basinhopping import BasinHopping
 from pele.takestep.displace import RandomDisplacement
 from pele.takestep.adaptive import AdaptiveStepsize
 from pele.storage import savenlowest
 
-#should probably use a different take step routine  which takes into account
-#the cyclical periodicity of angles
+# should probably use a different take step routine  which takes into account
+# the cyclical periodicity of angles
 takestep = RandomDisplacement(stepsize = np.pi/4)
 takestepa = AdaptiveStepsize(takestep, frequency = 20)
 storage = savenlowest.SaveN(500)
@@ -64,7 +63,7 @@ print "minima found"
 with open("out.spin", "w") as fout:
     for min in storage.data:
         print "energy", min.energy
-        fout.write("#%g\n" % (min.energy))
+        fout.write("# %g\n" % (min.energy))
         printspins(fout, pot, min.coords)
         fout.write('\n\n')
         """

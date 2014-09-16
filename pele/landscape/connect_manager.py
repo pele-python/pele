@@ -2,7 +2,6 @@
 classes to organize strategies for selecting which minima in a database to
 choose for a double ended connect run. 
 """
-
 from collections import deque
 
 import numpy as np
@@ -208,7 +207,7 @@ class ConnectManagerCombine(BaseConnectManager):
         if True:
             # make sure that the global minimum is in group1
             global_min = self.database.minima()[0]
-            if not global_min in group1:
+            if global_min not in group1:
                 print "warning, the global minimum is not the in the largest cluster.  Will try to connect them"
                 self.minpairs.append((min1, global_min))
                 

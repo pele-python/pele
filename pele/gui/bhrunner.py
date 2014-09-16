@@ -1,23 +1,9 @@
-# Comment: multiprocess not running yet, still using threading module
-#
-#
-# All calculations need to be done without blocking the
-# gui. The basin hopping runner takes care for running 
-# basin hopping simulations. It uses subproceses instead of
-# threading since threading is only possile on GIL level
-# and will not work properly if native code is involved
-#
-# The layout is the following: The BHRunner in master has
-# the storage class. The subprocess communicates all found
-# minima to the master via pipe which handles the insert and
-# gui updates.
-
-#import threading as mp
-import multiprocessing as mp
-import threading as th
 import time
-from PyQt4 import QtCore,QtGui
+import multiprocessing as mp
+
 import numpy as np
+from PyQt4 import QtCore
+
 from pele.utils.events import Signal
 
 class _BHProcess(mp.Process):
@@ -28,14 +14,12 @@ class _BHProcess(mp.Process):
     """
     def __init__(self, system, comm, nsteps=None):
         mp.Process.__init__(self)
-        #QtCore.QThread.__init__(self)
         self.comm = comm
         self.system = system
         self.nsteps = nsteps
     
     def run(self):
-        seed = int(time.time())#*100.)
-#        print seed
+        seed = int(time.time() * 100.)
         np.random.seed(seed)
         print np.random.random(2)
         db = self.system.create_database()
@@ -47,10 +31,6 @@ class _BHProcess(mp.Process):
             except AttributeError or KeyError:
                 self.nsteps = 100
         
-
-        
-        #while(True):
-        #print 'bhrunner.py: number of BH steps set to 1'
         for i in xrange(self.nsteps):
             opt.run(1)
             if self._should_die():
@@ -63,7 +43,6 @@ class _BHProcess(mp.Process):
             if message == "kill":
                 return True
             else:
-#                print self.__classname__, ": don't understand message", message, "ignoring"
                 print "don't understand message", message, "ignoring"
         return False
        
@@ -77,7 +56,6 @@ class PollThread(QtCore.QThread):
         self.conn = conn
     def run(self):
         while(self.bhrunner.bhprocess.is_alive()):
-            #print "no data"
             if(self.conn.poll()):
                 minimum = self.conn.recv()
                 self.emit(QtCore.SIGNAL("Activated( PyQt_PyObject )"),minimum)                
@@ -102,16 +80,6 @@ class BHRunner(QtCore.QObject):
         self.on_finish = Signal()
         if on_finish is not None:
             self.on_finish.connect(on_finish)
-#        self.lock = th.Lock()
-        
-#    def send(self, minimum):
-#        self.minimum_found(minimum)
-#    
-#    def pause(self):
-#        pass
-#    
-#    def contiue(self):
-#        pass
     
     def is_alive(self):
         return self.bhprocess.is_alive()
@@ -136,9 +104,6 @@ class BHRunner(QtCore.QObject):
         self.bhprocess = _BHProcess(self.system, child_conn, nsteps=self.nsteps)
         self.bhprocess.daemon = self.daemon
         self.bhprocess.start()
-#        self.poll_thread = PollThread(self, parent_conn)
-#        self.connect(self.poll_thread,QtCore.SIGNAL("Activated ( PyQt_PyObject ) "), self.minimum_found)        
-#        self.poll_thread.start()
         self.parent_conn = parent_conn
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
@@ -195,12 +160,6 @@ class BHManager(object):
         self._remove_dead()
         return len(self.workers)
         
-        
-#    def minimum_found(self,minimum):
-#        self.lock.acquire()
-#        self.system.database.addMinimum(minimum[0],minimum[1])
-#        self.lock.release()
-    
 def found(m):
     print("New Minimum",m[0])
     

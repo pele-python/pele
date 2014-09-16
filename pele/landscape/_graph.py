@@ -150,27 +150,17 @@ class TSGraph(object):
         now point to min1
         """
         self.connected_components.union(min1, min2)
-        #make the edges of min2 now point to min1
+        # make the edges of min2 now point to min1
         for v, data in self.graph[min2].iteritems():
             if v == min1: continue
             if v == min2: 
                 print "warning: minimum", min2._id, "is connected to itself"
                 continue
-            #the new edge will be (min1, v).  Add it if it doesn't already exist
+            # the new edge will be (min1, v).  Add it if it doesn't already exist
             if not self.graph.has_edge(min1, v):
-#                if not self.graph.has_edge(v, min1):
-#                    data = self.graph.get_edge_data(min2, v)
                 self.graph.add_edge(min1, v, **data)
         self.graph.remove_node(min2)
 
 class Graph(TSGraph):
     """this is included for backwards compatibility"""
     pass
-
-#
-# below here only for testing
-#
-
-
-
-

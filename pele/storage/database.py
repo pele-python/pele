@@ -154,14 +154,12 @@ class TransitionState(Base):
     
     _minimum1_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum1 = relationship("Minimum",
-                            primaryjoin="Minimum._id==TransitionState._minimum1_id") #,
-                            #backref='left_edges')
+                            primaryjoin="Minimum._id==TransitionState._minimum1_id")
     '''first minimum which connects to transition state'''
     
     _minimum2_id = Column(Integer, ForeignKey('tbl_minima._id'))
     minimum2 = relationship("Minimum",
-                            primaryjoin="Minimum._id==TransitionState._minimum2_id")#,
-                            #backref='right_edges')
+                            primaryjoin="Minimum._id==TransitionState._minimum2_id")
     '''second minimum which connects to transition state'''
     
     eigenval = Column(Float)
@@ -426,29 +424,6 @@ class Database(object):
                           "%d (%d). Please use migrate_db.py in pele/scripts to update database"%(schema, _schema_version))
 
 
-
-        
-#        self._initialize_queries()
-        
-#    def _initialize_queries(self):
-#        #        self._sql_get_dist = select([Distance.__table__.c.dist],
-#        #               or_(and_(Distance.__table__.c._minimum1_id==bindparam("id1"), 
-#        #                        Distance.__table__.c._minimum2_id==bindparam("id2")),
-#        #                   and_(Distance.__table__.c._minimum1_id==bindparam("id2"), 
-#        #                        Distance.__table__.c._minimum2_id==bindparam("id1")),
-#        #               ), use_labels=False).limit(1)
-#        tbl =  Distance.__table__.c
-#        self._sql_get_dist = select([tbl.dist],and_(
-#                                 tbl._minimum1_id==bindparam("id1"), 
-#                                 tbl._minimum2_id==bindparam("id2")
-#                                 ), use_labels=False).limit(1)
-#                                 
-#        #self._sql_set_dist = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
-#        self._sql_set_dist = "INSERT OR REPLACE INTO tbl_distances (dist, _minimum1_id, _minimum2_id) VALUES (:dist, :id1, :id2)"
-#        
-#        #self._sql_set_dist_upd = Distance.__table__.update().where(and_(tbl._minimum1_id==bindparam("id1"),tbl._minimum2_id==bindparam("id2"))).values(dist=bindparam("dist"))
-#        #self._sql_set_dist_ins = Distance.__table__.insert().values(_minimum1_id=bindparam("id1"),_minimum2_id=bindparam("id2"), dist=bindparam("dist"))
-        
     def _highest_energy_minimum(self):
         """return the minimum with the highest energy"""
         candidates = self.session.query(Minimum).order_by(Minimum.energy.desc()).\
@@ -512,11 +487,11 @@ class Database(object):
             if self.number_of_minima() >= max_n_minima:
                 mmax = self._highest_energy_minimum()
                 if E >= mmax.energy:
-                    #don't add the minimum
+                    # don't add the minimum
                     self.lock.release() 
                     return None
                 else:
-                    #remove the minimum with the highest energy and continue
+                    # remove the minimum with the highest energy and continue
                     self.removeMinimum(mmax, commit=commit)
         
         if fvib is not None:
@@ -574,14 +549,8 @@ class Database(object):
             filter(TransitionState.energy.between(energy-self.accuracy,  energy+self.accuracy))
         
         for m in candidates:
-            #if(self.compareMinima):
-            #    if(self.compareMinima(new, m) == False):
-            #        continue
-            #self.lock.release()
             return m
 
-        #if(m2.energy < m1.energy):
-        #    m1,m2 = m2,m1
         new = TransitionState(energy, coords, m1, m2, eigenval=eigenval, eigenvec=eigenvec)
         
         if fvib is not None:
@@ -611,10 +580,6 @@ class Database(object):
                        ))
 
         for m in candidates:
-            #if(self.compareMinima):
-            #    if(self.compareMinima(new, m) == False):
-            #        continue
-            #self.lock.release()
             return m
         return None
 
@@ -696,7 +661,7 @@ class Database(object):
         Remove a minimum and any objects (TransitionState) 
         pointing to that minimum.
         """
-        #delete any transition states objects pointing to min2
+        # delete any transition states objects pointing to min2
         candidates = self.session.query(TransitionState).\
             filter(or_(TransitionState.minimum1 == m, 
                        TransitionState.minimum2 == m))
@@ -706,7 +671,7 @@ class Database(object):
             self.session.delete(ts)
         
         self.on_minimum_removed(m)
-        #delete the minimum
+        # delete the minimum
         self.session.delete(m)
         if commit:
             self.session.commit()
@@ -718,20 +683,20 @@ class Database(object):
         min2 will be deleted and everything that 
         points to min2 will point to min1 instead.
         """
-        #find all transition states for which ts.minimum1 is min2
+        # find all transition states for which ts.minimum1 is min2
         candidates = self.session.query(TransitionState).\
             filter(TransitionState.minimum1 == min2) 
         for ts in candidates:
-            #should we check if this will duplicate an existing transition state?
+            # should we check if this will duplicate an existing transition state?
             ts.minimum1 = min1
             if ts.minimum1._id > ts.minimum2._id:
                 ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
         
-        #find all transition states for which ts.minimum2 is min2
+        # find all transition states for which ts.minimum2 is min2
         candidates = self.session.query(TransitionState).\
             filter(TransitionState.minimum2 == min2) 
         for ts in candidates:
-            #should we check if this will duplicate an existing transition state?
+            # should we check if this will duplicate an existing transition state?
             ts.minimum2 = min1
             if ts.minimum1._id > ts.minimum2._id:
                 ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1

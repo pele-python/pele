@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 ############################################################
-#Example 2: reading coords from file
+# Example 2: reading coords from file
 ############################################################
 import numpy as np
 import pele.potentials.lj as lj

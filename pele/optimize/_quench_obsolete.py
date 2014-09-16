@@ -50,8 +50,8 @@ def lbfgs_scipy(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=15000):
             print "too many function evaluations"
         else:
             print dictionary['task']
-    #note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
-    #tolerance exactly
+    # note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
+    # tolerance exactly
     if True:
         maxV = np.max( np.abs(V) )
         if maxV > tol:
@@ -86,9 +86,8 @@ def cg(coords, getEnergyGradient, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, gtol=tol, full_output=True, disp=iprint>0, maxiter=nsteps, **kwargs)
     newcoords = ret[0]
-    #e = ret[1]
     funcalls = ret[2]
-    funcalls += ret[3] #calls to gradient
+    funcalls += ret[3] # calls to gradient
     warnflag = ret[4]
     if warnflag > 0:
         print "warning: problem with quench: ",
@@ -111,10 +110,9 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
         # This function will now accept a potential object
         getEnergyGradient = getEnergyGradient.getEnergyGradient
     import scipy.optimize
-    pot = getEnergyGradientWrapper(getEnergyGradient)  #this is really stupid
+    pot = getEnergyGradientWrapper(getEnergyGradient)  # this is really stupid
     ret = scipy.optimize.fmin(pot.getEnergy, coords, ftol=tol, full_output = True)
     newcoords = ret[0]
-    #e = ret[1]
     funcalls = ret[2]
     warnflag = ret[4]
     if warnflag > 0:
@@ -123,18 +121,9 @@ def fmin(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
             print "Maximum number of function evaluations made."
         if warnflag == 2:
             print "Maximum number of iterations reached."
-    e,g = getEnergyGradient(newcoords)  #should I use gradient here?  It seems kind of dumb
+    e,g = getEnergyGradient(newcoords)  # should I use gradient here?  It seems kind of dumb
     rms = np.linalg.norm(g)/np.sqrt(len(g))
     return newcoords, e, rms, funcalls 
-
-#def lbfgs_ase(coords, getEnergyGradient, iprint = -1, tol = 1e-3):
-#    import fire as fire
-#    opt = fire.Fire(coords, getEnergyGradient)
-#    opt.run()
-#    e,g = getEnergyGradient(opt.coords)
-#    rms = np.linalg.norm(g)/np.sqrt(len(g))
-#    return opt.coords, e, rms, opt.nsteps
-
 
 def _steepest_descent(x0, getEnergyGradient, iprint = -1, dx = 1e-4, nsteps = 100000, \
                       gtol = 1e-3, maxstep = -1., event=None):
@@ -249,24 +238,4 @@ def mylbfgs(coords, getEnergyGradient, **kwargs):
     pot = getEnergyGradientWrapper(getEnergyGradient)
     ret = _mylbfgs(coords, pot, **kwargs)
     return ret
-
-#def _mylbfgs_callback(coords, pot, nsteps = 1e6, iprint = -1, tol = 1e-3, maxstep = 0.1, maxErise = 1e-4, M=10):
-#    """
-#    js850> I think this might not be working but I can't remember
-#    """
-#    from mylbfgs_callback import LBFGS
-#    lbfgs = LBFGS(coords, pot, maxstep = maxstep, maxErise = maxErise)
-#    
-#    ret = lbfgs.run(nsteps, tol, iprint)
-#    coords = ret[0]
-#    e = ret[1]
-#    rms = ret[2]
-#    funcalls = ret[3]
-#    return coords, e, rms, funcalls
-
-#def mylbfgs_callback(coords, getEnergyGradient, iprint = -1, tol = 1e-3, maxstep = 0.1):
-#    pot = getEnergyGradientWrapper(getEnergyGradient)
-#    ret = _mylbfgs_callback(coords, pot, iprint = iprint, tol = tol, maxstep = maxstep)
-#    return ret
-
 

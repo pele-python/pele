@@ -38,7 +38,7 @@ class MorseCluster(AtomicCluster):
         return Morse(rho=self.rho, r0=self.r0, A=self.A, rcut=self.rcut)
 
     #
-    #below here is stuff only for the gui
+    # below here is stuff only for the gui
     #
 
     def draw(self, coordslinear, index, subtract_com=True): # pragma: no cover
@@ -88,34 +88,34 @@ class MorseCluster(AtomicCluster):
         the implementation here is a bit hacky.  we create a temporary xyz file from coords
         and load the molecule in pymol from this file.  
         """
-        #pymol is imported here so you can do, e.g. basinhopping without installing pymol
+        # pymol is imported here so you can do, e.g. basinhopping without installing pymol
         import pymol 
 
-        #create the temporary file
+        # create the temporary file
         suffix = ".xyz"
         f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
         fname = f.name
                 
-        #write the coords into the xyz file
+        # write the coords into the xyz file
         from pele.mindist import CoMToOrigin
         for coords in coordslist:
             coords = CoMToOrigin(coords.copy())
             write_xyz(f, coords, title=oname, atomtypes=["LA"])
         f.flush()
                 
-        #load the molecule from the temporary file
+        # load the molecule from the temporary file
         pymol.cmd.load(fname)
         
-        #get name of the object just create and change it to oname
+        # get name of the object just create and change it to oname
         objects = pymol.cmd.get_object_list()
         objectname = objects[-1]
         pymol.cmd.set_name(objectname, oname)
         
-        #set the representation
+        # set the representation
         pymol.cmd.hide("everything", oname)
         pymol.cmd.show("spheres", oname)
         
-        #set the color according to index
+        # set the color according to index
         if index == 1:
             pymol.cmd.color("red", oname)
         else:
@@ -123,22 +123,22 @@ class MorseCluster(AtomicCluster):
 
 
 #
-#only for testing below here
+# only for testing below here
 #
 
 def run(): # pragma: no cover
-    #create the system object
+    # create the system object
     sys = MorseCluster(15)
     
-    #create a database
+    # create a database
     db = sys.create_database()
     
-    #do a short basinhopping run
-    bh = sys.get_basinhopping(database=db)#, outstream=None)
+    # do a short basinhopping run
+    bh = sys.get_basinhopping(database=db)
     while len(db.minima()) < 2:
         bh.run(100)
     
-    #try to connect the lowest two minima
+    # try to connect the lowest two minima
     min1, min2 = db.minima()[:2]
     connect = sys.get_double_ended_connect(min1, min2, db)
     connect.connect()

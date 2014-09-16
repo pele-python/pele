@@ -1,6 +1,5 @@
 from rmsfit import findrotation
 from permutational_alignment import find_best_permutation
-from pele.utils import rotations
 import numpy as np
 
 __all__ = ["TransformPolicy", "MeasurePolicy", "TransformAtomicCluster", "MeasureAtomicCluster"]

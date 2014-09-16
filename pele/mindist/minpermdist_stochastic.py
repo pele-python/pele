@@ -126,7 +126,6 @@ class MinPermDistCluster(object):
         and coords2 are brought in best alignment with coords2
         '''
         # we don't want to change the given coordinates
-        check_inversion = False
         coords1 = coords1.copy()
         coords2 = coords2.copy()
         
@@ -161,17 +160,15 @@ class MinPermDistCluster(object):
             if(self.transform.can_invert()):
                 self.check_match(x1, x2, rot, True)
 
-#        self.transform.rotate(X2, mxbest)
-#        dist, perm = self.measure.find_permutation(X1, X2)
-#        X2 = self.transform.permute(X2, perm)
-#        tmp, mx = self.measure.find_rotation(X1.copy(), X2.copy())
-#        self.transform.rotate(X2, mx)
-        
         # TODO: should we do an additional sanity check for permutation / rotation?        
         
         dist, x2 = self.finalize_best_match(coords1)                
         return dist, coords1, x2
-        
+
+#
+# testing only below here
+#
+
 def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
          minPermDist=MinPermDistCluster()): # pragma: no cover
     import copy
@@ -214,11 +211,11 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
     quench = mylbfgs
     lj = LJ()
     X1 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
-    #quench X1
+    # quench X1
     ret = quench( X1, lj)
     X1 = ret.coords
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
-    #make X2 a rotation of X1
+    # make X2 a rotation of X1
     print "testing with", natoms, "atoms, with X2 a rotated and permuted isomer of X1"
     aa = rot.random_aa()
     rot_mx = rot.aa2mx( aa )
@@ -230,8 +227,6 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
     print perm
     X2 = permuteArray( X2, perm)
 
-    #X1 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 0., 1.,] )
-    #X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )
     import copy
     X1i = copy.copy(X1)
     X2i = copy.copy(X2)

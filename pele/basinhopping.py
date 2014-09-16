@@ -29,7 +29,7 @@ class BasinHopping(MonteCarlo):
                  insert_rejected=False
                  ):
         #########################################################################
-        #initialize MonteCarlo base class
+        # initialize MonteCarlo base class
         #########################################################################
         MonteCarlo.__init__(self, coords, potential, takeStep, storage=storage,
                             event_after_step=event_after_step,
@@ -42,7 +42,7 @@ class BasinHopping(MonteCarlo):
         self.quench = quench
                 
         #########################################################################
-        #do initial quench
+        # do initial quench
         #########################################################################
         self.markovE_old = self.markovE
         res = self.quench(self.coords)
@@ -57,7 +57,7 @@ class BasinHopping(MonteCarlo):
         if(self.storage):
             self.storage(self.markovE, self.coords)
         
-        #print the initial quench
+        # print the initial quench
         self.acceptstep = True
         self.trial_energy = self.markovE
         self.printStep()
@@ -72,14 +72,14 @@ class BasinHopping(MonteCarlo):
 
         overload the MonteCarlo base class step
         """
-        self.coords_after_step = self.coords.copy() #make  a working copy
+        self.coords_after_step = self.coords.copy() # make  a working copy
         #########################################################################
-        #take step
+        # take step
         #########################################################################
         self.takeStep.takeStep(self.coords_after_step, driver=self)
 
         #########################################################################
-        #quench
+        # quench
         #########################################################################
         res = self.quench(self.coords_after_step)
 #        if isinstance(res, tuple): # for compatability with old and new quenchers
@@ -100,15 +100,15 @@ class BasinHopping(MonteCarlo):
                 self.config_ok = False
         
         #########################################################################
-        #check whether step is accepted with user defined tests.  If any returns
-        #false then reject step.
+        # check whether step is accepted with user defined tests.  If any returns
+        # false then reject step.
         #########################################################################
         if self.acceptstep:
             self.acceptstep = self.acceptTest(self.markovE, self.trial_energy,
                                               self.coords, self.trial_coords)
 
         #########################################################################
-        #return new coords and energy and whether or not they were accepted
+        # return new coords and energy and whether or not they were accepted
         #########################################################################
         return self.acceptstep, self.trial_coords, self.trial_energy
 
@@ -126,7 +126,7 @@ class BasinHopping(MonteCarlo):
         ddict = self.__dict__.copy();
         del ddict["outstream"]
         del ddict["potential"]
-        return ddict #.items()
+        return ddict
     
     def __setstate__(self, dct):
         self.__dict__.update(dct)

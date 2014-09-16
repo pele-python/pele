@@ -1,4 +1,3 @@
-
 from PyQt4 import QtCore, QtGui, Qt
 
 class NumberStandardItem(Qt.QStandardItem):
@@ -21,7 +20,7 @@ class MinimumStandardItem(Qt.QStandardItem):
         super(MinimumStandardItem, self).__init__(text)
         self.minimum = minimum
     def __lt__(self, item2):
-        #sort the energies in the list lowest to highest
+        # sort the energies in the list lowest to highest
         return self.minimum.energy < item2.minimum.energy
 
 class TransitionStateStandardItem(Qt.QStandardItem):
@@ -31,12 +30,12 @@ class TransitionStateStandardItem(Qt.QStandardItem):
     QListView
     """
     def __init__(self, ts):
-        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
+#        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
         text="%.4f"%(ts.energy)
         super(TransitionStateStandardItem, self).__init__(text)
         self.ts = ts
     def __lt__(self, item2):
-        #sort the energies in the list lowest to highest
+        # sort the energies in the list lowest to highest
         return self.ts.energy < item2.ts.energy
 
     def __getattr__(self, name):

@@ -1,7 +1,6 @@
 import numpy as np
 from collections import namedtuple
 
-from permutational_alignment import find_best_permutation
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 import rmsfit
 
@@ -205,7 +204,6 @@ class ExactMatchCluster(object):
         >>>     print "the two structures are identical
 
     '''
-
     def __init__(self, tol = 0.01, accuracy=0.01, transform=TransformAtomicCluster(), measure=MeasureAtomicCluster()):
         self.accuracy = accuracy
         self.tol = tol
@@ -272,7 +270,7 @@ class ExactMatchCluster(object):
         '''
         x2_trial = x2.copy()
 
-        #apply the inversion
+        # apply the inversion
         # note that inversion happens before rotation.  this is important as they are not commutative (I think)
         if(invert):
             self.transform.invert(x2_trial)
@@ -328,7 +326,7 @@ class ExactMatchCluster(object):
 # only testing below here
 #
 
-def test():
+def test(): # pragma: no cover
     natoms = 35
     from pele.utils import rotations
 

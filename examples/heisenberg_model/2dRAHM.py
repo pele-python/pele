@@ -1,11 +1,11 @@
-import numpy as np
 from copy import copy
-from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
-import pele.utils.rotations as rotations
-from numpy import sin, cos
 
 import networkx as nx
+import numpy as np
+from numpy import sin, cos
 
+from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
+import pele.utils.rotations as rotations
 from pele.potentials.heisenberg_spin import make3dVector,  make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
 
 def getm(coords2):
@@ -30,18 +30,15 @@ pi = np.pi
 L = 4
 nspins = L**2
 
-#phases = np.zeros(nspins)
-pot = HeisenbergModelRA( dim = [L,L], field_disorder = 2. ) #, phases=phases)
+pot = HeisenbergModelRA( dim = [L,L], field_disorder = 2. )
 
 coords = np.zeros([nspins, 2])
 for i in range(nspins): 
     vec = rotations.vec_random()
     coords[i,:] = make2dVector(vec)
 coords = np.reshape(coords, [nspins*2])
-#print np.shape(coords)
 coordsinit = np.copy(coords)
 
-#print "fields", pot.fields
 print coords
 
 
@@ -59,8 +56,7 @@ m = getm( ret[0] )
 print "magnetization after quench", m
 
 
-#do basin hopping
-
+# do basin hopping
 from pele.basinhopping import BasinHopping
 from pele.takestep.displace import RandomDisplacement
 from pele.takestep.adaptive import AdaptiveStepsize

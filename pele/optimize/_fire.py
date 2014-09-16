@@ -3,7 +3,6 @@ Created on 30 Apr 2012
 
 @author: ruehle
 '''
-
 import numpy as np
 import math
 import logging
@@ -92,7 +91,6 @@ class Fire(object):
                  dt=0.1, maxstep=0.5, dtmax=1., Nmin=5, finc=1.1, fdec=0.5,
                  astart=0.1, fa=0.99, a=0.1, iprint=-1,
                  alternate_stop_criterion=None, events=None, logger=None):
-        #Optimizer.__init__(self, atoms, restart, logfile, trajectory)
 
         self.dt = dt
         self.Nsteps = 0
@@ -145,11 +143,10 @@ class Fire(object):
 
         self.v += self.dt * f
         dr = self.dt * self.v
-        if False: #how do we determine maxstep?
+        if False: # how do we determine maxstep?
             normdr = np.sqrt(np.vdot(dr, dr))
         else:
             normdr = max(np.abs(dr))
-        #print "aa",normdr
         if normdr > self.maxstep:
             dr = self.maxstep * dr / normdr
         self.coords= coords + dr
@@ -159,8 +156,8 @@ class Fire(object):
 
         This method will return when the forces on all individual
         atoms are less than *fmax* or when the number of steps exceeds
-        *steps*."""
-
+        *steps*.
+        """
         self.fmax = fmax
         step = 0
         res = Result()
@@ -168,8 +165,6 @@ class Fire(object):
         while step < steps:
             E, f = self.potential.getEnergyGradient(self.coords)
             self.nfev += 1
-            #self.call_observers()
-            #print E
             if self.alternate_stop_criterion is None:
                 i_am_done = self.converged(f)
             else:
@@ -202,16 +197,6 @@ class Fire(object):
 
     def converged(self, forces=None):
         """Did the optimization converge?"""
-        #if forces is None:
-        #    forces = self.atoms.get_forces()
-        #if hasattr(self.atoms, 'get_curvature'):
-        #    return (forces**2).sum(axis=1).max() < self.fmax**2 and \
-        #           self.atoms.get_curvature() < 0.0
-        #print forces
-        #print (forces**2).sum()
-        #print max(forces)
-        #return (forces**2).sum().max() < self.fmax**2
-        #print np.linalg.norm(forces)/math.sqrt(len(forces))
         return np.linalg.norm(forces)/math.sqrt(len(forces)) < self.fmax
 
 

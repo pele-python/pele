@@ -1,13 +1,6 @@
-'''
-Created on Jun 6, 2012
-
-@author: vr274
-'''
-
 __all__ = ["AdaptiveStepsize"]
 
 from .generic import TakestepInterface
-import numpy as np
 
 class AdaptiveStepsize(TakestepInterface):
     '''Adaptive stepsize adjustment
@@ -28,18 +21,16 @@ class AdaptiveStepsize(TakestepInterface):
         adjust the stepsize every interval steps    
     
     note: the keyword frequency is the same as interval.  it exists only for backward compatability
-    
     '''
-
     def __init__(self, stepclass, acc_ratio=0.5, factor=0.9, frequency=None, last_step=None, interval=100, verbose=False):
         self.stepclass = stepclass
-        self.accrat = acc_ratio #target accept ratio            
+        self.accrat = acc_ratio # target accept ratio            
         self.factor = factor
         self.nstepsaccrat = interval
         if frequency is not None:
             print "AdaptiveStepsize: keyword frequency is obsolete, use interval instead"
             self.nstepsaccrat = frequency
-        self.last_step = last_step #stop adjusting after this many steps
+        self.last_step = last_step # stop adjusting after this many steps
 
         self.naccepted = 0
         self.nsteps = 0

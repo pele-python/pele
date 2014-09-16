@@ -43,13 +43,10 @@ def zeroEV_rotation(coords):
     x = coords.reshape(coords.size/3,3)
     com = x.sum(0)/x.shape[0]
     
-    #print com
     r1 = np.dot(Rx,(x-com).transpose()).transpose().reshape(coords.shape)
     r2 = np.dot(Ry,(x-com).transpose()).transpose().reshape(coords.shape)
     r3 = np.dot(Rz,(x-com).transpose()).transpose().reshape(coords.shape)
     
-    #for u,v in zip(r2.reshape(coords.size/3,3), x.reshape(coords.size/3,3)):
-    #    print np.dot(u,v-com)
     return [r1/np.linalg.norm(r1), r2/np.linalg.norm(r2), r3/np.linalg.norm(r3)]
 
 def zeroEV_cluster(coords):
@@ -67,7 +64,6 @@ def gramm_schmidt(v):
         vn=vi.copy()
         for uk in u:
             vn -= np.dot(vn,uk)*uk
-        #print "lz",len(u)
         vn = vn / np.linalg.norm(vn)
         u.append(vn)
     return u
@@ -86,7 +82,11 @@ def orthogonalize(v, ozev):
         v-=np.dot(v,u)*u
     return v
 
-if __name__ == '__main__':
+#
+# testing only below here
+#
+
+def test(): # pragma: no cover
     from _orthogopt import orthogopt_slow, orthogopt
     natoms = 105
     for i in xrange(1):
@@ -109,18 +109,18 @@ if __name__ == '__main__':
     pot = lj.LJ()
     x = np.array([-1.,0.,0.,1., 0., 0., 0., 1., 1., 0.,-1.,-1.])
     x = np.random.random(x.shape)
-    #x = np.random.random(6)
     print x
     v = zeroEV_cluster(x)
     print np.dot(v[0],v[1]),np.dot(v[0],v[2]),np.dot(v[1],v[2])
     print np.dot(v[3],v[4]),np.dot(v[3],v[5]),np.dot(v[5],v[4])
     u = gramm_schmidt(zeroEV_cluster(x))
     for i in u:
-        #print x+1e-4*i
         print (pot.getEnergy(x + 1e-4*i) - pot.getEnergy(x))/1e-4,i
     print np.dot(u[3],u[4]),np.dot(u[3],u[5]),np.dot(u[5],u[4])
     print "########################"
     
     r = np.random.random(x.shape)
     print orthogopt(r.copy(), x.copy()) - orthogonalize(r.copy(), u)
-    #print u[5],u[4]
+
+if __name__ == '__main__':
+    test()

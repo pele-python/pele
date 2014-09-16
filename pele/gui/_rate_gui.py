@@ -1,6 +1,4 @@
-import numpy as np
-
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 
 from pele.gui.ui.rate_gui import Ui_Form
 from pele.rates import RateCalculation
@@ -120,7 +118,7 @@ if __name__ == "__main__":
     dbname = "lj%dtest.db" % (natoms,)
     db = system.create_database(dbname)
     
-    #get some minima
+    # get some minima
     if False:
         bh = system.get_basinhopping(database=db)
         bh.run(10)

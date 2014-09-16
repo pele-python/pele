@@ -48,12 +48,12 @@ class PathInfoReader(object):
         natoms lines with coords
         """
         res = Result()
-        #read energy
+        # read energy
         line = self.get_next_line()
 #        print line
         res.energy = float(line.split()[0])
 
-        #ignore the line with the point group
+        # ignore the line with the point group
         line = self.get_next_line()
         
         res.eigenvalues = self.read_coords(fin)
@@ -87,23 +87,23 @@ class SpawnOPTIM(object):
         
     def make_input_files(self, rundir):
         
-        #make odata file
+        # make odata file
         odata = rundir + "/odata"
         with open(odata, "w") as fout:
             self.write_odata(fout)
             self.write_odata_coords(self.coords1, fout)
         
-        #make finish file
+        # make finish file
         finish = rundir + "/finish"
         with open(finish, "w") as fout:
             for xyz in self.coords2:
                 fout.write( "%f %f %f\n" % tuple(xyz))
         
-        #make perm.allow file, if appropriate
+        # make perm.allow file, if appropriate
         permallow = rundir + "/perm.allow"
         self.write_perm_allow(permallow)
         
-        #make any additional files
+        # make any additional files
         self.write_additional_input_files(rundir, self.coords1, self.coords2)
 
     
@@ -124,13 +124,13 @@ class SpawnOPTIM(object):
     def make_permallow_from_permlist(self, permlist):
         """return a string corresponding to the perm.allow file from a permlist"""
         permallow = ""
-        #first line is number of groups
+        # first line is number of groups
         permallow += "%d\n" % len(permlist)
         for permgroup in permlist:
-            #print the size of the permgroup and the dependency
-            #permlist doesn't yet support dependency
+            # print the size of the permgroup and the dependency
+            # permlist doesn't yet support dependency
             permallow += "%d %d\n" % (len(permgroup), 0)
-            #now print the atoms in the permgroup.  adding 1 for the fortran indexing
+            # now print the atoms in the permgroup.  adding 1 for the fortran indexing
             atoms = [str(i + 1) for i in permgroup]
             permallow += " ".join(atoms) + "\n"
         return permallow
@@ -187,14 +187,14 @@ class SpawnOPTIM(object):
             min1 = database.addMinimum(min1res.energy, min1res.coords)
             min2 = database.addMinimum(min2res.energy, min2res.coords)
             ts = database.addTransitionState(tsres.energy, tsres.coords, min1, min2)
-            #I should probably get the eigenvector here
+            # I should probably get the eigenvector here
             print "adding ", min1._id, min2._id
 #            print min1.energy, ts.energy, min2.energy
             newminima.add(min1)
             newminima.add(min2)
             newts.add(ts)
         
-        #delete rundir if is a temporary directory
+        # delete rundir if is a temporary directory
         if self.tempdir:
             print "removing directory", self.rundir
             shutil.rmtree(self.rundir)

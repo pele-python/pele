@@ -623,7 +623,7 @@ class DisconnectivityGraph(object):
             minima = []
         self.min0list = minima
         if include_gmin:
-            #find the minimum energy node
+            # find the minimum energy node
             elist = [ (self._getEnergy(m), m) for m in self.graph.nodes() ]
             elist = sorted(elist)
             self.gmin0 = elist[0][1]
@@ -772,9 +772,9 @@ class DisconnectivityGraph(object):
                 break
         if min0index is not None:
             minvalue = min([v for v, tree in tree_value_list])
-            #replace the value with a lower one
-            #for the tree containing min0
-            newvalue = minvalue - 1 #this won't work for non number values
+            # replace the value with a lower one
+            # for the tree containing min0
+            newvalue = minvalue - 1 # this won't work for non number values
             tree_value_list[i] = (newvalue, tree_value_list[i][1]) 
         return tree_value_list 
 
@@ -860,7 +860,7 @@ class DisconnectivityGraph(object):
                     tree.data['x'] = xself
                     tree.data["_x_updated"] = True
             else: 
-                #add vertical line segment
+                # add vertical line segment
                 line_segments.append( ([xself,xself], [yself, yhigh]) )
                 line_colours.append(color)
 #                print "coloring vertical line", tree
@@ -936,11 +936,11 @@ class DisconnectivityGraph(object):
         """determine how much of the graph to include in the disconnectivity graph
         """
         used_nodes = []
-        #make sure we include the subgraph containing min0
+        # make sure we include the subgraph containing min0
         if len(min0list) == 0:
-            #use the biggest connected cluster
+            # use the biggest connected cluster
             cc = list(nx.connected_components(graph))
-            used_nodes += cc[0] #list is ordered by size of cluster
+            used_nodes += cc[0] # list is ordered by size of cluster
         else:
             for min0 in min0list:
                 used_nodes += nx.node_connected_component(graph, min0)
@@ -990,7 +990,7 @@ class DisconnectivityGraph(object):
         if hasattr(self, "elevels"):
             return self.elevels
         
-        #define the energy levels
+        # define the energy levels
         elist = [self._getEnergy(self._getTS(*edge)) for edge in graph.edges()]
         if len(elist) == 0:
             raise Exception("there are no edges in the graph.  Is the global minimum connected?")
@@ -1000,7 +1000,7 @@ class DisconnectivityGraph(object):
         else:
             emax = self.Emax
         de = (emax - emin) / (self.nlevels-1)
-        #the upper edge of the bins
+        # the upper edge of the bins
         elower = [emin + de*(i) for i in range(self.nlevels)]
         elevels = elower.append(emin + de*self.nlevels)
         
@@ -1041,15 +1041,15 @@ class DisconnectivityGraph(object):
         # make the tree graph defining the discontinuity of the minima
         tree_graph = self._make_tree(graph, elevels)
         
-        #assign id to trees
+        # assign id to trees
         # this is needed for coloring basins
 #        self._assign_id(tree_graph)
         
-        #layout the x positions of the minima and the nodes
+        # layout the x positions of the minima and the nodes
         self._layout_x_axis(tree_graph)
 
-        #get the line segments which will be drawn to define the graph
-        eoffset = (elevels[-1] - elevels[-2]) * self.node_offset  #this should be passable
+        # get the line segments which will be drawn to define the graph
+        eoffset = (elevels[-1] - elevels[-2]) * self.node_offset  # this should be passable
 #        line_segments = self._get_line_segments(tree_graph, eoffset=eoffset)
         
         
@@ -1153,7 +1153,7 @@ class DisconnectivityGraph(object):
                 fig.set_facecolor('white')
                 ax = fig.add_subplot(111, adjustable='box')
 
-        #set up how the figure should look
+        # set up how the figure should look
         ax.tick_params(axis='y', direction='out')
         ax.yaxis.tick_left()
         # make the borders a bit prettier
@@ -1167,7 +1167,7 @@ class DisconnectivityGraph(object):
         if title is not None:
             ax.set_title(title)
 
-        #draw the minima as points
+        # draw the minima as points
         if show_minima: 
             xpos, minima = self.get_minima_layout()
             energies = [m.energy for m in minima]

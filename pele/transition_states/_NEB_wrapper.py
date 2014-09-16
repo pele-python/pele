@@ -43,13 +43,13 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
     NEB
     InterpolatedPath
     """
-    #determine the number of images to use
+    # determine the number of images to use
     dist = np.linalg.norm(coords1 - coords2)
     nimages = int(max(1., dist) * image_density * factor)
     if nimages > max_images:
         nimages = max_images
 
-    #determine the number of iterations
+    # determine the number of iterations
     NEBquenchParams = NEBquenchParams.copy()
     if NEBquenchParams.has_key("nsteps"):
         niter = NEBquenchParams["nsteps"]
@@ -57,8 +57,8 @@ def create_NEB(pot, coords1, coords2, image_density=10, max_images=40,
         niter = int(iter_density * nimages)
         NEBquenchParams["nsteps"] = niter
 
-    #if nimages is already max_images then increasing the number
-    #of images with factor will have no effect.  so double the number of steps instead
+    # if nimages is already max_images then increasing the number
+    # of images with factor will have no effect.  so double the number of steps instead
     if factor > 1. and nimages == max_images:
         niter *= factor
         NEBquenchParams["nsteps"] = niter

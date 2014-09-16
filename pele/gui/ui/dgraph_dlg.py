@@ -5,13 +5,12 @@ from PyQt4.QtGui import QApplication, QWidget, QColorDialog, QInputDialog
 from PyQt4.QtCore import pyqtSlot
 
 import networkx as nx
-import matplotlib.colors as col
 
 import dgraph_browser
 from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph, TreeLeastCommonAncestor
 from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
-from pele.rates import RatesLinalg, RateCalculation, compute_committors
+from pele.rates import RatesLinalg, compute_committors
 
 def check_thermodynamic_info(transition_states):
     """return False if any transition state or minimum does not have pgorder or fvib"""
