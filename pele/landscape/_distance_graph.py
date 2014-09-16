@@ -147,7 +147,7 @@ class _DistanceGraph(object):
         """
         trans = self.database.connection.begin()
         try:
-            if not m in self.Gdist:
+            if m not in self.Gdist:
                 self._addMinimum(m)
         except BaseException:
             trans.rollback()

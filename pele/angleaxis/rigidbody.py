@@ -66,7 +66,7 @@ class RigidFragment(aatopology.AASiteType):
             self.Sm[:] += m*np.outer(x, x)
         self._determine_symmetries()
         
-        #calculate aa rotations for later
+        # calculate aa rotations for later
         self.symmetriesaa = []
         for rot in self.symmetries:
             self.symmetriesaa.append(mx2aa(rot))

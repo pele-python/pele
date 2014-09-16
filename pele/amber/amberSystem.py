@@ -145,11 +145,10 @@ class AMBERSystem(BaseSystem):
         return self 
     
     def get_potential(self):
-      """  First attempts to get the potential from GMIN, then from OpenMM. If both fail, sets it to None """ 
- 
+        """  First attempts to get the potential from GMIN, then from OpenMM. If both fail, sets it to None """ 
         if hasattr(self, 'potential'):
-        if self.potential is not None: 
-            return self.potential 
+            if self.potential is not None: 
+                return self.potential 
 
     # default is None 
         self.potential = None 
@@ -162,7 +161,7 @@ class AMBERSystem(BaseSystem):
                 import gmin_potential
                 self.potential        = gmin_potential.GMINAmberPotential(self.prmtopFname, self.inpcrdFname)
                 print '\namberSystem> Using GMIN Amber potential ..'
-        return self.potential ; 
+                return self.potential ; 
             except ImportError:
                 # using OpenMM because ambgmin_ could not be imported 
                 print '\namberSystem> could not import ambgmin_. Will try OpenMM .. '
@@ -170,8 +169,8 @@ class AMBERSystem(BaseSystem):
         # get potential from OpenMM 
         try:
             import openmm_potential  
-                self.potential   = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
-                print '\namberSystem> Using OpenMM amber potential ..'
+            self.potential   = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
+            print '\namberSystem> Using OpenMM amber potential ..'
 
             # check for openmm version
             # data structures changed between openmm4 and 5
@@ -185,8 +184,8 @@ class AMBERSystem(BaseSystem):
         except AttributeError:
                 print '\namberSystem> could not import openmm_potential ..'
         
-    if self.potenial == None : 
-        print '\namberSystem> potential not set. Could not import GMIN or OpenMM potential.' 
+        if self.potenial == None : 
+            print '\namberSystem> potential not set. Could not import GMIN or OpenMM potential.' 
         
         
     def get_random_configuration(self):

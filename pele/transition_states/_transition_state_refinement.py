@@ -99,19 +99,19 @@ class FindTransitionState(object):
     pele.landscape.LocalConnect : the class which most often calls this routine
     """
     def __init__(self, coords, pot, tol=1e-4, event=None, nsteps=100, 
-                  nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
-                  nsteps_tangent1=10,
-                  nsteps_tangent2=100,
-                  lowestEigenvectorQuenchParams=None,
-                  tangentSpaceQuenchParams=None, 
-                  max_uphill_step=0.5,
-                  max_uphill_step_initial=0.2,
-                  demand_initial_negative_vec=False,
-                  negatives_before_check = 10,
-                  verbosity=1,
-                  check_negative=False,
-                  invert_gradient=False,
-                  hessian_diagonalization=False):
+                 nfail_max=200, eigenvec0=None, iprint=-1, orthogZeroEigs=0,
+                 nsteps_tangent1=10,
+                 nsteps_tangent2=100,
+                 lowestEigenvectorQuenchParams=None,
+                 tangentSpaceQuenchParams=None, 
+                 max_uphill_step=0.5,
+                 max_uphill_step_initial=0.2,
+                 demand_initial_negative_vec=False,
+                 negatives_before_check = 10,
+                 verbosity=1,
+                 check_negative=False,
+                 invert_gradient=False,
+                 hessian_diagonalization=False):
         self.pot = pot
         self.coords = np.copy(coords)
         self.nfev = 0
@@ -164,7 +164,7 @@ class FindTransitionState(object):
         else:
             self.maxstep_tangent = 0.1 # this should be determined in a better way
         
-        if not "logger" in self.tangent_space_quench_params:
+        if "logger" not in self.tangent_space_quench_params:
             self.tangent_space_quench_params["logger"] = logging.getLogger("pele.connect.findTS.tangent_space_quench")
 
 
@@ -266,8 +266,9 @@ class FindTransitionState(object):
         negative_before_check =  10
 
         self._compute_gradients(coords)
+        iend = 0
         for i in xrange(self.nsteps):
-            
+            iend = i
             # get the lowest eigenvalue and eigenvector
             self.overlap = self._getLowestEigenVector(coords, i)
             overlap = self.overlap
@@ -277,7 +278,7 @@ class FindTransitionState(object):
             
             # check to make sure the eigenvector is ok
             if (i == 0 or self.eigenval < 0 or not self.check_negative or 
-                (negative_before_check > 0 and not self.demand_initial_negative_vec)):
+                    (negative_before_check > 0 and not self.demand_initial_negative_vec)):
                 self._saveState(coords)
                 self.reduce_step = 0
             else:
@@ -310,10 +311,10 @@ class FindTransitionState(object):
             if self.iprint > 0:
                 if (i+1) % self.iprint == 0:
                     ostring = "findTS: %3d E %9g rms %8g eigenvalue %9g rms perp %8g grad par %9g overlap %g" % (
-                                    i, E, rms, self.eigenval, tangentrms, gradpar, overlap)
+                         i, E, rms, self.eigenval, tangentrms, gradpar, overlap)
                     extra = "  Evec search: %d rms %g" % (self.leig_result.nfev, self.leig_result.rms)
                     extra += "  Tverse search: %d step %g" % (self.tangent_result.nfev, 
-                                                                    self.tangent_move_step)
+                                                              self.tangent_move_step)
                     extra += "  Uphill step:%g" % (self.uphill_step_size,)
                     logger.info("%s %s", ostring, extra)
             
@@ -335,11 +336,11 @@ class FindTransitionState(object):
                     break
 
         # done.  do one last eigenvector search because coords may have changed
-        self._getLowestEigenVector(coords, i)
+        self._getLowestEigenVector(coords, iend)
 
         # print some data
         if self.verbosity > 0 or self.iprint > 0:
-            logger.info("findTransitionState done: %s %s %s %s %s", i, E, rms, "eigenvalue", self.eigenval)
+            logger.info("findTransitionState done: %s %s %s %s %s", iend, E, rms, "eigenvalue", self.eigenval)
     
         success = True
         # check if results make sense
@@ -351,8 +352,8 @@ class FindTransitionState(object):
             if self.verbosity > 2:
                 logger.info("warning: transition state search appears to have failed: rms %s", rms)
             success = False
-        if i >= self.nsteps:
-            res.message.append( "maximum iterations reached %d" % i )
+        if iend >= self.nsteps:
+            res.message.append("maximum iterations reached %d" % iend)
             
         # update nfev with the number of calls from the transverse walker
         if self._transverse_walker is not None:
@@ -365,7 +366,7 @@ class FindTransitionState(object):
         res.eigenvec = self.eigenvec
         res.grad = grad
         res.rms = rms
-        res.nsteps = i
+        res.nsteps = iend
         res.success = success
         res.nfev = self.nfev
         return res
@@ -379,11 +380,11 @@ class FindTransitionState(object):
             if self.verbosity > 3:
                 print "Using default of", niter, "steps for finding lowest eigenvalue"
         optimizer = FindLowestEigenVector(coords, self.pot,
+                                          eigenvec0=self.eigenvec, 
+                                          orthogZeroEigs=self.orthogZeroEigs, 
+                                          gradient=gradient,
+                                          **self.lowestEigenvectorQuenchParams)
 #                                    H0=self.H0_leig, 
-                                    eigenvec0=self.eigenvec, 
-                                    orthogZeroEigs=self.orthogZeroEigs, 
-                                    gradient=gradient,
-                                    **self.lowestEigenvectorQuenchParams)
         res = optimizer.run(niter)
         if res.nsteps == 0:
             if self.verbosity > 2:
@@ -460,8 +461,7 @@ class FindTransitionState(object):
             if self.invert_gradient:
                 # note: if we pass transverse energy and gradient here we can save 1 potential call
                 self._transverse_walker = _DimerTranslator(coords, self.pot, self.eigenvec,
-#                                         energy=transverse_energy, gradient=transverse_gradient,
-                                         **self.tangent_space_quench_params)
+                                                           **self.tangent_space_quench_params)
             else:
                 self._transverse_walker = _TransverseWalker(coords, self.pot, self.eigenvec, energy, gradient,
                                                             **self.tangent_space_quench_params)
@@ -574,7 +574,7 @@ def findTransitionState(*args, **kwargs):
         
 
 ###################################################################
-#below here only stuff for testing
+# below here only stuff for testing
 ###################################################################
 
 #
