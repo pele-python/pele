@@ -28,5 +28,4 @@ class MLCost(BasePotential):
         self.data = np.array(data)
 
     def getEnergy(self, parameters):
-        params = np.array(parameters)
-        return -np.sum(np.log(self.probf(self.data, parameters)))
+        return -np.sum(np.log(self.probf(self.data, np.asarray(parameters))))
