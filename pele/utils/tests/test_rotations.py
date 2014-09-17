@@ -3,6 +3,7 @@ from itertools import izip
 
 import numpy as np
 
+from pele.utils.vec3 import invert3x3
 from pele.utils import rotations
 from pele.utils.rotations import q2aa, mx2q, q_multiply, random_aa, random_q, q2mx
 
@@ -105,6 +106,18 @@ class TestRotations(unittest.TestCase):
         qtrue = np.array([ 0.37711203, -0.52323231, -0.13986293,  0.75130075])
         q = rotations.mx2q(mx)
         self.arrays_equal(q, qtrue)
-         
+
+
+class TestVec3(unittest.TestCase):
+    def test_invert3x3(self):
+        q = rotations.random_q()
+        mx = rotations.q2mx(q)
+        mxi1 = invert3x3(mx)
+        mxi2 = np.linalg.inv(mx)
+        self.assertEqual(mxi1.shape, mxi2.shape)
+        for v1, v2 in izip(mxi1.reshape(-1), mxi2.reshape(-1)):
+            self.assertAlmostEqual(v1, v2, places=5)
+        
+        
 if __name__ == "__main__":
     unittest.main()
