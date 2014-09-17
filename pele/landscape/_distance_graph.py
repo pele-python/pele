@@ -271,35 +271,3 @@ class _DistanceGraph(object):
         
         return allok
 
-
-
-#
-#
-# below here only stuff for testing
-#
-#
-
-
-
-
-
-def mytest(nmin=40, natoms=13): # pragma: no cover
-    from pele.landscape import DoubleEndedConnect
-    from pele.landscape._graph import create_random_database
-    from pele.mindist import minPermDistStochastic, MinDistWrapper
-    from pele.potentials import LJ
-    from pele.landscape import TSGraph
-    
-    pot = LJ()
-    mindist = MinDistWrapper(minPermDistStochastic, permlist=[range(natoms)], niter=10)
-    
-    db = create_random_database(nmin=nmin, natoms=natoms)
-    min1, min2 = list(db.minima())[:2] 
-    
-    
-    graph = TSGraph(db)
-    connect = DoubleEndedConnect(min1, min2, pot, mindist, db,
-                                 merge_minima=True, max_dist_merge=.1)
-
-if __name__ == "__main__":
-    mytest()

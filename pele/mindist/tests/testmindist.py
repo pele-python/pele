@@ -1,8 +1,6 @@
 import numpy as np
 import unittest
 
-#from pele.mindist import findBestPermutation
-
 class TestMinDist(unittest.TestCase):
     """
     a base class for mindist unit tests

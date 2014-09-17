@@ -619,7 +619,6 @@ def findTransitionState(*args, **kwargs):
 #
 #def guessts(coords1, coords2, pot):
 #    from pele.optimize import lbfgs_py as quench
-##    from pele.mindist.minpermdist_stochastic import minPermDistStochastic as mindist
 #    from pele.transition_states import NEB
 #    from pele.systems import LJCluster
 #    ret1 = quench(coords1, pot.getEnergyGradient)

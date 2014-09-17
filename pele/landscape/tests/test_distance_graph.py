@@ -7,9 +7,6 @@ from pele.systems import LJCluster
 
 class TestDistanceGraph(unittest.TestCase):
     def setUp(self):
-#        from pele.mindist import minPermDistStochastic, MinDistWrapper
-#        from pele.potentials import LJ
-        
         nmin = 10
         natoms=13
         
