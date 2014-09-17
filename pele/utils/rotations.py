@@ -17,7 +17,6 @@ Warning, they have not all been tested in this format.
     q2mx
     mx2q
     mx2aa
-    rot_q2mx
     aa2mx
     random_q
     random_aa
@@ -31,14 +30,15 @@ Warning, they have not all been tested in this format.
 
 """
 import numpy as np
-from pele.utils import _cpp_utils
 from pele.utils._cpp_utils import rotate_aa, mx2aa, aa2q, aa2mx, \
     rot_mat_derivatives
 
 rot_epsilon = 1e-6
+dprand = np.random.rand
+
 
 def q_multiply(q0, q1):
-    """ multiply 2 quaternions q1, q2 """
+    """multiply 2 quaternions q1, q2"""
     q3 = np.zeros(4)
     q3[0] = q0[0]*q1[0]-q0[1]*q1[1]-q0[2]*q1[2]-q0[3]*q1[3]
     q3[1] = q0[0]*q1[1]+q0[1]*q1[0]+q0[2]*q1[3]-q0[3]*q1[2]
@@ -49,7 +49,13 @@ def q_multiply(q0, q1):
 def q2aa( qin ):
     """
     quaternion to angle axis
-    input Q: quaternion of length 4
+    
+    Parameters
+    ----------
+    Q: quaternion of length 4
+    
+    Returns
+    -------
     output V: angle axis vector of lenth 3
     """
     q = np.copy(qin)
@@ -87,6 +93,7 @@ def q2mx( qin ):
     return RMX
 
 def mx2q(mi):
+    """convert a rotation matrix to a quaternion"""
     q = np.zeros(4)
     m = np.transpose(mi)
     trace=m[0,0] + m[1,1]+m[2,2]
@@ -120,37 +127,41 @@ def mx2q(mi):
         q = -q
     return q
 
-def rot_q2mx(qin):
-    m = np.zeros([3,3], np.float64)
-
-    q = qin / np.linalg.norm(qin)
-
-    sq = q**2
-
-    m[0,0] = ( sq[1] - sq[2] - sq[3] + sq[0])
-    m[1,1] = (-sq[1] + sq[2] - sq[3] + sq[0])
-    m[2,2] = (-sq[1] - sq[2] + sq[3] + sq[0])
-
-    tmp0 = q[1]*q[2]
-    tmp1 = q[0]*q[3]
-    m[1,0] = 2.0 * (tmp0 + tmp1)
-    m[0,1] = 2.0 * (tmp0 - tmp1)
-
-    tmp0 = q[1]*q[3]
-    tmp1 = q[2]*q[0]
-    m[2,0] = 2.0 * (tmp0 - tmp1)
-    m[0,2] = 2.0 * (tmp0 + tmp1)
-    tmp0 = q[2]*q[3]
-    tmp1 = q[0]*q[1]
-    m[2,1] = 2.0 * (tmp0 + tmp1)
-    m[1,2] = 2.0 * (tmp0 - tmp1)
-
-    return m
+# js850> this is commented because it's not documented and seems to be the same as q2mx()
+# def rot_q2mx(qin):
+#     m = np.zeros([3,3], np.float64)
+# 
+#     q = qin / np.linalg.norm(qin)
+# 
+#     sq = q**2
+# 
+#     m[0,0] = ( sq[1] - sq[2] - sq[3] + sq[0])
+#     m[1,1] = (-sq[1] + sq[2] - sq[3] + sq[0])
+#     m[2,2] = (-sq[1] - sq[2] + sq[3] + sq[0])
+# 
+#     tmp0 = q[1]*q[2]
+#     tmp1 = q[0]*q[3]
+#     m[1,0] = 2.0 * (tmp0 + tmp1)
+#     m[0,1] = 2.0 * (tmp0 - tmp1)
+# 
+#     tmp0 = q[1]*q[3]
+#     tmp1 = q[2]*q[0]
+#     m[2,0] = 2.0 * (tmp0 - tmp1)
+#     m[0,2] = 2.0 * (tmp0 + tmp1)
+#     tmp0 = q[2]*q[3]
+#     tmp1 = q[0]*q[1]
+#     m[2,1] = 2.0 * (tmp0 + tmp1)
+#     m[1,2] = 2.0 * (tmp0 - tmp1)
+# 
+#     return m
 
 
 def random_q():
     """
     uniform random rotation in angle axis formulation
+    
+    Notes
+    -----
     input: 3 uniformly distributed random numbers
     uses the algorithm given in
     K. Shoemake, Uniform random rotations, Graphics Gems III, pages 124-132. Academic, New York, 1992.
@@ -168,15 +179,16 @@ def random_q():
     return q
 
 def random_aa():
+    """return a uniformly distributed random angle axis vector"""
     return q2aa( random_q() )
 
 def takestep_aa(p, maxtheta):
-    """ change an angle axis vector by a small rotation"""
+    """change an angle axis vector by a small rotation"""
     p[:] = rotate_aa(p, small_random_aa(maxtheta))
 
 
 def small_random_aa(maxtheta):
-    """ generate a small random rotation"""
+    """generate a small random rotation"""
     # first choose a random unit vector
     p = vec_random()
 
@@ -197,7 +209,7 @@ def small_random_aa(maxtheta):
 
 
 def vec_random():
-    """ uniform random unit vector """
+    """uniform random unit vector"""
     p = np.zeros(3)
     u1 = dprand()
     u2 = dprand()
@@ -227,7 +239,6 @@ def vector_random_uniform_hypersphere(k):
 
 
 
-dprand = lambda: np.random.rand()
 
 def q_slerp (a, b,t):
     if(t<=0.):
@@ -256,7 +267,7 @@ def q_slerp (a, b,t):
 #
 
 
-def test_vector_random_uniform_hypersphere():
+def test_vector_random_uniform_hypersphere(): # pragma: no cover
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     nvec = 1000
