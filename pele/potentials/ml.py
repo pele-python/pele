@@ -21,7 +21,7 @@ class MLCost(BasePotential):
     --------
     To get maximum likelihood estimates of the parameters, do e.g.:
     
-        pot = MLCost(log_gauss, observed)
+        pot = MLCost(observed, probf=gauss)
         optimizer = LBFGS_CPP(parameters, pot)
         result = optimizer.run()
         opt_parameters = result.coords
