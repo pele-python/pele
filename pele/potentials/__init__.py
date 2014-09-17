@@ -64,7 +64,6 @@ from _inversepower_cpp import InversePower
 from _wca_cpp import *
 from _harmonic_cpp import Harmonic
 from ATLJ import *
-from coldfusioncheck import *
 from gminpotential import *
 from heisenberg_spin import *
 from heisenberg_spin_RA import *
