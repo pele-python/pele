@@ -3,7 +3,7 @@ tools for reading and writing OPTIM input and output files
 """
 
 import numpy as np
-from pele.storage import Database, Minimum, TransitionState
+from pele.storage import Minimum, TransitionState
 
 _id_count = 0
 

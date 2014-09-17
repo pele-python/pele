@@ -42,6 +42,24 @@ phases = {((1, 2), (1, 3)): 1.0, ((2, 0), (1, 0)): 1.0, ((0, 2), (0, 3)): 1.0,
           ((0, 1), (0, 0)): 1.0, ((1, 2), (0, 2)): 1.0, ((1, 3), (2, 3)): 0.0, 
           ((0, 1), (0, 2)): 0.0, ((3, 1), (2, 1)): 0.0, ((1, 2), (1, 1)): 0.0}
 
+_x0_xy = coords[:L*L]
+
+def xy_energy_gradient(self, angles):
+    # do internal energies first
+    E = 0.
+    grad = np.zeros(self.nspins)
+    for edge in self.G.edges():
+        phase = self.phases[edge]
+        u = self.indices[edge[0]]
+        v = self.indices[edge[1]]
+        E += np.cos( -angles[u] + angles[v] + phase )
+        
+        g = -np.sin( -angles[u] + angles[v] + phase )
+        grad[u] += g
+        grad[v] += -g
+    E =  - E
+    return E, grad
+
 
 class TestHeisenbergModel(_base_test._TestConfiguration):
     def setUp(self):
@@ -58,20 +76,32 @@ class TestHeisenbergModelDisorder(_base_test._TestConfiguration):
 class TestXYModel(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = XYModel(dim=[L, L], phi=0, periodic=False, phases=None)
-        self.x0 = coords
+        self.x0 = _x0_xy
         self.e0 = -0.6195031129867052
 
 class TestXYModelPeriodic(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = XYModel(dim=[L, L], phi=0, periodic=True)
-        self.x0 = coords
+        self.x0 = _x0_xy
         self.e0 = -0.08896226597510098
 
 class TestXYModelDisorder(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = XYModel(dim=[L, L], phi=1., periodic=False, phases=phases)
-        self.x0 = coords
+        self.x0 = _x0_xy
         self.e0 = -1.3466543852399337
+        self.assertEqual(self.pot.nspins, self.x0.size)
+    
+    def test_spin_energies(self):
+        e = self.pot.getEnergy(self.x0)
+        energies = self.pot.get_spin_energies(self.x0)
+        self.assertAlmostEqual(e, energies.sum() / 2, 5)
+
+    def test_python_version(self):
+        e, g = self.pot.getEnergyGradient(self.x0)
+        e1, g1 = xy_energy_gradient(self.pot, self.x0)
+        self.assertAlmostEqual(e, e1, 5)
+        self.compare_arrays(g, g1)
 
 class TestHeisenbergModelRADisorder(_base_test._TestConfiguration):
     def setUp(self):

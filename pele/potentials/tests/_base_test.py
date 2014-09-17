@@ -66,8 +66,8 @@ class _TestConfiguration(unittest.TestCase):
     ae_kwargs = dict(places=3) # kwargs passed to assertAlmostEqual
     
     def compare_arrays(self, v1, v2):
-        self.assertEqual(v1.size, v2.size)
-        for x, y in izip(v1, v2):
+        self.assertEqual(v1.shape, v2.shape)
+        for x, y in izip(v1.reshape(-1), v2.reshape(-1)):
             self.assertAlmostEqual(x, y, **self.ae_kwargs)
     
     def test_energy(self):
