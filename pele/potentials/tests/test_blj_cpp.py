@@ -48,7 +48,7 @@ class TestBLJ_CPP_Cut(unittest.TestCase):
         self.assertGreater(np.abs(e), 1e-5)
         
         
-def makeplot():
+def makeplot(): # pragma: no cover
     atom1 = np.zeros(3)
     rcut = 2.5
     potAA = BLJCut(2, 0, rcut=rcut)

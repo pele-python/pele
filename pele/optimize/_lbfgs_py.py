@@ -137,8 +137,8 @@ class LBFGS(object):
             self.H0 = H0
         if self.H0 < 1e-10:
             self.logger.warning("initial guess for inverse Hessian diagonal is negative or too small %s %s", 
-                                self.H0, "resetting it to 1.")
-            self.H0 = 1.
+                                self.H0, "resetting it to 0.1")
+            self.H0 = 0.1
         self.rho = np.zeros(M)
         self.k = 0
         
@@ -360,7 +360,7 @@ class LBFGS(object):
                 raise(LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
 
             # abort the linesearch, reset the memory and reset the coordinates            
-            self.logger.warning("lbfgs: having trouble finding a good step size. %s %s", f*stepsize, stepsize)
+            self.logger.warning("lbfgs: having trouble finding a good step size. %s %s, resetting the minimizer", f*stepsize, stepsize)
             self.reset()
             E = E0
             G = G0
@@ -379,8 +379,8 @@ class LBFGS(object):
         else:
             # get the increase in energy            
             if self.rel_energy: 
-                if Enew == 0: 
-                    Enew = 1e-100
+                if Eold == 0: 
+                    Eold = 1e-100
                 dE = (Enew - Eold) / abs(Eold)
             else:
                 dE = Enew - Eold
@@ -423,7 +423,7 @@ class LBFGS(object):
             wolfe2 = overlap_new >= overlap_old * self._wolfe2
         if not wolfe2 and self.debug:
             stepsize = np.linalg.norm(step)
-            print self.iter_number, "rejecting step due to gradient", overlap_new, overlap_old, self._wolfe2, "stepsize", stepsize
+            print "wolfe:", self.iter_number, "rejecting step due to gradient", overlap_new, overlap_old, self._wolfe2, "stepsize", stepsize
         return armijo and wolfe2
           
     
