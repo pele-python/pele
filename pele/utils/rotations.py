@@ -93,10 +93,14 @@ def q2mx( qin ):
     return RMX
 
 def mx2q(mi):
-    """convert a rotation matrix to a quaternion"""
+    """convert a rotation matrix to a quaternion
+    
+    see discussion at 
+    http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+    """
     q = np.zeros(4)
-    m = np.transpose(mi)
-    trace=m[0,0] + m[1,1]+m[2,2]
+    m = np.transpose(mi) # simply because I copied it from fortran code.
+    trace=m[0,0] + m[1,1] + m[2,2]
 
     if (trace > 0.):
         s = np.sqrt(trace+1.0) * 2.0
@@ -105,7 +109,7 @@ def mx2q(mi):
         q[2] = (m[2,0] - m[0,2]) / s
         q[3] = (m[0,1] - m[1,0]) / s
     elif ((m[0,0] > m[1,1]) and (m[0,0] > m[2,2])):
-        s=np.sqrt(1.0 + m[0,0] - m[1,1] - m[2,2]) * 2.0
+        s = np.sqrt(1.0 + m[0,0] - m[1,1] - m[2,2]) * 2.0
         q[0] = (m[1,2] - m[2,1]) / s
         q[1] = 0.25 * s
         q[2] = (m[1,0] + m[0,1]) / s

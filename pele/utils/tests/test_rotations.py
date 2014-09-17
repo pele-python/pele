@@ -74,6 +74,37 @@ class TestRotations(unittest.TestCase):
         mx2 = rotations.aa2mx(aa)
         self.arrays_equal(mx1, mx2)
 
-
+    def test_mx2q_fork1(self):
+        mx = np.array([[ 0.84678162,  0.50684295,  0.16146551],
+                       [-0.01866944, -0.27503628,  0.96125257],
+                       [ 0.53161296, -0.81698548, -0.2234332 ]])
+        qtrue = -np.array([-0.58058422,  0.76571063,  0.15938577,  0.22628603])
+        q = rotations.mx2q(mx)
+        self.arrays_equal(q, qtrue, 3)
+    
+    def test_mx2q_fork2(self):
+        mx = np.array([[ 0.60801609, -0.66494404,  0.43378088],
+       [ 0.02750384, -0.52840591, -0.84854625],
+       [ 0.79344815,  0.52786041, -0.30299078]])
+        qtrue = -np.array([-0.44063006, -0.78093098,  0.20406419, -0.39287372])
+        q = rotations.mx2q(mx)
+        self.arrays_equal(q, qtrue, 3)
+        
+    def test_mx2q_fork3(self):
+        mx = np.array([[-0.44019684, -0.78441865, -0.43693721],
+                       [-0.70029416, -0.00463489,  0.71383934],
+                       [-0.56197405,  0.6202144 , -0.54728353]])
+        qtrue = np.array([ 0.04439801, -0.52719104,  0.70406773,  0.4736951 ])
+        q = rotations.mx2q(mx)
+        self.arrays_equal(q, qtrue, 3)
+        
+    def test_mx2q_fork4(self):
+        mx = np.array([[-0.16802893, -0.42028749, -0.89169765],
+               [ 0.71301072, -0.67644975,  0.18447614],
+               [-0.68072167, -0.60479265,  0.41333261]])
+        qtrue = np.array([ 0.37711203, -0.52323231, -0.13986293,  0.75130075])
+        q = rotations.mx2q(mx)
+        self.arrays_equal(q, qtrue)
+         
 if __name__ == "__main__":
     unittest.main()
