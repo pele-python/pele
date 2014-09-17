@@ -5,7 +5,7 @@ from pele.systems import AtomicCluster
 from pele.potentials import Morse
 from pele.utils.xyz import write_xyz
 
-__all__ = ["LJCluster"]
+__all__ = ["MorseCluster"]
 
 class MorseCluster(AtomicCluster):
     """
@@ -30,7 +30,16 @@ class MorseCluster(AtomicCluster):
         self.params.database.accuracy = 1e-3
         self.params.basinhopping["temperature"] = 1.0
         self.params.gui.basinhopping_nsteps = 100
-    
+
+    def get_system_properties(self):
+        return dict(natoms=int(self.natoms),
+                    potential="Morse cluster",
+                    rho=float(self.rho),
+                    r0=float(self.r0),
+                    A=float(self.A),
+                    rcut=self.rcut)
+                    
+
     def get_permlist(self):
         return [range(self.natoms)]
     
