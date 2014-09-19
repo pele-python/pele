@@ -65,15 +65,18 @@ class FindTransitionState(object):
         If True then the sign of the lowest eigenvalue is required to remain negative.
         If the sign becomes positive, then the step is retaken with smaller step size
     demand_initial_negative_vec : bool
-        if True, and check_negative is True, then abort if the initial 
-        lowest eigenvalue is positive
+        if True then abort if the initial lowest eigenvalue is positive
     negatives_before_check : int
-        If the run starts with a positive eigenvalue and demand_initial_negative_vec is False,
-        then check to make sure that the eigenvalue is enabled after having had so 
-        many negative eigenvalues before.  If check_negative is False this has no affect.
+        If starting with positive curvature, disable negative eigenvalue check.
+        This will be re-enabled as soon as the eigenvalue becomes negative.
+        Allow a certain number of good iterations with negative eigenvalues before
+        demanding that the eigenvalue stay negative.
     nfail_max :
         if the lowest eigenvector search fails this many times in a row
         than the algorithm ends
+    hessian_diagonalization : bool
+        Diagonalize the Hessian matrix to find the lowest eigenvector rather
+        than using the iterative procedure
         
     
     Notes
@@ -107,9 +110,9 @@ class FindTransitionState(object):
                  max_uphill_step=0.5,
                  max_uphill_step_initial=0.2,
                  demand_initial_negative_vec=False,
-                 negatives_before_check = 10,
+                 negatives_before_check=10,
                  verbosity=1,
-                 check_negative=False,
+                 check_negative=True,
                  invert_gradient=False,
                  hessian_diagonalization=False):
         self.pot = pot
@@ -137,6 +140,7 @@ class FindTransitionState(object):
         self.demand_initial_negative_vec = demand_initial_negative_vec    
         self.npositive_max = max(10, self.nsteps / 5)
         self.check_negative = check_negative
+        self.negatives_before_check = negatives_before_check
         self.invert_gradient = invert_gradient
         self.hessian_diagonalization = hessian_diagonalization
 
@@ -180,9 +184,11 @@ class FindTransitionState(object):
         self.npositive = 0
         
         self._trust_radius = 2.
-        self._max_uphill = max_uphill_step_initial
-        self._max_uphill_min = .01
         self._max_uphill_max = max_uphill_step
+        self._max_uphill_min = .01
+        if self._max_uphill_min >= self._max_uphill_max:
+            self._max_uphill_min = self._max_uphill_max / 5
+        self._max_uphill = min(max_uphill_step_initial, self._max_uphill_max) 
         
         self._transverse_walker = None
         
@@ -241,10 +247,6 @@ class FindTransitionState(object):
         self.nfev += 1
         self.energy, self.gradient = self.pot.getEnergyGradient(coords)
 
-    def _set_energy_gradient(self, energy, gradient):
-        self.energy = energy
-        self.gradient = gradient.copy()
-
     def get_energy(self):
         """return the already computed energy at the current position"""
         return self.energy
@@ -259,12 +261,6 @@ class FindTransitionState(object):
         res = Result() #  return object
         res.message = []
         
-        # if starting with positive curvature, disable negative eigenvalue check
-        # this will be reenabled as soon as the eigenvector becomes negative.
-        # Allow a certain number of iterations with positive eigenvalue before
-        # demanding that the eigenvalue is negative.
-        negative_before_check =  10
-
         self._compute_gradients(coords)
         iend = 0
         for i in xrange(self.nsteps):
@@ -274,11 +270,22 @@ class FindTransitionState(object):
             overlap = self.overlap
             
             if self.eigenval < 0:
-                negative_before_check -= 1
+                self.negatives_before_check -= 1
             
-            # check to make sure the eigenvector is ok
-            if (i == 0 or self.eigenval < 0 or not self.check_negative or 
-                    (negative_before_check > 0 and not self.demand_initial_negative_vec)):
+            # determine whether everything looks OK.
+            all_ok = self.eigenval < 0 or not self.check_negative
+            if not all_ok:
+                if i == 0:
+                    # we need to accept because we haven't saved the state yet
+                    # Also, demand_initial_negative_vec will stop later if needed
+                    all_ok = True
+            if not all_ok:
+                if self.negatives_before_check > 0 and not self.demand_initial_negative_vec:
+                    print "  positive before check. setting all ok"
+                    all_ok = True
+            
+            # if everything is OK, then continue, else revert the step
+            if all_ok:
                 self._saveState(coords)
                 self.reduce_step = 0
             else:
@@ -531,6 +538,9 @@ class FindTransitionState(object):
         F = np.dot(grad, self.eigenvec)
         h = 2. * F / np.abs(self.eigenval) / (1. + np.sqrt(1. + 4. * (F / self.eigenval)**2))
 
+        if self.eigenval > 0 and self.verbosity >= 2:
+            logger.warn("eigenvalue is positive, but stepping uphill along the lowest curvature mode anyway")
+
         # get the maxstep and scale it if necessary
         maxstep = self._max_uphill
         if self.reduce_step > 0:
@@ -545,14 +555,19 @@ class FindTransitionState(object):
         coords += h * self.eigenvec
 
         # recompute the energy and gradient
+        Eold = self.energy
         self._compute_gradients(coords)
+        
+        if self.energy < Eold and self.verbosity > 0:
+            logger.warn("energy decreased after uphill step %s -> %s", Eold, self.energy)
+            
 
         # update the maximum step using a trust ratio
         if self.eigenval < 0:
             self._update_max_uphill_step(F, h)
 
         if self.verbosity > 2:
-            print "stepping uphill with stepsize", h
+            logger.info("stepping uphill with stepsize %s", h)
 
         return coords
 
