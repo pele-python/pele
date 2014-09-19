@@ -54,6 +54,11 @@ class _BaseTest(unittest.TestCase):
         self.grad_t(self.xmin+self.xrandom)
     
 
+def assert_arrays_almost_equal(self, v1, v2, **kwargs):
+    self.assertEqual(v1.shape, v2.shape)
+    for x, y in izip(v1.reshape(-1), v2.reshape(-1)):
+        self.assertAlmostEqual(x, y, **kwargs)
+
     
 class _TestConfiguration(unittest.TestCase):
     """test a potential at a single configuration single configuration
@@ -66,9 +71,7 @@ class _TestConfiguration(unittest.TestCase):
     ae_kwargs = dict(places=3) # kwargs passed to assertAlmostEqual
     
     def compare_arrays(self, v1, v2):
-        self.assertEqual(v1.size, v2.size)
-        for x, y in izip(v1, v2):
-            self.assertAlmostEqual(x, y, **self.ae_kwargs)
+        assert_arrays_almost_equal(self, v1, v2, **self.ae_kwargs)
     
     def test_energy(self):
         self.assertAlmostEqual(self.pot.getEnergy(self.x0), self.e0, **self.ae_kwargs)

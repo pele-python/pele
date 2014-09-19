@@ -3,7 +3,7 @@ tools for reading and writing OPTIM input and output files
 """
 
 import numpy as np
-from pele.storage import Database, Minimum, TransitionState
+from pele.storage import Minimum, TransitionState
 
 _id_count = 0
 
@@ -84,6 +84,50 @@ def read_points_min_ts(fname, ndof=None, endianness="="):
 class OptimDBConverter(object):
     '''
     Converts old OPTIM to pele database
+    
+    Parameters
+    ----------
+    database : pele Database
+        the minima and transition states will be place in here
+    ndof : int, optional
+        for testing to make sure the number of floats read is a multiple of ndof
+    mindata, tsdata, pointsmin, pointsts : str
+        the files to read from.  The files contain
+        
+            points.min : the coordinates of the minima in binary format
+            min.data   : additional information about the minima (like the energy)
+            points.ts  : the coordinates of the transition states
+            min.ts     : additional information about transition states (like which minima they connect)
+
+    endianness : str
+        define the endianness of the binary data. can be "=", "<", ">"
+    assert_coords : bool
+        If this is True the conversion will abort if the coordinate conversion doesn't work.
+        Set this to false if you only care about the minima and ts metadata.
+    
+    Notes
+    -----
+    the files were written with fortran code that looks something like this::
+    
+        NOPT = 3 * NATOMS
+        INQUIRE(IOLENGTH=NDUMMY) COORDS(1:NOPT)
+        OPEN(13,FILE='points.min,ACCESS='DIRECT',FORM='UNFORMATTED',STATUS='UNKNOWN',RECL=NDUMMY)
+        DO J1=1,NMIN
+            WRITE(13,REC=J1) COORDS(1:NOPT)
+        ENDDO
+        CLOSE(13) 
+    
+    This means the data is stored without any header information.  
+    It is just a long list of double precision floating point numbers.
+    
+    Note that some fortran compilers use different endiness for the data.  If
+    the coordinates comes out garbage this is probably the problem.  The solution
+    is to pass a different data type
+    
+    dtype=np.dtype("<d")  # for little-endian double precision
+    dtype=np.dtype(">d")  # for big-endian double precision
+
+
     '''
     def __init__(self, database, ndof=None, mindata="min.data", 
                   tsdata="ts.data", pointsmin="points.min", pointsts="points.ts",

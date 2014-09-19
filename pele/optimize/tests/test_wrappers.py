@@ -55,6 +55,12 @@ class TestMinimizers(unittest.TestCase):
         self.assertAlmostEqual(self.E, res.energy, 4)
         self.check_attributes(res)
     
+    def test_modifed_fire(self):
+        res = _quench.modifiedfire_cpp(self.x0, self.pot, tol=1e-7)
+        self.assertTrue(res.success)
+        self.assertAlmostEqual(self.E, res.energy, 4)
+        self.check_attributes(res)
+    
     def test_lbfgs_scipy(self):
         res = _quench.lbfgs_scipy(self.x0, self.pot, tol=1e-7)
         self.assertTrue(res.success)
@@ -65,6 +71,12 @@ class TestMinimizers(unittest.TestCase):
         res = _quench.bfgs_scipy(self.x0, self.pot, tol=1e-7)
         self.assertTrue(res.success)
         self.assertAlmostEqual(self.E, res.energy, 4)
+        self.check_attributes(res)
+        
+    def test_steepest_descent(self):
+        res = _quench.steepest_descent(self.x0, self.pot, tol=1e-1)
+        self.assertTrue(res.success)
+        self.assertAlmostEqual(self.E, res.energy, 1)
         self.check_attributes(res)
         
         

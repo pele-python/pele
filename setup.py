@@ -183,6 +183,8 @@ setup(name='pele',
                   ('pele/rates/tests', list(glob.glob('pele/rates/tests/*.data')) + list(glob.glob('pele/rates/tests/*.sqlite'))),
                   ('pele/mindist/tests', list(glob.glob('pele/mindist/tests/*.xyz')) + list(glob.glob('pele/mindist/tests/*.sqlite'))),
                   ('pele/storage/tests/', list(glob.glob('pele/storage/tests/*sqlite'))),
+                  ('pele/utils/tests/', list(glob.glob('pele/utils/tests/*data'))),
+                  ('pele/utils/tests/', list(glob.glob('pele/utils/tests/points*'))),
                  ]
         )
 

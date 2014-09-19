@@ -1,15 +1,9 @@
-'''
-Created on 3 Jun 2012
-
-@author: ruehle
-'''
-
 from pele.potentials import BasePotential 
 import numpy as np
 
 __all__ = ["GMINPotential"]
 
-class GMINPotential(BasePotential):
+class GMINPotential(BasePotential): # pragma: no cover
     '''
     Interface to fortran GMIN potential
     
@@ -39,10 +33,7 @@ class GMINPotential(BasePotential):
     >>>
     >>> coords = pot.getCoords()
     >>> pot.getEnergy(coords)
-    
     '''
-
-
     def __init__(self, GMIN):
         '''
         Constructor
@@ -56,7 +47,7 @@ class GMINPotential(BasePotential):
         
     def getEnergyGradient(self, coords):
         self.ncalls += 1
-        grad = np.zeros(3*self.GMIN.getNAtoms()) #coords.shape)
+        grad = np.zeros(3*self.GMIN.getNAtoms())
         E = self.GMIN.getEnergyGradient(coords, grad)
         return E,grad[0:coords.size]
     

@@ -1,5 +1,6 @@
 import unittest
 import os
+import numpy as np
 
 from pele.systems import LJCluster
 from pele.transition_states import FindTransitionState
@@ -72,6 +73,7 @@ class TestHEF_InvertedGradient(TestFindTransitionState):
 class TestFindTransitionState_NFEV(unittest.TestCase):
     def setUp(self):
         from pele.optimize.tests.test_nfev import _PotWrapper
+        np.random.seed(0)
         self.system = LJCluster(18)
         self.pot = _PotWrapper(self.system.get_potential())
         self.x = self.system.get_random_minimized_configuration(tol=10.).coords
