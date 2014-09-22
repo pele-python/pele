@@ -5,15 +5,12 @@ import os
 
 import numpy as np
 
-import sqlalchemy
 from sqlalchemy import create_engine, and_, or_
 from sqlalchemy.orm import sessionmaker, undefer
 from sqlalchemy import Column, Integer, Float, PickleType, String
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship, backref, deferred
-import sqlalchemy.orm
+from sqlalchemy.orm import relationship, deferred
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql import select, bindparam, case, insert
 from sqlalchemy.schema import Index
 
 from pele.utils.events import Signal
@@ -76,12 +73,6 @@ class Minimum(Base):
         self.coords = np.copy(coords)
         self.invalid = False
  
-    def right_neighbors(self):
-        return [x.higher_node for x in self.left_edges]
-
-    def left_neighbors(self):
-        return [x.lower_node for x in self.right_edges]
-   
     def __eq__(self, m):
         """m can be integer or Minima object"""
         assert self._id is not None
@@ -220,7 +211,7 @@ class SystemProperty(Base):
     def _values(self):
         """return a dictionary of the values that are not None"""
         values = dict(int_value=self.int_value, float_value=self.float_value, 
-                    string_value=self.string_value, pickle_value=self.pickle_value)
+                      string_value=self.string_value, pickle_value=self.pickle_value)
         values = dict([(k,v) for k,v in values.iteritems() if v is not None])
         return values
     
@@ -396,7 +387,7 @@ class Database(object):
         conn = self.engine.connect()
         result = True
         if (not self.engine.has_table("tbl_minima") or
-            not self.engine.has_table("tbl_transition_states")):
+                not self.engine.has_table("tbl_transition_states")):
             result = False
         conn.close()
         return result
@@ -507,12 +498,12 @@ class Database(object):
         self.on_minimum_added(new)
         return new
         
-    def getMinimum(self, id):
+    def getMinimum(self, mid):
         """return the minimum with a given id"""
-        return self.session.query(Minimum).get(id)
+        return self.session.query(Minimum).get(mid)
         
     def addTransitionState(self, energy, coords, min1, min2, commit=True, 
-                              eigenval=None, eigenvec=None, pgorder=None, fvib=None):
+                           eigenval=None, eigenvec=None, pgorder=None, fvib=None):
         """Add transition state object
         
         Parameters
@@ -592,8 +583,7 @@ class Database(object):
         """
         candidates = self.session.query(TransitionState).\
             filter(or_(TransitionState.minimum1==min1, 
-                       TransitionState.minimum2==min1
-                       ))
+                       TransitionState.minimum2==min1))
 
         return candidates.all()
 
@@ -781,9 +771,8 @@ class Database(object):
             try:
                 if new.value() == value:
                     same = True
-            except:
+            except Exception:
                 print "warning, could not compare value", value, "with", new.value()
-                pass
             if not same:
                 if not overwrite:
                     raise RuntimeError("property %s already exists and the value does not compare equal to the new value." )

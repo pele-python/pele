@@ -42,7 +42,7 @@ class Morse(BasePotential):
         return emorse, v
 
 
-def test():
+def test(): # pragma: no cover
     m = Morse()
     x = np.random.rand(3*10)
     e = m.getEnergy(x)

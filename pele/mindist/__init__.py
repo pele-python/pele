@@ -5,7 +5,7 @@ Structure Alignment (`pele.mindist`)
 =========================================
 Tools for finding the best alignment between two structures.
 (a.k.a. minimum distance routines, mindist, minpermdist, etc.) When trying to
-find path between two minima it is importatnt to ensure that the starting
+find path between two minima it is important to ensure that the starting
 points are as close together as possible given the symmetries of the system.
 Common symmetries that need to be accounted for are global translational 
 invariance, global rotational invariance, global inversion symmetry, and
@@ -92,22 +92,13 @@ Utilities
 
     PointGroupOrderCluster
 
-
-OBSOLETE: translational alignment
------------------------
-.. autosummary::
-   :toctree: generated/
-
-    alignCoM
-    CoMToOrigin
-
 """
-from backward_compatibility import *
+from backward_compatibility import CoMToOrigin
 from permutational_alignment import *
-from exact_match import *
-from minpermdist_stochastic import *
+from exact_match import StandardClusterAlignment, ExactMatchCluster
+from minpermdist_stochastic import MinPermDistCluster
 from rmsfit import *
 from _minpermdist_policies import *
 from periodic_exact_match import ExactMatchPeriodic
-from _pointgrouporder import *
-from _wrapper_atomiccluster import *
+from _pointgrouporder import PointGroupOrderCluster
+from _wrapper_atomiccluster import MinPermDistAtomicCluster, ExactMatchAtomicCluster

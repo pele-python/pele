@@ -4,7 +4,6 @@ import copy
 import logging
 
 
-from pele.transition_states import InterpolatedPath
 from pele.optimize import Result
 from pele.optimize import mylbfgs
         
@@ -341,8 +340,8 @@ class NEB(object):
         """
 
         # construct tangent vector
-        d_left, g_left = self.distance(image[1], left[1], distance=True)
-        d_right, g_right = self.distance(image[1], right[1], distance=True)
+        d_left, g_left = self.distance(image[1], left[1], distance=True, grad=True)
+        d_right, g_right = self.distance(image[1], right[1], distance=True, grad=True)
         self.distances[icenter-1] = np.sqrt(d_left)
         self.distances[icenter] = np.sqrt(d_right)
         
@@ -394,7 +393,7 @@ class NEB(object):
         
         d = []
         for i in xrange(0, self.nimages-1):
-            d.append(self.distance(tmp[i,:],tmp[i+1,:], distance=True, grad=False)[0])
+            d.append(self.distance(tmp[i,:], tmp[i+1,:], distance=True, grad=False)[0])
             
         d = np.array(np.sqrt(d))
         average_d = np.average(d)

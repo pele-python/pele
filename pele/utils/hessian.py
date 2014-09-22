@@ -14,7 +14,6 @@ Tools for manipulating the Hessian.  In particular, for finding eigenvalues and 
 
 """
 import numpy as np 
-from pele.potentials.lj import LJ
 
 __all__ = ["get_eig", "get_eigvals", "get_sorted_eig", "get_smallest_eig", "make_sparse"]
 
@@ -128,12 +127,12 @@ def get_smallest_eig_arpack(hess, tol=1e-3, **kwargs):
     use arpack 
     """
     import scipy.sparse
-    from scipy.sparse.linalg import eigsh, eigs
+    from scipy.sparse.linalg import eigsh
     from scipy.sparse.linalg.eigen.arpack.arpack import ArpackNoConvergence
     import sys
     try:
         e, v = eigsh(hess, which="SA", k=1, maxiter=1000, tol=tol)
-    except ArpackNoConvergence as err:
+    except ArpackNoConvergence:
         sys.stderr.write("ArpackNoConvergence raised\n")
         if scipy.sparse.issparse(hess):
             hess = hess.todense()
