@@ -40,6 +40,10 @@ class MLTest(unittest.TestCase):
         self.assertAlmostEqual(opt_ss, self.ss, delta=2*self.ss/np.sqrt(self.nr_points))
         self.assertAlmostEqual(opt_mu, opt_mul, delta = 1e-4)
         self.assertAlmostEqual(opt_ss, opt_ssl, delta = 1e-4)
+        confidence_intervalsl = potl.get_error_estimate(opt_parametersl)
+        for i, par in enumerate(opt_parameters):
+            self.assertLessEqual(confidence_intervalsl[i][0], par)
+            self.assertLessEqual(par, confidence_intervalsl[i][1])
 
 if __name__ == "__main__":
     unittest.main()
