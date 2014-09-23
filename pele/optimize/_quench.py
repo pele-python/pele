@@ -10,23 +10,9 @@ scipy.minimize would do a similar thing
 import numpy as np
 
 from pele.optimize import LBFGS, MYLBFGS, Fire, Result, LBFGS_CPP, ModifiedFireCPP
-from pele.potentials import BasePotential
 
 __all__ = ["lbfgs_scipy", "fire", "lbfgs_py", "mylbfgs", "cg", 
            "steepest_descent", "bfgs_scipy", "lbfgs_cpp"]
-
-class _getEnergyGradientWrapper(BasePotential):
-    """
-    create a potential object from getEnergyGradient.  This is quite wasteful
-    """
-    def __init__(self, getEnergyGradient):
-        self.get_e_g = getEnergyGradient
-#        print "warning: the minimizer usage has changed, please pass a potential object not the function getEnergyGradient"
-    def getEnergy(self, coords):
-        e, g = self.get_e_g(coords)
-        return e
-    def getEnergyGradient(self, coords):
-        return self.get_e_g(coords)
 
 def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     """
@@ -47,10 +33,6 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
         will probably stop before truly reaching that tolerance.  If you reduce `factr` 
         too much to mitigate this lbfgs will stop anyway, but declare failure misleadingly.  
     """
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
     import scipy.optimize
     res = Result()
     res.coords, res.energy, dictionary = scipy.optimize.fmin_l_bfgs_b(pot.getEnergyGradient, 
@@ -58,7 +40,7 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     res.grad = dictionary["grad"]
     res.nfev = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
-    #res.nsteps = dictionary['nit'] #  new in scipy version 0.12
+    # res.nsteps = dictionary['nit'] #  new in scipy version 0.12
     res.nsteps = res.nfev
     res.message = dictionary['task']
     res.success = True
@@ -70,8 +52,8 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
         else:
             res.message = str(dictionary['task'])
         print res.message
-    #note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
-    #tolerance exactly
+    # note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check
+    # tolerance exactly
     if False:
         if res.success:
             maxV = np.max( np.abs(res.grad) )
@@ -85,10 +67,6 @@ def fire(coords, pot, tol=1e-3, nsteps=100000, **kwargs):
     """
     A wrapper function for the pele FIRE implementation
     """
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
     opt = Fire(coords, pot, **kwargs)
     res = opt.run(fmax=tol, steps=nsteps)
     return res
@@ -97,19 +75,14 @@ def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     """
     a wrapper function for conjugate gradient routine in scipy
     """
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
     import scipy.optimize
     ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient, 
                                  gtol=tol, full_output=True, disp=iprint>0, 
                                  maxiter=nsteps, **kwargs)
     res = Result()
     res.coords = ret[0]
-    #e = ret[1]
     res.nfev = ret[2]
-    res.nfev += ret[3] #calls to gradient
+    res.nfev += ret[3] # calls to gradient
     res.success = True
     warnflag = ret[4]
     if warnflag > 0:
@@ -128,10 +101,13 @@ def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
 
 def steepest_descent(x0, pot, iprint=-1, dx=1e-4, nsteps=100000,
                       tol=1e-3, maxstep=-1., events=None):
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
+    """steepest descent minimization
+    
+    Notes
+    -----
+    this should never be used except for testing purposes.  It is a bad implementation
+    of a terrible minimization routine.  It will be very slow.
+    """
     N = len(x0)
     x=x0.copy()
     E, V = pot.getEnergyGradient(x)
@@ -168,10 +144,6 @@ def bfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     """
     a wrapper function for the scipy BFGS algorithm
     """
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
     import scipy.optimize
     ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime=pot.getGradient,
                                    gtol=tol, full_output=True, disp=iprint>0, 
@@ -187,34 +159,18 @@ def bfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     return res
 
 def lbfgs_py(coords, pot, **kwargs):
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
     lbfgs = LBFGS(coords, pot, **kwargs)    
     return lbfgs.run()
 
 def lbfgs_cpp(coords, pot, **kwargs):
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
     lbfgs = LBFGS_CPP(coords, pot, **kwargs)    
     return lbfgs.run()
 
 def mylbfgs(coords, pot, **kwargs):
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
     lbfgs = MYLBFGS(coords, pot, **kwargs)
     return lbfgs.run()
 
 def modifiedfire_cpp(coords, pot, **kwargs):
-    if not hasattr(pot, "getEnergyGradient"):
-        # for compatibility with old quenchers.
-        # assume pot is a getEnergyGradient function
-        pot = _getEnergyGradientWrapper(pot)
     modifiedfire = ModifiedFireCPP(coords, pot, **kwargs)    
     return modifiedfire.run()
 

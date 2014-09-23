@@ -1,4 +1,3 @@
-import numpy as np
 from pele.takestep import TakestepInterface
 
 __all__ = ["AdaptiveStepsizeTemperature"]
@@ -84,9 +83,8 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
         """
         self.ncalls_tot += 1
         trial_energy = driver.trial_energy
-        trial_coords = driver.trial_coords
         if self.energy is None:
-            #first time called. Save energy and coords
+            # first time called. Save energy and coords
             self.energy = driver.markovE
             self.coords = driver.coords.copy()
             return
@@ -95,14 +93,12 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
         if accepted:
             self.naccept += 1
 
-        #determine if the new minima is the same as the last one
+        # determine if the new minima is the same as the last one
         same = False
         if abs(self.energy - trial_energy) <= self.ediff:
-            #if np.std(self.coords - trial_coords) <= self.xdiff:
             same = True
             self.nsame += 1
         
-        #print abs(self.energy - trial_energy), np.std(self.coords - trial_coords), np.max(np.abs(self.coords - trial_coords))
         if not same and accepted:
                 self.energy = driver.markovE
                 self.coords = driver.coords.copy()
@@ -126,7 +122,7 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
         else:
             self.stepclass.scale(self.sfactor)
         
-        #print some status info
+        # print some status info
         if self.verbose:
             print "adaptive step and temperature: naccept nsame ndiff naccept_diff %d %d %d %d new min probability %.4g" % (
                 self.naccept, self.nsame, self.nattempts-self.nsame,
@@ -159,7 +155,6 @@ if __name__ == "__main__":
     import numpy as np
     from pele.takestep import displace
     from pele.systems import LJCluster
-    #from pele.takestep import adaptive
     
     natoms = 38
     sys = LJCluster(natoms=38)

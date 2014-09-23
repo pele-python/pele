@@ -4,7 +4,7 @@ import traceback
 import sys
 import numpy as np
 
-from PyQt4 import QtCore, QtGui, Qt
+from PyQt4 import QtCore, QtGui
 
 from pele.landscape import TSGraph
 from pele.storage import Database
@@ -15,7 +15,6 @@ from pele.gui.MainWindow import Ui_MainWindow
 from pele.gui.bhrunner import BHManager
 from pele.gui.dlg_params import DlgParams
 from pele.gui.ui.dgraph_dlg import DGraphDialog
-#from pele.gui.connect_explorer_dlg import ConnectExplorerDialog
 from pele.gui.connect_run_dlg import ConnectViewer
 from pele.gui.takestep_explorer import TakestepExplorer
 from pele.gui.normalmode_browser import NormalmodeBrowser
@@ -84,7 +83,7 @@ class MainGUI(QtGui.QMainWindow):
         # finish setting up the list manager (this must be done after NewSystem() is called)
         self.list_manager.finish_setup()
 
-        #try to load the pymol viewer.
+        # try to load the pymol viewer.
         try:
             self.usepymol = self.system.params.gui.use_pymol
         except (KeyError, AttributeError):
@@ -97,10 +96,10 @@ class MainGUI(QtGui.QMainWindow):
                 self.usepymol = False
             
         if self.usepymol == False:
-            #note: glutInit() must be called exactly once.  pymol calls it
-            #during pymol.finish_launching(), so if we call it again it will
-            #give an error. On the other hand, if we're not using pymol we 
-            #must call it.
+            # note: glutInit() must be called exactly once.  pymol calls it
+            # during pymol.finish_launching(), so if we call it again it will
+            # give an error. On the other hand, if we're not using pymol we 
+            # must call it.
             from OpenGL.GLUT import glutInit
             glutInit()
         
@@ -141,7 +140,7 @@ class MainGUI(QtGui.QMainWindow):
             self.system.database = database
         else:
             self.system.database = self.system.create_database(db=database)
-        #add minima to listWidged.  do sorting after all minima are added
+        # add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
         self.list_manager._sort_minima()
@@ -440,7 +439,7 @@ class MainGUI(QtGui.QMainWindow):
                 self.nebcoords = coords
                 self.nebenergies = np.array(energies)
                 print "setting path in oglPath"
-                self.ui.oglPath.setCoordsPath(coords)#, labels)
+                self.ui.oglPath.setCoordsPath(coords)
 #                self.ui.oglPath.setCoords(coords[0,:], 1)
 #                self.ui.oglPath.setCoords(None, 2)
 #                self.ui.sliderFrame.setRange(0, coords.shape[0]-1)
@@ -477,11 +476,11 @@ class MainGUI(QtGui.QMainWindow):
 #            if m not in existing_minima:
 #                self.NewMinimum(m)
             
-        #now use DoubleEndedConnect to test if they are connected
+        # now use DoubleEndedConnect to test if they are connected
         graph = TSGraph(db)
         if graph.areConnected(min1, min2):
-            #use double ended connect to draw the interpolated path
-            #this is ugly
+            # use double ended connect to draw the interpolated path
+            # this is ugly
             self._doubleEndedConnect(reconnect=False, min1min2=(min1, min2))
                                                        
 
@@ -498,7 +497,7 @@ class MainGUI(QtGui.QMainWindow):
             m1, m2 = min1, min2
             if m1._id > m2._id:
                 m1, m2 = m2, m1
-            print "merging minima", m1._id, m2._id#, ": minimum", m2._id, "will be deleted"
+            print "merging minima", m1._id, m2._id
             self.system.database.mergeMinima(m1, m2)
             self.RemoveMinimum(m2)
 
@@ -627,12 +626,6 @@ class MainGUI(QtGui.QMainWindow):
         self.rate_viewer.show()
 
         
-#        min1, min2 = self.get_selected_minima()
-#        self.compute_rates(min1, min2)
-        
-#def refresh_pl():
-    #pl.pause(0.000001)    
-    
 def run_gui(system, db=None, application=None):
     """
     The top level function that will launch the gui for a given system
@@ -663,13 +656,3 @@ def run_gui(system, db=None, application=None):
     myapp.show()
     sys.exit(application.exec_()) 
        
-#def run_gui(systemtype):
-#    app = QtGui.QApplication(sys.argv)
-#    import pylab as pl
-#    myapp = MainGUI(systemtype)
-#    refresh_timer = QtCore.QTimer()
-#    refresh_timer.timeout.connect(refresh_pl)
-#    refresh_timer.start(0.)
-#    
-#    myapp.show()
-#    sys.exit(app.exec_())

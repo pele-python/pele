@@ -102,18 +102,6 @@ class AASiteType(object):
         '''
         return sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
-#        R1 = rotations.aa2mx(p1)
-#        R2 = rotations.aa2mx(p2)
-#        dR = R2 - R1
-#        
-#        dR = dR
-#        
-#        d_M = self.W*np.sum((com2-com1)**2)
-#        # dR_kl S_lm dR_km 
-#        d_P = np.trace(np.dot(dR, np.dot(self.S, dR.transpose()))) 
-#        d_mix = 2.*self.W * np.dot((com2-com1), np.dot(dR, self.cog))
-#        return d_M + d_P + d_mix
-
     def distance_squared_grad(self, com1, p1, com2, p2):
         '''
         calculate spring force between 2 sites
@@ -136,28 +124,8 @@ class AASiteType(object):
         
         return sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
     
-#        R1, R11, R12, R13 = rot_mat_derivatives(p1, True)
-#        R2 = rotations.aa2mx(p2)
-#        dR = R2 - R1
-#        
-#        dR = dR
-#        
-#        g_M = -2.*self.W*(com2-com1)
-#        # dR_kl S_lm dR_km
-#        g_P = np.zeros(3) 
-#        g_P[0] = -2.*np.trace(np.dot(R11, np.dot(self.S, dR.transpose())))
-#        g_P[1] = -2.*np.trace(np.dot(R12, np.dot(self.S, dR.transpose())))
-#        g_P[2] = -2.*np.trace(np.dot(R13, np.dot(self.S, dR.transpose())))
-#    
-#        g_M -= 2.*self.W *  np.dot(dR, self.cog)
-#        g_P[0] -= 2.*self.W * np.dot((com2-com1), np.dot(R11, self.cog))
-#        g_P[1] -= 2.*self.W * np.dot((com2-com1), np.dot(R12, self.cog))
-#        g_P[2] -= 2.*self.W * np.dot((com2-com1), np.dot(R13, self.cog))
-#
-#        return g_M, g_P
-    
     def metric_tensor(self, p):
-        ''' calculate the mass weighted metric tensor '''
+        '''calculate the mass weighted metric tensor '''
         R, R1, R2, R3 = rot_mat_derivatives(p, True)        
         g = np.zeros([3,3])
                 
@@ -176,7 +144,7 @@ class AASiteType(object):
         return gx, g
         
     def metric_tensor_cog(self, x, p):
-        ''' calculate the metric tensor when for w_i != m_i '''
+        '''calculate the metric tensor when for w_i != m_i '''
         R, R1, R2, R3 = rot_mat_derivatives(p, True)        
         g = np.zeros([6,6])
 
@@ -250,12 +218,8 @@ class AATopology(object):
         return CoordsAdapter(nrigid=len(self.sites), coords=coords)
     
 
-    def distance_squared(self, coords1, coords2):
+    def _distance_squared_python(self, coords1, coords2):
         ''' Calculate the squared distance between 2 configurations'''
-        try:
-            return self.cpp_topology.distance_squared(coords1, coords2)
-        except AttributeError:
-            pass
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         
@@ -267,14 +231,17 @@ class AATopology(object):
                                            ca2.posRigid[i], ca2.rotRigid[i])
                  
         return d_sq
-                
-    # calculate the spring force on x1 to x2
-    def distance_squared_grad(self, coords1, coords2):
-        ''' Calculate gradient with respect to coords 1 for the squared distance'''
+    
+    def distance_squared(self, coords1, coords2):
+        '''Calculate the squared distance between 2 configurations'''
         try:
-            return self.cpp_topology.distance_squared_grad(coords1, coords2)
+            return self.cpp_topology.distance_squared(coords1, coords2)
         except AttributeError:
-            pass
+            return self._distance_squared_python(coords1, coords2)
+    
+     
+    def _distance_squared_grad_python(self, coords1, coords2):
+        '''Calculate gradient with respect to coords 1 for the squared distance'''
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         spring = self.coords_adapter(np.zeros(coords1.shape))
@@ -289,9 +256,16 @@ class AATopology(object):
             
         return spring.coords
     
+    def distance_squared_grad(self, coords1, coords2):
+        '''Calculate gradient with respect to coords 1 for the squared distance'''
+        try:
+            return self.cpp_topology.distance_squared_grad(coords1, coords2)
+        except AttributeError:
+            return self._distance_squared_grad_python(coords1, coords2)
+    
     def neb_distance(self, coords1, coords2, distance=True, grad=True):
-        ''' wrapper function called by neb to get distance between 2 images '''
-        d=None
+        '''wrapper function called by neb to get distance between 2 images '''
+        d = None
         if distance:
             d = self.distance_squared(coords1, coords2)
         g = None
@@ -318,38 +292,40 @@ class AATopology(object):
         cnew.posRigid[:] = interpolate_linear(cinitial.posRigid, cfinal.posRigid, t)
         cnew.rotRigid[:] = interpolate_angleaxis(cinitial.rotRigid, cfinal.rotRigid, t)        
         return cnew.coords
-  
-    def align_coords(self, x1, x2):
-        ''' align the angle axis coordinates to minimize |p2 - p1|
-        
-            The angle axis vectors are perodic, this function changes the definition
-            of the angle axis vectors in x2 to match closest the ones in x1. This can
-            be useful if simple distances are used on angle axis vectors. However,
-            using the difference in angle axis vectors should be avoided, instead
-            the angle axis distance function should be used which properly takes care
-            of the rotatational degrees of freedoms
-        '''
-        c2 = self.coords_adapter(x1)
-        c1 = self.coords_adapter(x2)
-        for p1, p2 in zip(c1.rotRigid,c2.rotRigid):
-            if np.linalg.norm(p2) < 1e-6:
-                if(np.linalg.norm(p1) < 1e-6):
-                    continue
-                n2 = p1/np.linalg.norm(p1)*2.*pi
-            else:
-                n2 = p2/np.linalg.norm(p2)*2.*pi
-        
-            while True:
-                p2n = p2+n2
-                if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
-                    break
-                p2[:]=p2n
-                
-            while True:
-                p2n = p2-n2
-                if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
-                    break
-                p2[:]=p2n 
+
+# js850> 9/2014 I commented this out because it seemed like it wasn't used 
+#               and the documentation suggests it shouldn't be used
+#    def align_coords(self, x1, x2):
+#        ''' align the angle axis coordinates to minimize |p2 - p1|
+#        
+#            The angle axis vectors are perodic, this function changes the definition
+#            of the angle axis vectors in x2 to match closest the ones in x1. This can
+#            be useful if simple distances are used on angle axis vectors. However,
+#            using the difference in angle axis vectors should be avoided, instead
+#            the angle axis distance function should be used which properly takes care
+#            of the rotatational degrees of freedoms
+#        '''
+#        c2 = self.coords_adapter(x1)
+#        c1 = self.coords_adapter(x2)
+#        for p1, p2 in zip(c1.rotRigid,c2.rotRigid):
+#            if np.linalg.norm(p2) < 1e-6:
+#                if(np.linalg.norm(p1) < 1e-6):
+#                    continue
+#                n2 = p1/np.linalg.norm(p1)*2.*pi
+#            else:
+#                n2 = p2/np.linalg.norm(p2)*2.*pi
+#        
+#            while True:
+#                p2n = p2+n2
+#                if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+#                    break
+#                p2[:]=p2n
+#                
+#            while True:
+#                p2n = p2-n2
+#                if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+#                    break
+#                p2[:]=p2n 
     
     def align_path(self, path):
         """ensure a series of images are aligned with each other
@@ -385,16 +361,12 @@ class AATopology(object):
                     if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
                         break
                     p2[:]=p2n
-                    
-    def zeroEV(self, x):
+    
+    def _zeroEV_python(self, x):
         """return a list of zero eigenvectors
         
         This does both translational and rotational eigenvectors
         """
-        try:
-            return self.cpp_topology.get_zero_modes(x)
-        except AttributeError:
-            pass
         zev = []
         ca = self.coords_adapter(x)
         cv = self.coords_adapter(np.zeros(x.shape))
@@ -432,19 +404,31 @@ class AATopology(object):
         #print "Zero eigenvectors", zev         
         return zev + [dx, dy, dz]
     
+    def zeroEV(self, x):
+        """return a list of zero eigenvectors
+        
+        This does both translational and rotational eigenvectors
+        """
+        try:
+            return self.cpp_topology.get_zero_modes(x)
+        except AttributeError:
+            return self._zeroEV_python(x)
+    
     def orthogopt(self, v, coords):
+        """make v orthogonal to the zero eigenvectors at position coords""" 
         zev = zeroev.gramm_schmidt(self.zeroEV(coords))
         zeroev.orthogonalize(v, zev)
         return v
     
-    def ortogopt_aa(self, v, coords):
-        v = v.copy()
-        zev = zeroev.gramm_schmidt(self.zeroEV(coords))
-        zeroev.orthogonalize(v, zev)
-        return v
+# js850> 9/2014 I commented this out because it is not used, not documented, and spelled wrong
+#    def ortogopt_aa(self, v, coords):
+#        v = v.copy()
+#        zev = zeroev.gramm_schmidt(self.zeroEV(coords))
+#        zeroev.orthogonalize(v, zev)
+#        return v
     
     def metric_tensor(self, coords):
-        ''' get the metric tensor for a current configuration '''
+        '''get the metric tensor for a current configuration '''
         ca = self.coords_adapter(coords=coords)
         g = np.zeros([coords.size, coords.size])
         offset = 3*ca.nrigid
@@ -462,7 +446,6 @@ class TakestepAA(takestep.TakestepInterface):
         self.rotate = rotate
         self.translate = translate
         self.topology = topology
-        self
     
     def takeStep(self, coords, **kwargs):
         ca = self.topology.coords_adapter(coords)

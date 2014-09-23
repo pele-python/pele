@@ -36,7 +36,8 @@ class XYModel(BasePotential):
 
         self.indices = dict()
         self.index2node = dict()
-        for i, node in enumerate(self.G.nodes()):
+        nodes = sorted(self.G.nodes())
+        for i, node in enumerate(nodes):
             self.indices[node] = i
             self.index2node[i] = node
         
@@ -66,44 +67,34 @@ class XYModel(BasePotential):
             phase = self.phases[edge]
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
-            E = np.cos( -angles[u] + angles[v] + phase )
+            E = -np.cos( -angles[u] + angles[v] + phase )
             energies[u] += E
             energies[v] += E
         return energies
         
-      
     def getEnergy(self, angles):
         e, g = self.getEnergyGradient(angles)
         return e
-        #do internal energies first
-        E = 0.
-        for edge in self.G.edges():
-            phase = self.phases[edge]
-            u = self.indices[edge[0]]
-            v = self.indices[edge[1]]
-            E += np.cos( -angles[u] + angles[v] + phase )
-        #E = self.num_edges - E
-        E = - E
-        return E
         
     def getEnergyGradient(self, angles):
         import _cython_tools
         return _cython_tools.xymodel_energy_gradient(angles, self.phase_matrix, self.neighbors) 
-        #do internal energies first
-        E = 0.
-        grad = np.zeros(self.nspins)
-        for edge in self.G.edges():
-            phase = self.phases[edge]
-            u = self.indices[edge[0]]
-            v = self.indices[edge[1]]
-            E += np.cos( -angles[u] + angles[v] + phase )
-            
-            g = -np.sin( -angles[u] + angles[v] + phase )
-            grad[u] += g
-            grad[v] += -g
-        #E = self.num_edges - E
-        E =  - E
-        return E, grad
+
+#    def getEnergyGradient(self, angles):
+#        # do internal energies first
+#        E = 0.
+#        grad = np.zeros(self.nspins)
+#        for edge in self.G.edges():
+#            phase = self.phases[edge]
+#            u = self.indices[edge[0]]
+#            v = self.indices[edge[1]]
+#            E += np.cos( -angles[u] + angles[v] + phase )
+#            
+#            g = -np.sin( -angles[u] + angles[v] + phase )
+#            grad[u] += g
+#            grad[v] += -g
+#        E =  - E
+#        return E, grad
 
 
 

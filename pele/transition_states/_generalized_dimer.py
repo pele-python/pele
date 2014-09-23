@@ -1,7 +1,7 @@
 import numpy as np
 
-from pele.transition_states import FindLowestEigenVector, analyticalLowestEigenvalue
-from pele.optimize import MYLBFGS, Result
+from pele.transition_states import FindLowestEigenVector
+from pele.optimize import Result
 from pele.utils import rotations
 from pele.transition_states._generalized_hef import _HybridEigenvectorWalker
 from pele.transition_states._dimer_translator import _DimerTranslator

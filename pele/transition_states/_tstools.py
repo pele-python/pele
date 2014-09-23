@@ -22,7 +22,6 @@ def determinePushoff(
         e, grad = pot.getEnergyGradient(coords)
     gpar0 = np.dot(grad, vec)/vnorm
     step = stepmin / vnorm
-    #print "gpar0", gpar0
     while True:
         coords1 = step * vec + coords
         e, grad = pot.getEnergyGradient(coords1)
@@ -75,13 +74,8 @@ def minima_from_ts(pot, xt, n=None, quench=None, **kwargs):
     if quench is None:
         quench = lambda coords : mylbfgs(coords, pot)        
     
-    #x1 = xt - displace*n
     x1 = determinePushoff(pot, xt, n, **kwargs)
     x2 = determinePushoff(pot, xt, -n, **kwargs)
-    #x2 = xt + displace*n
-    #e1,g1 = getEnergyGradient(x1)
-    #e2,g2 = getEnergyGradient(x2)
-    #print np.dot(g1,g2)
     minimum1 = quench(x1)
     minimum2 = quench(x2)
     return minimum1, minimum2

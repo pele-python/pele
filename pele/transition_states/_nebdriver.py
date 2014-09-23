@@ -6,7 +6,7 @@ from pele.transition_states._NEB import distance_cart
 from _interpolate import InterpolatedPath, interpolate_linear
 from pele.utils.events import Signal
 
-all = ["NEBDriver"]
+__all__ = ["NEBDriver"]
 
 logger = logging.getLogger("pele.connect.neb")
 
@@ -67,12 +67,12 @@ class NEBDriver(object):
     '''
     
     def __init__(self, potential, coords1, coords2,
-                 k = 100., max_images = 50, image_density=10., iter_density = 10.,
-                 verbose=0, factor=1.05, NEBquenchParams=None, adjustk_freq=0, 
-                 adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
-                 reinterpolate_tol=0.1,
-                 reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
-                 interpolator=interpolate_linear, distance=distance_cart, **kwargs):
+                  k = 100., max_images = 50, image_density=10., iter_density = 10.,
+                  verbose=0, factor=1.05, NEBquenchParams=None, adjustk_freq=0, 
+                  adjustk_tol=0.1, adjustk_factor=1.05, dneb=True,
+                  reinterpolate_tol=0.1,
+                  reinterpolate=0, adaptive_nimages = False, adaptive_niter=False,
+                  interpolator=interpolate_linear, distance=distance_cart, **kwargs):
         
         self.potential = potential
         self.interpolator = interpolator
@@ -160,7 +160,6 @@ class NEBDriver(object):
             self.prepare()
             
         quenchParams = self.quenchParams.copy()
-        nimages = len(self.path)
         # if nimages is already max_images then increasing the number
         # of images with factor will have no effect.  so double the number of steps instead
         niter = int(self.iter_density * self.nimages)
@@ -193,8 +192,6 @@ class NEBDriver(object):
             # optimize the NEB            
             res = neb.optimize()
             self.last_k=neb.k
-            
-#            self.path = neb.coords.copy() #js850> is this copy necessary?
             
             # check if we're finished
             self.steps_total += res.nsteps
@@ -229,7 +226,7 @@ class NEBDriver(object):
         
         
     def generate_path(self, coords1, coords2):
-        #determine the number of images to use
+        # determine the number of images to use
         dist, tmp = self.distance(coords1, coords2)
         dist=np.sqrt(dist)
         nimages = int(max(1., dist) * self.image_density * self.factor)
@@ -255,10 +252,9 @@ class NEBDriver(object):
         if nimages < self.min_images:
             nimages = int(self.min_images)
             
-        #print avdev, abs(float(nimages - len(path))/float(nimages))
         # only reinterpolate if above tolerance
-        if avdev < self.reinterpolate_tol and \
-            abs(float(nimages - len(path))/float(nimages)) < self.reinterpolate_tol:
+        if (avdev < self.reinterpolate_tol and 
+            abs(float(nimages - len(path))/float(nimages)) < self.reinterpolate_tol):
             print "no reinterpolation needed"
             return path
 

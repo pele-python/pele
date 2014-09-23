@@ -66,8 +66,8 @@ class readAmberParam:
         
         # atom index in bondList starts from 1 
         
-        #%FLAG BONDS_INC_HYDROGEN
-        #%FORMAT(10I8)  (IBH(i),JBH(i),ICBH(i), i=1,NBONH)
+        # %FLAG BONDS_INC_HYDROGEN
+        # %FORMAT(10I8)  (IBH(i),JBH(i),ICBH(i), i=1,NBONH)
         #  IBH    : atom involved in bond "i", bond contains hydrogen
         #  JBH    : atom involved in bond "i", bond contains hydrogen
         #  ICBH   : index into parameter arrays RK and REQ

@@ -28,44 +28,39 @@ class Metropolis(object):
         rand = self.random()
         if (rand > w): acceptstep = False
 
-        #print "mc step: Eo", Eold, "En", Enew, "accepted", acceptstep, w, self.temperature
-
         return acceptstep
     
     def forceAccept(self):
-        '''
-            Force acceptance of the next step. This is useful for reseeding.
+        '''Force acceptance of the next step. This is useful for reseeding.
         '''
         self._accept_next = True
 
-    def __call__(self, Eold, Enew, qcoords=[], coords=[]):
+    def __call__(self, Eold, Enew, qcoords, coords):
         """wrapper for acceptRejectE"""
         return self.acceptRejectE(Eold, Enew)
 
-class MetropolisNonQuench:
-    """
-    perform metropolis criterion on non quenched energy
-    """
-    def __init__(self, temperature, potential, random=np.random.rand):
-        self.potential = potential
-        self.metropolis = Metropolis(temperature, random)
-
-
-    def acceptReject(self, Equench_old=0., Equench_new=0., qcoords=[], coords=[]):
-        self.Enew = self.potential.getEnergy(coords)
-        try:
-            self.Eold
-        except AttributeError:
-            self.Eold = self.Enew
-        #print "Eold Enew", self.Eold, self.Enew
-        return self.metropolis.acceptReject(self.Eold, self.Enew)
-    
-    def checkAccepted(self, quenchedE, quenched_coords, accepted):
-        """
-        if the step was accepted, update self.Eold
-        """
-        if accepted:
-            self.Eold = self.Enew
+#class MetropolisNonQuench(object):
+#    """
+#    perform metropolis criterion on non quenched energy
+#    """
+#    def __init__(self, temperature, potential, random=np.random.rand):
+#        self.potential = potential
+#        self.metropolis = Metropolis(temperature, random)
+#
+#
+#    def acceptReject(self, Equench_old=0., Equench_new=0., qcoords=None, coords=None):
+#        self.Enew = self.potential.getEnergy(coords)
+#        try:
+#            self.Eold
+#        except AttributeError:
+#            self.Eold = self.Enew
+#        return self.metropolis.acceptReject(self.Eold, self.Enew)
+#    
+#    def checkAccepted(self, quenchedE, quenched_coords, accepted):
+#        """if the step was accepted, update self.Eold
+#        """
+#        if accepted:
+#            self.Eold = self.Enew
 
 
 if __name__ == "__main__":

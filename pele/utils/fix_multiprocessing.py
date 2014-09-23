@@ -1,4 +1,4 @@
-#from https://gist.github.com/626518
+# from https://gist.github.com/626518
 # Fix keyboard interrupts when using multiprocessing.pool.imap().
 
 # Usage: 

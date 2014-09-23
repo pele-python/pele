@@ -41,21 +41,15 @@ class LJCut(BasePotentialAtomistic):
         return E, grad 
     
     def getEnergyList(self, coords, ilist):
-        #ilist = ilist_i.getNPilist()
-        #ilist += 1 #fortran indexing
         E = _ljcut.energy_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
                 self.boxl, self.rcut)
-        #ilist -= 1
         return E
     
     def getEnergyGradientList(self, coords, ilist):
-        #ilist = ilist_i.getNPilist()
-        #ilist += 1 #fortran indexing
         E, grad = _ljcut.energy_gradient_ilist(
                 coords, self.eps, self.sig, ilist.reshape(-1), self.periodic, 
                 self.boxl, self.rcut)
-        #ilist -= 1
         return E, grad 
 
 #
@@ -63,7 +57,7 @@ class LJCut(BasePotentialAtomistic):
 #
 
 
-def test():
+def test(): # pragma: no cover
     natoms = 10
     coords = np.random.uniform(-1,1.,3*natoms) * natoms**(-1./3)
     pot = LJCut()

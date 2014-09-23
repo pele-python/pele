@@ -1,4 +1,4 @@
-import numpy as np #to access np.exp() not built int exp
+import numpy as np
 import fortran.ljpshiftfort as ljpshiftfort
 
 from pele.potentials import BasePotential
@@ -44,15 +44,8 @@ class LJpshift(BasePotential):
             self.boxl = 10000.
         else:
             self.periodic = True
-#        print "using binary Lennard-Jones potential ", self.ntypeA, self.AB.sig, self.BB.sig, self.AB.eps, self.BB.eps
-#        print "    with cutoff ", rcut,
-#        if self.periodic: 
-#            print "periodic with boxl ", self.boxl
-#        else:
-#            print ""
 
     def getEnergy(self, coords):
-        #print "getting energy only"
         V, E = ljpshiftfort.ljpshift(coords, False, False,
                 self.boxl, self.boxl, self.boxl,
                 self.AA.rcut, self.periodic, self.ntypeA,

@@ -68,17 +68,17 @@ class MonteCarlo(object):
                  confCheck=[], outstream=sys.stdout, store_initial=True,
                  iprint=1,
                 ):
-        #note: make a local copy of lists of events so that an inputted list is not modified.
+        # note: make a local copy of lists of events so that an inputted list is not modified.
         self.coords = np.copy(coords)
         self.storage = storage
         self.potential = potential
         self.takeStep = takeStep
-        self.event_after_step = copy.copy(event_after_step) #not deepcopy
+        self.event_after_step = copy.copy(event_after_step) # not deepcopy
         self.temperature = temperature
         self.naccepted = 0
         
         self.outstream = outstream
-        self.printfrq = iprint #controls how often printing is done
+        self.printfrq = iprint # controls how often printing is done
         self.confCheck = confCheck
     
         if acceptTest:
@@ -89,7 +89,7 @@ class MonteCarlo(object):
         self.stepnum = 0
     
         #########################################################################
-        #store intial structure
+        # store intial structure
         #########################################################################
         energy = self.potential.getEnergy(self.coords)
         if(self.storage and store_initial):
@@ -113,7 +113,7 @@ class MonteCarlo(object):
             how often to print data.  if None, don't change current value
             
         """
-        if ostream != "default": #ostream = None is valid input
+        if ostream != "default": # ostream = None is valid input
             self.outstream = ostream
         if frq is not None:
             self.printfrq = frq
@@ -126,14 +126,14 @@ class MonteCarlo(object):
     def _mcStep(self):
         """take one monte carlo basin hopping step
         """
-        self.trial_coords = self.coords.copy() #make  a working copy
+        self.trial_coords = self.coords.copy() # make  a working copy
         #########################################################################
-        #take step
+        # take step
         #########################################################################
         self.takeStep.takeStep(self.trial_coords, driver=self)
                 
         #########################################################################
-        #calculate new energy
+        # calculate new energy
         #########################################################################
         self.trial_energy = self.potential.getEnergy(self.trial_coords)
         
@@ -150,21 +150,21 @@ class MonteCarlo(object):
                 self.config_ok = False
         
         #########################################################################
-        #check whether step is accepted with user defined tests.  If any returns
-        #false then reject step.
+        # check whether step is accepted with user defined tests.  If any returns
+        # false then reject step.
         #########################################################################
         if self.acceptstep:
             self.acceptstep = self.acceptTest(self.markovE, self.trial_energy,
                                               self.coords, self.trial_coords)
             
         #########################################################################
-        #return new coords and energy and whether or not they were accepted
+        # return new coords and energy and whether or not they were accepted
         #########################################################################
         return self.acceptstep, self.trial_coords, self.trial_energy
   
     def run(self, nsteps):
         """do multiple iterations"""
-        #take nsteps
+        # take nsteps
         for istep in xrange(nsteps):
             self.takeOneStep()
     
@@ -174,11 +174,7 @@ class MonteCarlo(object):
         self.stepnum += 1
         self.markovE_old = self.markovE
         acceptstep, newcoords, newE = self._mcStep()
-        #self.outstream.write( "Qu   " + str(self.stepnum) + " E= " + str(newE) + " quench_steps= " + str(self.funcalls) + " RMS= " + str(self.rms) + " Markov E= " + str(self.markovE) + " accepted= " + str(acceptstep) + "\n" )
         self.printStep()
-#       try:
-#        except:
-#            print "WARNING: takeStep.updateStep() not implemented"
         if(self.storage and (self.insert_rejected or acceptstep) and self.config_ok):
             self.storage(newE, newcoords)
 

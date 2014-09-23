@@ -4,7 +4,6 @@ import copy
 import logging
 
 
-from pele.transition_states import InterpolatedPath
 from pele.optimize import Result
 from pele.optimize import mylbfgs
         
@@ -22,11 +21,8 @@ try:
 except:
     norm = np.linalg.norm
     
-#norm = np.linalg.norm
-
 def distance_cart(x1, x2, distance=True, grad=True):
     dist=None
-    #print x1.dtype, x2.dtype
     grad = x1-x2
     if distance:
         dist = norm(grad)**2
@@ -85,10 +81,10 @@ class NEB(object):
     InterpolatedPathDensity : alternate interpolater
     """
     def __init__(self, path, potential, distance=distance_cart,
-                 k=100.0, adjustk_freq=0, adjustk_tol=0.1,adjustk_factor=1.05,
-                 with_springenergy=False, dneb=True,
-                 copy_potential=False, quenchParams=dict(), quenchRoutine=None,
-                 save_energies=False, verbose=-1, events=None, use_minimizer_callback=True):
+                  k=100.0, adjustk_freq=0, adjustk_tol=0.1,adjustk_factor=1.05,
+                  with_springenergy=False, dneb=True,
+                  copy_potential=False, quenchParams=dict(), quenchRoutine=None,
+                  save_energies=False, verbose=-1, events=None, use_minimizer_callback=True):
         self.distance = distance
         self.potential = potential
         self.k = k
@@ -122,7 +118,7 @@ class NEB(object):
         self.adjustk_tol=adjustk_tol
         self.adjustk_factor=adjustk_factor
         
-        #initialize coordinate&gradient array
+        # initialize coordinate&gradient array
         self.coords = np.zeros([nimages, path[0].size])
         self.energies=np.zeros(nimages)
         self.isclimbing=[]
@@ -171,7 +167,7 @@ class NEB(object):
                 quenchRoutine = mylbfgs
             else:
                 quenchRoutine = self.quenchRoutine  
-        #combine default and passed params.  passed params will overwrite default 
+        # combine default and passed params.  passed params will overwrite default 
         quenchParams = dict([("nsteps", 300)] +
                             self.quenchParams.items() +
                             kwargs.items())
@@ -245,7 +241,6 @@ class NEB(object):
         # construction
         realgrad = self._getRealEnergyGradient(tmp)
 
-        #print "Spring forces"
         # the total energy of images, band is neglected
         E = sum(self.energies)
         Eneb = 0
@@ -264,7 +259,6 @@ class NEB(object):
             if self.getEnergyCount % self.iprint == 0 and self.save_energies:
                 self.printState()
         self.getEnergyCount += 1
-        #print "ENeb = ", Eneb
         if not self.use_minimizer_callback:
             self._step(coords1d)
         
@@ -275,7 +269,6 @@ class NEB(object):
                        distances=self.distances, stepnum=self.getEnergyCount, rms=rms)
             
         return E+Eneb, grad.reshape(grad.size)
-        #return 0., grad.reshape(grad.size)
 
     def tangent_old(self, central, left, right, gleft, gright):
         """
@@ -316,8 +309,8 @@ class NEB(object):
         vmax = max(abs(central - left), abs(central - right))
         vmin = min(abs(central - left), abs(central- right))
 
-        tleft = gleft#/np.linalg.norm(gleft)
-        tright = -gright#/np.linalg.norm(gright)
+        tleft = gleft
+        tright = -gright
 
         # special interpolation treatment for maxima/minima
         if (central >= left and central >= right) or (central <= left and central <= right):
@@ -347,17 +340,15 @@ class NEB(object):
         """
 
         # construct tangent vector
-        d_left, g_left = self.distance(image[1], left[1], distance=True)#self.with_springenergy)
-        d_right, g_right = self.distance(image[1], right[1], distance=True)#self.with_springenergy)
+        d_left, g_left = self.distance(image[1], left[1], distance=True, grad=True)
+        d_right, g_right = self.distance(image[1], right[1], distance=True, grad=True)
         self.distances[icenter-1] = np.sqrt(d_left)
         self.distances[icenter] = np.sqrt(d_right)
-        #print g_left, g_right
         
         t = self.tangent(image[0],left[0],right[0], g_left, g_right)
         if(isclimbing):
             return greal - 2.*np.dot(greal, t) * t
 
-        #print "spring", np.dot(g_spring, t)
         if True:
             import _NEB_utils
             E, g_tot = _NEB_utils.neb_force(t,greal, d_left, g_left, d_right, g_right, self.k, self.dneb)
@@ -387,7 +378,6 @@ class NEB(object):
                 E = 0.5 / self.k * (d_left **2 + d_right**2)
             else:
                 E = 0.
-            #print np.linalg.norm(gperp), np.linalg.norm(gs_par)
             return E, g_tot
 
     def _step(self, coords=None, energy=None, rms=None):
@@ -403,7 +393,7 @@ class NEB(object):
         
         d = []
         for i in xrange(0, self.nimages-1):
-            d.append(self.distance(tmp[i,:],tmp[i+1,:], distance=True, grad=False)[0])
+            d.append(self.distance(tmp[i,:], tmp[i+1,:], distance=True, grad=False)[0])
             
         d = np.array(np.sqrt(d))
         average_d = np.average(d)
@@ -440,14 +430,12 @@ class NEB(object):
         print the current state of the NEB.  Useful for bug testing
         """
         if self.printStateFile is None:
-            #get a unique file name
+            # get a unique file name
             for n in range(500):
                 self.printStateFile = "neb.EofS.%04d" % (n)
                 if not os.path.isfile(self.printStateFile):
                     break
             logger.info("NEB energies will be written to %s", self.printStateFile)
-        #fname = "neb.EofS.%04d" % (self.getEnergyCount)
-        #fname = "neb.EofS.all"
         with open(self.printStateFile, "a") as fout:
             fout.write( "\n\n" )
             fout.write("#neb step: %d\n" % (self.getEnergyCount))
@@ -458,12 +446,10 @@ class NEB(object):
                 else:
                     dist, t = self.distance( self.coords[i,:], self.coords[i-1,:], grad=False)
                 S += dist
-                #print "S",S, "E",self.energies[i], "dist", dist
                 fout.write("%f %g\n" % (S, self.energies[i]))
 
     def copy(self):
         ''' create a copy of the current neb '''
-        import copy        
         neb = copy.copy(self)
         neb.coords = neb.coords.copy()
         neb.energies = neb.energies.copy()

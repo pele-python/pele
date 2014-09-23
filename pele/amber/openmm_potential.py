@@ -38,12 +38,12 @@ class OpenMMAmberPotential(BasePotential):
         self.simulation = Simulation(self.prmtop.topology, self.system , self.integrator)
         
         #  Another way of setting up potential using just pdb file ( no prmtop ) 
-        #pdb = PDBFile('coords.pdb')
-        #forcefield = ForceField('amber99sb.xml', 'tip3p.xml')
-        #system = forcefield.createSystem(pdb.topology, nonbondedMethod=ff.NoCutoff)
-        #integrator = VerletIntegrator(0.001*picoseconds)
-        #simulation = Simulation(pdb.topology, system, integrator)
-        #simulation.context.setPositions(pdb.positions)
+        # pdb = PDBFile('coords.pdb')
+        # forcefield = ForceField('amber99sb.xml', 'tip3p.xml')
+        # system = forcefield.createSystem(pdb.topology, nonbondedMethod=ff.NoCutoff)
+        # integrator = VerletIntegrator(0.001*picoseconds)
+        # simulation = Simulation(pdb.topology, system, integrator)
+        # simulation.context.setPositions(pdb.positions)
         
         # remove units 
         self.localCoords = self.inpcrd.positions/angstrom
@@ -73,7 +73,7 @@ class OpenMMAmberPotential(BasePotential):
         ee = potE / kilojoules_per_mole / self.kJtokCal
         return float( ee ) 
 
-#'''  ------------------------------------------------------------------- '''
+# '''  ------------------------------------------------------------------- '''
     def getEnergyGradient(self, coords):
         """ returns energy and gradient in kcal/mol and kcal/mol/angstrom""" 
         
@@ -129,19 +129,19 @@ if __name__ == "__main__":
     print np.max(np.abs(gnum-g)) / np.max(np.abs(gnum))
     
     
-#$ python openmm_potential.py
-#Energy (kJ/mol) = 
-#-13.2272103351
-#Energy (kJ/mol) = 
-#-13.2272103351
-#Analytic Gradient = 
-#[0.5474055271317946 -1.3862268604248615 -0.34820375884655835
+# $ python openmm_potential.py
+# Energy (kJ/mol) = 
+# -13.2272103351
+# Energy (kJ/mol) = 
+# -13.2272103351
+# Analytic Gradient = 
+# [0.5474055271317946 -1.3862268604248615 -0.34820375884655835
 # 0.557332675020795 -1.3579497787292465]
-#Numerical Gradient = 
-#[ 0.21390981 -1.1717879  -0.09397455  0.1569264  -1.22877131]
-#Num vs Analytic Gradient =
-#1.93645994676 19.2856516597
-#0.100409360334
+# Numerical Gradient = 
+# [ 0.21390981 -1.1717879  -0.09397455  0.1569264  -1.22877131]
+# Num vs Analytic Gradient =
+# 1.93645994676 19.2856516597
+# 0.100409360334
 
 
 

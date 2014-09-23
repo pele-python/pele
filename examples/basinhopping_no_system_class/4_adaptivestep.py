@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 ############################################################
-#Example 4: adaptive step size
+# Example 4: adaptive step size
 ############################################################
 import numpy as np
 import pele.potentials.lj as lj

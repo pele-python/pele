@@ -91,8 +91,6 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl
         the box length for periodic box.  None for no periodic boundary conditions
     """
     print "making BLJ neighborlist potential", natoms, ntypeA, rcut, boxl
-    #rcut = 2.5
-    #natoms = 40
     if ntypeA is None:
         ntypeA = int(natoms * 0.8)
     Alist = range(ntypeA)
@@ -112,17 +110,17 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl
     ljAB = LJCut(eps=blj.AB.eps, sig=blj.AB.sig, rcut=rcut*blj.AB.sig, boxl=boxl)
     
     
-    #ten lists in total
-    #nlAA_ff
-    #nlAA_mm
-    #nlAA_mf
-    #nlBB_ff
-    #nlBB_mm
-    #nlBB_mf
-    #nlAB_ff
-    #nlAB_mm
-    #nlAB_mf
-    #nlAB_fm
+    # ten lists in total
+    # nlAA_ff
+    # nlAA_mm
+    # nlAA_mf
+    # nlBB_ff
+    # nlBB_mm
+    # nlBB_mf
+    # nlAB_ff
+    # nlAB_mm
+    # nlAB_mf
+    # nlAB_fm
     
     nlAA_ff = NeighborListSubsetBuild(natoms, rcut, frozenA, boxl=boxl )
     nlAA_mm = NeighborListSubsetBuild(natoms, rcut, mobileA, boxl=boxl )
@@ -152,14 +150,14 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl
                  NeighborListPotentialBuild(nlAB_fm, ljAB),
                  ]
     
-    #wrap the mobile potentials so the check for whether coords needs to be updated
-    #can be done all at once
+    # wrap the mobile potentials so the check for whether coords needs to be updated
+    # can be done all at once
     mobile_pot = NeighborListPotentialMulti(potlist_mobile, natoms, rcut, boxl=boxl)
 
-    #wrap the mobile and frozen potentials together
+    # wrap the mobile and frozen potentials together
     mcpot = MultiComponentSystemFreeze([mobile_pot], potlist_frozen)
     
-    #finally, wrap it once more in a class that will zero the gradients of the frozen atoms
+    # finally, wrap it once more in a class that will zero the gradients of the frozen atoms
     frozenpot = FreezePot(mcpot, frozenlist, natoms)
     return frozenpot
 
@@ -180,7 +178,7 @@ class FreezePot(basepot):
     def __init__(self, pot, frozen, natoms):
         self.pot = pot
         self.natoms = natoms
-        self.frozen_atoms = frozen  #a list of frozen atoms
+        self.frozen_atoms = frozen  # a list of frozen atoms
         self.frozen1d = self.get_1d_indices(self.frozen_atoms)
 #        self.frozen1d = np.zeros(len(self.frozen_atoms)*3, np.integer) # a list of frozen coordinates (x,y,z) for each atom
 #        j = 0
@@ -342,7 +340,7 @@ class FrozenPotWrapper(object):
             reference_coords = np.random.uniform(-1, 1, [3*natoms])
             print reference_coords
             
-            #freeze the first two atoms (6 degrees of freedom)
+            # freeze the first two atoms (6 degrees of freedom)
             frozen_dof = range(6)
             
             fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)
@@ -389,7 +387,7 @@ class FrozenPotWrapper(object):
 
 
 #########################################################
-#testing stuff below here
+# testing stuff below here
 #########################################################
 
 def test(natoms = 40, boxl=4.): # pragma: no cover
@@ -409,7 +407,6 @@ def test(natoms = 40, boxl=4.): # pragma: no cover
     blj = FreezePot(NLblj, freezelist, natoms)
 
     pot = makeBLJNeighborListPotFreeze(natoms, freezelist, ntypeA=ntypeA, rcut=rcut, boxl=boxl)
-    #pot = FreezePot(NLpot, freezelist)
     
     
     
@@ -465,7 +462,7 @@ def test2(): # pragma: no cover
     reference_coords = np.random.uniform(-1, 1, [3*natoms])
     print reference_coords
     
-    #freeze the first two atoms (6 degrees of freedom)
+    # freeze the first two atoms (6 degrees of freedom)
     frozen_dof = range(6)
     
     fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)

@@ -12,14 +12,6 @@ from pele.thermodynamics import logproduct_freq2, normalmodes
 
 __all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
-#class NotImplemented(BaseException):
-#    """
-#    The exception to return if there is a feature
-#    in the System is not implemented yet
-#    """
-#    pass
-
-
 class BaseParameters(dict):
     """define a dictionary who's values can be accessed like attributes
     
@@ -61,10 +53,6 @@ class Parameters(BaseParameters):
         self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters(FindTransitionState.params())
         self.double_ended_connect.local_connect_params.NEBparams = BaseParameters(NEBDriver.params())
         
-        #self.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams = BaseParameters()
-        #self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()     
-
-
 def dict_copy_update(dict1, dict2):
     """return a new dictionary from the union of dict1 and dict2.  
     
@@ -185,9 +173,9 @@ class BaseSystem(object):
         pele.storage
         """
         kwargs = dict_copy_update(self.params["database"], kwargs)        
-        #note this syntax is quite ugly, but we would like to be able to 
-        #create a new database by passing the filename as the first arg, 
-        #not as a kwarg.  
+        # note this syntax is quite ugly, but we would like to be able to 
+        # create a new database by passing the filename as the first arg, 
+        # not as a kwarg.  
         if len(args) > 1:
             raise ValueError("create_database can only take one non-keyword argument")
         if len(args) == 1:
@@ -199,7 +187,7 @@ class BaseSystem(object):
         except KeyError:
             overwrite_properties = True
 
-        #get a routine to compare the minima as exact
+        # get a routine to compare the minima as exact
         try:
             if not "compareMinima" in kwargs:
                 try:
@@ -208,7 +196,7 @@ class BaseSystem(object):
                 except NotImplementedError:
                     pass
         except NotImplementedError:
-            #compareMinima is optional
+            # compareMinima is optional
             pass
 
         db = Database(**kwargs)
@@ -324,8 +312,8 @@ class BaseSystem(object):
         pot = self.get_potential()
         mindist = self.get_mindist()
         
-        #attach the function which orthogonalizes to known zero eigenvectors.
-        #This is amazingly ugly
+        # attach the function which orthogonalizes to known zero eigenvectors.
+        # This is amazingly ugly
         # vr: yea, we should polish this parameters stuff and give create policies instead!
         try:
             kwargs["local_connect_params"]["tsSearchParams"]["orthogZeroEigs"]
@@ -452,7 +440,7 @@ class BaseSystem(object):
     
 
     #
-    #the following functions are used only for the GUI
+    # the following functions are used only for the GUI
     #
 
     def draw(self, coords, index):
@@ -505,31 +493,31 @@ class BaseSystem(object):
         the implementation here is a bit hacky.  we create a temporary xyz file from coords
         and load the molecule in pymol from this file.  
         """
-        #pymol is imported here so you can do, e.g. basinhopping without installing pymol
+        # pymol is imported here so you can do, e.g. basinhopping without installing pymol
         import pymol 
 
-        #create the temporary file (.xyz or .pdb, or whatever else pymol can read)
-        #note: this is the part that will be really system dependent.        
+        # create the temporary file (.xyz or .pdb, or whatever else pymol can read)
+        # note: this is the part that will be really system dependent.        
         f = tempfile.NamedTemporaryFile(mode="w", suffix=".xyz")
         fname = f.name
-        #write the coords into file
+        # write the coords into file
         for coords in coordslist:
             write_xyz(f, coords, title=oname)
         f.flush()
                 
-        #load the molecule from the temporary file
+        # load the molecule from the temporary file
         pymol.cmd.load(fname)
         
-        #get name of the object just create and change it to oname
+        # get name of the object just create and change it to oname
         objects = pymol.cmd.get_object_list()
         objectname = objects[-1]
         pymol.cmd.set_name(objectname, oname)
         
-        #here you might want to change the representation of the molecule, e.g.
+        # here you might want to change the representation of the molecule, e.g.
         # >>> pymol.cmd.hide("everything", oname)
         # >>> pymol.cmd.show("spheres", oname)
         
-        #set the color according to index
+        # set the color according to index
         if index == 1:
             pymol.cmd.color("red", oname)
         else:

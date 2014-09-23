@@ -43,5 +43,5 @@ def coords2pdb(coords, top, pdbfname):
 #        print "closing file"
 #        f.flush()
 #                
-#        #load the molecule from the temporary file
+#        # load the molecule from the temporary file
 #        pymol.cmd.load(fname)

@@ -85,7 +85,7 @@ class AMBERSystem(BaseSystem):
 #        pot = self.get_potential()
 #        # kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
 #        # return lambda coords: lbfgs_cpp(coords, pot, **kwargs)
-#	from pele.optimize import lbfgs_py
+#    from pele.optimize import lbfgs_py
 #        return lambda coords: lbfgs_py(coords, pot, **kwargs)
 
     def get_ndof(self):
@@ -94,7 +94,7 @@ class AMBERSystem(BaseSystem):
     def set_params(self, params):
         """set default parameters for the system"""
         
-        #set NEBparams
+        # set NEBparams
         NEBparams = params.double_ended_connect.local_connect_params.NEBparams
         NEBparams.NEBquenchParams = BaseParameters()
 #        NEBquenchParams = NEBparams.NEBquenchParams
@@ -104,10 +104,10 @@ class AMBERSystem(BaseSystem):
         NEBparams.max_images = 50
         NEBparams.k = 100.
         NEBparams.adjustk_freq = 5
-        if False: #use fire
+        if False: # use fire
             from pele.optimize import fire
             NEBparams.quenchRoutine = fire
-        else: #use lbfgs
+        else: # use lbfgs
             NEBparams.NEBquenchParams.maxErise = 100.5
             NEBparams.NEBquenchParams.maxstep = .1
         NEBparams.NEBquenchParams.tol = 1e-2
@@ -117,7 +117,7 @@ class AMBERSystem(BaseSystem):
         NEBparams.adaptive_nimages = True
         NEBparams.adjustk_freq = 50                    
         
-        #set transition state search params
+        # set transition state search params
         tsSearchParams = params.double_ended_connect.local_connect_params.tsSearchParams
         tsSearchParams.nsteps = 200
         tsSearchParams.lowestEigenvectorQuenchParams["nsteps"] = 100
@@ -129,7 +129,7 @@ class AMBERSystem(BaseSystem):
         tsSearchParams.nsteps_tangent2 = 100
         tsSearchParams.max_uphill_step = .3
         
-        #control the output
+        # control the output
         tsSearchParams.verbosity = 0
         NEBparams.NEBquenchParams.iprint = 50
         tsSearchParams.lowestEigenvectorQuenchParams["iprint"] = -50
@@ -139,19 +139,18 @@ class AMBERSystem(BaseSystem):
 #        self.params.double_ended_connect.local_connect_params.pushoff_params.verbose = True
 #        self.params.double_ended_connect.local_connect_params.pushoff_params.stepmin = 1e-3
 #        self.params.double_ended_connect.local_connect_params.pushoff_params.gdiff = 100.
-#        #self.params.double_ended_connect.local_connect_params.pushoff_params.quenchRoutine = fire
+#        # self.params.double_ended_connect.local_connect_params.pushoff_params.quenchRoutine = fire
             
     def __call__(self):
         return self 
     
     def get_potential(self):
-  	"""  First attempts to get the potential from GMIN, then from OpenMM. If both fail, sets it to None """ 
- 
+        """  First attempts to get the potential from GMIN, then from OpenMM. If both fail, sets it to None """ 
         if hasattr(self, 'potential'):
-		if self.potential is not None: 
-			return self.potential 
+            if self.potential is not None: 
+                return self.potential 
 
-	# default is None 
+    # default is None 
         self.potential = None 
 
         # get potential from GMIN 
@@ -162,58 +161,58 @@ class AMBERSystem(BaseSystem):
                 import gmin_potential
                 self.potential        = gmin_potential.GMINAmberPotential(self.prmtopFname, self.inpcrdFname)
                 print '\namberSystem> Using GMIN Amber potential ..'
-		return self.potential ; 
+                return self.potential ; 
             except ImportError:
                 # using OpenMM because ambgmin_ could not be imported 
                 print '\namberSystem> could not import ambgmin_. Will try OpenMM .. '
 
         # get potential from OpenMM 
         try:
-        	import openmm_potential  
-            	self.potential   = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
-                print '\namberSystem> Using OpenMM amber potential ..'
+            import openmm_potential  
+            self.potential   = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
+            print '\namberSystem> Using OpenMM amber potential ..'
 
-        	# check for openmm version
-	        # data structures changed between openmm4 and 5
-	        # crude check - todo  
-	        if hasattr(self.potential.prmtop.topology._bonds,'index'):
-	            self.OpenMMVer = 5
-	        else:
-	            self.OpenMMVer = 4
+            # check for openmm version
+            # data structures changed between openmm4 and 5
+            # crude check - todo  
+            if hasattr(self.potential.prmtop.topology._bonds,'index'):
+                self.OpenMMVer = 5
+            else:
+                self.OpenMMVer = 4
         
                 return self.potential
         except AttributeError:
-            	print '\namberSystem> could not import openmm_potential ..'
+                print '\namberSystem> could not import openmm_potential ..'
         
-	if self.potenial == None : 
-		print '\namberSystem> potential not set. Could not import GMIN or OpenMM potential.' 
+        if self.potenial == None : 
+            print '\namberSystem> potential not set. Could not import GMIN or OpenMM potential.' 
         
         
     def get_random_configuration(self):
         """set coordinates before calling BH etc."""
         """ returns a 1-D numpy array of length 3xNatoms """
-	
-	# using pele.amber.read_amber and inpcrd   
+    
+    # using pele.amber.read_amber and inpcrd   
         from pele.amber.read_amber import read_amber_coords  
 
         coords = read_amber_coords(self.inpcrdFname)
         print "amberSystem> Number of coordinates:", len(coords)
         coords = np.reshape( np.transpose(coords), len(coords),1)  
 
-	# -- OpenMM 
-        #from simtk.unit import angstrom as openmm_angstrom 
+    # -- OpenMM 
+        # from simtk.unit import angstrom as openmm_angstrom 
         
         ##  using pdb 
-        #from simtk.openmm.app import pdbfile as openmmpdbReader
-        #pdb = openmmpdbReader.PDBFile('coords.pdb')  # todo: coords.pdb is hardcoded
-        #coords = pdb.getPositions() / openmm_angstrom
-        #coords = np.reshape(np.transpose(coords), 3*len(coords),1 )
+        # from simtk.openmm.app import pdbfile as openmmpdbReader
+        # pdb = openmmpdbReader.PDBFile('coords.pdb')  # todo: coords.pdb is hardcoded
+        # coords = pdb.getPositions() / openmm_angstrom
+        # coords = np.reshape(np.transpose(coords), 3*len(coords),1 )
 
         ##  using input inpcrd 
-	#from simtk.openmm.app import AmberInpcrdFile
-        #inpcrd = AmberInpcrdFile( self.inpcrdFname )   
-	#coords = inpcrd.getPositions() / openmm_angstrom 
-        #coords = np.reshape(np.transpose(coords), 3*len(coords),1 )
+    # from simtk.openmm.app import AmberInpcrdFile
+        # inpcrd = AmberInpcrdFile( self.inpcrdFname )   
+    # coords = inpcrd.getPositions() / openmm_angstrom 
+        # coords = np.reshape(np.transpose(coords), 3*len(coords),1 )
 
         return coords 
 
@@ -237,8 +236,8 @@ class AMBERSystem(BaseSystem):
     def get_permlist(self):
         import pdb2permlist
                 
-        #return [[0, 2, 3], [11, 12, 13], [19, 20, 21]  ] # aladipep 
-        #return [[0, 2, 3], [11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [49,50,51]] # tetraala 
+        # return [[0, 2, 3], [11, 12, 13], [19, 20, 21]  ] # aladipep 
+        # return [[0, 2, 3], [11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [49,50,51]] # tetraala 
             
         if os.path.exists('coordsModTerm.pdb'):
             print '\namberSystem> constructing perm list from coordsModTerm.pdb'
@@ -280,17 +279,17 @@ class AMBERSystem(BaseSystem):
 
     def drawCylinder(self, X1, X2):
         from OpenGL import GL,GLUT, GLU
-        z = np.array([0.,0.,1.]) #default cylinder orientation
-        p = X2-X1 #desired cylinder orientation
+        z = np.array([0.,0.,1.]) # default cylinder orientation
+        p = X2-X1 # desired cylinder orientation
         r = np.linalg.norm(p)
-        t = np.cross(z,p)  #angle about which to rotate
-        a = np.arccos( np.dot( z,p) / r ) #rotation angle
-        a *= (180. / np.pi)  #change units to angles
+        t = np.cross(z,p)  # angle about which to rotate
+        a = np.arccos( np.dot( z,p) / r ) # rotation angle
+        a *= (180. / np.pi)  # change units to angles
         GL.glPushMatrix()
         GL.glTranslate( X1[0], X1[1], X1[2] )
         GL.glRotate( a, t[0], t[1], t[2] )
         g=GLU.gluNewQuadric()
-        GLU.gluCylinder(g, .1,0.1,r,30,30)  #I can't seem to draw a cylinder
+        GLU.gluCylinder(g, .1,0.1,r,30,30)  # I can't seem to draw a cylinder
         GL.glPopMatrix()
         
     def draw(self, coordsl, index):
@@ -309,7 +308,7 @@ class AMBERSystem(BaseSystem):
             draw_sphere(x, radius=rad, color=col)
 
         # draw bonds  
-        for atomPairs in self.bonds:#self.potential.prmtop.topology.bonds():
+        for atomPairs in self.bonds:# self.potential.prmtop.topology.bonds():
             # note that atom numbers in topology start at 0
             xyz1 = coords[atomPairs[0]] - com  
             xyz2 = coords[atomPairs[1]] - com
@@ -338,17 +337,17 @@ class AMBERSystem(BaseSystem):
         the implementation here is a bit hacky.  we create a temporary xyz file from coords
         and load the molecule in pymol from this file.  
         """
-        #pymol is imported here so you can do, e.g. basinhopping without installing pymol
+        # pymol is imported here so you can do, e.g. basinhopping without installing pymol
         import pymol 
                 
-        #create the temporary file
+        # create the temporary file
         suffix = ".pdb"
         f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
         fname = f.name
         
         from simtk.openmm.app import pdbfile as openmmpdb
 
-        #write the coords into pdb file
+        # write the coords into pdb file
         from pele.mindist import CoMToOrigin
         ct = 0 
         for coords in coordslist:
@@ -362,19 +361,19 @@ class AMBERSystem(BaseSystem):
         print "closing file"
         f.flush()
                 
-        #load the molecule from the temporary file
+        # load the molecule from the temporary file
         pymol.cmd.load(fname)
         
-        #get name of the object just created and change it to oname
+        # get name of the object just created and change it to oname
         objects = pymol.cmd.get_object_list()
         objectname = objects[-1]
         pymol.cmd.set_name(objectname, oname)
         
-        #set the representation
+        # set the representation
         pymol.cmd.hide("everything", oname)
         pymol.cmd.show("lines", oname)
         
-#        #set the color according to index
+#        # set the color according to index
 #        if index == 1:
 #            pymol.cmd.color("red", oname)
 #        else:
@@ -439,8 +438,8 @@ class AMBERSystem(BaseSystem):
 #                        neighborlist.append(b[0].index) 
                     
             
-            #print '---bonds = ', b[0].index , b[1].index 
-            #print '---amberSystem> atoms bonded to CA ',i, ' = ', neighborlist    
+            # print '---bonds = ', b[0].index , b[1].index 
+            # print '---amberSystem> atoms bonded to CA ',i, ' = ', neighborlist    
             nn = [i] 
             # append C (=O) 
             for n in neighborlist: 
@@ -593,7 +592,7 @@ class AMBERSystem(BaseSystem):
         print np.max(np.abs(gnum-g)) / np.max(np.abs(gnum))
         
     def test_connect(self, database):
-        #connect the all minima to the lowest minimum
+        # connect the all minima to the lowest minimum
         minima = database.minima()
         min1 = minima[0]
         
@@ -669,12 +668,12 @@ class AmberSpawnOPTIM(SpawnOPTIM):
             fout.write(permallow)
     
     def write_additional_input_files(self, rundir, coords1, coords2):
-        #write start
+        # write start
         with open(rundir + "/start", "w") as fout:
             for xyz in coords1.reshape(-1,3):
                 fout.write( "%f %f %f\n" % tuple(xyz))
         
-        #write coords.prmtop and coords.inpcrd
+        # write coords.prmtop and coords.inpcrd
         shutil.copyfile(self.sys.prmtopFname, rundir + "/coords.prmtop")
         shutil.copyfile(self.sys.inpcrdFname, rundir + "/coords.inpcrd")
         min_in = """

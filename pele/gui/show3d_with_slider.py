@@ -1,17 +1,9 @@
-#import math
-
-#from OpenGL.GL import *
-#from OpenGL.GLU import *
-#from OpenGL.GLUT import *
-from PyQt4 import QtGui, QtCore
-from PyQt4.Qt import Qt, QWidget
-#from PyQt4.QtOpenGL import *
-import numpy as np
-#import pele.utils.rotations as rot
-from pele.utils.events import Signal
+from PyQt4 import QtCore
+from PyQt4.Qt import QWidget
 from PyQt4.QtCore import pyqtSlot
-from pele.gui.ui.show3d_with_slider_ui import Ui_show3d_with_slider
 
+from pele.gui.ui.show3d_with_slider_ui import Ui_show3d_with_slider
+from pele.utils.events import Signal
 
 
 class Show3DWithSlider(QWidget):
@@ -77,21 +69,6 @@ class Show3DWithSlider(QWidget):
         self.label.hide()
         self.ui.btn_animate.hide()
 
-#    def getCoords(self, index=1):
-#        if index not in (1, 2):
-#            raise ValueError("index must be either 1 or 2")
-#        return self.oglwgt.coords[index]
-#    
-#    def setMinimum(self, m, index=1):
-#        if index not in (1, 2):
-#            raise ValueError("index must be either 1 or 2")
-#        self.oglwgt.minima[index] = m
-#
-#    def getMinimum(self, index=1):
-#        if index not in (1, 2):
-#            raise ValueError("index must be either 1 or 2")
-#        return self.oglwgt.minima[index]
-    
     def setCoordsPath(self, coordspath, frame=None, labels=None):
         """
         show a path in the viewer
@@ -145,12 +122,6 @@ class Show3DWithSlider(QWidget):
 
     def get_slider_index(self):
         return self.slider.value()
-
-#    def setCoordsSingle(self):
-
-#    def on_myslider_sliderMoved(self, index):
-#        print "slider moved", index
-##        self.oglwgt.setCoords(self.neb.coords[0,:], index=index)
 
     def on_btn_animate_clicked(self, checked=None):
         if checked is None: return

@@ -14,7 +14,7 @@ def main():
     reference_coords = np.random.uniform(-1, 1, [3*natoms])
     print reference_coords
     
-    #freeze the first two atoms (6 degrees of freedom)
+    # freeze the first two atoms (6 degrees of freedom)
     frozen_dof = range(6)
     
     fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)

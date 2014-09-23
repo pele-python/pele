@@ -1,16 +1,13 @@
 import numpy as np
-from numpy import sin, cos
 from copy import copy
 import networkx as nx
 
 from pele.potentials import BasePotential
 import pele.utils.rotations as rotations
-from pele.potentials.heisenberg_spin import make3dVector,  make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
-
+from pele.potentials.heisenberg_spin import coords2ToCoords3, grad3ToGrad2
 
 
 __all__ = ["HeisenbergModelRA"]
-
 
 
 class HeisenbergModelRA(BasePotential):
@@ -43,7 +40,8 @@ class HeisenbergModelRA(BasePotential):
         self.fields = np.zeros([self.nspins, 3])
                 
         self.indices = dict()
-        for i, node in enumerate(self.G.nodes()):
+        nodes = sorted(self.G.nodes())
+        for i, node in enumerate(nodes):
             self.indices[node] = i
             if fields is None:
                 self.fields[i,:] = rotations.vec_random() * np.sqrt(field_disorder)
@@ -67,7 +65,6 @@ class HeisenbergModelRA(BasePotential):
         
         Efields = - np.sum( np.sum( self.fields * coords3, axis=1 )**2 )
         
-        #print "EJ EH", E, Efields
         return E + Efields
         
     def getEnergyGradient(self, coords):
@@ -93,13 +90,9 @@ class HeisenbergModelRA(BasePotential):
 
         grad3 -= 2.* self.fields * vdotf[:, np.newaxis]
         
-        #for i in range(self.nspins):
-        #    grad3[i,:] /= np.linalg.norm( grad3[i,:] )
-        
         grad2 = grad3ToGrad2(coords2, grad3)
         grad2 = np.reshape(grad2, self.nspins*2)
         
-        #print "EJ EH", E, Efields
         return E + Efields, grad2
 
 

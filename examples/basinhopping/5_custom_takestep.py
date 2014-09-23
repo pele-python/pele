@@ -2,12 +2,11 @@
 Example 5: Adding a custom takestep routine.  This example
 takes 100 monte carlo steps as one basin hopping step
 """
-import numpy as np
 from pele.systems import LJCluster
 from pele.takestep import RandomDisplacement
 from pele.mc import MonteCarlo
 
-class TakeStepMonteCarlo:
+class TakeStepMonteCarlo(object):
     def __init__(self, pot, T = 10., nsteps = 100, stepsize=0.1):
         self.potential = pot
         self.T =  T
@@ -16,7 +15,7 @@ class TakeStepMonteCarlo:
         self.mcstep = RandomDisplacement(stepsize=stepsize)
     
     def takeStep(self, coords, **kwargs):
-        #make a new monte carlo class
+        # make a new monte carlo class
         mc = MonteCarlo(coords, self.potential, self.mcstep, 
                         temperature = self.T, outstream=None)
         mc.run( self.nsteps )

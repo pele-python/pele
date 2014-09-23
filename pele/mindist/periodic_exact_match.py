@@ -92,11 +92,11 @@ class ExactMatchPeriodic(object):
         x2 = x2.copy()
         permlist = self.permlist
         
-        #get the shortest atomlist from permlist
+        # get the shortest atomlist from permlist
         if permlist is None:
             atomlist = [range(len(x1.shape[0]))]
         elif len(permlist) == 0:
-            #no permutable atoms
+            # no permutable atoms
             atomlist = [0]
         else:
             atomlist = sorted(permlist, key=lambda a: len(a))[0]
@@ -105,7 +105,6 @@ class ExactMatchPeriodic(object):
         for iB in atomlist:
             # overlay structures with atom iA == atom iB and check for exact match 
             x2 = x2_init.copy()
-#            print iA, iB
             are_match = self.check_match(x1, x2, iA, iB)
             if are_match:
                 return True
@@ -158,8 +157,4 @@ if __name__ == "__main__":
     exact_match = ExactMatchPeriodic(measure)
     em = exact_match.are_exact(x1, x2)
     print em
-    
-    
-    
-    
     
