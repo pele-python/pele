@@ -18,8 +18,8 @@ class FinSin(BasePotential):
           c_2= -0.3976370   4.7578297   6.0804249   6.2541999
     
     """
-    def __init__(self, d=3.692767, A=2.010637, beta=0.0, c=3.8,
-                 c0=-0.8816318, c1=1.4907756, c2=-0.3976370):
+    def __init__(self, d=4.114825, A=1.887117, beta=0.0, c=3.25,
+                 c0=43.4475218, c1=-31.9332978, c2=6.0804249):
         self.d = d
         self.A = A
         self.beta = beta
@@ -40,7 +40,7 @@ class FinSin(BasePotential):
 #
 # testing only below here
 #
-def test_vanadium():
+def test_molybdenum():
     pot = FinSin()
     natoms = 20
     x = np.random.uniform(-2,2,[3*natoms])
@@ -48,4 +48,4 @@ def test_vanadium():
     pot.test_potential(x)
 
 if __name__ == "__main__":
-    test_vanadium()
+    test_molybdenum()

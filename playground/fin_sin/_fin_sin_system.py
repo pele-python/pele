@@ -5,7 +5,7 @@ from pele.systems import LJCluster
 from pele.potentials._fin_sin import FinSin
 
 class FinSinCluster(LJCluster):
-    def __init__(self, natoms, A=2.010637):
+    def __init__(self, natoms, A=1.887117):
         BaseSystem.__init__(self)
         
         self.potential_kwargs = dict(A=A)
@@ -22,7 +22,7 @@ class FinSinCluster(LJCluster):
 
 def rungui():
     from pele.gui import run_gui
-    natoms = 17
+    natoms = 13
     system = FinSinCluster(natoms)
     db = system.create_database()
     run_gui(system)
