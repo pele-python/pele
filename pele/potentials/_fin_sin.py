@@ -4,18 +4,39 @@ from pele.potentials import BasePotential
 from pele.potentials.fortran import FinSin as fortran_fs
 
 class FinSin(BasePotential):
-    """ The Finnis-Sinclair potential for transition metals.
-        [ Phil. Mag. A 50, 45 (1984); ibid. 53, 161 (1986). ]
+    """The Finnis-Sinclair potential for transition metals.
 
-        Metal:   Vanadium    Chromium  Molybdenum    Tungsten
+    Parameters
+    ----------
+           d : float
+               d is a cutoff for the pseudodensity 
+           A : float
+               A sets the energy scale for the attractive term
+        beta : float
+               beta adjusts the repulsive term at short distance
+           c : float
+               c is a cutoff for the pairwise repulsive term
+    c0,c1,c2 : float
+               Additional fitting parameters
+
+    Notes
+    -----
+    The default parameter set is for Molybdenum, with the 
+    values fitted to bulk properties and also adequate for 
+    clusters.
     
-            d=   3.692767    3.915720    4.114825    4.400224
-            A=   2.010637    1.453418    1.887117    1.896373
-         beta=        0.0         1.8         0.0         0.0
-            c=        3.8         2.9        3.25        3.25
-          c_0= -0.8816318  29.1429813  43.4475218  47.1346499
-          c_1=  1.4907756 -23.3975027 -31.9332978 -33.7665655
-          c_2= -0.3976370   4.7578297   6.0804249   6.2541999
+    Here is a selection of representative parameter values:
+    [ Phil. Mag. A 50, 45 (1984); ibid. 53, 161 (1986). ]
+
+    Metal:   Vanadium    Chromium  Molybdenum    Tungsten
+    
+        d=   3.692767    3.915720    4.114825    4.400224
+        A=   2.010637    1.453418    1.887117    1.896373
+     beta=        0.0         1.8         0.0         0.0
+        c=        3.8         2.9        3.25        3.25
+      c_0= -0.8816318  29.1429813  43.4475218  47.1346499
+      c_1=  1.4907756 -23.3975027 -31.9332978 -33.7665655
+      c_2= -0.3976370   4.7578297   6.0804249   6.2541999
     
     """
     def __init__(self, d=4.114825, A=1.887117, beta=0.0, c=3.25,
