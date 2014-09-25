@@ -35,6 +35,7 @@ pele/potentials/_lj_cpp.cxx
 pele/potentials/_morse_cpp.cxx
 pele/potentials/_pele.cxx
 pele/potentials/_pythonpotential.cxx
+pele/version.py
 _ngt_cpp.cxx
 .coverage
 htmlcov
