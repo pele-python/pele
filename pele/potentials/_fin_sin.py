@@ -9,7 +9,7 @@ class FinSin(BasePotential):
     Parameters
     ----------
            d : float
-               d is a cutoff for the pseudodensity 
+               d is a cutoff for the pseudo-density 
            A : float
                A sets the energy scale for the attractive term
         beta : float
