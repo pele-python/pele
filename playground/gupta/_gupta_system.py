@@ -5,10 +5,11 @@ from pele.systems import LJCluster
 from pele.potentials._gupta import gupta
 
 class GuptaCluster(LJCluster):
-    def __init__(self, natoms, p=10.612):
+    def __init__(self, natoms, 
+                 p=5.206, q=1.220, A=0.6124, xi=2.441):
         BaseSystem.__init__(self)
 
-        self.potential_kwargs = dict(p=p)
+        self.potential_kwargs = dict(p=p,q=q,A=A,xi=xi)
 
         self.natoms = natoms
 
