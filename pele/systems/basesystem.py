@@ -124,16 +124,40 @@ class BaseSystem(object):
         raise NotImplementedError
 
     def get_random_configuration(self):
-        """a starting point for basinhopping, etc."""
+        """return starting point for basinhopping, etc.
+        
+        Returns
+        -------
+        coords : array
+        """
         raise NotImplementedError
     
     def get_random_minimized_configuration(self, **kwargs):
+        """return a random configuration that is already minimized
+        
+        Returns
+        -------
+        result : an optimizer Results object
+        
+        See Also
+        --------
+        pele.optimize
+        """
         coords = self.get_random_configuration()
         quencher = self.get_minimizer(**kwargs)
         return quencher(coords)
     
     def get_minimizer(self, **kwargs):
-        """return a function to minimize the structure"""
+        """return a function to minimize the structure
+        
+        Notes
+        The function should be one of the optimizers in `pele.optimize`, or
+        have similar structure.
+        
+        See Also
+        --------
+        pele.optimize
+        """
         pot = self.get_potential()
         kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
         return lambda coords: lbfgs_cpp(coords, pot, **kwargs)
@@ -150,8 +174,8 @@ class BaseSystem(object):
         raise NotImplementedError
 
     def get_compare_minima(self):
-        """a wrapper for compare exact so in input can be in 
-        Minimum Form"""
+        """a wrapper for compare exact so in input can be in Minimum Form
+        """
         compare = self.get_compare_exact()
         if compare is None:
             return None
@@ -160,6 +184,8 @@ class BaseSystem(object):
     def get_system_properties(self):
         """return a dictionary of system specific properties.
         
+        Notes
+        -----
         These will be stored automatically in the database.  
         The keys must be strings.
         """
@@ -208,7 +234,9 @@ class BaseSystem(object):
     def get_takestep(self, **kwargs):
         """return the takestep object for use in basinhopping, etc.
         
-        default is random displacement with adaptive step size 
+        Notes
+        -----
+        default is random displacement with adaptive step size and
         adaptive temperature
         
         See Also
@@ -272,28 +300,46 @@ class BaseSystem(object):
         return bh
 
     def get_mindist(self):
-        """return a mindist object that is callable with the form
+        """return a function that structurally aligns two configurations
         
-        dist, X1new, X2new = mindist(X1, X2)
+        Returns
+        -------
+        mindist : callable object with the form::
+            dist, X1new, X2new = mindist(X1, X2)
+            
         
         Notes
         -----
-        the mindist object returns returns the best alignment between two
-        configurations, taking into account all global symmetries
+        The mindist object returns returns the best alignment between two
+        configurations, taking into account all global symmetries.  X2new
+        might be different from X2, but X1new should be the same as X1.
+        
+        If you have a simple system with cartesian distances and no symmetries,
+        you can simply return::
+        
+            return lambda x1, x2: np.linalg.norm(x1-x2), x1, x2
         
         See Also
         --------
         pele.mindist
-         
         """
         raise NotImplementedError
     
     def get_orthogonalize_to_zero_eigenvectors(self):
-        """return a function which makes a vector orthogonal to the known zero
-        eigenvectors (the eigenvectors with zero eigenvalues.  It should
-        be callable with the form::
+        """return `None` or a function which makes a vector orthogonal to the known zero eigenvectors 
         
-            vec = orthogVec(vec, coords)
+        Notes
+        -----
+        zero eigenvectors are those which have zero eigenvalues
+
+        
+        Returns
+        -------
+        orthogopt : None, or a function with the form::
+                
+                vec_new = orthogVec(vec, coords)
+        
+        
         
         See Also
         --------
@@ -353,6 +399,11 @@ class BaseSystem(object):
         calculating the thermodynamic weight of a minimum.  Most configurations
         will have pgorder 1, but some highly symmetric minima will have higher orders.
         Routines to compute the point group order are in module `mindist`.
+        If your system has not symmetries you can just return 1.
+        
+        Returns
+        -------
+        pgorder : int
         
         See Also
         --------
@@ -370,16 +421,25 @@ class BaseSystem(object):
         For atomic systems (cartesian coordinates) with masses different to 1.0, the metric tensor
         is a diagonal matrix with 1/m_i on the diagonal.
         For curvilinear coordinates like angle axis coordinates it is more complicated.
+        Returning None implies that the metric tensor is the identity.
 
+        Returns
+        -------
+        metric_tensor : None or 2d array
+            
         
         See Also
         --------
-        pele.landscape.smoothPath
+        pele.thermodynamics, get_normalmodes
         """
         raise NotImplementedError
     
     def get_nzero_modes(self):
         """return the number of vibration modes with zero frequency
+        
+        Returns
+        -------
+        nzero_modes : int
         
         Notes
         -----
@@ -394,6 +454,10 @@ class BaseSystem(object):
         to the product of the frequencies.  If the zero modes are not accounted for 
         correctly then the product will be trivially zero and the free energy will
         be completely wrong.
+        
+        See Also
+        --------
+        get_log_product_normalmode_freq, get_ndof
         """
         raise NotImplementedError
     
@@ -402,8 +466,16 @@ class BaseSystem(object):
         
         Notes
         -----
-        this is the true number of degrees of freedom.  It is probably the length
+        This is the true number of degrees of freedom.  It is probably the length
         of the coordinates array minus the number of zero modes
+        
+        Returns
+        -------
+        ndof : int
+        
+        See Also
+        --------
+        get_nzero_modes
         """
         try:
             coords = self.get_random_configuration()
@@ -413,6 +485,24 @@ class BaseSystem(object):
     
     def get_normalmodes(self, coords):
         """return the squared normal mode frequencies and eigenvectors
+        
+        Notes
+        -----
+        This is usually used to compute the log product of the normal mode frequencies
+        which is used to determine the free energy of a minimum in the harmonic
+        superposition approximation.
+        
+        Returns
+        -------
+        freqs : array
+            array of normal mode frequencies
+        vecs : 2d array
+            array of normal mode vectors.  `vecs[:,i]` is the vector for
+            the the i'th frequency
+        
+        See Also
+        --------
+        pele.thermodynamics, get_log_product_normalmode_freq, get_metric_tensor 
         """
         mt = self.get_metric_tensor(coords)
         pot = self.get_potential()
@@ -431,7 +521,15 @@ class BaseSystem(object):
         
         Notes
         -----
-        this is necessary to calculate the free energy contribution of a minimum
+        This is necessary to calculate the free energy contribution of a minimum
+
+        Returns
+        -------
+        lprod : float
+        
+        See Also
+        --------
+        pele.thermodynamics, get_normalmodes, get_nzero_modes
         """
         nzero = self.get_nzero_modes()
         freqs, vecs = self.get_normalmodes(coords)

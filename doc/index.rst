@@ -85,6 +85,7 @@ Modules
    structure_alignment
    transition_states_module
    concurrent
+   thermodynamics
    rates
    utils
    angleaxis_module
