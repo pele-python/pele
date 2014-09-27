@@ -65,7 +65,7 @@ for compilation:
 
   1. fortran compiler
 
-  #. c / c++ compiler
+  #. c++ compiler (must support c++11, GCC 4.6 or similar)
 
 python packages:
 
@@ -116,21 +116,21 @@ If you want to use the gui you will additionally need:
 
 Installing prerequisites on Ubuntu
 ----------------------------------
-if you're running ubuntu, you can get all the prerequisites with the following
+If you're running ubuntu, you can get all the prerequisites with the following
 commands::
 
   $ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip cython pymol
   $ pip install --user networkx sqlalchemy hungarian pyro4 brewer2mpl
 
-(in the above, the flag --user will install localy.)
+(in the above, the flag --user will install localy, in directory $HOME/.local/)
 
 
 Compilation
 -----------
 
-Compilation is required for use of the fast potentials, those written in C
-and/or fortran.  Theoretically you should be able to use any fortran compiler,
-but we mostly use gfortran, so it's the least likely to have problems.  This
+Compilation is required as many of the computationally intensive parts (especially potentials)
+are written in fortran and c++.  Theoretically you should be able to use any fortran compiler,
+but we mostly use gfortran and GCC, so it's the least likely to have problems.  This
 package uses the standard python setup utility (distutils).  There are lots of
 options for how and where to install. For more information::
   
