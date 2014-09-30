@@ -1,3 +1,0 @@
-[console_scripts]
-autosummary_generate = numpydoc.autosummary_generate:main
-
