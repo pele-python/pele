@@ -88,10 +88,10 @@ public:
             }
         }
 
-//        cout << "number of nodes " << _graph->number_of_nodes() << "\n";
-//        cout << "A.size() " << _A.size() << "\n";
-//        cout << "B.size() " << _B.size() << "\n";
-//        cout << "intermediates.size() " << intermediates.size() << "\n";
+//        std::cout << "number of nodes " << _graph->number_of_nodes() << "\n";
+//        std::cout << "A.size() " << _A.size() << "\n";
+//        std::cout << "B.size() " << _B.size() << "\n";
+//        std::cout << "intermediates.size() " << intermediates.size() << "\n";
         assert(intermediates.size() + _A.size() + _B.size() == _graph->number_of_nodes());
 
     }
@@ -172,11 +172,11 @@ public:
         intermediates.assign(nodes.begin(), nodes.end());
 
 
-//        cout << _graph->number_of_nodes() << "\n";
-//        cout << _A.size() << "\n";
-//        cout << _B.size() << "\n";
-//        cout << intermediates.size() << "\n";
-//        cout << nodes.size() << "\n";
+//        std::cout << _graph->number_of_nodes() << "\n";
+//        std::cout << _A.size() << "\n";
+//        std::cout << _B.size() << "\n";
+//        std::cout << intermediates.size() << "\n";
+//        std::cout << nodes.size() << "\n";
         assert(intermediates.size() + _A.size() + _B.size() == _graph->number_of_nodes());
     }
 
@@ -192,7 +192,7 @@ public:
     void sort_intermediates(){
         node_ptr x = *intermediates.begin();
         if (debug){
-            cout << "smallest node degree " << x->in_out_degree() << "\n";
+            std::cout << "smallest node degree " << x->in_out_degree() << "\n";
         }
         if (x->in_out_degree() > 4) {
             intermediates.sort(compare_degree);
@@ -249,7 +249,7 @@ public:
         double tau_u = get_tau(u);
         double new_tau_u = tau_u + Pux * tau_x / omPxx;
         if (debug){
-            cout << "updating node " << u->id() << " tau " << tau_u << " -> " << new_tau_u << "\n";
+            std::cout << "updating node " << u->id() << " tau " << tau_u << " -> " << new_tau_u << "\n";
         }
         set_tau(u, new_tau_u);
     }
@@ -280,7 +280,7 @@ public:
 
         double newPuv = Puv + Pux * Pxv / omPxx;
         if (debug) {
-            cout << "updating edge " << u->id() << " -> " << v->id() << " Puv " << Puv << " -> " << newPuv
+            std::cout << "updating edge " << u->id() << " -> " << v->id() << " Puv " << Puv << " -> " << newPuv
                     << " 1-Pxx " << omPxx
                     << " Pux " << Pux
                     << " Pxv " << Pxv

@@ -1,12 +1,9 @@
 #ifndef _PELE_MODIFIED_FIRE_H__
 #define _PELE_MODIFIED_FIRE_H__
 
-#include <vector>
 #include "base_potential.h"
 #include "array.h"
 #include "optimizer.h"
-
-using std::vector;
 
 namespace pele{
 /**

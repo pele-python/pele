@@ -7,8 +7,6 @@
 #include "array.h"
 #include "optimizer.h"
 
-using std::vector;
-
 namespace pele{
 
 /**

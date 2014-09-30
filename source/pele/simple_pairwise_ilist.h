@@ -9,8 +9,6 @@
 #include <iostream>
 #include <memory>
 
-using std::cout;
-
 namespace pele
 {
 /**
