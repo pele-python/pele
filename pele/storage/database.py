@@ -421,6 +421,12 @@ class Database(object):
             limit(1).all()
         return candidates[0]
     
+    def get_lowest_energy_minimum(self):
+        """return the minimum with the lowest energy"""
+        candidates = self.session.query(Minimum).order_by(Minimum.energy).\
+            limit(1).all()
+        return candidates[0]
+    
     def findMinimum(self, E, coords):
         candidates = self.session.query(Minimum).\
             options(undefer("coords")).\

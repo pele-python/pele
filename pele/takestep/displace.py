@@ -62,5 +62,5 @@ class RandomCluster(TakestepInterface):
         self.volume = volume
     
     def takeStep(self, coords, **kwargs):
-            coords[:] = np.random.random(coords.shape) * (self.volume**(1./3.))
+        coords[:] = np.random.random(coords.shape) * (self.volume**(1./3.))
     
