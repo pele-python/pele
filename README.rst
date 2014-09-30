@@ -37,15 +37,15 @@ the algorithms implemented are:
 
 #. Single ended saddle point search:
 
-  - Hybrid Eigenvector Following
+   - Hybrid Eigenvector Following
 
-  - Dimer method
+   - Dimer method
 
 4. Double ended saddle point search
 
-  - Nudged Elastic Band (NEB)
+   - Nudged Elastic Band (NEB)
 
-  - Doubly Nudged Elastic Band (DNEB)
+   - Doubly Nudged Elastic Band (DNEB)
 
 5. Disconnectivity Graph visualization
 
@@ -63,39 +63,39 @@ Required packages
 
 for compilation:
 
-  1. fortran compiler
+1. fortran compiler
 
-  #. c / c++ compiler
+#. c++ compiler (must support c++11, GCC 4.6 or similar)
 
 python packages:
 
-  1. numpy: 
-       We use numpy everywhere for doing numerical work.  It also installs f2py which
-       is used to compile fortran code into modules callable by python.
+1. numpy: 
+     We use numpy everywhere for doing numerical work.  It also installs f2py which
+     is used to compile fortran code into modules callable by python.
 
-  #. scipy:
-       For some of the optimizers and various scientific tools
+#. scipy:
+     For some of the optimizers and various scientific tools
 
-  #. networkx: 
-       For graph functionality. https://networkx.lanl.gov
+#. networkx: 
+     For graph functionality. https://networkx.lanl.gov
 
-  #. matplotlib:
-       For making plots (e.g. disconnectivity graphs)
+#. matplotlib:
+     For making plots (e.g. disconnectivity graphs)
 
-  #. SQLAlchemy 0.7: 
-       For managing database of stationary points.  http://www.sqlalchemy.org/
+#. SQLAlchemy 0.7: 
+     For managing database of stationary points.  http://www.sqlalchemy.org/
 
-  #. hungarian: 
-       For permutational alignment
+#. hungarian: 
+     For permutational alignment
 
-  #. pyro4: 
-       For parallel jobs
+#. pyro4: 
+     For parallel jobs
 
-  #. scikits.sparse: optional 
-       for use of sparse Cholesky decomposition methods when calculating rates
+#. scikits.sparse: optional 
+     For use of sparse Cholesky decomposition methods when calculating rates
 
-  #. pymol: optional
-       for viewing molecular structures
+#. pymol: optional
+     For viewing molecular structures
 
 
 All the above packages can be installed via the python package manager pip (or
@@ -105,32 +105,33 @@ dependencies and it can be more convenient to use the linux package manager
 
 If you want to use the gui you will additionally need:
 
-  1. qt4 and qt4 python bindings
+1. qt4 and qt4 python bindings
 
-  #. opengl python bindings
+#. opengl python bindings
+  
 
-  The Ubuntu packages (apt-get) for these are: python-qt4, python-opengl, and python-qt4-gl
+The Ubuntu packages (apt-get) for these are: python-qt4, python-opengl, and python-qt4-gl
 
-  In fedora Fedora (yum) you will want the packages: PyQt4, and PyOpenGl
+In fedora Fedora (yum) you will want the packages: PyQt4, and PyOpenGl
 
 
 Installing prerequisites on Ubuntu
 ----------------------------------
-if you're running ubuntu, you can get all the prerequisites with the following
+If you're running ubuntu, you can get all the prerequisites with the following
 commands::
 
   $ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip cython pymol
   $ pip install --user networkx sqlalchemy hungarian pyro4 brewer2mpl
 
-(in the above, the flag --user will install localy.)
+(in the above, the flag --user will install localy, in directory $HOME/.local/)
 
 
 Compilation
 -----------
 
-Compilation is required for use of the fast potentials, those written in C
-and/or fortran.  Theoretically you should be able to use any fortran compiler,
-but we mostly use gfortran, so it's the least likely to have problems.  This
+Compilation is required as many of the computationally intensive parts (especially potentials)
+are written in fortran and c++.  Theoretically you should be able to use any fortran compiler,
+but we mostly use gfortran and GCC, so it's the least likely to have problems.  This
 package uses the standard python setup utility (distutils).  There are lots of
 options for how and where to install. For more information::
   
@@ -194,7 +195,7 @@ http://sharewebegin.blogspot.co.uk/2013/06/install-pyqt-on-mac-osx-lion1084.html
 This worked even though I'm using osx Mavericks
 
 1. Ensure you're using a decent python installation, the osx pre-packaged one won't suffice.
-I use the Enthought Canopy python distribution https://www.enthought.com/products/canopy/
+   I use the Enthought Canopy python distribution https://www.enthought.com/products/canopy/
 
 2. Install Qt4.8 using the pre-compiled binary http://qt-project.org/downloads
 
