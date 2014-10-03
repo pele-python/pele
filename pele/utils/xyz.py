@@ -26,8 +26,14 @@ def read_xyz(fin):
     
     Returns
     -------
+    fin : open file
     xyz : namedtuple
         returns a named tuple with coords, title and list of atomtypes.
+    
+    See Also
+    --------
+    write_xyz
+
     '''
     natoms = int(fin.readline())
     title = fin.readline()[:-1]
@@ -41,7 +47,7 @@ def read_xyz(fin):
     return namedtuple("XYZFile", ["coords", "title", "atomtypes"])\
             (coords, title, atomtypes)
 
-def write_xyz(fout, coords, title="", atomtypes=["A"]):
+def write_xyz(fout, coords, title="", atomtypes=("A",)):
     ''' write a xyz file from file handle
     
     Writes coordinates in xyz format. It uses atomtypes as names. The list is
@@ -54,6 +60,7 @@ def write_xyz(fout, coords, title="", atomtypes=["A"]):
     
     Parameters
     ----------
+    fout : an open file
     coords : np.array
         array of coordinates
     title : title section, optional
@@ -61,7 +68,12 @@ def write_xyz(fout, coords, title="", atomtypes=["A"]):
     atomtypes : iteratable
         list of atomtypes.        
 
+    See Also
+    --------
+    read_xyz
+
     '''
-    fout.write( "%d\n%s\n"%(coords.size/3, title))
+    fout.write( "%d\n%s\n" % (coords.size/3, title))
     for x, atomtype in zip(coords.reshape(-1,3), cycle(atomtypes)):
-        fout.write( "%s %.18g %.18g %.18g\n"%(atomtype, x[0], x[1], x[2])) 
+        fout.write("%s %.18g %.18g %.18g\n" % (atomtype, x[0], x[1], x[2]))
+ 

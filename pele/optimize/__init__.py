@@ -30,6 +30,12 @@ which return the energy and gradient, and kwargs are a collection of optional pa
 The return value is a `pele.optimze.Result` object (similar to `scipy.optimize.Result`),
 which is simply a dictionary where `__getattr__` is a wrapper for `__getitem__`.  So the 
 coords can be accessed as res.coords or as res["coords"].
+
+.. autosummary::
+   :toctree: generated/
+   
+   Result
+
 We have tried to make the minimizers as consistent as possible, but it is not always possible.
 Some of the common parameters most of them accept are::
 

@@ -37,6 +37,7 @@ Tutorials
 .. toctree::
    :maxdepth: 3
 
+   getting_started
    tutorial_potential
    system_class_tutorial
 
