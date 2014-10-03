@@ -25,3 +25,5 @@ The general sequence of steps when using these methods is
 
 
 .. automodule:: examples.getting_started.example1_minimization
+
+.. automodule:: examples.getting_started.example2_global_optimization
