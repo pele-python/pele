@@ -18,9 +18,7 @@ class BasinHopping(MonteCarlo):
     Notes
     -----
     Basin-hopping is a stochastic algorithm which attempts to find the global
-    minimum of a smooth scalar function of one or more variables [1]_ [2]_ [3]_
-    [4]_.  The algorithm in its current form was described by David Wales and
-    Jonathan Doye [2]_ http://www-wales.ch.cam.ac.uk/.
+    minimum of a smooth scalar function of one or more variables
 
     The algorithm is iterative with each cycle composed of the following
     features
