@@ -72,7 +72,7 @@ class CoordsAdapter(object):
         self.nrigid = nrigid
         self.natoms = natoms
         self.nlattice = nlattice
-        if(coords!=None):
+        if coords is not None:
             self.updateCoords(coords)
 
     def copy(self):
