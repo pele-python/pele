@@ -8,7 +8,6 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
     
     Parameters
     ----------
-    
     stepclass : 
         the step taking class
     target_new_min_prob : 

@@ -19,9 +19,8 @@ class RandomDisplacement(TakestepSlice):
     
     Parameters
     ----------
-    
     stepsize : float
-        magnitue of random displacement
+        magnitude of random displacement
         
     '''
     def __init__(self, stepsize=1.0):

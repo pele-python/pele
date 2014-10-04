@@ -34,16 +34,27 @@ class Minimum(Base):
     
     Attributes
     ----------
-    energy : float
-    coords : numpy array
-    fvib : float
-        log product of squared frequencies for free energy calculation
-    pgorder : integer
+    energy : 
+        the energy of the minimum
+    coords :
+        the coordinates of the minimum.  This is stored as a pickled numpy
+        array which SQL interprets as a BLOB.
+    fvib : 
+        the log product of the squared normal mode frequencies.  This is used in
+        the free energy calcualations
+    pgorder :
         point group order
+    invalid :
+        a flag that can be used to indicate a problem with the minimum.  E.g. if
+        the Hessian has more zero eigenvalues than expected.
+    user_data :
+        Space to store anything that the user wants.  This is stored in SQL
+        as a BLOB, so you can put anything here you want as long as it's serializable.  
+        Usually a dictionary works best.
+        
         
     Notes
     -----
-    
     To avoid any double entries of minima and be able to compare them,
     only use `Database.addMinimum()` to create a minimum object.
 
@@ -114,12 +125,31 @@ class TransitionState(Base):
     
     Attributes
     ----------
-    energy : float
-    coords : numpy array
-    minimum1 : Minimum object
-    minimum2 : Minium object
-    eigenval : float
-    eigenvec : numpy array
+    energy : 
+        The energy of the transition state
+    coords :
+        The coordinates of the transition state.  This is stored as a pickled numpy
+        array which SQL interprets as a BLOB.
+    fvib : 
+        The log product of the squared normal mode frequencies.  This is used in
+        the free energy calcualations
+    pgorder :
+        The point group order
+    invalid :
+        A flag that is used to indicate a problem with the transition state.  E.g. if
+        the Hessian has more than one negaive eigenvalue then it is a higher order saddle.
+    user_data :
+        Space to store anything that the user wants.  This is stored in SQL
+        as a BLOB, so you can put anything here you want as long as it's serializable.  
+        Usually a dictionary works best.
+    minimum1, minimum2 :
+        These returns the minima on either side of the transition state
+    eigenvec :
+        The vector which points along the direction crossing the transition state.
+        This is the eigenvector of the lowest non-zero eigenvalue. 
+    eigenval :
+        The eigenvalue corresponding to `eigenvec`.  A.k.a. the curvature
+        along the direction given by `eigenvec`
     
     Notes
     -----

@@ -63,7 +63,7 @@ def dict_copy_update(dict1, dict2):
 
 class BaseSystem(object):
     """
-    this class defines a base class for a System object
+    The base class for a System object
         
     Notes
     -------------
