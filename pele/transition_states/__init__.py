@@ -80,6 +80,5 @@ from _NEB import *
 from _find_lowest_eig import *
 from _transition_state_refinement import *
 from _tstools import *
-from _NEB_wrapper import *
 from _nebdriver import *
 #from _generalized_dimer import GeneralizedDimer

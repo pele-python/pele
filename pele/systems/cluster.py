@@ -6,7 +6,7 @@ from pele.transition_states import orthogopt
 from pele.mindist import MinPermDistAtomicCluster, ExactMatchAtomicCluster, \
     PointGroupOrderCluster
 from pele.landscape import smoothPath
-from pele.transition_states import create_NEB
+from pele.transition_states import NEBDriver
 
 
 __all__ = ["AtomicCluster"]
@@ -74,5 +74,5 @@ class AtomicCluster(BaseSystem):
         pot = self.get_potential()
         NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams.copy()
         NEBparams.update(kwargs)
-        return create_NEB(pot, coords1, coords2, verbose=True, **NEBparams)
+        return NEBDriver(pot, coords1, coords2, verbose=True, **NEBparams)
 
