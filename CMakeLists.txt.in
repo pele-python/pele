@@ -39,8 +39,8 @@ function(make_cython_lib cython_cxx_source)
   message("making library ${library_name} from source ${cython_cxx_source}")
 endfunction(make_cython_lib)
 
-make_cython_lib(${CMAKE_SOURCE_DIR}/pele/rates/_ngt_cpp.cxx)
-make_cython_lib(${CMAKE_SOURCE_DIR}/pele/potentials/_pele.cxx)
+#make_cython_lib(${CMAKE_SOURCE_DIR}/pele/rates/_ngt_cpp.cxx)
+#make_cython_lib(${CMAKE_SOURCE_DIR}/pele/potentials/_pele.cxx)
 
 #get_filename_component(newstr ${CMAKE_SOURCE_DIR}/pele/potentials/_pele.cxx NAME)
 #message("newstr ${newstr}")
