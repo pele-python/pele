@@ -18,10 +18,10 @@ message("pele include directory ${pele_include}")
 
 # build the pele library
 FILE(GLOB pele_sources ${pele_include}/*.cpp)
-#add_library(pele_lib SHARED ${pele_sources} ${pele_sources} ${PYTHON_LIBS})
+add_library(pele_lib SHARED ${pele_sources})
 
 set(ngt_source ${CMAKE_SOURCE_DIR}/pele/rates/_ngt_cpp.cxx)
-add_library(_ngt_cpp SHARED ${ngt_source} ${pele_sources} ${PYTHON_LIBS})
-#add_library(_action_cpp SHARED ${_ngt_cpp})
-#target_link_libraries(_action_cpp PRIVATE mcpele_lib)
+#add_library(_ngt_cpp SHARED ${ngt_source} ${pele_sources} ${PYTHON_LIBS})
+add_library(_ngt_cpp SHARED ${ngt_source})
+target_link_libraries(_ngt_cpp pele_lib)
 set_target_properties(_ngt_cpp PROPERTIES PREFIX "")
