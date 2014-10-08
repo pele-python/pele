@@ -1,10 +1,15 @@
+# this file is mean to be parsed by python before being a proper CMakeLists.txt file
+# in particular, the following strings will be set by python
+set(numpy_include __NUMPY_INCLUDE__)
+set(PYTHON_INCLUDE_DIRS __PYTHON_INCLUDE__)
+
+message("python include dirs: ${PYTHON_INCLUDE_DIRS}")
+message("numpy include dirs: ${numpy_include}")
+include_directories(${numpy_include})
+include_directories(${PYTHON_INCLUDE_DIRS})
+
 cmake_minimum_required(VERSION 2.8)
 
-find_package(PythonLibs)
-message(${PYTHON_INCLUDE_DIRS})
-include_directories(${PYTHON_INCLUDE_DIRS})
-set(numpy_include "/home/js850/.local/lib/python2.7/site-packages/numpy/core/include")
-include_directories(${numpy_include})
 
 enable_language(CXX)
 SET(CMAKE_CXX_FLAGS "-Wall -ansi -pedantic -std=c++0x")
@@ -13,22 +18,12 @@ SET(CMAKE_CXX_FLAGS "-Wall -ansi -pedantic -std=c++0x")
 
 # set the pele include directory
 set(pele_include ${CMAKE_SOURCE_DIR}/source)
-include_directories(${pele_include})
-message("pele include directory ${pele_include}")
+message("pele include directory: ${pele_include}")
 
 # build the pele library
+include_directories(${pele_include})
 FILE(GLOB pele_sources ${pele_include}/*.cpp)
 add_library(pele_lib SHARED ${pele_sources})
-
-#set(ngt_source ${CMAKE_SOURCE_DIR}/pele/rates/_ngt_cpp.cxx)
-##add_library(_ngt_cpp SHARED ${ngt_source} ${pele_sources} ${PYTHON_LIBS})
-#add_library(_ngt_cpp SHARED ${ngt_source})
-#target_link_libraries(_ngt_cpp pele_lib)
-#set_target_properties(_ngt_cpp PROPERTIES PREFIX "")
-
-#add_library(_pele SHARED ${CMAKE_SOURCE_DIR}/pele/potentials/_pele.cxx)
-#target_link_libraries(_pele pele_lib)
-#set_target_properties(_pele PROPERTIES PREFIX "")
 
 function(make_cython_lib cython_cxx_source)
   get_filename_component(library_name ${cython_cxx_source} NAME)
@@ -39,10 +34,3 @@ function(make_cython_lib cython_cxx_source)
   message("making library ${library_name} from source ${cython_cxx_source}")
 endfunction(make_cython_lib)
 
-#make_cython_lib(${CMAKE_SOURCE_DIR}/pele/rates/_ngt_cpp.cxx)
-#make_cython_lib(${CMAKE_SOURCE_DIR}/pele/potentials/_pele.cxx)
-
-#get_filename_component(newstr ${CMAKE_SOURCE_DIR}/pele/potentials/_pele.cxx NAME)
-#message("newstr ${newstr}")
-#string(REGEX REPLACE ".cxx$" "" newstr ${newstr})
-#message("newstr ${newstr}")
