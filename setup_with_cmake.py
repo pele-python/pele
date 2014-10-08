@@ -2,15 +2,30 @@ import glob
 import os
 import sys
 import subprocess
+import shutil
+import argparse
 
+import numpy as np
 from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
-from numpy.distutils.misc_util import has_cxx_sources
-import numpy as np
+from numpy.distutils.command.build_ext import build_ext as old_build_ext
 
 # Numpy header files 
 numpy_lib = os.path.split(np.__file__)[0] 
 numpy_include = os.path.join(numpy_lib, 'core/include') 
+
+
+# extract the -j flag and pass save it for running make on the CMake makefile
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument("-j", type=int, default=None)
+jargs, remaining_args = parser.parse_known_args(sys.argv)
+sys.argv = remaining_args
+print jargs, remaining_args
+if jargs.j is None:
+    cmake_parallel_args = []
+else:
+    cmake_parallel_args = ["-j" + str(jargs.j)]
+    
 
 #
 # Make the git revision visible.  Most of this is copied from scipy
@@ -231,6 +246,8 @@ cxx_files = ["pele/potentials/_lj_cpp.cxx",
              "pele/utils/_cpp_utils.cxx",
              "pele/rates/_ngt_cpp.cxx",
              ]
+
+# create file CMakeLists.txt from CMakeLists.txt.in specifying which libraries to build 
 with open("CMakeLists.txt.in", "r") as fin:
     cmake_txt = fin.read()
 with open("CMakeLists.txt", "w") as fout:
@@ -239,9 +256,32 @@ with open("CMakeLists.txt", "w") as fout:
     for fname in cxx_files:
         fout.write("make_cython_lib(${CMAKE_SOURCE_DIR}/%s)\n" % fname)
 
+if not os.path.isdir(cmake_build_dir):
+    os.makedirs(cmake_build_dir)
 
-from numpy.distutils.command.build_ext import build_ext as old_build_ext
-import shutil
+
+def run_cmake():
+    print "\nrunning cmake in directory", cmake_build_dir
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    p = subprocess.call(["cmake", cwd], cwd=cmake_build_dir)
+    if p != 0:
+        raise Exception("running cmake failed")
+    print "\nbuilding files in cmake directory"
+    if len(cmake_parallel_args) > 0:
+        print "make flags:", cmake_parallel_args
+    p = subprocess.call(["make"] + cmake_parallel_args, cwd=cmake_build_dir)
+    if p != 0:
+        raise Exception("building libraries with CMake Makefile failed")
+    print "finished building the extension modules with cmake\n"
+
+run_cmake()
+    
+
+# Now that the cython libraries are built, we have to make sure they are copied to
+# the correct location.  This means in the source tree if build in-place, or 
+# somewhere in the build/ directory otherwise.  The standard distutils
+# knows how to do this best.  We will overload the build_ext command class
+# to simply copy the pre-compiled libraries into the right place
 class build_ext_precompiled(old_build_ext):
     def build_extension(self, ext):
         """overload the function that build the extension
@@ -270,10 +310,3 @@ for fname in cxx_files:
 
 setup(cmdclass=dict(build_ext=build_ext_precompiled),
       ext_modules=cxx_modules)
-
-#setup(ext_modules=)
-
-
-#setup(ext_modules=cxx_modules,
-#      )
-
